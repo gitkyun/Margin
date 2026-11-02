@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="./assets/RMS_Image.png" alt="RMS — Research Management System" width="100%" />
+  <img src="./docs/assets/rms-cover.png" alt="RMS — Research Management System" width="100%" />
 </p>
 
 <h1 align="center">RMS</h1>
@@ -14,6 +14,14 @@
 </p>
 
 ---
+
+## Start Here
+
+현재 저장소에는 기획 문서와 개발 준비 설정이 있습니다. 웹 앱 실행 코드는 아직 추가하지 않았습니다.
+
+- **제품 이해:** [PRD](docs/product/prd.md) → [기능명세서](docs/product/functional-specification.md) → [유저플로우](docs/product/user-flow.md)
+- **UI 구현 기준:** [shadcn/ui와 Wanted 스타일 적용](docs/design/README.md)
+- **개발 참여:** [개발 안내](docs/development/README.md) · [기여 방법](CONTRIBUTING.md)
 
 ## Overview
 
@@ -315,11 +323,44 @@ RMS는 서비스 디자인 제안 단계에 있으며, 프로토타입을 통해
 
 | Document | Description |
 |---|---|
-| [PRD](<./논문 지도 협업 및 연구 진행 관리 서비스_PRD_2026-11-02.md>) | 프로젝트 배경, 목표, 사용자 문제, 핵심 경험과 제공 범위 |
-| [Feature Specification](<./논문 지도 협업 및 연구 진행 관리 서비스_기능명세서_2026-11-02.md>) | 기능별 목적, 동작, 상태, 예외 처리, 권한 및 데이터 정의 |
-| [User Flow](<./논문 지도 협업 및 연구 진행 관리 서비스_유저플로우_2026-11-02.md.md>) | 서비스의 주요 사용자 흐름 및 기능 간 이동 관계 |
+| [PRD](<./docs/product/prd.md>) | 프로젝트 배경, 목표, 사용자 문제, 핵심 경험과 제공 범위 |
+| [Feature Specification](<./docs/product/functional-specification.md>) | 기능별 목적, 동작, 상태, 예외 처리, 권한 및 데이터 정의 |
+| [User Flow](<./docs/product/user-flow.md>) | 서비스의 주요 사용자 흐름 및 기능 간 이동 관계 |
 
-각 문서는 저장소 최상위 디렉터리에서 관리합니다.
+제품 문서는 `docs/product/`에서 관리합니다. 문서 본문의 버전 표기와 Git 이력으로 변경을 추적합니다.
+
+- [전체 문서 안내](docs/README.md)
+- [디자인 기준과 참고자료](docs/design/README.md)
+- [개발 준비·실행 안내](docs/development/README.md)
+- [기여 방법](CONTRIBUTING.md)
+
+---
+
+## Repository Structure
+
+```text
+RMS/
+├── .github/                 # 이슈·PR 양식, 저장소 검사 자동화
+├── docs/
+│   ├── assets/              # README·문서 이미지
+│   ├── product/             # PRD, 기능명세서, 유저플로우
+│   ├── design/              # UI 기준과 출처
+│   └── development/         # 개발·Git 사용 안내
+├── scripts/                 # 저장소 검사 도구
+├── AGENTS.md                # 코딩 에이전트 작업 기준
+├── CONTRIBUTING.md          # 기여·변경 검증 안내
+└── README.md
+```
+
+## Repository Checks
+
+문서의 로컬 연결과 필수 파일을 검사합니다. Python 3.10 이상이 필요합니다.
+
+```bash
+python3 scripts/check_repository.py
+```
+
+현재 검사는 저장소 구성을 확인합니다. 앱 빌드·제품 기능 테스트는 앱 초기화 후 추가합니다.
 
 ---
 

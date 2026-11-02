@@ -1,0 +1,31 @@
+# Dependencies and build output
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Local environment; keep examples versioned
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+
+# Local data and temporary files
+uploads/
+storage/
+tmp/
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+Thumbs.db

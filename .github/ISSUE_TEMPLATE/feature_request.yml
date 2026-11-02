@@ -1,0 +1,22 @@
+name: 기능·기획 제안
+description: 사용자 문제와 필요한 결과를 바탕으로 변경을 제안합니다.
+title: "[Proposal] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 누가 어떤 상황에서 겪는 문제인가요?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 필요한 결과와 제안 동작
+      description: 기존 요구사항 번호와 초기·후속 범위를 함께 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 근거·대안·미확정 사항
+      description: 확인한 사실과 설계 권고를 구분해 주세요.
