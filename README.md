@@ -1,4 +1,22 @@
 
+<p align="center">
+  <img src="./assets/RMS_Image.png" alt="RMS — Research Management System" width="100%" />
+</p>
+
+<h1 align="center">RMS</h1>
+
+<p align="center">
+  <strong>Research Management System</strong>
+</p>
+
+<p align="center">
+  받은 피드백이 다음 연구 행동으로 이어지도록.
+</p>
+
+---
+
+## Overview
+
 # RMS — Research Management System
 
 **논문 지도 과정의 피드백을 실제 연구 활동으로 연결하는 연구 관리 시스템**
