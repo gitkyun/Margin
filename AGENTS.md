@@ -6,8 +6,9 @@
 2. `docs/product/prd.md`
 3. `docs/product/functional-specification.md`
 4. `docs/product/user-flow.md`
-5. `docs/development/classroom-demo.md`
-6. UI 작업 시 `docs/design/README.md`
+5. `docs/product/information-architecture.md`
+6. `docs/development/classroom-demo.md`
+7. UI 작업 시 `docs/design/README.md`
 
 ## 제품 조건
 

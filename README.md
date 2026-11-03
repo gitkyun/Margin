@@ -19,7 +19,7 @@
 
 현재 저장소에는 기획 문서와 개발 준비 설정이 있습니다. 웹 앱 실행 코드는 아직 추가하지 않았습니다. 다음 구현 목표는 Google AI API를 실제 연결하고 대표 사용자 시나리오를 수업에서 시연할 수 있는 제한 공개 배포입니다.
 
-- **제품 이해:** [PRD](docs/product/prd.md) → [기능명세서](docs/product/functional-specification.md) → [유저플로우](docs/product/user-flow.md)
+- **제품 이해:** [PRD](docs/product/prd.md) → [기능명세서](docs/product/functional-specification.md) → [유저플로우](docs/product/user-flow.md) → [IA·화면 목록](docs/product/information-architecture.md)
 - **UI 구현 기준:** [shadcn/ui와 Wanted 스타일 적용](docs/design/README.md)
 - **시연 구현:** [대표 시나리오·Google API·배포 기준](docs/development/classroom-demo.md)
 - **개발 참여:** [개발 안내](docs/development/README.md) · [기여 방법](CONTRIBUTING.md)
@@ -334,6 +334,7 @@ RMS는 수업 시연을 위한 웹앱 구현·배포를 준비하고 있습니�
 | [PRD](<./docs/product/prd.md>) | 프로젝트 배경, 목표, 사용자 문제, 핵심 경험과 제공 범위 |
 | [Feature Specification](<./docs/product/functional-specification.md>) | 기능별 목적, 동작, 상태, 예외 처리, 권한 및 데이터 정의 |
 | [User Flow](<./docs/product/user-flow.md>) | 서비스의 주요 사용자 흐름 및 기능 간 이동 관계 |
+| [Information Architecture](<./docs/product/information-architecture.md>) | 학생·교수 메뉴와 화면 계층, 정보·행동·진입·복귀 및 시연 범위 |
 
 제품 문서는 `docs/product/`에서 관리합니다. 문서 본문의 버전 표기와 Git 이력으로 변경을 추적합니다.
 
