@@ -6,7 +6,8 @@
 2. `docs/product/prd.md`
 3. `docs/product/functional-specification.md`
 4. `docs/product/user-flow.md`
-5. UI 작업 시 `docs/design/README.md`
+5. `docs/development/classroom-demo.md`
+6. UI 작업 시 `docs/design/README.md`
 
 ## 제품 조건
 
@@ -16,6 +17,8 @@
 - AI는 선택적으로 실행하며 원문·제안·가정을 구분한다. 학생이 선택하지 않은 자료를 처리하지 않는다.
 - 공유한 자료·설명·응답은 당시 버전으로 유지하고 새 내용은 재확인 요청으로 전달한다.
 - 사용자 확정 사항, 작성 기준안, 운영 전 미확정 정책을 구분한다. 문서끼리 충돌하면 관련 위치와 영향을 먼저 보고하고 임의로 제품 결정을 확정하지 않는다.
+
+- 현재 구현 목표는 수업 시연이 가능한 제한 공개 배포다. D01~D06을 실제 로그인·저장·Google AI API로 연결하며 시연 준비와 구현 완료를 구분한다. AI의 Google API 선택을 인증·저장·호스팅 전체의 Google 사용 확정으로 확대하지 않는다.
 
 ## 구현과 저장소 관리
 

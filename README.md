@@ -17,10 +17,11 @@
 
 ## Start Here
 
-현재 저장소에는 기획 문서와 개발 준비 설정이 있습니다. 웹 앱 실행 코드는 아직 추가하지 않았습니다.
+현재 저장소에는 기획 문서와 개발 준비 설정이 있습니다. 웹 앱 실행 코드는 아직 추가하지 않았습니다. 다음 구현 목표는 Google AI API를 실제 연결하고 대표 사용자 시나리오를 수업에서 시연할 수 있는 제한 공개 배포입니다.
 
 - **제품 이해:** [PRD](docs/product/prd.md) → [기능명세서](docs/product/functional-specification.md) → [유저플로우](docs/product/user-flow.md)
 - **UI 구현 기준:** [shadcn/ui와 Wanted 스타일 적용](docs/design/README.md)
+- **시연 구현:** [대표 시나리오·Google API·배포 기준](docs/development/classroom-demo.md)
 - **개발 참여:** [개발 안내](docs/development/README.md) · [기여 방법](CONTRIBUTING.md)
 
 ## Overview
@@ -33,8 +34,9 @@ RMS(Research Management System)는 대학원생이 논문 지도 과정에서 �
 
 단순히 연구 자료와 할 일을 한곳에 모으는 것이 아니라, **어떤 피드백을 받았고, 어떻게 수정했으며, 무엇을 확인받았는지** 이어서 파악할 수 있는 경험을 목표로 합니다.
 
-> **Project Status:** UX/UI Service Design Proposal · 2026  
-> 현재 서비스 기획 및 설계 단계로, 소개된 기능은 구현 완료 여부와 구분됩니다.
+> **Project Status:** Classroom Demo Implementation Planning · 2026
+>
+> 대표 시나리오의 실제 구현·배포를 준비하고 있습니다. 앱·API 연결·배포 완료와는 구분됩니다.
 
 ---
 
@@ -274,6 +276,12 @@ RMS는 대학원생을 주 사용자로 설계합니다.
 
 P0와 P1은 기능의 설계 우선순위를 나타내며 구현 완료 여부를 의미하지 않습니다.
 
+### Classroom Demo
+
+학생 메모 저장 → 실제 Google API 정리·수정 방안 → 다음 미팅 준비 → v2 수정 결과 공유 → 교수 항목별 응답 → v3 재확인과 이전 이력 조회를 먼저 완성합니다. 시연용 학생·교수 계정으로 접속을 제한하고 실제 저장·파일·권한을 확인합니다. 공개 회원가입과 후속 확장 기능은 시연 필수에서 제외합니다.
+
+상세한 동선과 배포 후 통과 조건은 [수업 시연 기준](docs/development/classroom-demo.md)을 따릅니다.
+
 ---
 
 ## Design Principles
@@ -302,7 +310,7 @@ AI는 선택적으로 사용하며 연구 방향과 수정 결과에 대한 최�
 
 ## Validation
 
-RMS는 서비스 디자인 제안 단계에 있으며, 프로토타입을 통해 핵심 경험의 사용성과 효과를 검증할 계획입니다.
+RMS는 수업 시연을 위한 웹앱 구현·배포를 준비하고 있습니다. 배포 환경에서 대표 시나리오의 동작을 먼저 확인하고 핵심 경험의 사용성과 효과는 별도로 검증합니다.
 
 주요 검증 항목은 다음과 같습니다.
 
@@ -366,13 +374,13 @@ python3 scripts/check_repository.py
 
 ## Project Status
 
-**UX/UI Service Design Proposal — November 2026**
+**Classroom Demo Implementation Planning — November 2026**
 
 RMS는 논문 지도 과정에서 발생하는 연구 관리 문제를 개선하기 위한 서비스 디자인 프로젝트입니다.
 
-현재 PRD, 기능명세서 및 유저플로우를 기반으로 서비스의 구조와 사용자 경험을 구체화하고 있습니다.
+현재 PRD·기능명세서·유저플로우를 대표 시나리오의 실제 구현과 제한 공개 배포 기준으로 정리하고 있습니다. AI는 Google API에 연결할 예정이며 인증·저장·호스팅은 구현 시 선택합니다.
 
-기능 정의와 상세 설계는 프로토타입 및 사용자 검증 과정에서 수정될 수 있습니다. 실제 소스 코드 및 실행 환경이 확인되면 기술 스택과 실행 방법을 추가할 예정입니다.
+기능 정의와 상세 설계는 시연·사용자 검증 과정에서 수정될 수 있습니다. 아직 앱 실행 코드·Google API 연결·배포 환경은 없으며 실제 구현 후 기술 스택·실행 방법·배포 주소·검증 결과를 추가합니다.
 
 ---
 
