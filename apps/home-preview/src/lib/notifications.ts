@@ -1,0 +1,121 @@
+import type {
+  AppUser,
+  ReviewRequest,
+  ReviewRound,
+  WorkspaceData,
+} from "./domain";
+
+export interface ReviewNotification {
+  id: string;
+  kind: "response" | "comment" | "round";
+  requestId: string;
+  researchId: string;
+  roundId: string;
+  itemId: string;
+  roundNumber: number;
+  title: string;
+  message: string;
+  excerpt?: string;
+  tone: "amber" | "green" | "blue";
+  createdAt: string;
+}
+
+/** Uses only the caller's authorized workspace records; reads never imply review. */
+export function unreadReviewNotifications(
+  data: WorkspaceData,
+  user: AppUser,
+  researchId?: string,
+): ReviewNotification[] {
+  const permitted = new Map<
+    string,
+    { request: ReviewRequest; owner: boolean }
+  >();
+  for (const request of data.reviews) {
+    if (researchId && request.researchId !== researchId) continue;
+    const owner = data.researches.some(
+      (r) => r.id === request.researchId && r.ownerId === user.id,
+    );
+    if (
+      owner ||
+      (request.professorId === user.id && request.status === "shared")
+    )
+      permitted.set(request.id, { request, owner });
+  }
+  const notifications: ReviewNotification[] = [];
+  const add = (
+    round: ReviewRound,
+    details: Pick<
+      ReviewNotification,
+      "id" | "kind" | "message" | "excerpt" | "tone" | "createdAt"
+    >,
+  ) => {
+    const permittedRequest = permitted.get(round.requestId);
+    if (!permittedRequest) return;
+    const lastSeen = data.reads.find(
+      (read) => read.roundId === round.id && read.userId === user.id,
+    )?.lastSeenAt;
+    const time = Date.parse(details.createdAt);
+    if (!Number.isFinite(time) || (lastSeen && Date.parse(lastSeen) >= time))
+      return;
+    notifications.push({
+      ...details,
+      requestId: round.requestId,
+      researchId: permittedRequest.request.researchId,
+      roundId: round.id,
+      itemId: round.itemId,
+      roundNumber: round.number,
+      title: round.title,
+    });
+  };
+  for (const round of data.rounds) {
+    const permission = permitted.get(round.requestId);
+    if (!permission) continue;
+    if (!permission.owner)
+      add(round, {
+        id: `round:${round.id}`,
+        kind: "round",
+        message:
+          round.number > 1
+            ? "새 차수의 수정 결과가 도착했습니다."
+            : "검토할 수정 결과가 도착했습니다.",
+        tone: "blue",
+        createdAt: round.createdAt,
+      });
+    if (permission.owner) {
+      for (const response of data.responses.filter(
+        (r) => r.roundId === round.id && r.userId !== user.id,
+      ))
+        add(round, {
+          id: `response:${response.id}`,
+          kind: "response",
+          message:
+            response.result === "changes_requested"
+              ? "교수가 추가 수정 의견을 남겼습니다."
+              : "교수가 수정 내용을 확인했습니다.",
+          excerpt: response.comment || undefined,
+          tone: response.result === "changes_requested" ? "amber" : "green",
+          createdAt: response.updatedAt,
+        });
+    }
+    for (const comment of data.comments.filter(
+      (c) => c.roundId === round.id && c.userId !== user.id,
+    ))
+      add(round, {
+        id: `comment:${comment.id}`,
+        kind: "comment",
+        message: `${comment.authorName || "검토 참여자"}${comment.parentId ? "님이 답글을 남겼습니다." : "님이 댓글을 남겼습니다."}`,
+        excerpt: comment.body,
+        tone: "blue",
+        createdAt: comment.createdAt,
+      });
+  }
+  return notifications.sort(
+    (a, b) =>
+      Date.parse(b.createdAt) - Date.parse(a.createdAt) ||
+      a.id.localeCompare(b.id),
+  );
+}
+
+export function notificationHref(event: ReviewNotification): string {
+  return `/reviews/${event.requestId}?item=${event.itemId}&round=${event.roundId}`;
+}

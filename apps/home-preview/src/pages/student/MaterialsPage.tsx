@@ -1,0 +1,819 @@
+import { useEffect, useRef, useState } from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import { PdfViewer } from "@/components/PdfViewer";
+import { Icon } from "@/components/icons";
+import { useWorkspace } from "@/lib/workspace";
+import { UploadConnectionError } from "@/lib/repository";
+import {
+  recordBase,
+  safeUrl,
+  type Material,
+  type MaterialVersion,
+} from "@/lib/domain";
+import {
+  BackLink,
+  ErrorNotice,
+  FormDialog,
+  LabeledInput,
+  SaveActions,
+  SearchInput,
+  useSaving,
+} from "./shared";
+import {
+  OrphanMaterialError,
+  pendingUploadKey,
+  registerPdf,
+} from "./material-upload";
+const materialTypes = {
+  draft: "논문·초안",
+  reference: "참고문헌",
+  analysis: "분석 자료",
+  other: "기타",
+};
+function byteSize(bytes: number) {
+  return bytes >= 1048576
+    ? `${(bytes / 1048576).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+export function MaterialsPage() {
+  const { researchId = "", materialId } = useParams();
+  const { data, save, upload, remove } = useWorkspace();
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [registering, setRegistering] = useState(false);
+  const [target, setTarget] = useState<Material | null>(null);
+  const [registerMode, setRegisterMode] = useState<"file" | "link">("file");
+  const [draft, setDraft] = useState<Material | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const abort = useRef<AbortController | null>(null);
+  const fileInput = useRef<HTMLInputElement | null>(null);
+  const [editing, setEditing] = useState<Material | null>(null);
+  const editForm = useSaving();
+  const pendingKey = pendingUploadKey(researchId);
+  const [pending, setPending] = useState<MaterialVersion | null>(() => {
+    try {
+      const raw = sessionStorage.getItem(pendingKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+  const current = data.materials.find(
+    (item) => item.id === materialId && item.researchId === researchId,
+  );
+  const versions = data.versions
+    .filter((item) => item.materialId === materialId)
+    .sort((a, b) => b.number - a.number);
+  const selected =
+    versions.find((item) => item.id === params.get("version")) ?? versions[0];
+  useEffect(
+    () => () => {
+      abort.current?.abort();
+    },
+    [],
+  );
+  function startRegistration(material?: Material) {
+    if (pending) {
+      setError(
+        "먼저 올려 둔 파일을 자료에 연결하세요. 파일을 다시 올리지 않아도 됩니다.",
+      );
+      return;
+    }
+    setTarget(material ?? null);
+    setDraft(
+      material
+        ? { ...material }
+        : { ...recordBase(researchId), title: "", type: "other" },
+    );
+    setFile(null);
+    setProgress(null);
+    setError(null);
+    setRegisterMode("file");
+    setRegistering(true);
+  }
+  function selectFile(chosen: File | undefined) {
+    if (!chosen) return;
+    if (!chosen.name.toLowerCase().endsWith(".pdf")) {
+      setError("PDF 파일을 선택하세요.");
+      return;
+    }
+    if (chosen.size > 20 * 1024 * 1024) {
+      setError("파일은 20 MB 이하로 등록할 수 있습니다.");
+      return;
+    }
+    setError(null);
+    setFile(chosen);
+    if (!target)
+      setDraft((value) =>
+        value
+          ? {
+              ...value,
+              title: value.title || chosen.name.replace(/\.pdf$/i, ""),
+            }
+          : value,
+      );
+  }
+  function rememberPending(version: MaterialVersion | null) {
+    setPending(version);
+    try {
+      if (version) sessionStorage.setItem(pendingKey, JSON.stringify(version));
+      else sessionStorage.removeItem(pendingKey);
+    } catch {}
+  }
+  async function reconnect() {
+    if (!pending || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const version = await save("versions", pending);
+      rememberPending(null);
+      setRegistering(false);
+      navigate(
+        `/r/${researchId}/materials/${version.materialId}?version=${version.id}`,
+      );
+      toast.success("올려 둔 파일을 자료에 연결했습니다");
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : "파일 연결에 실패했습니다. 다시 업로드하지 않아도 됩니다.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function register(event: React.FormEvent) {
+    event.preventDefault();
+    if (saving || !draft) return;
+    if (pending) {
+      await reconnect();
+      return;
+    }
+    if (!draft.title.trim()) {
+      setError("자료 이름을 입력하세요.");
+      return;
+    }
+    if (registerMode === "link" && !safeUrl(draft.externalUrl ?? "")) {
+      setError("http 또는 https로 시작하는 주소를 입력하세요.");
+      return;
+    }
+    if (registerMode === "file" && !file) {
+      setError("등록할 PDF를 선택하세요.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    const controller = new AbortController();
+    abort.current = controller;
+    try {
+      if (registerMode === "link") {
+        const material = await save("materials", {
+          ...draft,
+          title: draft.title.trim(),
+          externalUrl: safeUrl(draft.externalUrl ?? "") ?? undefined,
+        });
+        setDraft(material);
+        setRegistering(false);
+        navigate(`/r/${researchId}/materials/${material.id}`);
+        toast.success("외부 링크를 등록했습니다");
+      } else {
+        setProgress(0);
+        const { material, version } = await registerPdf(
+          { save, upload, remove },
+          {
+            draft: { ...draft, title: draft.title.trim() },
+            isNew: !target,
+            file: file!,
+            onProgress: (value) => setProgress(value),
+            signal: controller.signal,
+            // A retry on an existing material needs its new updatedAt.
+            onMaterialSaved: (saved) => {
+              if (target) setDraft(saved);
+            },
+          },
+        );
+        setDraft(material);
+        setRegistering(false);
+        navigate(
+          `/r/${researchId}/materials/${material.id}?version=${version.id}`,
+        );
+        toast.success(
+          target ? "새 보존 버전을 등록했습니다" : "PDF를 등록했습니다",
+        );
+      }
+    } catch (e) {
+      if (e instanceof UploadConnectionError) {
+        rememberPending(e.uploadedVersion);
+        setError(e.message);
+      } else if (e instanceof OrphanMaterialError) {
+        setError(e.message);
+        setProgress(null);
+      } else if (controller.signal.aborted) {
+        setError(
+          "업로드를 중단했습니다. 파일을 선택한 상태로 다시 시도할 수 있습니다.",
+        );
+        setProgress(null);
+      } else
+        setError(
+          e instanceof Error
+            ? e.message
+            : "등록하지 못했습니다. 선택한 파일과 입력은 남아 있습니다.",
+        );
+    } finally {
+      setSaving(false);
+    }
+  }
+  const materials = data.materials
+    .filter(
+      (item) =>
+        item.researchId === researchId &&
+        (!search || item.title.toLowerCase().includes(search.toLowerCase())) &&
+        (filter === "all" ||
+          (filter === "links" ? !!item.externalUrl : item.type === filter)),
+    )
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  if (materialId && !current)
+    return (
+      <>
+        <BackLink to={`/r/${researchId}/materials`}>자료 목록</BackLink>
+        <EmptyState
+          title="자료를 열 수 없습니다"
+          description="현재 연구의 자료 목록에서 다시 선택하세요."
+        />
+      </>
+    );
+  return (
+    <div className="student-page">
+      {current ? (
+        <>
+          <BackLink to={`/r/${researchId}/materials`}>자료 목록</BackLink>
+          <PageHeader
+            title={current.title}
+            description={`${materialTypes[current.type]} · ${current.externalUrl ? "외부 참조" : "내용이 보존된 파일"}`}
+            actions={
+              <div className="button-row">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditing({ ...current });
+                    editForm.setError(null);
+                  }}
+                >
+                  <Icon name="edit" size={16} />
+                  자료 정보
+                </Button>
+                <Button onClick={() => startRegistration(current)}>
+                  <Icon name="upload" size={16} />새 버전 추가
+                </Button>
+              </div>
+            }
+          />
+          {current.externalUrl && (
+            <section className="surface external-reference">
+              <div>
+                <StatusBadge tone="neutral">외부 링크</StatusBadge>
+                <h2>원본 문서 열기</h2>
+                <p>
+                  외부 문서의 내용은 변경될 수 있습니다. 이 링크만으로 당시
+                  내용을 보존하지는 않습니다.
+                </p>
+                <a
+                  href={safeUrl(current.externalUrl) ?? undefined}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {current.externalUrl}
+                  <Icon name="arrow-up-right" size={16} />
+                </a>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void navigator.clipboard
+                    .writeText(current.externalUrl!)
+                    .then(() => toast.success("주소를 복사했습니다"))
+                    .catch(() =>
+                      toast.error(
+                        "주소 복사에 실패했습니다. 주소를 직접 선택해 복사하세요.",
+                      ),
+                    );
+                }}
+              >
+                주소 복사
+              </Button>
+            </section>
+          )}
+          <div className="material-detail-layout">
+            <section className="material-viewer-column">
+              {selected ? (
+                <>
+                  <div className="material-version-toolbar">
+                    <span className="meta">
+                      <Icon name="file" size={15} />
+                      {selected.fileName}
+                    </span>
+                    <label className="sr-only" htmlFor="version-select">
+                      보존 버전 선택
+                    </label>
+                    <select
+                      id="version-select"
+                      className="native-select"
+                      value={selected.id}
+                      onChange={(event) =>
+                        setParams({ version: event.target.value })
+                      }
+                    >
+                      {versions.map((version) => (
+                        <option key={version.id} value={version.id}>
+                          v{version.number} · {version.fileName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <PdfViewer key={selected.id} version={selected} />
+                </>
+              ) : (
+                <section className="surface">
+                  <EmptyState
+                    title="등록한 보존 파일이 없습니다"
+                    description={
+                      current.externalUrl
+                        ? "교수에게 수정 결과를 확인받으려면 PDF 등 내용이 고정된 파일을 추가하세요."
+                        : "이 자료에 PDF 파일을 추가하세요."
+                    }
+                    action={
+                      <Button
+                        variant="outline"
+                        onClick={() => startRegistration(current)}
+                      >
+                        PDF 추가
+                      </Button>
+                    }
+                  />
+                </section>
+              )}
+            </section>
+            <aside className="stack">
+              <section className="surface material-history">
+                <h2>보존 버전</h2>
+                {versions.length ? (
+                  versions.map((version) => (
+                    <button
+                      key={version.id}
+                      className={`version-history-item ${selected?.id === version.id ? "active" : ""}`}
+                      onClick={() => setParams({ version: version.id })}
+                    >
+                      <span className="version-number">v{version.number}</span>
+                      <span>
+                        <strong>{version.fileName}</strong>
+                        <small>
+                          {new Intl.DateTimeFormat("ko-KR", {
+                            month: "long",
+                            day: "numeric",
+                          }).format(new Date(version.createdAt))}{" "}
+                          · {byteSize(version.size)}
+                        </small>
+                      </span>
+                      {selected?.id === version.id && (
+                        <Icon name="check" size={15} />
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <p className="student-empty-inline">
+                    보존 버전을 등록하면 여기에서 이전 파일을 다시 열 수
+                    있습니다.
+                  </p>
+                )}
+                <p className="student-footnote">
+                  새 파일을 올려도 이전 검토에서 사용한 파일은 바뀌지 않습니다.
+                </p>
+              </section>
+              {selected && (
+                <section className="surface">
+                  <h2>이 버전을 사용한 기록</h2>
+                  {data.results
+                    .filter((result) => result.versionId === selected.id)
+                    .map((result) => (
+                      <Link
+                        key={result.id}
+                        className="student-simple-row"
+                        to={`/r/${researchId}/results/${result.id}`}
+                      >
+                        <span className="grow">
+                          <strong>{result.title}</strong>
+                          <small>
+                            수정 결과 · {result.location || "위치 미정"}
+                          </small>
+                        </span>
+                        <Icon name="chevron-right" size={15} />
+                      </Link>
+                    ))}
+                  {data.meetings
+                    .filter((meeting) =>
+                      meeting.versionIds.includes(selected.id),
+                    )
+                    .map((meeting) => (
+                      <Link
+                        key={meeting.id}
+                        className="student-simple-row"
+                        to={`/r/${researchId}/meetings/${meeting.id}?tab=prepare`}
+                      >
+                        <span className="grow">
+                          <strong>{meeting.title}</strong>
+                          <small>미팅 준비</small>
+                        </span>
+                        <Icon name="chevron-right" size={15} />
+                      </Link>
+                    ))}
+                  {!data.results.some(
+                    (result) => result.versionId === selected.id,
+                  ) &&
+                    !data.meetings.some((meeting) =>
+                      meeting.versionIds.includes(selected.id),
+                    ) && (
+                      <p className="student-empty-inline">
+                        아직 연결한 기록이 없습니다.
+                      </p>
+                    )}
+                </section>
+              )}
+            </aside>
+          </div>
+        </>
+      ) : (
+        <>
+          <PageHeader
+            title="자료"
+            description="자료의 보존 버전과 외부 링크를 구분해 연구 기록에 연결하세요."
+            actions={
+              <Button onClick={() => startRegistration()}>
+                <Icon name="plus" size={17} />
+                자료 등록
+              </Button>
+            }
+          />
+          <div className="page-toolbar">
+            <div className="segmented">
+              {[
+                ["all", "전체"],
+                ["draft", "논문·초안"],
+                ["reference", "참고문헌"],
+                ["analysis", "분석 자료"],
+                ["links", "외부 링크"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  className={filter === value ? "active" : ""}
+                  aria-pressed={filter === value}
+                  onClick={() => setFilter(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder="자료 이름으로 찾기"
+            />
+          </div>
+          <section className="surface material-list">
+            {materials.length ? (
+              materials.map((material) => {
+                const materialVersions = data.versions
+                  .filter((version) => version.materialId === material.id)
+                  .sort((a, b) => b.number - a.number);
+                return (
+                  <Link
+                    key={material.id}
+                    className="material-list-row"
+                    to={`/r/${researchId}/materials/${material.id}`}
+                  >
+                    <span
+                      className={`material-symbol ${material.externalUrl ? "is-link" : ""}`}
+                    >
+                      <Icon
+                        name={material.externalUrl ? "link" : "file"}
+                        size={23}
+                      />
+                      {!material.externalUrl && <small>PDF</small>}
+                    </span>
+                    <span className="grow">
+                      <strong>{material.title}</strong>
+                      <small>
+                        {materialTypes[material.type]} ·{" "}
+                        {material.externalUrl
+                          ? "외부 링크"
+                          : materialVersions.length
+                            ? `${materialVersions.length}개 보존 버전 · 최근 v${materialVersions[0].number}`
+                            : "보존 파일 없음"}
+                      </small>
+                    </span>
+                    <span className="material-row-date">
+                      {new Intl.DateTimeFormat("ko-KR", {
+                        month: "long",
+                        day: "numeric",
+                      }).format(new Date(material.updatedAt))}
+                    </span>
+                    <Icon name="chevron-right" size={17} />
+                  </Link>
+                );
+              })
+            ) : (
+              <EmptyState
+                title={
+                  search || filter !== "all"
+                    ? "조건에 맞는 자료가 없습니다"
+                    : "아직 등록한 자료가 없습니다"
+                }
+                description="논문 초안·분석 자료는 PDF로, 참고할 웹 문서는 링크로 등록하세요."
+                action={
+                  <Button variant="outline" onClick={() => startRegistration()}>
+                    자료 등록
+                  </Button>
+                }
+              />
+            )}
+          </section>
+        </>
+      )}
+      {pending && (
+        <div className="pending-upload-note" role="status">
+          <Icon name="warning" size={19} />
+          <span>
+            <strong>올려 둔 파일을 자료에 연결하지 못했습니다.</strong>
+            <small>
+              {pending.fileName} · 파일은 다시 올리지 않아도 됩니다.
+            </small>
+          </span>
+          <Button
+            variant="outline"
+            disabled={saving}
+            onClick={() => void reconnect()}
+          >
+            연결 다시 시도
+          </Button>
+        </div>
+      )}
+      {!registering && error && <ErrorNotice error={error} />}
+      <FormDialog
+        busy={saving}
+        open={registering}
+        onOpenChange={(open) => {
+          if (!saving) setRegistering(open);
+        }}
+        title={target ? "보존 버전 추가" : "자료 등록"}
+        description={
+          target
+            ? "새 버전을 올려도 이전 파일과 검토 응답은 유지됩니다."
+            : "PDF는 내용이 보존되고, 외부 링크는 원본이 바뀔 수 있습니다."
+        }
+      >
+        <form className="stack" onSubmit={register}>
+          {!target && (
+            <div className="segmented">
+              <button
+                type="button"
+                className={registerMode === "file" ? "active" : ""}
+                onClick={() => setRegisterMode("file")}
+              >
+                PDF 파일
+              </button>
+              <button
+                type="button"
+                className={registerMode === "link" ? "active" : ""}
+                onClick={() => setRegisterMode("link")}
+              >
+                외부 링크
+              </button>
+            </div>
+          )}
+          {draft && (
+            <>
+              <LabeledInput
+                label="자료 이름"
+                required
+                value={draft.title}
+                onChange={(title) => setDraft((v) => (v ? { ...v, title } : v))}
+                disabled={saving}
+              />
+              <label className="field">
+                <span className="field-name">자료 유형</span>
+                <select
+                  className="native-select"
+                  value={draft.type}
+                  onChange={(event) =>
+                    setDraft((v) =>
+                      v
+                        ? { ...v, type: event.target.value as Material["type"] }
+                        : v,
+                    )
+                  }
+                  disabled={saving}
+                >
+                  {Object.entries(materialTypes).map(([value, label]) => (
+                    <option value={value} key={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {registerMode === "link" ? (
+                <LabeledInput
+                  label="외부 주소"
+                  required
+                  type="url"
+                  value={draft.externalUrl ?? ""}
+                  onChange={(externalUrl) =>
+                    setDraft((v) => (v ? { ...v, externalUrl } : v))
+                  }
+                  placeholder="https://"
+                  hint="외부 문서의 접근 권한은 원래 서비스에서 관리합니다."
+                  disabled={saving}
+                />
+              ) : (
+                <>
+                  <div
+                    className={`upload-dropzone ${dragging ? "dragging" : ""}`}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      if (!saving) setDragging(true);
+                    }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      setDragging(false);
+                      if (!saving) selectFile(event.dataTransfer.files[0]);
+                    }}
+                  >
+                    <span className="upload-symbol">
+                      <Icon name="upload" size={25} />
+                    </span>
+                    <strong>
+                      {file ? file.name : "PDF를 끌어 놓거나 선택하세요"}
+                    </strong>
+                    <span>
+                      {file ? byteSize(file.size) : "PDF · 파일당 최대 20 MB"}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={saving}
+                      onClick={() => fileInput.current?.click()}
+                    >
+                      {file ? "다른 파일 선택" : "파일 선택"}
+                    </Button>
+                    <input
+                      ref={fileInput}
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      hidden
+                      onChange={(event) => selectFile(event.target.files?.[0])}
+                    />
+                  </div>
+                  {saving && progress !== null && (
+                    <div className="upload-progress">
+                      <div>
+                        <span>
+                          {progress === 100
+                            ? "자료에 연결 중…"
+                            : "파일 업로드 중"}
+                        </span>
+                        <strong>{Math.round(progress)}%</strong>
+                      </div>
+                      <progress max={100} value={progress} />
+                      {progress < 100 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => abort.current?.abort()}
+                        >
+                          업로드 중단
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+          <ErrorNotice error={error} />
+          {pending && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={saving}
+              onClick={() => void reconnect()}
+            >
+              올려 둔 파일 연결 다시 시도
+            </Button>
+          )}
+          <SaveActions
+            saving={saving}
+            onCancel={() => setRegistering(false)}
+            label={
+              pending
+                ? "파일 연결 다시 시도"
+                : registerMode === "link"
+                  ? "링크 등록"
+                  : target
+                    ? "새 버전 등록"
+                    : "자료 등록"
+            }
+          />
+        </form>
+      </FormDialog>
+      <FormDialog
+        busy={editForm.saving}
+        open={editing !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditing(null);
+        }}
+        title="자료 정보 편집"
+      >
+        <form
+          className="stack"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!editing || !editing.title.trim()) return;
+            void editForm.perform(async () => {
+              if (editing.externalUrl && !safeUrl(editing.externalUrl))
+                throw new Error("http 또는 https 주소를 입력하세요.");
+              await save("materials", {
+                ...editing,
+                title: editing.title.trim(),
+              });
+              setEditing(null);
+              toast.success("자료 정보를 저장했습니다");
+            });
+          }}
+        >
+          {editing && (
+            <>
+              <LabeledInput
+                label="자료 이름"
+                required
+                value={editing.title}
+                onChange={(title) =>
+                  setEditing((v) => (v ? { ...v, title } : v))
+                }
+              />
+              <label className="field">
+                <span className="field-name">자료 유형</span>
+                <select
+                  className="native-select"
+                  value={editing.type}
+                  onChange={(event) =>
+                    setEditing((v) =>
+                      v
+                        ? { ...v, type: event.target.value as Material["type"] }
+                        : v,
+                    )
+                  }
+                >
+                  {Object.entries(materialTypes).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {editing.externalUrl !== undefined && (
+                <LabeledInput
+                  label="외부 주소"
+                  type="url"
+                  required
+                  value={editing.externalUrl}
+                  onChange={(externalUrl) =>
+                    setEditing((v) => (v ? { ...v, externalUrl } : v))
+                  }
+                />
+              )}
+            </>
+          )}
+          <ErrorNotice error={editForm.error} />
+          <SaveActions
+            saving={editForm.saving}
+            onCancel={() => setEditing(null)}
+          />
+        </form>
+      </FormDialog>
+    </div>
+  );
+}

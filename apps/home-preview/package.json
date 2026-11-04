@@ -1,0 +1,50 @@
+{
+  "name": "rms-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test:sites": "node --test tests/sites-worker.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build:sites": "vite build && node scripts/prepare-sites-build.mjs",
+    "test:backend": "node --test supabase/tests/backend.test.mjs",
+    "format": "prettier --write src vite.config.mjs",
+    "format:check": "prettier --check src vite.config.mjs",
+    "test:live": "node --env-file=supabase/.env.provision.local supabase/scripts/check-live.mjs",
+    "predev": "node scripts/prepare-pdf-assets.mjs",
+    "prebuild": "node scripts/prepare-pdf-assets.mjs",
+    "prebuild:sites": "node scripts/prepare-pdf-assets.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "@tailwindcss/vite": "^4.3.4",
+    "@tanstack/react-query": "^5.105.3",
+    "@vitejs/plugin-react": "5.0.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "disarto-icons-react": "^1.0.0",
+    "lucide-react": "^1.67.0",
+    "pdfjs-dist": "^6.5.438",
+    "radix-ui": "^1.8.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-router-dom": "^7.18.5",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    "tailwindcss": "^4.3.4",
+    "vite": "6.4.2"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}

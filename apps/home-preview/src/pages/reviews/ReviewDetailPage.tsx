@@ -1,0 +1,1234 @@
+import { useNavigationGuard } from "@/lib/navigation-guard";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ChangeEvent,
+} from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  EmptyState,
+  Field,
+  LoadingState,
+  StatusBadge,
+} from "@/components/common";
+import { Icon } from "@/components/icons";
+import { PdfViewer } from "@/components/PdfViewer";
+import { useWorkspace } from "@/lib/workspace";
+import { useTheme } from "@/lib/theme";
+import {
+  uid,
+  type ReviewComment,
+  type ReviewItem,
+  type ReviewResponse,
+} from "@/lib/domain";
+import {
+  ResponseStatus,
+  evidenceIssue,
+  errorText,
+  isLatestRound,
+  latestResponse,
+  latestRound,
+  sharingLabels,
+  sharingTone,
+  timeText,
+  versionForRound,
+} from "./helpers";
+
+function CommentThread({
+  comment,
+  replies,
+  canWrite,
+  busy,
+  onReply,
+  onResolve,
+  userId,
+}: {
+  comment: ReviewComment;
+  replies: ReviewComment[];
+  canWrite: boolean;
+  busy: boolean;
+  onReply: (comment: ReviewComment) => void;
+  onResolve: (id: string, value: boolean) => void;
+  userId: string;
+}) {
+  return (
+    <article
+      className={`review-comment-thread ${comment.resolved ? "is-resolved" : ""}`}
+    >
+      <div className="review-comment-author">
+        <span className="review-comment-avatar">
+          {comment.authorName?.slice(0, 1) || "검"}
+        </span>
+        <strong>
+          {comment.authorName ||
+            (comment.userId === userId ? "나" : "검토 참여자")}
+        </strong>
+        <time>{timeText(comment.createdAt)}</time>
+      </div>
+      <p className="review-comment-body">{comment.body}</p>
+      <div className="review-comment-actions">
+        {comment.resolved && (
+          <StatusBadge tone="neutral">해결한 대화</StatusBadge>
+        )}
+        {canWrite && (
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onReply(comment)}
+            >
+              답글
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onResolve(comment.id, !comment.resolved)}
+            >
+              {comment.resolved ? "다시 열기" : "대화 해결"}
+            </button>
+          </>
+        )}
+      </div>
+      {replies.map((reply) => (
+        <div className="review-comment-reply" key={reply.id}>
+          <div className="review-comment-author">
+            <strong>
+              {reply.authorName ||
+                (reply.userId === userId ? "나" : "검토 참여자")}
+            </strong>
+            <time>{timeText(reply.createdAt)}</time>
+          </div>
+          <p className="review-comment-body">{reply.body}</p>
+        </div>
+      ))}
+    </article>
+  );
+}
+
+export function ReviewDetailPage() {
+  const { requestId = "" } = useParams();
+  const [params, setParams] = useSearchParams();
+  const context = useWorkspace();
+  const {
+    data,
+    user,
+    mode,
+    loading,
+    error: workspaceError,
+    refresh,
+    respond,
+    comment: sendComment,
+    resolveComment,
+    recheck,
+    setSharing,
+    markRead,
+  } = context;
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const request = data.reviews.find((r) => r.id === requestId);
+  const items = data.reviewItems.filter((r) => r.requestId === requestId);
+  const queryRound = data.rounds.find(
+    (r) => r.id === params.get("round") && r.requestId === requestId,
+  );
+  const item =
+    items.find((r) => r.id === params.get("item")) ??
+    items.find((r) => r.id === queryRound?.itemId) ??
+    items[0];
+  const rounds = data.rounds
+    .filter((r) => r.itemId === item?.id && r.requestId === requestId)
+    .sort((a, b) => b.number - a.number);
+  const round = rounds.find((r) => r.id === params.get("round")) ?? rounds[0];
+  const response = latestResponse(data, round?.id);
+  const isOwner =
+    !!request &&
+    data.researches.some(
+      (r) => r.id === request.researchId && r.ownerId === user.id,
+    );
+  const isProfessor = !!request && request.professorId === user.id && !isOwner;
+  const canRead =
+    !!request && (isOwner || (isProfessor && request.status === "shared"));
+  const canWrite = canRead && request?.status === "shared";
+  const canRespond =
+    isProfessor && canWrite && !!round && isLatestRound(data, round);
+  const version =
+    request && round ? versionForRound(round, request, data) : undefined;
+  const [mobilePanel, setMobilePanel] = useState<"document" | "response">(
+    "document",
+  );
+  const [responseDrafts, setResponseDrafts] = useState<
+    Record<
+      string,
+      { result: "" | "confirmed" | "changes_requested"; comment: string }
+    >
+  >({});
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>(
+    {},
+  );
+  const [replyTo, setReplyTo] = useState<
+    Record<string, ReviewComment | undefined>
+  >({});
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const [sharingOpen, setSharingOpen] = useState(false);
+  const [sharingEmail, setSharingEmail] = useState("");
+  const [recheckOpen, setRecheckOpen] = useState(false);
+  const [recheckConfirmed, setRecheckConfirmed] = useState(false);
+  const [history, setHistory] = useState<Record<string, ReviewResponse[]>>({});
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const seen = useRef(new Set<string>());
+  const recheckKey = useRef(uid());
+  const comments = data.comments
+    .filter((r) => r.roundId === round?.id)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const ownResponse = response?.userId === user.id ? response : undefined;
+  const draft = round
+    ? (responseDrafts[round.id] ?? {
+        result: ownResponse?.result ?? "",
+        comment: ownResponse?.comment ?? "",
+      })
+    : { result: "" as const, comment: "" };
+  const responseIsDirty = Object.entries(responseDrafts).some(([id, value]) => {
+    const saved = data.responses.find(
+      (r) => r.roundId === id && r.userId === user.id,
+    );
+    return (
+      value.result !== (saved?.result ?? "") ||
+      value.comment.trim() !== (saved?.comment ?? "").trim()
+    );
+  });
+  useNavigationGuard({
+    dirty:
+      responseIsDirty ||
+      Object.values(commentDrafts).some((text) => !!text.trim()) ||
+      (sharingOpen &&
+        sharingEmail.trim().toLowerCase() !== request?.professorEmail),
+    busy: !!busy && busy !== "history",
+    label: "검토 응답·댓글",
+    onDiscard: () => {
+      setResponseDrafts({});
+      setCommentDrafts({});
+      setSharingOpen(false);
+    },
+  });
+  const privateResult = data.results.find(
+    (r) => r.id === item?.resultId && r.researchId === request?.researchId,
+  );
+  const privateVersion = data.versions.find(
+    (r) => r.id === privateResult?.versionId,
+  );
+  const doAction = async (
+    key: string,
+    operation: () => Promise<unknown>,
+    success?: string,
+  ) => {
+    if (busy) return false;
+    setBusy(key);
+    setError("");
+    try {
+      await operation();
+      if (success) toast.success(success);
+      return true;
+    } catch (failure) {
+      setError(errorText(failure));
+      return false;
+    } finally {
+      setBusy("");
+    }
+  };
+  useEffect(() => {
+    if (!round || !canRead) return;
+    const key = `${round.id}:${response?.updatedAt ?? ""}:${comments.at(-1)?.createdAt ?? ""}`;
+    if (seen.current.has(key)) return;
+    seen.current.add(key);
+    void markRead(round.id).catch(() => {
+      seen.current.delete(key);
+    });
+  }, [
+    round?.id,
+    response?.updatedAt,
+    comments.at(-1)?.createdAt,
+    canRead,
+    markRead,
+  ]);
+  useEffect(() => {
+    setError("");
+    setHistoryOpen(false);
+  }, [round?.id]);
+  const selectItem = (value: ReviewItem) => {
+    const next = new URLSearchParams(params);
+    next.set("item", value.id);
+    next.delete("round");
+    next.delete("comment");
+    setParams(next);
+    setMobilePanel("document");
+  };
+  const selectRound = (id: string) => {
+    const next = new URLSearchParams(params);
+    if (item) next.set("item", item.id);
+    next.set("round", id);
+    next.delete("comment");
+    setParams(next);
+  };
+  const submitResponse = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!round || !canRespond) return;
+    if (!draft.result) {
+      setError("이 항목의 검토 결과를 선택해 주세요.");
+      return;
+    }
+    const chosenResult = draft.result;
+    if (draft.result === "changes_requested" && !draft.comment.trim()) {
+      setError("추가로 수정할 내용을 댓글에 적어 주세요.");
+      return;
+    }
+    const saved = await doAction(
+      "response",
+      () =>
+        respond({
+          roundId: round.id,
+          result: chosenResult,
+          comment: draft.comment.trim(),
+        }),
+      "이 항목의 검토 결과를 저장했습니다.",
+    );
+    if (saved)
+      setResponseDrafts((current) => {
+        const next = { ...current };
+        delete next[round.id];
+        return next;
+      });
+  };
+  const submitComment = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!round || !canWrite || !commentDrafts[round.id]?.trim()) return;
+    const saved = await doAction(
+      "comment",
+      () =>
+        sendComment({
+          roundId: round.id,
+          body: commentDrafts[round.id].trim(),
+          parentId: replyTo[round.id]?.id,
+        }),
+      "댓글을 남겼습니다.",
+    );
+    if (saved) {
+      setCommentDrafts((current) => ({ ...current, [round.id]: "" }));
+      setReplyTo((current) => ({ ...current, [round.id]: undefined }));
+    }
+  };
+  const copyLink = async () => {
+    try {
+      const url = new URL(`/reviews/${requestId}`, window.location.origin);
+      if (item) url.searchParams.set("item", item.id);
+      if (round) url.searchParams.set("round", round.id);
+      await navigator.clipboard.writeText(url.href);
+      toast.success("링크를 복사했습니다. 지정한 교수에게 직접 전달해 주세요.");
+    } catch {
+      toast.error(
+        "링크를 복사하지 못했습니다. 주소 표시줄의 링크를 복사해 주세요.",
+      );
+    }
+  };
+  const saveSharing = async (
+    status: "shared" | "stopped",
+    changeEmail: boolean,
+  ) => {
+    if (!request || !isOwner) return;
+    if (
+      changeEmail &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sharingEmail.trim())
+    ) {
+      setError("교수 계정 이메일을 확인해 주세요.");
+      return;
+    }
+    const saved = await doAction(
+      "sharing",
+      () =>
+        setSharing(
+          request.id,
+          status,
+          changeEmail ? sharingEmail.trim().toLowerCase() : undefined,
+        ),
+      status === "stopped"
+        ? "공유를 중지했습니다. 기존 검토 이력은 유지됩니다."
+        : "공유 설정을 저장했습니다.",
+    );
+    if (saved) setSharingOpen(false);
+  };
+  const submitRecheck = async () => {
+    if (!request || !item || !privateResult || !recheckConfirmed) return;
+    const issue = evidenceIssue(privateResult, data);
+    if (issue) {
+      setError(issue);
+      return;
+    }
+    const saved = await doAction(
+      "recheck",
+      () =>
+        recheck({
+          requestId: request.id,
+          itemId: item.id,
+          resultId: privateResult.id,
+          requestKey: recheckKey.current,
+        }),
+      "선택한 항목에 새 검토 차수를 만들었습니다.",
+    );
+    if (saved) {
+      recheckKey.current = uid();
+      setRecheckOpen(false);
+      const next = new URLSearchParams(params);
+      next.set("item", item.id);
+      next.delete("round");
+      setParams(next);
+    }
+  };
+  const loadHistory = async () => {
+    if (!round) return;
+    if (historyOpen) {
+      setHistoryOpen(false);
+      return;
+    }
+    const historyContext = context as typeof context & {
+      responseHistory?: (roundId: string) => Promise<ReviewResponse[]>;
+    };
+    if (!historyContext.responseHistory) return;
+    const saved = await doAction("history", async () => {
+      const values = await historyContext.responseHistory!(round.id);
+      setHistory((current) => ({ ...current, [round.id]: values }));
+    });
+    if (saved) setHistoryOpen(true);
+  };
+  if (loading)
+    return (
+      <div className="review-loading">
+        <LoadingState />
+      </div>
+    );
+  if (!request || !canRead)
+    return (
+      <main className="review-access-page">
+        <span className="review-brand">
+          <Icon name="book" size={23} />
+          RMS
+        </span>
+        <EmptyState
+          title="이 검토를 열 수 없습니다."
+          description="공유가 중지되었거나 현재 계정에 접근 권한이 없습니다."
+          action={
+            <div className="button-row">
+              <Button variant="outline" onClick={() => void refresh()}>
+                다시 확인
+              </Button>
+              <Button onClick={() => void context.signOut()}>
+                다른 계정으로 로그인
+              </Button>
+            </div>
+          }
+        />
+        {workspaceError && (
+          <p className="review-form-error" role="alert">
+            {workspaceError}
+          </p>
+        )}
+        <p className="meta">현재 로그인 계정 · {user.email}</p>
+        <Link className="review-return" to="/r">
+          내 작업 공간으로 이동
+        </Link>
+      </main>
+    );
+  return (
+    <main className="review-workspace">
+      <header className="review-workspace-header">
+        <div className="review-header-left">
+          <Link
+            className="review-brand"
+            to={isOwner ? `/r/${request.researchId}/reviews` : "/r"}
+            aria-label={isOwner ? "검토 요청 목록으로 돌아가기" : "RMS"}
+          >
+            <Icon name={isOwner ? "arrow-left" : "book"} size={21} />
+            <span>RMS</span>
+          </Link>
+          <span className="review-header-divider" />
+          <div>
+            <h1>{request.title}</h1>
+            <p>
+              {isOwner
+                ? `${request.professorEmail}에게 공유`
+                : "학생이 보낸 수정 결과"}{" "}
+              · {timeText(request.createdAt)}
+            </p>
+          </div>
+          <StatusBadge tone={sharingTone[request.status]}>
+            {sharingLabels[request.status]}
+          </StatusBadge>
+        </div>
+        <div className="review-header-actions">
+          <button
+            className="review-theme-button"
+            onClick={() =>
+              setTheme(resolvedTheme === "dark" ? "light" : "dark")
+            }
+            aria-label={
+              resolvedTheme === "dark"
+                ? "라이트 테마로 변경"
+                : "다크 테마로 변경"
+            }
+          >
+            <Icon name={resolvedTheme === "dark" ? "sun" : "moon"} size={18} />
+          </button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void refresh()}
+            disabled={!!busy}
+          >
+            <Icon name="refresh" size={16} />
+            <span className="review-refresh-label">새로고침</span>
+          </Button>
+          {isOwner ? (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSharingEmail(request.professorEmail);
+                  setError("");
+                  setSharingOpen(true);
+                }}
+              >
+                <Icon name="settings" size={16} />
+                공유 설정
+              </Button>
+              <Button size="sm" onClick={copyLink}>
+                <Icon name="link" size={16} />
+                링크 복사
+              </Button>
+            </>
+          ) : null}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="review-account-button" aria-label="계정 메뉴">
+                {user.name.slice(0, 1) || "나"}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="review-account-menu">
+              <DropdownMenuLabel>
+                <strong>{user.name}</strong>
+                <span>{user.email}</span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {(
+                [
+                  ["system", "시스템 테마", "monitor"],
+                  ["light", "라이트 테마", "sun"],
+                  ["dark", "다크 테마", "moon"],
+                ] as const
+              ).map(([value, label, icon]) => (
+                <DropdownMenuItem key={value} onSelect={() => setTheme(value)}>
+                  <Icon name={icon} size={16} />
+                  <span>{label}</span>
+                  {theme === value && <Icon name="check" size={15} />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => void context.signOut()}>
+                <Icon name="logout" size={16} />
+                로그아웃
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+      {mode === "preview" && (
+        <div className="review-preview-banner">
+          <Icon name="info" size={15} />
+          로컬 미리보기 · 실제 교수 로그인과 서버 연결 전입니다.
+        </div>
+      )}
+      {request.status === "stopped" && (
+        <div className="review-stopped-banner">
+          <Icon name="lock" size={16} />
+          공유를 중지한 검토입니다. 교수는 열 수 없으며, 학생의 검토 이력은
+          유지됩니다.
+        </div>
+      )}
+      <div className="review-workspace-body">
+        <aside className="review-item-sidebar" aria-label="검토 항목">
+          <div className="review-sidebar-title">
+            <h2>검토 항목</h2>
+            <span>{items.length}</span>
+          </div>
+          {items.map((record, index) => {
+            const latest = latestRound(data, record.id),
+              result = latestResponse(data, latest?.id);
+            return (
+              <button
+                type="button"
+                className={`review-item-nav ${record.id === item?.id ? "selected" : ""}`}
+                key={record.id}
+                aria-current={record.id === item?.id ? "true" : undefined}
+                onClick={() => selectItem(record)}
+              >
+                <span className="review-item-number">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <strong>{latest?.title ?? record.title}</strong>
+                <ResponseStatus response={result} />
+                <span className="review-item-version">
+                  {latest?.number ?? 1}차 검토
+                  {latest?.fileName ? ` · ${latest.fileName}` : ""}
+                </span>
+              </button>
+            );
+          })}
+          <div className="review-sidebar-note">
+            <Icon name="lock" size={15} />
+            <p>
+              이 요청에 포함된 내용만 공개됩니다. 학생의 개인 기록은 공유되지
+              않습니다.
+            </p>
+          </div>
+        </aside>
+        {!item || !round ? (
+          <div className="review-no-item">
+            <EmptyState
+              title="아직 검토 항목이 없습니다."
+              description="수정 결과를 선택해 검토 요청을 구성해 주세요."
+            />
+          </div>
+        ) : (
+          <div className="review-selected-workspace">
+            <div className="review-item-heading">
+              <div>
+                <span className="meta">
+                  항목 {items.indexOf(item) + 1} / {items.length}
+                </span>
+                <h2>{round.title}</h2>
+              </div>
+              <div className="review-round-actions">
+                <label className="review-round-picker">
+                  <span>검토 차수</span>
+                  <select
+                    value={round.id}
+                    onChange={(
+                      e: ChangeEvent<
+                        | HTMLInputElement
+                        | HTMLTextAreaElement
+                        | HTMLSelectElement
+                      >,
+                    ) => selectRound(e.target.value)}
+                  >
+                    {rounds.map((r, index) => (
+                      <option key={r.id} value={r.id}>
+                        {r.number}차 검토{index === 0 ? " · 최신" : " · 이전"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {isOwner && request.status === "shared" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!!busy || !privateResult}
+                    onClick={() => {
+                      recheckKey.current = uid();
+                      setRecheckConfirmed(false);
+                      setError("");
+                      setRecheckOpen(true);
+                    }}
+                  >
+                    <Icon name="refresh" size={15} />
+                    재확인 요청
+                  </Button>
+                )}
+              </div>
+            </div>
+            {round.id !== rounds[0]?.id && (
+              <div className="review-earlier-note">
+                <Icon name="clock" size={16} />
+                이전 차수입니다. 당시의 설명·자료·응답을 보여줍니다.
+                <button type="button" onClick={() => selectRound(rounds[0].id)}>
+                  최신 차수 열기
+                </button>
+              </div>
+            )}
+            <div
+              className="review-mobile-tabs"
+              role="tablist"
+              aria-label="검토 영역"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobilePanel === "document"}
+                onClick={() => setMobilePanel("document")}
+              >
+                수정 내용·자료
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobilePanel === "response"}
+                onClick={() => setMobilePanel("response")}
+              >
+                교수 응답·댓글
+              </button>
+            </div>
+            <div className={`review-reading-grid show-${mobilePanel}`}>
+              <section
+                className="review-document-column"
+                aria-label="수정 내용과 자료"
+              >
+                <article className="review-description-card">
+                  <div className="review-description-meta">
+                    <StatusBadge tone="neutral">
+                      {round.number}차 검토 · 보낸 당시 내용
+                    </StatusBadge>
+                    <time>{timeText(round.createdAt)}</time>
+                  </div>
+                  {round.feedbackExcerpt && (
+                    <div className="review-source-block">
+                      <span>연결된 피드백</span>
+                      <p>{round.feedbackExcerpt}</p>
+                    </div>
+                  )}
+                  <h3>수정한 내용</h3>
+                  <p className="review-preserved-description">
+                    {round.description}
+                  </p>
+                  {round.location && (
+                    <div className="review-location">
+                      <Icon name="eye" size={16} />
+                      <span>
+                        확인 위치<strong>{round.location}</strong>
+                      </span>
+                    </div>
+                  )}
+                </article>
+                {version ? (
+                  <section
+                    className="review-pdf-section"
+                    aria-label="보존 파일"
+                  >
+                    <div className="review-file-heading">
+                      <Icon name="file" size={17} />
+                      <strong>{version.fileName}</strong>
+                      <span>보존 파일</span>
+                    </div>
+                    <PdfViewer key={round.id} version={version} />
+                    <p className="review-file-note">
+                      표시한 위치 외에도 첨부한 PDF 전체를 열람할 수 있습니다.
+                    </p>
+                  </section>
+                ) : round.versionId ? (
+                  <div className="review-missing-file" role="status">
+                    <Icon name="file" size={23} />
+                    <p>파일 정보를 불러오지 못했습니다.</p>
+                    <Button variant="outline" onClick={() => void refresh()}>
+                      다시 불러오기
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="review-nondocument">
+                    <Icon name="file" size={19} />
+                    <p>
+                      문서 외 작업입니다. 위의 보존된 처리 설명을 기준으로
+                      검토합니다.
+                    </p>
+                  </div>
+                )}
+              </section>
+              <aside
+                className="review-response-column"
+                aria-label="교수 응답과 댓글"
+              >
+                <section className="review-response-card">
+                  <div className="section-heading">
+                    <h3>교수 응답</h3>
+                    <ResponseStatus response={response} />
+                  </div>
+                  {response && (
+                    <div className="review-saved-response">
+                      <span className="meta">
+                        {response.userId === user.id
+                          ? "내가 남긴 응답"
+                          : "검토 계정의 응답"}{" "}
+                        · {timeText(response.updatedAt)}
+                      </span>
+                      {response.comment && <p>{response.comment}</p>}
+                      {response.createdAt !== response.updatedAt && (
+                        <span className="review-edited-label">응답 수정됨</span>
+                      )}
+                    </div>
+                  )}
+                  {canRespond ? (
+                    <form
+                      className="review-response-form"
+                      onSubmit={submitResponse}
+                    >
+                      <fieldset>
+                        <legend>
+                          {ownResponse ? "내 응답 수정" : "이 항목의 검토 결과"}
+                        </legend>
+                        <label
+                          className={`review-response-option ${draft.result === "confirmed" ? "selected" : ""}`}
+                        >
+                          <input
+                            type="radio"
+                            name={`response-${round.id}`}
+                            checked={draft.result === "confirmed"}
+                            onChange={() =>
+                              setResponseDrafts((current) => ({
+                                ...current,
+                                [round.id]: { ...draft, result: "confirmed" },
+                              }))
+                            }
+                          />
+                          <Icon name="check" size={17} />
+                          수정 내용 확인
+                        </label>
+                        <label
+                          className={`review-response-option ${draft.result === "changes_requested" ? "selected" : ""}`}
+                        >
+                          <input
+                            type="radio"
+                            name={`response-${round.id}`}
+                            checked={draft.result === "changes_requested"}
+                            onChange={() =>
+                              setResponseDrafts((current) => ({
+                                ...current,
+                                [round.id]: {
+                                  ...draft,
+                                  result: "changes_requested",
+                                },
+                              }))
+                            }
+                          />
+                          <Icon name="edit" size={17} />
+                          추가 수정 필요
+                        </label>
+                      </fieldset>
+                      <Field
+                        label={
+                          draft.result === "changes_requested"
+                            ? "추가로 수정할 내용"
+                            : "댓글"
+                        }
+                        required={draft.result === "changes_requested"}
+                        hint={
+                          draft.result === "changes_requested"
+                            ? "무엇을 더 고쳐야 하는지 알려 주세요."
+                            : "필요한 의견이 있을 때 남겨 주세요."
+                        }
+                      >
+                        <Textarea
+                          aria-label={
+                            draft.result === "changes_requested"
+                              ? "추가로 수정할 내용"
+                              : "검토 응답 댓글"
+                          }
+                          value={draft.comment}
+                          maxLength={10000}
+                          onChange={(
+                            e: ChangeEvent<
+                              | HTMLInputElement
+                              | HTMLTextAreaElement
+                              | HTMLSelectElement
+                            >,
+                          ) =>
+                            setResponseDrafts((current) => ({
+                              ...current,
+                              [round.id]: { ...draft, comment: e.target.value },
+                            }))
+                          }
+                          placeholder={
+                            draft.result === "changes_requested"
+                              ? "예: 연구 목적에 맞는 비교 기준을 하나 더 보완해 주세요."
+                              : "댓글은 선택입니다."
+                          }
+                        />
+                      </Field>
+                      <Button type="submit" disabled={!!busy || !draft.result}>
+                        {busy === "response"
+                          ? "저장 중"
+                          : ownResponse
+                            ? "응답 수정 저장"
+                            : "검토 결과 저장"}
+                      </Button>
+                    </form>
+                  ) : (
+                    <p className="review-response-help">
+                      {isOwner
+                        ? "교수의 검토 결과입니다. 읽음이나 댓글 작성은 작업 완료·반영 상태를 바꾸지 않습니다."
+                        : isProfessor && canWrite
+                          ? "이 항목에 새 차수가 있어 이전 차수에는 응답할 수 없습니다. 최신 차수에서 결과를 남겨 주세요."
+                          : "공유 상태를 확인한 뒤 응답할 수 있습니다."}
+                    </p>
+                  )}
+                  {response && (
+                    <button
+                      type="button"
+                      className="review-history-button"
+                      disabled={!!busy}
+                      onClick={loadHistory}
+                    >
+                      <Icon name="clock" size={14} />
+                      {busy === "history"
+                        ? "이력 불러오는 중"
+                        : historyOpen
+                          ? "응답 변경 이력 닫기"
+                          : "응답 변경 이력"}
+                    </button>
+                  )}
+                  {historyOpen && (
+                    <div className="review-response-history">
+                      {!history[round.id]?.length ? (
+                        <p className="meta">
+                          이 차수의 이전 응답 변경 기록이 없습니다.
+                        </p>
+                      ) : (
+                        history[round.id].map((r, index) => (
+                          <div key={`${r.id}-${r.updatedAt}-${index}`}>
+                            <ResponseStatus response={r} />
+                            <time>{timeText(r.updatedAt)}</time>
+                            {r.comment && <p>{r.comment}</p>}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </section>
+                <section className="review-comments-card">
+                  <div className="section-heading">
+                    <h3>댓글</h3>
+                    <span className="meta">{comments.length}</span>
+                  </div>
+                  {!comments.length && (
+                    <p className="review-no-comments">
+                      아직 댓글이 없습니다. 검토 의견이나 진행 상황을 남겨
+                      보세요.
+                    </p>
+                  )}
+                  {comments
+                    .filter(
+                      (r) =>
+                        !r.parentId ||
+                        !comments.some((parent) => parent.id === r.parentId),
+                    )
+                    .map((record) => (
+                      <CommentThread
+                        key={record.id}
+                        comment={record}
+                        replies={comments.filter(
+                          (reply) => reply.parentId === record.id,
+                        )}
+                        canWrite={canWrite}
+                        busy={!!busy}
+                        userId={user.id}
+                        onReply={(parent) => {
+                          setReplyTo((current) => ({
+                            ...current,
+                            [round.id]: parent,
+                          }));
+                          setMobilePanel("response");
+                        }}
+                        onResolve={(id, value) =>
+                          void doAction(
+                            `resolve-${id}`,
+                            () => resolveComment(id, value),
+                            value
+                              ? "댓글 대화를 해결로 표시했습니다."
+                              : "댓글 대화를 다시 열었습니다.",
+                          )
+                        }
+                      />
+                    ))}
+                  {canWrite && (
+                    <form
+                      className="review-comment-form"
+                      onSubmit={submitComment}
+                    >
+                      {replyTo[round.id] && (
+                        <div className="review-reply-target">
+                          <span>
+                            {replyTo[round.id]?.authorName || "검토 참여자"}에게
+                            답글
+                          </span>
+                          <button
+                            type="button"
+                            aria-label="답글 대상 취소"
+                            onClick={() =>
+                              setReplyTo((current) => ({
+                                ...current,
+                                [round.id]: undefined,
+                              }))
+                            }
+                          >
+                            <Icon name="close" size={14} />
+                          </button>
+                        </div>
+                      )}
+                      <label
+                        className="sr-only"
+                        htmlFor={`comment-${round.id}`}
+                      >
+                        검토 댓글
+                      </label>
+                      <Textarea
+                        id={`comment-${round.id}`}
+                        value={commentDrafts[round.id] ?? ""}
+                        maxLength={10000}
+                        onChange={(
+                          e: ChangeEvent<
+                            | HTMLInputElement
+                            | HTMLTextAreaElement
+                            | HTMLSelectElement
+                          >,
+                        ) =>
+                          setCommentDrafts((current) => ({
+                            ...current,
+                            [round.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="확인한 내용이나 진행 상황을 남겨 주세요."
+                      />
+                      <Button
+                        type="submit"
+                        variant="outline"
+                        disabled={!!busy || !commentDrafts[round.id]?.trim()}
+                      >
+                        {busy === "comment"
+                          ? "저장 중"
+                          : replyTo[round.id]
+                            ? "답글 남기기"
+                            : "댓글 남기기"}
+                        <Icon name="send" size={15} />
+                      </Button>
+                    </form>
+                  )}
+                  <p className="review-comments-help">
+                    대화 해결은 교수 결과나 할 일 상태를 변경하지 않습니다.
+                  </p>
+                </section>
+                {error && !sharingOpen && !recheckOpen && (
+                  <p className="review-form-error" role="alert">
+                    {error}
+                  </p>
+                )}
+              </aside>
+            </div>
+          </div>
+        )}
+      </div>
+      <Dialog
+        open={sharingOpen}
+        onOpenChange={(value: boolean) => {
+          if (!busy) {
+            setSharingOpen(value);
+            setError("");
+          }
+        }}
+      >
+        <DialogContent
+          showCloseButton={!busy}
+          className="review-settings-dialog"
+          onPointerDownOutside={(e: { preventDefault(): void }) =>
+            e.preventDefault()
+          }
+        >
+          <DialogHeader>
+            <DialogTitle>공유 설정</DialogTitle>
+            <DialogDescription>
+              지정한 교수 계정만 검토를 열 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="review-sharing-current">
+            <span>현재 공유 상태</span>
+            <StatusBadge tone={sharingTone[request.status]}>
+              {sharingLabels[request.status]}
+            </StatusBadge>
+          </div>
+          <Field label="허용할 교수 계정 이메일" required>
+            <Input
+              aria-label="허용할 교수 계정 이메일"
+              type="email"
+              value={sharingEmail}
+              onChange={(
+                e: ChangeEvent<
+                  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+                >,
+              ) => setSharingEmail(e.target.value)}
+            />
+          </Field>
+          <p className="review-settings-note">
+            계정을 바꾸면 이전 교수의 새 접근은 차단됩니다. 당시 응답과 작성자
+            기록은 유지됩니다.
+          </p>
+          {error && (
+            <p className="review-form-error" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="form-actions">
+            <Button
+              variant="outline"
+              disabled={!!busy}
+              onClick={() => setSharingOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              disabled={!!busy}
+              onClick={() =>
+                void saveSharing(
+                  request.status === "stopped" ? "stopped" : "shared",
+                  true,
+                )
+              }
+            >
+              {busy === "sharing" ? "저장 중" : "설정 저장"}
+            </Button>
+          </div>
+          <div className="review-sharing-stop">
+            <p>
+              {request.status === "stopped"
+                ? "허용 계정에 다시 검토를 공개합니다."
+                : "공유를 중지해도 기존 검토 이력은 유지됩니다. 이미 내려받은 파일까지 회수되지는 않습니다."}
+            </p>
+            <Button
+              variant="outline"
+              disabled={!!busy}
+              onClick={() =>
+                void saveSharing(
+                  request.status === "stopped" ? "shared" : "stopped",
+                  request.status === "stopped",
+                )
+              }
+            >
+              {request.status === "stopped" ? "다시 공유" : "공유 중지"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={recheckOpen}
+        onOpenChange={(value: boolean) => {
+          if (!busy) {
+            setRecheckOpen(value);
+            if (!value) recheckKey.current = uid();
+            setError("");
+          }
+        }}
+      >
+        <DialogContent
+          showCloseButton={!busy}
+          className="review-recheck-dialog"
+          onPointerDownOutside={(e: { preventDefault(): void }) =>
+            e.preventDefault()
+          }
+        >
+          <DialogHeader>
+            <DialogTitle>이 항목 재확인 요청</DialogTitle>
+            <DialogDescription>
+              선택한 항목만 새 차수로 보냅니다. 이전 자료·응답과 다른 항목의
+              결과는 유지됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          {privateResult ? (
+            <>
+              <div className="review-preview-item">
+                <span className="meta">새로 보낼 수정 결과</span>
+                <h3>{privateResult.title}</h3>
+                <p className="review-preserved-description">
+                  {privateResult.description || "수정 설명을 작성해 주세요."}
+                </p>
+                {privateVersion && (
+                  <div className="review-file-chip">
+                    <Icon name="file" size={18} />
+                    <span>
+                      <strong>{privateVersion.fileName}</strong>
+                      <small>
+                        v{privateVersion.number} ·{" "}
+                        {privateResult.location || "확인 위치 미입력"}
+                      </small>
+                    </span>
+                  </div>
+                )}
+                {evidenceIssue(privateResult, data) && (
+                  <p className="review-evidence-warning">
+                    {evidenceIssue(privateResult, data)}
+                  </p>
+                )}
+                <Link
+                  className="review-text-link"
+                  to={`/r/${request.researchId}/results/${privateResult.id}`}
+                >
+                  개인 수정 결과에서 설명·근거 편집
+                  <Icon name="arrow-right" size={14} />
+                </Link>
+              </div>
+              <label className="review-recheck-confirmation">
+                <Checkbox
+                  checked={recheckConfirmed}
+                  onCheckedChange={(value: boolean | "indeterminate") =>
+                    setRecheckConfirmed(!!value)
+                  }
+                />
+                <span>보낼 설명과 근거 파일 전체를 확인했습니다.</span>
+              </label>
+              {error && (
+                <p className="review-form-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <div className="form-actions">
+                <Button
+                  variant="outline"
+                  disabled={!!busy}
+                  onClick={() => setRecheckOpen(false)}
+                >
+                  취소
+                </Button>
+                <Button
+                  disabled={
+                    !!busy ||
+                    !recheckConfirmed ||
+                    !!evidenceIssue(privateResult, data)
+                  }
+                  onClick={submitRecheck}
+                >
+                  {busy === "recheck"
+                    ? "요청 저장 중"
+                    : `${(rounds[0]?.number ?? 0) + 1}차 검토 요청`}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <p className="muted">연결된 개인 수정 결과를 찾을 수 없습니다.</p>
+          )}
+        </DialogContent>
+      </Dialog>
+    </main>
+  );
+}
