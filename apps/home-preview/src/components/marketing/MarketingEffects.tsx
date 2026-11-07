@@ -10,7 +10,7 @@ import {
 import { Icon } from "@/components/icons";
 import "./marketing-effects.css";
 
-/** RMS illustration; merging paths borrow the connector idiom of Aceternity animated beams. */
+/** Margin illustration; merging paths borrow the connector idiom of Aceternity animated beams. */
 export function MergeFlow({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useInView(ref, { margin: "80px" });

@@ -1,4 +1,4 @@
-# RMS Supabase backend
+# Margin Supabase backend
 
 학생의 개인 기록과 지정 교수에게 공개한 검토를 분리한다. 연구 소유자와 활성 공동 편집자의 공동 기록, 작성자별 개인 기록은 `rms_researches`·`rms_records`에 독립 행으로 저장하고, 공개한 항목·차수·응답·댓글은 별도 테이블에 저장한다. React의 역할 선택값은 접근 권한으로 사용하지 않는다.
 

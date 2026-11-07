@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
 
-/** Aceternity text-generate / cover interaction, composed for RMS's Korean headline. */
+/** Aceternity text-generate / cover interaction, composed for Margin's Korean headline. */
 export function RevealLine({
   children,
   delay = 0,

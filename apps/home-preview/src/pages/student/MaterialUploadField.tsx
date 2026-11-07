@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import "./material-upload-field.css";
 
-// Aceternity File Upload's grid/lifted-file pattern, adapted to RMS's real
+// Aceternity File Upload's grid/lifted-file pattern, adapted to Margin's real
 // upload transaction. Progress and linking states are supplied by the caller.
 export function MaterialUploadField({
   file,

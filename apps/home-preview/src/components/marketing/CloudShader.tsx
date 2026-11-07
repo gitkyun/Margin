@@ -1,4 +1,4 @@
-// Cloud shader by Manu Arora / Aceternity UI, adapted for RMS.
+// Cloud shader by Manu Arora / Aceternity UI, adapted for Margin.
 // Source: https://ui.aceternity.com/registry/cloud-shader.json
 // Aceternity License: https://ui.aceternity.com/licence
 import {
@@ -153,7 +153,7 @@ void main() {
   // faint haze band near the horizon
   color = mix(color, u_skyBottom * 1.06, smoothstep(0.35, 0.0, v_uv.y) * 0.5);
 
-  // Optional localized glow. RMS sets this to zero for a sun-free sky.
+  // Optional localized glow. Margin sets this to zero for a sun-free sky.
   vec2 sunPos = vec2(aspect * 0.78, 0.92);
   float sunDist = length(p - sunPos);
   color += vec3(1.0, 0.95, 0.82) * exp(-sunDist * sunDist * 5.0) * u_sunIntensity;

@@ -1,7 +1,7 @@
 import { useRef, type ComponentProps, type Ref } from "react";
 import { Icon } from "./icons";
 
-// RMS implementation of the search/clear/refocus pattern reviewed in Compass.
+// Margin implementation of the search/clear/refocus pattern reviewed in Compass.
 // Uses existing icons and tokens; no Compass source or global stylesheet is vendored.
 export function SearchField({
   value,

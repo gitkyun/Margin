@@ -59,7 +59,7 @@ node --test --test-name-pattern "recheck" supabase/tests/backend.test.mjs
 
 **AI.** `supabase/functions/ai-assist/`(Deno Edge Function)가 Gemini를 호출한다. 함수가 직접 Bearer 토큰·허용 계정·연구 소유권을 확인하고, 실행 제한(분당 6회·일 100회·중복 차단)과 발췌 위치 검증(`validation.ts`)을 한다. 키는 Supabase secrets에만 둔다. `VITE_*`에 서버 비밀을 넣지 않는다.
 
-**화면.** 경로는 `src/RmsApp.tsx`: 학생은 `/r/:researchId/{meetings,feedback,tasks,materials,results,reviews}`, 교수는 `/reviews/:requestId`. 학생 화면은 `src/pages/student/`, 검토는 `src/pages/reviews/`. 새 화면은 RMS 자체 CSS와 기존 Radix 동작을 사용한다. `src/experience.css`가 새 시각 규칙, `src/styles.css`와 영역별 CSS는 기존 기반이다. `src/components/ui/`의 버튼·입력·textarea는 자체 스타일이며 다른 기존 래퍼는 남아 있다. 소개는 `/`, 계정은 `/account`, 연구 설정과 도우미는 `/r/:researchId/{settings,assistant}`다. PDF는 `PdfViewer.tsx`에서 pdfjs를 지연 로드한다.
+**화면.** 경로는 `src/RmsApp.tsx`: 학생은 `/r/:researchId/{meetings,feedback,tasks,materials,results,reviews}`, 교수는 `/reviews/:requestId`. 학생 화면은 `src/pages/student/`, 검토는 `src/pages/reviews/`. 새 화면은 Margin 자체 CSS와 기존 Radix 동작을 사용한다. `src/experience.css`가 새 시각 규칙, `src/styles.css`와 영역별 CSS는 기존 기반이다. `src/components/ui/`의 버튼·입력·textarea는 자체 스타일이며 다른 기존 래퍼는 남아 있다. 소개는 `/`, 계정은 `/account`, 연구 설정과 도우미는 `/r/:researchId/{settings,assistant}`다. PDF는 `PdfViewer.tsx`에서 pdfjs를 지연 로드한다.
 
 **배포.** Cloudflare Pages(루트 `apps/home-preview`, 출력 `dist/client`, 주소 https://margin-research.pages.dev, 이전 배포: https://rms-classroom-demo.pages.dev). `public/_headers`의 CSP가 `connect-src`를 self와 `*.supabase.co`로 제한하므로 새 외부 호출을 추가하면 CSP도 고친다. 배포 주소는 Edge의 `ALLOWED_ORIGINS`에 있어야 한다. `worker/`, `.openai/hosting.json`, `scripts/prepare-sites-build.mjs`, `tests/sites-worker.test.mjs`는 Sites 전달용으로 유지한다.
 
