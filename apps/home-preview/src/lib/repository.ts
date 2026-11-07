@@ -27,7 +27,10 @@ export function previewDB(): Promise<IDBDatabase> {
       reject(new Error("브라우저의 미리보기 저장소를 열지 못했습니다."));
   });
 }
-async function idbGet<T>(store: string, key: string): Promise<T | undefined> {
+export async function idbGet<T>(
+  store: string,
+  key: string,
+): Promise<T | undefined> {
   const db = await previewDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(store, "readonly");
@@ -37,7 +40,7 @@ async function idbGet<T>(store: string, key: string): Promise<T | undefined> {
     tx.oncomplete = () => db.close();
   });
 }
-async function idbSet(
+export async function idbSet(
   store: string,
   key: string,
   value: unknown,
@@ -62,7 +65,7 @@ export async function loadPreview() {
     data = buildDemo();
     await idbSet("workspace", "current", data);
   }
-  return data;
+  return { ...emptyWorkspace(), ...data };
 }
 // A single read/write transaction also serializes edits from other preview tabs.
 export async function updatePreview(
@@ -77,7 +80,10 @@ export async function updatePreview(
     const request = store.get("current");
     request.onsuccess = () => {
       try {
-        next = structuredClone(request.result ?? emptyWorkspace());
+        next = structuredClone({
+          ...emptyWorkspace(),
+          ...(request.result ?? {}),
+        });
         change(next);
         store.put(next, "current");
       } catch (error) {
@@ -105,8 +111,11 @@ export async function rpc<T>(
   name: string,
   args: Record<string, unknown> = {},
 ): Promise<T> {
-  const { data, error } = await assertConnected().rpc(name, args);
-  if (error) throw new Error(error.message);
+  const { data, error } = await assertConnected()
+    .rpc(name, args)
+    .abortSignal(AbortSignal.timeout(25000));
+  if (error)
+    throw Object.assign(new Error(error.message), { code: error.code });
   return data as T;
 }
 export async function loadConnected(): Promise<WorkspaceData> {

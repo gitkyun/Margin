@@ -1,399 +1,650 @@
-import { Link, useParams } from "react-router-dom";
+import { AssistantMascot } from "@/components/brand/Brand";
 import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
+import { formatDate, meetingLabels, taskLabels } from "@/lib/domain";
 import {
-  formatDate,
-  taskLabels,
-  responseLabels,
-  type Task,
-} from "@/lib/domain";
-import { friendlyError } from "@/lib/supabase";
-import { toggleDone } from "@/lib/task-status";
+  unreadReviewNotifications,
+  notificationHref,
+} from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/icons";
-import { EmptyState, PageHeader, StatusBadge } from "@/components/common";
-function HomeTask({ task }: { task: Task }) {
-  const { save } = useWorkspace();
-  const [pending, setPending] = useState(false);
-  return (
-    <div className={`home-task ${task.status === "done" ? "is-done" : ""}`}>
-      <Checkbox
-        aria-label={`${task.title} 완료 상태 변경`}
-        disabled={pending}
-        checked={task.status === "done"}
-        onCheckedChange={async () => {
-          setPending(true);
-          try {
-            await save("tasks", { ...task, status: toggleDone(task.status) });
-          } catch (e) {
-            toast.error(friendlyError(e));
-          } finally {
-            setPending(false);
-          }
-        }}
-      />
-      <div>
-        <strong>
-          <Link to={`/r/${task.researchId}/tasks/${task.id}`}>
-            {task.title}
-          </Link>
-        </strong>
-        <span>{task.description}</span>
-      </div>
-      <StatusBadge tone={task.status === "doing" ? "blue" : "neutral"}>
-        {taskLabels[task.status]}
-      </StatusBadge>
-      <span className="task-date">
-        {task.dueDate
-          ? new Date(`${task.dueDate}T12:00:00`).toLocaleDateString("ko-KR", {
-              month: "2-digit",
-              day: "2-digit",
-            })
-          : "기한 미정"}
-      </span>
-    </div>
-  );
-}
+import { EmptyState } from "@/components/common";
+import { selectNextMeeting } from "@/lib/home-meeting";
+import "./research-home.css";
+
 export function HomePage() {
-  const { researchId } = useParams();
-  const { data, user } = useWorkspace();
-  const research = data.researches.find((r) => r.id === researchId);
-  const meetings = data.meetings.filter((m) => m.researchId === researchId);
-  const next =
-    meetings.find(
-      (m) =>
-        m.id === research?.nextMeetingId &&
-        (m.status === "preparing" || m.status === "recording"),
-    ) ??
-    meetings
-      .filter((m) => m.status === "preparing")
-      .sort((a, b) => (a.date ?? "9999").localeCompare(b.date ?? "9999"))[0];
-  const tasks = next
-    ? next.taskIds.flatMap((id) =>
-        data.tasks.filter((t) => t.id === id && t.researchId === researchId),
-      )
-    : data.tasks.filter((t) => t.researchId === researchId);
-  const recording = meetings.find((m) => m.status === "recording") ?? next;
-  const questions = data.questions.filter(
-    (q) =>
-      q.researchId === researchId &&
-      q.status === "open" &&
-      (!next || next.questionIds.includes(q.id)),
-  );
-  const requests = data.reviews.filter((r) => r.researchId === researchId);
-  const rounds = data.rounds.filter((r) =>
-    requests.some((request) => request.id === r.requestId),
-  );
-  const responses = data.responses
-    .filter((r) => rounds.some((round) => round.id === r.roundId))
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-  const previous = meetings
-    .filter((m) => m.status === "recorded")
-    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))[0];
-  const versions = data.versions.filter((v) => next?.versionIds.includes(v.id));
+  const { researchId = "" } = useParams();
+  const { data, user, save } = useWorkspace();
+  const [scope, setScope] = useState("mine");
+  const [busy, setBusy] = useState("");
+  const research = data.researches.find((item) => item.id === researchId);
+  if (!research) return <EmptyState title="연구를 찾을 수 없습니다." />;
   const base = `/r/${researchId}`;
-  if (!research)
-    return (
-      <EmptyState
-        title="연구를 찾을 수 없습니다."
-        action={
-          <Button asChild>
-            <Link to="/r">내 연구 보기</Link>
-          </Button>
-        }
-      />
+  const meetings = data.meetings.filter(
+    (m) =>
+      m.researchId === researchId && !m.archivedAt && m.status !== "cancelled",
+  );
+  const next = selectNextMeeting(meetings, research.nextMeetingId);
+  const tasks = data.tasks.filter(
+    (task) => task.researchId === researchId && !task.archivedAt,
+  );
+  const members = data.members.filter(
+    (member) => member.researchId === researchId && member.status === "active",
+  );
+  const isCollaborative = members.some(
+    (member) => member.userId !== research.ownerId,
+  );
+  const work = tasks
+    .filter(
+      (task) =>
+        !isCollaborative ||
+        scope === "all" ||
+        !task.assigneeId ||
+        task.assigneeId === user.id,
+    )
+    .sort(
+      (a, b) =>
+        Number(a.status === "done") - Number(b.status === "done") ||
+        Number(b.priority === "high") - Number(a.priority === "high") ||
+        (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
     );
+  const phases = data.phases
+    .filter((phase) => phase.researchId === researchId && !phase.archivedAt)
+    .sort((a, b) => a.order - b.order);
+  const current =
+    phases.find((phase) => phase.id === research.currentPhaseId) ??
+    phases.find((phase) => phase.status === "active");
+  const docs = data.documents
+    .filter(
+      (document) => document.researchId === researchId && !document.archivedAt,
+    )
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const updates = unreadReviewNotifications(data, user, researchId);
+  const pending = data.aiCandidates.filter(
+    (candidate) =>
+      candidate.researchId === researchId && candidate.status === "pending",
+  );
+  const events = data.events
+    .filter((event) => event.researchId === researchId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 4);
+  const milestone = data.milestones
+    .filter(
+      (item) =>
+        item.researchId === researchId &&
+        item.status === "planned" &&
+        !item.archivedAt,
+    )
+    .sort((a, b) =>
+      (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
+    )[0];
+  const preparation = next
+    ? tasks.filter((task) => next.taskIds.includes(task.id))
+    : [];
+  const prepared = preparation.filter((task) => task.status === "done").length;
+  const materials = next
+    ? data.versions.filter((version) => next.versionIds.includes(version.id))
+    : [];
+  const questions = next
+    ? data.questions.filter(
+        (question) =>
+          next.questionIds.includes(question.id) && !question.archivedAt,
+      )
+    : [];
+  const attentionCount = updates.length + pending.length;
+  const openCount = work.filter((task) => task.status !== "done").length;
+  const completedCount = work.filter((task) => task.status === "done").length;
+  async function toggle(id: string) {
+    const task = tasks.find((item) => item.id === id);
+    if (!task) return;
+    setBusy(id);
+    try {
+      await save("tasks", {
+        ...task,
+        status: task.status === "done" ? "todo" : "done",
+      });
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setBusy("");
+    }
+  }
   return (
-    <>
-      <PageHeader
-        title="연구 홈"
-        description="다음 미팅에서 보여줄 결과와 남은 작업을 확인하세요."
-        actions={
-          <Button variant="outline" asChild>
-            <Link
-              to={
-                recording
-                  ? `${base}/meetings/${recording.id}?tab=record`
-                  : `${base}/meetings?new=1`
-              }
-            >
-              <Icon name="edit" size={16} />
-              {recording ? "미팅 기록하기" : "미팅 추가"}
-            </Link>
-          </Button>
-        }
-      />
-      <div className="home-bento">
-        <section className="surface home-next">
-          <div className="section-heading">
-            <h2>
-              <Icon name="calendar" size={18} />
-              다음 미팅
-            </h2>
-            {next && (
-              <StatusBadge tone="blue">
-                {next.status === "recording" ? "기록 중" : "준비 중"}
-              </StatusBadge>
-            )}
-          </div>
-          {next ? (
-            <>
-              <div className="home-next-top">
-                <div>
-                  <div className="meeting-date">
-                    {formatDate(next.date)}
-                    {next.time && (
-                      <>
-                        <span className="middle-dot">·</span>
-                        {next.time}
-                      </>
-                    )}
-                  </div>
-                  <h3>{next.title}</h3>
-                </div>
-                <span className="meeting-date-symbol">
-                  <Icon name="calendar" size={32} />
-                </span>
-              </div>
-              <div className="goal-block">
-                <span>보여줄 결과</span>
-                <p>{next.goal || "이번 미팅에서 보여줄 결과를 적어 보세요."}</p>
-              </div>
-              <div className="home-next-bottom">
-                <div className="next-counts">
-                  <span>
-                    <Icon name="tasks" size={15} />
-                    준비 작업 <strong>{tasks.length}개</strong>
-                  </span>
-                  <span>
-                    <Icon name="help" size={15} />
-                    질문 <strong>{questions.length}개</strong>
-                  </span>
-                </div>
-                <Button asChild>
-                  <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
-                    미팅 준비하기
-                    <Icon name="arrow-right" size={16} />
-                  </Link>
-                </Button>
-              </div>
-            </>
-          ) : (
-            <EmptyState
-              icon="calendar"
-              title="다음 미팅을 준비해 보세요."
-              description="날짜를 정하기 전에도 작업과 질문을 모아둘 수 있습니다."
-              action={
-                <Button asChild>
-                  <Link to={`${base}/meetings?new=1`}>
-                    <Icon name="plus" size={16} />
-                    미팅 추가
-                  </Link>
-                </Button>
-              }
-            />
-          )}
-        </section>
-        <section className="surface home-responses">
-          <div className="section-heading">
-            <h2>교수님의 응답</h2>
-            <Link
-              className="text-button"
-              to={`${base}/reviews`}
-              aria-label="검토 요청 전체 보기"
-            >
-              <Icon name="arrow-up-right" size={17} />
-            </Link>
-          </div>
-          {responses.length ? (
-            <div className="home-response-list">
-              {responses.slice(0, 2).map((response) => {
-                const round = rounds.find((r) => r.id === response.roundId)!;
-                const unread = !data.reads.some(
-                  (read) =>
-                    read.roundId === round.id &&
-                    read.userId === user.id &&
-                    read.lastSeenAt >= response.updatedAt,
-                );
-                return (
-                  <Link
-                    key={response.id}
-                    to={`/reviews/${round.requestId}?item=${round.itemId}&round=${round.id}`}
-                    className="home-response"
-                  >
-                    <div>
-                      <StatusBadge
-                        tone={
-                          response.result === "changes_requested"
-                            ? "amber"
-                            : "green"
-                        }
-                      >
-                        {responseLabels[response.result]}
-                      </StatusBadge>
-                      {unread && (
-                        <span
-                          className="unread-marker"
-                          aria-label="읽지 않은 응답"
-                        />
-                      )}
-                    </div>
-                    <h3>{round.title}</h3>
-                    <p>{response.comment || "수정한 내용을 확인했습니다."}</p>
-                    <span className="meta">
-                      {round.number}차 검토
-                      {rounds.some(
-                        (r) =>
-                          r.itemId === round.itemId && r.number > round.number,
-                      )
-                        ? " · 이전 차수 응답"
-                        : ""}
-                      <Icon name="chevron-right" size={15} />
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState
-              icon="message"
-              title="새 응답이 없습니다."
-              description="보낸 검토의 응답을 여기에서 확인할 수 있습니다."
-            />
-          )}
-        </section>
-        <section className="surface home-work">
-          <div className="section-heading">
-            <h2>
-              미팅 준비 작업
-              <span className="heading-count">{tasks.length}</span>
-            </h2>
-            <Link className="text-button" to={`${base}/tasks`}>
-              전체 할 일<Icon name="arrow-right" size={15} />
-            </Link>
-          </div>
-          <div className="small-section-label">
-            {next ? "다음 미팅에 포함한 작업" : "현재 연구의 작업"}
-          </div>
-          {tasks.length ? (
-            <div>
-              {tasks.slice(0, 5).map((task) => (
-                <HomeTask task={task} key={task.id} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              icon="tasks"
-              title="준비에 포함한 작업이 없습니다."
-              action={
-                <Button variant="outline" asChild>
-                  <Link
-                    to={
-                      next
-                        ? `${base}/meetings/${next.id}?tab=prepare`
-                        : `${base}/tasks`
-                    }
-                  >
-                    작업 선택하기
-                  </Link>
-                </Button>
-              }
-            />
-          )}
-          <p className="section-footnote">
-            작업 기한과 교수의 검토 결과는 각각 기록됩니다.
+    <div className="rh-home">
+      <header className="rh-intro">
+        <div className="rh-intro-copy">
+          <h1>{research.name}</h1>
+          <p>
+            {research.description ||
+              "지난 기록을 살펴보고, 오늘 이어갈 일을 정리하세요."}
           </p>
-        </section>
-        <section className="surface home-preparation">
-          <div className="section-heading">
-            <h2>함께 챙길 내용</h2>
-            <Icon name="paperclip" size={18} />
-          </div>
-          <div className="small-section-label">미해결 질문</div>
-          {questions.length ? (
-            <ul className="home-questions">
-              {questions.slice(0, 3).map((q) => (
-                <li key={q.id}>
-                  <Icon name="help" size={16} />
-                  <Link
-                    to={
-                      next
-                        ? `${base}/meetings/${next.id}?tab=questions`
-                        : `${base}/meetings`
-                    }
-                  >
-                    {q.text}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="muted small">아직 준비한 질문이 없습니다.</p>
-          )}
-          <div className="home-materials">
-            <div className="small-section-label">연결한 자료</div>
-            {versions.length ? (
-              versions.slice(0, 2).map((version) => (
-                <Link
-                  key={version.id}
-                  to={`${base}/materials/${version.materialId}?version=${version.id}`}
-                >
-                  <span className="file-symbol">
-                    <Icon name="file" size={18} />
-                  </span>
-                  <span>
-                    <strong>{version.fileName}</strong>
-                    <small>보존 파일 · v{version.number}</small>
-                  </span>
-                  <Icon name="chevron-right" size={14} />
-                </Link>
-              ))
+          <Link className="rh-people" to={`${base}/settings?tab=members`}>
+            {isCollaborative ? (
+              <>
+                <span className="rh-avatars" aria-hidden="true">
+                  {members.slice(0, 3).map((member) => (
+                    <span key={member.userId}>{member.name.slice(0, 1)}</span>
+                  ))}
+                </span>
+                <span>{members.length}명이 함께하는 연구</span>
+              </>
             ) : (
-              <p className="muted small">
-                미팅 준비에서 자료를 연결할 수 있습니다.
-              </p>
+              <>
+                <Icon name="users" size={16} />
+                <span>함께할 연구자 초대</span>
+              </>
             )}
-          </div>
-        </section>
-      </div>
-      <section className="home-previous">
-        <div className="section-heading">
-          <h2>이전 미팅 이어보기</h2>
-          <Link className="text-button" to={`${base}/meetings`}>
-            미팅 목록
-            <Icon name="arrow-right" size={15} />
+            <Icon name="chevron-right" size={14} />
           </Link>
         </div>
-        {previous ? (
+      </header>
+      <section className="rh-quick-start" aria-labelledby="rh-start-heading">
+        <div className="rh-section-heading">
+          <h2 id="rh-start-heading">지금 시작할 일</h2>
+          <span className="rh-quick-caption">기록부터 다음 준비까지</span>
+        </div>
+        <div className="rh-quick-actions">
           <Link
-            className="previous-record"
-            to={`${base}/meetings/${previous.id}?tab=record`}
+            className="rh-quick-action rh-quick-record"
+            to={
+              next
+                ? `${base}/meetings/${next.id}?tab=record#meeting-recording`
+                : `${base}/meetings?new=1&intent=record`
+            }
           >
-            <span className="date-square">
-              <small>
-                {previous.date
-                  ? new Date(previous.date).getMonth() + 1 + "월"
-                  : "날짜"}
-              </small>
-              <strong>
-                {previous.date ? new Date(previous.date).getDate() : "미정"}
-              </strong>
+            <span className="rh-quick-icon">
+              <Icon name="mic" size={22} />
             </span>
-            <span>
-              <strong>
-                {previous.title}
-                <StatusBadge>기록 완료</StatusBadge>
-              </strong>
-              <p>{previous.memo || "저장한 미팅 기록을 확인하세요."}</p>
+            <span className="rh-quick-text">
+              <strong>피드백 기록하기</strong>
+              <small>
+                {next
+                  ? `${next.title} · 녹음·전사 또는 메모`
+                  : "새 미팅을 만들고 녹음·메모 시작"}
+              </small>
             </span>
             <Icon name="arrow-up-right" size={18} />
           </Link>
+          <Link
+            className="rh-quick-action"
+            to={
+              next
+                ? `${base}/meetings/${next.id}?tab=prepare`
+                : `${base}/meetings?new=1`
+            }
+          >
+            <span className="rh-quick-icon">
+              <Icon name="calendar" size={22} />
+            </span>
+            <span className="rh-quick-text">
+              <strong>미팅 준비하기</strong>
+              <small>보여줄 작업과 질문 모으기</small>
+            </span>
+            <Icon name="arrow-up-right" size={18} />
+          </Link>
+          <Link className="rh-quick-action" to={`${base}/writing?new=1`}>
+            <span className="rh-quick-icon">
+              <Icon name="edit" size={22} />
+            </span>
+            <span className="rh-quick-text">
+              <strong>연구 글 쓰기</strong>
+              <small>계획서·원고의 첫 문장부터</small>
+            </span>
+            <Icon name="arrow-up-right" size={18} />
+          </Link>
+        </div>
+      </section>
+      <section className="rh-phases" aria-labelledby="rh-phase-heading">
+        <div className="rh-section-heading">
+          <h2 id="rh-phase-heading">연구 흐름</h2>
+          {current && (
+            <span className="rh-current-label">{current.title} 진행 중</span>
+          )}
+          <Link className="rh-text-link" to={`${base}/planning`}>
+            계획·일정 <Icon name="arrow-up-right" size={15} />
+          </Link>
+        </div>
+        {phases.length ? (
+          <ol className="rh-phase-track">
+            {phases.map((phase, index) => (
+              <li
+                key={phase.id}
+                className={
+                  phase.id === current?.id
+                    ? "rh-phase-current"
+                    : phase.status === "done"
+                      ? "rh-phase-done"
+                      : ""
+                }
+              >
+                <Link
+                  to={`${base}/planning?phase=${phase.id}`}
+                  aria-current={phase.id === current?.id ? "step" : undefined}
+                >
+                  <span className="rh-phase-number" aria-hidden="true">
+                    {phase.status === "done" ? (
+                      <Icon name="check" size={13} />
+                    ) : (
+                      String(index + 1).padStart(2, "0")
+                    )}
+                  </span>
+                  <span>{phase.title}</span>
+                  {phase.id === current?.id && (
+                    <span className="rh-sr-only">현재 단계</span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ol>
         ) : (
-          <p className="muted">기록을 마친 미팅이 여기에 표시됩니다.</p>
+          <Link className="rh-phase-start" to={`${base}/planning`}>
+            <Icon name="flag" size={18} />
+            <span>연구 단계와 주요 마감을 정해 보세요.</span>
+            <Icon name="arrow-right" size={16} />
+          </Link>
         )}
       </section>
-    </>
+      <div className="rh-columns">
+        <div className="rh-main-column">
+          <section className="rh-meeting" aria-labelledby="rh-meeting-heading">
+            <div className="rh-section-heading">
+              <h2 id="rh-meeting-heading">
+                <Icon name="calendar" size={18} />
+                다음 미팅
+              </h2>
+              <Link className="rh-text-link" to={`${base}/meetings`}>
+                미팅 목록 <Icon name="chevron-right" size={14} />
+              </Link>
+            </div>
+            {next ? (
+              <>
+                <div className="rh-meeting-title">
+                  <div className="rh-date-tile" aria-hidden="true">
+                    {next.date ? (
+                      <>
+                        <span>{Number(next.date.slice(5, 7))}월</span>
+                        <strong>{Number(next.date.slice(8, 10))}</strong>
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="calendar" size={23} />
+                        <span>날짜 미정</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="rh-meeting-title-copy">
+                    <p>
+                      {formatDate(next.date)}
+                      {next.time && ` · ${next.time}`}
+                    </p>
+                    <h3>
+                      <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
+                        {next.title}
+                      </Link>
+                    </h3>
+                    <span className="rh-badge rh-badge-blue">
+                      {meetingLabels[next.status]}
+                    </span>
+                  </div>
+                </div>
+                <p className="rh-meeting-goal">
+                  {next.goal || "이번 미팅에서 함께 확인할 목표를 정해 보세요."}
+                </p>
+                <div className="rh-preparation-heading">
+                  <h4>미팅까지 준비할 일</h4>
+                  <span>
+                    {prepared}
+                    <span className="rh-muted">
+                      {" "}
+                      / {preparation.length}개 완료
+                    </span>
+                  </span>
+                </div>
+                {preparation.length > 0 && (
+                  <div
+                    className="rh-progress"
+                    role="progressbar"
+                    aria-label="미팅 준비 작업"
+                    aria-valuemin={0}
+                    aria-valuemax={preparation.length}
+                    aria-valuenow={prepared}
+                  >
+                    <span
+                      style={{
+                        width: `${(prepared / preparation.length) * 100}%`,
+                      }}
+                    />
+                  </div>
+                )}
+                <div className="rh-preparation-list">
+                  {preparation.slice(0, 3).map((task) => (
+                    <Link
+                      className={`rh-preparation-item ${task.status === "done" ? "rh-is-complete" : ""}`}
+                      key={task.id}
+                      to={`${base}/tasks/${task.id}`}
+                    >
+                      <span className="rh-preparation-check">
+                        <Icon
+                          name={task.status === "done" ? "check" : "minus"}
+                          size={13}
+                        />
+                      </span>
+                      <span>{task.title}</span>
+                      <Icon name="chevron-right" size={14} />
+                    </Link>
+                  ))}
+                  {!preparation.length && (
+                    <p className="rh-inline-empty">
+                      준비할 작업을 골라두면 미팅 전까지 여기에서 확인할 수
+                      있습니다.
+                    </p>
+                  )}
+                </div>
+                <div className="rh-meeting-footer">
+                  <div className="rh-preparation-links">
+                    <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
+                      <Icon name="paperclip" size={15} />
+                      자료 {materials.length}
+                    </Link>
+                    <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
+                      <Icon name="message" size={15} />
+                      질문 {questions.length}
+                    </Link>
+                  </div>
+                  <Button className="rh-primary" asChild>
+                    <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
+                      미팅 준비하기 <Icon name="arrow-right" size={16} />
+                    </Link>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="rh-meeting-empty">
+                <span className="rh-empty-calendar">
+                  <Icon name="calendar" size={27} />
+                </span>
+                <h3>다음 미팅을 준비해 볼까요?</h3>
+                <p>날짜를 잡기 전에도 목표와 질문부터 남길 수 있어요.</p>
+                <Button className="rh-primary" asChild>
+                  <Link to={`${base}/meetings?new=1`}>
+                    미팅 만들기 <Icon name="plus" size={16} />
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </section>
+          <section className="rh-work" aria-labelledby="rh-work-heading">
+            <div className="rh-section-heading">
+              <div>
+                <h2 id="rh-work-heading">이어갈 작업</h2>
+                <p className="rh-section-description">
+                  남은 작업 {openCount}개<span>·</span>완료 {completedCount}개
+                </p>
+              </div>
+              <Link className="rh-text-link" to={`${base}/tasks`}>
+                전체 보기 <Icon name="arrow-up-right" size={15} />
+              </Link>
+            </div>
+            {isCollaborative && (
+              <div className="rh-scope" role="group" aria-label="작업 범위">
+                <button
+                  type="button"
+                  aria-pressed={scope === "mine"}
+                  onClick={() => setScope("mine")}
+                >
+                  내 작업
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={scope === "all"}
+                  onClick={() => setScope("all")}
+                >
+                  연구 전체
+                </button>
+              </div>
+            )}
+            <div className="rh-task-list">
+              {work.slice(0, 5).map((task) => (
+                <div
+                  className={`rh-task ${task.status === "done" ? "rh-is-complete" : ""}`}
+                  key={task.id}
+                >
+                  <input
+                    type="checkbox"
+                    aria-label={`${task.title} 완료`}
+                    checked={task.status === "done"}
+                    disabled={busy === task.id}
+                    onChange={() => void toggle(task.id)}
+                  />
+                  <Link
+                    className="rh-task-copy"
+                    to={`${base}/tasks/${task.id}`}
+                  >
+                    <strong>{task.title}</strong>
+                    <span>
+                      {isCollaborative && (
+                        <>
+                          {members.find(
+                            (member) => member.userId === task.assigneeId,
+                          )?.name ?? "담당 미지정"}
+                          <i>·</i>
+                        </>
+                      )}
+                      {task.dueDate ? formatDate(task.dueDate) : "기한 없음"}
+                    </span>
+                  </Link>
+                  <span
+                    className={`rh-badge ${task.status === "done" ? "rh-badge-green" : task.priority === "high" ? "rh-badge-amber" : "rh-badge-neutral"}`}
+                  >
+                    {task.status === "done"
+                      ? taskLabels.done
+                      : task.priority === "high"
+                        ? "우선"
+                        : taskLabels[task.status]}
+                  </span>
+                </div>
+              ))}
+              {!work.length && (
+                <div className="rh-list-empty">
+                  <Icon name="tasks" size={22} />
+                  <p>지금 이어갈 일을 하나 남겨 보세요.</p>
+                </div>
+              )}
+            </div>
+            <Link className="rh-add-link" to={`${base}/tasks?new=1`}>
+              <Icon name="plus" size={17} />할 일 추가
+            </Link>
+          </section>
+          <section className="rh-writing" aria-labelledby="rh-writing-heading">
+            <div className="rh-section-heading">
+              <h2 id="rh-writing-heading">이어서 작성</h2>
+              <Link className="rh-text-link" to={`${base}/writing`}>
+                글쓰기 <Icon name="arrow-up-right" size={15} />
+              </Link>
+            </div>
+            {docs.slice(0, 3).map((document) => {
+              const versionCount = data.documentVersions.filter(
+                (version) => version.documentId === document.id,
+              ).length;
+              const author = members.find(
+                (member) => member.userId === document.updatedBy,
+              )?.name;
+              return (
+                <Link
+                  className="rh-document"
+                  key={document.id}
+                  to={`${base}/writing/${document.id}`}
+                >
+                  <span className="rh-document-icon">
+                    <Icon name="file" size={22} />
+                  </span>
+                  <span className="rh-document-copy">
+                    <strong>{document.title}</strong>
+                    <small>
+                      {new Date(document.updatedAt).toLocaleDateString("ko-KR")}
+                      {isCollaborative && author && ` · ${author}`}
+                      {versionCount > 0
+                        ? ` · 저장한 버전 ${versionCount}개`
+                        : " · 작성 중"}
+                    </small>
+                  </span>
+                  <Icon name="arrow-up-right" size={16} />
+                </Link>
+              );
+            })}
+            {!docs.length && (
+              <Link className="rh-writing-empty" to={`${base}/writing?new=1`}>
+                <span className="rh-document-icon">
+                  <Icon name="edit" size={22} />
+                </span>
+                <span>
+                  <strong>연구 계획서부터 첫 문장까지</strong>
+                  <small>새 문서를 열고 생각을 이어 적으세요.</small>
+                </span>
+                <Icon name="plus" size={18} />
+              </Link>
+            )}
+          </section>
+        </div>
+        <aside className="rh-side-column" aria-label="연구 소식과 도우미">
+          <section
+            className="rh-attention"
+            aria-labelledby="rh-attention-heading"
+          >
+            <div className="rh-section-heading">
+              <h2 id="rh-attention-heading">
+                확인할 내용
+                {attentionCount > 0 && (
+                  <span className="rh-count">{attentionCount}</span>
+                )}
+              </h2>
+              <Icon name="bell" size={18} />
+            </div>
+            {updates.slice(0, 3).map((event) => (
+              <Link
+                className="rh-attention-row"
+                key={event.id}
+                to={notificationHref(event)}
+              >
+                <span className="rh-attention-icon">
+                  <Icon name="feedback" size={18} />
+                </span>
+                <span>
+                  <strong>{event.title}</strong>
+                  <p>{event.message}</p>
+                </span>
+                <Icon name="chevron-right" size={14} />
+              </Link>
+            ))}
+            {pending.length > 0 && (
+              <Link
+                className="rh-attention-row"
+                to={`${base}/assistant?tab=overview`}
+              >
+                <span className="rh-attention-icon">
+                  <Icon name="sparkles" size={18} />
+                </span>
+                <span>
+                  <strong>기다리는 AI 결과 {pending.length}개</strong>
+                  <p>내 기록에 반영할 내용을 선택해 주세요.</p>
+                </span>
+                <Icon name="chevron-right" size={14} />
+              </Link>
+            )}
+            {!attentionCount && (
+              <div className="rh-attention-empty">
+                <span>
+                  <Icon name="check" size={18} />
+                </span>
+                <div>
+                  <strong>새 소식을 모두 확인했어요.</strong>
+                  <p>교수 의견이나 확인할 결과가 도착하면 여기에 모아둘게요.</p>
+                </div>
+              </div>
+            )}
+            {milestone && (
+              <Link className="rh-deadline" to={`${base}/planning`}>
+                <Icon name="flag" size={16} />
+                <span>
+                  <small>
+                    다음 주요 마감 · {formatDate(milestone.dueDate)}
+                  </small>
+                  <strong>{milestone.title}</strong>
+                </span>
+                <Icon name="chevron-right" size={14} />
+              </Link>
+            )}
+          </section>
+          <section
+            className="rh-assistant"
+            aria-labelledby="rh-assistant-heading"
+          >
+            <AssistantMascot state="ready" size={64} />
+            <h2 id="rh-assistant-heading">
+              메모에서
+              <br />
+              다음 작업으로.
+            </h2>
+            <p>미팅 기록을 정리하거나, 피드백에 맞는 수정 방법을 비교하세요.</p>
+            <div className="rh-assistant-actions">
+              <Link to={`${base}/assistant?mode=plan_research`}>
+                <span>
+                  <Icon name="tasks" size={16} />
+                  다음 작업 정리
+                </span>
+                <Icon name="arrow-up-right" size={15} />
+              </Link>
+              <Link to={`${base}/assistant?mode=suggest_revisions`}>
+                <span>
+                  <Icon name="layers" size={16} />
+                  수정 방법 비교
+                </span>
+                <Icon name="arrow-up-right" size={15} />
+              </Link>
+            </div>
+          </section>
+          <section
+            className="rh-activity"
+            aria-labelledby="rh-activity-heading"
+          >
+            <div className="rh-section-heading">
+              <h2 id="rh-activity-heading">최근 활동</h2>
+              <Icon name="history" size={18} />
+            </div>
+            <ol className="rh-activity-list">
+              {events.map((event) => (
+                <li key={event.id}>
+                  <Link to={event.href}>
+                    <span className="rh-activity-dot" aria-hidden="true" />
+                    <span>
+                      <strong>{event.title}</strong>
+                      <p>{event.message}</p>
+                      <small>
+                        {isCollaborative && `${event.actorName} · `}
+                        <time dateTime={event.createdAt}>
+                          {new Date(event.createdAt).toLocaleString("ko-KR", {
+                            month: "numeric",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </time>
+                      </small>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+            {!events.length && (
+              <p className="rh-inline-empty">
+                기록을 남기고 작업을 진행하면 여기에 쌓입니다.
+              </p>
+            )}
+          </section>
+        </aside>
+      </div>
+    </div>
   );
 }

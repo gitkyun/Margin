@@ -1,5 +1,9 @@
+import {PermanentResearchDelete, PendingResearchDeletions} from "@/components/PermanentResearchDelete";
+import { PublicFrame } from "./PublicPages";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
+export { ThemeSwitch } from "@/components/ThemeSwitch";
 import { useNavigationGuard } from "@/lib/navigation-guard";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
@@ -22,33 +26,9 @@ import {
   StatusBadge,
 } from "@/components/common";
 import { Icon } from "@/components/icons";
-import { useTheme } from "@/lib/theme";
+import { useExperience } from "@/lib/experience";
+import { Segments } from "@/components/experience";
 import { unreadReviewNotifications } from "@/lib/notifications";
-export function ThemeSwitch() {
-  const { theme, setTheme } = useTheme();
-  return (
-    <div className="theme-switch" role="group" aria-label="화면 테마">
-      {(
-        [
-          { value: "light", label: "라이트", icon: "sun" },
-          { value: "dark", label: "다크", icon: "moon" },
-          { value: "system", label: "시스템", icon: "monitor" },
-        ] as const
-      ).map((t) => (
-        <button
-          type="button"
-          key={t.value}
-          aria-label={t.label + " 테마"}
-          aria-pressed={theme === t.value}
-          onClick={() => setTheme(t.value)}
-        >
-          <Icon name={t.icon} size={16} />
-          <span>{t.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
 export function LoginPage({
   authenticated = false,
 }: {
@@ -60,9 +40,11 @@ export function LoginPage({
     [error, setError] = useState("");
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const next = params.get("next") ?? "/";
+  const next = params.get("next") ?? "/r";
   const target =
-    /^\/(r|reviews)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : "/";
+    /^\/(r|reviews|schedule)(\/|\?|$)/.test(next) && !next.startsWith("//")
+      ? next
+      : "/r";
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!configured) return;
@@ -73,7 +55,12 @@ export function LoginPage({
         email: email.trim(),
         password,
       });
-      if (error) throw new Error("이메일과 비밀번호를 확인해 주세요.");
+      if (error)
+        throw new Error(
+          error.message?.includes("fetch")
+            ? "서버에 연결하지 못했습니다. 연결을 확인하고 다시 시도해 주세요."
+            : "이메일과 비밀번호를 확인해 주세요.",
+        );
       setPassword("");
       navigate(target, { replace: true });
     } catch (e) {
@@ -83,120 +70,91 @@ export function LoginPage({
     }
   }
   return (
-    <div className="login-page">
-      <div className="login-top">
-        <Link className="brand" to="/">
-          <span className="brand-icon">
-            <Icon name="book" size={23} />
-          </span>
-          RMS
-        </Link>
-        <ThemeSwitch />
-      </div>
-      <main className="login-main">
-        <div className="login-intro">
-          <div className="login-dots" aria-hidden="true">
-            {Array.from({ length: 49 }, (_, i) => (
-              <i key={i} />
-            ))}
-          </div>
+    <PublicFrame compact signedIn={authenticated}>
+      <section className="signup-layout login-layout">
+        <div className="auth-story">
           <h1>
-            지난 지도를
+            다시 이어가는
             <br />
-            다음 연구로.
+            나의 연구.
           </h1>
           <p>
-            미팅 기록부터 수정 결과까지,
+            지난 미팅의 기록과
             <br />
-            흩어진 연구의 맥락을 한곳에서 이어갑니다.
+            다음에 할 일이 기다리고 있어요.
           </p>
-          <div className="login-flow">
-            <span>기록</span>
-            <Icon name="chevron-right" size={14} />
-            <span>수정</span>
-            <Icon name="chevron-right" size={14} />
-            <span>검토</span>
-            <Icon name="chevron-right" size={14} />
-            <span>다음 미팅</span>
-          </div>
+
         </div>
-        <section className="login-card">
+        <section className="auth-panel">
           <h2>로그인</h2>
-          <p>발급받은 계정으로 접속해 주세요.</p>
+          <p>이메일로 로그인하고 연구를 이어가세요.</p>
           {authenticated ? (
-            <Button asChild>
-              <Link to={target}>
+            <>
+              <div className="signed-in-notice">
+                <Icon name="check-circle" size={23} />
+                <p>이미 로그인되어 있습니다.</p>
+              </div>
+              <Link className="rms-action primary full" to={target}>
                 작업 공간으로 이동
-                <Icon name="arrow-right" size={17} />
+                <Icon name="arrow-right" size={18} />
               </Link>
-            </Button>
+            </>
           ) : (
             <form onSubmit={submit}>
-              <Field label="이메일" required>
-                <Input
+              <label className="field">
+                이메일
+                <input
+                  className="rms-input"
                   type="email"
                   autoComplete="username"
-                  aria-label="이메일"
-                  placeholder="name@university.ac.kr"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@university.ac.kr"
                   required
-                  disabled={!configured}
+                  disabled={!configured || pending}
                 />
-              </Field>
-              <Field label="비밀번호" required>
-                <Input
+              </label>
+              <label className="field">
+                비밀번호
+                <input
+                  className="rms-input"
                   type="password"
                   autoComplete="current-password"
-                  aria-label="비밀번호"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="비밀번호 입력"
+                  placeholder="비밀번호를 입력하세요"
                   required
-                  disabled={!configured}
+                  disabled={!configured || pending}
                 />
-              </Field>
+              </label>
               {error && (
-                <div className="form-error" role="alert">
+                <p className="form-error" role="alert">
                   {error}
-                </div>
+                </p>
               )}
-              <Button
-                className="login-submit"
-                type="submit"
+              <button
+                className="rms-action primary full"
                 disabled={pending || !configured}
               >
                 {pending ? "로그인 중" : "로그인"}
-                <Icon name="arrow-right" size={17} />
-              </Button>
+                <Icon name="arrow-right" size={18} />
+              </button>
             </form>
           )}
-          <div className="login-help">
-            <Icon name="lock" size={16} />
-            <p>교수 검토 링크로 들어왔다면 로그인 후 해당 검토로 이동합니다.</p>
-          </div>
-          {!configured && (
-            <div className="preview-entry">
-              <p>현재는 서버 연결 전 화면 미리보기입니다.</p>
-              <Button variant="outline" asChild>
-                <Link to="/">
-                  가상 연구 둘러보기
-                  <Icon name="arrow-up-right" size={16} />
-                </Link>
-              </Button>
-            </div>
-          )}
+          <p className="auth-switch">
+            처음 오셨나요? <Link to="/signup">가입 과정 살펴보기</Link>
+          </p>
+
         </section>
-      </main>
-      <footer>
-        RMS · 논문 지도 협업 및 연구 진행 관리
-        <span>수업 시연용 · 가상 자료 사용</span>
-      </footer>
-    </div>
+      </section>
+    </PublicFrame>
   );
 }
+
 export function ResearchSelectPage() {
-  const { data, user, saveResearch, seedDemo, mode } = useWorkspace();
+  const [creationParams, setCreationParams] = useSearchParams();
+  const w = useExperience();
+  const { data, user, saveResearch } = w;
   const sharedRequests = data.reviews
     .filter(
       (request) =>
@@ -206,12 +164,31 @@ export function ResearchSelectPage() {
   const incomingOnly =
     sharedRequests.length > 0 && data.researches.length === 0;
   const newEvents = unreadReviewNotifications(data, user);
+  const view = creationParams.get("view") ?? "active",
+    archivedView = view === "archived",
+    trashView = view === "trash";
+  const invites = data.members.filter(
+    (m) => m.userId === user.id && m.status === "pending",
+  );
+  const visibleResearches = data.researches.filter((r) =>
+    trashView
+      ? !!r.deletedAt
+      : !r.deletedAt && (archivedView ? !!r.archivedAt : !r.archivedAt),
+  );
   const navigate = useNavigate();
   const createId = useRef(uid());
   const [open, setOpen] = useState(false),
     [name, setName] = useState(""),
     [description, setDescription] = useState(""),
     [pending, setPending] = useState(false);
+  useEffect(() => {
+    if (creationParams.get("new") === "1") {
+      setOpen(true);
+      const next = new URLSearchParams(creationParams);
+      next.delete("new");
+      setCreationParams(next, { replace: true });
+    }
+  }, [creationParams, setCreationParams]);
   const researchGuard = useNavigationGuard({
     dirty: open && (!!name.trim() || !!description.trim()),
     busy: pending,
@@ -300,43 +277,198 @@ export function ResearchSelectPage() {
           </div>
         </section>
       )}
-      {data.researches.length ? (
+      {invites.length > 0 && (
+        <section aria-label="공동연구 초대">
+          <h2>받은 초대</h2>
+          {invites.map((m) => (
+            <div className="invitation-row" key={m.researchId}>
+              <div>
+                <h3>공동연구 초대</h3>
+                <p>
+                  {data.events.find(
+                    (e) => e.researchId === m.researchId && e.kind === "invite",
+                  )?.message ?? "연구 공간에 초대받았습니다."}
+                </p>
+              </div>
+              <Button
+                disabled={pending}
+                onClick={async () => {
+                  setPending(true);
+                  try {
+                    await w.action("rms_member_action", {
+                      researchId: m.researchId,
+                      action: "accept",
+                    });
+                    navigate(`/r/${m.researchId}`);
+                  } catch (e) {
+                    toast.error(friendlyError(e));
+                  } finally {
+                    setPending(false);
+                  }
+                }}
+              >
+                초대 수락
+              </Button>
+            </div>
+          ))}
+        </section>
+      )}
+      {data.polls
+        .filter(
+          (p) =>
+            p.status === "open" &&
+            p.participants.some((m) => m.userId === user.id),
+        )
+        .map((p) => (
+          <Link key={p.id} to={`/schedule/${p.id}`} className="invitation-row">
+            <div>
+              <h3>{p.title}</h3>
+              <p>미팅 시간 조율 · 가능한 시간을 알려주세요.</p>
+            </div>
+            <Icon name="arrow-right" size={18} />
+          </Link>
+        ))}
+      {!incomingOnly && (
+        <div className="research-view-switch">
+          <Segments
+            value={view}
+            onChange={(v) =>
+              setCreationParams(v === "active" ? {} : { view: v })
+            }
+            label="연구 목록"
+            options={[
+              { value: "active", label: "진행 중인 연구" },
+              {
+                value: "archived",
+                label: "보관함",
+                count: data.researches.filter(
+                  (r) => r.archivedAt && !r.deletedAt,
+                ).length,
+              },
+              {
+                value: "trash",
+                label: "휴지통",
+                count: data.researches.filter((r) => r.deletedAt).length,
+              },
+            ]}
+          />
+        </div>
+      )}
+      {visibleResearches.length ? (
         <div className="research-grid">
-          {data.researches.map((research) => (
-            <Link
-              key={research.id}
-              className="surface research-card"
-              to={`/r/${research.id}`}
-            >
-              <span className="research-card-icon">
-                <Icon name="book" size={24} />
-              </span>
-              <h2>{research.name}</h2>
-              <p>
-                {research.description || "설명을 추가하지 않은 연구입니다."}
-              </p>
-              <span className="meta">
-                {
-                  data.meetings.filter((m) => m.researchId === research.id)
-                    .length
-                }
-                개 미팅 ·{" "}
-                {
-                  data.tasks.filter(
-                    (t) => t.researchId === research.id && t.status !== "done",
-                  ).length
-                }
-                개 남은 작업
-                <Icon name="arrow-up-right" size={16} />
-              </span>
-            </Link>
+          {visibleResearches.map((research) => (
+            <div key={research.id} className="surface research-card-wrap">
+              <Link
+                className="research-card"
+                to={trashView ? "/r?view=trash" : `/r/${research.id}`}
+                aria-disabled={trashView || undefined}
+                tabIndex={trashView ? -1 : undefined}
+                onClick={(e) => {
+                  if (trashView) e.preventDefault();
+                }}
+              >
+                <span className="research-card-icon">
+                  <Icon name="book" size={24} />
+                </span>
+                <h2>{research.name}</h2>
+                <p>
+                  {research.description || "설명을 추가하지 않은 연구입니다."}
+                </p>
+                <span className="meta">
+                  {
+                    data.meetings.filter((m) => m.researchId === research.id)
+                      .length
+                  }
+                  개 미팅 ·{" "}
+                  {
+                    data.tasks.filter(
+                      (t) =>
+                        t.researchId === research.id && t.status !== "done",
+                    ).length
+                  }
+                  개 남은 작업
+                  <Icon name="arrow-up-right" size={16} />
+                </span>
+              </Link>
+              <div className="research-card-actions">
+                {trashView ? (
+                  <Button
+                    variant="outline"
+                    disabled={pending}
+                    onClick={async () => {
+                      setPending(true);
+                      try {
+                        await saveResearch({
+                          ...research,
+                          deletedAt: undefined,
+                          archivedAt: undefined,
+                        });
+                        toast.success(
+                          "복원했습니다. 교수 공유는 직접 다시 시작해 주세요.",
+                        );
+                      } catch (e) {
+                        toast.error(friendlyError(e));
+                      } finally {
+                        setPending(false);
+                      }
+                    }}
+                  >
+                    복원
+                  </Button>
+                ) : (
+                  <Button asChild variant="outline">
+                    <Link to={`/r/${research.id}/settings`}>연구 설정</Link>
+                  </Button>
+                )}
+                {trashView && research.ownerId === user.id && <PermanentResearchDelete id={research.id} name={research.name}/>}
+                {!trashView && research.ownerId === user.id && (
+                  <Button
+                    variant="ghost"
+                    disabled={pending}
+                    onClick={async () => {
+                      if (
+                        !confirm(
+                          "연구를 휴지통으로 옮길까요? 공동연구자와 교수의 접근이 중지되며 기록은 복원할 수 있습니다.",
+                        )
+                      )
+                        return;
+                      setPending(true);
+                      try {
+                        await saveResearch({
+                          ...research,
+                          deletedAt: new Date().toISOString(),
+                        });
+                      } catch (e) {
+                        toast.error(friendlyError(e));
+                      } finally {
+                        setPending(false);
+                      }
+                    }}
+                  >
+                    삭제
+                  </Button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       ) : !incomingOnly ? (
         <EmptyState
           icon="book"
-          title="첫 연구를 만들어 보세요."
-          description="이름만 정하면 미팅을 기록하고 작업을 모을 수 있습니다."
+          title={
+            trashView
+              ? "휴지통이 비어 있습니다."
+              : archivedView
+                ? "보관한 연구가 없습니다."
+                : "진행 중인 연구가 없습니다."
+          }
+          description={
+            trashView
+              ? "삭제한 연구는 이곳에서 복원할 수 있습니다. 자동으로 영구 삭제하지 않습니다."
+              : archivedView
+                ? "보관한 연구를 열어 설정에서 다시 복원할 수 있습니다."
+                : "연구를 만들거나 보관함의 연구를 복원하세요."
+          }
           action={
             <Button onClick={() => setOpen(true)}>
               <Icon name="plus" size={16} />
@@ -345,40 +477,7 @@ export function ResearchSelectPage() {
           }
         />
       ) : null}
-      {!incomingOnly && (
-        <div className="demo-seed">
-          <Icon name="info" size={18} />
-          <div>
-            <strong>가상 자료로 흐름을 살펴보려면</strong>
-            <p>
-              {mode === "preview"
-                ? "미리보기 기록을 처음 상태로 다시 불러올 수 있습니다."
-                : "가상 연구와 미팅 메모를 추가합니다. 다른 연구는 바뀌지 않습니다."}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            disabled={pending}
-            onClick={async () => {
-              if (
-                mode === "preview" &&
-                !confirm("현재 미리보기 기록을 초기 상태로 되돌릴까요?")
-              )
-                return;
-              setPending(true);
-              try {
-                navigate(`/r/${await seedDemo()}`);
-              } catch (e) {
-                toast.error(friendlyError(e));
-              } finally {
-                setPending(false);
-              }
-            }}
-          >
-            가상 연구 불러오기
-          </Button>
-        </div>
-      )}
+      {trashView && <PendingResearchDeletions/>}
       <Dialog
         open={open}
         onOpenChange={(nextOpen: boolean) => {

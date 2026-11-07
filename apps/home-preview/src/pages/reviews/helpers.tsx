@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/supabase";
 import { StatusBadge } from "@/components/common";
 import {
   responseLabels,
@@ -32,7 +33,7 @@ export function timeText(value?: string) {
 }
 export function errorText(e: unknown) {
   return e instanceof Error
-    ? e.message
+    ? friendlyError(e)
     : "요청을 처리하지 못했습니다. 다시 시도해 주세요.";
 }
 export function latestRound(data: WorkspaceData, itemId: string) {

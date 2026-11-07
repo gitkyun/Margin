@@ -1,3 +1,9 @@
+# 현재 구현 기준 · 2026-11-05
+
+2026-11-06 소개 화면의 최종 마감은 [적용 기록](design/aceternity-sources-20261106.md)과 [검증·배포 기록](development/verification-20261106.md)을 함께 확인한다.
+
+[승인한 확장 계약](product/experience-addendum-20261105.md) → [화면·라이브러리 적용](design/implementation-map-20261105.md) → [검증 기록](development/verification-20261105.md)을 먼저 읽는다. 기존 제품 문서는 원래 사용자 문제와 흐름의 기준으로 보존한다.
+
 # 문서 안내
 
 ## 읽는 순서

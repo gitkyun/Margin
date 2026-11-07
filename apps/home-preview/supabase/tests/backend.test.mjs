@@ -56,7 +56,7 @@ test('creates two immutable item snapshots without private notes',async()=>{
  await as(ids.student)
  request=await inputCall('rms_create_review',{researchId:ids.research,title:'가상 수정 결과 검토',professorEmail:'professor@example.test',resultIds:[resultA.id,resultB.id]})
  let data=await call('rms_bootstrap');[itemA,itemB]=[data.reviewItems.find(x=>x.resultId===resultA.id),data.reviewItems.find(x=>x.resultId===resultB.id)];roundA=data.rounds.find(x=>x.itemId===itemA.id);roundB=data.rounds.find(x=>x.itemId===itemB.id)
- assert.equal(roundA.number,1);assert.equal(roundA.versionId,v2.id);assert.ok(!JSON.stringify(roundA).includes('개인 메모'))
+ assert.equal(roundA.number,1);assert.equal(roundA.versionId,v2.id);assert.equal(roundA.createdBy,ids.student);assert.ok(!JSON.stringify(roundA).includes('개인 메모'))
  resultA=await save('results',{...resultA,description:'이후 개인 설명을 고쳤다.',versionId:v3.id})
  data=await call('rms_bootstrap');assert.equal(data.rounds.find(x=>x.id===roundA.id).description,'비교 기준 열을 추가했다.')
  await failure(()=>save('versions',{...v2,fileName:'바꾼파일.pdf'}),'22023')
@@ -144,4 +144,177 @@ test('stale upload numbers are allocated on the server and lost replies remain r
  }
  assert.equal(uploads[0].number,4)
  assert.equal(uploads[1].number,5)
+})
+
+test('AI usage reports only the caller and denies anonymous access',async()=>{
+ await as(ids.professor);const own=await call('rms_ai_usage');assert.equal(own.total,0);assert.equal(own.limit,100)
+ await as(ids.student);const used=await call('rms_ai_usage');assert.ok(used.total>0);assert.equal(used.total,used.complete+used.failed+used.running);assert.equal(used.windowHours,24)
+ await db.exec('reset role; set role anon');await failure(()=>call('rms_ai_usage'),'42501')
+})
+
+test('research archive and restore retain records and existing shared reviews',async()=>{
+ await as(ids.student);const before=await call('rms_bootstrap');const original=before.researches.find(r=>r.id===ids.research)
+ const archived=await call('rms_save_research',[JSON.stringify({...original,archivedAt:new Date().toISOString()})]);assert.ok(archived.archivedAt)
+ let after=await call('rms_bootstrap');assert.equal(after.meetings.length,before.meetings.length);assert.equal(after.reviews.length,before.reviews.length)
+ const restored={...archived};delete restored.archivedAt;await call('rms_save_research',[JSON.stringify(restored)]);after=await call('rms_bootstrap');assert.equal(after.researches.find(r=>r.id===ids.research).archivedAt,undefined)
+})
+
+let sharedDoc,docVersion,collabPoll
+const docId='abababab-abab-4bab-8bab-abababababab'
+test('coauthor invitation does not expose personal notes, private records, or direct rows',async()=>{
+ await db.exec('reset role');await db.query('update public.rms_demo_accounts set active=true where user_id=$1',[ids.stranger]);await as(ids.student)
+ await inputCall('rms_member_action',{action:'invite',researchId:ids.research,email:'other@example.test'})
+ await as(ids.stranger);assert.equal((await call('rms_bootstrap')).researches.length,0)
+ await inputCall('rms_member_action',{action:'accept',researchId:ids.research})
+ const data=await call('rms_bootstrap');assert.equal(data.researches.length,1);assert.equal(data.meetings.length,0);assert.equal(data.feedback[0].notes,'')
+ const rows=(await db.query('select data from public.rms_records')).rows;assert.ok(!JSON.stringify(rows).includes('개인 메모'));assert.ok(!rows.some(x=>x.data.id===meeting.id))
+ await failure(()=>save('meetings',{...meeting,memo:'비공개 기록 변경'}),'42501')
+ sharedDoc=await save('documents',{...base(docId),title:'공동 연구 계획서',type:'plan',content:{type:'doc',content:[]},text:'초안',revision:0,visibility:'shared'})
+ await as(ids.student);assert.ok((await call('rms_bootstrap')).documents.some(x=>x.id===docId))
+})
+test('document conflict rejects lost updates and immutable versions survive restore',async()=>{
+ await as(ids.student);const original=sharedDoc
+ sharedDoc=await save('documents',{...sharedDoc,text:'소유자의 변경',content:{type:'doc',content:[{type:'paragraph',content:[{type:'text',text:'소유자의 변경'}]}]}})
+ await as(ids.stranger);await failure(()=>save('documents',{...original,text:'편집자의 오래된 변경'}),'40001')
+ docVersion=await save('documentVersions',{...base('acacacac-acac-4cac-8cac-acacacacacac'),documentId:sharedDoc.id,title:'1차 정리',number:0,content:sharedDoc.content,text:sharedDoc.text})
+ await failure(()=>save('documentVersions',{...docVersion,text:'덮어쓰기'}),'22023')
+ sharedDoc=await save('documents',{...sharedDoc,text:'편집자의 변경'});assert.equal(sharedDoc.updatedBy,ids.stranger)
+ await as(ids.student);assert.equal((await call('rms_bootstrap')).documentVersions[0].text,'소유자의 변경')
+})
+test('schedule participants respond without research access; confirmation creates only one meeting',async()=>{
+ await as(ids.student)
+ collabPoll=await inputCall('rms_poll_action',{action:'create',researchId:ids.research,title:'시간 조율',emails:['professor@example.test'],options:[{id:'adadadad-adad-4dad-8dad-adadadadadad',start:'2026-12-10T05:00:00Z',end:'2026-12-10T05:30:00Z'}]})
+ await as(ids.professor);await inputCall('rms_poll_action',{action:'respond',pollId:collabPoll.id,available:[collabPoll.options[0].id]});assert.equal((await call('rms_bootstrap')).documents.length,0)
+ await failure(()=>inputCall('rms_poll_action',{action:'confirm',pollId:collabPoll.id,optionId:collabPoll.options[0].id}),'42501')
+ await as(ids.student);const a=await inputCall('rms_poll_action',{action:'confirm',pollId:collabPoll.id,optionId:collabPoll.options[0].id});const b=await inputCall('rms_poll_action',{action:'confirm',pollId:collabPoll.id,optionId:collabPoll.options[0].id});assert.equal(a.meetingId,b.meetingId)
+})
+test('trash blocks collaborator and professor; restore keeps sharing stopped; owner can revoke editor',async()=>{
+ await as(ids.student);let r=(await call('rms_bootstrap')).researches.find(r=>r.id===ids.research)
+ await call('rms_set_sharing',[JSON.stringify({requestId:request.id,status:'shared',professorEmail:'professor@example.test'})])
+ r=await call('rms_save_research',[JSON.stringify({...r,deletedAt:new Date().toISOString()})])
+ await as(ids.stranger);assert.equal((await call('rms_bootstrap')).documents.length,0)
+ await as(ids.professor);assert.equal((await call('rms_bootstrap')).reviews.length,0);assert.equal(await call('rms_can_read_file',[v2.storagePath]),false)
+ await as(ids.student);r=await call('rms_save_research',[JSON.stringify({...r,deletedAt:undefined})]);assert.equal((await call('rms_bootstrap')).reviews.find(x=>x.id===request.id).status,'stopped')
+ await inputCall('rms_member_action',{action:'remove',researchId:ids.research,userId:ids.stranger})
+ await as(ids.stranger);assert.equal((await call('rms_bootstrap')).documents.length,0)
+})
+
+test('AI cancellation wins before admission and ignores a late completion',async()=>{
+ await db.exec('reset role');await db.query("update public.rms_ai_runs set created_at=now()-interval '2 days' where user_id=$1",[ids.student]);
+ const cancelled='a1111111-1111-4111-8111-111111111111',late='a2222222-2222-4222-8222-222222222222';
+ await as(ids.student);await call('rms_cancel_ai',[cancelled]);
+ await db.exec('reset role;set role service_role');await failure(()=>call('rms_ai_begin_v2',[ids.student,ids.research,'cancelled-input',cancelled,'organize_meeting','test-model','minimal']),'57014');
+ await call('rms_ai_begin_v2',[ids.student,ids.research,'late-input',late,'organize_meeting','test-model','minimal']);
+ await as(ids.student);await call('rms_cancel_ai',[late]);
+ await db.exec('reset role;set role service_role');assert.equal(await call('rms_ai_finish_v2',[late,'complete',JSON.stringify({candidates:[{title:'늦은 결과',body:'적용하면 안 된다.'}]}),'[]',null]),false);
+ await as(ids.student);const data=await call('rms_bootstrap');assert.ok(!data.aiCandidates.some(c=>c.runId===late));assert.equal(data.aiRuns.find(r=>r.id===late).status,'cancelled');
+})
+test('AI adoption is atomic, private, caller-owned and idempotent after a lost response',async()=>{
+ const run='a3333333-3333-4333-8333-333333333333';await db.exec('reset role;set role service_role');await call('rms_ai_begin_v2',[ids.student,ids.research,'adoption-input',run,'plan_research','test-model','minimal']);
+ await call('rms_ai_finish_v2',[run,'complete',JSON.stringify({candidates:[{title:'비교 기준 정리',method:'기준표를 보완한다.'}]}),'[]',null]);
+ await as(ids.student);const data=await call('rms_bootstrap'),c=data.aiCandidates.find(c=>c.runId===run);
+ const input={candidateId:c.id,kind:'tasks',value:{...base('a4444444-4444-4444-8444-444444444444'),title:c.title,description:'기준표를 보완한다.',status:'todo',priority:'normal',dueDate:null,feedbackIds:[]}};
+ const first=await inputCall('rms_adopt_candidate',input),retry=await inputCall('rms_adopt_candidate',{...input,value:{...input.value,id:'a5555555-5555-4555-8555-555555555555'}});assert.equal(first.id,retry.id);assert.equal(first.visibility,'private');assert.equal(first.createdBy,ids.student);
+ await as(ids.professor);await failure(()=>inputCall('rms_adopt_candidate',input),'42501');
+})
+test('private attachment record rejects mismatched stored MIME metadata',async()=>{
+ await as(ids.student);const id='a6666666-6666-4666-8666-666666666666',path=`${ids.student}/${ids.research}/${id}.pdf`;
+ await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3)',['research-private',path,JSON.stringify({size:1024,mimetype:'text/plain'})]);
+ await failure(()=>save('attachments',{...base(id),title:'잘못된 파일',fileName:'sample.pdf',storagePath:path,size:1024,mimeType:'application/pdf',text:''}),'22023');
+})
+test('another account cannot cancel a private AI execution',async()=>{
+ await as(ids.professor);await failure(()=>call('rms_cancel_ai',['a3333333-3333-4333-8333-333333333333']),'42501');
+ await as(ids.student);assert.equal((await call('rms_bootstrap')).aiRuns.find(r=>r.id==='a3333333-3333-4333-8333-333333333333').status,'complete');
+})
+
+let liveRecording,liveTranscript
+const transcriptArgs=(text,revision=liveTranscript?.revision??0,segments=liveTranscript?.raw_segments??[{text:'연구 계획을 보완해 주세요.',final:true},{text:'분석 기준',final:false}])=>[liveRecording.id,JSON.stringify(segments),text,liveTranscript?.consent_at??'2026-11-05T00:00:00Z',JSON.stringify(liveTranscript?.warnings??[]),revision]
+test('live transcript stores Korean text and uncertain source segments independently of audio sharing',async()=>{
+ await as(ids.student)
+ const id='e1111111-1111-4111-8111-111111111111',path=`${ids.student}/${ids.research}/${id}.webm`
+ await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3)',['research-private',path,JSON.stringify({size:1024,mimetype:'audio/webm'})])
+ liveRecording=await save('recordings',{...base(id),meetingId:meeting.id,title:'한국어 음성 기록',fileName:'recording.webm',storagePath:path,size:1024,mimeType:'audio/webm',duration:20,consentAt:'2026-11-05T00:00:00Z',visibility:'shared'})
+ liveTranscript=await call('rms_save_live_transcript',transcriptArgs('연구 계획을 보완해 주세요.\n분석 기준'))
+ assert.equal(liveTranscript.language,'ko-KR');assert.equal(liveTranscript.engine,'browser-speech-recognition');assert.equal(liveTranscript.revision,1);assert.equal(liveTranscript.raw_segments[1].final,false)
+ assert.equal((await db.query('select * from public.rms_live_transcripts')).rows.length,1)
+ await failure(()=>db.query("update public.rms_live_transcripts set edited_text='임의 변경'"),'42501')
+})
+test('live transcript edit uses optimistic locking, preserves source, and survives a lost response retry',async()=>{
+ await as(ids.student);const original=liveTranscript
+ liveTranscript=await call('rms_save_live_transcript',transcriptArgs('연구 계획의 분석 기준을 보완해 주세요.'))
+ assert.equal(liveTranscript.revision,2);assert.deepEqual(liveTranscript.raw_segments,original.raw_segments)
+ const retry=await call('rms_save_live_transcript',transcriptArgs(liveTranscript.edited_text,1));assert.equal(retry.revision,2)
+ await failure(()=>call('rms_save_live_transcript',transcriptArgs('다른 창의 오래된 초안',1)),'PT409')
+ await failure(()=>call('rms_save_live_transcript',transcriptArgs('원문 바꾸기',2,[{text:'교수가 승인했다고 위조',final:true}])),'22023')
+ const rows=(await db.query('select * from public.rms_live_transcripts')).rows;assert.equal(rows[0].edited_text,liveTranscript.edited_text)
+})
+test('shared audio never grants transcript access to a coauthor or professor',async()=>{
+ await as(ids.student);await inputCall('rms_member_action',{action:'invite',researchId:ids.research,email:'other@example.test'})
+ await as(ids.stranger);await inputCall('rms_member_action',{action:'accept',researchId:ids.research})
+ assert.equal(await call('rms_can_read_record',[liveRecording.id]),true)
+ assert.equal((await db.query('select * from public.rms_live_transcripts')).rows.length,0)
+ await failure(()=>call('rms_save_live_transcript',transcriptArgs('다른 사람의 전사문')),'42501')
+ await as(ids.professor);assert.equal((await db.query('select * from public.rms_live_transcripts')).rows.length,0)
+ await failure(()=>call('rms_save_live_transcript',transcriptArgs('교수 계정의 변경')),'42501')
+ await db.exec('reset role;set role anon');await failure(()=>db.query('select * from public.rms_live_transcripts'),'42501')
+})
+test('transcript validates field types and length without truncating user text',async()=>{
+ await as(ids.student)
+ await failure(()=>call('rms_save_live_transcript',transcriptArgs('가'.repeat(100001))),'22023')
+ await failure(()=>call('rms_save_live_transcript',transcriptArgs('입력',2,[{text:'문장',final:'false'}])),'22023')
+ const args=transcriptArgs('입력');args[4]='[123]';await failure(()=>call('rms_save_live_transcript',args),'22023')
+})
+test('trash revokes even direct transcript reads and restore preserves the saved text',async()=>{
+ await as(ids.student);let research=(await call('rms_bootstrap')).researches.find(r=>r.id===ids.research)
+ research=await call('rms_save_research',[JSON.stringify({...research,deletedAt:new Date().toISOString()})])
+ assert.equal((await db.query('select * from public.rms_live_transcripts')).rows.length,0)
+ await failure(()=>call('rms_save_live_transcript',transcriptArgs('휴지통 이후 변경')),'42501')
+ await call('rms_save_research',[JSON.stringify({...research,deletedAt:undefined})])
+ const rows=(await db.query('select * from public.rms_live_transcripts')).rows;assert.equal(rows[0].edited_text,liveTranscript.edited_text)
+})
+
+const purgeResearch='f1000000-0000-4000-8000-000000000001'
+let purgeValue,purgePath,purgeOtherPath
+const purgeInput=(name='삭제 검증 연구')=>({researchId:purgeResearch,confirmationName:name})
+test('permanent deletion requires owner, trash state, and exact name',async()=>{
+ await as(ids.student)
+ purgeValue=await call('rms_save_research',[JSON.stringify({...base(purgeResearch),name:'삭제 검증 연구',description:''})])
+ await failure(()=>inputCall('rms_purge_research',purgeInput()),'22023')
+ await as(ids.professor);await failure(()=>inputCall('rms_purge_research',purgeInput()),'42501')
+ await as(ids.student)
+ purgeValue=await call('rms_save_research',[JSON.stringify({...purgeValue,deletedAt:new Date().toISOString()})])
+ await failure(()=>inputCall('rms_purge_research',purgeInput('다른 이름')),'22023')
+ assert.ok((await call('rms_bootstrap')).researches.some(r=>r.id===purgeResearch))
+ // Restore only this isolated test research to populate records and reviews.
+ purgeValue=await call('rms_save_research',[JSON.stringify({...purgeValue,deletedAt:undefined})])
+})
+test('permanent deletion removes related reviews and nested comments atomically, retains cleanup manifest',async()=>{
+ await as(ids.student)
+ const mat='f1000000-0000-4000-8000-000000000002',ver='f1000000-0000-4000-8000-000000000003',res='f1000000-0000-4000-8000-000000000004'
+ await save('materials',{...base(mat,purgeResearch),title:'검증 자료',type:'draft'})
+ purgePath=`${ids.student}/${purgeResearch}/${ver}.pdf`
+ purgeOtherPath=`${ids.student}/${ids.research}/f1000000-0000-4000-8000-000000000099.pdf`
+ await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3),($1,$4,$3)',['research-files',purgePath,JSON.stringify({size:1024,mimetype:'application/pdf'}),purgeOtherPath])
+ await save('versions',{...base(ver,purgeResearch),materialId:mat,number:1,fileName:'검증.pdf',storagePath:purgePath,size:1024,mimeType:'application/pdf'})
+ await save('results',{...base(res,purgeResearch),title:'수정 결과',description:'비교 기준 보완',kind:'document',versionId:ver,location:'1쪽',feedbackIds:[],taskIds:[]})
+ const req=await inputCall('rms_create_review',{researchId:purgeResearch,title:'삭제 검증',professorEmail:'professor@example.test',resultIds:[res]})
+ const data=await call('rms_bootstrap'),round=data.rounds.find(r=>r.requestId===req.id)
+ const comment=await inputCall('rms_comment',{roundId:round.id,body:'검증 댓글'})
+ await inputCall('rms_comment',{roundId:round.id,parentId:comment.id,body:'검증 답글'})
+ await as(ids.professor);await inputCall('rms_respond',{roundId:round.id,result:'confirmed',comment:''})
+ await as(ids.student);await call('rms_save_research',[JSON.stringify({...purgeValue,deletedAt:new Date().toISOString()})])
+ const job=await inputCall('rms_purge_research',purgeInput())
+ assert.deepEqual(job.files,[{bucket:'research-files',path:purgePath}])
+ const remaining=await call('rms_bootstrap');assert.ok(!remaining.researches.some(r=>r.id===purgeResearch));assert.ok(remaining.researches.some(r=>r.id===ids.research))
+ assert.ok(!remaining.reviews.some(r=>r.id===req.id));assert.equal(await call('rms_can_read_file',[purgePath]),false)
+ assert.deepEqual(await call('rms_pending_deletions'),[{id:purgeResearch,name:'삭제 검증 연구'}])
+ // Storage removal happens through Edge Functions, never a direct SQL delete.
+ await db.exec('reset role');assert.equal((await db.query('select name from storage.objects where name=$1',[purgeOtherPath])).rows.length,1)
+})
+test('cleanup retries are idempotent and private to the original owner',async()=>{
+ await as(ids.student);const first=await inputCall('rms_purge_research',purgeInput()),second=await inputCall('rms_purge_research',purgeInput());assert.deepEqual(first,second)
+ await failure(()=>db.query('select * from public.rms_deletion_jobs'),'42501')
+ await as(ids.professor);assert.deepEqual(await call('rms_pending_deletions'),[]);await failure(()=>inputCall('rms_purge_research',purgeInput()),'42501')
+ await db.exec('reset role;set role service_role');await db.query('update public.rms_deletion_jobs set completed_at=now(),files=$1 where research_id=$2',['[]',purgeResearch])
+ await as(ids.student);assert.deepEqual(await call('rms_pending_deletions'),[]);assert.deepEqual((await inputCall('rms_purge_research',purgeInput())).files,[])
 })

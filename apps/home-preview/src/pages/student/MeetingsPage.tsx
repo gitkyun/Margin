@@ -1,3 +1,6 @@
+import { VisibilityField } from "@/components/experience";
+import { RecordingPanel } from "@/components/RecordingPanel";
+import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -32,12 +35,30 @@ import { hasMemoConflict, restoreMemoDraft } from "./memo-draft";
 import {
   BackLink,
   ErrorNotice,
+  FilterSegments,
   FormDialog,
   LabeledInput,
   SearchInput,
   SaveActions,
   useSaving,
 } from "./shared";
+import { filterCounts } from "@/lib/filter-counts";
+
+const meetingFilters = [
+  ["all", "전체"],
+  ["upcoming", "준비 중"],
+  ["past", "지난 기록"],
+  ["undated", "날짜 미정"],
+  ["cancelled", "취소"],
+] as const;
+
+function meetingMatches(item: Meeting, filter: string): boolean {
+  if (filter === "all") return true;
+  if (filter === "undated") return !item.date;
+  if (filter === "past") return item.status === "recorded";
+  if (filter === "cancelled") return item.status === "cancelled";
+  return item.status === "preparing" || item.status === "recording";
+}
 
 export function MeetingsPage() {
   const { researchId = "", meetingId } = useParams();
@@ -45,16 +66,22 @@ export function MeetingsPage() {
   const navigate = useNavigate();
   const createBase = useRef<BaseRecord | null>(null);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
+  const [pageParams, setPageParams] = useSearchParams();
+  const filter = pageParams.get("status") ?? "all",
+    setFilter = (v: string) => {
+      const n = new URLSearchParams(pageParams);
+      n.set("status", v);
+      setPageParams(n);
+    };
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const form = useSaving();
-  const [pageParams, setPageParams] = useSearchParams();
   useEffect(() => {
     if (meetingId || pageParams.get("new") !== "1") return;
     openCreate();
+    if (pageParams.get("date")) setDate(pageParams.get("date")!);
     const nextParams = new URLSearchParams(pageParams);
     nextParams.delete("new");
     setPageParams(nextParams, { replace: true });
@@ -78,23 +105,19 @@ export function MeetingsPage() {
   const hasMeetings = data.meetings.some(
     (item) => item.researchId === researchId,
   );
-  const meetings = data.meetings
-    .filter((item) => item.researchId === researchId)
+  const searched = data.meetings
+    .filter((item) => item.researchId === researchId && !item.archivedAt)
     .filter(
       (item) =>
         !search || item.title.toLowerCase().includes(search.toLowerCase()),
-    )
-    .filter(
-      (item) =>
-        filter === "all" ||
-        (filter === "undated"
-          ? !item.date
-          : filter === "past"
-            ? item.status === "recorded"
-            : filter === "cancelled"
-              ? item.status === "cancelled"
-              : item.status === "preparing" || item.status === "recording"),
-    )
+    );
+  const counts = filterCounts(
+    meetingFilters.map(([value]) => value),
+    searched,
+    meetingMatches,
+  );
+  const meetings = searched
+    .filter((item) => meetingMatches(item, filter))
     .sort((a, b) => (b.date ?? "9999").localeCompare(a.date ?? "9999"));
   function openCreate() {
     createBase.current = recordBase(researchId);
@@ -121,12 +144,15 @@ export function MeetingsPage() {
         goal: "",
         memo: "",
         memoRevision: 1,
+        visibility: "private",
         taskIds: [],
         versionIds: [],
         questionIds: [],
       });
       setCreating(false);
-      navigate(`/r/${researchId}/meetings/${meeting.id}?tab=prepare`);
+      navigate(
+        `/r/${researchId}/meetings/${meeting.id}?tab=${pageParams.get("intent") === "record" ? "record#meeting-recording" : "prepare"}`,
+      );
       toast.success("미팅을 만들었습니다");
     });
   }
@@ -143,24 +169,13 @@ export function MeetingsPage() {
         }
       />
       <div className="page-toolbar">
-        <div className="segmented" aria-label="미팅 범위">
-          {[
-            ["all", "전체"],
-            ["upcoming", "준비 중"],
-            ["past", "지난 기록"],
-            ["undated", "날짜 미정"],
-            ["cancelled", "취소"],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              className={filter === value ? "active" : ""}
-              aria-pressed={filter === value}
-              onClick={() => setFilter(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <FilterSegments
+          label="미팅 범위"
+          options={meetingFilters}
+          value={filter}
+          onChange={setFilter}
+          counts={counts}
+        />
         <SearchInput
           value={search}
           onChange={setSearch}
@@ -250,8 +265,16 @@ export function MeetingsPage() {
         busy={form.saving}
         open={creating}
         onOpenChange={setCreating}
-        title="미팅 추가"
-        description="날짜는 나중에 정해도 됩니다."
+        title={
+          pageParams.get("intent") === "record"
+            ? "기록할 미팅 만들기"
+            : "미팅 추가"
+        }
+        description={
+          pageParams.get("intent") === "record"
+            ? "미팅 이름을 정하면 녹음·전사와 메모 화면으로 이어집니다. 날짜는 나중에 정해도 됩니다."
+            : "날짜는 나중에 정해도 됩니다."
+        }
       >
         <form onSubmit={create} className="stack">
           <LabeledInput
@@ -725,6 +748,16 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           </div>
         }
       />
+      <div className="meeting-visibility">
+        <VisibilityField
+          value={meeting.visibility ?? "private"}
+          onChange={(visibility) => {
+            void save("meetings", { ...meeting, visibility }).catch((e) =>
+              toast.error((e as Error).message),
+            );
+          }}
+        />
+      </div>
       <div className="tabs-line" role="tablist" aria-label="미팅 내용">
         {[
           ["prepare", "준비"],
@@ -915,9 +948,23 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           </div>
         </div>
       )}
-      {tab === "record" && (
-        <div className={`record-layout ${aiInput && aiOpen ? "with-ai" : ""}`}>
-          <section className="surface memo-surface">
+      {
+        <div
+          hidden={tab !== "record"}
+          className={`record-layout ${aiInput && aiOpen ? "with-ai" : ""}`}
+        >
+          <section id="meeting-recording" className="surface memo-surface">
+            <RecordingPanel
+              researchId={meeting.researchId}
+              meetingId={meeting.id}
+              onAppend={(text) => {
+                if ((draftMemo.current + text).length > 50000)
+                  throw new Error(
+                    "미팅 메모가 너무 깁니다. 필요한 구간만 복사해 추가해 주세요.",
+                  );
+                setMemo(draftMemo.current + text);
+              }}
+            />
             <div className="section-heading">
               <h2>미팅 원문 메모</h2>
               <span role="status" className={`save-state ${memoState}`}>
@@ -945,7 +992,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               onBlur={() => {
                 void commitMemo();
               }}
-              placeholder="미팅에서 나눈 내용을 기록하세요.\n\n교수님의 피드백, 결정한 내용, 다시 확인할 질문을 함께 적어도 됩니다."
+              placeholder={
+                "미팅에서 나눈 내용을 기록하세요.\n\n교수님의 피드백, 결정한 내용, 다시 확인할 질문을 함께 적어도 됩니다."
+              }
             />
             <ErrorNotice error={memoError} />
             {memoConflict ? (
@@ -1056,7 +1105,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             />
           )}
         </div>
-      )}
+      }
       {tab === "questions" && (
         <div className="student-two-column">
           <section className="surface">
@@ -1349,7 +1398,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           </div>
           <label className="field">
             <span className="field-name">기록 상태</span>
-            <select
+            <SelectField
               className="native-select"
               value={meta.status}
               onChange={(e) =>
@@ -1364,7 +1413,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   {label}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </label>
           <p className="student-inline-note">
             일정이나 기록 상태를 바꿔도 연결한 작업의 기한은 바뀌지 않습니다.
@@ -1452,7 +1501,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         >
           <label className="field">
             <span className="field-name">준비할 미팅</span>
-            <select
+            <SelectField
               className="native-select"
               value={targetMeetingId}
               onChange={(e) => setTargetMeetingId(e.target.value)}
@@ -1471,7 +1520,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     {m.title} · {formatDate(m.date)}
                   </option>
                 ))}
-            </select>
+            </SelectField>
           </label>
           <ErrorNotice error={questionForm.error} />
           <SaveActions

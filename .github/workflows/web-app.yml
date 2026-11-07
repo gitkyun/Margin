@@ -1,0 +1,32 @@
+name: Web app checks
+on:
+  push:
+    branches: [main]
+    paths: ['apps/home-preview/**', '.github/workflows/web-app.yml']
+  pull_request:
+    paths: ['apps/home-preview/**', '.github/workflows/web-app.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/home-preview
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/home-preview/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:backend
+      - run: npm run test:sites
+      - run: npm run build

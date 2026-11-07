@@ -1,3 +1,5 @@
+import { WorkTabs } from "./shared";
+import { SelectField } from "@/components/experience";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -105,6 +107,7 @@ export function ResultsPage() {
     );
   return (
     <div className="student-page">
+      <WorkTabs researchId={researchId} selected="results" />
       {current ? (
         <>
           <BackLink to={`/r/${researchId}/results`}>수정 결과 목록</BackLink>
@@ -410,7 +413,7 @@ export function ResultsPage() {
               />
               <label className="field">
                 <span className="field-name">작업 종류</span>
-                <select
+                <SelectField
                   className="native-select"
                   value={draft.kind}
                   onChange={(event) =>
@@ -426,11 +429,11 @@ export function ResultsPage() {
                 >
                   <option value="document">문서 수정</option>
                   <option value="other">비문서 작업</option>
-                </select>
+                </SelectField>
               </label>
               <label className="field">
                 <span className="field-name">보존 파일</span>
-                <select
+                <SelectField
                   className="native-select"
                   value={draft.versionId ?? ""}
                   onChange={(event) =>
@@ -453,7 +456,7 @@ export function ResultsPage() {
                         {version.fileName} · v{version.number}
                       </option>
                     ))}
-                </select>
+                </SelectField>
                 <small className="field-hint">
                   문서 수정의 교수 검토에는 보존 파일과 확인 위치가 필요합니다.
                 </small>

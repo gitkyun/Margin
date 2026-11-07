@@ -29,6 +29,16 @@ import {
   IconButton,
   LoadingState,
 } from "@/components/common";
+import { WorkspaceShell as Shell } from "@/components/WorkspaceShell";
+import {
+  LandingPage,
+  SignupPage,
+  InfoPage,
+  FeatureTourPage,
+  PricingPage,
+} from "@/pages/PublicPages";
+import { AccountPage, ResearchSettingsPage } from "@/pages/SettingsPage";
+import { ResearchAssistant } from "@/pages/ResearchAssistant";
 import { isHomeEntry } from "@/lib/entry-route";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +66,41 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HomePage } from "@/pages/HomePage";
 import { LoginPage, ResearchSelectPage, ThemeSwitch } from "@/pages/AuthPages";
+const WritingPage = lazy(() =>
+  import("@/pages/WritingPage").then((m) => ({ default: m.WritingPage })),
+);
+const PlanningPage = lazy(() =>
+  import("@/pages/PlanningPage").then((m) => ({ default: m.PlanningPage })),
+);
+const PollPage = lazy(() =>
+  import("@/pages/PlanningPage").then((m) => ({ default: m.PollPage })),
+);
+function ReviewRoute() {
+  const { requestId } = useParams(),
+    { data } = useWorkspace();
+  const q = data.reviews.find((r) => r.id === requestId);
+  return q && data.researches.some((r) => r.id === q.researchId) ? (
+    <Shell researchOverride={q.researchId}>
+      <ReviewDetailPage />
+    </Shell>
+  ) : (
+    <ReviewDetailPage />
+  );
+}
+function PollRoute() {
+  const { pollId } = useParams(),
+    { data } = useWorkspace(),
+    p = data.polls.find((p) => p.id === pollId);
+  return p && data.researches.some((r) => r.id === p.researchId) ? (
+    <Shell researchOverride={p.researchId}>
+      <PollPage />
+    </Shell>
+  ) : (
+    <div className="standalone-page">
+      <PollPage />
+    </div>
+  );
+}
 const MeetingsPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.MeetingsPage })),
 );
@@ -85,380 +130,6 @@ const navigation = [
   { label: "자료", path: "materials", icon: "folder" },
   { label: "검토 요청", path: "reviews", icon: "send" },
 ];
-function StartPage() {
-  const { data } = useWorkspace();
-  return (
-    <Navigate
-      to={data.researches.length ? `/r/${data.researches[0].id}` : "/r"}
-      replace
-    />
-  );
-}
-function Shell() {
-  const { researchId } = useParams();
-  const { data, user, mode, saveResearch, signOut } = useWorkspace();
-  const location = useLocation(),
-    navigate = useNavigate();
-  const research = data.researches.find((r) => r.id === researchId);
-  const [collapsed, setCollapsed] = useState(
-      () => localStorage.getItem("rms-sidebar-collapsed") === "true",
-    ),
-    [mobileOpen, setMobileOpen] = useState(false),
-    [notifications, setNotifications] = useState(false),
-    [settings, setSettings] = useState(false),
-    [name, setName] = useState(research?.name ?? ""),
-    [saving, setSaving] = useState(false);
-  useNavigationGuard({
-    dirty: settings && name.trim() !== research?.name,
-    busy: saving,
-    label: "연구 설정",
-    onDiscard: () => setSettings(false),
-  });
-  const currentLabel = location.pathname.includes("/results")
-    ? "수정 결과"
-    : (navigation.find(
-        (item) => item.path && location.pathname.includes("/" + item.path),
-      )?.label ?? "홈");
-  const updates = unreadReviewNotifications(data, user, researchId);
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
-  const menu = (
-    <>
-      <div className="sidebar-brand">
-        <Link to="/" className="brand">
-          <span className="brand-icon">
-            <Icon name="book" size={22} />
-          </span>
-          <strong>RMS</strong>
-        </Link>
-        <IconButton
-          label={collapsed ? "메뉴 펼치기" : "메뉴 접기"}
-          onClick={() => {
-            const value = !collapsed;
-            setCollapsed(value);
-            localStorage.setItem("rms-sidebar-collapsed", String(value));
-          }}
-        >
-          <Icon name={collapsed ? "chevron-right" : "chevron-left"} size={15} />
-        </IconButton>
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className="workspace-switch"
-            title={research?.name ?? "내 연구"}
-          >
-            <span className="workspace-symbol">
-              <Icon name="book" size={18} />
-            </span>
-            <span>
-              <small>내 연구</small>
-              <strong>{research?.name ?? "연구 선택"}</strong>
-            </span>
-            <Icon name="chevron-down" size={15} />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="workspace-menu">
-          <DropdownMenuLabel>연구 선택</DropdownMenuLabel>
-          {data.researches.map((r) => (
-            <DropdownMenuItem
-              key={r.id}
-              onSelect={() => navigate(`/r/${r.id}`)}
-            >
-              <Icon name="book" size={16} />
-              {r.name}
-              {r.id === researchId && <Icon name="check" size={15} />}
-            </DropdownMenuItem>
-          ))}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => navigate("/r")}>
-            <Icon name="plus" size={16} />내 연구 · 새 연구
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <span className="nav-caption">작업 공간</span>
-      <nav className="nav-list" aria-label="주요 메뉴">
-        {researchId ? (
-          navigation.map((item) => (
-            <NavLink
-              key={item.label}
-              end={!item.path}
-              to={`/r/${researchId}${item.path ? "/" + item.path : ""}`}
-              title={item.label}
-              className={({ isActive }) =>
-                `nav-item ${isActive || (item.path === "feedback" && location.pathname.includes("/results")) ? "active" : ""}`
-              }
-            >
-              <Icon name={item.icon} size={20} />
-              <span>{item.label}</span>
-              {item.path === "reviews" && updates.length > 0 && (
-                <b className="nav-badge">{updates.length}</b>
-              )}
-            </NavLink>
-          ))
-        ) : (
-          <NavLink to="/r" className="nav-item active">
-            <Icon name="book" size={20} />
-            <span>내 연구</span>
-          </NavLink>
-        )}
-      </nav>
-      <div className="sidebar-bottom">
-        {research && (
-          <button
-            className="nav-item sidebar-settings"
-            onClick={() => {
-              setName(research.name);
-              setSettings(true);
-            }}
-            title="연구 설정"
-          >
-            <Icon name="settings" size={19} />
-            <span>연구 설정</span>
-          </button>
-        )}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="profile-button">
-              <span className="avatar">{user.name.slice(0, 1)}</span>
-              <span>
-                <strong>{user.name}</strong>
-                <small>
-                  {mode === "preview" ? "가상 학생 계정" : user.email}
-                </small>
-              </span>
-              <Icon name="chevron-down" size={14} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="top"
-            align="start"
-            className="account-menu"
-          >
-            <DropdownMenuLabel>
-              {mode === "preview" ? "화면 미리보기" : user.email}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <div className="account-theme">
-              <span>화면 테마</span>
-              <ThemeSwitch />
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={async () => {
-                try {
-                  if (mode === "connected") await signOut();
-                  navigate("/login");
-                } catch (e) {
-                  toast.error(friendlyError(e));
-                }
-              }}
-            >
-              <Icon name="logout" size={16} />
-              {mode === "preview" ? "로그인 화면" : "로그아웃"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </>
-  );
-  return (
-    <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
-      <a className="skip-link" href="#main-content">
-        본문으로 이동
-      </a>
-      <aside className="sidebar">{menu}</aside>
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="mobile-sidebar rms-mobile-sheet">
-          <SheetHeader className="sr-only">
-            <SheetTitle>연구 메뉴</SheetTitle>
-            <SheetDescription>
-              연구를 전환하거나 작업 화면으로 이동합니다.
-            </SheetDescription>
-          </SheetHeader>
-          {menu}
-        </SheetContent>
-      </Sheet>
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="breadcrumbs">
-            <button
-              className="mobile-menu icon-button"
-              aria-label="메뉴 열기"
-              onClick={() => setMobileOpen(true)}
-            >
-              <Icon name="menu" />
-            </button>
-            <Link to="/r">{research?.name ?? "내 연구"}</Link>
-            {research && (
-              <>
-                <Icon name="chevron-right" size={14} />
-                <strong>{currentLabel}</strong>
-              </>
-            )}
-          </div>
-          <div className="topbar-right">
-            <span className="today">
-              {new Intl.DateTimeFormat("ko-KR", {
-                month: "long",
-                day: "numeric",
-                weekday: "long",
-              }).format(new Date())}
-            </span>
-            <button
-              className="icon-button notification-trigger"
-              onClick={() => setNotifications(true)}
-              aria-label={`알림 ${updates.length}개`}
-            >
-              <Icon name="bell" size={20} />
-              {updates.length > 0 && <i />}
-            </button>
-            <span className="avatar avatar-small">{user.name.slice(0, 1)}</span>
-          </div>
-        </header>
-        {mode === "preview" && (
-          <div className="preview-banner">
-            <Icon name="info" size={14} />
-            <span>
-              화면 미리보기 · 가상 자료 · 변경 내용은 이 브라우저에 저장됩니다.
-            </span>
-            <Link to="/login">
-              로그인 화면
-              <Icon name="arrow-up-right" size={13} />
-            </Link>
-          </div>
-        )}
-        <main id="main-content" className="workspace-content">
-          <Suspense fallback={<LoadingState />}>
-            <Outlet />
-          </Suspense>
-        </main>
-        <footer className="workspace-footer">
-          <span>RMS · 연구의 맥락을 이어서</span>
-          <span>{mode === "preview" ? "로컬 미리보기" : "수업 시연용"}</span>
-        </footer>
-      </div>
-      <Sheet open={notifications} onOpenChange={setNotifications}>
-        <SheetContent className="notifications-sheet">
-          <SheetHeader>
-            <SheetTitle>새 응답</SheetTitle>
-            <SheetDescription>
-              새 댓글·응답·검토 차수가 있는 항목으로 이동합니다.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="notification-content">
-            {updates.length ? (
-              updates.map((event) => (
-                <Link
-                  key={event.id}
-                  onClick={() => setNotifications(false)}
-                  to={notificationHref(event)}
-                  className="notification-item"
-                >
-                  <span className={`notification-event ${event.tone}`}>
-                    <Icon
-                      name={
-                        event.kind === "round"
-                          ? "send"
-                          : event.tone === "green"
-                            ? "check"
-                            : "message"
-                      }
-                      size={18}
-                    />
-                  </span>
-                  <div>
-                    <strong>{event.title}</strong>
-                    <p>{event.message}</p>
-                    {event.excerpt && <blockquote>{event.excerpt}</blockquote>}
-                    <small>
-                      {event.roundNumber}차 검토 ·{" "}
-                      {new Date(event.createdAt).toLocaleString("ko-KR")}
-                    </small>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <EmptyState
-                icon="bell"
-                title="읽지 않은 응답이 없습니다."
-                description="새 응답이 도착하면 여기에 표시됩니다."
-              />
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-      <Dialog
-        open={settings}
-        onOpenChange={(nextOpen: boolean) => {
-          if (!saving) setSettings(nextOpen);
-        }}
-      >
-        <DialogContent
-          className="rms-dialog"
-          showCloseButton={!saving}
-          aria-busy={saving}
-          onEscapeKeyDown={(event: { preventDefault(): void }) => {
-            if (saving) event.preventDefault();
-          }}
-          onPointerDownOutside={(event: { preventDefault(): void }) => {
-            if (saving) event.preventDefault();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>연구 설정</DialogTitle>
-            <DialogDescription>
-              현재 연구의 이름과 화면 테마를 설정합니다.
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            className="stack"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (saving || !research || !name.trim()) return;
-              setSaving(true);
-              try {
-                await saveResearch({ ...research, name: name.trim() });
-                setSettings(false);
-                toast.success("연구 이름을 저장했습니다.");
-              } catch (error) {
-                toast.error(friendlyError(error));
-              } finally {
-                setSaving(false);
-              }
-            }}
-          >
-            <label className="field">
-              연구 이름
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={120}
-                required
-              />
-            </label>
-            <div className="field">
-              <span>화면 테마</span>
-              <ThemeSwitch />
-            </div>
-            <div className="form-actions">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setSettings(false)}
-                disabled={saving}
-              >
-                취소
-              </Button>
-              <Button disabled={saving || !name.trim()}>저장</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
 function InitialLoading() {
   const location = useLocation();
   if (isHomeEntry(location.pathname, location.search)) return <HomeSkeleton />;
@@ -477,7 +148,7 @@ function WorkspaceRoutes() {
         <Icon name="lock" size={30} />
         <h1>작업 공간을 불러오지 못했습니다.</h1>
         <ErrorNotice message={error} retry={() => void refresh()} />
-        <p>계정 연결과 시연 계정의 접근 허용 여부를 확인해 주세요.</p>
+        <p>계정 연결과 연구 접근 권한을 확인해 주세요.</p>
         <Button
           variant="outline"
           onClick={async () => {
@@ -510,10 +181,24 @@ function WorkspaceRoutes() {
           path="/login"
           element={<LoginPage authenticated={configured} />}
         />
-        <Route path="/" element={<StartPage />} />
+        <Route path="/" element={<LandingPage signedIn />} />
         <Route element={<Shell />}>
           <Route path="/r" element={<ResearchSelectPage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route
+            path="/r/:researchId/settings"
+            element={<ResearchSettingsPage />}
+          />
+          <Route
+            path="/r/:researchId/assistant"
+            element={<ResearchAssistant />}
+          />
           <Route path="/r/:researchId" element={<HomePage />} />
+          <Route
+            path="/r/:researchId/writing/:documentId?"
+            element={<WritingPage />}
+          />
+          <Route path="/r/:researchId/planning" element={<PlanningPage />} />
           <Route
             path="/r/:researchId/meetings/:meetingId?"
             element={<MeetingsPage />}
@@ -534,10 +219,18 @@ function WorkspaceRoutes() {
           <Route path="/r/:researchId/reviews" element={<ReviewsPage />} />
         </Route>
         <Route
+          path="/schedule/:pollId"
+          element={
+            <Suspense fallback={<LoadingState />}>
+              <PollRoute />
+            </Suspense>
+          }
+        />
+        <Route
           path="/reviews/:requestId"
           element={
             <Suspense fallback={<LoadingState />}>
-              <ReviewDetailPage />
+              <ReviewRoute />
             </Suspense>
           }
         />
@@ -580,6 +273,46 @@ export function App() {
       data.subscription.unsubscribe();
     };
   }, []);
+  useEffect(() => {
+    const path = location.pathname;
+    const publicTitles: Record<string, string> = {
+      "/features": "기능 둘러보기",
+      "/pricing": "구독 플랜",
+      "/guide": "사용 안내",
+      "/privacy": "자료와 개인정보",
+    };
+    const name =
+      publicTitles[path] ??
+      (path === "/"
+        ? "지난 지도를, 다음 연구로"
+        : path === "/signup"
+          ? "회원가입 미리보기"
+          : path === "/login"
+            ? "로그인"
+            : path.includes("assistant")
+              ? "AI 연구 도우미"
+              : path.includes("settings")
+                ? "연구 설정"
+                : path === "/account"
+                  ? "계정 설정"
+                  : path === "/r"
+                    ? "내 연구"
+                    : "연구 작업 공간");
+    document.title = `${name} · Margin`;
+  }, [location.pathname]);
+  if (location.pathname === "/") return <LandingPage signedIn={!!session} />;
+  if (location.pathname === "/signup") return <SignupPage />;
+  if (location.pathname === "/features")
+    return <FeatureTourPage signedIn={!!session} />;
+  if (location.pathname === "/pricing")
+    return <PricingPage signedIn={!!session} />;
+  if (location.pathname === "/guide" || location.pathname === "/privacy")
+    return (
+      <InfoPage
+        privacy={location.pathname === "/privacy"}
+        signedIn={!!session}
+      />
+    );
   if (!ready) return <InitialLoading />;
   if (configured && !session) {
     if (location.pathname !== "/login")
@@ -595,6 +328,7 @@ export function App() {
     ? {
         id: session.user.id,
         email: session.user.email ?? "",
+        preferences: session.user.user_metadata?.preferences ?? {},
         name:
           session.user.user_metadata?.name ??
           session.user.email?.split("@")[0] ??

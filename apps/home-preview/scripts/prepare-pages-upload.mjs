@@ -12,6 +12,7 @@ const types = {
   ".json": "application/json",
   ".pdf": "application/pdf",
   ".woff2": "font/woff2",
+  ".woff": "font/woff",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -30,6 +31,8 @@ async function walk(dir, rel = "") {
       await walk(new URL(entry.name + "/", dir), path + "/");
     else {
       if (["_headers", "_redirects"].includes(path)) continue;
+      // Preserve supplied originals locally; publish only the assets used by the app.
+      if (path.startsWith("brand/source-svg/") || path === "brand/sources.json") continue;
       if (
         path.includes(".env") ||
         path.includes("local.json") ||

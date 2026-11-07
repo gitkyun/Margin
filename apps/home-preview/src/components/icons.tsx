@@ -50,6 +50,15 @@ import {
   Question,
   Circle,
   Minus,
+  ArrowUp,
+  ChatLines,
+  Flag,
+  Microphone,
+  StopSolid,
+  Rotate,
+  Pause,
+  Play,
+  ChartBar,
 } from "disarto-icons-react";
 const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   home: Home,
@@ -106,6 +115,17 @@ const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   dot: Circle,
   result: FileText,
   minus: Minus,
+  "arrow-up": ArrowUp,
+  chat: ChatLines,
+  clip: Paperclip,
+  flag: Flag,
+  history: Clock,
+  mic: Microphone,
+  stop: StopSolid,
+  undo: Rotate,
+  pause: Pause,
+  play: Play,
+  chart: ChartBar,
 };
 export function Icon({
   name,

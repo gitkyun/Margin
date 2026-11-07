@@ -1,3 +1,5 @@
+import { WorkTabs } from "./shared";
+import { SelectField } from "@/components/experience";
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -22,6 +24,7 @@ import { isAISourceStale } from "./ai-source";
 import {
   BackLink,
   ErrorNotice,
+  FilterSegments,
   FormDialog,
   LabeledInput,
   LabeledText,
@@ -30,6 +33,15 @@ import {
   SearchInput,
   useSaving,
 } from "./shared";
+import { filterCounts } from "@/lib/filter-counts";
+
+const feedbackFilters = [
+  ["all", "전체"],
+  ["unprocessed", "처리 전"],
+  ["in_progress", "진행 중"],
+  ["recorded", "반영 기록 있음"],
+  ["held", "보류"],
+] as const;
 
 export function FeedbackPage() {
   const { researchId = "", feedbackId } = useParams();
@@ -65,17 +77,25 @@ export function FeedbackPage() {
     form.setError(null);
     setCreating(true);
   }
-  const items = data.feedback.filter(
+  const searched = data.feedback.filter(
     (item) =>
       item.researchId === researchId &&
-      (filter === "all" || item.status === filter) &&
       (!search ||
         `${item.title} ${item.body}`
           .toLowerCase()
           .includes(search.toLowerCase())),
   );
+  const matches = (item: (typeof searched)[number], value: string) =>
+    value === "all" || item.status === value;
+  const counts = filterCounts(
+    feedbackFilters.map(([value]) => value),
+    searched,
+    matches,
+  );
+  const items = searched.filter((item) => matches(item, filter));
   return (
     <div className="student-page">
+      <WorkTabs researchId={researchId} selected="feedback" />
       <PageHeader
         title="피드백·수정"
         description="받은 피드백을 이해하고, 수정 방법과 실제 결과를 이어서 기록하세요."
@@ -93,24 +113,13 @@ export function FeedbackPage() {
         <Link to={`/r/${researchId}/results`}>수정 결과</Link>
       </div>
       <div className="page-toolbar">
-        <div className="segmented">
-          {[
-            ["all", "전체"],
-            ["unprocessed", "처리 전"],
-            ["in_progress", "진행 중"],
-            ["recorded", "반영 기록 있음"],
-            ["held", "보류"],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              className={filter === value ? "active" : ""}
-              aria-pressed={filter === value}
-              onClick={() => setFilter(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <FilterSegments
+          label="피드백 처리 상태"
+          options={feedbackFilters}
+          value={filter}
+          onChange={setFilter}
+          counts={counts}
+        />
         <SearchInput
           value={search}
           onChange={setSearch}
@@ -647,7 +656,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           />
           <label className="field">
             <span className="field-name">나의 처리 상태</span>
-            <select
+            <SelectField
               className="native-select"
               value={draft.status}
               onChange={(e) =>
@@ -662,7 +671,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   {label}
                 </option>
               ))}
-            </select>
+            </SelectField>
           </label>
           <LabeledText
             label="나의 메모"

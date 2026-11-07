@@ -1,0 +1,127 @@
+[
+  {
+    "source": "Margin_Symbol 1.svg",
+    "asset": "/brand/source-svg/Margin_Symbol 1.svg",
+    "sha256": "bc1d9aef88f7fafaf6a95928b7b5979017a2147545aa3fe6ed4f24ac1d7657a9"
+  },
+  {
+    "source": "Margin_Symbol 2.svg",
+    "asset": "/brand/source-svg/Margin_Symbol 2.svg",
+    "sha256": "a0519583db30e1e1abcdfe60182b79847fbdada32f9c2a84c9b149ec73491485"
+  },
+  {
+    "source": "Margin_Symbol 3.svg",
+    "asset": "/brand/source-svg/Margin_Symbol 3.svg",
+    "sha256": "4b6dee9ad7f37548f38e464684cf84c50c6bd11cf3b4c3c460a252f198ed3bf0"
+  },
+  {
+    "source": "Margin_Symbol 4.svg",
+    "asset": "/brand/source-svg/Margin_Symbol 4.svg",
+    "sha256": "16f364f0bd370e08ffac99c2cdb25de3cfb9381c5ed73d51d3fa97b0d87369c4"
+  },
+  {
+    "source": "Margin_Symbol 6.svg",
+    "asset": "/brand/source-svg/Margin_Symbol 6.svg",
+    "sha256": "16f364f0bd370e08ffac99c2cdb25de3cfb9381c5ed73d51d3fa97b0d87369c4"
+  },
+  {
+    "source": "margin.svg",
+    "asset": "/brand/source-svg/margin.svg",
+    "sha256": "e3986cd0f0e052e7887e5160f690deed929488f1a66286a826ed430dc6ae6339"
+  },
+  {
+    "source": "margin-1.svg",
+    "asset": "/brand/source-svg/margin-1.svg",
+    "sha256": "eaac5a2927b11aec9300b936df2439e1ec84d3c22c99c81348d3568f66762a2d"
+  },
+  {
+    "source": "margin-2.svg",
+    "asset": "/brand/source-svg/margin-2.svg",
+    "sha256": "d4a211673c38f50ded2de4427003125a64562d151ab731111f48b9648fdbc194"
+  },
+  {
+    "source": "margin-3.svg",
+    "asset": "/brand/source-svg/margin-3.svg",
+    "sha256": "c90d48158d8cf2a115a0d859ea70fc66fe76ba0e0067dbf2e6f7c545d8d892a7"
+  },
+  {
+    "source": "01_idle.png",
+    "asset": "/brand/mascot/01_idle.png",
+    "sha256": "bf750443f17b6b44547e967737b73bed9a898b5d64dec2d91c8f10c45326aa3f"
+  },
+  {
+    "source": "02_ready.png",
+    "asset": "/brand/mascot/02_ready.png",
+    "sha256": "9de86f00bfcfbfdc87120883fe4410a74b6295f350d38c0db7a0dc1f2a2bcba4"
+  },
+  {
+    "source": "03_question.png",
+    "asset": "/brand/mascot/03_question.png",
+    "sha256": "44df1ca3d64c5470e1a4d01f0665c64fda35ab20bba7095835cfc5ab17068fbf"
+  },
+  {
+    "source": "04_rest.png",
+    "asset": "/brand/mascot/04_rest.png",
+    "sha256": "a04d41e361b9a705bcfb1b75e48992a0946e9ca52089c32451c84c19fd50b71b"
+  },
+  {
+    "source": "05_working.png",
+    "asset": "/brand/mascot/05_working.png",
+    "sha256": "56c2aa1036eb280aac69bd3f01162f5cd6383ee3b61e3b9408814c997a2e0fc5"
+  },
+  {
+    "source": "06_thinking.png",
+    "asset": "/brand/mascot/06_thinking.png",
+    "sha256": "ddf2ffad8c11ce52fd444b1abe1e00e7401965b781eef0ef9a6c14baad9e0419"
+  },
+  {
+    "source": "07_searching.png",
+    "asset": "/brand/mascot/07_searching.png",
+    "sha256": "e2ebf43288a89c2d1720c0a6d56266f8598597f582370ef717e3d26e07a90a05"
+  },
+  {
+    "source": "08_idea.png",
+    "asset": "/brand/mascot/08_idea.png",
+    "sha256": "31e5c6fc5719709605ac34ac73e3808e4b756334f6ead1140bf0262c9718fc0a"
+  },
+  {
+    "source": "09_chatting.png",
+    "asset": "/brand/mascot/09_chatting.png",
+    "sha256": "2af0ff3d07232f342c39155f550c24de066b9446bcbf74b0589821d31d71ea9b"
+  },
+  {
+    "source": "10_processing.png",
+    "asset": "/brand/mascot/10_processing.png",
+    "sha256": "b52af237bb57186851f1d2c21b704c7ff05fdecea4a24e56378b35f6f39eb10b"
+  },
+  {
+    "source": "11_analyzing.png",
+    "asset": "/brand/mascot/11_analyzing.png",
+    "sha256": "c4f8491aed13798152ad3bdc16245ffb58377433a2ebcd278a10a8354340b15f"
+  },
+  {
+    "source": "12_writing.png",
+    "asset": "/brand/mascot/12_writing.png",
+    "sha256": "62bdd166061f61f32e9a6210db037a33181d193be7a4e1408f799511dca806e3"
+  },
+  {
+    "source": "13_completed.png",
+    "asset": "/brand/mascot/13_completed.png",
+    "sha256": "e246a094ee3c7b0b19e05fa39cfd6bded83de3be07cd750486860a0149125743"
+  },
+  {
+    "source": "14_happy.png",
+    "asset": "/brand/mascot/14_happy.png",
+    "sha256": "ace16b76b6645790c5fd7e4846df403e2d2b3a61d9a6d754adfe4a9481f113fc"
+  },
+  {
+    "source": "15_approved.png",
+    "asset": "/brand/mascot/15_approved.png",
+    "sha256": "a619455f72732a668ba8d0dd6907f009774265ab8a1acd840b4c56ae03938aab"
+  },
+  {
+    "source": "16_attention.png",
+    "asset": "/brand/mascot/16_attention.png",
+    "sha256": "b7fb8b3d55c43e700e367cc5b143d66ab328d466822926e39de6fff44fb95a3d"
+  }
+]

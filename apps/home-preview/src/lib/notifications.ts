@@ -26,6 +26,7 @@ export function unreadReviewNotifications(
   user: AppUser,
   researchId?: string,
 ): ReviewNotification[] {
+  if (user.preferences?.review === false) return [];
   const permitted = new Map<
     string,
     { request: ReviewRequest; owner: boolean }
@@ -33,7 +34,15 @@ export function unreadReviewNotifications(
   for (const request of data.reviews) {
     if (researchId && request.researchId !== researchId) continue;
     const owner = data.researches.some(
-      (r) => r.id === request.researchId && r.ownerId === user.id,
+      (r) =>
+        r.id === request.researchId &&
+        (r.ownerId === user.id ||
+          data.members.some(
+            (m) =>
+              m.researchId === r.id &&
+              m.userId === user.id &&
+              m.status === "active",
+          )),
     );
     if (
       owner ||
@@ -118,4 +127,20 @@ export function unreadReviewNotifications(
 
 export function notificationHref(event: ReviewNotification): string {
   return `/reviews/${event.requestId}?item=${event.itemId}&round=${event.roundId}`;
+}
+
+export function activityEnabled(
+  event: WorkspaceData["events"][number],
+  user: AppUser,
+  data: WorkspaceData,
+): boolean {
+  const key =
+    event.kind === "schedule"
+      ? "schedule"
+      : event.kind === "review"
+        ? "review"
+        : event.href.includes("/tasks/")
+          ? "assignment"
+          : "collaboration";
+  return user.preferences?.[key] !== false;
 }

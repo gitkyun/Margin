@@ -1,12 +1,14 @@
+> 2026-11-06: Margin 브랜드 및 연구 도우미 반영, 신규 배포 주소(https://margin-research.pages.dev) 연결. 공동연구·원고/버전/PDF·계획/일정·녹음·AI 작업 화면을 포함합니다. 상세 내역은 [구현/검증](docs/development/verification-20261106.md)을 참조합니다.
+
 
 <p align="center">
-  <img src="./docs/assets/rms-cover.png" alt="RMS — Research Management System" width="100%" />
+  <img src="./docs/assets/rms-cover.png" alt="Margin — 받은 피드백이 다음 연구 행동으로 이어지도록" width="100%" />
 </p>
 
-<h1 align="center">RMS</h1>
+<h1 align="center">Margin</h1>
 
 <p align="center">
-  <strong>Research Management System</strong>
+  <strong>논문 지도 협업 및 연구 진행 관리 서비스</strong>
 </p>
 
 <p align="center">
@@ -17,7 +19,7 @@
 
 ## Start Here
 
-현재 저장소에는 기획 문서와 개발 준비 설정이 있습니다. 웹 앱 실행 코드는 아직 추가하지 않았습니다. 다음 구현 목표는 Google AI API를 실제 연결하고 대표 사용자 시나리오를 수업에서 시연할 수 있는 제한 공개 배포입니다.
+현재 저장소에는 기획 문서와 [실행 가능한 웹앱](apps/home-preview/README.md)이 있습니다. 학생 기록·자료·수정 결과·교수 검토를 연결합니다. [수업 시연 배포본](https://margin-research.pages.dev)은 Supabase에 실제 저장하며, Gemini API 키는 사용자 요청으로 추후 연결합니다. 코드 검사·서버 검사·브라우저 확인 범위는 앱 검증 기록에서 구분합니다.
 
 - **제품 이해:** [PRD](docs/product/prd.md) → [기능명세서](docs/product/functional-specification.md) → [유저플로우](docs/product/user-flow.md) → [IA·화면 목록](docs/product/information-architecture.md)
 - **UI 구현 기준:** [shadcn/ui와 Wanted 스타일 적용](docs/design/README.md)
@@ -26,21 +28,21 @@
 
 ## Overview
 
-# RMS — Research Management System
+# Margin (마진)
 
 **논문 지도 과정의 피드백을 실제 연구 활동으로 연결하는 연구 관리 시스템**
 
-RMS(Research Management System)는 대학원생이 논문 지도 과정에서 발생하는 미팅 기록, 피드백, 수정 작업, 연구 자료와 교수 검토 이력을 연결해 관리할 수 있도록 돕는 웹 기반 서비스입니다.
+Margin은 대학원생이 논문 지도 과정에서 발생하는 미팅 기록, 피드백, 수정 작업, 연구 자료와 교수 검토 이력을 연결해 관리할 수 있도록 돕는 웹 기반 서비스입니다.
 
 단순히 연구 자료와 할 일을 한곳에 모으는 것이 아니라, **어떤 피드백을 받았고, 어떻게 수정했으며, 무엇을 확인받았는지** 이어서 파악할 수 있는 경험을 목표로 합니다.
 
-> **Project Status:** Classroom Demo Implementation Planning · 2026
+> **Project Status:** Classroom Demo Implementation · 2026
 >
-> 대표 시나리오의 실제 구현·배포를 준비하고 있습니다. 앱·API 연결·배포 완료와는 구분됩니다.
+> 대표 시나리오의 웹앱과 서버 코드를 구현했습니다. 실제 연결·배포 결과는 앱의 검증 기록에서 확인합니다.
 
 ---
 
-## Why RMS?
+## Why Margin?
 
 논문 연구는 계획을 세우고 수행하는 과정뿐 아니라, 지도교수의 피드백을 바탕으로 연구 방향과 내용을 반복적으로 수정하는 과정이기도 합니다.
 
@@ -53,7 +55,7 @@ RMS(Research Management System)는 대학원생이 논문 지도 과정에서 �
 
 학생은 다음 미팅을 준비할 때마다 이전 기록을 다시 찾고, 어떤 피드백을 반영했는지 확인하며, 다음에 무엇을 준비할지 판단해야 합니다.
 
-RMS는 이 과정에서 발생하는 네 가지 문제에 집중합니다.
+Margin은 이 과정에서 발생하는 네 가지 문제에 집중합니다.
 
 | Problem | Approach |
 |---|---|
@@ -62,13 +64,13 @@ RMS는 이 과정에서 발생하는 네 가지 문제에 집중합니다.
 | 이전 지적과 수정 이력을 추적하기 어려움 | 피드백·작업·문서 버전·교수 응답을 함께 관리 |
 | 다음 미팅의 준비 범위를 정하기 어려움 | 보여줄 결과와 남은 작업·질문을 중심으로 준비 |
 
-**RMS의 핵심은 피드백을 기록하는 것에서 끝나지 않고, 실제 수정과 다음 연구 활동까지 연결하는 것입니다.**
+**Margin의 핵심은 피드백을 기록하는 것에서 끝나지 않고, 실제 수정과 다음 연구 활동까지 연결하는 것입니다.**
 
 ---
 
 ## How It Works
 
-RMS는 논문 지도의 반복적인 과정을 다음과 같이 연결합니다.
+Margin은 논문 지도의 반복적인 과정을 다음과 같이 연결합니다.
 
 **Meeting → Feedback → Revision → Task → Review → Next Meeting**
 
@@ -197,11 +199,11 @@ AI를 사용하지 않아도 학생은 동일한 기본 작업을 직접 수행�
 
 ---
 
-## What Makes RMS Different?
+## What Makes Margin Different?
 
 ### 1. From Feedback to Action
 
-RMS는 피드백을 단순한 메모나 할 일로 취급하지 않습니다.
+Margin은 피드백을 단순한 메모나 할 일로 취급하지 않습니다.
 
 피드백의 원문부터 선택한 수정 방법, 실제 작업, 수정 결과, 교수의 검토까지 연결하여 연구자가 이전 판단과 수정 과정을 다시 확인할 수 있도록 합니다.
 
@@ -217,7 +219,7 @@ RMS는 피드백을 단순한 메모나 할 일로 취급하지 않습니다.
 
 ### 2. Human-in-Control AI
 
-RMS에서 AI는 연구자의 판단을 대신하지 않습니다.
+Margin에서 AI는 연구자의 판단을 대신하지 않습니다.
 
 AI는 학생이 선택한 기록을 정리하고 여러 수정 방안을 탐색하는 데 도움을 주지만, 연구 방향이나 수정 방법을 최종적으로 결정하지 않습니다.
 
@@ -229,7 +231,7 @@ AI는 학생이 선택한 기록을 정리하고 여러 수정 방안을 탐색�
 
 연구 과정에서 중요한 것은 현재의 수정본뿐 아니라 이전에 어떤 내용을 검토받았는지 확인할 수 있는 것입니다.
 
-RMS는 피드백과 수정본, 교수 응답을 당시 문서 버전 및 검토 차수에 연결합니다.
+Margin은 피드백과 수정본, 교수 응답을 당시 문서 버전 및 검토 차수에 연결합니다.
 
 새로운 수정 결과가 만들어져도 이전 검토 기록을 덮어쓰지 않으며, 과거 지적이 어떻게 처리되었는지 확인할 수 있도록 설계합니다.
 
@@ -242,7 +244,7 @@ RMS는 피드백과 수정본, 교수 응답을 당시 문서 버전 및 검토 
 | **Graduate Student** | 연구 기록, 피드백, 수정 작업, 일정 및 교수 검토 요청 관리 |
 | **Academic Advisor** | 학생이 공유한 수정 결과와 자료를 확인하고 항목별 검토 의견 제공 |
 
-RMS는 대학원생을 주 사용자로 설계합니다.
+Margin은 대학원생을 주 사용자로 설계합니다.
 
 지도교수는 학생의 연구 관리 공간 전체를 사용하는 것이 아니라, 학생이 공유한 수정 결과를 검토하는 협업 참여자로 설정합니다.
 
@@ -310,7 +312,7 @@ AI는 선택적으로 사용하며 연구 방향과 수정 결과에 대한 최�
 
 ## Validation
 
-RMS는 수업 시연을 위한 웹앱 구현·배포를 준비하고 있습니다. 배포 환경에서 대표 시나리오의 동작을 먼저 확인하고 핵심 경험의 사용성과 효과는 별도로 검증합니다.
+Margin은 수업 시연용 웹앱을 Cloudflare Pages에 배포했습니다. 실제 저장·파일·검토 동작과 화면 확인 범위는 [최신 검증 기록](docs/development/verification-20261106.md)에 구분합니다. Gemini 생성은 키 연결 전이며, 사용성과 효과는 별도 검증 대상입니다.
 
 주요 검증 항목은 다음과 같습니다.
 
@@ -348,8 +350,9 @@ RMS는 수업 시연을 위한 웹앱 구현·배포를 준비하고 있습니�
 ## Repository Structure
 
 ```text
-RMS/
+Margin/
 ├── .github/                 # 이슈·PR 양식, 저장소 검사 자동화
+├── apps/home-preview/      # React 앱·Supabase 서버 코드
 ├── docs/
 │   ├── assets/              # README·문서 이미지
 │   ├── product/             # PRD, 기능명세서, 유저플로우
@@ -369,22 +372,22 @@ RMS/
 python3 scripts/check_repository.py
 ```
 
-현재 검사는 저장소 구성을 확인합니다. 앱 빌드·제품 기능 테스트는 앱 초기화 후 추가합니다.
+위 검사는 저장소 구성을 확인합니다. 앱 폴더에서는 타입·AI 검증·PostgreSQL 권한·빌드 검사를 실행합니다. [개발 안내](docs/development/README.md)를 참고합니다.
 
 ---
 
 ## Project Status
 
-**Classroom Demo Implementation Planning — November 2026**
+**Classroom Demo Implementation — November 2026**
 
-RMS는 논문 지도 과정에서 발생하는 연구 관리 문제를 개선하기 위한 서비스 디자인 프로젝트입니다.
+Margin은 논문 지도 과정에서 발생하는 연구 관리 문제를 개선하기 위한 서비스 디자인 프로젝트입니다.
 
-현재 PRD·기능명세서·유저플로우를 대표 시나리오의 실제 구현과 제한 공개 배포 기준으로 정리하고 있습니다. AI는 Google API에 연결할 예정이며 인증·저장·호스팅은 구현 시 선택합니다.
+PRD·기능명세서·유저플로우를 바탕으로 대표 시나리오를 구현 중입니다. Cloudflare Pages + Supabase DB·Auth·Storage·Edge Functions + Gemini API 구성을 사용합니다.
 
-기능 정의와 상세 설계는 시연·사용자 검증 과정에서 수정될 수 있습니다. 아직 앱 실행 코드·Google API 연결·배포 환경은 없으며 실제 구현 후 기술 스택·실행 방법·배포 주소·검증 결과를 추가합니다.
+기능 정의와 상세 설계는 시연·사용자 검증 과정에서 수정될 수 있습니다. 실행 방법과 서버 설정은 앱 README에 기록합니다. 실제 API·배포 주소에서 확인하지 않은 항목은 완료로 표시하지 않습니다.
 
 ---
 
-**RMS — Research Management System**
+**Margin**
 
-*피드백에서 다음 연구로.*
+*받은 피드백이 다음 연구 행동으로 이어지도록.*

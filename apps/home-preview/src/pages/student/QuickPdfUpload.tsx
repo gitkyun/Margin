@@ -1,3 +1,4 @@
+import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -125,7 +126,7 @@ export function QuickPdfUpload({
       </label>
       <label className="field">
         <span className="field-name">등록 위치</span>
-        <select
+        <SelectField
           className="native-select"
           value={targetId}
           disabled={busy}
@@ -137,7 +138,7 @@ export function QuickPdfUpload({
               {item.title}에 새 버전 추가
             </option>
           ))}
-        </select>
+        </SelectField>
       </label>
       {progress !== null && (
         <div className="upload-progress">

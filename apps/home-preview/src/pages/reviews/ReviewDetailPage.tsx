@@ -1,3 +1,5 @@
+import { BrandMark, BrandWordmark } from "@/components/brand/Brand";
+import { SelectField } from "@/components/experience";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import {
   useEffect,
@@ -159,12 +161,18 @@ export function ReviewDetailPage() {
     .filter((r) => r.itemId === item?.id && r.requestId === requestId)
     .sort((a, b) => b.number - a.number);
   const round = rounds.find((r) => r.id === params.get("round")) ?? rounds[0];
+  // Pin the opened round so background refresh never replaces an in-progress response.
+  useEffect(() => {
+    if (round && !params.get("round")) {
+      const next = new URLSearchParams(params);
+      next.set("item", round.itemId);
+      next.set("round", round.id);
+      setParams(next, { replace: true });
+    }
+  }, [round?.id, params, setParams]);
   const response = latestResponse(data, round?.id);
   const isOwner =
-    !!request &&
-    data.researches.some(
-      (r) => r.id === request.researchId && r.ownerId === user.id,
-    );
+    !!request && data.researches.some((r) => r.id === request.researchId);
   const isProfessor = !!request && request.professorId === user.id && !isOwner;
   const canRead =
     !!request && (isOwner || (isProfessor && request.status === "shared"));
@@ -429,8 +437,8 @@ export function ReviewDetailPage() {
     return (
       <main className="review-access-page">
         <span className="review-brand">
-          <Icon name="book" size={23} />
-          RMS
+          <BrandMark />
+          <BrandWordmark />
         </span>
         <EmptyState
           title="이 검토를 열 수 없습니다."
@@ -464,10 +472,11 @@ export function ReviewDetailPage() {
           <Link
             className="review-brand"
             to={isOwner ? `/r/${request.researchId}/reviews` : "/r"}
-            aria-label={isOwner ? "검토 요청 목록으로 돌아가기" : "RMS"}
+            aria-label={isOwner ? "검토 요청 목록으로 돌아가기" : "Margin"}
           >
-            <Icon name={isOwner ? "arrow-left" : "book"} size={21} />
-            <span>RMS</span>
+            {isOwner && <Icon name="arrow-left" size={21} />}
+            <BrandMark />
+            <BrandWordmark />
           </Link>
           <span className="review-header-divider" />
           <div>
@@ -484,19 +493,6 @@ export function ReviewDetailPage() {
           </StatusBadge>
         </div>
         <div className="review-header-actions">
-          <button
-            className="review-theme-button"
-            onClick={() =>
-              setTheme(resolvedTheme === "dark" ? "light" : "dark")
-            }
-            aria-label={
-              resolvedTheme === "dark"
-                ? "라이트 테마로 변경"
-                : "다크 테마로 변경"
-            }
-          >
-            <Icon name={resolvedTheme === "dark" ? "sun" : "moon"} size={18} />
-          </button>
           <Button
             size="sm"
             variant="outline"
@@ -538,19 +534,12 @@ export function ReviewDetailPage() {
                 <span>{user.email}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {(
-                [
-                  ["system", "시스템 테마", "monitor"],
-                  ["light", "라이트 테마", "sun"],
-                  ["dark", "다크 테마", "moon"],
-                ] as const
-              ).map(([value, label, icon]) => (
-                <DropdownMenuItem key={value} onSelect={() => setTheme(value)}>
-                  <Icon name={icon} size={16} />
-                  <span>{label}</span>
-                  {theme === value && <Icon name="check" size={15} />}
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuItem asChild>
+                <Link to="/account?tab=appearance">
+                  <Icon name="monitor" size={16} />
+                  화면 설정
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => void context.signOut()}>
                 <Icon name="logout" size={16} />
@@ -629,7 +618,7 @@ export function ReviewDetailPage() {
               <div className="review-round-actions">
                 <label className="review-round-picker">
                   <span>검토 차수</span>
-                  <select
+                  <SelectField
                     value={round.id}
                     onChange={(
                       e: ChangeEvent<
@@ -644,7 +633,7 @@ export function ReviewDetailPage() {
                         {r.number}차 검토{index === 0 ? " · 최신" : " · 이전"}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </label>
                 {isOwner && request.status === "shared" && (
                   <Button
@@ -706,6 +695,9 @@ export function ReviewDetailPage() {
                       {round.number}차 검토 · 보낸 당시 내용
                     </StatusBadge>
                     <time>{timeText(round.createdAt)}</time>
+                    {round.createdByName && (
+                      <span>{round.createdByName} · 보냄</span>
+                    )}
                   </div>
                   {round.feedbackExcerpt && (
                     <div className="review-source-block">

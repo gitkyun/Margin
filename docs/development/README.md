@@ -1,43 +1,44 @@
 # 개발 안내
 
-## 현재 상태
+## 현재 구현
 
-현재 저장소는 기획 문서·디자인 기준·협업 설정·문서 검사 도구로 구성돼 있다. 프런트엔드 앱, 백엔드, 데이터베이스와 배포 설정은 아직 초기화하지 않았다. 따라서 지금 실행할 개발 서버·앱 빌드 명령은 없다.
+실행 앱은 [apps/home-preview](../../apps/home-preview/README.md)에 있다. 기존 폴더명은 초기 미리보기에서 유지했지만 현재는 여러 페이지와 실제 Supabase 연결 코드를 포함한다. 제품 문서의 전체 기능이 구현됐다는 뜻은 아니다. 첫 배포 목표는 [D01~D06](classroom-demo.md)이다.
 
-목표는 수업에서 대표 시나리오를 수행할 수 있는 제한 공개 웹앱의 구현·배포다. shadcn/ui와 AI의 Google API 연결은 정해졌다. 앱 프레임워크·패키지 관리자·인증·DB·파일 저장·호스팅 및 Google API의 실제 접속 방식·모델은 앱 초기화 시 기록한다. 설치 명령과 환경 변수 예제도 실제 구성이 생긴 뒤 추가한다.
+| 역할 | 구성 |
+|---|---|
+| 웹앱 | React 19 · TypeScript · Vite · React Router · TanStack Query |
+| UI | Margin 자체 화면 · Radix · Motion · Pretendard · Disarto, 기존 공통 래퍼 보존 |
+| 저장·로그인·파일 | Supabase PostgreSQL · Auth · private Storage |
+| AI | Supabase Edge Function → Gemini, 서버 키만 사용 |
+| 배포 | Cloudflare Pages 정적 앱, SPA 직접 경로 지원 |
 
-[수업 시연 구현·배포 기준](classroom-demo.md)에서 D01~D06, 실제 API 연결·저장·권한과 배포 후 확인 항목을 먼저 읽는다. 시연 목표와 현재 구현 상태를 구분한다.
+학생·교수는 사전 발급 계정과 허용 목록을 사용한다. 공개 회원가입·교수 다수 학생 대시보드는 제외한다. 실 API 입력은 가상 자료만 사용한다.
 
-## 저장소 받기와 갱신
-
-```bash
-git clone https://github.com/gitkyun/RMS.git
-cd RMS
-git pull --ff-only
-```
-
-원격 접근에는 저장소 읽기 권한이 필요하다. push에는 쓰기 권한이 있는 계정을 사용한다. 인증 정보는 저장소 파일에 넣지 않는다.
-
-## 현재 실행 가능한 검사
-
-Python 3.10 이상에서 실행한다. 별도 패키지 설치는 필요 없다.
+## 실행·검사
 
 ```bash
-python3 scripts/check_repository.py
-git diff --check
+cd apps/home-preview
+npm ci
+npm run dev -- --port 4175
+npm run typecheck
+npm test
+npm run test:backend
+npm run test:sites
+npm run build
 ```
 
-검사 범위는 필수 문서 존재와 Markdown·HTML의 로컬 파일 연결이다. 코드 블록 예시와 외부 URL·문서 내부 앵커는 검사 대상에서 제외한다. 이 검사는 제품 기능·보안·화면 동작의 통과를 의미하지 않는다.
+저장소 루트에서는 `python3 scripts/check_repository.py`와 `git diff --check`를 실행한다. 문서 검사와 제품 동작 검사는 구분한다.
 
-## 앱 초기화 때 정리할 내용
+## 서버 연결과 배포
 
-- 선택한 프레임워크·버전·패키지 관리자와 하나의 잠금 파일.
-- 실제 설치·개발·빌드·검사 명령과 `.env.example`.
-- shadcn/ui 구성과 UI 테마 토큰.
-- 업무 기능과 공통 UI를 구분하는 소스 구조.
-- 가상 시연 데이터·사전 발급 계정·실제 인증·영구 저장·Google AI 연결의 구분.
-- 서버 비밀 설정과 선택한 API 엔드포인트·모델·사용 한도, 시연 계정의 허용 범위.
-- 배포 주소·대상 커밋과 D01~D06을 배포 환경에서 확인한 기록.
-- CI의 앱 빌드·기능 검사와 배포 환경.
+[Supabase 연결 안내](../../apps/home-preview/supabase/README.md), [앱 환경 변수](../../apps/home-preview/.env.example), [디자인 기준](../../apps/home-preview/DESIGN.md), [검증 기록](../../apps/home-preview/design-qa.md)을 따른다. 환경 변수와 실제 계정 비밀번호·연구 자료를 Git에 넣지 않는다.
 
-실행 코드가 생기면 이 문서와 루트 README를 같은 변경에서 갱신한다.
+Cloudflare Pages의 프로젝트 루트는 `apps/home-preview`, 빌드는 `npm run build`, 출력은 `dist/client`다. 배포 주소(`https://margin-research.pages.dev`)를 Edge의 허용 출처에 추가한다. 라이트·다크와 로그인 후 직접 검토 링크 복귀를 같은 배포 주소에서 확인한다.
+
+## 완료 판정
+
+코드 작성, 격리 테스트 통과, 실제 클라우드 연결, 배포 시연을 각각 기록한다. 코드만 있는 기능을 시연 완료로 쓰지 않는다. 소개 페이지와 제목 찾기는 구현했다. 로드맵·캘린더·녹음 코드는 추가했고 전사·전체 본문 검색은 미연결이다. 실제 확인 범위는 [2026-11-06 기록](verification-20261106.md)을 따른다. 변경 이력·작업 완료·교수 결과·읽음은 별도 상태다.
+
+## 2026-11-06 ~ 2026-11-07 Margin 리브랜딩 및 GitHub 동기화
+
+Margin 브랜드 및 연구 도우미 캐릭터를 반영하고 새 주소(`https://margin-research.pages.dev`)로 배포했다. 사용자 요청에 따라 GitHub 원격 저장소(`gitkyun/Margin`)의 최신 상태를 확인하고 저장소 및 스튜디오 폴더의 문서를 Margin으로 통일 반영하여 원격에 동기화한다.

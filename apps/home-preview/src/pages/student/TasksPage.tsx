@@ -1,3 +1,9 @@
+import { WorkTabs } from "./shared";
+import {
+  SelectField,
+  Segments,
+  VisibilityField,
+} from "@/components/experience";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -31,10 +37,15 @@ import {
 const priorityLabels = { high: "높음", normal: "보통", low: "낮음" };
 export function TasksPage() {
   const { researchId = "", taskId } = useParams();
-  const { data, save, remove } = useWorkspace();
+  const { data, user, save, remove } = useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const [filter, setFilter] = useState("active");
+  const filter = params.get("status") ?? "active",
+    setFilter = (v: string) => {
+      const n = new URLSearchParams(params);
+      n.set("status", v);
+      setParams(n);
+    };
   const [search, setSearch] = useState("");
   const [scope, setScope] = useState("all");
   const [priority, setPriority] = useState("all");
@@ -112,10 +123,15 @@ export function TasksPage() {
   }
   const hasTasks = data.tasks.some((item) => item.researchId === researchId);
   const tasks = data.tasks
-    .filter((item) => item.researchId === researchId)
+    .filter(
+      (item) =>
+        item.researchId === researchId &&
+        (filter === "archived" ? !!item.archivedAt : !item.archivedAt),
+    )
     .filter(
       (item) =>
         filter === "all" ||
+        filter === "archived" ||
         (filter === "done" ? item.status === "done" : item.status !== "done"),
     )
     .filter(
@@ -147,6 +163,7 @@ export function TasksPage() {
     );
   return (
     <div className="student-page">
+      <WorkTabs researchId={researchId} selected="tasks" />
       {current ? (
         <>
           <BackLink to={`/r/${researchId}/tasks`}>할 일 목록</BackLink>
@@ -201,13 +218,19 @@ export function TasksPage() {
               <div className="button-row">
                 <Button
                   variant={current.status === "done" ? "outline" : "default"}
-                  disabled={busyIds.includes(current.id)}
+                  disabled={
+                    !!current.archivedAt || busyIds.includes(current.id)
+                  }
                   onClick={() => void quickToggle(current)}
                 >
                   <Icon name="check" size={16} />
                   {current.status === "done" ? "작업 다시 열기" : "완료로 표시"}
                 </Button>
-                <Button variant="outline" onClick={() => openLink(current)}>
+                <Button
+                  variant="outline"
+                  disabled={!!current.archivedAt}
+                  onClick={() => openLink(current)}
+                >
                   미팅 준비에 포함
                   <Icon name="arrow-right" size={15} />
                 </Button>
@@ -304,16 +327,37 @@ export function TasksPage() {
             </aside>
           </div>
           <div className="student-bottom-actions">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setDeleting(true);
-                deleteForm.setError(null);
-              }}
-            >
-              <Icon name="trash" size={15} />
-              작업 삭제
-            </Button>
+            {current.archivedAt ? (
+              <Button
+                variant="outline"
+                disabled={busyIds.includes(current.id)}
+                onClick={async () => {
+                  setBusyIds((ids) => [...ids, current.id]);
+                  try {
+                    await save("tasks", { ...current, archivedAt: undefined });
+                    toast.success("작업을 복원했습니다");
+                  } catch (e) {
+                    toast.error((e as Error).message);
+                  } finally {
+                    setBusyIds((ids) => ids.filter((id) => id !== current.id));
+                  }
+                }}
+              >
+                <Icon name="archive" size={15} />
+                작업 복원
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setDeleting(true);
+                  deleteForm.setError(null);
+                }}
+              >
+                <Icon name="archive" size={15} />
+                작업 보관
+              </Button>
+            )}
           </div>
         </>
       ) : (
@@ -328,22 +372,17 @@ export function TasksPage() {
             }
           />
           <div className="page-toolbar">
-            <div className="segmented">
-              {[
-                ["active", "진행할 작업"],
-                ["done", "완료"],
-                ["all", "전체"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  className={filter === value ? "active" : ""}
-                  aria-pressed={filter === value}
-                  onClick={() => setFilter(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <Segments
+              value={filter}
+              onChange={setFilter}
+              label="작업 상태"
+              options={[
+                { value: "active", label: "진행할 작업" },
+                { value: "done", label: "완료" },
+                { value: "all", label: "전체" },
+                { value: "archived", label: "보관함" },
+              ]}
+            />
             <SearchInput
               value={search}
               onChange={setSearch}
@@ -353,7 +392,7 @@ export function TasksPage() {
           <div className="student-filter-row">
             <label>
               미팅
-              <select
+              <SelectField
                 className="native-select"
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
@@ -369,11 +408,11 @@ export function TasksPage() {
                       {m.title}
                     </option>
                   ))}
-              </select>
+              </SelectField>
             </label>
             <label>
               우선순위
-              <select
+              <SelectField
                 className="native-select"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
@@ -384,7 +423,7 @@ export function TasksPage() {
                     {label}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </label>
             <span className="meta">{tasks.length}개 작업</span>
           </div>
@@ -405,7 +444,7 @@ export function TasksPage() {
                     type="checkbox"
                     checked={task.status === "done"}
                     onChange={() => void quickToggle(task)}
-                    disabled={busyIds.includes(task.id)}
+                    disabled={!!task.archivedAt || busyIds.includes(task.id)}
                     aria-label={`${task.title} 완료 상태 변경`}
                   />
                   <Link
@@ -450,6 +489,7 @@ export function TasksPage() {
                     variant="ghost"
                     size="icon"
                     aria-label={`${task.title} 미팅 준비에 포함`}
+                    disabled={!!task.archivedAt}
                     onClick={() => openLink(task)}
                   >
                     <Icon name="calendar" size={16} />
@@ -531,7 +571,7 @@ export function TasksPage() {
               <div className="form-grid">
                 <label className="field">
                   <span className="field-name">진행 상태</span>
-                  <select
+                  <SelectField
                     className="native-select"
                     value={draft.status}
                     onChange={(e) =>
@@ -547,7 +587,7 @@ export function TasksPage() {
                         {label}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </label>
                 <LabeledInput
                   label="기한"
@@ -562,7 +602,7 @@ export function TasksPage() {
               </div>
               <label className="field">
                 <span className="field-name">우선순위</span>
-                <select
+                <SelectField
                   className="native-select"
                   value={draft.priority}
                   onChange={(e) =>
@@ -578,8 +618,63 @@ export function TasksPage() {
                       {label}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
+              <div className="two-column-fields">
+                <label className="field">
+                  담당자
+                  <SelectField
+                    aria-label="작업 담당자"
+                    value={draft.assigneeId ?? ""}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        assigneeId: e.target.value || undefined,
+                      })
+                    }
+                  >
+                    <option value="">담당 미지정</option>
+                    {data.members
+                      .filter(
+                        (m) =>
+                          m.researchId === researchId && m.status === "active",
+                      )
+                      .map((m) => (
+                        <option key={m.userId} value={m.userId}>
+                          {m.name}
+                        </option>
+                      ))}
+                  </SelectField>
+                </label>
+                <label className="field">
+                  연구 단계
+                  <SelectField
+                    aria-label="연결할 연구 단계"
+                    value={draft.phaseId ?? ""}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        phaseId: e.target.value || undefined,
+                      })
+                    }
+                  >
+                    <option value="">연결하지 않음</option>
+                    {data.phases
+                      .filter(
+                        (p) => p.researchId === researchId && !p.archivedAt,
+                      )
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.title}
+                        </option>
+                      ))}
+                  </SelectField>
+                </label>
+              </div>
+              <VisibilityField
+                value={draft.visibility ?? "shared"}
+                onChange={(visibility) => setDraft({ ...draft, visibility })}
+              />
               <div className="student-picker">
                 <h3>연결할 피드백</h3>
                 {data.feedback
@@ -674,7 +769,7 @@ export function TasksPage() {
           </p>
           <label className="field">
             <span className="field-name">준비할 미팅</span>
-            <select
+            <SelectField
               className="native-select"
               value={meetingId}
               onChange={(e) => setMeetingId(e.target.value)}
@@ -691,7 +786,7 @@ export function TasksPage() {
                     {m.title} · {formatDate(m.date)}
                   </option>
                 ))}
-            </select>
+            </SelectField>
           </label>
           {!data.meetings.some(
             (m) => m.researchId === researchId && m.status !== "cancelled",
@@ -716,12 +811,12 @@ export function TasksPage() {
         busy={deleteForm.saving}
         open={deleting}
         onOpenChange={setDeleting}
-        title="작업 삭제"
-        description="다른 기록에 연결된 작업은 연결을 해제한 뒤 삭제할 수 있습니다."
+        title="작업 보관"
+        description="목록에서 숨기고 보관함으로 옮깁니다. 연결된 미팅과 수정 결과는 남으며 언제든 복원할 수 있습니다."
       >
         <div className="stack">
           <p className="student-body-text">
-            ‘{current?.title}’ 작업을 삭제합니다.
+            ‘{current?.title}’ 작업을 보관합니다.
           </p>
           <ErrorNotice error={deleteForm.error} />
           <div className="form-actions">
@@ -737,11 +832,11 @@ export function TasksPage() {
                     await remove("tasks", current.id);
                     setDeleting(false);
                     navigate(`/r/${researchId}/tasks`);
-                    toast.success("작업을 삭제했습니다");
+                    toast.success("작업을 보관했습니다");
                   });
               }}
             >
-              작업 삭제
+              작업 보관
             </Button>
           </div>
         </div>

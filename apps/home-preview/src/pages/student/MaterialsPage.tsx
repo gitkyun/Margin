@@ -1,3 +1,10 @@
+import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
+import {
+  MaterialUploadField,
+  MaterialSubmitLabel,
+} from "./MaterialUploadField";
+import { MaterialFolders } from "@/components/MaterialFolders";
+import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -21,12 +28,22 @@ import {
 import {
   BackLink,
   ErrorNotice,
+  FilterSegments,
   FormDialog,
   LabeledInput,
   SaveActions,
   SearchInput,
   useSaving,
 } from "./shared";
+import { filterCounts } from "@/lib/filter-counts";
+
+const materialFilters = [
+  ["all", "전체"],
+  ["draft", "논문·초안"],
+  ["reference", "참고문헌"],
+  ["analysis", "분석 자료"],
+  ["links", "외부 링크"],
+] as const;
 import {
   OrphanMaterialError,
   pendingUploadKey,
@@ -49,18 +66,22 @@ export function MaterialsPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
+  const filter = params.get("type") ?? "all",
+    setFilter = (v: string) => {
+      const n = new URLSearchParams(params);
+      n.set("type", v);
+      setParams(n);
+    };
+  const folder = params.get("folder") ?? "";
   const [registering, setRegistering] = useState(false);
   const [target, setTarget] = useState<Material | null>(null);
   const [registerMode, setRegisterMode] = useState<"file" | "link">("file");
   const [draft, setDraft] = useState<Material | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
-  const [dragging, setDragging] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
-  const fileInput = useRef<HTMLInputElement | null>(null);
   const [editing, setEditing] = useState<Material | null>(null);
   const editForm = useSaving();
   const pendingKey = pendingUploadKey(researchId);
@@ -97,7 +118,12 @@ export function MaterialsPage() {
     setDraft(
       material
         ? { ...material }
-        : { ...recordBase(researchId), title: "", type: "other" },
+        : {
+            ...recordBase(researchId),
+            title: "",
+            type: "other",
+            folderId: folder && folder !== "archived" ? folder : undefined,
+          },
     );
     setFile(null);
     setProgress(null);
@@ -237,14 +263,23 @@ export function MaterialsPage() {
       setSaving(false);
     }
   }
-  const materials = data.materials
-    .filter(
-      (item) =>
-        item.researchId === researchId &&
-        (!search || item.title.toLowerCase().includes(search.toLowerCase())) &&
-        (filter === "all" ||
-          (filter === "links" ? !!item.externalUrl : item.type === filter)),
-    )
+  const searched = data.materials.filter(
+    (item) =>
+      item.researchId === researchId &&
+      (folder === "archived" ? !!item.archivedAt : !item.archivedAt) &&
+      (!folder || folder === "archived" || item.folderId === folder) &&
+      (!search || item.title.toLowerCase().includes(search.toLowerCase())),
+  );
+  const matches = (item: (typeof searched)[number], value: string) =>
+    value === "all" ||
+    (value === "links" ? !!item.externalUrl : item.type === value);
+  const counts = filterCounts(
+    materialFilters.map(([value]) => value),
+    searched,
+    matches,
+  );
+  const materials = searched
+    .filter((item) => matches(item, filter))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   if (materialId && !current)
     return (
@@ -282,6 +317,52 @@ export function MaterialsPage() {
               </div>
             }
           />
+          <div className="material-location">
+            <label className="field">
+              폴더
+              <SelectField
+                aria-label="자료 폴더"
+                value={current.folderId ?? ""}
+                onChange={(e) =>
+                  void save("materials", {
+                    ...current,
+                    folderId: e.target.value || undefined,
+                  }).catch((e) => toast.error((e as Error).message))
+                }
+              >
+                <option value="">최상위</option>
+                {data.folders
+                  .filter((f) => f.researchId === researchId && !f.archivedAt)
+                  .map((f) => (
+                    <option value={f.id} key={f.id}>
+                      {f.title}
+                    </option>
+                  ))}
+              </SelectField>
+            </label>
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                try {
+                  await save("materials", {
+                    ...current,
+                    archivedAt: current.archivedAt
+                      ? undefined
+                      : new Date().toISOString(),
+                  });
+                  toast.success(
+                    current.archivedAt
+                      ? "자료를 복원했습니다"
+                      : "자료를 보관했습니다. 이전 검토 파일은 유지됩니다.",
+                  );
+                } catch (e) {
+                  toast.error((e as Error).message);
+                }
+              }}
+            >
+              {current.archivedAt ? "자료 복원" : "자료 보관"}
+            </Button>
+          </div>
           {current.externalUrl && (
             <section className="surface external-reference">
               <div>
@@ -329,7 +410,7 @@ export function MaterialsPage() {
                     <label className="sr-only" htmlFor="version-select">
                       보존 버전 선택
                     </label>
-                    <select
+                    <SelectField
                       id="version-select"
                       className="native-select"
                       value={selected.id}
@@ -342,7 +423,7 @@ export function MaterialsPage() {
                           v{version.number} · {version.fileName}
                         </option>
                       ))}
-                    </select>
+                    </SelectField>
                   </div>
                   <PdfViewer key={selected.id} version={selected} />
                 </>
@@ -467,25 +548,23 @@ export function MaterialsPage() {
               </Button>
             }
           />
+          <MaterialFolders
+            researchId={researchId}
+            value={folder}
+            onChange={(v) => {
+              const n = new URLSearchParams(params);
+              v ? n.set("folder", v) : n.delete("folder");
+              setParams(n);
+            }}
+          />
           <div className="page-toolbar">
-            <div className="segmented">
-              {[
-                ["all", "전체"],
-                ["draft", "논문·초안"],
-                ["reference", "참고문헌"],
-                ["analysis", "분석 자료"],
-                ["links", "외부 링크"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  className={filter === value ? "active" : ""}
-                  aria-pressed={filter === value}
-                  onClick={() => setFilter(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <FilterSegments
+              label="자료 종류"
+              options={materialFilters}
+              value={filter}
+              onChange={setFilter}
+              counts={counts}
+            />
             <SearchInput
               value={search}
               onChange={setSearch}
@@ -504,6 +583,7 @@ export function MaterialsPage() {
                     className="material-list-row"
                     to={`/r/${researchId}/materials/${material.id}`}
                   >
+                    {!material.externalUrl && materialVersions[0] ? <MaterialPreviewBadge version={materialVersions[0]}/> : (
                     <span
                       className={`material-symbol ${material.externalUrl ? "is-link" : ""}`}
                     >
@@ -513,6 +593,7 @@ export function MaterialsPage() {
                       />
                       {!material.externalUrl && <small>PDF</small>}
                     </span>
+                    )}
                     <span className="grow">
                       <strong>{material.title}</strong>
                       <small>
@@ -614,7 +695,7 @@ export function MaterialsPage() {
               />
               <label className="field">
                 <span className="field-name">자료 유형</span>
-                <select
+                <SelectField
                   className="native-select"
                   value={draft.type}
                   onChange={(event) =>
@@ -631,7 +712,7 @@ export function MaterialsPage() {
                       {label}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
               {registerMode === "link" ? (
                 <LabeledInput
@@ -647,69 +728,19 @@ export function MaterialsPage() {
                   disabled={saving}
                 />
               ) : (
-                <>
-                  <div
-                    className={`upload-dropzone ${dragging ? "dragging" : ""}`}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      if (!saving) setDragging(true);
-                    }}
-                    onDragLeave={() => setDragging(false)}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      setDragging(false);
-                      if (!saving) selectFile(event.dataTransfer.files[0]);
-                    }}
-                  >
-                    <span className="upload-symbol">
-                      <Icon name="upload" size={25} />
-                    </span>
-                    <strong>
-                      {file ? file.name : "PDF를 끌어 놓거나 선택하세요"}
-                    </strong>
-                    <span>
-                      {file ? byteSize(file.size) : "PDF · 파일당 최대 20 MB"}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={saving}
-                      onClick={() => fileInput.current?.click()}
-                    >
-                      {file ? "다른 파일 선택" : "파일 선택"}
-                    </Button>
-                    <input
-                      ref={fileInput}
-                      type="file"
-                      accept="application/pdf,.pdf"
-                      hidden
-                      onChange={(event) => selectFile(event.target.files?.[0])}
-                    />
-                  </div>
-                  {saving && progress !== null && (
-                    <div className="upload-progress">
-                      <div>
-                        <span>
-                          {progress === 100
-                            ? "자료에 연결 중…"
-                            : "파일 업로드 중"}
-                        </span>
-                        <strong>{Math.round(progress)}%</strong>
-                      </div>
-                      <progress max={100} value={progress} />
-                      {progress < 100 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => abort.current?.abort()}
-                        >
-                          업로드 중단
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </>
+                <MaterialUploadField
+                  file={file}
+                  busy={saving}
+                  progress={progress}
+                  pending={!!pending}
+                  onSelect={selectFile}
+                  onClear={() => {
+                    setFile(null);
+                    setProgress(null);
+                    setError(null);
+                  }}
+                  onAbort={() => abort.current?.abort()}
+                />
               )}
             </>
           )}
@@ -724,19 +755,30 @@ export function MaterialsPage() {
               올려 둔 파일 연결 다시 시도
             </Button>
           )}
-          <SaveActions
-            saving={saving}
-            onCancel={() => setRegistering(false)}
-            label={
-              pending
-                ? "파일 연결 다시 시도"
-                : registerMode === "link"
-                  ? "링크 등록"
-                  : target
-                    ? "새 버전 등록"
-                    : "자료 등록"
-            }
-          />
+          <div className="form-actions">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={saving}
+              onClick={() => setRegistering(false)}
+            >
+              취소
+            </Button>
+            <Button type="submit" disabled={saving} aria-busy={saving}>
+              <MaterialSubmitLabel
+                busy={saving}
+                label={
+                  pending
+                    ? "파일 연결 다시 시도"
+                    : registerMode === "link"
+                      ? "링크 등록"
+                      : target
+                        ? "새 버전 등록"
+                        : "자료 등록"
+                }
+              />
+            </Button>
+          </div>
         </form>
       </FormDialog>
       <FormDialog
@@ -776,7 +818,7 @@ export function MaterialsPage() {
               />
               <label className="field">
                 <span className="field-name">자료 유형</span>
-                <select
+                <SelectField
                   className="native-select"
                   value={editing.type}
                   onChange={(event) =>
@@ -792,7 +834,7 @@ export function MaterialsPage() {
                       {label}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
               {editing.externalUrl !== undefined && (
                 <LabeledInput

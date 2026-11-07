@@ -1,0 +1,583 @@
+/* 글쓰기: 문서 목록, 편집 화면, 하단 서식 도크, 버전 비교, PDF 미리보기. */
+
+/* ── 문서 목록 ─────────────────────────────────────────── */
+.document-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+.document-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-muted);
+  color: var(--text);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.document-tile:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 10px 24px -18px rgba(16, 24, 40, 0.35);
+}
+.document-tile-paper {
+  aspect-ratio: 4 / 3;
+  padding: 16px 16px 0;
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+  overflow: hidden;
+  position: relative;
+}
+.document-tile-paper::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 40%;
+  background: linear-gradient(transparent, var(--surface));
+}
+.document-tile-paper > span {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+.document-tile-paper h3 {
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.document-tile-paper p {
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.document-tile > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 4px;
+}
+.document-tile > div:last-child strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.document-tile > div:last-child small {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ── 편집 화면 ─────────────────────────────────────────── */
+.writing-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 160px);
+}
+.writing-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.writing-heading > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.writing-heading .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  width: fit-content;
+}
+.writing-heading .text-link:hover {
+  color: var(--text);
+}
+.document-title-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  border-radius: 6px;
+}
+.document-title-input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+}
+.writing-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.writing-meta > span + span::before {
+  content: "·";
+  margin-right: 12px;
+  color: var(--line-strong);
+}
+.writing-heading .button-row {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.writing-layout {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  gap: 28px;
+  padding-top: 24px;
+  flex: 1;
+}
+.writing-layout:not(:has(.writing-outline)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.writing-outline {
+  min-width: 0;
+  width: auto;
+  padding: 8px 0;
+  position: sticky;
+  top: 76px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.writing-outline h2 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin: 0 0 6px 8px;
+}
+.writing-outline > button {
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.writing-outline > button:hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+.writing-outline > p {
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+  margin: 0 8px;
+  line-height: 1.55;
+}
+.writing-outline .field {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.writing-paper {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 44px 56px 140px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+/* ── 본문 서식 (Tiptap) ───────────────────────────────── */
+.rms-document-editor {
+  padding: 0;
+  outline: none;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text);
+  min-height: 420px;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.rms-document-editor > * + * {
+  margin-top: 0.85em;
+}
+.rms-document-editor h1 {
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 1.4em;
+}
+.rms-document-editor h2 {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  margin-top: 1.6em;
+}
+.rms-document-editor h3 {
+  font-size: 17px;
+  font-weight: 650;
+  margin-top: 1.4em;
+}
+.rms-document-editor > :first-child {
+  margin-top: 0;
+}
+.rms-document-editor ul,
+.rms-document-editor ol {
+  padding-left: 1.4em;
+}
+.rms-document-editor li + li {
+  margin-top: 0.3em;
+}
+.rms-document-editor blockquote {
+  margin-left: 0;
+  padding-left: 14px;
+  border-left: 1px solid var(--line-strong);
+  color: var(--text-secondary);
+}
+.rms-document-editor a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rms-document-editor table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+  margin: 1.2em 0;
+}
+.rms-document-editor th,
+.rms-document-editor td {
+  border: 1px solid var(--line-strong);
+  padding: 8px 10px;
+  vertical-align: top;
+  position: relative;
+}
+.rms-document-editor th {
+  background: var(--surface-muted);
+  font-weight: 600;
+  text-align: left;
+}
+.rms-document-editor .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--brand-soft);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ── 하단 서식 도크 (Apple Music 재생바·macOS Dock) ────── */
+.editor-dock-wrap {
+  position: sticky;
+  bottom: 18px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: -96px;
+  padding-top: 28px;
+  pointer-events: none;
+}
+.editor-dock-wrap > * {
+  pointer-events: auto;
+}
+.editor-dock {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: saturate(1.6) blur(16px);
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 12px 32px -14px rgba(16, 24, 40, 0.35);
+}
+.dark .editor-dock {
+  background: color-mix(in srgb, #202226 94%, transparent);
+  box-shadow:
+    0 0 0 1px var(--line-strong),
+    0 16px 36px -14px rgba(0, 0, 0, 0.8);
+}
+.editor-dock > button:not([data-slot="button"]) {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transform-origin: bottom center;
+}
+.editor-dock > button:not([data-slot="button"]):hover {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+.editor-dock > button:not([data-slot="button"])[aria-pressed="true"] {
+  background: var(--text);
+  color: var(--surface);
+}
+.editor-dock > button:not([data-slot="button"]):disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.editor-dock > button:not([data-slot="button"]):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.editor-dock > i {
+  flex: none;
+  width: 1px;
+  height: 22px;
+  margin: 0 6px;
+  background: var(--line-strong);
+}
+.editor-dock > a,
+.editor-dock > [data-slot="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  gap: 7px;
+  width: auto;
+  min-width: 104px;
+  margin-left: 6px;
+  border-radius: 999px;
+  height: 40px;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+.editor-dock span[class^="format-"] {
+  font-size: 15px;
+  line-height: 1;
+}
+.format-bold {
+  font-weight: 800;
+}
+.format-italic {
+  font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 600;
+}
+.editor-dock .format-heading {
+  font-weight: 700;
+  font-size: 14px;
+}
+.editor-dock .format-bulletList {
+  font-size: 18px;
+}
+.editor-dock-wrap > p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  padding: 1px 8px;
+  border-radius: 6px;
+}
+
+/* ── 버전 비교 ─────────────────────────────────────────── */
+.rms-dialog.wide-dialog {
+  width: min(920px, calc(100vw - 32px));
+  max-width: none;
+}
+.comparison-selects {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+.comparison-selects > svg {
+  color: var(--text-tertiary);
+}
+.text-comparison {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.diff-legend {
+  display: flex;
+  gap: 16px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--line);
+}
+.diff-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.diff-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.diff-legend i.removed {
+  background: color-mix(in srgb, var(--tone-red) 30%, var(--surface));
+}
+.diff-legend i.added {
+  background: color-mix(in srgb, var(--tone-green) 30%, var(--surface));
+}
+.diff-content {
+  max-height: min(56dvh, 520px);
+  overflow: auto;
+  padding: 16px 18px;
+  font-size: 14.5px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.diff-content ins {
+  text-decoration: none;
+  background: color-mix(in srgb, var(--tone-green) 18%, transparent);
+  color: var(--text);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+.diff-content del {
+  background: color-mix(in srgb, var(--tone-red) 16%, transparent);
+  color: var(--text-secondary);
+  text-decoration-color: var(--tone-red);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+.pdf-export-preview {
+  width: 100%;
+  height: min(70dvh, 760px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+
+@media (max-width: 1100px) {
+  .writing-heading {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .writing-heading > div:first-child {
+    flex-basis: 100%;
+  }
+  .writing-heading .button-row {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+}
+@media (max-width: 1024px) {
+  .writing-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .writing-outline {
+    position: static;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+}
+@media (max-width: 720px) {
+  .editor-dock > i {
+    margin: 0 2px;
+  }
+  .writing-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .writing-heading .button-row {
+    flex-wrap: wrap;
+  }
+  .document-title-input {
+    font-size: 22px;
+  }
+  .writing-paper {
+    padding: 24px 18px 120px;
+    border-radius: 12px;
+  }
+  .editor-dock {
+    max-width: calc(100vw - 24px);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .editor-dock > button:not([data-slot="button"]) {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+  .comparison-selects {
+    grid-template-columns: 1fr;
+  }
+  .comparison-selects > svg {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .document-tile {
+    transition: none;
+  }
+}
+
+.rms-control-tooltip {
+  z-index: 100;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--surface);
+  box-shadow: var(--shadow-pop);
+  font-size: 12px;
+  line-height: 1.4;
+  user-select: none;
+  animation: tooltip-arrive 120ms ease-out;
+}
+.rms-control-tooltip svg {
+  fill: var(--text);
+}
+@keyframes tooltip-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rms-control-tooltip {
+    animation: none;
+  }
+}

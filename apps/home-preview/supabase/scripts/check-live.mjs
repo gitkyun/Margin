@@ -318,6 +318,6 @@ await writeFile(
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(JSON.stringify(report));
-await student.auth.signOut();
-await professor.auth.signOut();
-await relog.auth.signOut();
+await student.auth.signOut({scope:"local"});
+await professor.auth.signOut({scope:"local"});
+await relog.auth.signOut({scope:"local"});

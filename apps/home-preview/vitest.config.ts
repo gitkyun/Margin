@@ -4,8 +4,8 @@ export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   test: {
     include: [
-      "src/**/*.test.ts",
-      "tests/**/*.test.ts",
+      "src/**/*.test.{ts,tsx}",
+      "tests/**/*.test.{ts,tsx}",
       "supabase/functions/**/*.test.ts",
     ],
   },

@@ -1,3 +1,4 @@
+import { Segments } from "@/components/experience";
 import {
   useCallback,
   useEffect,
@@ -51,7 +52,11 @@ function FormNavigationGuard({
   label,
   onDiscard,
   children,
+  onDirtyChange,
+  onCancel,
 }: {
+  onDirtyChange?(dirty: boolean): void;
+  onCancel?(): void;
   active: boolean;
   busy: boolean;
   label: string;
@@ -84,6 +89,9 @@ function FormNavigationGuard({
       onDiscard();
     },
   });
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
   function check() {
     if (root.current && baseline.current !== null)
       setDirty(readDraftFields(root.current) !== baseline.current);
@@ -93,7 +101,15 @@ function FormNavigationGuard({
       ref={bind}
       onInputCapture={check}
       onChangeCapture={check}
-      onClickCapture={() => queueMicrotask(check)}
+      onClickCapture={(event) => {
+        const target = event.target as HTMLElement;
+        const button = target.closest("button");
+        if (button?.textContent?.trim() === "취소" && onCancel) {
+          event.preventDefault();
+          event.stopPropagation();
+          onCancel();
+        } else queueMicrotask(check);
+      }}
     >
       {children}
     </div>
@@ -115,40 +131,81 @@ export function FormDialog({
   busy?: boolean;
   children: ReactNode;
 }) {
+  const [dirty, setDirty] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  useEffect(() => {
+    if (!open) {
+      setDirty(false);
+      setDiscardOpen(false);
+    }
+  }, [open]);
+  function requestClose(nextOpen: boolean) {
+    if (busy) return;
+    if (!nextOpen && dirty) {
+      setDiscardOpen(true);
+      return;
+    }
+    onOpenChange(nextOpen);
+  }
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen: boolean) => {
-        if (!busy) onOpenChange(nextOpen);
-      }}
-    >
-      <DialogContent
-        className="student-dialog"
-        showCloseButton={!busy}
-        aria-busy={busy}
-        onEscapeKeyDown={(event: { preventDefault(): void }) => {
-          if (busy) event.preventDefault();
-        }}
-        onPointerDownOutside={(event: { preventDefault(): void }) => {
-          if (busy) event.preventDefault();
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            {description ?? "내용을 확인하고 저장하세요."}
-          </DialogDescription>
-        </DialogHeader>
-        <FormNavigationGuard
-          active={open}
-          busy={busy}
-          label={title}
-          onDiscard={() => onOpenChange(false)}
+    <>
+      {" "}
+      <Dialog open={open} onOpenChange={requestClose}>
+        <DialogContent
+          className="student-dialog"
+          showCloseButton={!busy}
+          aria-busy={busy}
+          onEscapeKeyDown={(event: { preventDefault(): void }) => {
+            if (busy) event.preventDefault();
+          }}
+          onPointerDownOutside={(event: { preventDefault(): void }) => {
+            if (busy) event.preventDefault();
+          }}
         >
-          {children}
-        </FormNavigationGuard>
-      </DialogContent>
-    </Dialog>
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>
+              {description ?? "내용을 확인하고 저장하세요."}
+            </DialogDescription>
+          </DialogHeader>
+          <FormNavigationGuard
+            active={open}
+            busy={busy}
+            label={title}
+            onDiscard={() => onOpenChange(false)}
+            onDirtyChange={setDirty}
+            onCancel={() => requestClose(false)}
+          >
+            {children}
+          </FormNavigationGuard>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
+        <DialogContent className="student-dialog">
+          <DialogHeader>
+            <DialogTitle>작성 중인 내용을 닫을까요?</DialogTitle>
+            <DialogDescription>
+              저장하지 않은 변경 내용은 사라집니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="form-actions">
+            <Button variant="outline" onClick={() => setDiscardOpen(false)}>
+              계속 작성
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setDirty(false);
+                setDiscardOpen(false);
+                onOpenChange(false);
+              }}
+            >
+              변경 버리고 닫기
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 export function LabeledInput({
@@ -222,6 +279,34 @@ export function LabeledText({
     </label>
   );
 }
+/** 목록 범위 필터. 선택지마다 실제로 보일 항목 수를 함께 표시한다. */
+export function FilterSegments({
+  options,
+  value,
+  onChange,
+  counts,
+  label,
+}: {
+  options: readonly (readonly [string, string])[];
+  value: string;
+  onChange(value: string): void;
+  counts?: Record<string, number>;
+  label: string;
+}) {
+  return (
+    <Segments
+      value={value}
+      onChange={onChange}
+      label={label}
+      options={options.map(([value, label]) => ({
+        value,
+        label,
+        count: counts?.[value],
+      }))}
+    />
+  );
+}
+
 export function SearchInput({
   value,
   onChange,
@@ -326,5 +411,36 @@ export function LinkChip({
       {children}
       <Icon name="arrow-up-right" size={13} />
     </Link>
+  );
+}
+
+export function WorkTabs({
+  researchId,
+  selected,
+}: {
+  researchId: string;
+  selected: "feedback" | "tasks" | "results";
+}) {
+  return (
+    <nav className="work-tabs" aria-label="피드백과 작업">
+      <Link
+        to={`/r/${researchId}/feedback`}
+        aria-current={selected === "feedback" ? "page" : undefined}
+      >
+        피드백
+      </Link>
+      <Link
+        to={`/r/${researchId}/tasks`}
+        aria-current={selected === "tasks" ? "page" : undefined}
+      >
+        할 일
+      </Link>
+      <Link
+        to={`/r/${researchId}/results`}
+        aria-current={selected === "results" ? "page" : undefined}
+      >
+        수정 결과
+      </Link>
+    </nav>
   );
 }

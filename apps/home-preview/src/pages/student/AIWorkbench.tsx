@@ -1,3 +1,15 @@
+import { AssistantMascot } from "@/components/brand/Brand";
+import {
+  workingMascot,
+  workMessages,
+  researchModelLabel,
+  reviewDepthOptions,
+  resolveReviewDepth,
+  reviewDepthHints,
+} from "@/lib/assistant-presentation";
+import { useAICapabilities } from "@/lib/ai-capabilities";
+import { Choice } from "@/components/experience";
+import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +43,23 @@ export function AIWorkbench({
   onRefresh(): void;
   onSave(candidate: AICandidate, base: BaseRecord): Promise<void>;
 }) {
-  const { runAI, mode } = useWorkspace();
+  const { runAI, mode, user } = useWorkspace();
+  const caps = useAICapabilities();
+  const [selectedModelId, setSelectedModelId] = useState(
+    String(input.model ?? user.preferences?.model ?? ""),
+  );
+  const [preferredDepth, setPreferredDepth] = useState(
+    String(input.thinking ?? user.preferences?.thinking ?? "minimal"),
+  );
+  const selectedModel =
+    caps.data?.models.find((m) => m.id === selectedModelId) ??
+    caps.data?.models[0];
+  const depth = resolveReviewDepth(
+    selectedModel?.thinking ?? [],
+    preferredDepth,
+  );
   const [running, setRunning] = useState(false);
+  const [stopped, setStopped] = useState(false);
   const [candidates, setCandidates] = useState<AICandidate[]>([]);
   const [saved, setSaved] = useState<number[]>([]);
   const [saving, setSaving] = useState<number | null>(null);
@@ -51,13 +78,32 @@ export function AIWorkbench({
   );
   async function generate() {
     if (running || savingRef.current) return;
+    if (
+      candidates.length &&
+      !window.confirm(
+        "현재 후보를 새 제안으로 바꿀까요? 저장하지 않은 편집은 사라집니다.",
+      )
+    )
+      return;
     const current = ++sequence.current;
     const abort = new AbortController();
     controller.current = abort;
     setRunning(true);
+    setStopped(false);
     setError(null);
     try {
-      const result = await runAI(input, abort.signal);
+      const result = await runAI(
+        {
+          ...input,
+          ...(selectedModel
+            ? {
+                model: selectedModel.id,
+                thinking: depth ? (depth as AIInput["thinking"]) : undefined,
+              }
+            : {}),
+        },
+        abort.signal,
+      );
       if (current !== sequence.current) return;
       candidateBases.current = result.candidates.map(() =>
         recordBase(input.researchId),
@@ -80,6 +126,7 @@ export function AIWorkbench({
     sequence.current++;
     controller.current?.abort();
     setRunning(false);
+    setStopped(true);
     setError("생성을 중단했습니다. 작성한 기록은 바뀌지 않았습니다.");
   }
   function edit(index: number, change: Partial<AICandidate>) {
@@ -119,7 +166,23 @@ export function AIWorkbench({
     <aside className="ai-workbench" aria-label={title} hidden={hidden}>
       <div className="ai-workbench-heading">
         <div className="ai-workbench-title">
-          <Icon name="sparkles" size={18} />
+          <AssistantMascot
+            state={
+              running
+                ? workingMascot(input.mode)
+                : stopped
+                  ? "rest"
+                  : error || stale
+                    ? "attention"
+                    : candidates.length
+                      ? saved.length === candidates.length
+                        ? "completed"
+                        : "idea"
+                      : "ready"
+            }
+            active={running}
+            size={40}
+          />
           <h3>{title}</h3>
         </div>
         <Button
@@ -144,6 +207,42 @@ export function AIWorkbench({
           {input.sourceRevision ? ` · 원문 v${input.sourceRevision}` : ""}
         </small>
       </div>
+      {selectedModel && (
+        <details className="margin-review-settings">
+          <summary>
+            이번 검토 설정
+            <Icon name="chevron-down" size={15} />
+          </summary>
+          <div className="margin-review-fields">
+            <label className="field">
+              AI 모델
+              <Choice
+                label="이번 검토의 AI 모델"
+                value={selectedModel.id}
+                disabled={running || saving !== null}
+                onChange={setSelectedModelId}
+                options={caps.data!.models.map((m) => ({
+                  value: m.id,
+                  label: researchModelLabel(m),
+                }))}
+              />
+            </label>
+            {!!selectedModel.thinking.length && (
+              <label className="field">
+                검토 깊이
+                <Choice
+                  label="이번 검토의 깊이"
+                  value={depth}
+                  disabled={running || saving !== null}
+                  onChange={setPreferredDepth}
+                  options={reviewDepthOptions(selectedModel.thinking)}
+                />
+                <small>{reviewDepthHints[depth]}</small>
+              </label>
+            )}
+          </div>
+        </details>
+      )}
       <p className="ai-disclosure">
         원문과 AI가 제안한 내용을 구분해 확인한 뒤 필요한 항목만 저장하세요.
       </p>
@@ -171,7 +270,9 @@ export function AIWorkbench({
         ) : (
           <Button
             onClick={generate}
-            disabled={saving !== null || !input.sourceText.trim()}
+            disabled={
+              mode === "preview" || saving !== null || !input.sourceText.trim()
+            }
           >
             <Icon name="sparkles" size={16} />
             {candidates.length ? "다시 제안받기" : "제안받기"}
@@ -180,20 +281,27 @@ export function AIWorkbench({
       </div>
       {running && (
         <div className="ai-running" role="status">
-          <span className="ai-dot-matrix" aria-hidden="true">
-            {Array.from({ length: 25 }, (_, i) => (
-              <i key={i} style={{ animationDelay: `${i * 36}ms` }} />
-            ))}
-          </span>
           <span>
-            선택한 내용을 읽고 정리하고 있습니다.
+            {workMessages[input.mode]}
             <small>완료되기 전에는 원문과 작업이 바뀌지 않습니다.</small>
           </span>
         </div>
       )}
       <ErrorNotice error={error} />
       {candidates.length > 0 && (
-        <div className="ai-candidate-list">
+        <div className="ai-candidate-list" aria-live="polite">
+          <div className="margin-result-note">
+            <div>
+              <strong>
+                {saved.length === candidates.length
+                  ? "선택한 내용을 기록에 남겼어요."
+                  : `${candidates.length}개 제안을 살펴보세요.`}
+              </strong>
+              <small>
+                원문과 비교하고, 필요한 내용은 고쳐서 저장할 수 있어요.
+              </small>
+            </div>
+          </div>
           {candidates.map((candidate, index) => (
             <section
               className={`ai-candidate ${saved.includes(index) ? "is-saved" : ""}`}
@@ -207,7 +315,7 @@ export function AIWorkbench({
               {input.mode === "organize_meeting" && (
                 <label className="field">
                   <span className="field-name">종류</span>
-                  <select
+                  <SelectField
                     className="native-select"
                     value={candidate.category ?? "feedback"}
                     onChange={(e) =>
@@ -220,7 +328,7 @@ export function AIWorkbench({
                     <option value="feedback">피드백</option>
                     <option value="decision">결정 사항</option>
                     <option value="question">질문</option>
-                  </select>
+                  </SelectField>
                 </label>
               )}
               <label className="field">

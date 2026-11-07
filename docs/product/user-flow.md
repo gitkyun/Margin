@@ -19,7 +19,7 @@
 
 ## 수업 시연 동선
 
-이번 구현·배포의 목표는 아래 경로를 실제 저장과 Google API 호출로 이어 수행하는 것이다. 세부 제품 흐름은 다음 절에 유지한다. [수업 시연 기준](../development/classroom-demo.md)의 D01~D06을 우선 구현하며 아직 앱·배포가 완료된 상태는 아니다.
+이번 구현·배포의 목표는 아래 경로를 실제 저장과 Google API 호출로 이어 수행하는 것이다. 세부 제품 흐름은 다음 절에 유지한다. [수업 시연 기준](../development/classroom-demo.md)의 D01~D06을 우선 구현하며 앱·서버·배포는 구현했으며 실제 Gemini 생성은 키 연결 전이다. 최신 검증 범위는 [2026-11-04 기록](../development/verification-20261104.md)을 따른다.
 
 ```mermaid
 flowchart LR

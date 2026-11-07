@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check RMS's required files and local Markdown/HTML file links."""
+"""Check Margin's required files and local Markdown/HTML file links."""
 
 from __future__ import annotations
 
@@ -23,7 +23,8 @@ REQUIRED_FILES = (
     "docs/assets/rms-cover.png",
     ".github/workflows/repository-checks.yml",
 )
-EXCLUDED_DIRS = {".git", "node_modules", ".next", ".venv", "dist", "build"}
+# Historical copies keep their original paths and are not active repository documents.
+EXCLUDED_DIRS = {".git", "node_modules", ".next", ".venv", "dist", "build", "archive", ".local"}
 MARKDOWN_LINK = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>\n]+>|[^\s)]+)(?:\s+[^)]+)?\)")
 
 

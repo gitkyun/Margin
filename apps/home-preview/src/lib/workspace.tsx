@@ -74,7 +74,28 @@ export function WorkspaceProvider({
       await refresh();
       return result;
     }
-    const updated = { ...value, updatedAt: now() };
+    const updated = {
+      ...value,
+      createdBy: value.createdBy ?? user.id,
+      updatedBy: user.id,
+      updatedAt: now(),
+      ...(kind === "documents"
+        ? { revision: ((value as EntityMap["documents"]).revision ?? 0) + 1 }
+        : {}),
+      ...(kind === "documentVersions"
+        ? {
+            number:
+              1 +
+              (query.data?.documentVersions
+                .filter(
+                  (v) =>
+                    v.documentId ===
+                    (value as EntityMap["documentVersions"]).documentId,
+                )
+                .reduce((n, v) => Math.max(n, v.number), 0) ?? 0),
+          }
+        : {}),
+    };
     await localChange((data) => {
       const list = data[kind] as EntityMap[K][];
       const index = list.findIndex((item) => item.id === value.id);
@@ -147,29 +168,10 @@ export function WorkspaceProvider({
         return;
       }
       await localChange((data) => {
-        const references = (value: unknown): boolean =>
-          typeof value === "string"
-            ? value === id
-            : Array.isArray(value)
-              ? value.some(references)
-              : value && typeof value === "object"
-                ? Object.values(value).some(references)
-                : false;
-        const connected = Object.entries(data).some(
-          ([key, list]) =>
-            Array.isArray(list) &&
-            list.some(
-              (record: Record<string, unknown>) =>
-                !(key === kind && record.id === id) && references(record),
-            ),
-        );
-        if (connected)
-          throw new Error(
-            "다른 기록에 연결된 항목은 삭제할 수 없습니다. 연결을 먼저 확인해 주세요.",
-          );
-        (data[kind] as { id: string }[]) = (
-          data[kind] as { id: string }[]
-        ).filter((item) => item.id !== id);
+        const record = (
+          data[kind] as { id: string; archivedAt?: string }[]
+        ).find((r) => r.id === id);
+        if (record) record.archivedAt = now();
       });
     },
     async upload(file, material, onProgress, signal) {
@@ -192,7 +194,13 @@ export function WorkspaceProvider({
       }
     },
     openFile: (version) => getFile(version, mode),
-    runAI: executeAI,
+    runAI: async (input, signal) => {
+      try {
+        return await executeAI(input, signal);
+      } finally {
+        await refresh();
+      }
+    },
     async createReview(input) {
       if (mode === "connected") {
         const result = await rpc<ReviewRequest>("rms_create_review", {

@@ -1,0 +1,349 @@
+/* Workspace review, 2026-11-06: equal shell gutters and quiet, legible controls. */
+.app-shell.floating-workspace {
+  padding: 8px;
+  gap: 8px;
+}
+.app-shell.floating-workspace .sidebar {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 10px 10px;
+}
+.app-shell.floating-workspace .nav-item {
+  border: 0;
+  box-shadow: none;
+  border-radius: 9px;
+  min-height: 40px;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+.app-shell.floating-workspace .nav-item:hover {
+  background: color-mix(in srgb, var(--brand) 9%, var(--surface));
+  color: var(--brand);
+  box-shadow: none;
+}
+.app-shell.floating-workspace .nav-item.active {
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+  color: var(--brand);
+  box-shadow: none;
+  font-weight: 600;
+}
+.app-shell.floating-workspace .nav-item::before,
+.app-shell.floating-workspace .nav-item::after {
+  display: none;
+}
+.research-view-switch {
+  margin: 24px 0;
+  padding: 0;
+}
+.research-view-switch .rms-segments {
+  padding: 4px;
+  min-height: 44px;
+  align-items: stretch;
+}
+.research-view-switch .rms-segments button {
+  min-height: 36px;
+}
+.account-menu {
+  border: 1px solid var(--line-strong);
+  box-shadow:
+    0 16px 48px -12px #10182840,
+    0 4px 12px #10182814 !important;
+}
+.dark .account-menu {
+  box-shadow:
+    0 20px 56px #0009,
+    0 0 0 1px #ffffff0a !important;
+}
+.rh-home .rh-quick-record,
+.rh-home .rh-quick-record:hover {
+  background: var(--surface);
+  border-color: var(--line);
+}
+.rh-home .rh-quick-record .rh-quick-icon {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+.preferences-list input[role="switch"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  flex: 0 0 40px;
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  height: 24px;
+  min-height: 24px;
+  max-height: 24px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 99px;
+  position: relative;
+  background: var(--line-strong);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.preferences-list input[role="switch"]::after {
+  content: "";
+  position: absolute;
+  inset: 3px auto auto 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px #0003;
+  transition: transform 160ms ease;
+}
+.preferences-list input[role="switch"]:checked {
+  background: var(--brand);
+}
+.preferences-list input[role="switch"]:checked::after {
+  transform: translateX(16px);
+}
+.preferences-list input[role="switch"]:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+.password-settings {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.password-settings h3 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.password-settings > p {
+  margin: 0 0 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.password-settings form {
+  display: grid;
+  gap: 18px;
+  max-width: 520px;
+}
+.password-settings .field {
+  margin: 0;
+}
+.ai-workspace {
+  min-height: 640px;
+  height: max(640px, calc(100dvh - 230px));
+}
+.ai-chat-main {
+  min-height: 0;
+}
+.ai-chat-main .chat-scroll {
+  min-height: 0;
+  padding: 32px clamp(20px, 3vw, 40px);
+}
+.ai-chat-main .assistant-welcome {
+  width: 100%;
+  max-width: 620px;
+  margin: auto;
+  padding: 12px 0 28px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.ai-chat-main .assistant-welcome h2 {
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.4;
+  margin: 16px 0 10px;
+}
+.ai-chat-main .assistant-welcome p {
+  margin: 0;
+  line-height: 1.7;
+}
+.ai-chat-main .assistant-prompts {
+  width: 100%;
+  max-width: 440px;
+  margin: 24px auto 0;
+}
+.ai-chat-main .ai-composer {
+  width: calc(100% - 40px);
+  max-width: 820px;
+  margin: 0 auto 12px;
+  box-sizing: border-box;
+}
+.ai-chat-main .ai-composer textarea {
+  min-height: 88px;
+}
+.writing-layout {
+  grid-template-columns: minmax(0, 1fr);
+  position: relative;
+}
+.writing-layout .writing-outline {
+  position: relative;
+  top: auto;
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 16px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.writing-layout .writing-outline .field {
+  max-width: 340px;
+}
+.writing-layout .writing-paper {
+  width: 100%;
+  max-width: 820px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 40px clamp(24px, 4vw, 64px) 160px;
+}
+.writing-save-status {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.writing-meta .writing-save-status::before {
+  display: none;
+}
+.editor-dock-wrap {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.editor-dock-wrap .editor-dock {
+  max-width: 100%;
+  width: max-content;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: auto;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 16px;
+}
+.editor-dock-wrap .editor-dock > button:not([data-slot="button"]) {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+}
+.material-preview-badge {
+  position: relative;
+  display: block;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 64px;
+  isolation: isolate;
+}
+.material-preview-badge::before {
+  content: "";
+  position: absolute;
+  inset: 3px -3px -3px 3px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-muted);
+  border-radius: 7px;
+  transform: rotate(6deg);
+  transition: transform 180ms ease;
+  z-index: -1;
+}
+.material-preview-badge canvas {
+  display: block;
+  width: 52px;
+  height: 64px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.material-preview-badge .preview-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  height: 64px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+.material-list-row:hover .material-preview-badge::before,
+.material-list-row:focus-visible .material-preview-badge::before {
+  transform: rotate(12deg) translateX(2px);
+}
+.material-list-row {
+  min-height: 100px;
+  gap: 18px;
+}
+.pending-deletions {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.pending-deletions > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+}
+@media (max-width: 767px) {
+  .app-shell.floating-workspace {
+    padding: 0;
+    gap: 0;
+  }
+  .ai-chat-main .ai-composer {
+    width: calc(100% - 24px);
+  }
+  .ai-workspace {
+    min-height: 620px;
+    height: auto;
+  }
+  .writing-heading {
+    flex-wrap: wrap;
+  }
+  .writing-layout .writing-paper {
+    padding: 28px 22px 160px;
+  }
+  .editor-dock-wrap .editor-dock > button:not([data-slot="button"]) {
+    width: 36px;
+    min-width: 36px;
+    height: 40px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .material-preview-badge::before,
+  .preferences-list input[role="switch"]::after {
+    transition: none;
+  }
+}
+
+/* Adopt the clone's section grouping without changing shared color or type tokens. */
+.rh-home .rh-work,
+.rh-home .rh-writing,
+.rh-home .rh-attention {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.rh-home .rh-quick-text {
+  min-width: 0;
+  flex: 1;
+}
+.rh-home .rh-quick-text small {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.rh-home .rh-quick-actions {
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .rh-home .rh-work,
+  .rh-home .rh-writing,
+  .rh-home .rh-attention {
+    padding: 18px;
+  }
+}

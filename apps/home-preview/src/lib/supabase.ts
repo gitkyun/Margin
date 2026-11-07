@@ -39,3 +39,15 @@ export function friendlyError(error: unknown): string {
     ? "요청을 처리하지 못했습니다. 입력한 내용은 유지됩니다."
     : message;
 }
+
+/** Verify the current password without replacing the app's active session. */
+export function createPasswordVerificationClient() {
+  if (!configured) throw new Error("서버에 연결하지 못했습니다.");
+  return createClient(url, key, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}

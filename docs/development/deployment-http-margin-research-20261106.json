@@ -1,0 +1,240 @@
+{
+  "checkedAt": "2026-11-06T14:53:43.843Z",
+  "url": "https://margin-research.pages.dev",
+  "deploymentId": "7e7240e7-cc82-46d3-a3a5-b94e2a32302e",
+  "scope": "HTTP resources only, not a browser UI or authenticated flow check",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/login",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/r",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/r/00000000-0000-4000-8000-000000000000/writing",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/features",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/pricing",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/guide",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "bytes": 678,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/assets/index-M5hCstg4.js",
+      "status": 200,
+      "bytes": 1141278,
+      "matchesBuild": true,
+      "contentType": "application/javascript"
+    },
+    {
+      "path": "/assets/index-DPUimgBg.css",
+      "status": 200,
+      "bytes": 255666,
+      "matchesBuild": true,
+      "contentType": "text/css; charset=utf-8"
+    },
+    {
+      "path": "/fonts/Pretendard-Regular.woff",
+      "status": 200,
+      "bytes": 1115060,
+      "matchesBuild": true,
+      "contentType": "font/woff"
+    },
+    {
+      "path": "/favicon.svg",
+      "status": 200,
+      "bytes": 830,
+      "matchesBuild": true,
+      "contentType": "image/svg+xml"
+    },
+    {
+      "path": "/brand/symbol-blue.svg",
+      "status": 200,
+      "bytes": 830,
+      "matchesBuild": true,
+      "contentType": "image/svg+xml"
+    },
+    {
+      "path": "/brand/symbol-white.svg",
+      "status": 200,
+      "bytes": 824,
+      "matchesBuild": true,
+      "contentType": "image/svg+xml"
+    },
+    {
+      "path": "/brand/wordmark-blue.svg",
+      "status": 200,
+      "bytes": 2522,
+      "matchesBuild": true,
+      "contentType": "image/svg+xml"
+    },
+    {
+      "path": "/brand/wordmark-white.svg",
+      "status": 200,
+      "bytes": 2520,
+      "matchesBuild": true,
+      "contentType": "image/svg+xml"
+    },
+    {
+      "path": "/brand/mascot/01_idle.png",
+      "status": 200,
+      "bytes": 263990,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/02_ready.png",
+      "status": 200,
+      "bytes": 239058,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/03_question.png",
+      "status": 200,
+      "bytes": 276298,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/04_rest.png",
+      "status": 200,
+      "bytes": 253286,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/05_working.png",
+      "status": 200,
+      "bytes": 355098,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/06_thinking.png",
+      "status": 200,
+      "bytes": 244254,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/07_searching.png",
+      "status": 200,
+      "bytes": 269459,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/08_idea.png",
+      "status": 200,
+      "bytes": 277144,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/09_chatting.png",
+      "status": 200,
+      "bytes": 288740,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/10_processing.png",
+      "status": 200,
+      "bytes": 323422,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/11_analyzing.png",
+      "status": 200,
+      "bytes": 264412,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/12_writing.png",
+      "status": 200,
+      "bytes": 274562,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/13_completed.png",
+      "status": 200,
+      "bytes": 305853,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/14_happy.png",
+      "status": 200,
+      "bytes": 258544,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/15_approved.png",
+      "status": 200,
+      "bytes": 276827,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/brand/mascot/16_attention.png",
+      "status": 200,
+      "bytes": 262893,
+      "matchesBuild": true,
+      "contentType": "image/png"
+    }
+  ]
+}

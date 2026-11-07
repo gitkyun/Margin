@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-11-05T23:38:39.121Z",
+  "url": "https://rms-classroom-demo.pages.dev",
+  "deploymentId": "282fe96d-eb5a-4cd7-814d-a62ee21e698d",
+  "scope": "HTTP resources only, not a browser UI or authenticated flow check",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 452,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/login",
+      "status": 200,
+      "bytes": 452,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/r",
+      "status": 200,
+      "bytes": 452,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/r/00000000-0000-4000-8000-000000000000/writing",
+      "status": 200,
+      "bytes": 452,
+      "matchesBuild": true,
+      "contentType": "text/html; charset=utf-8",
+      "permissionsPolicy": "camera=(), microphone=(self), geolocation=()"
+    },
+    {
+      "path": "/assets/index-T2YJzgJQ.js",
+      "status": 200,
+      "bytes": 1107646,
+      "matchesBuild": true,
+      "contentType": "application/javascript"
+    },
+    {
+      "path": "/assets/index-C93QXSHa.css",
+      "status": 200,
+      "bytes": 227832,
+      "matchesBuild": true,
+      "contentType": "text/css; charset=utf-8"
+    },
+    {
+      "path": "/fonts/Pretendard-Regular.woff",
+      "status": 200,
+      "bytes": 1115060,
+      "matchesBuild": true,
+      "contentType": "font/woff"
+    }
+  ]
+}
