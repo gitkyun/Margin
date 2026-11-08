@@ -55,15 +55,22 @@ for (let attempt=0;attempt<60;attempt++) {
 }
 if (!succeeded) throw new Error('Cloudflare deployment status timed out');
 const base=`https://${project}.pages.dev`;
-for (const route of ['/','/login','/r']) {
+const indexHash=createHash('sha256').update(await readFile(new URL('index.html',root))).digest('hex');
+// Deep links must be served in place. A redirect (e.g. /login -> /) is a failure, so redirects are not followed.
+const appRoutes=['/','/login','/r','/r/00000000-0000-4000-8000-000000000000','/guide'];
+const routeChecks=[...appRoutes.map(route=>({route,status:200})),{route:'/__margin-missing-route',status:404}];
+for (const {route,status:expected} of routeChecks) {
+  let last='no response';
   let matched=false;
   for(let n=0;n<12;n++) {
-    const response=await fetch(base+route+'?release='+sha,{headers:{'Cache-Control':'no-cache'}});
+    const response=await fetch(base+route+'?release='+sha,{headers:{'Cache-Control':'no-cache',Accept:'text/html'},redirect:'manual'});
     const html=await response.text();
-    if(response.ok && createHash('sha256').update(html).digest('hex')===createHash('sha256').update(await readFile(new URL('index.html',root))).digest('hex')) { matched=true;break; }
+    const sameShell=createHash('sha256').update(html).digest('hex')===indexHash;
+    if(response.status===expected && (expected!==200 || sameShell)) { matched=true;break; }
+    last=`${response.status}${response.headers.get('location')?' -> '+response.headers.get('location'):''}`;
     await new Promise(resolve=>setTimeout(resolve,3000));
   }
-  if(!matched) throw new Error('Published HTML does not match checked build: '+route);
+  if(!matched) throw new Error(`Published route ${route} expected ${expected} with the checked build, got ${last}`);
 }
-console.log(JSON.stringify({deploymentId:deployment.id,commit:sha,url:base,uploaded,verifiedRoutes:3}));
-if(process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY,`Published ${sha} to ${base}\n\nDeployment: ${deployment.id}. Three entry routes match the built HTML.\n`);
+console.log(JSON.stringify({deploymentId:deployment.id,commit:sha,url:base,uploaded,verifiedRoutes:routeChecks.length}));
+if(process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY,`Published ${sha} to ${base}\n\nDeployment: ${deployment.id}. ${appRoutes.length} app routes serve the built HTML without redirects; unknown routes return 404.\n`);
