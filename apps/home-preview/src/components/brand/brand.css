@@ -1,4 +1,9 @@
 /* User-supplied Margin identity; opaque mascot tiles preserve the original blue artwork. */
+/* One wordmark size for the public header/footer and the workspace sidebar (AGENTS.md: keep them equal). */
+:root {
+  --margin-wordmark-width: 86.8px;
+  --margin-wordmark-height: 28px;
+}
 .margin-brand-mark {
   display: inline-grid;
   width: 34px;
@@ -43,8 +48,8 @@
   height: 32px;
 }
 .floating-workspace .brand .margin-wordmark {
-  width: 99.2px;
-  height: 32px;
+  width: var(--margin-wordmark-width);
+  height: var(--margin-wordmark-height);
 }
 .floating-workspace.sidebar-collapsed .brand .margin-wordmark {
   display: none;
@@ -53,8 +58,8 @@
   gap: 4px;
 }
 .lp-brand .margin-wordmark {
-  width: 99.2px;
-  height: 32px;
+  width: var(--margin-wordmark-width);
+  height: var(--margin-wordmark-height);
 }
 .lp-brand .margin-brand-mark {
   width: 36px;
