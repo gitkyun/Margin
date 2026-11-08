@@ -21,29 +21,51 @@ const EYES = [
 ];
 
 type Palette = {
-  ground: string;
+  /** Field colour by density: pale at the thin edge, deeper where full. */
+  ramp: [string, string, string];
+  /** Eyes: the one deep spot, so the face reads on a pale field. */
+  eye: string;
   grid: string;
   shape: string;
   markOnShape: string;
   markOnGround: string;
 };
 
+// Pale and airy like a halftone wash (cf. modulify.ai's footer), with brand
+// blue kept for the densest edge and the mascot's eyes.
 const PALETTES: Record<"light" | "dark", Palette> = {
   light: {
-    ground: "#1a4be8",
-    grid: "rgba(255, 255, 255, 0.13)",
-    shape: "#f3f6ff",
-    markOnShape: "#3d63e4",
-    markOnGround: "rgba(236, 242, 255, 0.62)",
+    ramp: ["#e3eeff", "#a9c6ff", "#6e98fb"],
+    eye: "#3f6ff0",
+    grid: "rgba(255, 255, 255, 0.45)",
+    shape: "#ffffff",
+    markOnShape: "#8aaaf6",
+    markOnGround: "rgba(255, 255, 255, 0.85)",
   },
   dark: {
-    ground: "#102c86",
-    grid: "rgba(255, 255, 255, 0.08)",
-    shape: "#cad8ff",
-    markOnShape: "#2b4cb4",
-    markOnGround: "rgba(200, 216, 255, 0.5)",
+    ramp: ["#1a2540", "#25427f", "#3561c2"],
+    eye: "#2a4fb0",
+    grid: "rgba(255, 255, 255, 0.06)",
+    shape: "#c9d8ff",
+    markOnShape: "#4a6cc4",
+    markOnGround: "rgba(205, 220, 255, 0.45)",
   },
 };
+
+function hexToRgb(hex: string) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/** Colour along a three-stop ramp, t in 0..1. */
+function rampColor(ramp: [string, string, string], t: number) {
+  const [a, b] = t < 0.6 ? [ramp[0], ramp[1]] : [ramp[1], ramp[2]];
+  const k = t < 0.6 ? t / 0.6 : (t - 0.6) / 0.4;
+  const ca = hexToRgb(a);
+  const cb = hexToRgb(b);
+  const mix = ca.map((v, i) => Math.round(v + (cb[i] - v) * k));
+  return `rgb(${mix[0]} ${mix[1]} ${mix[2]})`;
+}
 
 function hash(a: number, b: number, seed = 0) {
   let x =
@@ -294,7 +316,7 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
           const y = row * cell;
           if (hash(col, row, 1) < Math.pow(d, 1.25)) {
             groundMap[row * cols + col] = 1;
-            baseCtx.fillStyle = palette.ground;
+            baseCtx.fillStyle = rampColor(palette.ramp, Math.pow(d, 1.6));
             baseCtx.fillRect(x, y, cell, cell);
             baseCtx.fillStyle = palette.grid;
             baseCtx.fillRect(x, y, cell, 1);
@@ -314,7 +336,14 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
                   : d > 0.18
                     ? "square"
                     : "dot";
-            drawMark(baseCtx, mark, x, y, cell, palette.ground);
+            drawMark(
+              baseCtx,
+              mark,
+              x,
+              y,
+              cell,
+              rampColor(palette.ramp, Math.min(1, d + 0.45)),
+            );
           }
         }
       }
@@ -369,7 +398,7 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
       const r0 = Math.max(0, Math.floor(mascot.y / cell));
       const c1 = Math.min(cols, Math.ceil((mascot.x + mascot.w) / cell));
       const r1 = Math.min(rows, Math.ceil((mascot.y + mascot.h) / cell));
-      ctx.fillStyle = palette.ground; // eyes read as holes in the white cloud
+      ctx.fillStyle = palette.eye; // eyes read as holes in the white cloud
       for (let row = r0; row < r1; row++) {
         for (let col = c0; col < c1; col++) {
           const p = artworkPoint(col, row);
@@ -431,7 +460,7 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
               ? palette.markOnShape
               : isGround(col, row)
                 ? palette.markOnGround
-                : palette.ground;
+                : palette.ramp[2];
             drawMark(ctx, mark, col * cell, row * cell, cell, color);
           }
         }

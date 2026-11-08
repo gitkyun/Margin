@@ -1090,7 +1090,7 @@
   padding: clamp(56px, 10vh, 112px) clamp(32px, 11vw, 180px);
   position: relative;
   isolation: isolate;
-  background: linear-gradient(180deg, transparent 10%, #1a4be8 85%);
+  background: linear-gradient(180deg, transparent 10%, #a9c6ff 85%);
 }
 .lp-footer-glyph-field {
   position: absolute;
@@ -1107,8 +1107,8 @@
   margin: 0 auto;
   border-radius: 28px;
   box-shadow:
-    0 30px 70px -28px #061a6b99,
-    0 3px 16px -5px #0a237a33;
+    0 30px 70px -28px #2f5bc266,
+    0 3px 16px -5px #2f5bc21f;
   padding: 56px 48px 25px;
   background: #fcfdff;
   display: grid;
@@ -1515,7 +1515,7 @@
   color: #a8c9f3;
 }
 .dark .lp-footer {
-  background: linear-gradient(180deg, transparent 10%, #102c86 85%);
+  background: linear-gradient(180deg, transparent 10%, #25427f 85%);
 }
 .dark .lp-footer-inner {
   background: #1c2430;
