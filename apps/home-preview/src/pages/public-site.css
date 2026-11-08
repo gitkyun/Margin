@@ -1072,64 +1072,43 @@
   background: white;
   box-shadow: 0 4px 12px #557bb013;
 }
-/* The footer gradient (.lp-footer::before) extends 160px upward into the page.
-   Lift every public page's content above it so closing cards and CTAs stay crisp.
-   The sticky header (z-index 40) still sits above this layer. */
+/* Keep page content above the footer's field and shadow layers. The sticky
+   header (z-index 40) still sits above this layer. */
 .lp-site > main {
   position: relative;
   z-index: 1;
 }
+/* A full-height footer: the glyph field (FooterGlyphField) fills the whole
+   area around the card, so the card sits centred on it. The side padding
+   leaves the right margin wide enough for the mascot to peek out with both
+   eyes. The gradient is the no-canvas fallback. */
 .lp-footer {
-  padding: 64px 32px 64px;
+  min-height: calc(100svh - 84px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(56px, 10vh, 112px) clamp(32px, 11vw, 180px);
   position: relative;
   isolation: isolate;
-  --footer-dot-color: #6599df;
-  --footer-dot-accent: #8dc4ff;
-  background: transparent;
+  background: linear-gradient(180deg, transparent 10%, #a9c6ff 85%);
 }
-.lp-footer::before {
-  content: "";
+.lp-footer-glyph-field {
   position: absolute;
-  inset: -160px 0 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 45% 48% at 0% 100%, #1479ffba, transparent 85%),
-    radial-gradient(ellipse 45% 56% at 100% 100%, #40adffbb, transparent 85%),
-    radial-gradient(ellipse 66% 45% at 98% 28%, #51a8ff99, transparent 80%),
-    radial-gradient(ellipse 60% 55% at 0% 30%, #438bf099, transparent 82%),
-    radial-gradient(ellipse 78% 85% at 100% 15%, #66c2ff99, transparent 74%),
-    radial-gradient(ellipse 75% 100% at 0% 28%, #428ff080, transparent 76%),
-    linear-gradient(180deg, #f7faff 0%, #c5e3ff 42%, #f5f8ff 100%);
-  mask-image: linear-gradient(180deg, transparent, #000 150px);
-}
-.lp-footer-dot-field {
-  position: absolute;
-  inset: -70px 0 0;
+  inset: 0;
   width: 100%;
-  height: calc(100% + 70px);
+  height: 100%;
   z-index: -1;
   pointer-events: none;
-  background-image: radial-gradient(
-    circle,
-    var(--footer-dot-color) 1px,
-    transparent 1.3px
-  );
-  background-size: 10px 10px;
-  mask-image:
-    radial-gradient(ellipse 35% 78% at 100% 55%, #000 15%, transparent 86%),
-    radial-gradient(ellipse 38% 65% at 0% 80%, #000 10%, transparent 85%);
-}
-.lp-footer-dot-field[data-ready="true"] {
-  background-image: none;
 }
 .lp-footer-inner {
+  position: relative;
+  width: 100%;
   max-width: 1216px;
-  margin: auto;
+  margin: 0 auto;
   border-radius: 28px;
   box-shadow:
-    0 24px 64px -25px #243b6640,
-    0 3px 16px -5px #304e7c12;
+    0 30px 70px -28px #2f5bc266,
+    0 3px 16px -5px #2f5bc21f;
   padding: 56px 48px 25px;
   background: #fcfdff;
   display: grid;
@@ -1536,19 +1515,7 @@
   color: #a8c9f3;
 }
 .dark .lp-footer {
-  --footer-dot-color: #719ad9;
-  --footer-dot-accent: #85b5f4;
-  background: transparent;
-}
-.dark .lp-footer::before {
-  background:
-    radial-gradient(ellipse 45% 48% at 0% 100%, #135cbab0, transparent 85%),
-    radial-gradient(ellipse 45% 56% at 100% 100%, #178cd69c, transparent 85%),
-    radial-gradient(ellipse 66% 45% at 98% 28%, #215fae80, transparent 80%),
-    radial-gradient(ellipse 60% 55% at 0% 30%, #285fba80, transparent 82%),
-    radial-gradient(ellipse 78% 85% at 100% 15%, #236db080, transparent 74%),
-    radial-gradient(ellipse 75% 100% at 0% 28%, #205aab80, transparent 76%),
-    linear-gradient(180deg, #141c29, #1c2b45 45%, #162133);
+  background: linear-gradient(180deg, transparent 10%, #25427f 85%);
 }
 .dark .lp-footer-inner {
   background: #1c2430;
@@ -1996,7 +1963,8 @@
     line-height: 1.8;
   }
   .lp-footer {
-    padding: 36px 14px 40px;
+    min-height: 0;
+    padding: 72px 14px 230px;
   }
   .lp-footer-inner {
     border-radius: 20px;

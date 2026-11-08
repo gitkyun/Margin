@@ -13,7 +13,7 @@ import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { CloudShader } from "@/components/marketing/CloudShader";
 import { CoverText, RevealLine } from "@/components/marketing/TextEffects";
 import { FooterControls } from "@/components/marketing/FooterControls";
-import { FooterDotField } from "@/components/marketing/FooterDotField";
+import { FooterGlyphField } from "@/components/marketing/FooterGlyphField";
 import { PublicNavigation } from "@/components/marketing/PublicNavigation";
 import {
   MergeFlow,
@@ -134,7 +134,7 @@ export function PublicFrame({
       </header>
       <main id="public-main">{children}</main>
       <footer className="lp-footer" id="footer">
-        <FooterDotField />
+        <FooterGlyphField />
         <div className="lp-footer-inner">
           <div className="lp-footer-intro">
             <Link className="lp-brand" to="/" aria-label="Margin 홈">
