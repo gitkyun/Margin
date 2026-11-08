@@ -66,3 +66,21 @@ test("emits the files required by Sites packaging", async () => {
   await access(new URL("../dist/server/index.js", import.meta.url));
   await access(new URL("../dist/.openai/hosting.json", import.meta.url));
 });
+
+test("Pages rewrites app routes to / so deep links are not redirected", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const rules = (await readFile(new URL("../public/_redirects", import.meta.url), "utf8"))
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .map((line) => line.split(/\s+/));
+
+  for (const route of ["/login", "/r", "/r/*", "/guide"]) {
+    assert.ok(rules.some(([from]) => from === route), `missing rewrite for ${route}`);
+  }
+  for (const [from, to, status] of rules) {
+    // Pages redirects /index.html to / (308), so a rewrite to /index.html sends deep links to the landing page.
+    assert.notEqual(to, "/index.html", `${from} must not rewrite to /index.html`);
+    assert.equal(status, "200", `${from} must be a rewrite, not a redirect`);
+  }
+});
