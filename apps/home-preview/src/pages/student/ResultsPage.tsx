@@ -1,5 +1,4 @@
 import { WorkTabs } from "./shared";
-import { SelectField } from "@/components/experience";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -7,23 +6,14 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
-import { recordBase, type RevisionResult } from "@/lib/domain";
-import {
-  BackLink,
-  ErrorNotice,
-  FormDialog,
-  LabeledInput,
-  LabeledText,
-  SaveActions,
-  SearchInput,
-  useSaving,
-} from "./shared";
-import { QuickPdfUpload } from "./QuickPdfUpload";
+import type { RevisionResult } from "@/lib/domain";
+import { BackLink, SearchInput } from "./shared";
+import { ResultEditorDialog } from "./ResultEditorDialog";
+import { newResultDraft } from "./result-draft";
 
 export function ResultsPage() {
   const { researchId = "", resultId } = useParams();
@@ -33,7 +23,6 @@ export function ResultsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [draft, setDraft] = useState<RevisionResult | null>(null);
-  const form = useSaving();
   const current = data.results.find(
     (result) => result.id === resultId && result.researchId === researchId,
   );
@@ -49,31 +38,22 @@ export function ResultsPage() {
     (current.kind === "other" ||
       (!!current.versionId && !!current.location.trim()));
   function startCreate() {
-    const feedbackId = params.get("feedback");
-    const taskId = params.get("task");
-    const task = data.tasks.find(
-      (item) => item.id === taskId && item.researchId === researchId,
+    setDraft(
+      newResultDraft(researchId, {
+        feedback: data.feedback.find(
+          (item) =>
+            item.id === params.get("feedback") &&
+            item.researchId === researchId,
+        ),
+        task: data.tasks.find(
+          (item) =>
+            item.id === params.get("task") && item.researchId === researchId,
+        ),
+        versionId: data.versions.find(
+          (v) => v.id === params.get("version") && v.researchId === researchId,
+        )?.id,
+      }),
     );
-    const feedback = data.feedback.find(
-      (item) => item.id === feedbackId && item.researchId === researchId,
-    );
-    setDraft({
-      ...recordBase(researchId),
-      title: task
-        ? `${task.title} 수정 결과`
-        : feedback
-          ? `${feedback.title} 수정 결과`
-          : "",
-      description: "",
-      feedbackIds: feedback ? [feedback.id] : (task?.feedbackIds ?? []),
-      taskIds: task ? [task.id] : [],
-      kind: "document",
-      versionId: data.versions.find(
-        (v) => v.id === params.get("version") && v.researchId === researchId,
-      )?.id,
-      location: "",
-    });
-    form.setError(null);
   }
   useEffect(() => {
     if (params.get("new") === "1" && !resultId) {
@@ -121,10 +101,7 @@ export function ResultsPage() {
               <div className="button-row">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setDraft({ ...current });
-                    form.setError(null);
-                  }}
+                  onClick={() => setDraft({ ...current })}
                 >
                   <Icon name="edit" size={16} />
                   수정 결과 편집
@@ -353,205 +330,12 @@ export function ResultsPage() {
           </section>
         </>
       )}
-      <FormDialog
-        busy={form.saving}
-        open={draft !== null}
-        onOpenChange={(open) => {
-          if (!open) setDraft(null);
-        }}
-        title={
-          draft && data.results.some((result) => result.id === draft.id)
-            ? "수정 결과 편집"
-            : "수정 결과 작성"
-        }
-        description="개인 저장본입니다. 저장만으로 교수에게 공개되지 않습니다."
-      >
-        <form
-          className="stack"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!draft || !draft.title.trim() || !draft.description.trim()) {
-              form.setError("결과 제목과 실제 수정한 내용을 입력하세요.");
-              return;
-            }
-            void form.perform(async () => {
-              const result = await save("results", {
-                ...draft,
-                title: draft.title.trim(),
-                description: draft.description.trim(),
-                location: draft.location.trim(),
-              });
-              setDraft(null);
-              navigate(`/r/${researchId}/results/${result.id}`);
-              toast.success("수정 결과를 저장했습니다");
-            });
-          }}
-        >
-          {draft && (
-            <>
-              <LabeledInput
-                label="결과 제목"
-                required
-                value={draft.title}
-                onChange={(title) =>
-                  setDraft((value) => (value ? { ...value, title } : value))
-                }
-              />
-              <LabeledText
-                label={
-                  draft.kind === "other"
-                    ? "실제로 수행한 내용"
-                    : "실제로 수정한 내용"
-                }
-                required
-                value={draft.description}
-                onChange={(description) =>
-                  setDraft((value) =>
-                    value ? { ...value, description } : value,
-                  )
-                }
-                placeholder="어떤 부분을 어떻게 바꿨는지 적어 주세요."
-                rows={5}
-              />
-              <label className="field">
-                <span className="field-name">작업 종류</span>
-                <SelectField
-                  className="native-select"
-                  value={draft.kind}
-                  onChange={(event) =>
-                    setDraft((value) =>
-                      value
-                        ? {
-                            ...value,
-                            kind: event.target.value as RevisionResult["kind"],
-                          }
-                        : value,
-                    )
-                  }
-                >
-                  <option value="document">문서 수정</option>
-                  <option value="other">비문서 작업</option>
-                </SelectField>
-              </label>
-              {draft.kind === "document" && (
-                <>
-                  <label className="field">
-                    <span className="field-name">보존 파일</span>
-                    <SelectField
-                      className="native-select"
-                      value={draft.versionId ?? ""}
-                      onChange={(event) =>
-                        setDraft((value) =>
-                          value
-                            ? {
-                                ...value,
-                                versionId: event.target.value || undefined,
-                              }
-                            : value,
-                        )
-                      }
-                    >
-                      <option value="">나중에 연결</option>
-                      {data.versions
-                        .filter((version) => version.researchId === researchId)
-                        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-                        .map((version) => (
-                          <option key={version.id} value={version.id}>
-                            {version.fileName} · v{version.number}
-                          </option>
-                        ))}
-                    </SelectField>
-                    <small className="field-hint">
-                      문서 수정의 교수 검토에는 보존 파일과 확인 위치가
-                      필요합니다.
-                    </small>
-                  </label>
-                  <QuickPdfUpload
-                    researchId={researchId}
-                    onUploaded={(version) =>
-                      setDraft((value) =>
-                        value ? { ...value, versionId: version.id } : value,
-                      )
-                    }
-                  />
-                  <LabeledInput
-                    label="확인 위치"
-                    value={draft.location}
-                    onChange={(location) =>
-                      setDraft((value) =>
-                        value ? { ...value, location } : value,
-                      )
-                    }
-                    placeholder="예: 4페이지 표 2, 2장 마지막 문단"
-                  />
-                </>
-              )}
-              <div className="student-picker">
-                <h3>연결할 피드백</h3>
-                {data.feedback
-                  .filter((feedback) => feedback.researchId === researchId)
-                  .map((feedback) => (
-                    <label className="student-choice-row" key={feedback.id}>
-                      <input
-                        type="checkbox"
-                        checked={draft.feedbackIds.includes(feedback.id)}
-                        onChange={(event) =>
-                          setDraft((value) =>
-                            value
-                              ? {
-                                  ...value,
-                                  feedbackIds: event.target.checked
-                                    ? [...value.feedbackIds, feedback.id]
-                                    : value.feedbackIds.filter(
-                                        (id) => id !== feedback.id,
-                                      ),
-                                }
-                              : value,
-                          )
-                        }
-                      />
-                      <span>{feedback.title}</span>
-                    </label>
-                  ))}
-              </div>
-              <div className="student-picker">
-                <h3>연결할 작업</h3>
-                {data.tasks
-                  .filter((task) => task.researchId === researchId)
-                  .map((task) => (
-                    <label className="student-choice-row" key={task.id}>
-                      <input
-                        type="checkbox"
-                        checked={draft.taskIds.includes(task.id)}
-                        onChange={(event) =>
-                          setDraft((value) =>
-                            value
-                              ? {
-                                  ...value,
-                                  taskIds: event.target.checked
-                                    ? [...value.taskIds, task.id]
-                                    : value.taskIds.filter(
-                                        (id) => id !== task.id,
-                                      ),
-                                }
-                              : value,
-                          )
-                        }
-                      />
-                      <span>{task.title}</span>
-                    </label>
-                  ))}
-              </div>
-            </>
-          )}
-          <ErrorNotice error={form.error} />
-          <SaveActions
-            saving={form.saving}
-            onCancel={() => setDraft(null)}
-            label="수정 결과 저장"
-          />
-        </form>
-      </FormDialog>
+      <ResultEditorDialog
+        researchId={researchId}
+        draft={draft}
+        setDraft={setDraft}
+        onSaved={(result) => navigate(`/r/${researchId}/results/${result.id}`)}
+      />
     </div>
   );
 }

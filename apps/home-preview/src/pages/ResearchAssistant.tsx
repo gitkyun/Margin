@@ -1041,9 +1041,6 @@ export function ResearchAssistant() {
                 />
               </button>
             ))}
-            <Button variant="outline" onClick={() => setPicker(false)}>
-              선택 완료 · {contexts.length}개
-            </Button>
             <h3>PDF 보존 자료</h3>
             <label className="field">
               읽을 페이지
@@ -1076,6 +1073,14 @@ export function ResearchAssistant() {
                 </button>
               ))}
           </div>
+          {task !== "organize_meeting" && (
+            // Outside the scrolling list so the confirm action stays visible.
+            <div className="bottom-actions">
+              <Button onClick={() => setPicker(false)}>
+                선택 완료 · {contexts.length}개
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
       <Dialog

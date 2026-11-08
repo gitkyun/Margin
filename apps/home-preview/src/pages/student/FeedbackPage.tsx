@@ -18,8 +18,11 @@ import {
   type BaseRecord,
   type Feedback,
   type RevisionPlan,
+  type RevisionResult,
 } from "@/lib/domain";
 import { AIWorkbench } from "./AIWorkbench";
+import { ResultEditorDialog } from "./ResultEditorDialog";
+import { newResultDraft } from "./result-draft";
 import { isAISourceStale } from "./ai-source";
 import {
   BackLink,
@@ -242,6 +245,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
   const [aiInput, setAiInput] = useState<AIInput | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiRun, setAiRun] = useState(0);
+  const [resultDraft, setResultDraft] = useState<RevisionResult | null>(null);
   const aiStale =
     !!aiInput && isAISourceStale(aiInput, { text: feedback.body });
   function openAI() {
@@ -572,14 +576,23 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             <section className="surface">
               <div className="section-heading">
                 <h2>수정 결과</h2>
-                <Link
+                <button
+                  type="button"
                   className="student-text-link"
-                  to={`/r/${researchId}/results?feedback=${feedback.id}&new=1`}
+                  onClick={() =>
+                    setResultDraft(newResultDraft(researchId, { feedback }))
+                  }
                 >
                   작성
                   <Icon name="plus" size={14} />
-                </Link>
+                </button>
               </div>
+              {/* Opened in place so this feedback stays behind the dialog. */}
+              <ResultEditorDialog
+                researchId={researchId}
+                draft={resultDraft}
+                setDraft={setResultDraft}
+              />
               {results.length ? (
                 results.map((result) => (
                   <Link
