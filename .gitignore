@@ -1,28 +1,28 @@
-# Dependencies and build output
+# Dependencies, generated files and private local state
 node_modules/
-.next/
-out/
 dist/
 build/
-.turbo/
-.vercel/
 coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo
-
-# Local environment; keep examples versioned
 .env
 .env.*
 !.env.example
 !.env.*.example
 *.pem
 *.key
-
-# Local data and temporary files
+*.local
+*.local.json
+.local/
+.npm-rms-cache/
+.impeccable/
+.wrangler/
+supabase/.temp/
 uploads/
 storage/
 tmp/
+archive/
 .venv/
 __pycache__/
 *.py[cod]
@@ -30,13 +30,4 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Supabase CLI link/cache state
-supabase/.temp/
-.wrangler/
-
-# Per-machine live test results
-*.local.json
-
-# Local course workspace and historical working files.
-archive/
-.local/
+**/supabase/.temp/

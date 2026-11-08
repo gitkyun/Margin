@@ -1,3 +1,4 @@
+import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
 import {
   reviewDepthOptions,
   resolveReviewDepth,
@@ -462,6 +463,7 @@ export function ResearchSettingsPage() {
                   toast.info("변경한 내용을 저장하거나 취소해 주세요.");
                   return;
                 }
+                setError("");
                 setParams({ tab: id });
               }}
             >
@@ -471,7 +473,7 @@ export function ResearchSettingsPage() {
           ))}
         </nav>
         <div className="settings-body">
-          {error && (
+          {error && tab !== "members" && (
             <p className="rms-error" role="alert">
               {error}
             </p>
@@ -607,10 +609,20 @@ export function ResearchSettingsPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      aria-describedby={error ? "invite-error" : undefined}
                       placeholder="동료의 계정 이메일"
                     />
                   </label>
                   <p className="settings-note">
+                    {error && (
+                      <span
+                        id="invite-error"
+                        role="alert"
+                        className="form-error"
+                      >
+                        {error}
+                      </span>
+                    )}
                     등록된 계정만 초대할 수 있습니다. 편집자도 지정 교수에게
                     검토를 공개할 수 있습니다.
                   </p>
@@ -834,11 +846,11 @@ function PasswordSettings() {
             autoComplete="new-password"
             value={next}
             onChange={(e) => setNext(e.target.value)}
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
             required
             disabled={busy}
           />
-          <small>8자 이상으로 입력하세요.</small>
+          <small>{PASSWORD_HELP}</small>
         </label>
         <label className="field">
           새 비밀번호 확인

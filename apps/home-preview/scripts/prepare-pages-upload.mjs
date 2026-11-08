@@ -5,6 +5,8 @@ import { extname } from "node:path";
 const base = new URL("../dist/client/", import.meta.url),
   out = new URL("../../../.local/pages-upload/", import.meta.url);
 const types = {
+  ".xml": "application/xml; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "application/javascript",

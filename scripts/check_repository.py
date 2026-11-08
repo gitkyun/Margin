@@ -19,12 +19,14 @@ REQUIRED_FILES = (
     "docs/product/functional-specification.md",
     "docs/product/user-flow.md",
     "docs/design/README.md",
-    "docs/development/README.md",
-    "docs/assets/rms-cover.png",
+    "docs/development.md",
+    "docs/deployment.md",
+    "docs/architecture.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
     ".github/workflows/repository-checks.yml",
 )
-# Historical copies keep their original paths and are not active repository documents.
-EXCLUDED_DIRS = {".git", "node_modules", ".next", ".venv", "dist", "build", "archive", ".local"}
+EXCLUDED_DIRS = {".git", "node_modules", ".next", ".venv", "dist", "build", ".local", ".npm-rms-cache", ".impeccable"}
 MARKDOWN_LINK = re.compile(r"!?\[[^\]\n]*\]\(\s*(<[^>\n]+>|[^\s)]+)(?:\s+[^)]+)?\)")
 
 

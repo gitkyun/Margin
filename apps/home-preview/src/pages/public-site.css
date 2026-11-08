@@ -1,4 +1,4 @@
-/* Public narrative: Aceternity clouds and interaction, Margin content and product truth. */
+/* Public narrative: Aceternity clouds and interaction, RMS content and product truth. */
 .lp-site {
   --canvas: #fff;
   --surface: #fff;
@@ -361,7 +361,7 @@
 }
 .lp-window-content {
   overflow-y: auto;
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
   padding: 36px 40px;
   flex: 1;
   min-width: 0;
@@ -937,7 +937,7 @@
     color 0.25s,
     transform 0.25s;
 }
-.lp-capability > svg {
+.lp-capability-link > svg {
   color: #71819a;
 }
 .lp-capability h3 {
@@ -1942,7 +1942,7 @@
   .lp-capability p {
     font-size: 12px;
   }
-  .lp-capability > svg {
+  .lp-capability-link > svg {
     width: 24px;
   }
   .lp-pricing .subscription-card {
@@ -2277,4 +2277,28 @@
   .lp-footer-columns {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* The complete feature card is an accessible destination. */
+.lp-capability-link {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  gap: 40px;
+  color: inherit;
+  text-decoration: none;
+}
+.lp-demo-title {
+  margin: 20px 0;
+  font-size: 22px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.landing-page .lp-capability p {
+  font-size: 14px;
+  color: #556176;
+}
+.dark .landing-page .lp-capability p {
+  color: #bac8de;
 }

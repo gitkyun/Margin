@@ -36,6 +36,7 @@ import {
   InfoPage,
   FeatureTourPage,
   PricingPage,
+  PublicFrame,
 } from "@/pages/PublicPages";
 import { AccountPage, ResearchSettingsPage } from "@/pages/SettingsPage";
 import { ResearchAssistant } from "@/pages/ResearchAssistant";
@@ -297,7 +298,25 @@ export function App() {
                   ? "계정 설정"
                   : path === "/r"
                     ? "내 연구"
-                    : "연구 작업 공간");
+                    : /^\/r\/[^/]+/.test(path)
+                      ? path.includes("/meetings")
+                        ? "미팅"
+                        : path.includes("/writing")
+                          ? "글쓰기"
+                          : path.includes("/tasks")
+                            ? "할 일"
+                            : path.includes("/feedback")
+                              ? "피드백"
+                              : path.includes("/materials")
+                                ? "자료"
+                                : path.includes("/results")
+                                  ? "수정 결과"
+                                  : path.includes("/planning")
+                                    ? "계획·일정"
+                                    : "연구 홈"
+                      : path.startsWith("/reviews")
+                        ? "교수 검토"
+                        : "페이지를 찾을 수 없습니다");
     document.title = `${name} · Margin`;
   }, [location.pathname]);
   if (location.pathname === "/") return <LandingPage signedIn={!!session} />;
@@ -312,6 +331,23 @@ export function App() {
         privacy={location.pathname === "/privacy"}
         signedIn={!!session}
       />
+    );
+  if (
+    !/^\/(login|account|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
+      location.pathname,
+    )
+  )
+    return (
+      <PublicFrame signedIn={!!session} compact>
+        <section className="not-found">
+          <Icon name="search" size={32} />
+          <h1>페이지를 찾을 수 없습니다.</h1>
+          <p>주소를 확인하거나 첫 화면으로 이동해 주세요.</p>
+          <Button asChild>
+            <Link to="/">첫 화면으로</Link>
+          </Button>
+        </section>
+      </PublicFrame>
     );
   if (!ready) return <InitialLoading />;
   if (configured && !session) {

@@ -33,6 +33,7 @@ import {
 } from "@/lib/domain";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import {
   Dialog,
@@ -89,6 +90,15 @@ export function WritingPage() {
     navigate = useNavigate();
   const [params] = useSearchParams(),
     [creating, setCreating] = useState(false);
+  const [createType, setCreateType] = useState<DocumentRecord["type"] | null>(
+    null,
+  );
+  const [newTitle, setNewTitle] = useState("");
+  function beginCreate(type: DocumentRecord["type"] = "plan") {
+    creationBase.current = null;
+    setNewTitle("");
+    setCreateType(type);
+  }
   const creationInFlight = useRef(false);
   const creationBase = useRef<ReturnType<typeof recordBase> | null>(null);
   const docs = data.documents.filter(
@@ -96,20 +106,21 @@ export function WritingPage() {
   );
   const current = docs.find((d) => d.id === documentId);
   async function create(type: DocumentRecord["type"] = "plan") {
-    if (creationInFlight.current) return;
+    if (creationInFlight.current || !newTitle.trim()) return;
     creationInFlight.current = true;
     setCreating(true);
     creationBase.current ??= recordBase(researchId);
     try {
       const d = await save("documents", {
         ...creationBase.current,
-        title: type === "plan" ? "새 연구 계획서" : "새 원고",
+        title: newTitle.trim(),
         type,
         visibility: "private",
         content: { type: "doc", content: [{ type: "paragraph" }] },
         text: "",
         revision: 0,
       });
+      setCreateType(null);
       navigate(`/r/${researchId}/writing/${d.id}`, { replace: true });
     } catch (e) {
       toast.error((e as Error).message);
@@ -119,7 +130,7 @@ export function WritingPage() {
     }
   }
   useEffect(() => {
-    if (params.get("new") === "1" && !documentId) void create();
+    if (params.get("new") === "1" && !documentId) beginCreate();
   }, []);
   if (current) return <DocumentEditor key={current.id} initial={current} />;
   return (
@@ -132,17 +143,73 @@ export function WritingPage() {
             <Button
               disabled={creating}
               variant="outline"
-              onClick={() => void create("manuscript")}
+              onClick={() => beginCreate("manuscript")}
             >
               원고 만들기
             </Button>
-            <Button disabled={creating} onClick={() => void create()}>
+            <Button disabled={creating} onClick={() => beginCreate()}>
               <Icon name="plus" size={17} />
               계획서 만들기
             </Button>
           </div>
         }
       />
+      <Dialog
+        open={createType !== null}
+        onOpenChange={(open) => {
+          if (!open && !creating) {
+            setCreateType(null);
+            navigate(`/r/${researchId}/writing`, { replace: true });
+          }
+        }}
+      >
+        <DialogContent className="rms-dialog">
+          <DialogHeader>
+            <DialogTitle>
+              {createType === "manuscript"
+                ? "원고 만들기"
+                : "연구 계획서 만들기"}
+            </DialogTitle>
+            <DialogDescription>
+              제목을 정한 뒤 작성 공간을 만듭니다. 문서는 나만 보기로
+              시작합니다.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (createType) void create(createType);
+            }}
+          >
+            <label className="field">
+              <span>문서 제목 (필수)</span>
+              <Input
+                autoFocus
+                maxLength={160}
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="예: 연구 방법 초안"
+              />
+            </label>
+            <div className="form-actions">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={creating}
+                onClick={() => {
+                  setCreateType(null);
+                  navigate(`/r/${researchId}/writing`, { replace: true });
+                }}
+              >
+                취소
+              </Button>
+              <Button disabled={creating || !newTitle.trim()}>
+                {creating ? "만드는 중" : "문서 만들기"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
       <div className="document-grid">
         {docs.map((d) => (
           <Link
@@ -181,7 +248,7 @@ export function WritingPage() {
           title="연구의 첫 문장을 남겨 보세요."
           description="저장한 버전은 비교하고, 검토용 PDF로 만들 수 있습니다."
           action={
-            <Button variant="outline" onClick={() => void create()}>
+            <Button variant="outline" onClick={() => beginCreate()}>
               계획서 작성
             </Button>
           }
@@ -697,7 +764,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             <TextComparison before={before} after={after} />
           ) : (
             <p className="quiet-placeholder">
-              버전을 저장한 뒤 비교할 수 있습니다.
+              저장은 작성 중인 내용을 갱신합니다. ‘현재 버전 보존’으로 비교할
+              기준을 남기면 작성 중인 내용과 비교할 수 있습니다.
             </p>
           )}
           <div className="bottom-actions">
@@ -737,7 +805,9 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               disabled={!!busy}
               onClick={() =>
                 void action("version", async () => {
-                  await keepVersion();
+                  const version = await keepVersion();
+                  setFrom(version.id);
+                  setTo("draft");
                   toast.success("보존 버전을 저장했습니다.");
                 })
               }
@@ -796,19 +866,30 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   try {
                     if (pending.version)
                       await save("versions", pending.version);
-                    else await upload(pending.file, pending.material);
+                    else
+                      pending.version = await upload(
+                        pending.file,
+                        pending.material,
+                      );
                   } catch (e) {
                     if (e instanceof UploadConnectionError)
                       pending.version = e.uploadedVersion;
                     throw e;
                   }
+                  const versionId = pending.version?.id;
                   pendingPDF.current = {};
                   setPreview(null);
-                  toast.success("보존 PDF를 자료에 등록했습니다.");
+                  toast.success(
+                    "보존 PDF를 등록했습니다. 수정한 내용을 이어서 적어 주세요.",
+                  );
+                  if (versionId)
+                    navigate(
+                      `/r/${initial.researchId}/results?new=1&version=${versionId}`,
+                    );
                 })
               }
             >
-              {busy === "register" ? "등록 중" : "보존 자료로 등록"}
+              {busy === "register" ? "등록 중" : "등록하고 수정 결과 작성"}
             </Button>
           </div>
         </DialogContent>

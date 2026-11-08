@@ -341,7 +341,7 @@ export function MaterialsPage() {
               </SelectField>
             </label>
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={async () => {
                 try {
                   await save("materials", {
@@ -583,16 +583,18 @@ export function MaterialsPage() {
                     className="material-list-row"
                     to={`/r/${researchId}/materials/${material.id}`}
                   >
-                    {!material.externalUrl && materialVersions[0] ? <MaterialPreviewBadge version={materialVersions[0]}/> : (
-                    <span
-                      className={`material-symbol ${material.externalUrl ? "is-link" : ""}`}
-                    >
-                      <Icon
-                        name={material.externalUrl ? "link" : "file"}
-                        size={23}
-                      />
-                      {!material.externalUrl && <small>PDF</small>}
-                    </span>
+                    {!material.externalUrl && materialVersions[0] ? (
+                      <MaterialPreviewBadge version={materialVersions[0]} />
+                    ) : (
+                      <span
+                        className={`material-symbol ${material.externalUrl ? "is-link" : ""}`}
+                      >
+                        <Icon
+                          name={material.externalUrl ? "link" : "file"}
+                          size={23}
+                        />
+                        {!material.externalUrl && <small>PDF</small>}
+                      </span>
                     )}
                     <span className="grow">
                       <strong>{material.title}</strong>
@@ -665,7 +667,7 @@ export function MaterialsPage() {
             : "PDF는 내용이 보존되고, 외부 링크는 원본이 바뀔 수 있습니다."
         }
       >
-        <form className="stack" onSubmit={register}>
+        <form className="stack material-registration-form" onSubmit={register}>
           {!target && (
             <div className="segmented">
               <button

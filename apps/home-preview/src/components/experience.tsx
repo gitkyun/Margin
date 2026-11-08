@@ -82,6 +82,7 @@ export function Choice({
           disabled={disabled}
           aria-label={label}
           aria-haspopup="listbox"
+          data-draft-value={value}
         >
           <span>{options.find((o) => o.value === value)?.label ?? "선택"}</span>
           <Icon name="chevron-down" size={16} />
@@ -209,20 +210,43 @@ function flattenOptions(
   });
 }
 export function SelectField(props: SelectHTMLAttributes<HTMLSelectElement>) {
+  const host = useRef<HTMLSpanElement>(null);
+  const [fieldLabel, setFieldLabel] = useState("선택");
+  useEffect(() => {
+    const parent = host.current?.closest(".field, label");
+    const explicit = props.id
+      ? document.querySelector(`label[for="${CSS.escape(props.id)}"]`)
+      : null;
+    const label =
+      explicit ??
+      parent?.querySelector(
+        ".field-label, .field-name, :scope > span:first-child",
+      );
+    const text =
+      label?.textContent?.replace(/필수/g, "").trim() ||
+      [...(parent?.childNodes ?? [])]
+        .filter((n) => n.nodeType === Node.TEXT_NODE)
+        .map((n) => n.textContent)
+        .join("")
+        .trim();
+    if (text) setFieldLabel(text);
+  }, [props.id]);
   return (
-    <Choice
-      id={props.id}
-      value={String(props.value ?? "")}
-      label={String(props["aria-label"] ?? props.name ?? "항목 선택")}
-      disabled={props.disabled}
-      options={flattenOptions(props.children)}
-      onChange={(value) =>
-        props.onChange?.({
-          target: { value },
-          currentTarget: { value },
-        } as React.ChangeEvent<HTMLSelectElement>)
-      }
-    />
+    <span className="select-field-host" ref={host}>
+      <Choice
+        id={props.id}
+        value={String(props.value ?? "")}
+        label={String(props["aria-label"] ?? props.name ?? fieldLabel)}
+        disabled={props.disabled}
+        options={flattenOptions(props.children)}
+        onChange={(value) =>
+          props.onChange?.({
+            target: { value },
+            currentTarget: { value },
+          } as React.ChangeEvent<HTMLSelectElement>)
+        }
+      />
+    </span>
   );
 }
 export function Segments({

@@ -116,10 +116,7 @@ export function HomePage() {
       <header className="rh-intro">
         <div className="rh-intro-copy">
           <h1>{research.name}</h1>
-          <p>
-            {research.description ||
-              "지난 기록을 살펴보고, 오늘 이어갈 일을 정리하세요."}
-          </p>
+          <p>{research.description || "설명을 추가하지 않은 연구입니다."}</p>
           <Link className="rh-people" to={`${base}/settings?tab=members`}>
             {isCollaborative ? (
               <>
@@ -432,7 +429,9 @@ export function HomePage() {
                           <i>·</i>
                         </>
                       )}
-                      {task.dueDate ? formatDate(task.dueDate) : "기한 없음"}
+                      {task.dueDate
+                        ? `${task.status !== "done" && task.dueDate < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }) ? "기한 지남 · " : ""}${formatDate(task.dueDate)}`
+                        : "기한 없음"}
                     </span>
                   </Link>
                   <span

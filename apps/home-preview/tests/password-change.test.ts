@@ -58,3 +58,8 @@ it("surfaces update errors while still closing the verification session", async 
   ).rejects.toThrow();
   expect(auth.signOut).toHaveBeenCalledOnce();
 });
+
+it("accepts exactly eight characters without trimming the entered value", async () => {
+  await changeAccountPassword(user, "old-secret", " pass12!", " pass12!");
+  expect(auth.update).toHaveBeenCalledWith({ password: " pass12!" });
+});

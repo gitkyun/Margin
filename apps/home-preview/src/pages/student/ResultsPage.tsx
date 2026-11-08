@@ -68,6 +68,9 @@ export function ResultsPage() {
       feedbackIds: feedback ? [feedback.id] : (task?.feedbackIds ?? []),
       taskIds: task ? [task.id] : [],
       kind: "document",
+      versionId: data.versions.find(
+        (v) => v.id === params.get("version") && v.researchId === researchId,
+      )?.id,
       location: "",
     });
     form.setError(null);
@@ -271,12 +274,7 @@ export function ResultsPage() {
               </Button>
             }
           />
-          <div className="tabs-line">
-            <Link to={`/r/${researchId}/feedback`}>피드백</Link>
-            <Link className="active" to={`/r/${researchId}/results`}>
-              수정 결과
-            </Link>
-          </div>
+
           <div className="page-toolbar">
             <div className="segmented">
               {[
@@ -400,7 +398,11 @@ export function ResultsPage() {
                 }
               />
               <LabeledText
-                label="실제로 수정한 내용"
+                label={
+                  draft.kind === "other"
+                    ? "실제로 수행한 내용"
+                    : "실제로 수정한 내용"
+                }
                 required
                 value={draft.description}
                 onChange={(description) =>
@@ -431,52 +433,59 @@ export function ResultsPage() {
                   <option value="other">비문서 작업</option>
                 </SelectField>
               </label>
-              <label className="field">
-                <span className="field-name">보존 파일</span>
-                <SelectField
-                  className="native-select"
-                  value={draft.versionId ?? ""}
-                  onChange={(event) =>
-                    setDraft((value) =>
-                      value
-                        ? {
-                            ...value,
-                            versionId: event.target.value || undefined,
-                          }
-                        : value,
-                    )
-                  }
-                >
-                  <option value="">나중에 연결</option>
-                  {data.versions
-                    .filter((version) => version.researchId === researchId)
-                    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-                    .map((version) => (
-                      <option key={version.id} value={version.id}>
-                        {version.fileName} · v{version.number}
-                      </option>
-                    ))}
-                </SelectField>
-                <small className="field-hint">
-                  문서 수정의 교수 검토에는 보존 파일과 확인 위치가 필요합니다.
-                </small>
-              </label>
-              <QuickPdfUpload
-                researchId={researchId}
-                onUploaded={(version) =>
-                  setDraft((value) =>
-                    value ? { ...value, versionId: version.id } : value,
-                  )
-                }
-              />
-              <LabeledInput
-                label="확인 위치"
-                value={draft.location}
-                onChange={(location) =>
-                  setDraft((value) => (value ? { ...value, location } : value))
-                }
-                placeholder="예: 4페이지 표 2, 2장 마지막 문단"
-              />
+              {draft.kind === "document" && (
+                <>
+                  <label className="field">
+                    <span className="field-name">보존 파일</span>
+                    <SelectField
+                      className="native-select"
+                      value={draft.versionId ?? ""}
+                      onChange={(event) =>
+                        setDraft((value) =>
+                          value
+                            ? {
+                                ...value,
+                                versionId: event.target.value || undefined,
+                              }
+                            : value,
+                        )
+                      }
+                    >
+                      <option value="">나중에 연결</option>
+                      {data.versions
+                        .filter((version) => version.researchId === researchId)
+                        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                        .map((version) => (
+                          <option key={version.id} value={version.id}>
+                            {version.fileName} · v{version.number}
+                          </option>
+                        ))}
+                    </SelectField>
+                    <small className="field-hint">
+                      문서 수정의 교수 검토에는 보존 파일과 확인 위치가
+                      필요합니다.
+                    </small>
+                  </label>
+                  <QuickPdfUpload
+                    researchId={researchId}
+                    onUploaded={(version) =>
+                      setDraft((value) =>
+                        value ? { ...value, versionId: version.id } : value,
+                      )
+                    }
+                  />
+                  <LabeledInput
+                    label="확인 위치"
+                    value={draft.location}
+                    onChange={(location) =>
+                      setDraft((value) =>
+                        value ? { ...value, location } : value,
+                      )
+                    }
+                    placeholder="예: 4페이지 표 2, 2장 마지막 문단"
+                  />
+                </>
+              )}
               <div className="student-picker">
                 <h3>연결할 피드백</h3>
                 {data.feedback

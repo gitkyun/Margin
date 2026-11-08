@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /r
+Disallow: /account
+Disallow: /reviews/
+Disallow: /schedule/
+Sitemap: https://margin-research.pages.dev/sitemap.xml

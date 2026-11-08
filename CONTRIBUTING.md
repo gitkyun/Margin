@@ -1,42 +1,32 @@
-# 기여 방법
+# 공동작업
 
-## 작업 시작
+## 브랜치와 PR
 
-```bash
-git switch main
-git pull --ff-only
-git switch -c feat/short-description
-```
+- `main`: 배포 기준. 직접 push하지 않습니다.
+- `feat/기능`, `fix/문제`, `chore/정리`: 목적 하나에 브랜치 하나.
+- 작업 전 최신 main을 받고, 완료 후 PR을 엽니다. 검사 통과와 다른 한 명의 검토를 확인하고 squash merge합니다.
+- 병합한 브랜치는 삭제합니다. 장기 develop 브랜치는 두지 않습니다.
 
-기능 작업은 `feat/`, 수정은 `fix/`, 문서는 `docs/`, 저장소 정리는 `chore/` 접두어를 권한다. 실제 변경에 맞는 짧은 이름을 사용한다.
+현재 GitHub 요금제는 비공개 저장소의 보호 브랜치를 지원하지 않습니다. PR·동료 검토는 팀 규칙이며 서버에서 강제되는 것으로 오해하지 마세요. 업그레이드는 관리자가 결정합니다.
 
-PRD·기능명세서·유저플로우는 [제품 문서](docs/README.md)에서 확인한다. 새 기능을 구현하기 전에 관련 동작과 초기·후속 범위를 먼저 읽는다.
+## 역할
 
-## 문서 변경
+`gitkyun`: 저장소·Supabase·Cloudflare 관리. `hyouka0508`, `dydtjr54`: 앱 개발·동료 검토. GitHub는 각자 계정을 사용합니다. 서비스 체험용 학생·교수 계정은 별개이며 관리자가 비공개로 전달합니다.
 
-- 현재 기준 문서는 `docs/product/`에서 관리한다. 파일명에 날짜를 계속 붙여 중복본을 만들지 않는다.
-- 요구사항을 바꾸면 문서의 변경 시점과 관련 설명을 갱신하고 PR에 이유를 기록한다.
-- 사용자 확정과 작성 기준안·검증할 가설을 구분한다.
-- 화면·도구의 동작을 주장할 때는 공식 자료 또는 실제 확인한 근거를 남긴다.
-- 이미지 경로를 바꾸면 README와 관련 문서 링크를 함께 고친다.
+## 변경 기록
 
-## 검증
+매 작업에 `CHANGELOG.md` Unreleased를 갱신합니다. PR에는 문제/변경 이유, 영향 화면·권한·데이터, 실제 검사, 남은 제한을 적습니다. 빌드 산출물·개인 보고서·스크린샷을 무조건 추가하지 않습니다.
 
-```bash
+## 검사
+
+```sh
 python3 scripts/check_repository.py
-git diff --check
-git status --short
+cd apps/home-preview
+npm run typecheck
+npm test
+npm run test:backend
+npm run test:sites
+npm run build
 ```
 
-저장소 검사는 로컬 문서 연결과 필수 파일을 확인한다. 외부 사이트의 가용성이나 제품 기능의 작동을 검사하지 않는다. 앱 초기화 후 빌드·기능 검사 명령을 여기에 추가한다.
-
-## 커밋과 PR
-
-커밋은 한 가지 목적의 변경으로 묶고 다음처럼 작성한다.
-
-```text
-docs: clarify professor review requirements
-chore: organize repository documentation
-```
-
-PR에는 해결할 문제, 변경 내용, 실행한 검사와 남은 한계를 적는다. 원본 문서를 이동한 경우 내용도 바꿨는지 명시한다. 이슈를 연결할 때는 해당 요구사항 번호도 함께 적는다.
+DB는 기존 마이그레이션을 수정하지 않고 새 파일을 추가합니다. 데이터 삭제·계정 조작은 테스트 프로젝트에서만 명시적으로 실행합니다. 운영 계정 변경과 비밀값은 PR/이슈/로그에 남기지 않습니다.

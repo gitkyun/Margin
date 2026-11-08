@@ -191,6 +191,17 @@ export function ResearchAssistant() {
       .map((a) => ({ kind: "attachments" as const, id: a.id, title: a.title })),
   ];
   async function addContext(c: AIContext) {
+    if (task === "organize_meeting") {
+      setContexts([c]);
+      setPicker(false);
+      return;
+    }
+    if (contexts.some((x) => x.kind === c.kind && x.id === c.id)) {
+      setContexts((v) =>
+        v.filter((x) => !(x.kind === c.kind && x.id === c.id)),
+      );
+      return;
+    }
     if (contexts.length >= 8) {
       toast.info("한 번에 최대 8개까지 선택할 수 있습니다.");
       return;
@@ -198,7 +209,6 @@ export function ResearchAssistant() {
     setContexts((v) =>
       v.some((x) => x.kind === c.kind && x.id === c.id) ? v : [...v, c],
     );
-    setPicker(false);
   }
   async function addPDF(id: string) {
     try {
@@ -756,6 +766,23 @@ export function ResearchAssistant() {
                   </article>
                 ))
               )}
+              {!running && messages.at(-1)?.role === "user" && (
+                <div className="ai-unanswered" role="status">
+                  <Icon name="info" size={17} />
+                  <span>
+                    이 질문의 답변이 아직 없습니다. 선택한 자료와 질문을 확인해
+                    다시 요청할 수 있습니다.
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setDraft(messages.at(-1)?.text ?? "");
+                    }}
+                  >
+                    다시 작성
+                  </Button>
+                </div>
+              )}
               {running && (
                 <div className="ai-processing" role="status">
                   <AssistantMascot
@@ -982,6 +1009,9 @@ export function ResearchAssistant() {
                 type="button"
                 key={`${c.kind}-${c.id}`}
                 onClick={() => void addContext(c)}
+                aria-pressed={contexts.some(
+                  (x) => x.kind === c.kind && x.id === c.id,
+                )}
               >
                 <Icon name="file" size={17} />
                 <span>
@@ -1001,9 +1031,19 @@ export function ResearchAssistant() {
                     }
                   </small>
                 </span>
-                <Icon name="plus" size={16} />
+                <Icon
+                  name={
+                    contexts.some((x) => x.kind === c.kind && x.id === c.id)
+                      ? "check"
+                      : "plus"
+                  }
+                  size={16}
+                />
               </button>
             ))}
+            <Button variant="outline" onClick={() => setPicker(false)}>
+              선택 완료 · {contexts.length}개
+            </Button>
             <h3>PDF 보존 자료</h3>
             <label className="field">
               읽을 페이지

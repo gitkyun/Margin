@@ -1,8 +1,8 @@
-# Margin 정보 구조·화면 목록
+# RMS 정보 구조·화면 목록
 
 수정일: 2026-11-03 · 상태: 화면 설계를 위한 IA 작성 기준안
 
-기준 문서: [PRD](prd.md), [기능명세서](functional-specification.md), [유저 플로우](user-flow.md), [수업 시연 기준](../development/classroom-demo.md).
+기준 문서: [PRD](prd.md), [기능명세서](functional-specification.md), [유저 플로우](user-flow.md), [수업 시연 기준](../deployment.md).
 
 이 문서는 정보를 어느 메뉴와 화면에서 찾고 어떤 행동을 같은 화면에서 수행할지 정한다. 순차 행동과 저장 조건은 유저 플로우·기능명세서를 따른다. 화면ID는 논리적 화면·영역의 식별자이며 ID마다 별도 페이지를 구현하는 뜻은 아니다. 메뉴 이름·탭·레이아웃·주소는 이번 설계 기준안이며 사용자 개별 확정이나 구현 완료로 취급하지 않는다.
 

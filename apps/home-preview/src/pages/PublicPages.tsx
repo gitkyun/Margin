@@ -1,11 +1,12 @@
+import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
 import {
   BrandMark,
   BrandWordmark,
   AssistantMascot,
 } from "@/components/brand/Brand";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useTheme } from "@/lib/theme";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Icon } from "@/components/icons";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
@@ -79,6 +80,16 @@ export function PublicFrame({
   signedIn?: boolean;
 }) {
   const [menu, setMenu] = useState(false);
+  const location = useLocation();
+  useEffect(() => {
+    if (!location.hash) return;
+    const frame = requestAnimationFrame(() => {
+      document
+        .getElementById(decodeURIComponent(location.hash.slice(1)))
+        ?.scrollIntoView({ block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname, location.hash]);
   return (
     <div
       className={`public-site lp-site ${compact ? "public-compact lp-compact" : ""}`}
@@ -126,7 +137,7 @@ export function PublicFrame({
         <FooterDotField />
         <div className="lp-footer-inner">
           <div className="lp-footer-intro">
-            <Link className="lp-brand" to="/">
+            <Link className="lp-brand" to="/" aria-label="Margin 홈">
               <ResearchMark />
               <BrandWordmark />
             </Link>
@@ -182,7 +193,7 @@ function ProductPreview({ index }: { index: number }) {
         <Icon name="microphone" size={14} />
         미팅 원문
       </span>
-      <h4>비교 기준을 더 분명히 해볼까요?</h4>
+      <p className="lp-demo-title">비교 기준을 더 분명히 해볼까요?</p>
       <p>
         연구 목적, 자료 수집 방법, 분석 관점을 나누어 비교해 주세요. 다음
         미팅에는 기준을 고른 이유도 설명해 주세요.
@@ -211,7 +222,7 @@ function ProductPreview({ index }: { index: number }) {
       </div>
       <div className="lp-method">
         <span>방법 1</span>
-        <h4>세 가지 기준으로 비교표 다시 만들기</h4>
+        <p className="lp-demo-title">세 가지 기준으로 비교표 다시 만들기</p>
         <p>연구 목적 · 자료 수집 방법 · 분석 관점</p>
         <span className="lp-example-selected">
           <Icon name="check" size={14} />이 방법으로 준비
@@ -219,7 +230,7 @@ function ProductPreview({ index }: { index: number }) {
       </div>
       <div className="lp-method lp-method-alt">
         <span>방법 2</span>
-        <h4>핵심 선행연구 두 편을 깊게 비교하기</h4>
+        <p className="lp-demo-title">핵심 선행연구 두 편을 깊게 비교하기</p>
       </div>
       <div className="lp-model-meta">
         <Icon name="sparkles" size={14} />
@@ -234,7 +245,7 @@ function ProductPreview({ index }: { index: number }) {
         </span>
         <span>보존 버전 v2</span>
       </div>
-      <h4>2. 선행연구 비교</h4>
+      <p className="lp-demo-title">2. 선행연구 비교</p>
       <p>
         본 연구는 선행연구를 <mark>연구 목적, 자료 수집 방법, 분석 관점</mark>에
         따라 비교한다.
@@ -257,7 +268,7 @@ function ProductPreview({ index }: { index: number }) {
         <Icon name="lock" size={14} />
         지정 교수에게 공유
       </span>
-      <h4>선행연구 비교표 수정</h4>
+      <p className="lp-demo-title">선행연구 비교표 수정</p>
       <p>비교 기준을 세 가지로 나누고, 각 기준을 선택한 이유를 덧붙였습니다.</p>
       <div className="lp-review-file">
         <Icon name="file" size={23} />
@@ -563,14 +574,19 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             },
           ].map((c) => (
             <SpotlightCard key={c.title} className="lp-capability">
-              <Icon name={c.icon} size={27} />
-              <div>
-                <h3>{c.title}</h3>
-                <p>{c.body}</p>
-              </div>
-              <span className="lp-capability-arrow">
-                <Icon name="arrow-up-right" size={20} />
-              </span>
+              <Link
+                className="lp-capability-link"
+                to={`/features?view=${({ microphone: "meeting", calendar: "meeting", folder: "writing", users: "review" } as Record<string, string>)[c.icon]}`}
+              >
+                <Icon name={c.icon} size={27} />
+                <div>
+                  <h3>{c.title}</h3>
+                  <p>{c.body}</p>
+                </div>
+                <span className="lp-capability-arrow">
+                  <Icon name="arrow-up-right" size={20} />
+                </span>
+              </Link>
             </SpotlightCard>
           ))}
         </div>
@@ -875,12 +891,12 @@ export function SignupPage() {
                   <input
                     className="rms-input"
                     type="password"
-                    minLength={12}
+                    minLength={MIN_PASSWORD_LENGTH}
                     required
                     autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="시연용으로 12자 이상 입력하세요"
+                    placeholder={PASSWORD_HELP}
                   />
                   <small>실제로 사용하는 비밀번호를 입력하지 마세요.</small>
                 </label>
@@ -964,7 +980,7 @@ export function InfoPage({
         <h1>{privacy ? "자료와 개인정보" : "Margin 사용 안내"}</h1>
         <p>
           {privacy
-            ? "현재 Margin은 수업 시연을 위한 제한 공개 서비스입니다. 아래 내용은 현재 구현 상태에 대한 안내이며 정식 서비스의 이용약관이나 개인정보 처리방침을 대신하지 않습니다."
+            ? "현재 Margin는 수업 시연을 위한 제한 공개 서비스입니다. 아래 내용은 현재 구현 상태에 대한 안내이며 정식 서비스의 이용약관이나 개인정보 처리방침을 대신하지 않습니다."
             : "미팅 기록에서 시작해 수정 방법을 고르고, 결과를 확인받은 뒤 다음 미팅을 준비합니다."}
         </p>
         {(privacy

@@ -100,12 +100,10 @@ export function PlanningPage() {
         description="연구의 큰 흐름과 다음 약속을 함께 살펴보세요."
         actions={
           <Button
-            onClick={() =>
-              tab === "calendar" ? setPollOpen(true) : newPhase()
-            }
+            onClick={() => (tab !== "roadmap" ? setPollOpen(true) : newPhase())}
           >
             <Icon name="plus" size={17} />
-            {tab === "calendar" ? "미팅 시간 조율" : "단계 추가"}
+            {tab !== "roadmap" ? "미팅 시간 조율" : "단계 추가"}
           </Button>
         }
       />
@@ -350,6 +348,29 @@ export function PlanningPage() {
                     url: `/r/${researchId}/meetings/${m.id}`,
                     allDay: !m.time,
                   })),
+                ...data.tasks
+                  .filter(
+                    (t) =>
+                      t.researchId === researchId && !t.archivedAt && t.dueDate,
+                  )
+                  .map((t) => ({
+                    id: `task-${t.id}`,
+                    title: `할 일 · ${t.title}`,
+                    start: t.dueDate!,
+                    allDay: true,
+                    color: "#2466cc",
+                    url: `/r/${researchId}/tasks/${t.id}`,
+                  })),
+                ...phases
+                  .filter((p) => !p.archivedAt && p.dueDate)
+                  .map((p) => ({
+                    id: `phase-${p.id}`,
+                    title: `단계 목표 · ${p.title}`,
+                    start: p.dueDate!,
+                    allDay: true,
+                    color: "#517c9e",
+                    extendedProps: { phaseId: p.id },
+                  })),
                 ...milestones
                   .filter((m) => m.dueDate)
                   .map((m) => ({
@@ -363,7 +384,11 @@ export function PlanningPage() {
               ]}
               eventClick={(e) => {
                 e.jsEvent.preventDefault();
-                if (e.event.extendedProps.milestone)
+                if (e.event.extendedProps.phaseId)
+                  setPhase(
+                    phases.find((p) => p.id === e.event.extendedProps.phaseId)!,
+                  );
+                else if (e.event.extendedProps.milestone)
                   setMilestone(milestones.find((m) => m.id === e.event.id)!);
                 else navigate(e.event.url);
               }}
@@ -448,7 +473,9 @@ export function PlanningPage() {
           <DialogHeader>
             <DialogTitle>연구 단계 편집</DialogTitle>
             <DialogDescription>
-              실제 연구 흐름에 맞게 이름과 순서를 조정하세요.
+              이름·목표일·진행 상태를 수정하세요. 순서는 단계 목록에서 바꿀 수
+              있습니다. 현재 단계 지정은 다른 단계의 완료 상태를 바꾸지
+              않습니다.
             </DialogDescription>
           </DialogHeader>
           {phase && (
@@ -485,18 +512,21 @@ export function PlanningPage() {
                   }
                 />
               </label>
-              <Choice
-                label="단계 상태"
-                value={phase.status}
-                onChange={(v) =>
-                  setPhase({ ...phase, status: v as ResearchPhase["status"] })
-                }
-                options={[
-                  { value: "planned", label: "예정" },
-                  { value: "active", label: "진행 중" },
-                  { value: "done", label: "완료" },
-                ]}
-              />
+              <label className="field">
+                <span>진행 상태</span>
+                <Choice
+                  label="단계 상태"
+                  value={phase.status}
+                  onChange={(v) =>
+                    setPhase({ ...phase, status: v as ResearchPhase["status"] })
+                  }
+                  options={[
+                    { value: "planned", label: "예정" },
+                    { value: "active", label: "진행 중" },
+                    { value: "done", label: "완료" },
+                  ]}
+                />
+              </label>
               <div className="bottom-actions">
                 {data.phases.some((p) => p.id === phase.id) && (
                   <Button

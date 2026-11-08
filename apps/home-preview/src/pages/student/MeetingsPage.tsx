@@ -55,9 +55,21 @@ const meetingFilters = [
 function meetingMatches(item: Meeting, filter: string): boolean {
   if (filter === "all") return true;
   if (filter === "undated") return !item.date;
-  if (filter === "past") return item.status === "recorded";
+  const elapsed =
+    !!item.date &&
+    item.date <
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Seoul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date()) &&
+    item.status !== "recording";
+  if (filter === "past") return item.status === "recorded" || elapsed;
   if (filter === "cancelled") return item.status === "cancelled";
-  return item.status === "preparing" || item.status === "recording";
+  return (
+    !elapsed && (item.status === "preparing" || item.status === "recording")
+  );
 }
 
 export function MeetingsPage() {
@@ -357,6 +369,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const draftMemo = useRef(memo);
   draftMemo.current = memo;
   const memoPending = useRef(false);
+  const composingMemo = useRef(false);
   const savedMemo = useRef<string | null>(
     restoredDraft?.text === meeting.memo
       ? meeting.memo
@@ -409,7 +422,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     (item) => item.meetingId === meeting.id,
   );
   async function commitMemo(overwrite = false): Promise<Meeting | null> {
-    if (memoPending.current) return null;
+    if (memoPending.current || composingMemo.current) return null;
     if (draftMemo.current === savedMemo.current) return latest.current;
     const current = latest.current;
     if (!overwrite && hasMemoConflict(savedMemo.current, current.memo)) {
@@ -988,7 +1001,19 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               className="meeting-memo"
               aria-label="미팅 원문 메모"
               value={memo}
-              onChange={(e) => setMemo(e.target.value)}
+              onCompositionStart={() => {
+                composingMemo.current = true;
+              }}
+              onCompositionEnd={(e) => {
+                composingMemo.current = false;
+                draftMemo.current = e.currentTarget.value;
+                setMemo(e.currentTarget.value);
+                setMemoTick((v) => v + 1);
+              }}
+              onChange={(e) => {
+                draftMemo.current = e.target.value;
+                setMemo(e.target.value);
+              }}
               onBlur={() => {
                 void commitMemo();
               }}
@@ -1459,9 +1484,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               rows={5}
             />
           </label>
-          <p className="student-footnote">
-            직접 작성한 내용으로 저장합니다. 없는 원문 출처를 붙이지 않습니다.
-          </p>
+          <p className="student-footnote">직접 쓴 내용으로 저장됩니다.</p>
           <ErrorNotice error={entryForm.error} />
           <SaveActions
             saving={entryForm.saving}

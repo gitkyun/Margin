@@ -259,11 +259,16 @@ export function WorkspaceShell({
         ? "연구 설정"
         : location.pathname.endsWith("/assistant")
           ? "AI 연구 도우미"
-          : location.pathname.includes("/results")
-            ? "수정 결과"
-            : (navigation.find(
-                ([path]) => path && location.pathname.includes("/" + path),
-              )?.[2] ?? (research ? "연구 홈" : "내 연구"));
+          : location.pathname.includes("/tasks")
+            ? "할 일"
+            : location.pathname.includes("/results")
+              ? "수정 결과"
+              : (navigation.find(
+                  ([path]) => path && location.pathname.includes("/" + path),
+                )?.[2] ?? (research ? "연구 홈" : "내 연구"));
+  useEffect(() => {
+    document.title = `${current}${research ? ` · ${research.name}` : ""} · Margin`;
+  }, [current, research?.name]);
   if (researchId && (!research || research.deletedAt))
     return (
       <div className="not-found">
@@ -368,7 +373,9 @@ export function WorkspaceShell({
         {research && (
           <NavLink
             to={`/r/${researchId}/assistant`}
-            className={({ isActive }) => `nav-item assistant-nav ${isActive ? "active" : ""}`}
+            className={({ isActive }) =>
+              `nav-item assistant-nav ${isActive ? "active" : ""}`
+            }
             title="연구 도우미 · 선택한 기록으로 AI 도움받기"
           >
             <Icon name="sparkles" size={20} />
@@ -496,7 +503,9 @@ export function WorkspaceShell({
           <div className="archived-banner" role="status">
             <Icon name="folder" size={17} />
             <span>보관한 연구입니다. 기록과 공유한 검토는 유지됩니다.</span>
-            <Link to={`/r/${researchId}/settings`}>연구 복원하기</Link>
+            <Link to={`/r/${researchId}/settings?tab=lifecycle`}>
+              연구 복원하기
+            </Link>
           </div>
         )}
         <main id="main-content" className="workspace-content">

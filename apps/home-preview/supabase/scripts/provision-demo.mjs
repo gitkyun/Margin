@@ -5,7 +5,7 @@ for(const name of required)if(!process.env[name])throw new Error(`${name} 값을
 const url=new URL(process.env.SUPABASE_URL)
 if(url.protocol!=='https:'&&url.hostname!=='127.0.0.1'&&url.hostname!=='localhost')throw new Error('HTTPS Supabase 주소를 사용해 주세요.')
 if(process.env.RMS_STUDENT_EMAIL.toLowerCase()===process.env.RMS_PROFESSOR_EMAIL.toLowerCase())throw new Error('학생과 교수 이메일은 서로 달라야 합니다.')
-for(const role of ['STUDENT','PROFESSOR'])if(process.env[`RMS_${role}_PASSWORD`].length<12)throw new Error('시연 비밀번호는 12자 이상으로 설정해 주세요.')
+for(const role of ['STUDENT','PROFESSOR'])if(process.env[`RMS_${role}_PASSWORD`].length<8)throw new Error('시연 비밀번호는 8자 이상으로 설정해 주세요.')
 if(!process.argv.includes('--apply')){console.log('설정 확인 완료. 실제 계정 생성은 --apply를 붙여 실행하세요. 기존 계정의 비밀번호는 변경하지 않습니다.');process.exit(0)}
 const headers={apikey:process.env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json'}
 async function request(path,init={}){const response=await fetch(new URL(path,url),{...init,headers:{...headers,...init.headers}});const body=await response.json().catch(()=>null);if(!response.ok)throw new Error(`계정 준비 요청이 실패했습니다 (${response.status}). 키·프로젝트·마이그레이션을 확인해 주세요.`);return body}
