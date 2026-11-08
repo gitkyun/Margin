@@ -315,6 +315,14 @@ function ProductPreview({ index }: { index: number }) {
             transition={{ duration: 0.18 }}
           >
             {content[index]}
+            <div className="lp-window-filler" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
