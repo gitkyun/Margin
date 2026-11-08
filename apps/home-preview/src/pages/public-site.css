@@ -1054,8 +1054,6 @@
   color: #fff;
   border-radius: 24px;
   position: relative;
-  /* Keep the footer's upward-extending gradient (.lp-footer::before) behind this card. */
-  z-index: 1;
   overflow: hidden;
 }
 .lp-close h2 {
@@ -1073,6 +1071,13 @@
 .lp-close > .lp-mark {
   background: white;
   box-shadow: 0 4px 12px #557bb013;
+}
+/* The footer gradient (.lp-footer::before) extends 160px upward into the page.
+   Lift every public page's content above it so closing cards and CTAs stay crisp.
+   The sticky header (z-index 40) still sits above this layer. */
+.lp-site > main {
+  position: relative;
+  z-index: 1;
 }
 .lp-footer {
   padding: 64px 32px 64px;
