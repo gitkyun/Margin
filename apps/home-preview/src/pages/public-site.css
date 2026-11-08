@@ -1054,6 +1054,8 @@
   color: #fff;
   border-radius: 24px;
   position: relative;
+  /* Keep the footer's upward-extending gradient (.lp-footer::before) behind this card. */
+  z-index: 1;
   overflow: hidden;
 }
 .lp-close h2 {
