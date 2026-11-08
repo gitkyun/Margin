@@ -2335,3 +2335,160 @@
 .dark .landing-page .lp-capability p {
   color: #bac8de;
 }
+
+/* Demo window framing (Stageshow review, 2026-11-08).
+   The demo window fills its ground down to the bottom edge and fades out at its
+   foot over filler rows, instead of floating whole with an empty lower half.
+   Same treatment for the landing hero and the feature tour, so both demos read
+   as one figure language. */
+.lp-hero-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 0;
+}
+.lp-hero-demo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.lp-hero-demo .lp-product-window {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.lp-hero-demo .lp-window-body {
+  flex: 1;
+  height: auto;
+}
+.lp-workflow-preview {
+  padding-bottom: 0;
+  overflow: hidden;
+}
+.lp-hero-demo .lp-product-window,
+.lp-workflow-preview .lp-product-window {
+  border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 calc(100% - 150px),
+    transparent calc(100% - 16px)
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 calc(100% - 150px),
+    transparent calc(100% - 16px)
+  );
+}
+.lp-hero-demo .lp-window-content,
+.lp-workflow-preview .lp-window-content {
+  overflow: hidden;
+}
+.lp-workflow-preview .lp-mini-sidebar {
+  display: flex;
+}
+.lp-window-filler {
+  display: grid;
+  gap: 14px;
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid #eef1f6;
+}
+.lp-window-filler i {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: #eef2f7;
+}
+.lp-window-filler i:nth-child(1) {
+  width: 92%;
+}
+.lp-window-filler i:nth-child(2) {
+  width: 64%;
+}
+.lp-window-filler i:nth-child(3) {
+  width: 80%;
+}
+.lp-window-filler i:nth-child(4) {
+  width: 48%;
+}
+.lp-window-filler i:nth-child(5) {
+  width: 86%;
+}
+.lp-window-filler i:nth-child(6) {
+  width: 58%;
+}
+.dark .lp-window-filler {
+  border-color: #2c3a4e;
+}
+.dark .lp-window-filler i {
+  background: #263346;
+}
+
+/* Hierarchy: the scene title was flattened to body size by
+   `.lp-window-content p`; restore it, and lift 9-11px labels to readable sizes. */
+.lp-window-content .lp-demo-title {
+  margin: 14px 0 8px;
+  font-size: 20px;
+  line-height: 1.45;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: #1d2026;
+}
+.lp-window-content .lp-method .lp-demo-title {
+  margin: 4px 0;
+  font-size: 15px;
+}
+.lp-window-content .lp-method-alt .lp-demo-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+.dark .lp-window-content .lp-demo-title {
+  color: #edf2f8;
+}
+.lp-window-top,
+.lp-preview-tag,
+.lp-note-candidates > span,
+.lp-assistant-name small,
+.lp-example-selected,
+.lp-version-top,
+.lp-version-bottom,
+.lp-reviewed {
+  font-size: 12px;
+}
+.lp-window-example,
+.lp-method > span:first-child,
+.lp-model-meta,
+.lp-model-meta em,
+.lp-review-file small {
+  font-size: 11px;
+}
+.lp-method p {
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .lp-workflow-preview .lp-mini-sidebar {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .lp-hero-stage,
+  .lp-workflow-preview,
+  .lp-tour-preview {
+    padding-bottom: 0;
+  }
+  .lp-window-content .lp-demo-title {
+    font-size: 17px;
+  }
+  .lp-preview-tag,
+  .lp-note-candidates > span {
+    font-size: 11px;
+  }
+  .lp-window-filler {
+    margin-top: 26px;
+    padding-top: 20px;
+  }
+}
