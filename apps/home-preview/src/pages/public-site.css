@@ -1172,9 +1172,10 @@
   gap: 15px;
 }
 .lp-footer-columns h3 {
-  font-size: 12px;
-  font-weight: 450;
-  color: #65738a;
+  font-size: 13px;
+  font-weight: 650;
+  color: #1b2433;
+  letter-spacing: -0.2px;
   margin: 0 0 7px;
 }
 .lp-footer-columns a {
@@ -1554,7 +1555,7 @@
   color: #b7c8e1;
 }
 .dark .lp-footer-columns h3 {
-  color: #a4b6d1;
+  color: #eef3fb;
 }
 .dark .lp-footer-bottom {
   border-color: #394a62;
@@ -2028,6 +2029,7 @@
   .lp-footer-columns h3 {
     grid-column: 1 / -1;
     margin: 0 0 2px;
+    font-size: 14px;
   }
   .lp-footer-columns a {
     font-size: 13px;
