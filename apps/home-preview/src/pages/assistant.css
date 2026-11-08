@@ -301,9 +301,15 @@
 /* 자료 선택 */
 .source-picker {
   display: grid;
+  /* In a height-capped scroll list, auto rows shrink to min-height and the
+     secondary label spills over the row border. Size rows to their content. */
+  grid-auto-rows: max-content;
   gap: 6px;
   max-height: min(60dvh, 520px);
   overflow-y: auto;
+}
+.source-picker > button:not([data-slot="button"]) > span {
+  flex: 1;
 }
 .source-picker > [data-slot="button"] {
   justify-content: center;

@@ -41,6 +41,7 @@ import {
 import { AccountPage, ResearchSettingsPage } from "@/pages/SettingsPage";
 import { ResearchAssistant } from "@/pages/ResearchAssistant";
 import { isHomeEntry } from "@/lib/entry-route";
+import { isWorkspaceShellPath } from "@/lib/page-title";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -274,8 +275,11 @@ export function App() {
       data.subscription.unsubscribe();
     };
   }, []);
+  const workspaceVisible = !configured || !!session;
   useEffect(() => {
     const path = location.pathname;
+    // WorkspaceShell sets the title for its own routes; writing here would overwrite it.
+    if (workspaceVisible && isWorkspaceShellPath(path)) return;
     const publicTitles: Record<string, string> = {
       "/features": "기능 둘러보기",
       "/pricing": "구독 플랜",
@@ -318,7 +322,7 @@ export function App() {
                         ? "교수 검토"
                         : "페이지를 찾을 수 없습니다");
     document.title = `${name} · Margin`;
-  }, [location.pathname]);
+  }, [location.pathname, workspaceVisible]);
   if (location.pathname === "/") return <LandingPage signedIn={!!session} />;
   if (location.pathname === "/signup") return <SignupPage />;
   if (location.pathname === "/features")
