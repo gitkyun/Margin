@@ -106,12 +106,7 @@ export function FeedbackPage() {
           </Button>
         }
       />
-      <div className="tabs-line">
-        <Link className="active" to={`/r/${researchId}/feedback`}>
-          피드백
-        </Link>
-        <Link to={`/r/${researchId}/results`}>수정 결과</Link>
-      </div>
+
       <div className="page-toolbar">
         <FilterSegments
           label="피드백 처리 상태"
@@ -401,6 +396,10 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             <div className="section-heading">
               <div>
                 <h2>수정 방안</h2>
+                <p className="meta">
+                  방안 채택은 방법을 고른 기록입니다. 실제 작업 진행과 완료는
+                  연결한 할 일에서 변경하세요.
+                </p>
                 <p className="student-footnote">
                   어떤 방법으로 고칠지 정하고 필요한 작업으로 연결하세요.
                 </p>

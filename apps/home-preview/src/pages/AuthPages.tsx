@@ -175,6 +175,8 @@ export function ResearchSelectPage() {
       ? !!r.deletedAt
       : !r.deletedAt && (archivedView ? !!r.archivedAt : !r.archivedAt),
   );
+  const [trashTarget, setTrashTarget] = useState<(typeof data.researches)[number] | null>(null);
+  const [trashName, setTrashName] = useState("");
   const navigate = useNavigate();
   const createId = useRef(uid());
   const [open, setOpen] = useState(false),
@@ -375,6 +377,7 @@ export function ResearchSelectPage() {
                   {research.description || "설명을 추가하지 않은 연구입니다."}
                 </p>
                 <span className="meta">
+                  {trashView ? "연구를 복원하면 기록을 확인할 수 있습니다." : <>
                   {
                     data.meetings.filter((m) => m.researchId === research.id)
                       .length
@@ -388,6 +391,7 @@ export function ResearchSelectPage() {
                   }
                   개 남은 작업
                   <Icon name="arrow-up-right" size={16} />
+                  </>}
                 </span>
               </Link>
               <div className="research-card-actions">
@@ -420,30 +424,17 @@ export function ResearchSelectPage() {
                     <Link to={`/r/${research.id}/settings`}>연구 설정</Link>
                   </Button>
                 )}
+                {archivedView && research.ownerId === user.id && <Button variant="outline" disabled={pending} onClick={async () => {
+                  setPending(true);
+                  try { await saveResearch({ ...research, archivedAt: undefined }); toast.success("진행 중인 연구로 복원했습니다."); }
+                  catch (e) { toast.error(friendlyError(e)); } finally { setPending(false); }
+                }}>복원</Button>}
                 {trashView && research.ownerId === user.id && <PermanentResearchDelete id={research.id} name={research.name}/>}
                 {!trashView && research.ownerId === user.id && (
                   <Button
                     variant="ghost"
                     disabled={pending}
-                    onClick={async () => {
-                      if (
-                        !confirm(
-                          "연구를 휴지통으로 옮길까요? 공동연구자와 교수의 접근이 중지되며 기록은 복원할 수 있습니다.",
-                        )
-                      )
-                        return;
-                      setPending(true);
-                      try {
-                        await saveResearch({
-                          ...research,
-                          deletedAt: new Date().toISOString(),
-                        });
-                      } catch (e) {
-                        toast.error(friendlyError(e));
-                      } finally {
-                        setPending(false);
-                      }
-                    }}
+                    onClick={() => { setTrashTarget(research); setTrashName(""); }}
                   >
                     삭제
                   </Button>
@@ -477,6 +468,15 @@ export function ResearchSelectPage() {
           }
         />
       ) : null}
+      <Dialog open={!!trashTarget} onOpenChange={(open) => { if (!pending && !open) setTrashTarget(null); }}>
+        <DialogContent className="rms-dialog">
+          <DialogHeader><DialogTitle>연구를 휴지통으로 옮길까요?</DialogTitle><DialogDescription>기록은 보존되며 복원할 수 있습니다. 공동연구자와 교수의 접근은 중지됩니다. 확인을 위해 연구 이름을 입력해 주세요.</DialogDescription></DialogHeader>
+          <form onSubmit={async (e) => { e.preventDefault(); if (!trashTarget || pending || trashName !== trashTarget.name) return; setPending(true); try { await saveResearch({...trashTarget, deletedAt: new Date().toISOString()}); setTrashTarget(null); toast.success("휴지통으로 옮겼습니다. 휴지통에서 복원할 수 있습니다."); } catch(e) { toast.error(friendlyError(e)); } finally { setPending(false); } }}>
+            <label className="field">{trashTarget?.name}<Input value={trashName} onChange={e => setTrashName(e.target.value)} autoComplete="off" /></label>
+            <div className="button-row"><Button type="button" variant="outline" disabled={pending} onClick={() => setTrashTarget(null)}>취소</Button><Button type="submit" disabled={pending || trashName !== trashTarget?.name}>휴지통으로 이동</Button></div>
+          </form>
+        </DialogContent>
+      </Dialog>
       {trashView && <PendingResearchDeletions/>}
       <Dialog
         open={open}

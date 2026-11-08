@@ -1,0 +1,5 @@
+# 관리자는 서버·권한·배포 변경을 검토합니다.
+/.github/ @gitkyun
+/apps/home-preview/supabase/ @gitkyun
+/apps/home-preview/src/lib/password* @gitkyun
+/SECURITY.md @gitkyun

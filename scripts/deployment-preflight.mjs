@@ -1,0 +1,11 @@
+import { execFileSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
+const required = ['VITE_SUPABASE_URL','VITE_SUPABASE_PUBLISHABLE_KEY','SUPABASE_PROJECT_ID','CLOUDFLARE_ACCOUNT_ID','CLOUDFLARE_PAGES_PROJECT','CLOUDFLARE_API_TOKEN'];
+for (const key of required) if (!process.env[key]) throw new Error(`Missing deployment setting: ${key}`);
+const baseline = process.env.BACKEND_BASELINE_COMMIT;
+if (!baseline || !/^[a-f0-9]{40}$/.test(baseline)) throw new Error('An owner-verified BACKEND_BASELINE_COMMIT is required. See docs/deployment.md.');
+execFileSync('git', ['merge-base', '--is-ancestor', baseline, 'HEAD']);
+const changed = execFileSync('git', ['diff','--name-only',baseline,'HEAD','--','apps/home-preview/supabase/migrations','apps/home-preview/supabase/functions','apps/home-preview/supabase/config.toml'],{encoding:'utf8'}).trim().length > 0;
+if (changed) for (const key of ['SUPABASE_ACCESS_TOKEN','SUPABASE_DB_PASSWORD']) if (!process.env[key]) throw new Error(`Backend changes require ${key}. Frontend deployment stopped to prevent a mismatched release.`);
+console.log(`Backend changes since verified baseline: ${changed}`);
+if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT,`changed=${changed}\n`);

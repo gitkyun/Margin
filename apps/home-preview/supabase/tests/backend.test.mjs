@@ -191,7 +191,7 @@ test('schedule participants respond without research access; confirmation create
 test('trash blocks collaborator and professor; restore keeps sharing stopped; owner can revoke editor',async()=>{
  await as(ids.student);let r=(await call('rms_bootstrap')).researches.find(r=>r.id===ids.research)
  await call('rms_set_sharing',[JSON.stringify({requestId:request.id,status:'shared',professorEmail:'professor@example.test'})])
- r=await call('rms_save_research',[JSON.stringify({...r,deletedAt:new Date().toISOString()})])
+ r=await call('rms_save_research',[JSON.stringify({...r,nextMeetingId:meeting.id,deletedAt:new Date().toISOString()})])
  await as(ids.stranger);assert.equal((await call('rms_bootstrap')).documents.length,0)
  await as(ids.professor);assert.equal((await call('rms_bootstrap')).reviews.length,0);assert.equal(await call('rms_can_read_file',[v2.storagePath]),false)
  await as(ids.student);r=await call('rms_save_research',[JSON.stringify({...r,deletedAt:undefined})]);assert.equal((await call('rms_bootstrap')).reviews.find(x=>x.id===request.id).status,'stopped')
@@ -317,4 +317,16 @@ test('cleanup retries are idempotent and private to the original owner',async()=
  await as(ids.professor);assert.deepEqual(await call('rms_pending_deletions'),[]);await failure(()=>inputCall('rms_purge_research',purgeInput()),'42501')
  await db.exec('reset role;set role service_role');await db.query('update public.rms_deletion_jobs set completed_at=now(),files=$1 where research_id=$2',['[]',purgeResearch])
  await as(ids.student);assert.deepEqual(await call('rms_pending_deletions'),[]);assert.deepEqual((await inputCall('rms_purge_research',purgeInput())).files,[])
+})
+
+
+test('review preview validates recipient and denies unrelated and anonymous callers', async()=>{
+ await as(ids.student)
+ assert.equal(await call('rms_validate_reviewer',[ids.research,'professor@example.test']),true)
+ await failure(()=>call('rms_validate_reviewer',[ids.research,'unknown@example.test']),'22023')
+ await failure(()=>call('rms_validate_reviewer',[ids.research,'student@example.test']),'22023')
+ await as(ids.professor)
+ await failure(()=>call('rms_validate_reviewer',[ids.research,'student@example.test']),'42501')
+ await db.exec('reset role;set role anon')
+ await failure(()=>call('rms_validate_reviewer',[ids.research,'professor@example.test']),'42501')
 })

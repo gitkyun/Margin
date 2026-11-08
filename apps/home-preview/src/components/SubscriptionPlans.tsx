@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "./icons";
-import { Segments } from "./experience";
 import {
   Dialog,
   DialogContent,
@@ -59,7 +58,6 @@ export function SubscriptionPlans({
   publicView?: boolean;
   signedIn?: boolean;
 }) {
-  const [period, setPeriod] = useState("monthly");
   const [detail, setDetail] = useState<string | null>(null);
   const selected = plans.find((p) => p.id === detail);
   return (
@@ -73,17 +71,6 @@ export function SubscriptionPlans({
           <p>연구하는 방식에 맞춰 선택하세요.</p>
         </div>
       )}
-      <div className="subscription-period">
-        <Segments
-          label="청구 주기"
-          value={period}
-          onChange={setPeriod}
-          options={[
-            { value: "monthly", label: "월간" },
-            { value: "yearly", label: "연간" },
-          ]}
-        />
-      </div>
       <div className="subscription-grid">
         {plans.map((plan) => (
           <article
@@ -104,7 +91,7 @@ export function SubscriptionPlans({
               {plan.id === "free" ? (
                 <>
                   <strong>₩0</strong>
-                  <span>/ {period === "monthly" ? "월" : "년"}</span>
+                  <span>/ 월</span>
                 </>
               ) : (
                 <strong className="subscription-coming">출시 예정</strong>
@@ -128,7 +115,7 @@ export function SubscriptionPlans({
                 onClick={() => setDetail(plan.id)}
               >
                 플랜 자세히 보기
-                <Icon name="arrow-up-right" size={16} />
+                <Icon name="chevron-right" size={16} />
               </button>
             )}
             <ul>

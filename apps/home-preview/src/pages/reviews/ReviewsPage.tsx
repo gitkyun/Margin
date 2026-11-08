@@ -1,3 +1,4 @@
+import { assertConnected } from "@/lib/supabase";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { unreadReviewNotifications } from "@/lib/notifications";
 import {
@@ -49,7 +50,7 @@ import {
 
 export function ReviewsPage() {
   const { researchId = "" } = useParams();
-  const { data, loading, createReview, user } = useWorkspace();
+  const { data, loading, createReview, user, mode } = useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [filter, setFilter] = useState("all");
@@ -60,6 +61,7 @@ export function ReviewsPage() {
   const [email, setEmail] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
   const [error, setError] = useState("");
   const [previewFile, setPreviewFile] = useState<MaterialVersion | null>(null);
   const prompted = useRef("");
@@ -114,6 +116,7 @@ export function ReviewsPage() {
     requestKey.current = uid();
     requestGuard.clear();
     setOpen(false);
+    setDiscardOpen(false);
     setError("");
     setPreviewFile(null);
     if (params.has("result")) {
@@ -121,6 +124,11 @@ export function ReviewsPage() {
       p.delete("result");
       setParams(p, { replace: true });
     }
+  };
+  const requestClose = () => {
+    if (busy) return;
+    if (title.trim() || email.trim() || selected.length) setDiscardOpen(true);
+    else close();
   };
   const begin = () => {
     requestKey.current = uid();
@@ -145,11 +153,27 @@ export function ReviewsPage() {
     }
     return "";
   };
-  const showPreview = (event: FormEvent) => {
+  const showPreview = async (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
     const issue = validate();
     setError(issue);
-    if (!issue) setStep("preview");
+    if (issue) return;
+    setBusy(true);
+    try {
+      if (mode === "connected") {
+        const response = await assertConnected().rpc("rms_validate_reviewer", {
+          p_research_id: researchId,
+          p_email: email.trim().toLowerCase(),
+        });
+        if (response.error) throw new Error(response.error.message);
+      }
+      setStep("preview");
+    } catch (failure) {
+      setError(errorText(failure));
+    } finally {
+      setBusy(false);
+    }
   };
   const submit = async () => {
     const issue = validate();
@@ -235,7 +259,9 @@ export function ReviewsPage() {
           action={
             !results.length ? (
               <Button asChild variant="outline">
-                <Link to={`/r/${researchId}/results`}>수정 결과 작성</Link>
+                <Link to={`/r/${researchId}/results?new=1`}>
+                  수정 결과 작성
+                </Link>
               </Button>
             ) : (
               <Button variant="outline" onClick={begin}>
@@ -311,7 +337,7 @@ export function ReviewsPage() {
       <Dialog
         open={open}
         onOpenChange={(value: boolean) => {
-          if (!value) close();
+          if (!value) requestClose();
         }}
       >
         <DialogContent
@@ -372,7 +398,12 @@ export function ReviewsPage() {
                   보낼 수정 결과 <span className="review-required">필수</span>
                 </legend>
                 {!results.length ? (
-                  <p className="muted">먼저 수정 결과를 작성해 주세요.</p>
+                  <p className="muted">
+                    먼저 수정 결과를 작성해 주세요.{" "}
+                    <Link to={`/r/${researchId}/results?new=1`}>
+                      수정 결과 작성하기
+                    </Link>
+                  </p>
                 ) : (
                   results.map((result) => {
                     const issue = evidenceIssue(result, data);
@@ -417,11 +448,16 @@ export function ReviewsPage() {
                 </p>
               )}
               <div className="form-actions">
-                <Button type="button" variant="outline" onClick={close}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={requestClose}
+                >
                   취소
                 </Button>
-                <Button type="submit" disabled={!results.length}>
-                  공유할 내용 확인
+                <Button type="submit" disabled={busy || !results.length}>
+                  {busy ? "교수 계정 확인 중…" : "공유할 내용 확인"}
                   <Icon name="arrow-right" size={16} />
                 </Button>
               </div>
@@ -486,8 +522,9 @@ export function ReviewsPage() {
               )}
               <p className="review-inline-note">
                 <Icon name="info" size={17} />
-                확인 위치는 읽기 안내입니다. 첨부한 PDF 전체를 열람할 수
-                있습니다.
+                {picks.some((result) => !!result.versionId)
+                  ? "확인 위치는 읽기 안내입니다. 첨부한 PDF 전체를 열람할 수 있습니다."
+                  : "선택한 비문서 작업의 처리 설명이 공개됩니다."}
               </p>
               {error && (
                 <p className="review-form-error" role="alert">
@@ -513,6 +550,24 @@ export function ReviewsPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
+        <DialogContent className="student-dialog">
+          <DialogHeader>
+            <DialogTitle>검토 요청 작성을 닫을까요?</DialogTitle>
+            <DialogDescription>
+              저장하지 않은 제목·교수 계정·선택 내용은 사라집니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="form-actions">
+            <Button variant="outline" onClick={() => setDiscardOpen(false)}>
+              계속 작성
+            </Button>
+            <Button variant="destructive" onClick={close}>
+              변경 버리고 닫기
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,13 +1,15 @@
 import { assertConnected, createPasswordVerificationClient } from "./supabase";
 
+import { validateNewPassword } from "./password-policy";
+
 export async function changeAccountPassword(
   user: { id: string; email: string },
   current: string,
   next: string,
   confirmation: string,
 ) {
-  if (next.length < 8)
-    throw new Error("새 비밀번호는 8자 이상으로 입력해 주세요.");
+  const policyError = validateNewPassword(next);
+  if (policyError) throw new Error(policyError);
   if (next !== confirmation) throw new Error("새 비밀번호가 서로 다릅니다.");
   if (current === next)
     throw new Error("현재 비밀번호와 다른 비밀번호를 입력해 주세요.");

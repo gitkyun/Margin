@@ -1,64 +1,115 @@
 -- RMS classroom: private records, immutable review snapshots, validated RPC writes.
 create table public.rms_demo_accounts(user_id uuid primary key references auth.users(id) on delete cascade,active boolean not null default true,created_at timestamptz not null default now());
-create table public.rms_researches(id uuid primary key,owner_id uuid not null references auth.users(id),data jsonb not null check(jsonb_typeof(data)='object'),created_at timestamptz not null default now(),updated_at timestamptz not null default now());
-create table public.rms_records(id uuid primary key,research_id uuid not null references public.rms_researches(id) on delete restrict,kind text not null check(kind in ('meetings','feedback','plans','tasks','questions','decisions','materials','versions','results')),data jsonb not null check(jsonb_typeof(data)='object'),created_at timestamptz not null default now(),updated_at timestamptz not null default now());
-create index rms_records_research_kind on public.rms_records(research_id,kind);
-create unique index rms_material_version_number on public.rms_records((data->>'materialId'),((data->>'number')::integer)) where kind='versions';
-create table public.rms_review_requests(id uuid primary key default gen_random_uuid(),research_id uuid not null references public.rms_researches(id) on delete restrict,owner_id uuid not null references auth.users(id),professor_id uuid not null references auth.users(id),professor_email text not null,title text not null,status text not null check(status in ('draft','shared','stopped')) default 'shared',created_at timestamptz not null default now(),updated_at timestamptz not null default now(),check(owner_id<>professor_id));
-create index rms_review_professor on public.rms_review_requests(professor_id,status);
-create index rms_review_owner on public.rms_review_requests(owner_id);
-create table public.rms_review_items(id uuid primary key default gen_random_uuid(),request_id uuid not null references public.rms_review_requests(id) on delete restrict,result_id uuid not null references public.rms_records(id) on delete restrict,title text not null,unique(request_id,result_id));
-create table public.rms_review_rounds(id uuid primary key default gen_random_uuid(),request_id uuid not null references public.rms_review_requests(id) on delete restrict,item_id uuid not null references public.rms_review_items(id) on delete restrict,number integer not null check(number>0),snapshot jsonb not null,created_at timestamptz not null default now(),unique(item_id,number));
-create index rms_round_request on public.rms_review_rounds(request_id);
-create table public.rms_review_responses(id uuid primary key default gen_random_uuid(),round_id uuid not null unique references public.rms_review_rounds(id) on delete restrict,user_id uuid not null references auth.users(id),result text not null check(result in ('confirmed','changes_requested')),comment text not null default '',created_at timestamptz not null default now(),updated_at timestamptz not null default now(),check(result<>'changes_requested' or length(btrim(comment))>0));
-create table public.rms_response_history(id uuid primary key default gen_random_uuid(),response_id uuid not null references public.rms_review_responses(id) on delete restrict,round_id uuid not null references public.rms_review_rounds(id) on delete restrict,data jsonb not null,replaced_at timestamptz not null default now());
-create table public.rms_review_comments(id uuid primary key default gen_random_uuid(),round_id uuid not null references public.rms_review_rounds(id) on delete restrict,user_id uuid not null references auth.users(id),author_name text not null,body text not null check(length(btrim(body)) between 1 and 10000),parent_id uuid references public.rms_review_comments(id) on delete restrict,resolved boolean not null default false,created_at timestamptz not null default now());
-create index rms_comments_round on public.rms_review_comments(round_id,created_at);
-create table public.rms_review_reads(round_id uuid not null references public.rms_review_rounds(id) on delete cascade,user_id uuid not null references auth.users(id) on delete cascade,last_seen_at timestamptz not null default now(),primary key(round_id,user_id));
-create table public.rms_ai_runs(id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id),research_id uuid not null references public.rms_researches(id),input_hash text not null,status text not null check(status in ('running','complete','failed')) default 'running',created_at timestamptz not null default now(),completed_at timestamptz);
-create index rms_ai_rate_window on public.rms_ai_runs(user_id,created_at);
-create table public.rms_mutation_receipts(user_id uuid not null references auth.users(id),request_key uuid not null,operation text not null,payload_hash text not null,response jsonb not null,created_at timestamptz not null default now(),primary key(user_id,request_key));
-alter table public.rms_mutation_receipts enable row level security;
-revoke all on public.rms_mutation_receipts from public,anon,authenticated;
-grant all on public.rms_mutation_receipts to service_role;
 
+create table public.rms_researches(id uuid primary key,owner_id uuid not null references auth.users(id),data jsonb not null check(jsonb_typeof(data)='object'),created_at timestamptz not null default now(),updated_at timestamptz not null default now());
+
+create table public.rms_records(id uuid primary key,research_id uuid not null references public.rms_researches(id) on delete restrict,kind text not null check(kind in ('meetings','feedback','plans','tasks','questions','decisions','materials','versions','results')),data jsonb not null check(jsonb_typeof(data)='object'),created_at timestamptz not null default now(),updated_at timestamptz not null default now());
+
+create index rms_records_research_kind on public.rms_records(research_id,kind);
+
+create unique index rms_material_version_number on public.rms_records((data->>'materialId'),((data->>'number')::integer)) where kind='versions';
+
+create table public.rms_review_requests(id uuid primary key default gen_random_uuid(),research_id uuid not null references public.rms_researches(id) on delete restrict,owner_id uuid not null references auth.users(id),professor_id uuid not null references auth.users(id),professor_email text not null,title text not null,status text not null check(status in ('draft','shared','stopped')) default 'shared',created_at timestamptz not null default now(),updated_at timestamptz not null default now(),check(owner_id<>professor_id));
+
+create index rms_review_professor on public.rms_review_requests(professor_id,status);
+
+create index rms_review_owner on public.rms_review_requests(owner_id);
+
+create table public.rms_review_items(id uuid primary key default gen_random_uuid(),request_id uuid not null references public.rms_review_requests(id) on delete restrict,result_id uuid not null references public.rms_records(id) on delete restrict,title text not null,unique(request_id,result_id));
+
+create table public.rms_review_rounds(id uuid primary key default gen_random_uuid(),request_id uuid not null references public.rms_review_requests(id) on delete restrict,item_id uuid not null references public.rms_review_items(id) on delete restrict,number integer not null check(number>0),snapshot jsonb not null,created_at timestamptz not null default now(),unique(item_id,number));
+
+create index rms_round_request on public.rms_review_rounds(request_id);
+
+create table public.rms_review_responses(id uuid primary key default gen_random_uuid(),round_id uuid not null unique references public.rms_review_rounds(id) on delete restrict,user_id uuid not null references auth.users(id),result text not null check(result in ('confirmed','changes_requested')),comment text not null default '',created_at timestamptz not null default now(),updated_at timestamptz not null default now(),check(result<>'changes_requested' or length(btrim(comment))>0));
+
+create table public.rms_response_history(id uuid primary key default gen_random_uuid(),response_id uuid not null references public.rms_review_responses(id) on delete restrict,round_id uuid not null references public.rms_review_rounds(id) on delete restrict,data jsonb not null,replaced_at timestamptz not null default now());
+
+create table public.rms_review_comments(id uuid primary key default gen_random_uuid(),round_id uuid not null references public.rms_review_rounds(id) on delete restrict,user_id uuid not null references auth.users(id),author_name text not null,body text not null check(length(btrim(body)) between 1 and 10000),parent_id uuid references public.rms_review_comments(id) on delete restrict,resolved boolean not null default false,created_at timestamptz not null default now());
+
+create index rms_comments_round on public.rms_review_comments(round_id,created_at);
+
+create table public.rms_review_reads(round_id uuid not null references public.rms_review_rounds(id) on delete cascade,user_id uuid not null references auth.users(id) on delete cascade,last_seen_at timestamptz not null default now(),primary key(round_id,user_id));
+
+create table public.rms_ai_runs(id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id),research_id uuid not null references public.rms_researches(id),input_hash text not null,status text not null check(status in ('running','complete','failed')) default 'running',created_at timestamptz not null default now(),completed_at timestamptz);
+
+create index rms_ai_rate_window on public.rms_ai_runs(user_id,created_at);
+
+create table public.rms_mutation_receipts(user_id uuid not null references auth.users(id),request_key uuid not null,operation text not null,payload_hash text not null,response jsonb not null,created_at timestamptz not null default now(),primary key(user_id,request_key));
+
+alter table public.rms_mutation_receipts enable row level security;
+
+revoke all on public.rms_mutation_receipts from public,anon,authenticated;
+
+grant all on public.rms_mutation_receipts to service_role;
 
 -- Helpers intentionally have a fixed search_path and no dynamic SQL.
 create function public.rms_is_allowed() returns boolean language sql stable security definer set search_path=pg_catalog,public,auth as $$ select auth.uid() is not null and exists(select 1 from public.rms_demo_accounts where user_id=auth.uid() and active) $$;
+
 create function public.rms_assert_session() returns uuid language plpgsql stable security definer set search_path=pg_catalog,public,auth as $$ begin if not public.rms_is_allowed() then raise exception '허용된 시연 계정으로 로그인해 주세요.' using errcode='42501'; end if; return auth.uid(); end $$;
+
 create function public.rms_owns_research(p_id uuid) returns boolean language sql stable security definer set search_path=pg_catalog,public,auth as $$ select public.rms_is_allowed() and exists(select 1 from public.rms_researches where id=p_id and owner_id=auth.uid()) $$;
+
 create function public.rms_can_read_request(p_id uuid) returns boolean language sql stable security definer set search_path=pg_catalog,public,auth as $$ select public.rms_is_allowed() and exists(select 1 from public.rms_review_requests where id=p_id and (owner_id=auth.uid() or (professor_id=auth.uid() and status='shared'))) $$;
+
 create function public.rms_can_read_round(p_id uuid) returns boolean language sql stable security definer set search_path=pg_catalog,public,auth as $$ select exists(select 1 from public.rms_review_rounds where id=p_id and public.rms_can_read_request(request_id)) $$;
+
 create function public.rms_can_read_file(p_path text) returns boolean language sql stable security definer set search_path=pg_catalog,public,auth as $$ select public.rms_is_allowed() and ((split_part(p_path,'/',1)=auth.uid()::text and public.rms_owns_research(case when split_part(p_path,'/',2) ~ '^[0-9a-f-]{36}$' then split_part(p_path,'/',2)::uuid else null end)) or exists(select 1 from public.rms_review_rounds rr join public.rms_review_requests r on r.id=rr.request_id where rr.snapshot->>'storagePath'=p_path and r.status='shared' and r.professor_id=auth.uid())) $$;
 
 alter table public.rms_demo_accounts enable row level security;
+
 alter table public.rms_researches enable row level security;
+
 alter table public.rms_records enable row level security;
+
 alter table public.rms_review_requests enable row level security;
+
 alter table public.rms_review_items enable row level security;
+
 alter table public.rms_review_rounds enable row level security;
+
 alter table public.rms_review_responses enable row level security;
+
 alter table public.rms_response_history enable row level security;
+
 alter table public.rms_review_comments enable row level security;
+
 alter table public.rms_review_reads enable row level security;
+
 alter table public.rms_ai_runs enable row level security;
+
 create policy researches_owner_read on public.rms_researches for select to authenticated using(public.rms_owns_research(id));
+
 create policy records_owner_read on public.rms_records for select to authenticated using(public.rms_owns_research(research_id));
+
 create policy requests_allowed_read on public.rms_review_requests for select to authenticated using(public.rms_can_read_request(id));
+
 create policy items_allowed_read on public.rms_review_items for select to authenticated using(public.rms_can_read_request(request_id));
+
 create policy rounds_allowed_read on public.rms_review_rounds for select to authenticated using(public.rms_can_read_request(request_id));
+
 create policy responses_allowed_read on public.rms_review_responses for select to authenticated using(public.rms_can_read_round(round_id));
+
 create policy response_history_allowed_read on public.rms_response_history for select to authenticated using(public.rms_can_read_round(round_id));
+
 create policy comments_allowed_read on public.rms_review_comments for select to authenticated using(public.rms_can_read_round(round_id));
+
 create policy reads_own_read on public.rms_review_reads for select to authenticated using(public.rms_is_allowed() and user_id=auth.uid() and public.rms_can_read_round(round_id));
+
 revoke all on public.rms_demo_accounts,public.rms_researches,public.rms_records,public.rms_review_requests,public.rms_review_items,public.rms_review_rounds,public.rms_review_responses,public.rms_response_history,public.rms_review_comments,public.rms_review_reads,public.rms_ai_runs from anon,authenticated;
+
 grant select on public.rms_researches,public.rms_records,public.rms_review_requests,public.rms_review_items,public.rms_review_rounds,public.rms_review_responses,public.rms_response_history,public.rms_review_comments,public.rms_review_reads to authenticated;
 
 create function public.rms_required_text(p_value jsonb,p_key text,p_limit integer default 10000) returns text language plpgsql immutable as $$ declare v text; begin if jsonb_typeof(p_value->p_key) is distinct from 'string' then raise exception '% 입력을 확인해 주세요.',p_key using errcode='22023'; end if; v:=btrim(p_value->>p_key); if length(v)=0 or length(v)>p_limit then raise exception '% 입력 길이를 확인해 주세요.',p_key using errcode='22023'; end if; return v; end $$;
+
 create function public.rms_optional_text(p_value jsonb,p_key text,p_limit integer default 10000) returns text language plpgsql immutable as $$ begin if p_value->p_key is null or p_value->p_key='null'::jsonb then return ''; end if; if jsonb_typeof(p_value->p_key)<>'string' or length(p_value->>p_key)>p_limit then raise exception '% 입력을 확인해 주세요.',p_key using errcode='22023'; end if; return p_value->>p_key; end $$;
+
 create function public.rms_require_record(p_id uuid,p_research_id uuid,p_kind text) returns jsonb language plpgsql stable security definer set search_path=pg_catalog,public,auth as $$ declare v jsonb; begin select data into v from public.rms_records where id=p_id and research_id=p_research_id and kind=p_kind; if v is null then raise exception '연결할 기록을 찾을 수 없습니다.' using errcode='22023'; end if; return v; end $$;
+
 create function public.rms_validate_refs(p_value jsonb,p_key text,p_research_id uuid,p_kind text) returns void language plpgsql stable security definer set search_path=pg_catalog,public,auth as $$ declare v text; begin if jsonb_typeof(p_value->p_key) is distinct from 'array' or jsonb_array_length(p_value->p_key)>100 then raise exception '연결 기록 목록을 확인해 주세요.' using errcode='22023'; end if; for v in select jsonb_array_elements_text(p_value->p_key) loop perform public.rms_require_record(v::uuid,p_research_id,p_kind); end loop; end $$;
+
 create function public.rms_utf16_length(p_text text) returns integer language sql immutable as $$ select coalesce(sum(case when ascii(c)>65535 then 2 else 1 end),0)::integer from regexp_split_to_table(p_text,'') c $$;
+
 create function public.rms_professor_id(p_email text) returns uuid language plpgsql stable security definer set search_path=pg_catalog,public,auth as $$ declare v uuid; begin select u.id into v from auth.users u join public.rms_demo_accounts a on a.user_id=u.id and a.active where lower(u.email)=lower(btrim(p_email)) and u.email_confirmed_at is not null; if v is null then raise exception '등록된 교수 시연 계정의 이메일을 입력해 주세요.' using errcode='22023'; end if; if v=auth.uid() then raise exception '본인 계정을 검토 대상으로 지정할 수 없습니다.' using errcode='22023'; end if; return v; end $$;
 
 create function public.rms_save_research(p_value jsonb) returns jsonb language plpgsql security definer set search_path=pg_catalog,public,auth as $$
@@ -178,7 +229,9 @@ begin
 end $$;
 
 create function public.rms_request_json(p_row public.rms_review_requests) returns jsonb language sql immutable as $$ select jsonb_build_object('id',p_row.id,'researchId',p_row.research_id,'title',p_row.title,'professorEmail',p_row.professor_email,'professorId',p_row.professor_id,'status',p_row.status,'createdAt',p_row.created_at,'updatedAt',p_row.updated_at) $$;
+
 create function public.rms_response_json(p_row public.rms_review_responses) returns jsonb language sql immutable as $$ select jsonb_build_object('id',p_row.id,'roundId',p_row.round_id,'userId',p_row.user_id,'result',p_row.result,'comment',p_row.comment,'createdAt',p_row.created_at,'updatedAt',p_row.updated_at) $$;
+
 create function public.rms_build_snapshot(p_result_id uuid,p_research_id uuid) returns jsonb language plpgsql stable security definer set search_path=pg_catalog,public,auth,storage as $$
 declare v_result jsonb; v_version jsonb; v_excerpt text; v_stamp timestamptz:=clock_timestamp();
 begin
@@ -209,6 +262,7 @@ begin
  end if;
  return null;
 end $$;
+
 create function public.rms_idempotency_write(p_operation text,p_input jsonb,p_response jsonb) returns void language plpgsql security definer set search_path=pg_catalog,public,auth as $$
 begin
  if nullif(p_input->>'requestKey','') is not null then insert into public.rms_mutation_receipts(user_id,request_key,operation,payload_hash,response) values(auth.uid(),(p_input->>'requestKey')::uuid,p_operation,md5((p_input-'requestKey')::text),p_response); end if;
@@ -279,6 +333,7 @@ begin
  insert into public.rms_review_comments(round_id,user_id,author_name,body,parent_id) values(v_round,auth.uid(),v_name,public.rms_required_text(p_input,'body',10000),v_parent) returning * into v_row;
  return jsonb_strip_nulls(jsonb_build_object('id',v_row.id,'roundId',v_row.round_id,'userId',v_row.user_id,'authorName',v_row.author_name,'body',v_row.body,'parentId',v_row.parent_id,'resolved',v_row.resolved,'createdAt',v_row.created_at));
 end $$;
+
 create function public.rms_resolve_comment(p_id uuid,p_resolved boolean) returns void language plpgsql security definer set search_path=pg_catalog,public,auth as $$
 declare v_round uuid;
 begin
@@ -286,6 +341,7 @@ begin
  if not public.rms_can_read_round(v_round) then raise exception '이 대화를 변경할 수 없습니다.' using errcode='42501'; end if;
  update public.rms_review_comments set resolved=p_resolved where id=p_id;
 end $$;
+
 create function public.rms_set_sharing(p_input jsonb) returns jsonb language plpgsql security definer set search_path=pg_catalog,public,auth as $$
 declare v public.rms_review_requests; v_prof uuid;
 begin
@@ -297,7 +353,9 @@ begin
  update public.rms_review_requests set status=p_input->>'status',professor_id=v_prof,professor_email=case when v_prof<>v.professor_id then lower(btrim(p_input->>'professorEmail')) else v.professor_email end,updated_at=clock_timestamp() where id=v.id returning * into v;
  return public.rms_request_json(v);
 end $$;
+
 create function public.rms_mark_read(p_round_id uuid) returns void language plpgsql security definer set search_path=pg_catalog,public,auth as $$ begin perform public.rms_assert_session(); if not public.rms_can_read_round(p_round_id) then raise exception '이 검토에 접근할 수 없습니다.' using errcode='42501'; end if; insert into public.rms_review_reads(round_id,user_id,last_seen_at) values(p_round_id,auth.uid(),clock_timestamp()) on conflict(round_id,user_id) do update set last_seen_at=excluded.last_seen_at; end $$;
+
 create function public.rms_response_history(p_round_id uuid) returns jsonb language plpgsql stable security definer set search_path=pg_catalog,public,auth as $$ begin perform public.rms_assert_session(); if not public.rms_can_read_round(p_round_id) then raise exception '이 검토에 접근할 수 없습니다.' using errcode='42501'; end if; return (select coalesce(jsonb_agg(data order by replaced_at),'[]'::jsonb) from public.rms_response_history where round_id=p_round_id); end $$;
 
 create function public.rms_bootstrap() returns jsonb language plpgsql stable security definer set search_path=pg_catalog,public,auth as $$
@@ -331,17 +389,24 @@ begin
  insert into public.rms_ai_runs(user_id,research_id,input_hash) values(p_user_id,p_research_id,left(p_input_hash,128)) returning id into v_id;
  return v_id;
 end $$;
+
 create function public.rms_ai_finish(p_run_id uuid,p_status text) returns void language plpgsql security definer set search_path=pg_catalog,public,auth as $$ begin if p_status not in ('complete','failed') then raise exception '잘못된 AI 상태'; end if; update public.rms_ai_runs set status=p_status,completed_at=clock_timestamp() where id=p_run_id and status='running'; end $$;
 
 -- Private bucket: authenticated reads re-check permission, no reusable public URLs.
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('research-files','research-files',false,20971520,array['application/pdf']) on conflict(id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
+
 create policy rms_files_upload on storage.objects for insert to authenticated with check(bucket_id='research-files' and public.rms_is_allowed() and split_part(name,'/',1)=auth.uid()::text and name ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\.pdf$' and public.rms_owns_research(split_part(name,'/',2)::uuid));
+
 create policy rms_files_read on storage.objects for select to authenticated using(bucket_id='research-files' and public.rms_can_read_file(name));
+
 -- No UPDATE policy: an uploaded object can never overwrite a preserved version.
 create policy rms_orphan_files_delete on storage.objects for delete to authenticated using(bucket_id='research-files' and public.rms_is_allowed() and split_part(name,'/',1)=auth.uid()::text and not exists(select 1 from public.rms_records r where r.kind='versions' and r.data->>'storagePath'=name) and not exists(select 1 from public.rms_review_rounds rr where rr.snapshot->>'storagePath'=name));
 
 -- PUBLIC execution is revoked for every RMS function, including private helpers.
 do $$ declare f record; begin for f in select p.oid::regprocedure signature from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname like 'rms_%' loop execute format('revoke all on function %s from public, anon, authenticated',f.signature); execute format('grant execute on function %s to service_role',f.signature); end loop; end $$;
+
 grant execute on function public.rms_is_allowed(),public.rms_owns_research(uuid),public.rms_can_read_request(uuid),public.rms_can_read_round(uuid),public.rms_can_read_file(text) to authenticated;
+
 grant execute on function public.rms_bootstrap(),public.rms_save_research(jsonb),public.rms_save_record(text,jsonb),public.rms_delete_record(text,uuid),public.rms_save_preparation(jsonb,jsonb),public.rms_create_review(jsonb),public.rms_recheck(jsonb),public.rms_respond(jsonb),public.rms_comment(jsonb),public.rms_resolve_comment(uuid,boolean),public.rms_set_sharing(jsonb),public.rms_mark_read(uuid),public.rms_response_history(uuid) to authenticated;
+
 grant all on public.rms_demo_accounts,public.rms_researches,public.rms_records,public.rms_review_requests,public.rms_review_items,public.rms_review_rounds,public.rms_review_responses,public.rms_response_history,public.rms_review_comments,public.rms_review_reads,public.rms_ai_runs to service_role;

@@ -9,5 +9,7 @@ begin
  into v_result from public.rms_ai_runs where user_id=v_uid and created_at>now()-interval '24 hours';
  return v_result;
 end $$;
+
 revoke all on function public.rms_ai_usage() from public,anon;
+
 grant execute on function public.rms_ai_usage() to authenticated;

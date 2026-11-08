@@ -21,28 +21,35 @@ import { Icon } from "@/components/icons";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 
 function readDraftFields(root: HTMLDivElement) {
-  return JSON.stringify(
-    [
-      ...root.querySelectorAll<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >("input, textarea, select"),
-    ].map((field) => {
-      if (
-        field instanceof HTMLInputElement &&
-        ["checkbox", "radio"].includes(field.type)
-      )
-        return [field.type, field.value, field.checked];
-      if (field instanceof HTMLInputElement && field.type === "file")
-        return [
-          field.type,
-          [...(field.files ?? [])].map((file) => [
-            file.name,
-            file.size,
-            file.lastModified,
-          ]),
-        ];
-      return [field.tagName, field.name, field.value];
-    }),
+  return (
+    JSON.stringify(
+      [
+        ...root.querySelectorAll<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >("input, textarea, select"),
+      ].map((field) => {
+        if (
+          field instanceof HTMLInputElement &&
+          ["checkbox", "radio"].includes(field.type)
+        )
+          return [field.type, field.value, field.checked];
+        if (field instanceof HTMLInputElement && field.type === "file")
+          return [
+            field.type,
+            [...(field.files ?? [])].map((file) => [
+              file.name,
+              file.size,
+              file.lastModified,
+            ]),
+          ];
+        return [field.tagName, field.name, field.value];
+      }),
+    ) +
+    JSON.stringify(
+      [...root.querySelectorAll("[data-draft-value]")].map((field) =>
+        field.getAttribute("data-draft-value"),
+      ),
+    )
   );
 }
 
@@ -96,6 +103,16 @@ function FormNavigationGuard({
     if (root.current && baseline.current !== null)
       setDirty(readDraftFields(root.current) !== baseline.current);
   }
+  useEffect(() => {
+    if (!active || !root.current) return;
+    const observer = new MutationObserver(check);
+    observer.observe(root.current, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-draft-value"],
+    });
+    return () => observer.disconnect();
+  }, [active]);
   return (
     <div
       ref={bind}

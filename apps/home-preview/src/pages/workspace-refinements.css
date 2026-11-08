@@ -347,3 +347,67 @@
     padding: 18px;
   }
 }
+
+/* QA: stable labels, intrinsic controls and readable draft feedback. */
+.student-filter-row {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+}
+.student-filter-row > label {
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+.student-filter-row .select-field-host {
+  min-width: 144px;
+}
+.select-field-host {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+.material-registration-form {
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+}
+.material-registration-form > .button-row:last-child {
+  margin-top: auto;
+  padding-top: 20px;
+}
+.ai-chat-main .assistant-welcome {
+  overflow: visible;
+  padding-top: 48px;
+  align-items: center;
+  text-align: center;
+}
+.ai-unanswered {
+  margin: 16px 24px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.ai-unanswered p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+.source-picker > button {
+  flex-shrink: 0;
+}
+.source-picker > button[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.source-picker button > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.source-picker small {
+  white-space: normal;
+  line-height: 1.6;
+}
+.ai-source-controls label {
+  white-space: nowrap;
+}

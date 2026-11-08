@@ -74,6 +74,7 @@ export function TasksPage() {
       status: "todo",
       dueDate: null,
       priority: "normal",
+      visibility: "private",
       feedbackIds:
         feedbackId &&
         data.feedback.some(
@@ -478,6 +479,17 @@ export function TasksPage() {
                     {taskLabels[task.status]}
                   </StatusBadge>
                   <span className="task-list-date">
+                    {task.status !== "done" &&
+                      task.dueDate &&
+                      task.dueDate <
+                        new Intl.DateTimeFormat("en-CA", {
+                          timeZone: "Asia/Seoul",
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                        }).format(new Date()) && (
+                        <span className="overdue-label">기한 지남 · </span>
+                      )}
                     {task.dueDate
                       ? new Intl.DateTimeFormat("ko-KR", {
                           month: "2-digit",

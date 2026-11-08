@@ -1,4 +1,4 @@
-# Margin Supabase backend
+# Margin 서버
 
 학생의 개인 기록과 지정 교수에게 공개한 검토를 분리한다. 연구 소유자와 활성 공동 편집자의 공동 기록, 작성자별 개인 기록은 `rms_researches`·`rms_records`에 독립 행으로 저장하고, 공개한 항목·차수·응답·댓글은 별도 테이블에 저장한다. React의 역할 선택값은 접근 권한으로 사용하지 않는다.
 
@@ -24,7 +24,7 @@ node --env-file=supabase/.env.provision.local supabase/scripts/provision-demo.mj
 node --env-file=supabase/.env.provision.local supabase/scripts/provision-demo.mjs --apply
 ```
 
-스크립트는 기존 계정의 비밀번호를 바꾸지 않는다. 실제로 생성·등록하는 두 번째 실행 뒤 브라우저에서 로그인해야 확인이 끝난다. 계정은 학생과 교수에 서로 다른 이메일을 사용하고, 비밀번호는 12자 이상으로 설정한다.
+스크립트는 기존 계정의 비밀번호를 바꾸지 않는다. 실제로 생성·등록하는 두 번째 실행 뒤 브라우저에서 로그인해야 확인이 끝난다. 계정은 학생과 교수에 서로 다른 이메일을 사용하고, 비밀번호는 8자 이상으로 설정한다.
 
 4. `.env.functions.example`을 `.env.functions.local`로 복사해 Gemini 키, 모델, 허용 웹앱 주소를 넣는다. 다음 명령은 파일 값을 Supabase의 서버 비밀 설정에 저장한다.
 
@@ -86,4 +86,4 @@ DB 테스트는 PGlite의 실제 PostgreSQL·RLS·PL/pgSQL로 마이그레이션
 - `research-private`: 녹음/개인 첨부 비공개 버킷, 50MB. 작성자 외 다운로드 금지. `research-files`는 보존 PDF 공유 버킷, 20MB.
 - GET `ai-assist`: 허용 모델·생각 수준. POST는 선택 원문·버전·범위를 서버에서 다시 검사. 개인 AI 대화와 결과 후보는 작성자만 접근.
 
-실제 로그인·파일·검토·시간 조율 검사는 `scripts/check-experience.mjs`, Edge 경계 검사는 `scripts/check-edge.mjs`다. 로컬 환경의 가상 계정만 사용한다. 상세 한계는 [검증 기록](../../../docs/development/verification-20261105.md)을 따른다.
+실제 로그인·파일·검토·시간 조율 검사는 `scripts/check-experience.mjs`, Edge 경계 검사는 `scripts/check-edge.mjs`다. 로컬 환경의 가상 계정만 사용한다. 상세 한계는 [개발 검사 안내](../../../docs/development.md)을 따른다.
