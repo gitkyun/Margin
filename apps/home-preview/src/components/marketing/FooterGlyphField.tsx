@@ -2,9 +2,10 @@ import { useEffect, useRef } from "react";
 import { useTheme } from "@/lib/theme";
 
 /**
- * Footer ground drawn as a glyph grid: a brand-blue field of cells, a ragged
- * dissolve into the page above, and the Margin mascot rendered from its own
- * artwork as white cells textured with dots, squares and crosses.
+ * Full-height footer ground drawn as a glyph grid: brand-blue cells that fill
+ * the bottom and both sides and dissolve as a halftone of glyphs toward the
+ * top, plus the Margin mascot rendered from its own artwork as white cells
+ * textured with dots, squares and crosses, peeking out from behind the card.
  *
  * Decorative only (aria-hidden, pointer-events: none). The footer stays the
  * pointer target so its links keep working; the field reads pointer moves from
@@ -18,7 +19,6 @@ const EYES = [
   { x: 535, y: 485, rx: 58, ry: 80 },
   { x: 680, y: 452, rx: 53, ry: 75 },
 ];
-const DISSOLVE = 96; // px of field above the footer's top edge (canvas inset)
 
 type Palette = {
   ground: string;
@@ -143,6 +143,7 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
     // Mascot placement in canvas px, and its tones sampled per cell.
     let mascot = { x: 0, y: 0, w: 0, h: 0 };
     let tones: Float32Array | null = null;
+    let groundMap: Uint8Array | null = null;
     let toneCols = 0;
     let toneRows = 0;
     let artwork: HTMLImageElement | null = null;
@@ -250,10 +251,33 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
       return Math.min(1, tone + jitter);
     }
 
-    function isGround(row: number) {
-      const y = row * cell;
-      if (y >= DISSOLVE) return 1;
-      return y / DISSOLVE;
+    /** Field density 0..1: empty at the top centre, full along the bottom and
+     *  up both sides, with a slow wave so the boundary is not a straight
+     *  gradient. Cells are blue when a per-cell roll falls under it, which
+     *  gives the halftone dissolve. */
+    function density(col: number, row: number) {
+      const nx = ((col + 0.5) * cell) / width;
+      const ny = ((row + 0.5) * cell) / height;
+      const side = Math.max(
+        Math.exp(-Math.pow(nx / 0.2, 2)),
+        Math.exp(-Math.pow((1 - nx) / 0.2, 2)),
+      );
+      // The wave only bends the boundary lower down; the top stays open.
+      const wave =
+        (Math.sin(nx * 6.3 + ny * 2.1) + Math.sin(nx * 2.4 - ny * 4.7)) *
+        0.07 *
+        ny;
+      return Math.max(
+        0,
+        Math.min(
+          1,
+          Math.pow(ny, 2.1) * 1.25 + side * (0.12 + 0.88 * ny) + wave,
+        ),
+      );
+    }
+
+    function isGround(col: number, row: number) {
+      return groundMap ? groundMap[row * cols + col] === 1 : false;
     }
 
     function drawBase() {
@@ -262,29 +286,34 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
       base.height = canvas!.height;
       baseCtx.setTransform(scale, 0, 0, scale, 0, 0);
       baseCtx.clearRect(0, 0, width, height);
-      // Solid ground below the dissolve band, with grid lines.
-      baseCtx.fillStyle = palette.ground;
-      baseCtx.fillRect(0, DISSOLVE, width, height - DISSOLVE);
-      baseCtx.fillStyle = palette.grid;
-      for (let x = 0; x <= width; x += cell)
-        baseCtx.fillRect(x, DISSOLVE, 1, height - DISSOLVE);
-      for (let y = DISSOLVE; y <= height; y += cell)
-        baseCtx.fillRect(0, y, width, 1);
-      // Dissolve: ground cells thin out toward the page above.
-      for (let row = 0; row * cell < DISSOLVE; row++) {
-        const p = isGround(row);
+      groundMap = new Uint8Array(cols * rows);
+      for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
+          const d = density(col, row);
           const x = col * cell;
           const y = row * cell;
-          const roll = hash(col, row, 1);
-          if (roll < Math.pow(p, 1.35)) {
+          if (hash(col, row, 1) < Math.pow(d, 1.25)) {
+            groundMap[row * cols + col] = 1;
             baseCtx.fillStyle = palette.ground;
             baseCtx.fillRect(x, y, cell, cell);
             baseCtx.fillStyle = palette.grid;
             baseCtx.fillRect(x, y, cell, 1);
             baseCtx.fillRect(x, y, 1, cell);
-          } else if (hash(col, row, 2) < p * (1 - p) * 0.9) {
-            const mark: Mark = hash(col, row, 4) > 0.5 ? "square" : "cross";
+            // Lighter glyphs on blue where the field is still thinning.
+            if (d < 0.8 && hash(col, row, 5) < (0.8 - d) * 0.45) {
+              const mark: Mark = d < 0.5 ? "square" : "dot";
+              drawMark(baseCtx, mark, x, y, cell, palette.markOnGround);
+            }
+          } else if (hash(col, row, 2) < d * (1 - d) * 1.8) {
+            // Blue glyphs on the page where the field begins.
+            const mark: Mark =
+              d > 0.55
+                ? "grain"
+                : d > 0.35
+                  ? "cross"
+                  : d > 0.18
+                    ? "square"
+                    : "dot";
             drawMark(baseCtx, mark, x, y, cell, palette.ground);
           }
         }
@@ -356,11 +385,12 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
       // Idle flicker: a few cells change glyph for ~0.7s at a time.
       if (motion) {
         const tick = Math.floor(time / 700);
-        for (let row = Math.ceil(DISSOLVE / cell); row < rows; row++) {
+        for (let row = 0; row < rows; row++) {
           for (let col = 0; col < cols; col++) {
             if (hash(col, row, tick) > 0.0035) continue;
             const tone = shapeTone(col, row);
             const onShape = tone >= 0;
+            if (!onShape && !isGround(col, row)) continue;
             const mark: Mark = onShape
               ? markForTone(Math.max(0.45, tone - 0.2))
               : hash(col, row, tick + 9) > 0.5
@@ -382,10 +412,7 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
         const radius = cell * 11;
         const c0 = Math.max(0, Math.floor((smoothed.x - radius) / cell));
         const c1 = Math.min(cols, Math.ceil((smoothed.x + radius) / cell));
-        const r0 = Math.max(
-          Math.ceil(DISSOLVE / cell),
-          Math.floor((smoothed.y - radius) / cell),
-        );
+        const r0 = Math.max(0, Math.floor((smoothed.y - radius) / cell));
         const r1 = Math.min(rows, Math.ceil((smoothed.y + radius) / cell));
         for (let row = r0; row < r1; row++) {
           for (let col = c0; col < c1; col++) {
@@ -400,14 +427,12 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
             if (mark === "none" || hash(col, row, 11) > 1 - d / radius + 0.25)
               continue;
             const onShape = shapeTone(col, row) >= 0;
-            drawMark(
-              ctx,
-              mark,
-              col * cell,
-              row * cell,
-              cell,
-              onShape ? palette.markOnShape : palette.markOnGround,
-            );
+            const color = onShape
+              ? palette.markOnShape
+              : isGround(col, row)
+                ? palette.markOnGround
+                : palette.ground;
+            drawMark(ctx, mark, col * cell, row * cell, cell, color);
           }
         }
       }
@@ -437,23 +462,34 @@ export function FooterGlyphField({ className = "" }: { className?: string }) {
       cell = width < 600 ? 8 : 10;
       cols = Math.ceil(width / cell);
       rows = Math.ceil(height / cell);
-      // The mascot rises from the band under the card and runs off the bottom.
+      // Wide: the mascot hides behind the card's right edge and peeks out of
+      // the margin with both eyes, running off the right and bottom edges.
+      // Narrow: it rises from the band under the card.
       const inner = host!.querySelector<HTMLElement>(".lp-footer-inner");
-      const cardBottom = inner
-        ? inner.getBoundingClientRect().bottom - bounds.top
-        : height * 0.6;
+      const card = inner?.getBoundingClientRect();
+      const cardRight = card ? card.right - bounds.left : width * 0.85;
+      const cardBottom = card ? card.bottom - bounds.top : height * 0.75;
       const narrow = width < 600;
-      const w = narrow
-        ? Math.min(width * 0.86, 420)
-        : Math.min(Math.max(width * 0.32, 360), 520);
-      const h = (w * CROP.h) / CROP.w;
-      const centre = narrow ? width * 0.5 : width * 0.7;
-      mascot = {
-        x: Math.round((centre - w / 2) / cell) * cell,
-        y: Math.round((cardBottom + (narrow ? 20 : 28)) / cell) * cell,
-        w,
-        h,
-      };
+      if (narrow) {
+        const w = Math.min(width * 0.86, 420);
+        mascot = {
+          x: Math.round((width / 2 - w / 2) / cell) * cell,
+          y: Math.round((cardBottom + 20) / cell) * cell,
+          w,
+          h: (w * CROP.h) / CROP.w,
+        };
+      } else {
+        const margin = width - cardRight;
+        // Both eyes span ~0.34 of the mascot's width; fit them in the margin.
+        const w = Math.max(200, Math.min(460, (margin - 20) / 0.36));
+        const h = (w * CROP.h) / CROP.w;
+        mascot = {
+          x: Math.round((cardRight + 14 - 0.457 * w) / cell) * cell,
+          y: Math.round((cardBottom - 0.4 * h - 90) / cell) * cell,
+          w,
+          h,
+        };
+      }
       sampleArtwork();
       drawBase();
       if (visible) draw(elapsed);

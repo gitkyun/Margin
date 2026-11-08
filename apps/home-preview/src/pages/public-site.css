@@ -1072,33 +1072,39 @@
   background: white;
   box-shadow: 0 4px 12px #557bb013;
 }
-/* The footer's glyph field (FooterGlyphField) dissolves 96px upward into the
-   page. Lift every public page's content above it so closing cards and CTAs
-   stay crisp. The sticky header (z-index 40) still sits above this layer. */
+/* Keep page content above the footer's field and shadow layers. The sticky
+   header (z-index 40) still sits above this layer. */
 .lp-site > main {
   position: relative;
   z-index: 1;
 }
-/* Brand-blue glyph grid; the bottom padding is the band where the mascot
-   rises from behind the card. The solid colour is the no-canvas fallback. */
+/* A full-height footer: the glyph field (FooterGlyphField) fills the whole
+   area around the card, so the card sits centred on it. The side padding
+   leaves the right margin wide enough for the mascot to peek out with both
+   eyes. The gradient is the no-canvas fallback. */
 .lp-footer {
-  padding: 64px 32px clamp(240px, 26vw, 380px);
+  min-height: calc(100svh - 84px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(56px, 10vh, 112px) clamp(32px, 11vw, 180px);
   position: relative;
   isolation: isolate;
-  background: #1a4be8;
+  background: linear-gradient(180deg, transparent 10%, #1a4be8 85%);
 }
 .lp-footer-glyph-field {
   position: absolute;
-  inset: -96px 0 0;
+  inset: 0;
   width: 100%;
-  height: calc(100% + 96px);
+  height: 100%;
   z-index: -1;
   pointer-events: none;
 }
 .lp-footer-inner {
   position: relative;
+  width: 100%;
   max-width: 1216px;
-  margin: auto;
+  margin: 0 auto;
   border-radius: 28px;
   box-shadow:
     0 30px 70px -28px #061a6b99,
@@ -1509,7 +1515,7 @@
   color: #a8c9f3;
 }
 .dark .lp-footer {
-  background: #102c86;
+  background: linear-gradient(180deg, transparent 10%, #102c86 85%);
 }
 .dark .lp-footer-inner {
   background: #1c2430;
@@ -1957,7 +1963,8 @@
     line-height: 1.8;
   }
   .lp-footer {
-    padding: 36px 14px 230px;
+    min-height: 0;
+    padding: 72px 14px 230px;
   }
   .lp-footer-inner {
     border-radius: 20px;
