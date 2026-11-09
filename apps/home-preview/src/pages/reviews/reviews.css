@@ -780,6 +780,28 @@
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
+  .review-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-12);
+    padding: var(--spacing-12);
+    border-radius: var(--radius-10);
+    background: var(--surface-muted);
+  }
+  .review-progress > p {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .review-progress.is-done {
+    justify-content: flex-start;
+    color: var(--semantic-foreground-positive-primary);
+  }
   .review-history-button {
     display: flex;
     align-items: center;
