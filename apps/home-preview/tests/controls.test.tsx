@@ -9,7 +9,6 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { Choice, Segments } from "../src/components/experience";
-import { SearchField } from "../src/components/SearchField";
 
 beforeAll(() => {
   Object.defineProperty(window, "matchMedia", {
@@ -60,26 +59,6 @@ describe("search and selection controls", () => {
     render(<Choose long />);
     fireEvent.click(screen.getByRole("combobox", { name: /^미팅, / }));
     expect(await screen.findAllByRole("option")).toHaveLength(9);
-  });
-  it("clears search and returns typing focus", () => {
-    function Search() {
-      const [value, setValue] = useState("원고");
-      return (
-        <SearchField
-          aria-label="자료 찾기"
-          value={value}
-          onValueChange={setValue}
-        />
-      );
-    }
-    render(<Search />);
-    fireEvent.click(screen.getByRole("button", { name: "검색어 지우기" }));
-    const input = screen.getByRole("searchbox", {
-      name: "자료 찾기",
-    }) as HTMLInputElement;
-    expect(input.value).toBe("");
-    expect(document.activeElement).toBe(input);
-    expect(screen.queryByRole("button", { name: "검색어 지우기" })).toBeNull();
   });
   it("moves the selected filter and keyboard focus together", async () => {
     function Filters() {

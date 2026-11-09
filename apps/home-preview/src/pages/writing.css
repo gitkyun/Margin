@@ -565,23 +565,6 @@
       transition: none;
     }
   }
-
-  .rms-control-tooltip {
-    z-index: 100;
-    padding: 7px 10px;
-    border-radius: var(--radius-8);
-    background: var(--text);
-    color: var(--surface);
-    box-shadow: var(--shadow-pop);
-    font-size: var(--typography-caption1-fontSize);
-    line-height: var(--typography-caption1-lineHeight);
-    user-select: none;
-    animation: tooltip-arrive 120ms ease-out;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .rms-control-tooltip svg {
-    fill: var(--text);
-  }
   @keyframes tooltip-arrive {
     from {
       opacity: 0;
@@ -590,11 +573,6 @@
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .rms-control-tooltip {
-      animation: none;
     }
   }
 }

@@ -1649,15 +1649,14 @@
       font-size: var(--typography-caption2-fontSize);
       letter-spacing: var(--typography-caption2-letterSpacing);
     }
-    .rms-mobile-sheet.mobile-sidebar {
+    /* 휴대폰 연구 메뉴: Montage Modal(full) 안에서 사이드바 내용을 세로로 채웁니다. */
+    .rms-mobile-sheet .margin-sheet-body {
       display: flex;
-      position: fixed;
-      inset: 0 auto 0 0;
-      width: min(290px, 88vw);
-      height: 100dvh;
-      padding: 23px 16px 15px;
-      background: var(--surface);
+      flex: 1;
       flex-direction: column;
+      min-height: 0;
+      padding: 0 16px 15px;
+      overflow-y: auto;
     }
     .rms-mobile-sheet .sidebar-toggle {
       display: none;

@@ -8,7 +8,6 @@ import {
   type SelectHTMLAttributes,
   type ReactElement,
 } from "react";
-import { Tooltip } from "radix-ui";
 import { useParams } from "react-router-dom";
 import {
   Option,
@@ -19,6 +18,7 @@ import {
 import { useWorkspace } from "@/lib/workspace";
 import { motion, useReducedMotion, useMotionValue } from "motion/react";
 import { Icon } from "./icons";
+import { Hint } from "./ui/hint";
 /**
  * 선택 상자. 모양·키보드·목록은 Montage Select가 맡습니다.
  * 접근성 이름은 "이름, 현재 값"으로 둬 보이는 글자가 이름에 들어가게 합니다(WCAG 2.5.3).
@@ -240,33 +240,19 @@ export function DockItem({
 }) {
   const reduced = useReducedMotion();
   return (
-    <Tooltip.Provider delayDuration={250}>
-      <Tooltip.Root>
-        <Tooltip.Trigger asChild>
-          <motion.button
-            type="button"
-            aria-label={label}
-            aria-pressed={active}
-            disabled={disabled}
-            whileHover={reduced ? undefined : { y: -3, scale: 1.08 }}
-            whileTap={reduced ? undefined : { scale: 0.97 }}
-            onClick={onClick}
-          >
-            {children}
-          </motion.button>
-        </Tooltip.Trigger>
-        <Tooltip.Portal>
-          <Tooltip.Content
-            className="rms-control-tooltip"
-            side="top"
-            sideOffset={12}
-          >
-            {label}
-            <Tooltip.Arrow />
-          </Tooltip.Content>
-        </Tooltip.Portal>
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    <Hint label={label} position="top-center">
+      <motion.button
+        type="button"
+        aria-label={label}
+        aria-pressed={active}
+        disabled={disabled}
+        whileHover={reduced ? undefined : { y: -3, scale: 1.08 }}
+        whileTap={reduced ? undefined : { scale: 0.97 }}
+        onClick={onClick}
+      >
+        {children}
+      </motion.button>
+    </Hint>
   );
 }
 export function VisibilityField({

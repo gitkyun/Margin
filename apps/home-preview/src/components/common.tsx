@@ -168,55 +168,90 @@ export function LoadingState() {
 }
 const SKELETON_NAV_ROWS = 7;
 const SKELETON_TASK_ROWS = 3;
-function SkeletonLines({ count }: { count: number }) {
+function SkeletonLines({
+  count,
+  height = 16,
+}: {
+  count: number;
+  height?: number;
+}) {
   return (
     <>
       {Array.from({ length: count }, (_, index) => (
-        <div key={index} className="skeleton skeleton-line" />
+        <Skeleton
+          key={index}
+          variant="rectangle"
+          width="100%"
+          height={height}
+          radius={8}
+        />
       ))}
     </>
   );
 }
+function SkeletonLabel() {
+  return <Skeleton variant="text" width="40%" />;
+}
 // Mirrors the shell and the research home bento so the first screen after
-// signing in keeps its layout while the workspace loads.
+// signing in keeps its layout while the workspace loads. 회색 막대는 Montage Skeleton.
 export function HomeSkeleton() {
   return (
     <div className="app-shell home-skeleton" role="status" aria-busy="true">
       <span className="sr-only">연구 홈을 불러오는 중</span>
       <aside className="sidebar" aria-hidden="true">
-        <div className="skeleton skeleton-brand" />
+        <Skeleton variant="rectangle" width={150} height={34} radius={8} />
         <div className="skeleton-nav">
-          <SkeletonLines count={SKELETON_NAV_ROWS} />
+          <SkeletonLines count={SKELETON_NAV_ROWS} height={36} />
         </div>
       </aside>
       <div className="main-shell" aria-hidden="true">
         <div className="topbar">
-          <div className="skeleton skeleton-crumb" />
-          <div className="skeleton skeleton-avatar" />
+          <Skeleton variant="text" width={180} />
+          <Skeleton variant="circle" width={30} height={30} />
         </div>
         <div className="workspace-content">
           <div className="page-header">
             <div>
-              <div className="skeleton skeleton-title" />
-              <div className="skeleton skeleton-line skeleton-short" />
+              <Skeleton
+                variant="rectangle"
+                width={210}
+                height={30}
+                radius={8}
+              />
+              <SkeletonLabel />
             </div>
           </div>
           <div className="home-bento">
             <section className="surface home-next">
-              <div className="skeleton skeleton-line skeleton-short" />
-              <div className="skeleton skeleton-heading" />
-              <div className="skeleton skeleton-panel" />
+              <SkeletonLabel />
+              <Skeleton
+                variant="rectangle"
+                width="60%"
+                height={28}
+                radius={8}
+              />
+              <Skeleton
+                variant="rectangle"
+                width="100%"
+                height={120}
+                radius={12}
+              />
             </section>
             <section className="surface home-responses">
-              <div className="skeleton skeleton-line skeleton-short" />
-              <div className="skeleton skeleton-panel" />
+              <SkeletonLabel />
+              <Skeleton
+                variant="rectangle"
+                width="100%"
+                height={120}
+                radius={12}
+              />
             </section>
             <section className="surface home-work">
-              <div className="skeleton skeleton-line skeleton-short" />
-              <SkeletonLines count={SKELETON_TASK_ROWS} />
+              <SkeletonLabel />
+              <SkeletonLines count={SKELETON_TASK_ROWS} height={48} />
             </section>
             <section className="surface home-preparation">
-              <div className="skeleton skeleton-line skeleton-short" />
+              <SkeletonLabel />
               <SkeletonLines count={2} />
             </section>
           </div>

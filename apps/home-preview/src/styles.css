@@ -135,24 +135,20 @@
     border-color: var(--primary);
     color: var(--semantic-static-white);
   }
-  [data-slot="dialog-overlay"],
-  [data-slot="sheet-overlay"] {
+  [data-slot="dialog-overlay"] {
     background: var(--semantic-effect-dimmer-primary);
     backdrop-filter: blur(3px);
   }
-  [data-slot="dialog-content"],
-  [data-slot="sheet-content"] {
+  [data-slot="dialog-content"] {
     color: var(--text);
     background: var(--surface);
     border-color: var(--line);
   }
-  [data-slot="dialog-title"],
-  [data-slot="sheet-title"] {
+  [data-slot="dialog-title"] {
     font-weight: 600;
     letter-spacing: -0.5px;
   }
-  [data-slot="dialog-description"],
-  [data-slot="sheet-description"] {
+  [data-slot="dialog-description"] {
     color: var(--text-secondary);
     line-height: 1.7;
   }
@@ -1038,16 +1034,6 @@
     margin-bottom: 10px;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
-  .notifications-sheet {
-    width: min(460px, 100vw) !important;
-    max-width: 460px !important;
-    padding: 0;
-    overflow: auto;
-  }
-  .notifications-sheet > [data-slot="sheet-header"] {
-    padding: 30px 26px 24px;
-    border-bottom: 1px solid var(--line);
-  }
   .notification-content {
     padding: 8px 25px;
   }
@@ -1236,72 +1222,16 @@
     gap: 20px;
     padding: 18px 0;
   }
-  .skeleton {
-    background: var(--surface-muted);
-    border-radius: var(--radius-8);
-    animation: skeleton-pulse 1.4s ease-in-out infinite;
-  }
-  .skeleton-title {
-    width: 210px;
-    height: 30px;
-  }
-  .skeleton-block {
-    height: 220px;
-    width: 100%;
-    margin-top: 12px;
-  }
-  .skeleton-row {
-    height: 55px;
-    width: 100%;
-  }
-  .skeleton-line {
-    height: 16px;
-    width: 100%;
-  }
-  .skeleton-short {
-    width: 40%;
-  }
-  .skeleton-brand {
-    height: 34px;
-    width: 150px;
-  }
   .skeleton-nav {
     display: grid;
     gap: 10px;
     margin-top: 28px;
-  }
-  .skeleton-nav .skeleton-line {
-    height: 36px;
-  }
-  .skeleton-crumb {
-    height: 16px;
-    width: 180px;
-  }
-  .skeleton-avatar {
-    height: 30px;
-    width: 30px;
-    border-radius: 50%;
-  }
-  .skeleton-heading {
-    height: 28px;
-    width: 60%;
-  }
-  .skeleton-panel {
-    height: 120px;
   }
   .home-skeleton .page-header > div,
   .home-skeleton .home-bento > section {
     display: grid;
     gap: 14px;
     align-content: start;
-  }
-  .home-skeleton .home-work .skeleton-line:not(.skeleton-short) {
-    height: 48px;
-  }
-  @keyframes skeleton-pulse {
-    50% {
-      opacity: 0.45;
-    }
   }
   .initial-loading {
     max-width: 950px;
