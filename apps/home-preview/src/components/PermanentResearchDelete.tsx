@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/lib/workspace";
 import { assertConnected, friendlyError } from "@/lib/supabase";
@@ -111,8 +112,7 @@ export function PermanentResearchDelete({
           >
             <label className="field">
               확인을 위해 연구 이름을 입력하세요
-              <input
-                className="rms-input"
+              <Input
                 value={confirmation}
                 onChange={(e) => setConfirmation(e.target.value)}
                 autoComplete="off"

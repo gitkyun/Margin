@@ -104,13 +104,13 @@
   transform: translateY(-1px);
 }
 .subscription-button-primary {
-  color: #fff;
+  color: var(--semantic-static-white);
   background: var(--primary);
   border-color: var(--primary);
 }
 .subscription-button-primary:hover {
-  color: #fff;
-  background: #0055dc;
+  color: var(--semantic-static-white);
+  background: var(--semantic-surface-brand-strong);
 }
 .subscription-card ul {
   padding: 24px 0 0;

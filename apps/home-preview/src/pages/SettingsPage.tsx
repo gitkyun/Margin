@@ -1,4 +1,6 @@
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   reviewDepthOptions,
   resolveReviewDepth,
@@ -194,8 +196,7 @@ export function AccountPage() {
               >
                 <label className="field">
                   표시 이름
-                  <input
-                    className="rms-input"
+                  <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     maxLength={40}
@@ -204,7 +205,7 @@ export function AccountPage() {
                 </label>
                 <label className="field">
                   로그인 이메일
-                  <input className="rms-input" value={user.email} readOnly />
+                  <Input value={user.email} readOnly />
                   <small>로그인 이메일은 여기서 바꿀 수 없어요.</small>
                 </label>
                 <div className="settings-form-actions">
@@ -493,8 +494,7 @@ export function ResearchSettingsPage() {
               >
                 <label className="field">
                   연구 이름
-                  <input
-                    className="rms-input"
+                  <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     maxLength={120}
@@ -503,8 +503,7 @@ export function ResearchSettingsPage() {
                 </label>
                 <label className="field">
                   설명 <small>선택</small>
-                  <textarea
-                    className="rms-input"
+                  <Textarea
                     rows={5}
                     value={description}
                     maxLength={3000}
@@ -599,9 +598,9 @@ export function ResearchSettingsPage() {
                 >
                   <label className="field">
                     공동연구자 이메일
-                    <input
+                    <Input
                       type="email"
-                      className="rms-input"
+
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -831,8 +830,7 @@ function PasswordSettings() {
       >
         <label className="field">
           현재 비밀번호
-          <input
-            className="rms-input"
+          <Input
             type="password"
             autoComplete="current-password"
             value={current}
@@ -843,8 +841,7 @@ function PasswordSettings() {
         </label>
         <label className="field">
           새 비밀번호
-          <input
-            className="rms-input"
+          <Input
             type="password"
             autoComplete="new-password"
             value={next}
@@ -857,8 +854,7 @@ function PasswordSettings() {
         </label>
         <label className="field">
           새 비밀번호 확인
-          <input
-            className="rms-input"
+          <Input
             type="password"
             autoComplete="new-password"
             value={confirmation}

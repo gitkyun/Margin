@@ -34,7 +34,7 @@
 .lp-footer-theme button[aria-pressed="true"] {
   background: var(--surface);
   color: var(--text);
-  box-shadow: 0 2px 5px -2px #15284426;
+  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
 }
 .lp-footer-theme button:hover {
   color: var(--text);

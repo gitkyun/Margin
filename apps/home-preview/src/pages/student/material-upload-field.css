@@ -52,7 +52,11 @@
     linear-gradient(var(--line) 1px, transparent 1px),
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse at center, #0006, transparent 72%);
+  mask-image: radial-gradient(
+    ellipse at center,
+    rgba(var(--semantic-static-black-rgb), var(--opacity-43)),
+    transparent 72%
+  );
   pointer-events: none;
 }
 .mu-file-stack {
@@ -76,7 +80,7 @@
   display: grid;
   place-items: center;
   color: var(--brand);
-  box-shadow: 0 6px 14px -8px #10182840;
+  box-shadow: var(--semantic-elevation-shadow-normal-small);
 }
 .mu-dropzone > strong {
   max-width: 100%;

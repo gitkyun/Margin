@@ -34,10 +34,10 @@
 .margin-theme-dark {
   display: none !important;
 }
-.dark .margin-theme-light {
+[data-theme="dark"] .margin-theme-light {
   display: none !important;
 }
-.dark .margin-theme-dark {
+[data-theme="dark"] .margin-theme-dark {
   display: block !important;
 }
 .floating-workspace .brand {
@@ -114,15 +114,15 @@
   position: absolute;
   top: -20px;
   left: 22px;
-  box-shadow: 0 5px 12px #1450a51a;
+  box-shadow: var(--semantic-elevation-shadow-normal-small);
 }
 .rh-assistant > .margin-mascot {
   margin-bottom: 16px;
-  box-shadow: 0 6px 16px #1450a518;
+  box-shadow: var(--semantic-elevation-shadow-normal-medium);
 }
 .assistant-welcome > .margin-mascot {
   margin-bottom: 4px;
-  box-shadow: 0 10px 24px #1450a518;
+  box-shadow: var(--semantic-elevation-shadow-normal-large);
 }
 .message-role {
   display: flex;

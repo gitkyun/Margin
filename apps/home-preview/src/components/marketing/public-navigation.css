@@ -44,9 +44,7 @@
   border: 1px solid var(--line);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow:
-    0 20px 50px -15px #18365f38,
-    0 5px 14px #18365f0a;
+  box-shadow: var(--semantic-elevation-shadow-normal-large);
   transform-origin: top left;
   animation: lp-nav-enter 160ms ease-out;
 }
@@ -242,7 +240,7 @@
   }
   .lp-header .lp-mobile-auth .lp-mobile-start {
     background: var(--primary);
-    color: #fff;
+    color: var(--semantic-static-white);
     border-color: transparent;
   }
 }

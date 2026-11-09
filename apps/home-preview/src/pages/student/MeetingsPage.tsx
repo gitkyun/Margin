@@ -989,7 +989,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한
               피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.
             </p>
-            <Textarea
+            <textarea
               className="meeting-memo"
               aria-label="미팅 원문 메모"
               value={memo}

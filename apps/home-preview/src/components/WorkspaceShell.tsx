@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import { Icon } from "./icons";
 import { SearchField } from "./SearchField";
 import { Button } from "./ui/button";
-import { LiquidGlassLayer } from "./LiquidGlassLayer";
 import { LoadingState } from "./common";
 import { useWorkspace } from "@/lib/workspace";
 import { useAIUsage } from "@/lib/ai-usage";

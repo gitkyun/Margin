@@ -9,13 +9,26 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { App } from "./RmsApp";
-import { ThemeProvider } from "./lib/theme";
+import { ThemeProvider, useTheme } from "./lib/theme";
 import { NavigationGuardProvider } from "./lib/navigation-guard";
+import "@montage-ui/core/theme.css";
 import "./styles.css";
+import "./design/tokens.css";
 import "./experience.css";
 const client = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
 });
+function ThemedToaster() {
+  const { resolvedTheme } = useTheme();
+  return (
+    <Toaster
+      position="bottom-right"
+      richColors
+      closeButton
+      theme={resolvedTheme}
+    />
+  );
+}
 const router = createBrowserRouter([
   {
     path: "*",
@@ -23,7 +36,7 @@ const router = createBrowserRouter([
       <NavigationGuardProvider>
         <ScrollRestoration />
         <App />
-        <Toaster position="bottom-right" richColors closeButton />
+        <ThemedToaster />
       </NavigationGuardProvider>
     ),
   },

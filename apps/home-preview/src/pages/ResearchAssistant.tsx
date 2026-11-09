@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useAICapabilities } from "@/lib/ai-capabilities";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -1048,8 +1050,7 @@ export function ResearchAssistant() {
             <h3>PDF 파일</h3>
             <label className="field">
               읽을 페이지
-              <input
-                className="rms-input"
+              <Input
                 type="number"
                 min={1}
                 max={1000}
@@ -1106,8 +1107,7 @@ export function ResearchAssistant() {
           </DialogHeader>
           <label className="field">
             제목
-            <input
-              className="rms-input"
+            <Input
               value={candidateTitle}
               onChange={(e) => setCandidateTitle(e.target.value)}
               maxLength={200}
@@ -1115,8 +1115,7 @@ export function ResearchAssistant() {
           </label>
           <label className="field">
             기록할 내용
-            <textarea
-              className="rms-input"
+            <Textarea
               rows={7}
               value={candidateBody}
               onChange={(e) => setCandidateBody(e.target.value)}

@@ -98,14 +98,6 @@
   color: var(--text-secondary);
   line-height: 1.65;
 }
-.student-dialog input,
-.student-dialog textarea {
-  font-size: 14px;
-}
-.student-dialog textarea {
-  min-height: 90px;
-  line-height: 1.7;
-}
 .student-dialog .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -141,24 +133,7 @@
   outline-offset: 2px;
 }
 .student-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
   min-width: 200px;
-  color: var(--text-secondary);
-}
-.student-search > svg {
-  position: absolute;
-  left: 12px;
-  pointer-events: none;
-}
-.student-search input {
-  padding-left: 38px;
-  font-size: 13px;
-  min-width: 0;
-  height: 38px;
-  background: var(--surface);
 }
 .student-back {
   display: inline-flex;
@@ -207,9 +182,9 @@ button.student-text-link {
   align-items: flex-start;
   font-size: 13px;
   line-height: 1.7;
-  color: var(--danger, #d83d45);
-  background: color-mix(in srgb, var(--danger, #d83d45) 7%, transparent);
-  border: 1px solid color-mix(in srgb, var(--danger, #d83d45) 16%, transparent);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 16%, transparent);
   padding: 12px 14px;
   border-radius: 10px;
   margin-top: 10px;
@@ -524,7 +499,7 @@ button.student-text-link {
   background: currentColor;
 }
 .save-state.error {
-  color: var(--danger, #d83d45);
+  color: var(--danger);
 }
 .save-state.saving {
   color: var(--brand);
@@ -891,10 +866,6 @@ button.student-text-link {
 }
 .ai-candidate > .field {
   margin: 14px 0;
-}
-.ai-candidate textarea {
-  font-size: 13px;
-  line-height: 1.8;
 }
 .ai-candidate-number {
   font-size: 12px;

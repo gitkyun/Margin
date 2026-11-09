@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
 import { recordBase, type MaterialFolder } from "@/lib/domain";
@@ -186,8 +187,7 @@ export function MaterialFolders({
             >
               <label className="field">
                 폴더 이름
-                <input
-                  className="rms-input"
+                <Input
                   value={draft.title}
                   maxLength={120}
                   required

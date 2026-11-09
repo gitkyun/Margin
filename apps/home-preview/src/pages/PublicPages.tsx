@@ -1,4 +1,5 @@
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
+import { Input } from "@/components/ui/input";
 import {
   BrandMark,
   BrandWordmark,
@@ -882,8 +883,7 @@ export function SignupPage() {
               >
                 <label className="field">
                   이름
-                  <input
-                    className="rms-input"
+                  <Input
                     required
                     maxLength={40}
                     autoComplete="off"
@@ -894,8 +894,7 @@ export function SignupPage() {
                 </label>
                 <label className="field">
                   이메일
-                  <input
-                    className="rms-input"
+                  <Input
                     type="email"
                     required
                     autoComplete="off"
@@ -906,8 +905,7 @@ export function SignupPage() {
                 </label>
                 <label className="field">
                   비밀번호
-                  <input
-                    className="rms-input"
+                  <Input
                     type="password"
                     minLength={MIN_PASSWORD_LENGTH}
                     required

@@ -3,7 +3,7 @@
 - [개발](development.md): 실행·검사·폴더
 - [구조와 권한](architecture.md): 저장·공유·서버 경계
 - [배포](deployment.md): GitHub Actions, 환경변수, 복구
-- [디자인](design/README.md): 브랜드와 공통 UI
+- [디자인](design/README.md): Montage 기반 토큰·테마·공통 UI·브랜드 (시작점)
 - [UX 라이팅](design/ux-writing.md) · [UI 품질 기준](design/ui-quality.md): 화면 문구와 검수 기준
 - [PRD](product/prd.md) · [기능 명세](product/functional-specification.md) · [흐름](product/user-flow.md) · [정보 구조](product/information-architecture.md)
 

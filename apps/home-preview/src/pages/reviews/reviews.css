@@ -168,9 +168,9 @@
   margin: 0;
 }
 .review-form-error {
-  color: var(--danger, #c43c3c);
-  background: var(--danger-soft, #db44440d);
-  border: 1px solid var(--danger-line, #db444433);
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-line);
   padding: 12px 14px;
   border-radius: 10px;
   font-size: 13px;
@@ -709,11 +709,6 @@
 .review-response-option svg {
   color: var(--text-secondary);
 }
-.review-response-form textarea {
-  min-height: 114px;
-  font-size: 13px;
-  line-height: 1.8;
-}
 .review-response-form > button {
   width: 100%;
 }
@@ -824,11 +819,6 @@
   gap: 10px;
   padding-top: 16px;
   border-top: 1px solid var(--line);
-}
-.review-comment-form textarea {
-  min-height: 97px;
-  font-size: 13px;
-  line-height: 1.8;
 }
 .review-comment-form > button {
   justify-self: end;
@@ -1037,6 +1027,12 @@
   }
   .review-round-actions {
     gap: 10px;
+  }
+}
+/* Montage md(992) 미만: 사이드바가 보이는 태블릿 폭에서는 응답 열을 아래로 내립니다. */
+@media (max-width: 991px) {
+  .review-reading-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 760px) {

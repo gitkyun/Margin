@@ -22,7 +22,7 @@
 }
 .document-tile:hover {
   border-color: var(--line-strong);
-  box-shadow: 0 10px 24px -18px rgba(16, 24, 40, 0.35);
+  box-shadow: var(--semantic-elevation-shadow-normal-medium);
 }
 .document-tile-paper {
   aspect-ratio: 4 / 3;
@@ -207,7 +207,7 @@
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
 }
 
 /* ── 본문 서식 (Tiptap) ───────────────────────────────── */
@@ -318,16 +318,9 @@
   padding: 6px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface) 94%, transparent);
-  backdrop-filter: saturate(1.6) blur(16px);
   box-shadow:
     0 0 0 1px var(--line),
-    0 12px 32px -14px rgba(16, 24, 40, 0.35);
-}
-.dark .editor-dock {
-  background: color-mix(in srgb, #202226 94%, transparent);
-  box-shadow:
-    0 0 0 1px var(--line-strong),
-    0 16px 36px -14px rgba(0, 0, 0, 0.8);
+    var(--semantic-elevation-shadow-normal-large);
 }
 .editor-dock > button:not([data-slot="button"]) {
   flex: none;
@@ -365,8 +358,7 @@
   margin: 0 6px;
   background: var(--line-strong);
 }
-.editor-dock > a,
-.editor-dock > [data-slot="button"] {
+.editor-dock > a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -379,6 +371,10 @@
   height: 40px;
   padding: 0 16px;
   white-space: nowrap;
+}
+.editor-dock > [data-slot="button"] {
+  flex: none;
+  margin-left: 6px;
 }
 .editor-dock span[class^="format-"] {
   font-size: 15px;

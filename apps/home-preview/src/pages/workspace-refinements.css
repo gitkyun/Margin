@@ -46,14 +46,7 @@
 }
 .account-menu {
   border: 1px solid var(--line-strong);
-  box-shadow:
-    0 16px 48px -12px #10182840,
-    0 4px 12px #10182814 !important;
-}
-.dark .account-menu {
-  box-shadow:
-    0 20px 56px #0009,
-    0 0 0 1px #ffffff0a !important;
+  box-shadow: var(--semantic-elevation-shadow-normal-large) !important;
 }
 .rh-home .rh-quick-record,
 .rh-home .rh-quick-record:hover {
@@ -91,8 +84,8 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px #0003;
+  background: var(--semantic-static-white);
+  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   transition: transform 160ms ease;
 }
 .preferences-list input[role="switch"]:checked {
@@ -250,7 +243,7 @@
   width: 52px;
   height: 64px;
   object-fit: contain;
-  background: #fff;
+  background: var(--semantic-static-white);
   border: 1px solid var(--line);
   border-radius: 6px;
 }
@@ -438,7 +431,7 @@
 }
 /* Settings tabs on phones: a single scrollable row. Tabs keep their labels on
    one line instead of shrinking into 2-3 line stacks ("AI / 기본 / 설정"). */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .settings-layout > nav {
     overflow-x: auto;
     scrollbar-width: none;

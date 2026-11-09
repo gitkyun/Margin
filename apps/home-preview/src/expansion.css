@@ -1,30 +1,9 @@
-:root {
-  --border: var(--line);
-  --muted: var(--text-secondary);
-  --bg: var(--canvas);
-  --surface-soft: var(--surface-muted);
-  --primary-soft: var(--brand-soft);
-}
-/* RMS: opaque research surfaces, quiet depth and purposeful motion. */
-.dark {
-  --canvas: #141517;
-  --surface: #202124;
-  --surface-muted: #2a2c30;
-  --sidebar: #1b1c1f;
-  --text: #f1f2f4;
-  --text-secondary: #b1b5bd;
-  --line: #393b40;
-  --input-line: #4a4e56;
-  --brand: #83b1ff;
-  --brand-soft: #23334d;
-  --primary: #286de8;
-}
 .floating-workspace .sidebar {
   background: var(--sidebar) !important;
   backdrop-filter: none !important;
   filter: none !important;
   border: 1px solid var(--line);
-  box-shadow: 0 4px 20px #171c2810;
+  box-shadow: var(--semantic-elevation-shadow-normal-small);
 }
 .floating-workspace .main-shell,
 .floating-workspace .topbar {
@@ -109,7 +88,7 @@
   border-radius: 12px;
   text-align: left;
   font-size: 14px;
-  box-shadow: 0 1px 2px #00000004;
+  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   transition:
     border-color 150ms,
     box-shadow 150ms,
@@ -323,16 +302,11 @@
 .segment-highlight {
   position: absolute;
   inset: 0;
-  background: var(--surface);
+  background: var(--semantic-surface-elevated-primary);
   border: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
   border-radius: 999px;
-  box-shadow: 0 1px 3px #0000000d;
+  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   z-index: -1;
-}
-.dark .segment-highlight {
-  background: #41454d;
-  border-color: #565b64;
-  box-shadow: 0 1px 3px #00000026;
 }
 .rms-segments small,
 .count-chip {
@@ -355,7 +329,11 @@
   height: 280px;
   transform: translate(-50%, -50%);
   border-radius: 100%;
-  background: radial-gradient(circle, #0066ff15, transparent 67%);
+  background: radial-gradient(
+    circle,
+    rgba(var(--semantic-foreground-brand-primary-rgb), var(--opacity-8)),
+    transparent 67%
+  );
   z-index: -1;
 }
 .rms-animated-list {
@@ -465,7 +443,7 @@
 .phase-strip li.is-current i {
   background: var(--primary);
   border-color: var(--primary);
-  color: white;
+  color: var(--semantic-static-white);
 }
 .phase-strip li.is-current a {
   color: var(--brand);
@@ -776,7 +754,7 @@
 }
 .review-comment-form button[type="submit"],
 .review-comment-submit {
-  color: white !important;
+  color: var(--semantic-static-white) !important;
   background: var(--primary) !important;
 }
 .workspace-content .review-topbar {
@@ -1139,13 +1117,13 @@
   border-radius: 12px;
 }
 .diff-content ins {
-  background: #d4f3e3;
-  color: #155f42;
+  background: var(--semantic-surface-positive-primary);
+  color: var(--success);
   text-decoration: none;
 }
 .diff-content del {
-  background: #ffe0df;
-  color: #92302d;
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 .diff-legend {
   display: flex;
@@ -1165,17 +1143,17 @@
   border-radius: 3px;
 }
 .diff-legend .removed {
-  background: #f3b8b5;
+  background: var(--danger-line);
 }
 .diff-legend .added {
-  background: #a3dfbf;
+  background: var(--semantic-line-positive-primary);
 }
 .pdf-export-preview {
   width: 100%;
   height: 60vh;
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: white;
+  background: var(--semantic-static-white);
 }
 .quiet-placeholder {
   padding: 28px 16px;
@@ -1497,7 +1475,7 @@
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--surface);
-  box-shadow: 0 3px 18px #10182808;
+  box-shadow: var(--semantic-elevation-shadow-normal-small);
   padding: 12px;
 }
 .ai-composer:focus-within {
@@ -1910,8 +1888,8 @@ input[role="switch"]:before {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: white;
-  box-shadow: 0 1px 2px #0002;
+  background: var(--semantic-static-white);
+  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   transition: transform 0.18s;
 }
 input[role="switch"]:checked:before {
@@ -1957,7 +1935,7 @@ input[role="switch"]:checked:before {
   color: var(--muted);
 }
 .danger-zone h3 {
-  color: var(--danger, #c33730);
+  color: var(--danger);
 }
 .plan-grid {
   display: grid;
@@ -2041,7 +2019,7 @@ input[role="switch"]:checked:before {
 .floating-workspace .research-card-wrap:hover,
 .floating-workspace .research-card-wrap:focus-within {
   border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
-  box-shadow: 0 8px 24px -18px rgba(16, 24, 40, 0.35);
+  box-shadow: var(--semantic-elevation-shadow-normal-medium);
 }
 .research-card-wrap > .research-card {
   display: flex;
@@ -2094,10 +2072,6 @@ input[role="switch"]:checked:before {
   padding: 12px 18px;
   border-top: 1px solid var(--line);
   background: var(--surface-muted);
-}
-.research-card-actions .rms-button {
-  min-height: 38px;
-  font-size: 13px;
 }
 .meeting-visibility {
   width: min(100%, 280px);

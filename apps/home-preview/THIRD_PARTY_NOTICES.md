@@ -12,7 +12,6 @@ PDF.js 배포의 CMap·표준 글꼴·WASM 보조 파일은 `public/pdfjs/`에 �
 
 - Motion (`motion`, MIT): 감소된 움직임 설정과 소개 화면 상태 전환에 사용한다. 소개 탭·상태 전환 및 직접 작성한 비교·합류 그림에 사용한다. Aceternity Cloud Shader의 실제 소스 채택은 아래 별도 항목을 따른다.
 
-- [LiquidGlass](https://github.com/ybouane/liquidglass), `@ybouane/liquidglass@1.0.3`, MIT (upstream README/package 표기). 유리 표면의 WebGL 렌더링에 사용. 번들에 포함된 html-to-image의 사용 고지도 패키지와 함께 보존한다. 원문·입력·PDF를 캡처하지 않는 분리된 장식 배경만 렌더링한다.
 
 ## 2026-11-05 추가 구성
 
@@ -28,3 +27,8 @@ PDF.js 배포의 CMap·표준 글꼴·WASM 보조 파일은 `public/pdfjs/`에 �
 - [Compass](https://compass.designcompass.org/components) 1.0.14의 검색·선택·탭을 상호작용 참고로 확인했다. Compass 원본 코드·전역 스타일·브랜드·유료 자료를 배포 소스에 복사하지 않았다. 해당 동작은 RMS의 기존 React/Radix/Motion으로 구현했으며, Compass 전체가 MIT라는 표기를 하지 않는다.
 
 - Aceternity Cloud Shader (Manu Arora, Aceternity License): 공개 레지스트리의 GLSL을 소개 배경에 채택·변형했다. 원본·라이선스·변경 범위는 `../../docs/design/aceternity-sources-20261106.md`에 기록했다. MIT 라이선스로 재표기하지 않는다.
+
+## 2026-11-09 디자인 시스템
+
+- Montage (`@montage-ui/core`, `@montage-ui/icon` 4.2.0, 내부 의존 `@montage-ui/engine`·`@montage-ui/theme` 4.2.0) · Wanted Lab · MIT · https://github.com/wanteddev/montage-web · 색·글자·간격 토큰, 테마(쿠키 저장), 공통 버튼의 기준. 공식 CSS 변수(`theme.css`)와 공개 API만 사용한다. 스타일 엔진 의존 Emotion(`@emotion/react`·`@emotion/cache`·`@emotion/serialize`·`@emotion/utils`, MIT)을 함께 설치한다.
+- `@ybouane/liquidglass`와 이를 위한 `patch-package`는 로그인 후 광학 굴절 금지 기준에 따라 제거했다.

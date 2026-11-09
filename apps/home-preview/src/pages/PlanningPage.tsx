@@ -1,4 +1,5 @@
 import themePlugin from "@fullcalendar/react/themes/forma";
+import { Input } from "@/components/ui/input";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
 import "@fullcalendar/react/themes/forma/palettes/blue.css";
@@ -491,9 +492,9 @@ export function PlanningPage() {
             >
               <label className="field">
                 단계 이름
-                <input
+                <Input
                   required
-                  className="rms-input"
+
                   maxLength={200}
                   value={phase.title}
                   onChange={(e) =>
@@ -503,9 +504,9 @@ export function PlanningPage() {
               </label>
               <label className="field">
                 목표일
-                <input
+                <Input
                   type="date"
-                  className="rms-input"
+
                   value={phase.dueDate ?? ""}
                   onChange={(e) =>
                     setPhase({ ...phase, dueDate: e.target.value || null })
@@ -585,8 +586,7 @@ export function PlanningPage() {
             >
               <label className="field">
                 목표 이름
-                <input
-                  className="rms-input"
+                <Input
                   required
                   maxLength={200}
                   value={milestone.title}
@@ -597,9 +597,9 @@ export function PlanningPage() {
               </label>
               <label className="field">
                 기한
-                <input
+                <Input
                   type="date"
-                  className="rms-input"
+
                   value={milestone.dueDate ?? ""}
                   onChange={(e) =>
                     setMilestone({
@@ -755,8 +755,7 @@ function PollCreate({
         >
           <label className="field">
             미팅 제목
-            <input
-              className="rms-input"
+            <Input
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -765,8 +764,7 @@ function PollCreate({
           </label>
           <label className="field">
             참여자 이메일
-            <input
-              className="rms-input"
+            <Input
               required
               value={emails}
               onChange={(e) => setEmails(e.target.value)}

@@ -9,6 +9,7 @@ import {
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TextField, TextFieldContent } from "@montage-ui/core";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -332,15 +333,18 @@ export function SearchInput({
   placeholder?: string;
 }) {
   return (
-    <div className="student-search">
-      <Icon name="search" size={17} />
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-label={placeholder}
-      />
-    </div>
+    <TextField
+      className="student-search"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      aria-label={placeholder}
+      leadingContent={
+        <TextFieldContent variant="icon">
+          <Icon name="search" size={17} />
+        </TextFieldContent>
+      }
+    />
   );
 }
 export function BackLink({

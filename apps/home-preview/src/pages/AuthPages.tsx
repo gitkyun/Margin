@@ -118,8 +118,7 @@ export function LoginPage({
               )}
               <label className="field">
                 이메일
-                <input
-                  className="rms-input"
+                <Input
                   type="email"
                   autoComplete="username"
                   value={email}
@@ -131,8 +130,7 @@ export function LoginPage({
               </label>
               <label className="field">
                 비밀번호
-                <input
-                  className="rms-input"
+                <Input
                   type="password"
                   autoComplete="current-password"
                   value={password}
