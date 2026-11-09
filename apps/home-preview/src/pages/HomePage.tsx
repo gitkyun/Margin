@@ -9,6 +9,7 @@ import {
   meetingLabels,
   relativeDay,
   taskLabels,
+  formatDateTime,
 } from "@/lib/domain";
 import {
   unreadReviewNotifications,
@@ -354,11 +355,11 @@ export function HomePage() {
                   <div className="rh-preparation-links">
                     <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
                       <Icon name="paperclip" size={15} />
-                      자료 {materials.length}
+                      자료 {materials.length}개
                     </Link>
                     <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
                       <Icon name="message" size={15} />
-                      질문 {questions.length}
+                      질문 {questions.length}개
                     </Link>
                   </div>
                   <Button className="rh-primary" fullWidth="mobile" asChild>
@@ -494,7 +495,7 @@ export function HomePage() {
                   <span className="rh-document-copy">
                     <strong>{document.title}</strong>
                     <small>
-                      {new Date(document.updatedAt).toLocaleDateString("ko-KR")}
+                      {formatDateTime(document.updatedAt, { time: false })}
                       {isCollaborative && author && ` · ${author}`}
                       {versionCount > 0 ? ` · 버전 ${versionCount}개` : ""}
                     </small>

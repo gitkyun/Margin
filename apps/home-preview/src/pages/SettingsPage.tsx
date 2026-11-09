@@ -442,7 +442,7 @@ export function ResearchSettingsPage() {
         <nav aria-label="연구 설정 항목">
           {[
             ["basic", "file", "기본 정보"],
-            ["members", "users", "참여자"],
+            ["members", "users", "공동연구자"],
             ["phases", "chart", "연구 단계"],
             ["lifecycle", "folder", "보관·삭제"],
           ].map(([id, icon, label]) => (
@@ -528,7 +528,7 @@ export function ResearchSettingsPage() {
             </section>
           ) : tab === "members" ? (
             <section className="settings-section">
-              <h2>연구 참여자</h2>
+              <h2>공동연구자</h2>
               <p>
                 참여자는 공동 기록을 함께 보고 편집할 수 있어요. ‘나만 보기’로
                 둔 기록, 개인 메모, AI 대화, 선택하지 않은 AI 제안은 다른
@@ -676,11 +676,11 @@ export function ResearchSettingsPage() {
                     )
                   }
                 >
-                  {research.archivedAt ? "복원하기" : "보관하기"}
+                  {research.archivedAt ? "연구 복원" : "연구 보관"}
                 </Button>
               </section>
               <section className="lifecycle-block danger-zone">
-                <h3>연구 삭제</h3>
+                <h3>휴지통으로 옮기기</h3>
                 <p>
                   휴지통으로 옮기면 공동연구자가 이 연구에 접근할 수 없고, 공유
                   중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 소유자는
