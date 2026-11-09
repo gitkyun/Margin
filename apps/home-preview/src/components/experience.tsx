@@ -31,6 +31,7 @@ export function Choice({
   disabled = false,
   id: fieldId,
   compact = false,
+  size = compact ? "medium" : "large",
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -40,6 +41,8 @@ export function Choice({
   id?: string;
   /** 입력창 도구 줄처럼 좁은 곳: 작은 크기(40px), 내용 너비 */
   compact?: boolean;
+  /** 폼 안은 large(48px, 입력 칸과 같음), 목록 위 필터는 medium(40px) */
+  size?: "large" | "medium";
 }) {
   const current = options.find((o) => o.value === value);
   const currentText = current
@@ -50,7 +53,7 @@ export function Choice({
     <Select
       className="rms-choice"
       id={fieldId}
-      size="medium"
+      size={size}
       width={compact ? "auto" : "100%"}
       value={value}
       onChange={onChange}
@@ -87,6 +90,7 @@ function flattenOptions(
 export function SelectField(props: SelectHTMLAttributes<HTMLSelectElement>) {
   const host = useRef<HTMLSpanElement>(null);
   const [fieldLabel, setFieldLabel] = useState("선택");
+  const [inToolbar, setInToolbar] = useState(false);
   useEffect(() => {
     const parent = host.current?.closest(".field, label");
     const explicit = props.id
@@ -105,10 +109,14 @@ export function SelectField(props: SelectHTMLAttributes<HTMLSelectElement>) {
         .join("")
         .trim();
     if (text) setFieldLabel(text);
+    setInToolbar(
+      !!host.current?.closest(".student-filter-row, .page-toolbar"),
+    );
   }, [props.id]);
   return (
     <span className="select-field-host" ref={host}>
       <Choice
+        size={inToolbar ? "medium" : "large"}
         id={props.id}
         value={String(props.value ?? "")}
         label={String(props["aria-label"] ?? props.name ?? fieldLabel)}

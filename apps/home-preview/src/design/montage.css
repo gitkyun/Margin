@@ -60,42 +60,6 @@
   background-color: var(--atomic-coolNeutral-30);
   box-shadow: var(--semantic-elevation-shadow-normal-small);
 }
-.rms-calendar {
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-16);
-  background: var(--surface);
-  margin: 20px 0;
-  color: var(--text);
-  --fc-border-color: var(--line);
-  --fc-page-bg-color: var(--surface);
-  --fc-neutral-bg-color: var(--surface-muted);
-  --fc-today-bg-color: var(--brand-soft);
-}
-.rms-calendar h2 {
-  font-size: var(--typography-heading2-fontSize) !important;
-  letter-spacing: var(--typography-heading2-letterSpacing);
-}
-.rms-calendar .fc {
-  --fc-border-color: var(--line);
-  --fc-button-bg-color: var(--primary);
-  --fc-button-border-color: var(--primary);
-  font-family: inherit;
-}
-.rms-calendar a {
-  color: inherit;
-  text-decoration: none;
-}
-@media (max-width: 767px) {
-  .rms-calendar {
-    padding: 10px;
-    overflow: hidden;
-  }
-  .rms-calendar .fc-header-toolbar {
-    flex-wrap: wrap;
-    gap: 14px;
-  }
-}
 /* 공통 툴팁(Hint): 이름 한 줄 + 요약 한 줄 */
 .margin-hint-anchor.is-inline {
   display: inline-flex;
@@ -113,61 +77,6 @@
 }
 .margin-hint-body > span {
   opacity: 0.78;
-}
-
-/* from pages/screens.css */
-/* ── 캘린더 (FullCalendar) ─────────────────────────────── */
-.rms-calendar {
-  margin-top: 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-14);
-  padding: 14px;
-  background: var(--surface);
-  --fc-border-color: var(--line);
-  --fc-page-bg-color: var(--surface);
-  --fc-neutral-bg-color: var(--surface-muted);
-  --fc-today-bg-color: color-mix(in srgb, var(--brand) 6%, transparent);
-  --fc-event-bg-color: var(--brand-soft);
-  --fc-event-border-color: transparent;
-  --fc-event-text-color: var(--brand);
-  --fc-button-bg-color: var(--surface);
-  --fc-button-border-color: var(--line-strong);
-  --fc-button-text-color: var(--text);
-  --fc-button-hover-bg-color: var(--surface-muted);
-  --fc-button-hover-border-color: var(--line-strong);
-  --fc-button-active-bg-color: var(--surface-sunken);
-  --fc-button-active-border-color: var(--line-strong);
-  font-size: var(--typography-label2-fontSize);
-  letter-spacing: var(--typography-label2-letterSpacing);
-}
-.rms-calendar .fc .fc-toolbar-title {
-  font-size: var(--typography-headline2-fontSize);
-  font-weight: 600;
-  letter-spacing: var(--typography-headline2-letterSpacing);
-}
-.rms-calendar .fc .fc-button {
-  border-radius: var(--radius-8);
-  font-size: var(--typography-label2-fontSize);
-  font-weight: 600;
-  padding: 5px 10px;
-  box-shadow: none;
-  letter-spacing: var(--typography-label2-letterSpacing);
-}
-.rms-calendar .fc .fc-button-primary:not(:disabled).fc-button-active {
-  color: var(--text);
-}
-.rms-calendar .fc .fc-col-header-cell-cushion,
-.rms-calendar .fc .fc-daygrid-day-number {
-  color: var(--text-secondary);
-}
-.rms-calendar .fc .fc-event {
-  border-radius: var(--radius-8);
-  padding: 1px 4px;
-  font-weight: 600;
-}
-.rms-calendar .fc .fc-scrollgrid {
-  border-radius: var(--radius-10);
-  overflow: hidden;
 }
 
 /* from reference.css */
@@ -236,4 +145,43 @@
     display: flex;
     margin-bottom: var(--spacing-20);
   }
+}
+
+/*
+ * 큰 캘린더(FullCalendar v7 forma 테마). v7은 클래스 이름이 해시라 선택자 대신
+ * 테마 변수에 Montage 토큰을 넣습니다. 라이트·다크는 Montage 토큰이 알아서 바뀝니다.
+ */
+.rms-calendar {
+  margin-top: var(--spacing-16);
+  font-size: var(--typography-label2-fontSize);
+  line-height: var(--typography-label2-lineHeight);
+  letter-spacing: var(--typography-label2-letterSpacing);
+
+  --fc-forma-primary: var(--semantic-surface-brand-primary);
+  --fc-forma-primary-over: var(--semantic-surface-brand-strong);
+  --fc-forma-primary-down: var(--semantic-surface-brand-heavy);
+  --fc-forma-primary-foreground: var(--semantic-static-white);
+  --fc-forma-event: var(--semantic-surface-brand-primary);
+  --fc-forma-event-contrast: var(--semantic-static-white);
+  --fc-forma-background-event: var(--semantic-surface-brand-primary);
+  --fc-forma-highlight: rgba(
+    var(--semantic-surface-brand-primary-rgb),
+    var(--opacity-16)
+  );
+  --fc-forma-ring-color: var(--semantic-line-brand-focus);
+
+  --fc-forma-background: var(--surface);
+  --fc-forma-faint: var(--semantic-surface-neutral-tertiary);
+  --fc-forma-muted: var(--semantic-surface-neutral-secondary);
+  --fc-forma-strong: var(--semantic-surface-neutral-strong);
+  --fc-forma-stronger: var(--semantic-line-neutral-primary);
+  --fc-forma-strongest: var(--semantic-line-neutral-primary);
+
+  --fc-forma-foreground: var(--semantic-foreground-neutral-primary);
+  --fc-forma-faint-foreground: var(--semantic-foreground-neutral-quaternary);
+  --fc-forma-muted-foreground: var(--semantic-foreground-neutral-tertiary);
+
+  --fc-forma-border: var(--semantic-line-neutral-tertiary);
+  --fc-forma-muted-border: var(--semantic-line-neutral-tertiary);
+  --fc-forma-strong-border: var(--semantic-line-neutral-primary);
 }

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- 달력 통일: 브라우저 기본 날짜·시간 입력 9곳을 Montage DatePicker·TimePicker(`YYYY.MM.DD`, `오후 02:00`)로 바꿈. 시간 조율 후보 시간은 날짜·시간 두 칸으로 나눔.
+- 계획·일정 큰 달력(FullCalendar v7)의 색을 Montage 토큰으로 다시 입힘. v7은 클래스 이름이 해시라 그동안 적용되지 않던 `.fc-*` 규칙을 지우고 테마 변수(`--fc-forma-*`)에 Montage 색을 넣음. 일정 색도 `#2466cc` 같은 직접 값 대신 미팅=브랜드, 할 일 마감=주황, 단계 목표=보라, 주요 목표=초록 토큰으로. 라이트·다크가 자동으로 바뀜. 달력을 이중으로 감싸던 테두리 제거.
 - 남아 있던 직접 만든 버튼(`.rms-action`·`.text-link`·`.icon-button` 등)을 Montage Button·TextButton·IconButton으로 바꿈. 화면 테마 고르기와 홈 ‘내 할 일/연구 전체’도 보기 전환 토글(SegmentedControl)로 통일.
 - 화면 안 탭(피드백·할 일·수정 결과, 미팅 준비·기록·결정, 검토 화면 휴대폰 탭)을 Montage Tab(밑줄 표시)으로 통일.
 - 공통 부품을 Montage로 교체: 대화상자 26개(Modal, 휴대폰에서는 아래에서 올라오는 시트), 계정·연구 전환 메뉴(Menu, 현재 연구에 체크), 선택 상자 65곳(Select), 체크박스 16개·알림 스위치(Checkbox·Switch), 상태 표시 30곳(ContentBadge), 빈 화면(FallbackView), 불러오는 중(Skeleton). 선택 상자 안 검색 칸은 Montage Select에 없어 없앰.

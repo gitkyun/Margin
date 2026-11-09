@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateField, TimeField } from "@/components/ui/date-field";
 import { TextField, TextFieldContent } from "@montage-ui/core";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -246,14 +247,30 @@ export function LabeledInput({
         {label}
         {required && <span className="required-mark"> *</span>}
       </span>
-      <Input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-      />
+      {type === "date" ? (
+        <DateField
+          value={value}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+        />
+      ) : type === "time" ? (
+        <TimeField
+          value={value}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+        />
+      ) : (
+        <Input
+          type={type}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          required={required}
+          disabled={disabled}
+        />
+      )}
       {hint && <small className="field-hint">{hint}</small>}
     </label>
   );

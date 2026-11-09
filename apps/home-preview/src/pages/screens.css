@@ -226,24 +226,20 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .schedule-option-input label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  .schedule-option-field {
+    display: grid;
+    gap: var(--spacing-4);
+    min-width: 0;
     font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
-  .schedule-option-input input {
-    min-height: 36px;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-8);
-    padding: 0 8px;
-    background: var(--surface);
-    color: var(--text);
-    font: inherit;
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
+  /* 날짜·시각 두 칸(Montage DatePicker·TimePicker) */
+  .margin-date-time {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: var(--spacing-8);
   }
   .connection-picker {
     border: 1px solid var(--line);

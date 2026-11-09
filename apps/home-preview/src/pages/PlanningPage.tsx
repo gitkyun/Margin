@@ -2,7 +2,6 @@ import themePlugin from "@fullcalendar/react/themes/forma";
 import { Input } from "@/components/ui/input";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
-import "@fullcalendar/react/themes/forma/palettes/blue.css";
 import { lazy, Suspense, useState } from "react";
 import {
   Link,
@@ -44,6 +43,28 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@montage-ui/core";
+import { DateField, DateTimeField } from "@/components/ui/date-field";
+
+/**
+ * 캘린더 일정 색. FullCalendar v7은 color 하나로 막대·옅은 바탕을 만들고,
+ * contrastColor를 채운 막대 위 글자색으로 씁니다.
+ * 미팅=브랜드, 할 일 마감=주의(주황), 단계 목표=보라, 주요 목표=완료(초록).
+ */
+type EventTone = "brand" | "cautionary" | "violet" | "positive";
+const EVENT_TONE: Record<EventTone, string> = {
+  brand: "--semantic-foreground-brand-primary",
+  cautionary: "--semantic-foreground-cautionary-primary",
+  violet: "--semantic-foreground-accent-violet",
+  positive: "--semantic-foreground-positive-primary",
+};
+function eventTone(tone: EventTone) {
+  const token = EVENT_TONE[tone];
+  return {
+    color: `var(${token})`,
+    contrastColor: "var(--semantic-static-white)",
+  };
+}
+
 const Diagram = lazy(() => import("./RoadmapDiagram"));
 export function PlanningPage() {
   const { researchId = "" } = useParams(),
@@ -351,6 +372,7 @@ export function PlanningPage() {
                     start: m.date! + (m.time ? "T" + m.time : ""),
                     url: `/r/${researchId}/meetings/${m.id}`,
                     allDay: !m.time,
+                    ...eventTone("brand"),
                   })),
                 ...data.tasks
                   .filter(
@@ -362,7 +384,7 @@ export function PlanningPage() {
                     title: `할 일 · ${t.title}`,
                     start: t.dueDate!,
                     allDay: true,
-                    color: "#2466cc",
+                    ...eventTone("cautionary"),
                     url: `/r/${researchId}/tasks/${t.id}`,
                   })),
                 ...phases
@@ -372,7 +394,7 @@ export function PlanningPage() {
                     title: `단계 목표 · ${p.title}`,
                     start: p.dueDate!,
                     allDay: true,
-                    color: "#517c9e",
+                    ...eventTone("violet"),
                     extendedProps: { phaseId: p.id },
                   })),
                 ...milestones
@@ -382,7 +404,7 @@ export function PlanningPage() {
                     title: m.title,
                     start: m.dueDate!,
                     allDay: true,
-                    color: "var(--success)",
+                    ...eventTone("positive"),
                     extendedProps: { milestone: true },
                   })),
               ]}
@@ -505,12 +527,10 @@ export function PlanningPage() {
               </label>
               <label className="field">
                 목표일
-                <Input
-                  type="date"
-
+                <DateField
                   value={phase.dueDate ?? ""}
-                  onChange={(e) =>
-                    setPhase({ ...phase, dueDate: e.target.value || null })
+                  onChange={(dueDate) =>
+                    setPhase({ ...phase, dueDate: dueDate || null })
                   }
                 />
               </label>
@@ -598,15 +618,10 @@ export function PlanningPage() {
               </label>
               <label className="field">
                 기한
-                <Input
-                  type="date"
-
+                <DateField
                   value={milestone.dueDate ?? ""}
-                  onChange={(e) =>
-                    setMilestone({
-                      ...milestone,
-                      dueDate: e.target.value || null,
-                    })
+                  onChange={(dueDate) =>
+                    setMilestone({ ...milestone, dueDate: dueDate || null })
                   }
                 />
               </label>
@@ -777,36 +792,36 @@ function PollCreate({
           {options.map((o, i) => (
             <div className="schedule-option-input" key={o.id}>
               <strong>후보 {i + 1}</strong>
-              <label>
-                시작
-                <input
-                  type="datetime-local"
+              <div className="schedule-option-field">
+                <span>시작</span>
+                <DateTimeField
+                  label={`후보 ${i + 1} 시작`}
                   required
                   value={o.start}
-                  onChange={(e) =>
+                  onChange={(startValue) =>
                     setOptions(
                       options.map((v) =>
-                        v.id === o.id ? { ...v, start: e.target.value } : v,
+                        v.id === o.id ? { ...v, start: startValue } : v,
                       ),
                     )
                   }
                 />
-              </label>
-              <label>
-                종료
-                <input
-                  type="datetime-local"
+              </div>
+              <div className="schedule-option-field">
+                <span>종료</span>
+                <DateTimeField
+                  label={`후보 ${i + 1} 종료`}
                   required
                   value={o.end}
-                  onChange={(e) =>
+                  onChange={(endValue) =>
                     setOptions(
                       options.map((v) =>
-                        v.id === o.id ? { ...v, end: e.target.value } : v,
+                        v.id === o.id ? { ...v, end: endValue } : v,
                       ),
                     )
                   }
                 />
-              </label>
+              </div>
               {options.length > 1 && (
                 <Button
                   type="button"
