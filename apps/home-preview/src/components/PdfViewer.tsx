@@ -133,7 +133,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
   return (
     <div className="pdf-viewer">
       <div className="pdf-toolbar">
-        <span className="pdf-file-name">
+        <span className="pdf-file-name" title={version.fileName}>
           <Icon name="file" size={16} />
           {version.fileName}
         </span>

@@ -9,9 +9,6 @@
   .assistant-experience > .page-header {
     margin-bottom: var(--spacing-16);
   }
-  .assistant-experience > .experience-toolbar {
-    margin-bottom: var(--spacing-16);
-  }
 
   /* 대화: 왼쪽 대화 목록 + 오른쪽 대화 면(내용은 가운데 760px 열) */
   .ai-workspace {
@@ -275,7 +272,9 @@
     font-size: var(--typography-label2-fontSize);
     font-weight: 500;
   }
+  /* 칩 안 제목: 한 줄 말줄임, 전체 이름은 title·aria-label로(검수 F-2). */
   .context-chip > span {
+    min-width: 0;
     max-width: 220px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -645,8 +644,8 @@
     flex-shrink: 0;
   }
   .source-picker > button[aria-pressed="true"] {
-    border-color: var(--brand);
-    background: var(--brand-soft);
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
   }
   .source-picker button > span {
     min-width: 0;

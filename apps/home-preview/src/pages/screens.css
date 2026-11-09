@@ -68,8 +68,8 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .phase-card.is-current .phase-number {
-    color: var(--surface);
-    background: var(--brand);
+    color: var(--semantic-static-white);
+    background: var(--semantic-surface-brand-primary);
     box-shadow: none;
   }
   .phase-card-body .section-heading {
