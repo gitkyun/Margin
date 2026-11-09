@@ -21,6 +21,7 @@ import "./research-home.css";
 import { useTaskCompletion } from "@/lib/use-task-completion";
 import { AnimatePresence, motion } from "motion/react";
 import { taskRowMotion } from "@/components/task-row-motion";
+import { WeekStrip } from "@/components/home/WeekStrip";
 import { Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 
@@ -242,6 +243,7 @@ export function HomePage() {
       </section>
       <div className="rh-columns">
         <div className="rh-main-column">
+          <WeekStrip data={data} researchId={research.id} />
           <section className="rh-meeting" aria-labelledby="rh-meeting-heading">
             <div className="rh-section-heading">
               <h2 id="rh-meeting-heading">

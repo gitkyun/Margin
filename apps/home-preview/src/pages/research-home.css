@@ -1024,23 +1024,26 @@
     .rh-side-column {
       display: contents;
     }
-    .rh-meeting {
+    .rh-week {
       grid-row: 1;
     }
-    .rh-attention {
+    .rh-meeting {
       grid-row: 2;
     }
-    .rh-work {
+    .rh-attention {
       grid-row: 3;
     }
-    .rh-writing {
+    .rh-work {
       grid-row: 4;
     }
-    .rh-assistant {
+    .rh-writing {
       grid-row: 5;
     }
-    .rh-activity {
+    .rh-assistant {
       grid-row: 6;
+    }
+    .rh-activity {
+      grid-row: 7;
     }
     .rh-assistant-actions {
       flex-direction: row;

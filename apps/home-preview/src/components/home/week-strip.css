@@ -1,0 +1,173 @@
+/* 홈 주간 띠. 색 규칙은 계획·일정 큰 캘린더와 같음: 미팅 = 브랜드, 마감 = 주의(주황). */
+@layer margin {
+  .rh-week {
+    padding: var(--spacing-16) var(--spacing-20) var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    background: var(--surface);
+  }
+
+  .rh-week-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-8);
+  }
+  .rh-week-head h2 {
+    margin: 0;
+    margin-right: auto;
+    color: var(--text);
+    font-size: var(--typography-headline2-fontSize);
+    font-weight: 600;
+    line-height: var(--typography-headline2-lineHeight);
+    letter-spacing: var(--typography-headline2-letterSpacing);
+  }
+  .rh-week-nav {
+    display: flex;
+    gap: var(--spacing-2);
+  }
+
+  .rh-week-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--spacing-4);
+  }
+  .rh-week-day {
+    display: grid;
+    justify-items: center;
+    gap: var(--spacing-4);
+    min-height: 76px;
+    padding: var(--spacing-8) 0 var(--spacing-6);
+    border: 1px solid transparent;
+    border-radius: var(--radius-12);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .rh-week-day:hover {
+    background: var(--hover-fill);
+  }
+  .rh-week-day[aria-pressed="true"] {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+  }
+  .rh-week-day:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 2px;
+  }
+  .rh-week-weekday {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .rh-week-number {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: var(--typography-headline2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-headline2-letterSpacing);
+  }
+  .rh-week-day[aria-current="date"] .rh-week-number {
+    background: var(--semantic-surface-brand-primary);
+    color: var(--semantic-static-white);
+  }
+  .rh-week-dots {
+    display: flex;
+    gap: 3px;
+    height: 5px;
+  }
+  .rh-week-dots i,
+  .rh-week-item i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--semantic-foreground-brand-primary);
+  }
+  .rh-week-dots i.is-task,
+  .rh-week-item i.is-task {
+    background: var(--semantic-foreground-cautionary-primary);
+  }
+
+  .rh-week-agenda {
+    margin-top: var(--spacing-10);
+    padding-top: var(--spacing-10);
+    border-top: 1px solid var(--semantic-line-neutral-tertiary);
+  }
+  .rh-week-agenda-date {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    margin: 0 0 var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .rh-week-agenda-date span {
+    color: var(--brand);
+  }
+  .rh-week-agenda ul {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rh-week-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    min-height: 40px;
+    padding: 0 var(--spacing-8);
+    margin: 0 calc(var(--spacing-8) * -1);
+    border-radius: var(--radius-8);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .rh-week-item:hover {
+    background: var(--hover-fill);
+  }
+  .rh-week-item i {
+    flex: none;
+  }
+  .rh-week-item strong {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 500;
+    letter-spacing: var(--typography-body2-letterSpacing);
+  }
+  .rh-week-item small {
+    flex: none;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .rh-week-empty {
+    margin: 0;
+    padding: var(--spacing-8) 0 var(--spacing-4);
+    color: var(--text-tertiary);
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+
+  @media (max-width: 767px) {
+    .rh-week {
+      padding: var(--spacing-12) var(--spacing-12) var(--spacing-10);
+    }
+    .rh-week-day {
+      min-height: 68px;
+    }
+    .rh-week-number {
+      width: 28px;
+      height: 28px;
+      font-size: var(--typography-body1-fontSize);
+    }
+  }
+}
