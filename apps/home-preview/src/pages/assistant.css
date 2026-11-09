@@ -642,8 +642,8 @@
     flex-shrink: 0;
   }
   .source-picker > button[aria-pressed="true"] {
-    border-color: var(--brand);
-    background: var(--brand-soft);
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
   }
   .source-picker button > span {
     min-width: 0;

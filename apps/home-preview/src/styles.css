@@ -273,8 +273,8 @@
     color: var(--text);
   }
   .nav-item.active {
-    background: var(--brand-soft);
-    color: var(--brand);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
     font-weight: 600;
   }
   .nav-badge {

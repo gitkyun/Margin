@@ -203,7 +203,9 @@
 
 /*
  * 알림(sonner) — Montage Toast 모양을 따릅니다.
- * 반투명 반전 면 + 32px 흐림, 모서리 12px, 흰 body2 굵은 글자.
+ * 반투명 반전 면 + 32px 흐림, 모서리 12px, body2 굵은 글자.
+ * 반전 면은 다크에서 밝아지므로 글자도 반전 글자(neutral-inverse)를 짝으로 씁니다.
+ * 고정 흰 글자를 쓰면 다크에서 밝은 면 위 흰 글자가 됩니다(2026-11-09 검수 B-2).
  * 종류는 색 배경 대신 아이콘 색으로만 구분합니다.
  */
 [data-sonner-toast][data-styled="true"].margin-toast {
@@ -213,10 +215,10 @@
   border-radius: var(--radius-12);
   background: rgba(
     var(--semantic-surface-neutral-inverse-rgb),
-    var(--opacity-52)
+    var(--opacity-88)
   );
   box-shadow: none;
-  color: var(--semantic-static-white);
+  color: var(--semantic-foreground-neutral-inverse);
   font-size: var(--typography-body2-fontSize);
   line-height: var(--typography-body2-lineHeight);
   letter-spacing: var(--typography-body2-letterSpacing);
@@ -229,7 +231,10 @@
   word-break: keep-all;
 }
 .margin-toast[data-sonner-toast][data-styled="true"] [data-description] {
-  color: rgba(var(--semantic-static-white-rgb), var(--opacity-88));
+  color: rgba(
+    var(--semantic-foreground-neutral-inverse-rgb),
+    var(--opacity-88)
+  );
   word-break: keep-all;
 }
 .margin-toast[data-sonner-toast][data-type="success"] [data-icon] {
@@ -259,5 +264,5 @@
     var(--semantic-surface-neutral-inverse-rgb),
     var(--opacity-88)
   );
-  color: var(--semantic-static-white);
+  color: var(--semantic-foreground-neutral-inverse);
 }
