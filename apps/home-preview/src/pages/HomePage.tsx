@@ -18,15 +18,17 @@ import { Icon } from "@/components/icons";
 import { EmptyState } from "@/components/common";
 import { selectNextMeeting } from "@/lib/home-meeting";
 import "./research-home.css";
-import { toggleDone } from "@/lib/task-status";
+import { useTaskCompletion } from "@/lib/use-task-completion";
+import { AnimatePresence, motion } from "motion/react";
+import { taskRowMotion } from "@/components/task-row-motion";
 import { Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 
 export function HomePage() {
   const { researchId = "" } = useParams();
   const { data, user, save } = useWorkspace();
+  const completion = useTaskCompletion(save);
   const [scope, setScope] = useState("mine");
-  const [busy, setBusy] = useState("");
   const research = data.researches.find((item) => item.id === researchId);
   if (!research) return <EmptyState title="연구를 찾을 수 없어요" />;
   const base = `/r/${researchId}`;
@@ -54,7 +56,8 @@ export function HomePage() {
     )
     .sort(
       (a, b) =>
-        Number(a.status === "done") - Number(b.status === "done") ||
+        Number(a.status === "done" && !completion.held.has(a.id)) -
+          Number(b.status === "done" && !completion.held.has(b.id)) ||
         Number(b.priority === "high") - Number(a.priority === "high") ||
         (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
     );
@@ -104,21 +107,6 @@ export function HomePage() {
   const attentionCount = updates.length + pending.length;
   const openCount = work.filter((task) => task.status !== "done").length;
   const completedCount = work.filter((task) => task.status === "done").length;
-  async function toggle(id: string) {
-    const task = tasks.find((item) => item.id === id);
-    if (!task) return;
-    setBusy(id);
-    try {
-      await save("tasks", {
-        ...task,
-        status: toggleDone(task.status),
-      });
-    } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setBusy("");
-    }
-  }
   return (
     <div className="rh-home">
       <header className="rh-intro">
@@ -417,47 +405,50 @@ export function HomePage() {
               />
             )}
             <div className="rh-task-list">
-              {work.slice(0, 5).map((task) => (
-                <div
-                  className={`rh-task ${task.status === "done" ? "rh-is-complete" : ""}`}
-                  key={task.id}
-                >
-                  <Checkbox
-                    aria-label={`${task.title} 완료`}
-                    checked={task.status === "done"}
-                    disabled={busy === task.id}
-                    onCheckedChange={() => void toggle(task.id)}
-                  />
-                  <Link
-                    className="rh-task-copy"
-                    to={`${base}/tasks/${task.id}`}
+              <AnimatePresence initial={false}>
+                {work.slice(0, 5).map((task) => (
+                  <motion.div
+                    {...taskRowMotion}
+                    className={`rh-task ${task.status === "done" ? "rh-is-complete" : ""}`}
+                    key={task.id}
                   >
-                    <strong>{task.title}</strong>
-                    <span>
-                      {isCollaborative && (
-                        <>
-                          {members.find(
-                            (member) => member.userId === task.assigneeId,
-                          )?.name ?? "담당 미지정"}
-                          <i>·</i>
-                        </>
-                      )}
-                      {task.dueDate
-                        ? `${task.status !== "done" && task.dueDate < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }) ? "기한 지남 · " : ""}${formatDate(task.dueDate)}`
-                        : "기한 없음"}
+                    <Checkbox
+                      aria-label={`${task.title} 완료`}
+                      checked={task.status === "done"}
+                      disabled={completion.busy.has(task.id)}
+                      onCheckedChange={() => void completion.toggle(task)}
+                    />
+                    <Link
+                      className="rh-task-copy"
+                      to={`${base}/tasks/${task.id}`}
+                    >
+                      <strong>{task.title}</strong>
+                      <span>
+                        {isCollaborative && (
+                          <>
+                            {members.find(
+                              (member) => member.userId === task.assigneeId,
+                            )?.name ?? "담당 미지정"}
+                            <i>·</i>
+                          </>
+                        )}
+                        {task.dueDate
+                          ? `${task.status !== "done" && task.dueDate < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }) ? "기한 지남 · " : ""}${formatDate(task.dueDate)}`
+                          : "기한 없음"}
+                      </span>
+                    </Link>
+                    <span
+                      className={`rh-badge ${task.status === "done" ? "rh-badge-green" : task.priority === "high" ? "rh-badge-amber" : "rh-badge-neutral"}`}
+                    >
+                      {task.status === "done"
+                        ? taskLabels.done
+                        : task.priority === "high"
+                          ? "우선"
+                          : taskLabels[task.status]}
                     </span>
-                  </Link>
-                  <span
-                    className={`rh-badge ${task.status === "done" ? "rh-badge-green" : task.priority === "high" ? "rh-badge-amber" : "rh-badge-neutral"}`}
-                  >
-                    {task.status === "done"
-                      ? taskLabels.done
-                      : task.priority === "high"
-                        ? "우선"
-                        : taskLabels[task.status]}
-                  </span>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
               {!work.length && (
                 <div className="rh-list-empty">
                   <Icon name="tasks" size={22} />

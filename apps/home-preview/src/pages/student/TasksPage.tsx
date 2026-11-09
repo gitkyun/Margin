@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
-import { toggleDone } from "@/lib/task-status";
+import { useTaskCompletion } from "@/lib/use-task-completion";
+import { AnimatePresence, motion } from "motion/react";
+import { taskRowMotion } from "@/components/task-row-motion";
 import {
   formatDate,
   originLabels,
@@ -39,6 +41,7 @@ const priorityLabels = { high: "높음", normal: "보통", low: "낮음" };
 export function TasksPage() {
   const { researchId = "", taskId } = useParams();
   const { data, user, save, remove } = useWorkspace();
+  const completion = useTaskCompletion(save);
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const filter = params.get("status") ?? "active",
@@ -92,28 +95,7 @@ export function TasksPage() {
       setParams({}, { replace: true });
     }
   }, [params.get("new"), taskId]);
-  async function quickToggle(task: Task) {
-    setBusyIds((ids) => [...ids, task.id]);
-    try {
-      await save("tasks", {
-        ...task,
-        status: toggleDone(task.status),
-      });
-      toast.success(
-        task.status === "done"
-          ? "할 일을 진행 중으로 되돌렸어요"
-          : "할 일을 완료로 표시했어요",
-      );
-    } catch (e) {
-      toast.error(
-        e instanceof Error
-          ? e.message
-          : "할 일 상태를 저장하지 못했어요. 다시 시도해 주세요.",
-      );
-    } finally {
-      setBusyIds((ids) => ids.filter((id) => id !== task.id));
-    }
-  }
+  const quickToggle = completion.toggle;
   function openLink(task: Task) {
     setLinkTask(task);
     setMeetingId(research?.nextMeetingId ?? "");
@@ -136,7 +118,9 @@ export function TasksPage() {
       (item) =>
         filter === "all" ||
         filter === "archived" ||
-        (filter === "done" ? item.status === "done" : item.status !== "done"),
+        (filter === "done"
+          ? item.status === "done"
+          : item.status !== "done" || completion.held.has(item.id)),
     )
     .filter(
       (item) =>
@@ -222,7 +206,9 @@ export function TasksPage() {
                 <Button
                   variant={current.status === "done" ? "outline" : "default"}
                   disabled={
-                    !!current.archivedAt || busyIds.includes(current.id)
+                    !!current.archivedAt ||
+                    busyIds.includes(current.id) ||
+                    completion.busy.has(current.id)
                   }
                   onClick={() => void quickToggle(current)}
                 >
@@ -436,80 +422,85 @@ export function TasksPage() {
               <span />
             </div>
             {tasks.length ? (
-              tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`student-task-row ${task.status === "done" ? "is-complete" : ""}`}
-                >
-                  <Checkbox
-                    checked={task.status === "done"}
-                    onCheckedChange={() => void quickToggle(task)}
-                    disabled={!!task.archivedAt || busyIds.includes(task.id)}
-                    aria-label={`${task.title} 완료`}
-                  />
-                  <Link
-                    className="task-row-text"
-                    to={`/r/${researchId}/tasks/${task.id}`}
+              <AnimatePresence initial={false}>
+                {tasks.map((task) => (
+                  <motion.div
+                    {...taskRowMotion}
+                    key={task.id}
+                    className={`student-task-row ${task.status === "done" ? "is-complete" : ""}`}
                   >
-                    <strong>
-                      {task.title}
-                      {task.priority === "high" && (
-                        <span
-                          className="priority-dot"
-                          role="img"
-                          aria-label="우선순위 높음"
-                        />
-                      )}
-                    </strong>
-                    <small>
-                      {task.origin && <>{originLabels[task.origin]} · </>}
-                      {task.description ||
-                        (task.feedbackIds.length
-                          ? `관련 피드백 ${task.feedbackIds.length}개`
-                          : "관련 피드백 없음")}
-                    </small>
-                  </Link>
-                  <StatusBadge
-                    tone={
-                      task.status === "done"
-                        ? "green"
-                        : task.status === "doing"
-                          ? "blue"
-                          : "neutral"
-                    }
-                  >
-                    {taskLabels[task.status]}
-                  </StatusBadge>
-                  <span className="task-list-date">
-                    {task.status !== "done" &&
-                      task.dueDate &&
-                      task.dueDate <
-                        new Intl.DateTimeFormat("en-CA", {
-                          timeZone: "Asia/Seoul",
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                        }).format(new Date()) && (
-                        <span className="overdue-label">기한 지남 · </span>
-                      )}
-                    {task.dueDate
-                      ? new Intl.DateTimeFormat("ko-KR", {
-                          month: "2-digit",
-                          day: "2-digit",
-                        }).format(new Date(`${task.dueDate}T12:00:00`))
-                      : "미정"}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`${task.title} 미팅 준비에 포함`}
-                    disabled={!!task.archivedAt}
-                    onClick={() => openLink(task)}
-                  >
-                    <Icon name="calendar" size={16} />
-                  </Button>
-                </div>
-              ))
+                    <Checkbox
+                      checked={task.status === "done"}
+                      onCheckedChange={() => void quickToggle(task)}
+                      disabled={
+                        !!task.archivedAt || completion.busy.has(task.id)
+                      }
+                      aria-label={`${task.title} 완료`}
+                    />
+                    <Link
+                      className="task-row-text"
+                      to={`/r/${researchId}/tasks/${task.id}`}
+                    >
+                      <strong>
+                        {task.title}
+                        {task.priority === "high" && (
+                          <span
+                            className="priority-dot"
+                            role="img"
+                            aria-label="우선순위 높음"
+                          />
+                        )}
+                      </strong>
+                      <small>
+                        {task.origin && <>{originLabels[task.origin]} · </>}
+                        {task.description ||
+                          (task.feedbackIds.length
+                            ? `관련 피드백 ${task.feedbackIds.length}개`
+                            : "관련 피드백 없음")}
+                      </small>
+                    </Link>
+                    <StatusBadge
+                      tone={
+                        task.status === "done"
+                          ? "green"
+                          : task.status === "doing"
+                            ? "blue"
+                            : "neutral"
+                      }
+                    >
+                      {taskLabels[task.status]}
+                    </StatusBadge>
+                    <span className="task-list-date">
+                      {task.status !== "done" &&
+                        task.dueDate &&
+                        task.dueDate <
+                          new Intl.DateTimeFormat("en-CA", {
+                            timeZone: "Asia/Seoul",
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          }).format(new Date()) && (
+                          <span className="overdue-label">기한 지남 · </span>
+                        )}
+                      {task.dueDate
+                        ? new Intl.DateTimeFormat("ko-KR", {
+                            month: "2-digit",
+                            day: "2-digit",
+                          }).format(new Date(`${task.dueDate}T12:00:00`))
+                        : "미정"}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`${task.title} 미팅 준비에 포함`}
+                      disabled={!!task.archivedAt}
+                      onClick={() => openLink(task)}
+                    >
+                      <Icon name="calendar" size={16} />
+                    </Button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             ) : hasTasks ? (
               <EmptyState
                 title="조건에 맞는 할 일이 없어요"
