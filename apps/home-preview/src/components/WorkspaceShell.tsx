@@ -1,5 +1,5 @@
 import { BrandMark, BrandWordmark } from "./brand/Brand";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Link,
   NavLink,
@@ -13,7 +13,8 @@ import { toast } from "sonner";
 import { Icon } from "./icons";
 import { Hint } from "./ui/hint";
 import { navPreview } from "@/lib/nav-preview";
-import { SearchField } from "./SearchField";
+import { CommandPalette } from "./CommandPalette";
+import { RESEARCH_NAVIGATION } from "@/lib/command-items";
 import { Button } from "./ui/button";
 import { LoadingState } from "./common";
 import { useWorkspace } from "@/lib/workspace";
@@ -48,15 +49,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-const navigation = [
-  ["", "home", "연구 홈"],
-  ["planning", "flag", "계획·일정"],
-  ["meetings", "calendar", "미팅"],
-  ["writing", "file", "글쓰기"],
-  ["feedback", "feedback", "피드백·수정"],
-  ["materials", "folder", "자료"],
-  ["reviews", "send", "검토 요청"],
-];
+const navigation = RESEARCH_NAVIGATION;
 const activityTitles: Record<string, string> = {
   "새 기록이 추가되었습니다": "새 기록을 추가했어요",
   "연구 기록이 변경되었습니다": "기록을 수정했어요",
@@ -186,10 +179,8 @@ export function WorkspaceShell({
     ),
     [mobile, setMobile] = useState(false),
     [search, setSearch] = useState(false),
-    [query, setQuery] = useState(""),
     [notifications, setNotifications] = useState(false);
   const usage = useAIUsage();
-  const searchInput = useRef<HTMLInputElement>(null);
   const updates = unreadReviewNotifications(data, user, researchId);
   const [notificationFilter, setNotificationFilter] = useState("unread");
   const events = data.events.filter(
@@ -217,63 +208,6 @@ export function WorkspaceShell({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const searchResults = research
-    ? [
-        ...data.documents
-          .filter((d) => d.researchId === researchId && !d.archivedAt)
-          .map((d) => ({
-            id: d.id,
-            title: d.title,
-            type: "문서",
-            path: "writing",
-            icon: "file",
-          })),
-        ...data.meetings
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "미팅",
-            path: "meetings",
-            icon: "calendar",
-          })),
-        ...data.feedback
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "피드백",
-            path: "feedback",
-            icon: "feedback",
-          })),
-        ...data.tasks
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "할 일",
-            path: "tasks",
-            icon: "tasks",
-          })),
-        ...data.materials
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "자료",
-            path: "materials",
-            icon: "file",
-          })),
-      ]
-        .filter(
-          (r) =>
-            query.trim() &&
-            r.title
-              .toLocaleLowerCase()
-              .includes(query.trim().toLocaleLowerCase()),
-        )
-        .slice(0, 12)
-    : [];
   const current =
     location.pathname === "/account"
       ? "계정 설정"
@@ -684,73 +618,11 @@ export function WorkspaceShell({
           </div>
         </SheetContent>
       </Sheet>
-      <Dialog open={search} onOpenChange={setSearch}>
-        <DialogContent className="search-dialog">
-          <DialogHeader>
-            <DialogTitle>
-              {research ? "이 연구에서 찾기" : "연구 찾기"}
-            </DialogTitle>
-            <DialogDescription>
-              {research
-                ? "문서, 미팅, 피드백, 할 일, 자료의 제목에서 찾아요."
-                : "연구 이름으로 찾아요. 연구 안의 기록은 연구를 연 뒤 찾을 수 있어요."}
-            </DialogDescription>
-          </DialogHeader>
-          <SearchField
-            className="workspace-command-search"
-            inputRef={searchInput}
-            autoFocus
-            value={query}
-            onValueChange={setQuery}
-            placeholder={research ? "기록 제목 검색" : "연구 이름 검색"}
-            aria-label={research ? "기록 제목 검색" : "연구 이름 검색"}
-          />
-          <div className="command-results">
-            {research ? (
-              query.trim() ? (
-                searchResults.length ? (
-                  searchResults.map((r) => (
-                    <Link
-                      key={r.path + r.id}
-                      to={`/r/${researchId}/${r.path}/${r.id}`}
-                      onClick={() => {
-                        setSearch(false);
-                        setQuery("");
-                      }}
-                    >
-                      <Icon name={r.icon} size={20} />
-                      <span>
-                        {r.title}
-                        <small>{r.type}</small>
-                      </span>
-                      <Icon name="arrow-up-right" size={16} />
-                    </Link>
-                  ))
-                ) : (
-                  <p>제목이 일치하는 기록이 없어요.</p>
-                )
-              ) : (
-                <p>찾을 제목을 입력하세요.</p>
-              )
-            ) : (
-              data.researches
-                .filter((r) =>
-                  r.name.toLowerCase().includes(query.toLowerCase()),
-                )
-                .map((r) => (
-                  <Link
-                    to={`/r/${r.id}`}
-                    key={r.id}
-                    onClick={() => setSearch(false)}
-                  >
-                    <Icon name="book" size={20} />
-                    {r.name}
-                  </Link>
-                ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CommandPalette
+        open={search}
+        onOpenChange={setSearch}
+        researchId={research ? researchId : undefined}
+      />
     </div>
   );
 }

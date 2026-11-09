@@ -185,3 +185,18 @@
   --fc-forma-muted-border: var(--semantic-line-neutral-tertiary);
   --fc-forma-strong-border: var(--semantic-line-neutral-primary);
 }
+
+/*
+ * ⌘K 명령 팔레트: Montage Modal은 가운데 정렬이라 결과 수가 바뀌면 상자가 위아래로
+ * 움직입니다. 입력 칸 위치가 고정되도록 위쪽에 붙이고, 넓은 화면은 600px로 엽니다.
+ */
+.command-palette.command-palette {
+  align-self: flex-start;
+  margin-top: var(--spacing-16);
+}
+@media (min-width: 768px) {
+  .command-palette.command-palette {
+    width: 600px;
+    margin-top: 14vh;
+  }
+}

@@ -1,0 +1,134 @@
+/*
+ * ⌘K 명령 팔레트. 겉 상자는 Montage Modal(ModalContainer)이고,
+ * 안쪽 cmdk 목록만 여기서 Montage 토큰으로 그립니다.
+ */
+@layer margin {
+  .command-palette-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .command-palette [cmdk-root] {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .command-palette-field {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    padding: var(--spacing-16) var(--spacing-20);
+    border-bottom: 1px solid var(--semantic-line-neutral-tertiary);
+    color: var(--semantic-foreground-neutral-tertiary);
+  }
+  .command-palette-field input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--semantic-foreground-neutral-primary);
+    font-size: var(--typography-body1-fontSize);
+    line-height: var(--typography-body1-lineHeight);
+    letter-spacing: var(--typography-body1-letterSpacing);
+  }
+  .command-palette-field input::placeholder {
+    color: var(--semantic-foreground-neutral-quaternary);
+  }
+
+  .command-palette kbd {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 var(--spacing-4);
+    border: 1px solid var(--semantic-line-neutral-tertiary);
+    border-radius: var(--radius-4);
+    color: var(--semantic-foreground-neutral-tertiary);
+    font-family: inherit;
+    font-size: var(--typography-caption2-fontSize);
+    line-height: 1;
+  }
+
+  .command-palette-list {
+    max-height: min(420px, 56vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--spacing-8);
+    scroll-padding-block: var(--spacing-8);
+  }
+  .command-palette [cmdk-group-heading] {
+    padding: var(--spacing-12) var(--spacing-12) var(--spacing-6);
+    color: var(--semantic-foreground-neutral-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .command-palette [cmdk-item] {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    min-height: 44px;
+    padding: 0 var(--spacing-12);
+    border-radius: var(--radius-10);
+    color: var(--semantic-foreground-neutral-secondary);
+    cursor: pointer;
+    font-size: var(--typography-body2-fontSize);
+    line-height: var(--typography-body2-lineHeight);
+    letter-spacing: var(--typography-body2-letterSpacing);
+  }
+  .command-palette [cmdk-item][data-selected="true"] {
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-neutral-primary);
+  }
+  .command-palette [cmdk-item][data-selected="true"] > svg {
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .command-palette-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .command-palette [cmdk-item] small {
+    flex: none;
+    color: var(--semantic-foreground-neutral-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+
+  .command-palette-empty {
+    padding: var(--spacing-32) var(--spacing-12);
+    color: var(--semantic-foreground-neutral-tertiary);
+    text-align: center;
+    font-size: var(--typography-body2-fontSize);
+  }
+
+  .command-palette-help {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-6) var(--spacing-16);
+    margin: 0;
+    padding: var(--spacing-12) var(--spacing-20);
+    border-top: 1px solid var(--semantic-line-neutral-tertiary);
+    color: var(--semantic-foreground-neutral-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .command-palette-help span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  @media (max-width: 767px) {
+    .command-palette-help {
+      display: none;
+    }
+  }
+}

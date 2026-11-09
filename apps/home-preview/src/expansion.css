@@ -145,9 +145,6 @@
     font-size: var(--typography-label1-fontSize);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
-  .workspace-command-search {
-    margin: 16px 0 12px;
-  }
   @media (pointer: coarse) {
     .rms-search-field .search-clear {
       width: 44px;

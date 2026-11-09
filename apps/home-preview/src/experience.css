@@ -954,44 +954,6 @@
     min-width: 0;
     letter-spacing: var(--typography-body1-letterSpacing);
   }
-  .command-results {
-    max-height: 420px;
-    overflow-y: auto;
-  }
-  .command-results > a {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 13px 10px;
-    border-radius: var(--radius-10);
-    min-height: 50px;
-    font-size: var(--typography-label1-fontSize);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .command-results > a:hover {
-    background: var(--surface-muted);
-  }
-  .command-results > a > span {
-    flex: 1;
-  }
-  .command-results small {
-    display: block;
-    color: var(--text-secondary);
-    font-size: var(--typography-caption2-fontSize);
-    margin-top: 3px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .command-results > p {
-    padding: 25px;
-    color: var(--text-secondary);
-    font-size: var(--typography-label1-fontSize);
-    text-align: center;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .search-dialog {
-    width: min(580px, calc(100vw - 32px));
-    border-radius: var(--radius-16);
-  }
   /* Settings and contextual conversation */
   .settings-page,
   .assistant-page {

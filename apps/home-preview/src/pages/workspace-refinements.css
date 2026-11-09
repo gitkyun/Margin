@@ -453,14 +453,6 @@
     min-width: 0;
     overflow-wrap: anywhere;
   }
-  /* ⌘K results: titles wrap instead of being cut mid-character; icons keep size. */
-  .command-results > a > span {
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-  .command-results > a > svg {
-    flex: none;
-  }
   /* Selected material folder ("전체"): brand text on a brand tint. */
   .folder-all[aria-pressed="true"] {
     color: var(--brand);
