@@ -858,8 +858,8 @@
     overflow: hidden;
     background: var(--surface);
     transition:
-      transform 0.16s,
-      border-color 0.16s;
+      transform var(--motion-duration-micro),
+      border-color var(--motion-duration-micro);
   }
   .document-tile:hover {
     border-color: var(--hover-line);
@@ -1515,7 +1515,7 @@
     cursor: pointer;
     position: relative;
     flex: none;
-    transition: background 0.18s;
+    transition: background var(--motion-duration-micro);
   }
   input[role="switch"]:checked {
     background: var(--primary);
@@ -1530,7 +1530,7 @@
     border-radius: 50%;
     background: var(--semantic-static-white);
     box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-    transition: transform 0.18s;
+    transition: transform var(--motion-duration-micro);
   }
   input[role="switch"]:checked:before {
     transform: translateX(16px);
@@ -1659,8 +1659,8 @@
     min-width: 0;
     overflow: hidden;
     transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease;
+      border-color var(--motion-duration-micro) ease,
+      box-shadow var(--motion-duration-micro) ease;
   }
   .floating-workspace .research-card-wrap:hover,
   .floating-workspace .research-card-wrap:focus-within {

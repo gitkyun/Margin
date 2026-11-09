@@ -21,12 +21,13 @@ import { selectNextMeeting } from "@/lib/home-meeting";
 import "./research-home.css";
 import { useTaskCompletion } from "@/lib/use-task-completion";
 import { AnimatePresence, motion } from "motion/react";
-import { taskRowMotion } from "@/components/task-row-motion";
+import { useTaskRowMotion } from "@/components/task-row-motion";
 import { WeekStrip } from "@/components/home/WeekStrip";
 import { Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 
 export function HomePage() {
+  const taskRowMotion = useTaskRowMotion();
   const { researchId = "" } = useParams();
   const { data, user, save } = useWorkspace();
   const completion = useTaskCompletion(save);

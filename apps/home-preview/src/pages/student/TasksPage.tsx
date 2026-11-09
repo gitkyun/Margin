@@ -18,7 +18,7 @@ import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { useTaskCompletion } from "@/lib/use-task-completion";
 import { AnimatePresence, motion } from "motion/react";
-import { taskRowMotion } from "@/components/task-row-motion";
+import { useTaskRowMotion } from "@/components/task-row-motion";
 import {
   formatDate,
   originLabels,
@@ -39,6 +39,7 @@ import {
 import { Checkbox } from "@montage-ui/core";
 const priorityLabels = { high: "높음", normal: "보통", low: "낮음" };
 export function TasksPage() {
+  const taskRowMotion = useTaskRowMotion();
   const { researchId = "", taskId } = useParams();
   const { data, user, save, remove } = useWorkspace();
   const completion = useTaskCompletion(save);

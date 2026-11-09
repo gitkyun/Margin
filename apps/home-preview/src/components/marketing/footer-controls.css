@@ -29,9 +29,9 @@
     font-size: var(--typography-caption1-fontSize);
     line-height: 1;
     transition:
-      background 160ms ease,
-      color 160ms ease,
-      box-shadow 160ms ease;
+      background var(--motion-duration-micro) ease,
+      color var(--motion-duration-micro) ease,
+      box-shadow var(--motion-duration-micro) ease;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .lp-footer-theme button[aria-pressed="true"] {
@@ -57,7 +57,7 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .lp-back-to-top svg {
-    transition: transform 180ms ease;
+    transition: transform var(--motion-duration-micro) ease;
   }
   .lp-back-to-top:hover svg {
     transform: translateY(-3px);

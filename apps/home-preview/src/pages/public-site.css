@@ -85,7 +85,7 @@
   }
   .lp-header nav a {
     color: var(--text-secondary);
-    transition: color 0.15s;
+    transition: color var(--motion-duration-micro);
     padding: 9px 0;
     position: relative;
   }
@@ -99,7 +99,7 @@
     transform: scaleX(0);
     transform-origin: left;
     background: var(--primary);
-    transition: transform 0.2s;
+    transition: transform var(--motion-duration-enter);
   }
   .lp-header nav a:hover {
     color: var(--text);
@@ -127,12 +127,12 @@
     font-weight: 600;
     line-height: 1.4;
     transition:
-      transform 0.18s,
-      background 0.18s,
-      box-shadow 0.18s;
+      transform var(--motion-duration-micro),
+      background var(--motion-duration-micro),
+      box-shadow var(--motion-duration-micro);
   }
   .lp-button svg {
-    transition: transform 0.18s;
+    transition: transform var(--motion-duration-micro);
   }
   .lp-button:hover svg {
     transform: translate(2px, -2px);
@@ -265,9 +265,9 @@
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     transition:
-      background 0.18s,
-      color 0.18s,
-      box-shadow 0.18s;
+      background var(--motion-duration-micro),
+      color var(--motion-duration-micro),
+      box-shadow var(--motion-duration-micro);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .lp-demo-tabs button:hover {
@@ -650,16 +650,16 @@
     clip-path: inset(100% 0 0 0);
     transform: translateY(var(--spacing-16));
     transition:
-      clip-path 0.34s cubic-bezier(0.2, 0, 0, 1),
-      transform 0.34s cubic-bezier(0.2, 0, 0, 1),
-      opacity 0.18s ease-out;
+      clip-path var(--motion-duration-page) cubic-bezier(0.2, 0, 0, 1),
+      transform var(--motion-duration-page) cubic-bezier(0.2, 0, 0, 1),
+      opacity var(--motion-duration-micro) ease-out;
     pointer-events: none;
   }
   .lp-feature-peek .lp-product-window {
     width: max(100%, 640px);
   }
   .lp-feature-visual > :not(.lp-feature-peek) {
-    transition: opacity 0.2s ease-out;
+    transition: opacity var(--motion-duration-enter) ease-out;
   }
   .lp-feature-card:focus-within .lp-feature-peek {
     opacity: 1;
@@ -824,7 +824,7 @@
     border-radius: var(--radius-12);
     font-size: var(--typography-caption1-fontSize);
     box-shadow: var(--semantic-elevation-shadow-normal-small);
-    transition: transform 0.2s;
+    transition: transform var(--motion-duration-enter);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .lp-review-stack > div:first-child {
@@ -899,9 +899,9 @@
     letter-spacing: var(--typography-heading2-letterSpacing);
     text-align: left;
     transition:
-      color 0.18s,
-      background 0.18s,
-      transform 0.18s;
+      color var(--motion-duration-micro),
+      background var(--motion-duration-micro),
+      transform var(--motion-duration-micro);
   }
   .lp-workflow-select button > svg:last-child {
     margin-left: auto;
@@ -934,7 +934,7 @@
     justify-content: center;
     padding: 45px;
     background: var(--brand-soft);
-    transition: background 0.3s;
+    transition: background var(--motion-duration-page);
     height: 720px;
     min-width: 0;
   }
@@ -1006,7 +1006,7 @@
   .lp-workflow-stack .lp-workflow-select button > svg:last-child {
     margin-left: 0;
     opacity: 0.55;
-    transition: opacity 0.2s;
+    transition: opacity var(--motion-duration-enter);
   }
   .lp-workflow-stack .lp-workflow-select button[aria-pressed="true"] {
     background: var(--surface-raised);
@@ -1031,8 +1031,8 @@
     font-size: var(--typography-caption1-fontSize);
     font-weight: 700;
     transition:
-      background 0.2s,
-      color 0.2s;
+      background var(--motion-duration-enter),
+      color var(--motion-duration-enter);
   }
   .lp-workflow-stack button[aria-pressed="true"] .lp-stack-index {
     background: var(--semantic-surface-brand-primary);
@@ -1050,7 +1050,8 @@
     height: 100%;
     background: var(--semantic-surface-brand-primary);
     transform-origin: left;
-    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform var(--motion-duration-page)
+      cubic-bezier(0.22, 1, 0.36, 1);
   }
   .lp-stack-cards {
     display: grid;
@@ -1170,9 +1171,9 @@
     flex-direction: column;
     justify-content: space-between;
     transition:
-      background 0.25s,
-      color 0.25s,
-      transform 0.25s;
+      background var(--motion-duration-enter),
+      color var(--motion-duration-enter),
+      transform var(--motion-duration-enter);
   }
   .lp-capability-link > svg {
     color: var(--text-tertiary);
@@ -1198,8 +1199,8 @@
     opacity: 0;
     transform: translate(-3px, 3px);
     transition:
-      opacity 0.2s,
-      transform 0.2s;
+      opacity var(--motion-duration-enter),
+      transform var(--motion-duration-enter);
   }
   .lp-capability:hover {
     background: var(--hover-fill);
@@ -1270,7 +1271,7 @@
   .lp-faq-list summary svg {
     flex-shrink: 0;
     color: var(--text-tertiary);
-    transition: transform 0.2s;
+    transition: transform var(--motion-duration-enter);
   }
   .lp-faq-list details[open] summary svg {
     transform: rotate(45deg);
@@ -1416,7 +1417,7 @@
     min-height: 24px;
     font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
-    transition: color 0.15s;
+    transition: color var(--motion-duration-micro);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .lp-footer-columns a:hover,
@@ -1469,8 +1470,8 @@
     border-radius: 0.05em;
     transform: scaleX(0.98);
     transition:
-      height 220ms,
-      background 220ms;
+      height var(--motion-duration-enter),
+      background var(--motion-duration-enter);
     z-index: -1;
   }
   .lp-cover-trails {
@@ -1479,7 +1480,7 @@
     overflow: hidden;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 220ms;
+    transition: opacity var(--motion-duration-enter);
   }
   .lp-cover-trails i {
     position: absolute;
@@ -2065,8 +2066,8 @@
     text-align: left;
     font-size: var(--typography-body2-fontSize);
     transition:
-      background 150ms,
-      color 150ms;
+      background var(--motion-duration-micro),
+      color var(--motion-duration-micro);
     letter-spacing: var(--typography-body2-letterSpacing);
   }
   .lp-tour-index button > svg:last-child {
@@ -2074,8 +2075,8 @@
     opacity: 0;
     transform: translateX(-4px);
     transition:
-      opacity 150ms,
-      transform 150ms;
+      opacity var(--motion-duration-micro),
+      transform var(--motion-duration-micro);
   }
   .lp-tour-index button:hover {
     background: var(--hover-fill);
