@@ -75,18 +75,28 @@ const BADGE_COLOR: Record<Exclude<BadgeTone, "neutral">, ThemeColorsToken> = {
   amber: "semantic.foreground.cautionary.primary",
   red: "semantic.foreground.negative.primary",
 };
-/** 상태 표시. 모양은 Montage ContentBadge(small·solid)가 맡습니다. */
+/**
+ * 상태 표시. 모양은 Montage ContentBadge(small)가 맡습니다.
+ * 학생 작업 상태는 solid, 교수 결과는 outlined + 아이콘으로 모양을 나눕니다
+ * (docs/design/patterns.md §1, 작업 완료와 교수 결과를 합치지 않음).
+ */
 export function StatusBadge({
   children,
   tone = "neutral",
+  variant = "solid",
+  icon,
 }: {
   children: ReactNode;
   tone?: BadgeTone;
+  variant?: "solid" | "outlined";
+  icon?: ReactNode;
 }) {
   return (
     <ContentBadge
       className={`status-badge tone-${tone}`}
       size="small"
+      variant={variant}
+      leadingContent={icon}
       color={tone === "neutral" ? "neutral" : "accent"}
       accentColor={tone === "neutral" ? undefined : BADGE_COLOR[tone]}
     >
