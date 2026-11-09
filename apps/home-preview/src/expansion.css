@@ -23,11 +23,6 @@
     min-height: 42px;
     color: var(--text-secondary);
   }
-  .floating-workspace .nav-item.active {
-    background: var(--brand-soft);
-    color: var(--brand);
-    box-shadow: none;
-  }
   .floating-workspace .sidebar-search {
     margin: 16px 0 20px;
     background: var(--surface-muted);
@@ -863,8 +858,8 @@
     overflow: hidden;
     background: var(--surface);
     transition:
-      transform 0.16s,
-      border-color 0.16s;
+      transform var(--motion-duration-micro),
+      border-color var(--motion-duration-micro);
   }
   .document-tile:hover {
     border-color: var(--hover-line);
@@ -1635,8 +1630,8 @@
     min-width: 0;
     overflow: hidden;
     transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease;
+      border-color var(--motion-duration-micro) ease,
+      box-shadow var(--motion-duration-micro) ease;
   }
   .floating-workspace .research-card-wrap:hover,
   .floating-workspace .research-card-wrap:focus-within {
@@ -1801,8 +1796,8 @@
   }
   .folder-tree-row button[aria-pressed="true"],
   .folder-all[aria-pressed="true"] {
-    background: var(--brand-soft);
-    color: var(--brand);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
   }
   .folder-tree-row button:hover,
   .folder-all:hover {

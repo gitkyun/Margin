@@ -133,7 +133,40 @@ function CommentThread({
   );
 }
 
-export function ReviewDetailPage() {
+/**
+ * 교수가 이 항목에 결과를 남긴 뒤 다음에 할 일을 알려 줍니다(검수 H-3).
+ * 이 검토 요청 안의 항목만 셉니다. 여러 학생을 모아 보는 화면이 아닙니다.
+ * ‘승인’·‘완료’라는 말은 쓰지 않습니다(docs/design/ux-writing.md).
+ */
+function ProfessorProgress({
+  pending,
+  onNext,
+}: {
+  pending: ReviewItem[];
+  onNext: (item: ReviewItem) => void;
+}) {
+  if (!pending.length)
+    return (
+      <div className="review-progress is-done" role="status">
+        <Icon name="check-circle" size={16} />
+        <p>이 요청의 모든 항목에 결과를 남겼어요. 학생에게 알림으로 보여요.</p>
+      </div>
+    );
+  return (
+    <div className="review-progress" role="status">
+      <p>결과를 남기지 않은 항목 {pending.length}개</p>
+      <Button size="sm" onClick={() => onNext(pending[0])}>
+        다음 항목
+        <Icon name="arrow-right" size={14} />
+      </Button>
+    </div>
+  );
+}
+/**
+ * `embedded`: 학생이 앱 셸 안에서 열 때. 셸이 로고·계정 메뉴·<main>을 이미 그리므로
+ * 이 화면은 그것들을 다시 그리지 않습니다(2026-11-09 검수 E-7).
+ */
+export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const { requestId = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -479,24 +512,31 @@ export function ReviewDetailPage() {
         </Link>
       </main>
     );
+  const Root = embedded ? "div" : "main";
   return (
-    <main className="review-workspace">
+    <Root className="review-workspace">
       <header className="review-workspace-header">
         <div className="review-header-left">
           <Link
             className="review-brand"
-            to={isOwner ? `/r/${request.researchId}/reviews` : "/r"}
+            to={isOwner || embedded ? `/r/${request.researchId}/reviews` : "/r"}
             aria-label={
-              isOwner
-                ? "마진(Margin) 검토 요청 목록으로 돌아가기"
-                : "마진(Margin) 홈"
+              embedded
+                ? "검토 요청 목록으로 돌아가기"
+                : isOwner
+                  ? "마진(Margin) 검토 요청 목록으로 돌아가기"
+                  : "마진(Margin) 홈"
             }
           >
-            {isOwner && <Icon name="arrow-left" size={21} />}
-            <BrandMark />
-            <BrandWordmark />
+            {(isOwner || embedded) && <Icon name="arrow-left" size={21} />}
+            {!embedded && (
+              <>
+                <BrandMark />
+                <BrandWordmark />
+              </>
+            )}
           </Link>
-          <span className="review-header-divider" />
+          {!embedded && <span className="review-header-divider" />}
           <div>
             <h1>{request.title}</h1>
             <p>
@@ -541,34 +581,36 @@ export function ReviewDetailPage() {
               </Button>
             </>
           ) : null}
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <button
-                className="review-account-button"
-                aria-label={`${user.name} 계정 메뉴`}
-              >
-                {user.name.slice(0, 1) || "나"}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="review-account-menu">
-              <DropdownMenuLabel>
-                <strong>{user.name}</strong>
-                <span>{user.email}</span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() => navigate("/account?tab=appearance")}
-              >
-                <Icon name="monitor" size={16} />
-                화면 설정
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => void context.signOut()}>
-                <Icon name="logout" size={16} />
-                로그아웃
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {!embedded && (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <button
+                  className="review-account-button"
+                  aria-label={`${user.name} 계정 메뉴`}
+                >
+                  {user.name.slice(0, 1) || "나"}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="review-account-menu">
+                <DropdownMenuLabel>
+                  <strong>{user.name}</strong>
+                  <span>{user.email}</span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => navigate("/account?tab=appearance")}
+                >
+                  <Icon name="monitor" size={16} />
+                  화면 설정
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => void context.signOut()}>
+                  <Icon name="logout" size={16} />
+                  로그아웃
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </header>
       {mode === "preview" && (
@@ -640,7 +682,7 @@ export function ReviewDetailPage() {
               </div>
               <div className="review-round-actions">
                 <label className="review-round-picker">
-                  <span>검토 차수</span>
+                  <span>검토</span>
                   <SelectField
                     value={round.id}
                     onChange={(
@@ -679,9 +721,10 @@ export function ReviewDetailPage() {
             {round.id !== rounds[0]?.id && (
               <div className="review-earlier-note">
                 <Icon name="clock" size={16} />
-                이전 차수예요. 당시의 설명, 파일, 응답을 그대로 보여 줘요.
+                {round.number}차 검토예요. 당시의 설명, 파일, 응답을 그대로 보여
+                줘요.
                 <button type="button" onClick={() => selectRound(rounds[0].id)}>
-                  최신 차수 열기
+                  최신 {rounds[0].number}차 검토 열기
                 </button>
               </div>
             )}
@@ -782,6 +825,20 @@ export function ReviewDetailPage() {
                       )}
                     </div>
                   )}
+                  {/* ‘추가 수정 필요’를 받은 학생이 고칠 곳으로 바로 갑니다(검수 H-1).
+                      교수 결과와 학생의 수정 결과 상태는 합치지 않고 길만 이어 줍니다. */}
+                  {isOwner &&
+                    response?.result === "changes_requested" &&
+                    privateResult && (
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          to={`/r/${request.researchId}/results/${privateResult.id}`}
+                        >
+                          수정 결과에서 고치기
+                          <Icon name="arrow-right" size={14} />
+                        </Link>
+                      </Button>
+                    )}
                   {canRespond ? (
                     <form
                       className="review-response-form"
@@ -882,9 +939,21 @@ export function ReviewDetailPage() {
                       {isOwner
                         ? "교수님 응답은 여기에 보여요. 응답, 댓글, 읽음 표시는 할 일과 피드백 상태를 바꾸지 않아요."
                         : isProfessor && canWrite
-                          ? "이 항목은 새 차수가 있어 이 차수에는 응답할 수 없어요. 최신 차수에서 결과를 남겨 주세요."
+                          ? `이 항목은 ${rounds[0]?.number ?? round.number}차 검토가 있어 ${round.number}차에는 응답할 수 없어요. 최신 검토에서 결과를 남겨 주세요.`
                           : "공유 중일 때 응답할 수 있어요."}
                     </p>
+                  )}
+                  {isProfessor && canWrite && response && (
+                    <ProfessorProgress
+                      pending={items.filter(
+                        (record) =>
+                          !latestResponse(
+                            data,
+                            latestRound(data, record.id)?.id,
+                          ),
+                      )}
+                      onNext={selectItem}
+                    />
                   )}
                   {response && (
                     <button
@@ -905,7 +974,7 @@ export function ReviewDetailPage() {
                     <div className="review-response-history">
                       {!history[round.id]?.length ? (
                         <p className="meta">
-                          이 차수에서 응답을 바꾼 기록이 없어요.
+                          이 검토에서 응답을 바꾼 기록이 없어요.
                         </p>
                       ) : (
                         history[round.id].map((r, index) => (
@@ -1147,7 +1216,7 @@ export function ReviewDetailPage() {
           <DialogHeader>
             <DialogTitle>이 항목만 다시 확인을 요청할까요?</DialogTitle>
             <DialogDescription>
-              {nextRoundNumber}차 검토로 새로 요청해요. 이전 차수의 설명, 파일,
+              {nextRoundNumber}차 검토로 새로 요청해요. 이전 검토의 설명, 파일,
               응답은 그대로 남고, 다른 항목은 바뀌지 않아요.
             </DialogDescription>
           </DialogHeader>
@@ -1231,6 +1300,6 @@ export function ReviewDetailPage() {
           )}
         </DialogContent>
       </Dialog>
-    </main>
+    </Root>
   );
 }

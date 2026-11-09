@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { formatDateTime } from "@/lib/domain";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
@@ -232,8 +233,7 @@ export function SavedTranscript({
           )}
         </div>
         <small className="student-footnote">
-          수정본 v{current.revision} ·{" "}
-          {new Date(current.updated_at).toLocaleString("ko-KR")}
+          수정본 v{current.revision} · {formatDateTime(current.updated_at)}
         </small>
       </div>
       <Dialog open={append} onOpenChange={setAppend}>

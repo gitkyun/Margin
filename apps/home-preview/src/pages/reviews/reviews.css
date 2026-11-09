@@ -453,8 +453,8 @@
     background: var(--surface-muted);
   }
   .review-item-nav.selected {
-    border-color: var(--line);
-    background: var(--surface-muted);
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
   }
   .review-item-nav.selected .review-item-number {
     color: var(--brand);
@@ -474,9 +474,7 @@
     font-size: var(--typography-caption2-fontSize);
     line-height: var(--typography-caption2-lineHeight);
     width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
     letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .review-sidebar-note {
@@ -646,9 +644,9 @@
     color: var(--text);
     font-weight: 500;
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 0;
+    /* 파일명은 끝부분(_v2·_v3)으로 구분하므로 자르지 않고 줄을 바꿉니다(검수 F-1). */
+    overflow-wrap: anywhere;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-file-heading > span {
@@ -758,8 +756,8 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-response-option.selected {
-    border-color: var(--brand);
-    background: var(--brand-soft);
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
   }
   .review-response-option input {
     accent-color: var(--brand);
@@ -779,6 +777,28 @@
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .review-progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-12);
+    padding: var(--spacing-12);
+    border-radius: var(--radius-10);
+    background: var(--surface-muted);
+  }
+  .review-progress > p {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .review-progress.is-done {
+    justify-content: flex-start;
+    color: var(--semantic-foreground-positive-primary);
   }
   .review-history-button {
     display: flex;
@@ -1217,6 +1237,9 @@
     }
     .review-round-actions {
       justify-content: space-between;
+      /* 360px에서 차수 선택이 ‘1차 검토 · 최…’로 잘리지 않게 버튼을 다음 줄로(검수 F-1). */
+      flex-wrap: wrap;
+      row-gap: var(--spacing-8);
     }
     .review-round-picker {
       flex-direction: row;

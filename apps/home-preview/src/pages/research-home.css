@@ -29,9 +29,9 @@
   }
   .rh-home :is(a, button) {
     transition:
-      background-color 150ms ease,
-      color 150ms ease,
-      border-color 150ms ease;
+      background-color var(--motion-duration-micro) ease,
+      color var(--motion-duration-micro) ease,
+      border-color var(--motion-duration-micro) ease;
   }
   .rh-home a:focus-visible,
   .rh-home button:focus-visible,
@@ -416,7 +416,7 @@
     height: 100%;
     border-radius: inherit;
     background: var(--primary);
-    transition: width 180ms ease;
+    transition: width var(--motion-duration-micro) ease;
   }
   .rh-preparation-list {
     display: flex;
@@ -454,10 +454,11 @@
     border-radius: 50%;
     color: var(--text-tertiary);
   }
+  /* 읽기 전용 완료 체크는 Montage Checkbox 체크 상태와 같은 모양(검수 D-4). */
   .rh-is-complete .rh-preparation-check {
-    border-color: var(--selected-line);
-    background: var(--brand-soft);
-    color: var(--brand);
+    border-color: var(--semantic-surface-brand-primary);
+    background: var(--semantic-surface-brand-primary);
+    color: var(--semantic-static-white);
   }
   .rh-preparation-item.rh-is-complete > span:nth-child(2) {
     color: var(--text-tertiary);

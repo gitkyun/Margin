@@ -42,7 +42,7 @@
     border-radius: var(--radius-14);
     background: var(--surface);
     padding: 14px 16px 10px;
-    transition: border-color 160ms ease;
+    transition: border-color var(--motion-duration-micro) ease;
   }
   .phase-card:hover {
     border-color: var(--hover-line);
@@ -68,8 +68,8 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .phase-card.is-current .phase-number {
-    color: var(--surface);
-    background: var(--brand);
+    color: var(--semantic-static-white);
+    background: var(--semantic-surface-brand-primary);
     box-shadow: none;
   }
   .phase-card-body .section-heading {
@@ -535,8 +535,8 @@
     color: var(--text);
     cursor: pointer;
     transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease;
+      border-color var(--motion-duration-micro) ease,
+      box-shadow var(--motion-duration-micro) ease;
   }
   .plan-option:hover {
     border-color: var(--hover-line);

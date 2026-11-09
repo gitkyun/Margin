@@ -105,8 +105,8 @@ describe("experience pages render with an empty research", () => {
     const { ResearchAssistant } =
       await import("../src/pages/ResearchAssistant");
     await page(ResearchAssistant, "/r/r1/assistant");
-    expect(screen.getByRole("radio", { name: "대화" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("radio", { name: /AI 제안/ }));
+    expect(screen.getByRole("tab", { name: "대화" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("tab", { name: /AI 제안/ }));
     await waitFor(() =>
       expect(screen.getByText("아직 실행 기록이 없어요.")).toBeTruthy(),
     );
@@ -115,7 +115,7 @@ describe("experience pages render with an empty research", () => {
     const { PlanningPage } = await import("../src/pages/PlanningPage");
     await page(PlanningPage, "/r/r1/planning");
     expect(screen.getByRole("heading", { name: "계획·일정" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("radio", { name: "캘린더" }));
+    fireEvent.click(screen.getByRole("tab", { name: "캘린더" }));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "오늘" })).toBeTruthy(),
     );

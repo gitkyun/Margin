@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useAICapabilities } from "@/lib/ai-capabilities";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, modeLabels } from "@/lib/experience";
 import { assertConnected } from "@/lib/supabase";
@@ -17,15 +23,12 @@ import {
   type AIConversation,
   type Attachment,
   type SavedAICandidate,
+  formatDateTime,
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
-import {
-  Choice,
-  Segments,
-  MagicCard,
-  AnimatedList,
-} from "@/components/experience";
+import { Choice, MagicCard, AnimatedList } from "@/components/experience";
+import { Tabs } from "@/components/ui/tabs";
 import { AssistantMascot } from "@/components/brand/Brand";
 import {
   workingMascot,
@@ -53,6 +56,7 @@ const stateLabel: Record<string, string> = {
 export function ResearchAssistant() {
   const { researchId = "" } = useParams(),
     w = useExperience(),
+    navigate = useNavigate(),
     { data, user, save, runAI, mode, refresh } = w,
     [params, setParams] = useSearchParams(),
     tab = params.get("tab") ?? "chat";
@@ -489,13 +493,33 @@ export function ResearchAssistant() {
           visibility: "private",
         };
       }
-      await w.action("rms_adopt_candidate", {
-        candidateId: adopting.id,
-        kind: targetKind,
-        value: targetValue,
-      });
+      const saved = await w.action<{ id?: string } | null>(
+        "rms_adopt_candidate",
+        {
+          candidateId: adopting.id,
+          kind: targetKind,
+          value: targetValue,
+        },
+      );
       setAdopting(null);
-      toast.success("선택한 내용을 나만 볼 수 있는 기록으로 저장했어요.");
+      // 만든 기록으로 바로 갈 수 있게 알림에 ‘열기’를 붙입니다(검수 H-4).
+      const savedId = saved?.id ?? (targetValue.id as string | undefined);
+      const href =
+        targetKind === "feedback" && savedId
+          ? `/r/${researchId}/feedback/${savedId}`
+          : targetKind === "tasks" && savedId
+            ? `/r/${researchId}/tasks/${savedId}`
+            : targetKind === "plans" && feedback
+              ? `/r/${researchId}/feedback/${feedback.id}`
+              : meeting
+                ? `/r/${researchId}/meetings/${meeting.id}?tab=questions`
+                : undefined;
+      toast.success(
+        "선택한 내용을 나만 볼 수 있는 기록으로 저장했어요.",
+        href
+          ? { action: { label: "열기", onClick: () => navigate(href) } }
+          : undefined,
+      );
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -507,24 +531,26 @@ export function ResearchAssistant() {
       <PageHeader
         title="연구 도우미"
         description="선택한 기록만 읽고 질문에 답하거나 수정 방법을 제안해요."
-        actions={
+        status={
           <span className="rms-pill">
             <Icon name="lock" size={13} />
             나만 볼 수 있는 공간
           </span>
         }
+        tabs={
+          <Tabs
+            className="tabs-line"
+            label="연구 도우미 화면"
+            value={tab}
+            onChange={(v) => setParams({ tab: v })}
+            options={[
+              { value: "chat", label: "대화" },
+              { value: "overview", label: "AI 제안", count: pending.length },
+              { value: "usage", label: "사용량" },
+            ]}
+          />
+        }
       />
-      <div className="experience-toolbar">
-        <Segments
-          value={tab}
-          onChange={(v) => setParams({ tab: v })}
-          options={[
-            { value: "chat", label: "대화" },
-            { value: "overview", label: "AI 제안", count: pending.length },
-            { value: "usage", label: "사용량" },
-          ]}
-        />
-      </div>
       {tab === "usage" ? (
         <>
           <UsageDetails />
@@ -673,7 +699,7 @@ export function ResearchAssistant() {
                 <div>
                   <strong>{modeLabels[r.mode] ?? "연구 대화"}</strong>
                   <small>
-                    {new Date(r.createdAt).toLocaleString("ko-KR")}
+                    {formatDateTime(r.createdAt)}
                     {r.model && ` · ${r.model}`}
                   </small>
                   {r.error && <p>{r.error}</p>}
@@ -833,8 +859,10 @@ export function ResearchAssistant() {
                 {contexts.map((c, i) => (
                   <span className="context-chip" key={`${c.kind}-${c.id}`}>
                     <Icon name="file" size={14} />
-                    {c.title}
-                    {c.page && ` · ${c.page}쪽`}
+                    <span title={c.page ? `${c.title} · ${c.page}쪽` : c.title}>
+                      {c.title}
+                      {c.page && ` · ${c.page}쪽`}
+                    </span>
                     <button
                       type="button"
                       disabled={running}
@@ -864,7 +892,7 @@ export function ResearchAssistant() {
                   if (
                     (e.metaKey || e.ctrlKey) &&
                     e.key === "Enter" &&
-                    !e.nativeEvent.isComposing
+                    !isImeComposing(e)
                   ) {
                     e.preventDefault();
                     void send();

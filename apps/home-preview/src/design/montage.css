@@ -24,6 +24,42 @@
 .rms-segments.is-fill[data-component="segmented-control"] {
   width: 100%;
 }
+
+/*
+ * 가로로 넘치는 보기 전환·설정 메뉴: 스크롤바를 숨긴 대신 남은 쪽 끝을 흐려
+ * 더 있다는 것을 보여 줍니다(검수 F-7). 넘치지 않으면 스크롤 타임라인이 비활성이라
+ * 흐림이 생기지 않고, 끝까지 밀면 흐림이 사라집니다. 지원하지 않는 브라우저는 그대로.
+ */
+@property --scroll-edge-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes margin-scroll-edge {
+  from {
+    --scroll-edge-end: 28px;
+  }
+  to {
+    --scroll-edge-end: 0px;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .rms-segments[data-component="segmented-control"],
+  .settings-layout > nav {
+    animation: margin-scroll-edge linear both;
+    animation-timeline: scroll(self inline);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black calc(100% - var(--scroll-edge-end)),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      black calc(100% - var(--scroll-edge-end)),
+      transparent
+    );
+  }
+}
 .rms-segments:not(.is-fill) [data-component="segmented-control-item"] {
   flex: 0 0 auto;
   padding-inline: var(--spacing-12);
@@ -193,7 +229,9 @@
 
 /*
  * 알림(sonner) — Montage Toast 모양을 따릅니다.
- * 반투명 반전 면 + 32px 흐림, 모서리 12px, 흰 body2 굵은 글자.
+ * 반투명 반전 면 + 32px 흐림, 모서리 12px, body2 굵은 글자.
+ * 반전 면은 다크에서 밝아지므로 글자도 반전 글자(neutral-inverse)를 짝으로 씁니다.
+ * 고정 흰 글자를 쓰면 다크에서 밝은 면 위 흰 글자가 됩니다(2026-11-09 검수 B-2).
  * 종류는 색 배경 대신 아이콘 색으로만 구분합니다.
  */
 [data-sonner-toast][data-styled="true"].margin-toast {
@@ -203,10 +241,10 @@
   border-radius: var(--radius-12);
   background: rgba(
     var(--semantic-surface-neutral-inverse-rgb),
-    var(--opacity-52)
+    var(--opacity-88)
   );
   box-shadow: none;
-  color: var(--semantic-static-white);
+  color: var(--semantic-foreground-neutral-inverse);
   font-size: var(--typography-body2-fontSize);
   line-height: var(--typography-body2-lineHeight);
   letter-spacing: var(--typography-body2-letterSpacing);
@@ -219,7 +257,10 @@
   word-break: keep-all;
 }
 .margin-toast[data-sonner-toast][data-styled="true"] [data-description] {
-  color: rgba(var(--semantic-static-white-rgb), var(--opacity-88));
+  color: rgba(
+    var(--semantic-foreground-neutral-inverse-rgb),
+    var(--opacity-88)
+  );
   word-break: keep-all;
 }
 .margin-toast[data-sonner-toast][data-type="success"] [data-icon] {
@@ -249,5 +290,5 @@
     var(--semantic-surface-neutral-inverse-rgb),
     var(--opacity-88)
   );
-  color: var(--semantic-static-white);
+  color: var(--semantic-foreground-neutral-inverse);
 }
