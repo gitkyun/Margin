@@ -498,10 +498,11 @@
     border-radius: var(--radius-4);
     flex-shrink: 0;
   }
+  /* 읽기 전용 완료 체크는 Montage Checkbox 체크 상태와 같은 모양(검수 D-4). */
   .student-check-indicator.checked {
-    background: var(--text-secondary);
-    color: var(--surface);
-    border-color: var(--text-secondary);
+    background: var(--semantic-surface-brand-primary);
+    color: var(--semantic-static-white);
+    border-color: var(--semantic-surface-brand-primary);
   }
   .student-question-row {
     display: flex;
