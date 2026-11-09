@@ -20,12 +20,8 @@ import {
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
-import {
-  Choice,
-  Segments,
-  MagicCard,
-  AnimatedList,
-} from "@/components/experience";
+import { Choice, MagicCard, AnimatedList } from "@/components/experience";
+import { Tabs } from "@/components/ui/tabs";
 import { AssistantMascot } from "@/components/brand/Brand";
 import {
   workingMascot,
@@ -507,24 +503,26 @@ export function ResearchAssistant() {
       <PageHeader
         title="연구 도우미"
         description="선택한 기록만 읽고 질문에 답하거나 수정 방법을 제안해요."
-        actions={
+        status={
           <span className="rms-pill">
             <Icon name="lock" size={13} />
             나만 볼 수 있는 공간
           </span>
         }
+        tabs={
+          <Tabs
+            className="tabs-line"
+            label="연구 도우미 화면"
+            value={tab}
+            onChange={(v) => setParams({ tab: v })}
+            options={[
+              { value: "chat", label: "대화" },
+              { value: "overview", label: "AI 제안", count: pending.length },
+              { value: "usage", label: "사용량" },
+            ]}
+          />
+        }
       />
-      <div className="experience-toolbar">
-        <Segments
-          value={tab}
-          onChange={(v) => setParams({ tab: v })}
-          options={[
-            { value: "chat", label: "대화" },
-            { value: "overview", label: "AI 제안", count: pending.length },
-            { value: "usage", label: "사용량" },
-          ]}
-        />
-      </div>
       {tab === "usage" ? (
         <>
           <UsageDetails />

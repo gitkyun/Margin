@@ -9,6 +9,7 @@
 | [참고자료](references.md) | 공식 버전·링크·Figma·토큰 아카이브 위치(원본은 저장소에 두지 않음) |
 | [UX 라이팅 원칙](ux-writing.md) | 문구·용어·상태 구분 |
 | [UI 품질 기준](ui-quality.md) | 렌더링된 화면에서 확인할 동작·줄바꿈·너비·테마 |
+| [화면 규칙](patterns.md) | 색 역할, 화면 머리 순서, 움직임 단계 |
 
 ## 1. 기반 구조
 
@@ -49,7 +50,7 @@
 | `Button asChild` | `Button as={자식 요소}` | `<Link>`를 버튼 모양 링크로 |
 
 - `data-slot="button"`은 화면 배치(여백·격자 위치) 선택자로만 남깁니다. 이 선택자로 색·높이·모서리·글자 크기를 덮지 않습니다.
-- 대화상자·시트·메뉴는 아직 Radix 래퍼(`components/ui/dialog.jsx` 등)입니다. 연 버튼으로 포커스를 돌려주는 동작을 유지한 채 옮겨야 해서 [이전 기록](migration.md)의 다음 단계에 둡니다.
+- 대화상자·시트·메뉴는 Montage Modal·Menu를 감싼 래퍼(`components/ui/dialog.tsx`·`sheet.tsx`·`dropdown-menu.tsx`)입니다. 닫으면 연 버튼으로 포커스를 돌려주는 동작은 래퍼가 맡습니다.
 - 알림은 `sonner`를 유지하고 현재 테마를 넘깁니다.
 
 ## 2. 새 화면 체크리스트

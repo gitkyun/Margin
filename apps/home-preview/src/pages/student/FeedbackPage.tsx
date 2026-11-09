@@ -99,9 +99,9 @@ export function FeedbackPage() {
   const items = searched.filter((item) => matches(item, filter));
   return (
     <div className="student-page">
-      <WorkTabs researchId={researchId} selected="feedback" />
       <PageHeader
         title="피드백"
+        tabs={<WorkTabs researchId={researchId} selected="feedback" />}
         description="받은 피드백마다 수정 방법을 정하고 고친 내용을 기록하세요."
         actions={
           <Button onClick={openCreate}>
@@ -328,8 +328,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
   }
   return (
     <div className="student-page">
-      <BackLink to={`/r/${researchId}/feedback`}>피드백 목록</BackLink>
       <PageHeader
+        back={<BackLink to={`/r/${researchId}/feedback`}>피드백 목록</BackLink>}
         title={feedback.title}
         description={
           meeting ? `${meeting.title}에서 정리한 피드백` : "저장한 피드백"
