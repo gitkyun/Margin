@@ -458,13 +458,6 @@
     padding: 11px 0;
     cursor: pointer;
   }
-  .student-choice-row input {
-    flex-shrink: 0;
-    width: 17px;
-    height: 17px;
-    margin: 3px 0 0;
-    accent-color: var(--brand);
-  }
   .student-choice-row > span {
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
@@ -1534,11 +1527,6 @@
       font-size: var(--typography-caption2-fontSize);
       letter-spacing: var(--typography-caption2-letterSpacing);
     }
-    .student-task-row .status-badge {
-      font-size: var(--typography-caption2-fontSize);
-      padding: 4px 6px;
-      letter-spacing: var(--typography-caption2-letterSpacing);
-    }
     .task-list-date {
       font-size: var(--typography-caption2-fontSize);
       letter-spacing: var(--typography-caption2-letterSpacing);
@@ -1580,9 +1568,6 @@
     }
     .saved-plan {
       padding: 17px;
-    }
-    .student-page .empty-state {
-      padding: 34px 12px;
     }
   }
   @media (prefers-reduced-motion: reduce) {

@@ -8,10 +8,15 @@ import {
   type FormEvent,
   type ChangeEvent,
 } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -130,6 +135,7 @@ function CommentThread({
 export function ReviewDetailPage() {
   const { requestId = "" } = useParams();
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const context = useWorkspace();
   const {
     data,
@@ -535,7 +541,7 @@ export function ReviewDetailPage() {
             </>
           ) : null}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <button
                 className="review-account-button"
                 aria-label={`${user.name} 계정 메뉴`}
@@ -549,11 +555,11 @@ export function ReviewDetailPage() {
                 <span>{user.email}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/account?tab=appearance">
-                  <Icon name="monitor" size={16} />
-                  화면 설정
-                </Link>
+              <DropdownMenuItem
+                onSelect={() => navigate("/account?tab=appearance")}
+              >
+                <Icon name="monitor" size={16} />
+                화면 설정
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => void context.signOut()}>
@@ -1058,9 +1064,7 @@ export function ReviewDetailPage() {
         <DialogContent
           showCloseButton={!busy}
           className="review-settings-dialog"
-          onPointerDownOutside={(e: { preventDefault(): void }) =>
-            e.preventDefault()
-          }
+          disableOutsideClickClose
         >
           <DialogHeader>
             <DialogTitle>공유 설정</DialogTitle>
@@ -1149,9 +1153,7 @@ export function ReviewDetailPage() {
         <DialogContent
           showCloseButton={!busy}
           className="review-recheck-dialog"
-          onPointerDownOutside={(e: { preventDefault(): void }) =>
-            e.preventDefault()
-          }
+          disableOutsideClickClose
         >
           <DialogHeader>
             <DialogTitle>이 항목만 다시 확인을 요청할까요?</DialogTitle>
@@ -1198,7 +1200,7 @@ export function ReviewDetailPage() {
               <label className="review-recheck-confirmation">
                 <Checkbox
                   checked={recheckConfirmed}
-                  onCheckedChange={(value: boolean | "indeterminate") =>
+                  onCheckedChange={(value: boolean) =>
                     setRecheckConfirmed(!!value)
                   }
                 />

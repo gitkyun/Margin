@@ -34,6 +34,7 @@ import {
   SearchInput,
   useSaving,
 } from "./shared";
+import { Checkbox } from "@montage-ui/core";
 const priorityLabels = { high: "높음", normal: "보통", low: "낮음" };
 export function TasksPage() {
   const { researchId = "", taskId } = useParams();
@@ -440,10 +441,9 @@ export function TasksPage() {
                   key={task.id}
                   className={`student-task-row ${task.status === "done" ? "is-complete" : ""}`}
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={task.status === "done"}
-                    onChange={() => void quickToggle(task)}
+                    onCheckedChange={() => void quickToggle(task)}
                     disabled={!!task.archivedAt || busyIds.includes(task.id)}
                     aria-label={`${task.title} 완료`}
                   />
@@ -633,7 +633,7 @@ export function TasksPage() {
                   ))}
                 </SelectField>
               </label>
-              <div className="two-column-fields">
+              <div className="form-grid">
                 <label className="field">
                   담당자
                   <SelectField
@@ -694,15 +694,14 @@ export function TasksPage() {
                   .filter((f) => f.researchId === researchId)
                   .map((feedback) => (
                     <label className="student-choice-row" key={feedback.id}>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={draft.feedbackIds.includes(feedback.id)}
-                        onChange={(e) =>
+                        onCheckedChange={(next) =>
                           setDraft((v) =>
                             v
                               ? {
                                   ...v,
-                                  feedbackIds: e.target.checked
+                                  feedbackIds: next
                                     ? [...v.feedbackIds, feedback.id]
                                     : v.feedbackIds.filter(
                                         (id) => id !== feedback.id,
@@ -723,11 +722,10 @@ export function TasksPage() {
               </div>
               {(draft.planId || current?.planId) && (
                 <label className="student-choice-row">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={!!draft.planId}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
+                    onCheckedChange={(next) => {
+                      const checked = next;
                       setDraft((v) =>
                         v
                           ? {

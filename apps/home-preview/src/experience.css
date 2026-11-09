@@ -985,29 +985,6 @@
   .sidebar-collapsed .workspace-switch:hover {
     outline: 1px solid var(--brand);
   }
-  .menu-email {
-    display: block;
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    font-weight: 400;
-    margin-top: 3px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .account-menu {
-    min-width: 235px;
-    border-radius: var(--radius-16);
-    padding: 7px;
-  }
-  .workspace-menu {
-    min-width: 270px;
-    max-width: 340px;
-    border-radius: var(--radius-14);
-  }
-  .workspace-menu [role="menuitem"] > span {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
   .calm-empty {
     text-align: center;
     padding: 70px 20px;
@@ -1550,16 +1527,6 @@
   .chat-processing button {
     margin-left: auto;
   }
-  /* More legible shared states, consistent touch targets. */
-  .status-badge.blue {
-    color: var(--brand);
-  }
-  .status-badge.green {
-    color: var(--success);
-  }
-  .status-badge.amber {
-    color: var(--warning);
-  }
   .chip.selected,
   .filter-chip.selected {
     background: var(--text);
@@ -2064,10 +2031,6 @@
     }
     .student-tabs button {
       min-height: 44px;
-    }
-    .status-badge {
-      font-size: var(--typography-caption2-fontSize) !important;
-      letter-spacing: var(--typography-caption2-letterSpacing);
     }
     .login-intro h1 {
       font-size: var(--typography-display3-fontSize);

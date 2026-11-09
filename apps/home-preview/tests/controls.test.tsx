@@ -44,64 +44,22 @@ function Choose({ long = false }: { long?: boolean }) {
   );
 }
 describe("search and selection controls", () => {
-  it("opens at the saved choice and commits a keyboard selection", async () => {
+  it("names the select with its current value and commits a selection", async () => {
     render(<Choose />);
-    fireEvent.click(screen.getByRole("button", { name: /^미팅(, |$)/ }));
+    const select = screen.getByRole("combobox", { name: "미팅, 미팅 3" });
+    expect(select.textContent).toContain("미팅 3");
+    fireEvent.click(select);
+    fireEvent.click(await screen.findByRole("option", { name: "미팅 4" }));
     await waitFor(() =>
-      expect(document.activeElement).toBe(
-        screen.getByRole("option", { name: "미팅 3" }),
-      ),
+      expect(
+        screen.getByRole("combobox", { name: "미팅, 미팅 4" }).textContent,
+      ).toContain("미팅 4"),
     );
-    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
-    await waitFor(() =>
-      expect(document.activeElement).toBe(
-        screen.getByRole("option", { name: "미팅 4" }),
-      ),
-    );
-    fireEvent.keyDown(document.activeElement!, { key: "Enter" });
-    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
-    expect(
-      screen.getByRole("button", { name: /^미팅(, |$)/ }).textContent,
-    ).toContain("미팅 4");
   });
-  it("filters long choices, then clears without closing and keeps input focus", async () => {
+  it("lists every option of a long choice", async () => {
     render(<Choose long />);
-    fireEvent.click(screen.getByRole("button", { name: /^미팅(, |$)/ }));
-    const input = await screen.findByRole("combobox", { name: "미팅 검색" });
-    fireEvent.change(input, { target: { value: "8" } });
-    expect(screen.getAllByRole("option")).toHaveLength(1);
-    fireEvent.click(screen.getByRole("button", { name: "검색어 지우기" }));
-    expect(screen.getAllByRole("option")).toHaveLength(9);
-    expect(document.activeElement).toBe(input);
-    fireEvent.change(input, { target: { value: "없음" } });
-    expect(screen.getByText("검색 결과가 없어요.")).toBeTruthy();
-    fireEvent.keyDown(input, { key: "Escape" });
-    expect(screen.getAllByRole("option")).toHaveLength(9);
-    expect(document.activeElement).toBe(input);
-  });
-  it("ignores the Enter that finishes Korean IME composition", async () => {
-    render(<Choose long />);
-    fireEvent.click(screen.getByRole("button", { name: /^미팅(, |$)/ }));
-    const input = await screen.findByRole("combobox", { name: "미팅 검색" });
-    fireEvent.change(input, { target: { value: "8" } });
-    fireEvent.keyDown(input, { key: "Enter", isComposing: true });
-    expect(screen.getByRole("listbox")).toBeTruthy();
-    fireEvent.keyDown(input, { key: "Enter" });
-    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
-    expect(
-      screen.getByRole("button", { name: /^미팅(, |$)/ }).textContent,
-    ).toContain("미팅 8");
-  });
-  it("does not select an unrelated item when a search has no matches", async () => {
-    render(<Choose long />);
-    fireEvent.click(screen.getByRole("button", { name: /^미팅(, |$)/ }));
-    const input = await screen.findByRole("combobox");
-    fireEvent.change(input, { target: { value: "없음" } });
-    fireEvent.keyDown(input, { key: "Enter" });
-    expect(screen.getByRole("listbox")).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: /^미팅(, |$)/ }).textContent,
-    ).toContain("미팅 3");
+    fireEvent.click(screen.getByRole("combobox", { name: /^미팅, / }));
+    expect(await screen.findAllByRole("option")).toHaveLength(9);
   });
   it("clears search and returns typing focus", () => {
     function Search() {

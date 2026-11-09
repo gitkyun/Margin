@@ -586,12 +586,8 @@ export function ResearchSelectPage() {
           className="rms-dialog"
           showCloseButton={!pending}
           aria-busy={pending}
-          onEscapeKeyDown={(event: { preventDefault(): void }) => {
-            if (pending) event.preventDefault();
-          }}
-          onPointerDownOutside={(event: { preventDefault(): void }) => {
-            if (pending) event.preventDefault();
-          }}
+          disableEscapeKeyDownClose={pending}
+          disableOutsideClickClose={pending}
         >
           <DialogHeader>
             <DialogTitle>연구 만들기</DialogTitle>

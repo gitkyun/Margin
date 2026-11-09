@@ -1,7 +1,6 @@
 import {
   Children,
   isValidElement,
-  useId,
   useEffect,
   useRef,
   useState,
@@ -9,19 +8,21 @@ import {
   type SelectHTMLAttributes,
   type ReactElement,
 } from "react";
-import { Popover, Tooltip } from "radix-ui";
+import { Tooltip } from "radix-ui";
 import { useParams } from "react-router-dom";
-import { SegmentedControl, SegmentedControlItem } from "@montage-ui/core";
-import { useWorkspace } from "@/lib/workspace";
 import {
-  motion,
-  useReducedMotion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-} from "motion/react";
+  Option,
+  SegmentedControl,
+  SegmentedControlItem,
+  Select,
+} from "@montage-ui/core";
+import { useWorkspace } from "@/lib/workspace";
+import { motion, useReducedMotion, useMotionValue } from "motion/react";
 import { Icon } from "./icons";
-import { SearchField } from "./SearchField";
+/**
+ * 선택 상자. 모양·키보드·목록은 Montage Select가 맡습니다.
+ * 접근성 이름은 "이름, 현재 값"으로 둬 보이는 글자가 이름에 들어가게 합니다(WCAG 2.5.3).
+ */
 export function Choice({
   value,
   onChange,
@@ -29,6 +30,7 @@ export function Choice({
   label,
   disabled = false,
   id: fieldId,
+  compact = false,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -36,173 +38,33 @@ export function Choice({
   label: string;
   disabled?: boolean;
   id?: string;
+  /** 입력창 도구 줄처럼 좁은 곳: 작은 크기(40px), 내용 너비 */
+  compact?: boolean;
 }) {
-  const [open, setOpen] = useState(false),
-    [query, setQuery] = useState(""),
-    [active, setActive] = useState(0);
-  const id = useId();
-  const menuRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-  const searchable = options.length > 7;
-  const filtered = options.filter(
-    (o) =>
-      !query ||
-      (o.search ?? String(o.label)).toLowerCase().includes(query.toLowerCase()),
-  );
-  useEffect(() => {
-    if (!open) return;
-    const option = menuRef.current?.querySelector<HTMLElement>(
-      `[id="${id}-${active}"]`,
-    );
-    option?.scrollIntoView?.({ block: "nearest" });
-    if (!searchable) option?.focus();
-  }, [active, open, id, searchable]);
-  function select(value: string) {
-    onChange(value);
-    setOpen(false);
-  }
   const current = options.find((o) => o.value === value);
   const currentText = current
     ? (current.search ??
       (typeof current.label === "string" ? current.label : ""))
     : "";
   return (
-    <Popover.Root
-      open={open}
-      onOpenChange={(v) => {
-        setOpen(v);
-        setQuery("");
-        setActive(
-          Math.max(
-            0,
-            options.findIndex((o) => o.value === value),
-          ),
-        );
-      }}
+    <Select
+      className="rms-choice"
+      id={fieldId}
+      size="medium"
+      width={compact ? "auto" : "100%"}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      placeholder="선택"
+      aria-label={currentText ? `${label}, ${currentText}` : label}
+      data-draft-value={value}
     >
-      <Popover.Trigger asChild>
-        <button
-          type="button"
-          className="rms-choice"
-          id={fieldId}
-          disabled={disabled}
-          // The button shows only the current value; name it "label, value" so
-          // the visible text is part of the accessible name (WCAG 2.5.3).
-          aria-label={currentText ? `${label}, ${currentText}` : label}
-          aria-haspopup="listbox"
-          data-draft-value={value}
-        >
-          <span>{current?.label ?? "선택"}</span>
-          <Icon name="chevron-down" size={16} />
-        </button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          ref={menuRef}
-          className="rms-choice-menu"
-          sideOffset={6}
-          align="start"
-          collisionPadding={12}
-          onEscapeKeyDown={(event) => {
-            if (searchRef.current?.value) {
-              event.preventDefault();
-              setQuery("");
-              setActive(0);
-              searchRef.current.focus();
-            }
-          }}
-          onOpenAutoFocus={(event) => {
-            event.preventDefault();
-            if (searchable) searchRef.current?.focus();
-            else
-              menuRef.current
-                ?.querySelector<HTMLElement>(`[id="${id}-${active}"]`)
-                ?.focus();
-          }}
-          onKeyDown={(e) => {
-            if (
-              e.defaultPrevented ||
-              (e.target instanceof Element && e.target.closest(".search-clear"))
-            )
-              return;
-            if (e.key === "ArrowDown") {
-              e.preventDefault();
-              setActive((active + 1) % Math.max(filtered.length, 1));
-            }
-            if (e.key === "ArrowUp") {
-              e.preventDefault();
-              setActive(
-                (active + filtered.length - 1) % Math.max(filtered.length, 1),
-              );
-            }
-            // 한글 조합을 끝내는 Enter는 선택으로 처리하지 않는다.
-            if (
-              e.key === "Enter" &&
-              !e.nativeEvent.isComposing &&
-              filtered[active]
-            ) {
-              e.preventDefault();
-              select(filtered[active].value);
-            }
-            if (!searchable && (e.key === "Home" || e.key === "End")) {
-              e.preventDefault();
-              setActive(
-                e.key === "Home" ? 0 : Math.max(filtered.length - 1, 0),
-              );
-            }
-          }}
-        >
-          <div className="choice-menu-label">{label}</div>
-          {searchable && (
-            <SearchField
-              inputRef={searchRef}
-              compact
-              role="combobox"
-              aria-expanded={open}
-              aria-autocomplete="list"
-              aria-label={`${label} 검색`}
-              aria-controls={id}
-              aria-activedescendant={
-                filtered[active] ? `${id}-${active}` : undefined
-              }
-              value={query}
-              onValueChange={(next) => {
-                setQuery(next);
-                setActive(0);
-              }}
-              placeholder="이름으로 찾기"
-            />
-          )}
-          <div
-            role="listbox"
-            id={id}
-            aria-label={label}
-            className="rms-choice-options"
-          >
-            {filtered.map((o, i) => (
-              <button
-                type="button"
-                id={`${id}-${i}`}
-                key={o.value}
-                role="option"
-                tabIndex={searchable || i !== active ? -1 : 0}
-                aria-selected={o.value === value}
-                data-highlighted={i === active || undefined}
-                onFocus={() => setActive(i)}
-                onPointerMove={() => setActive(i)}
-                onClick={() => select(o.value)}
-              >
-                <span className="choice-option-label">{o.label}</span>
-                <span className="choice-check" aria-hidden="true">
-                  {o.value === value && <Icon name="check" size={16} />}
-                </span>
-              </button>
-            ))}
-            {!filtered.length && <p>검색 결과가 없어요.</p>}
-          </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+      {options.map((o) => (
+        <Option key={o.value} value={o.value}>
+          {o.label}
+        </Option>
+      ))}
+    </Select>
   );
 }
 function flattenOptions(

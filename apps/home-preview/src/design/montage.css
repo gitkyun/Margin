@@ -190,3 +190,25 @@
     display: none;
   }
 }
+
+/* 동작 메뉴(Montage Menu) 머리글: Montage 메뉴 그룹 제목과 같은 글자 단계 */
+.margin-menu-label {
+  display: grid;
+  gap: 2px;
+  padding: var(--spacing-8) var(--spacing-16) var(--spacing-4);
+  color: var(--semantic-foreground-neutral-primary);
+  font-size: var(--typography-label1-fontSize);
+  line-height: var(--typography-label1-lineHeight);
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.margin-menu-label :is(small, span) {
+  color: var(--semantic-foreground-neutral-tertiary);
+  font-size: var(--typography-caption1-fontSize);
+  line-height: var(--typography-caption1-lineHeight);
+  font-weight: 400;
+}
+.margin-menu-divider {
+  margin-block: var(--spacing-8);
+}

@@ -52,12 +52,8 @@ export function PermanentResearchDelete({
         <DialogContent
           className="rms-dialog"
           showCloseButton={!busy}
-          onEscapeKeyDown={(e) => {
-            if (busy) e.preventDefault();
-          }}
-          onPointerDownOutside={(e) => {
-            if (busy) e.preventDefault();
-          }}
+          disableEscapeKeyDownClose={busy}
+          disableOutsideClickClose={busy}
         >
           <DialogHeader>
             <DialogTitle>연구를 완전히 삭제할까요?</DialogTitle>

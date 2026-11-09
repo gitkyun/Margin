@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Segments } from "@/components/experience";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -230,6 +230,7 @@ export function ReviewsPage() {
         />
         <div className="review-search">
           <Input
+            fieldSize="medium"
             width="100%"
             aria-label="검토 요청 찾기"
             placeholder="제목이나 교수 이메일로 찾기"
@@ -341,12 +342,8 @@ export function ReviewsPage() {
         <DialogContent
           showCloseButton={!busy}
           className="review-compose-dialog"
-          onEscapeKeyDown={(event: { preventDefault(): void }) => {
-            if (busy) event.preventDefault();
-          }}
-          onPointerDownOutside={(event: { preventDefault(): void }) =>
-            event.preventDefault()
-          }
+          disableEscapeKeyDownClose={busy}
+          disableOutsideClickClose
         >
           <DialogHeader>
             <DialogTitle>
@@ -410,9 +407,7 @@ export function ReviewsPage() {
                       <label className="review-pick-row" key={result.id}>
                         <Checkbox
                           checked={selected.includes(result.id)}
-                          onCheckedChange={(
-                            checked: boolean | "indeterminate",
-                          ) =>
+                          onCheckedChange={(checked: boolean) =>
                             setSelected((current) =>
                               checked
                                 ? [...current, result.id]

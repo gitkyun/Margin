@@ -6,6 +6,15 @@ import {
   type ReactNode,
   type ReactElement,
 } from "react";
+import {
+  ContentBadge,
+  FallbackView,
+  FallbackViewActionArea,
+  FallbackViewContent,
+  FallbackViewText,
+  Skeleton,
+  type ThemeColorsToken,
+} from "@montage-ui/core";
 import { Icon } from "./icons";
 export function PageHeader({
   title,
@@ -29,8 +38,11 @@ export function PageHeader({
     </header>
   );
 }
+/**
+ * 빈 화면. 모양은 Montage FallbackView(compact)가 맡습니다.
+ * Montage는 빈 화면에 그림을 두지 않으므로 `icon`은 받기만 하고 그리지 않습니다.
+ */
 export function EmptyState({
-  icon = "folder",
   title,
   description,
   action,
@@ -41,28 +53,44 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="empty-state">
-      <div className="empty-state-icon">
-        {typeof icon === "string" ? <Icon name={icon} size={28} /> : icon}
-      </div>
-      <h3>{title}</h3>
-      {description && <p>{description}</p>}
-      {action}
-    </div>
+    <FallbackView
+      className="empty-state"
+      padding="compact"
+      width="100%"
+      platform="mobile"
+      sm={{ platform: "desktop" }}
+    >
+      <FallbackViewContent>
+        <FallbackViewText title={title} description={description ?? ""} />
+      </FallbackViewContent>
+      {action && <FallbackViewActionArea>{action}</FallbackViewActionArea>}
+    </FallbackView>
   );
 }
+type BadgeTone = "neutral" | "blue" | "green" | "amber" | "red";
+const BADGE_COLOR: Record<Exclude<BadgeTone, "neutral">, ThemeColorsToken> = {
+  blue: "semantic.foreground.brand.primary",
+  green: "semantic.foreground.positive.primary",
+  amber: "semantic.foreground.cautionary.primary",
+  red: "semantic.foreground.negative.primary",
+};
+/** 상태 표시. 모양은 Montage ContentBadge(small·solid)가 맡습니다. */
 export function StatusBadge({
   children,
   tone = "neutral",
 }: {
   children: ReactNode;
-  tone?: "neutral" | "blue" | "green" | "amber" | "red";
+  tone?: BadgeTone;
 }) {
   return (
-    <span className={`status-badge tone-${tone}`}>
-      <span className="badge-dot" />
+    <ContentBadge
+      className={`status-badge tone-${tone}`}
+      size="small"
+      color={tone === "neutral" ? "neutral" : "accent"}
+      accentColor={tone === "neutral" ? undefined : BADGE_COLOR[tone]}
+    >
       {children}
-    </span>
+    </ContentBadge>
   );
 }
 export function Field({
@@ -134,10 +162,10 @@ export function IconButton({
 export function LoadingState() {
   return (
     <div className="loading-state" role="status" aria-label="불러오는 중">
-      <div className="skeleton skeleton-title" />
-      <div className="skeleton skeleton-block" />
-      <div className="skeleton skeleton-row" />
-      <div className="skeleton skeleton-row" />
+      <Skeleton variant="text" width="40%" height={32} />
+      <Skeleton variant="rectangle" width="100%" height={160} radius={16} />
+      <Skeleton variant="text" width="100%" />
+      <Skeleton variant="text" width="100%" />
       <span className="sr-only">불러오는 중</span>
     </div>
   );

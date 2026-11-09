@@ -21,6 +21,7 @@ export function Textarea({
     <TextArea
       ref={ref}
       minRows={rows ?? 3}
+      width="100%"
       value={value === undefined ? undefined : String(value)}
       status={invalid ? "negative" : "normal"}
       data-slot="textarea"

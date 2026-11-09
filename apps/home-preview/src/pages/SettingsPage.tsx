@@ -34,6 +34,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Switch } from "@montage-ui/core";
 export function UsageDetails() {
   const { mode } = useWorkspace();
   const usage = useAIUsage();
@@ -366,13 +367,9 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
             ].map(([id, label]) => (
               <label key={id}>
                 <span>{label}</span>
-                <input
-                  type="checkbox"
-                  role="switch"
+                <Switch
                   checked={prefs[id] !== false}
-                  onChange={(e) =>
-                    setPrefs({ ...prefs, [id]: e.target.checked })
-                  }
+                  onCheckedChange={(next) => setPrefs({ ...prefs, [id]: next })}
                 />
               </label>
             ))}

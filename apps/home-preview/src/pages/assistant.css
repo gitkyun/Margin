@@ -310,20 +310,6 @@
     background: var(--hover-fill);
     color: var(--text);
   }
-  .composer-actions .rms-choice {
-    width: auto;
-    min-width: 0;
-    min-height: 36px;
-    padding: 6px 10px;
-    gap: 8px;
-    border-color: transparent;
-    background: var(--hover-fill);
-    font-size: var(--typography-label2-fontSize);
-    box-shadow: none;
-  }
-  .composer-actions .rms-choice:hover:not(:disabled) {
-    border-color: var(--line-strong);
-  }
   .composer-actions > [data-slot="button"]:last-child,
   .composer-actions > button[type="submit"],
   .composer-actions > button[aria-label="실행 중단"] {

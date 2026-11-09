@@ -12,6 +12,7 @@ import {
   useSaving,
 } from "./shared";
 import { QuickPdfUpload } from "./QuickPdfUpload";
+import { Checkbox } from "@montage-ui/core";
 
 interface ResultEditorDialogProps {
   researchId: string;
@@ -170,15 +171,14 @@ export function ResultEditorDialog({
                 .filter((feedback) => feedback.researchId === researchId)
                 .map((feedback) => (
                   <label className="student-choice-row" key={feedback.id}>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={draft.feedbackIds.includes(feedback.id)}
-                      onChange={(event) =>
+                      onCheckedChange={(next) =>
                         setDraft((value) =>
                           value
                             ? {
                                 ...value,
-                                feedbackIds: event.target.checked
+                                feedbackIds: next
                                   ? [...value.feedbackIds, feedback.id]
                                   : value.feedbackIds.filter(
                                       (id) => id !== feedback.id,
@@ -198,15 +198,14 @@ export function ResultEditorDialog({
                 .filter((task) => task.researchId === researchId)
                 .map((task) => (
                   <label className="student-choice-row" key={task.id}>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={draft.taskIds.includes(task.id)}
-                      onChange={(event) =>
+                      onCheckedChange={(next) =>
                         setDraft((value) =>
                           value
                             ? {
                                 ...value,
-                                taskIds: event.target.checked
+                                taskIds: next
                                   ? [...value.taskIds, task.id]
                                   : value.taskIds.filter(
                                       (id) => id !== task.id,

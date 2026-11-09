@@ -75,67 +75,6 @@
   .sidebar-collapsed .sidebar .nav-item {
     justify-content: center;
   }
-  .rms-choice {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    min-width: 150px;
-    width: 100%;
-    min-height: 42px;
-    padding: 10px 14px;
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-12);
-    text-align: left;
-    font-size: var(--typography-label1-fontSize);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-    transition:
-      border-color 150ms,
-      box-shadow 150ms,
-      background 150ms;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .rms-choice > span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .rms-choice:hover {
-    border-color: var(--text-secondary);
-  }
-  .rms-choice[data-state="open"] {
-    border-color: var(--brand);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 13%, transparent);
-  }
-  .rms-choice > svg {
-    flex: none;
-    color: var(--text-secondary);
-  }
-  .rms-choice:disabled {
-    opacity: 0.5;
-  }
-  .rms-choice-menu {
-    z-index: 200;
-    min-width: max(220px, var(--radix-popover-trigger-width));
-    max-width: min(420px, calc(100vw - 24px));
-    padding: 6px;
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow-pop);
-    border-radius: var(--radius-16);
-    max-height: var(--radix-popover-content-available-height);
-    overflow-y: auto;
-  }
-  .choice-menu-label {
-    padding: 7px 12px 9px;
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 500;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .rms-search-field {
     display: flex;
     align-items: center;
@@ -215,49 +154,9 @@
       height: 44px;
     }
   }
-  .choice-option-label {
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-  .choice-check {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 20px;
-    height: 20px;
-  }
-  .rms-choice-options {
-    max-height: 280px;
-    overflow: auto;
-  }
-  .rms-choice-options button {
-    width: 100%;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    text-align: left;
-    padding: 9px 12px;
-    border-radius: var(--radius-10);
-    background: transparent;
-    border: 0;
-    color: var(--text);
-    font-size: var(--typography-label1-fontSize);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
   .rms-choice-options button:hover,
   .rms-choice-options button[data-highlighted] {
     background: var(--surface-muted);
-  }
-  .rms-choice-options [aria-selected="true"] {
-    color: var(--brand);
-    font-weight: 500;
-    background: color-mix(in srgb, var(--brand-soft) 60%, var(--surface));
-  }
-  .rms-choice-options p {
-    padding: 14px;
-    color: var(--text-secondary);
   }
   .student-filter-row > label {
     display: grid;
@@ -989,11 +888,6 @@
     .dashboard-task {
       gap: 10px;
     }
-    .dashboard-task .status-badge {
-      font-size: var(--typography-caption2-fontSize);
-      padding: 4px 6px;
-      letter-spacing: var(--typography-caption2-letterSpacing);
-    }
     .meeting-readiness > div + div {
       padding-left: 14px;
     }
@@ -1003,12 +897,6 @@
     }
     .experience-panel {
       padding: 18px;
-    }
-    .rms-choice {
-      min-height: 44px;
-    }
-    .rms-choice-options button {
-      min-height: 44px;
     }
 
     .page-actions {
@@ -2174,9 +2062,7 @@
     border: 0;
     cursor: pointer;
   }
-  .app-shell.floating-workspace .sidebar,
-  .app-shell .account-menu,
-  .app-shell .workspace-menu {
+  .app-shell.floating-workspace .sidebar {
     backdrop-filter: none !important;
     filter: none !important;
     background: var(--surface) !important;

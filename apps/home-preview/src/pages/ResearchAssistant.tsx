@@ -883,6 +883,7 @@ export function ResearchAssistant() {
                   <Icon name="clip" size={20} />
                 </button>
                 <Choice
+                  compact
                   value={task}
                   onChange={(v) => setTask(v as AIInput["mode"])}
                   label="요청 종류"
@@ -893,6 +894,7 @@ export function ResearchAssistant() {
                   }))}
                 />
                 <Choice
+                  compact
                   value={allowedModel?.id ?? ""}
                   onChange={setModel}
                   disabled={running || !caps.data}
@@ -913,6 +915,7 @@ export function ResearchAssistant() {
                 />
                 {!!allowedModel?.thinking.length && (
                   <Choice
+                    compact
                     label="답변 깊이"
                     value={thinking}
                     onChange={setThinking}

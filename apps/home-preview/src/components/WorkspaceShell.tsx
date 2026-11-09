@@ -74,7 +74,7 @@ function AccountMenu() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger>
           <button
             className="profile-button"
             aria-label={`${user.name} ${user.email} 계정 메뉴`}
@@ -87,11 +87,7 @@ function AccountMenu() {
             <Icon name="chevron-down" size={14} />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="top"
-          align="start"
-          className="account-menu glass-surface"
-        >
+        <DropdownMenuContent side="top" align="start" className="account-menu">
           <DropdownMenuLabel>
             {user.name}
             <small className="menu-email">{user.email}</small>
@@ -325,8 +321,8 @@ export function WorkspaceShell({
         </button>
       </div>
       {research && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <DropdownMenu value={researchId}>
+          <DropdownMenuTrigger>
             <button className="workspace-switch" title={research.name}>
               <span className="workspace-symbol">
                 <Icon name="book" size={17} />
@@ -335,10 +331,7 @@ export function WorkspaceShell({
               <Icon name="chevron-down" size={15} />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="workspace-menu glass-surface"
-            align="start"
-          >
+          <DropdownMenuContent className="workspace-menu" align="start">
             <DropdownMenuLabel>연구 전환</DropdownMenuLabel>
             {data.researches
               .filter(
@@ -347,11 +340,11 @@ export function WorkspaceShell({
               .map((r) => (
                 <DropdownMenuItem
                   key={r.id}
+                  value={r.id}
                   onSelect={() => navigate(`/r/${r.id}`)}
                 >
                   <Icon name="book" size={17} />
-                  <span title={r.name}>{r.name}</span>
-                  {r.id === researchId && <Icon name="check" size={15} />}
+                  {r.name}
                 </DropdownMenuItem>
               ))}
             <DropdownMenuSeparator />
@@ -692,16 +685,7 @@ export function WorkspaceShell({
         </SheetContent>
       </Sheet>
       <Dialog open={search} onOpenChange={setSearch}>
-        <DialogContent
-          className="search-dialog"
-          onEscapeKeyDown={(event) => {
-            if (query) {
-              event.preventDefault();
-              setQuery("");
-              searchInput.current?.focus();
-            }
-          }}
-        >
+        <DialogContent className="search-dialog">
           <DialogHeader>
             <DialogTitle>
               {research ? "이 연구에서 찾기" : "연구 찾기"}

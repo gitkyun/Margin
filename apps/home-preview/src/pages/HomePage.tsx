@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/common";
 import { selectNextMeeting } from "@/lib/home-meeting";
 import "./research-home.css";
 import { toggleDone } from "@/lib/task-status";
+import { Checkbox } from "@montage-ui/core";
 
 export function HomePage() {
   const { researchId = "" } = useParams();
@@ -426,12 +427,11 @@ export function HomePage() {
                   className={`rh-task ${task.status === "done" ? "rh-is-complete" : ""}`}
                   key={task.id}
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     aria-label={`${task.title} 완료`}
                     checked={task.status === "done"}
                     disabled={busy === task.id}
-                    onChange={() => void toggle(task.id)}
+                    onCheckedChange={() => void toggle(task.id)}
                   />
                   <Link
                     className="rh-task-copy"

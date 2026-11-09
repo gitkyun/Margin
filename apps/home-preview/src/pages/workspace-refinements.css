@@ -39,10 +39,6 @@
     margin: 24px 0;
     padding: 0;
   }
-  .account-menu {
-    border: 1px solid var(--line-strong);
-    box-shadow: var(--semantic-elevation-shadow-normal-large) !important;
-  }
   .rh-home .rh-quick-record {
     background: var(--surface);
     border-color: var(--line);
@@ -460,16 +456,6 @@
   .field {
     min-width: 0;
     overflow-wrap: anywhere;
-  }
-  /* Research switcher: two lines before cutting, so studies that share their
-   opening words stay distinguishable. */
-  .workspace-menu [role="menuitem"] > span {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
   }
   /* ⌘K results: titles wrap instead of being cut mid-character; icons keep size. */
   .command-results > a > span {

@@ -173,12 +173,8 @@ export function FormDialog({
           className="student-dialog"
           showCloseButton={!busy}
           aria-busy={busy}
-          onEscapeKeyDown={(event: { preventDefault(): void }) => {
-            if (busy) event.preventDefault();
-          }}
-          onPointerDownOutside={(event: { preventDefault(): void }) => {
-            if (busy) event.preventDefault();
-          }}
+          disableEscapeKeyDownClose={busy}
+          disableOutsideClickClose={busy}
         >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
@@ -336,6 +332,7 @@ export function SearchInput({
     <TextField
       className="student-search"
       // 좁은 화면에서는 줄 전체, 768px 이상에서는 내용 너비(Montage 반응형 속성)
+      size="medium"
       width="100%"
       sm={{ width: "auto" }}
       value={value}

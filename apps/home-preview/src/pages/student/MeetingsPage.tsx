@@ -44,6 +44,7 @@ import {
   useSaving,
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
+import { Checkbox } from "@montage-ui/core";
 
 const meetingFilters = [
   ["all", "전체"],
@@ -1252,12 +1253,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               .filter((t) => t.researchId === researchId)
               .map((task) => (
                 <label className="student-choice-row" key={task.id}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={taskIds.includes(task.id)}
-                    onChange={(e) =>
+                    onCheckedChange={(next) =>
                       setTaskIds((ids) =>
-                        e.target.checked
+                        next
                           ? [...ids, task.id]
                           : ids.filter((id) => id !== task.id),
                       )
@@ -1284,12 +1284,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               .filter((v) => v.researchId === researchId)
               .map((version) => (
                 <label className="student-choice-row" key={version.id}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={versionIds.includes(version.id)}
-                    onChange={(e) =>
+                    onCheckedChange={(next) =>
                       setVersionIds((ids) =>
-                        e.target.checked
+                        next
                           ? [...ids, version.id]
                           : ids.filter((id) => id !== version.id),
                       )
@@ -1319,12 +1318,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               .filter((q) => q.status === "open" || questionIds.includes(q.id))
               .map((question) => (
                 <label className="student-choice-row" key={question.id}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={questionIds.includes(question.id)}
-                    onChange={(e) =>
+                    onCheckedChange={(next) =>
                       setQuestionIds((ids) =>
-                        e.target.checked
+                        next
                           ? [...ids, question.id]
                           : ids.filter((id) => id !== question.id),
                       )

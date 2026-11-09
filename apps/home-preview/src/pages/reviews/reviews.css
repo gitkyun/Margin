@@ -1316,23 +1316,4 @@
     font-weight: 600;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
-  .review-account-menu {
-    min-width: 220px;
-  }
-  .review-account-menu [data-slot="dropdown-menu-label"] > strong {
-    display: block;
-    font-size: var(--typography-label2-fontSize);
-    font-weight: 600;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .review-account-menu [data-slot="dropdown-menu-label"] > span {
-    display: block;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    margin-top: 4px;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .review-account-menu [data-slot="dropdown-menu-item"] > span {
-    flex: 1;
-  }
 }

@@ -43,6 +43,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@montage-ui/core";
 const Diagram = lazy(() => import("./RoadmapDiagram"));
 export function PlanningPage() {
   const { researchId = "" } = useParams(),
@@ -652,13 +653,12 @@ export function PlanningPage() {
                         kind === "tasks" ? "taskIds" : "documentIds";
                       return (
                         <label key={t.id}>
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={milestone[field].includes(t.id)}
-                            onChange={(e) =>
+                            onCheckedChange={(next) =>
                               setMilestone({
                                 ...milestone,
-                                [field]: e.target.checked
+                                [field]: next
                                   ? [...milestone[field], t.id]
                                   : milestone[field].filter(
                                       (id) => id !== t.id,
@@ -936,13 +936,12 @@ export function PollPage() {
               key={o.id}
             >
               <label>
-                <input
-                  type="checkbox"
+                <Checkbox
                   disabled={!mine || p.status !== "open" || busy}
                   checked={available.includes(o.id)}
-                  onChange={(e) =>
+                  onCheckedChange={(next) =>
                     setSelected(
-                      e.target.checked
+                      next
                         ? [...available, o.id]
                         : available.filter((id) => id !== o.id),
                     )

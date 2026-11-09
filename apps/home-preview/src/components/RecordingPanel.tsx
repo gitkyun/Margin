@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "./ui/dialog";
+import { Checkbox } from "@montage-ui/core";
 
 const durationText = (n: number) =>
   `${String(Math.floor(n / 60)).padStart(2, "0")}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
@@ -664,11 +665,10 @@ export function RecordingPanel({
             </DialogDescription>
           </DialogHeader>
           <label className="student-choice-row">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={liveText && speechSupported}
               disabled={!speechSupported}
-              onChange={(e) => setLiveText(e.target.checked)}
+              onCheckedChange={(next) => setLiveText(next)}
             />
             실시간 한국어 전사 켜기
           </label>
@@ -679,10 +679,9 @@ export function RecordingPanel({
             </p>
           )}
           <label className="student-choice-row">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={agree}
-              onChange={(e) => setAgree(e.target.checked)}
+              onCheckedChange={(next) => setAgree(next)}
             />
             참여자에게 녹음{liveText && speechSupported ? "과 음성 인식" : ""}을
             알리고 동의를 받았어요.
