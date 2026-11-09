@@ -10,7 +10,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
-import { now, uid } from "@/lib/domain";
+import { now, uid, formatDateTime } from "@/lib/domain";
 import { configured, assertConnected, friendlyError } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -281,7 +281,7 @@ export function ResearchSelectPage() {
                     <strong>{request.title}</strong>
                     <span>
                       검토 항목 {itemCount}개 ·{" "}
-                      {new Date(request.createdAt).toLocaleDateString("ko-KR")}
+                      {formatDateTime(request.createdAt, { time: false })}
                     </span>
                   </div>
                   {events.length > 0 && (
@@ -482,7 +482,7 @@ export function ResearchSelectPage() {
                       setTrashName("");
                     }}
                   >
-                    삭제
+                    휴지통으로 옮기기
                   </Button>
                 )}
               </div>

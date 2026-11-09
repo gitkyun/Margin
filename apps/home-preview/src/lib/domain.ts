@@ -468,6 +468,25 @@ export function formatDate(
     options ?? { month: "long", day: "numeric", weekday: "short" },
   ).format(new Date(`${date.slice(0, 10)}T12:00:00`));
 }
+/**
+ * 기록 시각(ISO 타임스탬프)을 화면 표기 하나로 씁니다: ‘11월 9일 (월) 오후 2:00’.
+ * 올해가 아니면 연도를 앞에 붙이고, 초는 쓰지 않습니다. `time: false`면 날짜만.
+ */
+export function formatDateTime(
+  value?: string | null,
+  { time = true }: { time?: boolean } = {},
+) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.valueOf())) return "";
+  return new Intl.DateTimeFormat("ko-KR", {
+    ...(d.getFullYear() !== new Date().getFullYear() && { year: "numeric" }),
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    ...(time && { hour: "numeric", minute: "2-digit" }),
+  }).format(d);
+}
 const DAY_MS = 86_400_000;
 /** 오늘 기준 남은 날 수를 ‘오늘·내일·3일 뒤·2일 지남’으로 씁니다. */
 export function relativeDay(date?: string | null, today = new Date()) {

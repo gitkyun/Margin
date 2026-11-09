@@ -1,4 +1,5 @@
 import { BrandMark, BrandWordmark } from "./brand/Brand";
+import { formatDateTime } from "@/lib/domain";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   Link,
@@ -573,7 +574,7 @@ export function WorkspaceShell({
                       </strong>
                       <p>{e.message}</p>
                       <small>
-                        {new Date(e.createdAt).toLocaleString("ko-KR")}
+                        {formatDateTime(e.createdAt)}
                         {e.readAt ? " · 읽음" : ""}
                       </small>
                     </div>
@@ -606,7 +607,7 @@ export function WorkspaceShell({
                     {event.excerpt && <blockquote>{event.excerpt}</blockquote>}
                     <small>
                       {event.roundNumber}차 검토 ·{" "}
-                      {new Date(event.createdAt).toLocaleString("ko-KR")}
+                      {formatDateTime(event.createdAt)}
                     </small>
                   </div>
                 </Link>

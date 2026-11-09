@@ -30,6 +30,7 @@ import {
   recordBase,
   type DocumentRecord,
   type DocumentVersion,
+  formatDateTime,
 } from "@/lib/domain";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -234,7 +235,7 @@ export function WritingPage() {
             <div>
               <strong>{d.title}</strong>
               <small>
-                {new Date(d.updatedAt).toLocaleDateString("ko-KR")} · 버전{" "}
+                {formatDateTime(d.updatedAt, { time: false })} · 버전{" "}
                 {
                   data.documentVersions.filter((v) => v.documentId === d.id)
                     .length
@@ -790,7 +791,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 { value: "", label: "비교할 버전 선택" },
                 ...versionList.map((v) => ({
                   value: v.id,
-                  label: `v${v.number} · ${new Date(v.createdAt).toLocaleString("ko-KR")}`,
+                  label: `v${v.number} · ${formatDateTime(v.createdAt)}`,
                 })),
               ]}
             />

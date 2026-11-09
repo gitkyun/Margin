@@ -17,6 +17,7 @@ import {
   type AIConversation,
   type Attachment,
   type SavedAICandidate,
+  formatDateTime,
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
@@ -673,7 +674,7 @@ export function ResearchAssistant() {
                 <div>
                   <strong>{modeLabels[r.mode] ?? "연구 대화"}</strong>
                   <small>
-                    {new Date(r.createdAt).toLocaleString("ko-KR")}
+                    {formatDateTime(r.createdAt)}
                     {r.model && ` · ${r.model}`}
                   </small>
                   {r.error && <p>{r.error}</p>}

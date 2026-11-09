@@ -640,7 +640,7 @@ export function ReviewDetailPage() {
               </div>
               <div className="review-round-actions">
                 <label className="review-round-picker">
-                  <span>검토 차수</span>
+                  <span>검토</span>
                   <SelectField
                     value={round.id}
                     onChange={(
@@ -679,9 +679,10 @@ export function ReviewDetailPage() {
             {round.id !== rounds[0]?.id && (
               <div className="review-earlier-note">
                 <Icon name="clock" size={16} />
-                이전 차수예요. 당시의 설명, 파일, 응답을 그대로 보여 줘요.
+                {round.number}차 검토예요. 당시의 설명, 파일, 응답을 그대로 보여
+                줘요.
                 <button type="button" onClick={() => selectRound(rounds[0].id)}>
-                  최신 차수 열기
+                  최신 {rounds[0].number}차 검토 열기
                 </button>
               </div>
             )}
@@ -882,7 +883,7 @@ export function ReviewDetailPage() {
                       {isOwner
                         ? "교수님 응답은 여기에 보여요. 응답, 댓글, 읽음 표시는 할 일과 피드백 상태를 바꾸지 않아요."
                         : isProfessor && canWrite
-                          ? "이 항목은 새 차수가 있어 이 차수에는 응답할 수 없어요. 최신 차수에서 결과를 남겨 주세요."
+                          ? `이 항목은 ${rounds[0]?.number ?? round.number}차 검토가 있어 ${round.number}차에는 응답할 수 없어요. 최신 검토에서 결과를 남겨 주세요.`
                           : "공유 중일 때 응답할 수 있어요."}
                     </p>
                   )}
@@ -905,7 +906,7 @@ export function ReviewDetailPage() {
                     <div className="review-response-history">
                       {!history[round.id]?.length ? (
                         <p className="meta">
-                          이 차수에서 응답을 바꾼 기록이 없어요.
+                          이 검토에서 응답을 바꾼 기록이 없어요.
                         </p>
                       ) : (
                         history[round.id].map((r, index) => (
@@ -1147,7 +1148,7 @@ export function ReviewDetailPage() {
           <DialogHeader>
             <DialogTitle>이 항목만 다시 확인을 요청할까요?</DialogTitle>
             <DialogDescription>
-              {nextRoundNumber}차 검토로 새로 요청해요. 이전 차수의 설명, 파일,
+              {nextRoundNumber}차 검토로 새로 요청해요. 이전 검토의 설명, 파일,
               응답은 그대로 남고, 다른 항목은 바뀌지 않아요.
             </DialogDescription>
           </DialogHeader>
