@@ -335,6 +335,9 @@ export function SearchInput({
   return (
     <TextField
       className="student-search"
+      // 좁은 화면에서는 줄 전체, 768px 이상에서는 내용 너비(Montage 반응형 속성)
+      width="100%"
+      sm={{ width: "auto" }}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}

@@ -1,246 +1,249 @@
-.lp-header .lp-public-nav {
-  position: relative;
-}
-.lp-public-nav-list {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.lp-public-nav-item {
-  position: relative;
-}
-.lp-nav-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 0;
-  border: 0;
-  background: transparent;
-  font-size: 14px;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.lp-nav-trigger svg {
-  transition: transform 180ms;
-}
-.lp-nav-trigger[data-state="open"] svg {
-  transform: rotate(180deg);
-}
-.lp-nav-trigger:hover,
-.lp-nav-trigger[data-state="open"],
-.lp-nav-trigger[data-current="true"],
-.lp-public-nav .lp-nav-direct[data-active] {
-  color: var(--primary);
-}
-.lp-header .lp-nav-panel {
-  position: absolute;
-  top: calc(100% + 18px);
-  left: -24px;
-  width: 520px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--semantic-elevation-shadow-normal-large);
-  transform-origin: top left;
-  animation: lp-nav-enter 160ms ease-out;
-}
-.lp-nav-panel::before {
-  content: "";
-  position: absolute;
-  inset: -22px 0 100%;
-}
-.lp-nav-feature-links {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-}
-.lp-header nav .lp-nav-feature-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 84px;
-  padding: 14px 10px;
-  border-radius: 12px;
-  color: var(--text);
-  transition: background 150ms;
-}
-.lp-nav-feature-icon {
-  display: grid;
-  place-items: center;
-  flex: 0 0 36px;
-  height: 40px;
-  color: var(--primary);
-}
-.lp-nav-feature-link strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 550;
-}
-.lp-nav-feature-link small {
-  display: block;
-  margin-top: 5px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-.lp-nav-feature-link > svg {
-  margin-left: auto;
-  flex-shrink: 0;
-  color: var(--text-secondary);
-}
-.lp-header nav .lp-nav-panel a::after {
-  display: none;
-}
-.lp-header nav .lp-nav-panel a:hover,
-.lp-header nav .lp-nav-panel a[data-highlighted] {
-  background: var(--brand-soft);
-  color: var(--text);
-}
-.lp-header nav .lp-nav-panel-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
-  padding: 14px 16px;
-  border-top: 1px solid var(--line);
-  color: var(--primary);
-  font-size: 13px;
-  border-radius: 0 0 9px 9px;
-}
-.lp-header .lp-nav-help-panel {
-  width: 240px;
-  left: auto;
-  right: -20px;
-}
-.lp-header nav .lp-nav-help-panel a {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 15px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-.lp-nav-help-panel svg {
-  color: var(--primary);
-}
-@keyframes lp-nav-enter {
-  from {
-    opacity: 0.65;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (max-width: 1100px) {
-  .lp-public-nav-list {
-    gap: 18px;
-  }
-}
-@media (max-width: 800px) {
-  .lp-public-nav-list {
-    gap: 15px;
-  }
-  .lp-nav-trigger {
-    font-size: 12px;
-  }
-  .lp-header .lp-nav-feature-panel {
-    left: -110px;
-  }
-}
-@media (max-width: 600px) {
-  .lp-header .lp-public-nav.is-open {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    padding: 10px 20px 20px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--line);
-  }
-  .lp-public-nav-list {
-    display: flex;
-    align-items: stretch;
-    flex-direction: column;
-    gap: 0;
-    width: 100%;
-  }
-  .lp-nav-trigger {
-    width: 100%;
-    justify-content: space-between;
-    min-height: 48px;
-    font-size: 14px;
-  }
-  .lp-header nav .lp-nav-direct {
-    display: block;
-    min-height: 48px;
-    padding: 13px 0;
-    font-size: 14px;
-  }
-  .lp-header .lp-nav-panel,
-  .lp-header .lp-nav-feature-panel,
-  .lp-header .lp-nav-help-panel {
+/* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
+@layer margin {
+  .lp-header .lp-public-nav {
     position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
-    width: 100%;
-    box-shadow: none;
-    padding: 5px;
-    margin-bottom: 12px;
-    background: var(--surface-muted);
-    border: 0;
-    border-radius: 12px;
   }
-  .lp-nav-feature-links {
-    grid-template-columns: 1fr;
-  }
-  .lp-nav-panel::before {
-    display: none;
-  }
-  .lp-header nav .lp-nav-feature-link {
-    min-height: 64px;
-    padding: 10px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lp-nav-panel {
-    animation: none !important;
-  }
-  .lp-nav-trigger svg {
-    transition: none;
-  }
-}
-
-.lp-mobile-auth {
-  display: none;
-}
-@media (max-width: 600px) {
-  .lp-header .lp-mobile-auth {
-    display: flex;
-    gap: 12px;
-    margin-top: 12px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line);
-  }
-  .lp-header .lp-mobile-auth a {
+  .lp-public-nav-list {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 44px;
-    flex: 1;
-    border: 1px solid var(--line);
-    border-radius: 10px;
+    gap: 24px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
   }
-  .lp-header .lp-mobile-auth .lp-mobile-start {
-    background: var(--primary);
-    color: var(--semantic-static-white);
-    border-color: transparent;
+  .lp-public-nav-item {
+    position: relative;
+  }
+  .lp-nav-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 0;
+    border: 0;
+    background: transparent;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .lp-nav-trigger svg {
+    transition: transform 180ms;
+  }
+  .lp-nav-trigger[data-state="open"] svg {
+    transform: rotate(180deg);
+  }
+  .lp-nav-trigger:hover,
+  .lp-nav-trigger[data-state="open"],
+  .lp-nav-trigger[data-current="true"],
+  .lp-public-nav .lp-nav-direct[data-active] {
+    color: var(--primary);
+  }
+  .lp-header .lp-nav-panel {
+    position: absolute;
+    top: calc(100% + 18px);
+    left: -24px;
+    width: 520px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: var(--semantic-elevation-shadow-normal-large);
+    transform-origin: top left;
+    animation: lp-nav-enter 160ms ease-out;
+  }
+  .lp-nav-panel::before {
+    content: "";
+    position: absolute;
+    inset: -22px 0 100%;
+  }
+  .lp-nav-feature-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .lp-header nav .lp-nav-feature-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 84px;
+    padding: 14px 10px;
+    border-radius: 12px;
+    color: var(--text);
+    transition: background 150ms;
+  }
+  .lp-nav-feature-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 36px;
+    height: 40px;
+    color: var(--primary);
+  }
+  .lp-nav-feature-link strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 550;
+  }
+  .lp-nav-feature-link small {
+    display: block;
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .lp-nav-feature-link > svg {
+    margin-left: auto;
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+  .lp-header nav .lp-nav-panel a::after {
+    display: none;
+  }
+  .lp-header nav .lp-nav-panel a:hover,
+  .lp-header nav .lp-nav-panel a[data-highlighted] {
+    background: var(--brand-soft);
+    color: var(--text);
+  }
+  .lp-header nav .lp-nav-panel-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--line);
+    color: var(--primary);
+    font-size: 13px;
+    border-radius: 0 0 9px 9px;
+  }
+  .lp-header .lp-nav-help-panel {
+    width: 240px;
+    left: auto;
+    right: -20px;
+  }
+  .lp-header nav .lp-nav-help-panel a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .lp-nav-help-panel svg {
+    color: var(--primary);
+  }
+  @keyframes lp-nav-enter {
+    from {
+      opacity: 0.65;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (max-width: 1100px) {
+    .lp-public-nav-list {
+      gap: 18px;
+    }
+  }
+  @media (max-width: 800px) {
+    .lp-public-nav-list {
+      gap: 15px;
+    }
+    .lp-nav-trigger {
+      font-size: 12px;
+    }
+    .lp-header .lp-nav-feature-panel {
+      left: -110px;
+    }
+  }
+  @media (max-width: 600px) {
+    .lp-header .lp-public-nav.is-open {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      padding: 10px 20px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .lp-public-nav-list {
+      display: flex;
+      align-items: stretch;
+      flex-direction: column;
+      gap: 0;
+      width: 100%;
+    }
+    .lp-nav-trigger {
+      width: 100%;
+      justify-content: space-between;
+      min-height: 48px;
+      font-size: 14px;
+    }
+    .lp-header nav .lp-nav-direct {
+      display: block;
+      min-height: 48px;
+      padding: 13px 0;
+      font-size: 14px;
+    }
+    .lp-header .lp-nav-panel,
+    .lp-header .lp-nav-feature-panel,
+    .lp-header .lp-nav-help-panel {
+      position: relative;
+      top: auto;
+      left: auto;
+      right: auto;
+      width: 100%;
+      box-shadow: none;
+      padding: 5px;
+      margin-bottom: 12px;
+      background: var(--surface-muted);
+      border: 0;
+      border-radius: 12px;
+    }
+    .lp-nav-feature-links {
+      grid-template-columns: 1fr;
+    }
+    .lp-nav-panel::before {
+      display: none;
+    }
+    .lp-header nav .lp-nav-feature-link {
+      min-height: 64px;
+      padding: 10px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-nav-panel {
+      animation: none !important;
+    }
+    .lp-nav-trigger svg {
+      transition: none;
+    }
+  }
+
+  .lp-mobile-auth {
+    display: none;
+  }
+  @media (max-width: 600px) {
+    .lp-header .lp-mobile-auth {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+    .lp-header .lp-mobile-auth a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .lp-header .lp-mobile-auth .lp-mobile-start {
+      background: var(--primary);
+      color: var(--semantic-static-white);
+      border-color: transparent;
+    }
   }
 }

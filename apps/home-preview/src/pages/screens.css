@@ -1,741 +1,691 @@
-/*
+/* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
+@layer margin {
+  /*
  * 계획·일정, 시간 조율, 미팅 녹음, 설정 화면.
  * 참고: IMG_1829(일정 카드), 1838(녹음 파형), 1837·1843(설정), 1828(참여자 목록), 1825(플랜 선택).
  */
 
-/* ── 로드맵 ────────────────────────────────────────────── */
-.roadmap-summary {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  margin: 18px 0 14px;
-}
-.roadmap-summary > p {
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--text-tertiary);
-}
-.roadmap-timeline {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-left: 44px;
-}
-.roadmap-timeline::before {
-  content: "";
-  position: absolute;
-  left: 17px;
-  top: 18px;
-  bottom: 18px;
-  width: 1px;
-  background: var(--line-strong);
-}
-.phase-card {
-  position: relative;
-  display: block;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  padding: 14px 16px 10px;
-  transition: border-color 160ms ease;
-}
-.phase-card:hover {
-  border-color: var(--hover-line);
-}
-.phase-card.is-current {
-  border-color: color-mix(in srgb, var(--tone-blue) 45%, var(--line));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone-blue) 10%, transparent);
-}
-.phase-number {
-  position: absolute;
-  left: -44px;
-  top: 12px;
-  width: 34px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--surface);
-  box-shadow: 0 0 0 1px var(--line-strong);
-}
-.phase-card.is-current .phase-number {
-  color: var(--surface);
-  background: var(--tone-blue);
-  box-shadow: none;
-}
-.phase-card-body .section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0;
-}
-.phase-card-body h2 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-.phase-card-body > p {
-  margin: 3px 0 0;
-  font-size: 12.5px;
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
-}
-.phase-milestones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-.phase-milestones:empty {
-  display: none;
-}
-.phase-milestones > button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 28px;
-  padding: 3px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-muted);
-  font-size: 12.5px;
-  color: var(--text);
-  cursor: pointer;
-}
-.phase-milestones > button small {
-  color: var(--text-tertiary);
-  font-size: 11.5px;
-}
-.phase-milestones > button:hover {
-  border-color: var(--hover-line);
-}
-.phase-card-body .button-row {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin: 8px -8px 0;
-  padding-top: 6px;
-  border-top: 1px dashed var(--line);
-}
-.roadmap-goals {
-  margin-top: 22px;
-  padding: 16px;
-}
-.roadmap-goals .section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.roadmap-goals .section-heading h2 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 650;
-}
-.roadmap-goals > p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-tertiary);
-}
-.goal-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 44px;
-  padding: 8px 6px;
-  border: 0;
-  border-top: 1px solid var(--line);
-  background: transparent;
-  text-align: left;
-  color: var(--text);
-  cursor: pointer;
-}
-.goal-row:hover {
-  background: var(--surface-muted);
-}
-.goal-row > svg {
-  color: var(--text-tertiary);
-}
-.goal-row strong {
-  font-size: 13.5px;
-  font-weight: 550;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.goal-row > span:not(.status-badge) {
-  font-size: 12.5px;
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
-}
-.roadmap-diagram {
-  height: min(64dvh, 560px);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--surface-muted);
-  position: relative;
-}
-.roadmap-diagram > p {
-  position: absolute;
-  left: 12px;
-  bottom: 10px;
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-tertiary);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 4px 8px;
-  z-index: 5;
-}
-
-/* ── 캘린더 (FullCalendar) ─────────────────────────────── */
-.rms-calendar {
-  margin-top: 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px;
-  background: var(--surface);
-  --fc-border-color: var(--line);
-  --fc-page-bg-color: var(--surface);
-  --fc-neutral-bg-color: var(--surface-muted);
-  --fc-today-bg-color: color-mix(in srgb, var(--tone-blue) 6%, transparent);
-  --fc-event-bg-color: var(--brand-soft);
-  --fc-event-border-color: transparent;
-  --fc-event-text-color: var(--brand);
-  --fc-button-bg-color: var(--surface);
-  --fc-button-border-color: var(--line-strong);
-  --fc-button-text-color: var(--text);
-  --fc-button-hover-bg-color: var(--surface-muted);
-  --fc-button-hover-border-color: var(--line-strong);
-  --fc-button-active-bg-color: var(--surface-sunken);
-  --fc-button-active-border-color: var(--line-strong);
-  font-size: 13px;
-}
-.rms-calendar .fc .fc-toolbar-title {
-  font-size: 17px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-.rms-calendar .fc .fc-button {
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 550;
-  padding: 5px 10px;
-  box-shadow: none;
-}
-.rms-calendar .fc .fc-button-primary:not(:disabled).fc-button-active {
-  color: var(--text);
-}
-.rms-calendar .fc .fc-col-header-cell-cushion,
-.rms-calendar .fc .fc-daygrid-day-number {
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-.rms-calendar .fc .fc-event {
-  border-radius: 6px;
-  padding: 1px 4px;
-  font-weight: 550;
-}
-.rms-calendar .fc .fc-scrollgrid {
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-/* ── 시간 조율 ────────────────────────────────────────── */
-.schedule-option-input {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr;
-  align-items: end;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-muted);
-}
-.schedule-option-input > strong {
-  align-self: center;
-  font-size: 12.5px;
-  font-family: var(--font-mono);
-  color: var(--text-secondary);
-}
-.schedule-option-input label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.schedule-option-input input {
-  min-height: 36px;
-  border: 1px solid var(--input-line);
-  border-radius: 8px;
-  padding: 0 8px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
-}
-.connection-picker {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 8px 12px 10px;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 200px;
-  overflow: auto;
-}
-.connection-picker legend {
-  padding: 0 4px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.connection-picker label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  font-size: 13.5px;
-}
-.poll-page .experience-panel {
-  padding: 6px;
-}
-.poll-options {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.poll-option {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px 16px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-.poll-option.selected {
-  border-color: color-mix(in srgb, var(--tone-green) 50%, var(--line));
-  background: color-mix(in srgb, var(--tone-green) 6%, var(--surface));
-}
-.poll-option > label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-}
-.poll-option > label input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary);
-}
-.poll-option > label div {
-  display: flex;
-  flex-direction: column;
-}
-.poll-option > label strong {
-  font-size: 14px;
-  font-weight: 600;
-}
-.poll-option > label span {
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-.poll-responses {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding-left: 30px;
-}
-.poll-option > [data-slot="button"] {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-/* ── 미팅 녹음 (팟캐스트 재생 카드) ───────────────────── */
-.recording-panel {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.memo-surface > .recording-panel {
-  margin-bottom: 22px;
-}
-.recording-panel > .section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0;
-}
-.recording-panel > .section-heading h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-size: 15px;
-  font-weight: 650;
-}
-.recording-start {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px;
-  border: 1px dashed var(--line-strong);
-  border-radius: 12px;
-  background: var(--surface-muted);
-}
-.recording-start p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-.recording-wave {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
-  padding: 14px 16px 12px;
-  border-radius: 12px;
-  background: var(--surface-muted);
-  border: 1px solid var(--line);
-}
-.recording-wave canvas {
-  width: 100%;
-  height: 72px;
-  display: block;
-}
-.recording-wave strong {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-.recording-panel .button-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.recording-review {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.recording-review audio,
-.saved-recording audio {
-  width: 100%;
-  height: 40px;
-}
-.saved-recording {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-  padding: 12px 0 2px;
-  border-top: 1px solid var(--line);
-}
-.saved-recording > svg {
-  margin-top: 2px;
-  color: var(--text-tertiary);
-}
-.saved-recording > div {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-.saved-recording strong {
-  font-size: 13.5px;
-  font-weight: 600;
-}
-.saved-recording small {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── 설정: 묶음 행 (macOS 설정·disarto) ───────────────── */
-.settings-list,
-.preferences-list,
-.member-list {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  overflow: hidden;
-}
-.settings-list > div,
-.preferences-list > label,
-.member-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 52px;
-  padding: 10px 14px;
-}
-.settings-list > div + div,
-.preferences-list > label + label,
-.member-row + .member-row {
-  border-top: 1px solid var(--line);
-}
-.settings-list > div {
-  justify-content: space-between;
-  font-size: 13.5px;
-}
-.settings-list > div > span {
-  color: var(--text-secondary);
-}
-.settings-list > div > strong {
-  font-weight: 550;
-  text-align: right;
-}
-.preferences-list > label {
-  justify-content: space-between;
-  font-size: 14px;
-  cursor: pointer;
-}
-.preferences-list input[role="switch"] {
-  appearance: none;
-  width: 36px;
-  height: 22px;
-  border-radius: 999px;
-  background: var(--line-strong);
-  position: relative;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 160ms ease;
-}
-.preferences-list input[role="switch"]::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--semantic-static-white);
-  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-  transition: transform 160ms ease;
-}
-.preferences-list input[role="switch"]:checked {
-  background: var(--primary);
-}
-.preferences-list input[role="switch"]:checked::after {
-  transform: translateX(14px);
-}
-.preferences-list input[role="switch"]:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-.member-row > div {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-.member-row strong {
-  font-size: 13.5px;
-  font-weight: 600;
-}
-.member-row small {
-  font-size: 12px;
-  color: var(--text-tertiary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.member-row .avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 13px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-.member-list:empty {
-  display: none;
-}
-.member-list + form {
-  margin-top: 14px;
-}
-.plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
-  margin: 14px 0 10px;
-}
-.plan-option {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  text-align: left;
-  color: var(--text);
-  cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-.plan-option:hover {
-  border-color: var(--hover-line);
-}
-.plan-option[aria-pressed="true"] {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
-}
-.plan-option h3 {
-  margin: 6px 0 0;
-  font-size: 15px;
-  font-weight: 650;
-}
-.plan-option p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.55;
-}
-.plan-option ul {
-  margin: 8px 0 0;
-  padding: 10px 0 0;
-  list-style: none;
-  border-top: 1px dashed var(--line);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-}
-.plan-option li {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.plan-option li::before {
-  content: "";
-  width: 5px;
-  height: 9px;
-  border: solid var(--tone-green);
-  border-width: 0 1.5px 1.5px 0;
-  transform: rotate(45deg) translateY(-2px);
-  flex-shrink: 0;
-}
-.lifecycle-block {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-.lifecycle-block + .lifecycle-block {
-  margin-top: 12px;
-}
-.lifecycle-block h3 {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 650;
-}
-.lifecycle-block p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-.lifecycle-block [data-slot="button"] {
-  align-self: flex-start;
-  margin-top: 4px;
-}
-.danger-zone {
-  border-color: var(--danger-line);
-  background: color-mix(in srgb, var(--danger-soft) 55%, var(--surface));
-}
-.danger-zone h3 {
-  color: var(--danger);
-}
-
-/* ── 그 밖의 단일 클래스 ──────────────────────────────── */
-.dashboard-task-list {
-  display: flex;
-  flex-direction: column;
-  margin-top: 10px;
-}
-.feedback-origin {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-.result-body,
-.task-detail-main {
-  min-width: 0;
-}
-
-@media (max-width: 720px) {
+  /* ── 로드맵 ────────────────────────────────────────────── */
+  .roadmap-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin: 18px 0 14px;
+  }
+  .roadmap-summary > p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+  }
   .roadmap-timeline {
-    padding-left: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 44px;
   }
   .roadmap-timeline::before {
-    display: none;
+    content: "";
+    position: absolute;
+    left: 17px;
+    top: 18px;
+    bottom: 18px;
+    width: 1px;
+    background: var(--line-strong);
+  }
+  .phase-card {
+    position: relative;
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    padding: 14px 16px 10px;
+    transition: border-color 160ms ease;
+  }
+  .phase-card:hover {
+    border-color: var(--hover-line);
+  }
+  .phase-card.is-current {
+    border-color: color-mix(in srgb, var(--tone-blue) 45%, var(--line));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone-blue) 10%, transparent);
   }
   .phase-number {
-    position: static;
+    position: absolute;
+    left: -44px;
+    top: 12px;
+    width: 34px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line-strong);
+  }
+  .phase-card.is-current .phase-number {
+    color: var(--surface);
+    background: var(--tone-blue);
+    box-shadow: none;
+  }
+  .phase-card-body .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+  }
+  .phase-card-body h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .phase-card-body > p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .phase-milestones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .phase-milestones:empty {
+    display: none;
+  }
+  .phase-milestones > button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 3px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-muted);
+    font-size: 12.5px;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .phase-milestones > button small {
+    color: var(--text-tertiary);
+    font-size: 11.5px;
+  }
+  .phase-milestones > button:hover {
+    border-color: var(--hover-line);
+  }
+  .phase-card-body .button-row {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin: 8px -8px 0;
+    padding-top: 6px;
+    border-top: 1px dashed var(--line);
+  }
+  .roadmap-goals {
+    margin-top: 22px;
+    padding: 16px;
+  }
+  .roadmap-goals .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 8px;
   }
-  .schedule-option-input {
-    grid-template-columns: 1fr;
+  .roadmap-goals .section-heading h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 650;
   }
-  .recording-start {
+  .roadmap-goals > p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+  .goal-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 6px;
+    border: 0;
+    border-top: 1px solid var(--line);
+    background: transparent;
+    text-align: left;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .goal-row:hover {
+    background: var(--surface-muted);
+  }
+  .goal-row > svg {
+    color: var(--text-tertiary);
+  }
+  .goal-row strong {
+    font-size: 13.5px;
+    font-weight: 550;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .goal-row > span:not(.status-badge) {
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .roadmap-diagram {
+    height: min(64dvh, 560px);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface-muted);
+    position: relative;
+  }
+  .roadmap-diagram > p {
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 4px 8px;
+    z-index: 5;
+  }
+
+  /* ── 시간 조율 ────────────────────────────────────────── */
+  .schedule-option-input {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    align-items: end;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface-muted);
+  }
+  .schedule-option-input > strong {
+    align-self: center;
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+  }
+  .schedule-option-input label {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .schedule-option-input input {
+    min-height: 36px;
+    border: 1px solid var(--input-line);
+    border-radius: 8px;
+    padding: 0 8px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+  }
+  .connection-picker {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 12px 10px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 200px;
+    overflow: auto;
+  }
+  .connection-picker legend {
+    padding: 0 4px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .connection-picker label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    font-size: 13.5px;
+  }
+  .poll-page .experience-panel {
+    padding: 6px;
+  }
+  .poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
   .poll-option {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
   }
-  .poll-option > [data-slot="button"] {
-    grid-column: 1;
-    grid-row: auto;
+  .poll-option.selected {
+    border-color: color-mix(in srgb, var(--tone-green) 50%, var(--line));
+    background: color-mix(in srgb, var(--tone-green) 6%, var(--surface));
+  }
+  .poll-option > label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .poll-option > label input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+  }
+  .poll-option > label div {
+    display: flex;
+    flex-direction: column;
+  }
+  .poll-option > label strong {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .poll-option > label span {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
   }
   .poll-responses {
-    padding-left: 0;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-left: 30px;
   }
-}
-@media (prefers-reduced-motion: reduce) {
-  .phase-card,
-  .plan-option,
-  .preferences-list input[role="switch"],
+  .poll-option > [data-slot="button"] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  /* ── 미팅 녹음 (팟캐스트 재생 카드) ───────────────────── */
+  .recording-panel {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .memo-surface > .recording-panel {
+    margin-bottom: 22px;
+  }
+  .recording-panel > .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+  }
+  .recording-panel > .section-heading h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 650;
+  }
+  .recording-start {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 12px;
+    background: var(--surface-muted);
+  }
+  .recording-start p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .recording-wave {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 14px 16px 12px;
+    border-radius: 12px;
+    background: var(--surface-muted);
+    border: 1px solid var(--line);
+  }
+  .recording-wave canvas {
+    width: 100%;
+    height: 72px;
+    display: block;
+  }
+  .recording-wave strong {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .recording-panel .button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .recording-review {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .recording-review audio,
+  .saved-recording audio {
+    width: 100%;
+    height: 40px;
+  }
+  .saved-recording {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding: 12px 0 2px;
+    border-top: 1px solid var(--line);
+  }
+  .saved-recording > svg {
+    margin-top: 2px;
+    color: var(--text-tertiary);
+  }
+  .saved-recording > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .saved-recording strong {
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+  .saved-recording small {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 설정: 묶음 행 (macOS 설정·disarto) ───────────────── */
+  .settings-list,
+  .preferences-list,
+  .member-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .settings-list > div,
+  .preferences-list > label,
+  .member-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 10px 14px;
+  }
+  .settings-list > div + div,
+  .preferences-list > label + label,
+  .member-row + .member-row {
+    border-top: 1px solid var(--line);
+  }
+  .settings-list > div {
+    justify-content: space-between;
+    font-size: 13.5px;
+  }
+  .settings-list > div > span {
+    color: var(--text-secondary);
+  }
+  .settings-list > div > strong {
+    font-weight: 550;
+    text-align: right;
+  }
+  .preferences-list > label {
+    justify-content: space-between;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .preferences-list input[role="switch"] {
+    appearance: none;
+    width: 36px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--line-strong);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 160ms ease;
+  }
   .preferences-list input[role="switch"]::after {
-    transition: none;
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--semantic-static-white);
+    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
+    transition: transform 160ms ease;
+  }
+  .preferences-list input[role="switch"]:checked {
+    background: var(--primary);
+  }
+  .preferences-list input[role="switch"]:checked::after {
+    transform: translateX(14px);
+  }
+  .preferences-list input[role="switch"]:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .member-row > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+  }
+  .member-row strong {
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+  .member-row small {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .member-row .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .member-list:empty {
+    display: none;
+  }
+  .member-list + form {
+    margin-top: 14px;
+  }
+  .plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px;
+    margin: 14px 0 10px;
+  }
+  .plan-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    text-align: left;
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+  .plan-option:hover {
+    border-color: var(--hover-line);
+  }
+  .plan-option[aria-pressed="true"] {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+  }
+  .plan-option h3 {
+    margin: 6px 0 0;
+    font-size: 15px;
+    font-weight: 650;
+  }
+  .plan-option p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .plan-option ul {
+    margin: 8px 0 0;
+    padding: 10px 0 0;
+    list-style: none;
+    border-top: 1px dashed var(--line);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+  }
+  .plan-option li {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .plan-option li::before {
+    content: "";
+    width: 5px;
+    height: 9px;
+    border: solid var(--tone-green);
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg) translateY(-2px);
+    flex-shrink: 0;
+  }
+  .lifecycle-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .lifecycle-block + .lifecycle-block {
+    margin-top: 12px;
+  }
+  .lifecycle-block h3 {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 650;
+  }
+  .lifecycle-block p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .lifecycle-block [data-slot="button"] {
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .danger-zone {
+    border-color: var(--danger-line);
+    background: color-mix(in srgb, var(--danger-soft) 55%, var(--surface));
+  }
+  .danger-zone h3 {
+    color: var(--danger);
+  }
+
+  /* ── 그 밖의 단일 클래스 ──────────────────────────────── */
+  .dashboard-task-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  .feedback-origin {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .result-body,
+  .task-detail-main {
+    min-width: 0;
+  }
+
+  @media (max-width: 720px) {
+    .roadmap-timeline {
+      padding-left: 0;
+    }
+    .roadmap-timeline::before {
+      display: none;
+    }
+    .phase-number {
+      position: static;
+      margin-bottom: 8px;
+    }
+    .schedule-option-input {
+      grid-template-columns: 1fr;
+    }
+    .recording-start {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .poll-option {
+      grid-template-columns: 1fr;
+    }
+    .poll-option > [data-slot="button"] {
+      grid-column: 1;
+      grid-row: auto;
+    }
+    .poll-responses {
+      padding-left: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .phase-card,
+    .plan-option,
+    .preferences-list input[role="switch"],
+    .preferences-list input[role="switch"]::after {
+      transition: none;
+    }
   }
 }

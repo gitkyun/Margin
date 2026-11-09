@@ -1021,7 +1021,6 @@ export function ReviewDetailPage() {
                       />
                       <Button
                         type="submit"
-                        variant="outline"
                         disabled={!!busy || !commentDrafts[round.id]?.trim()}
                       >
                         {busy === "comment"

@@ -1,3 +1,5 @@
+// 레이어 순서를 가장 먼저 정합니다(design/layers.css).
+import "./design/layers.css";
 import React, { useEffect } from "react";
 import { MotionConfig } from "motion/react";
 import { createRoot } from "react-dom/client";
@@ -63,3 +65,5 @@ import "./pages/public-site.css";
 import "./components/brand/brand.css";
 
 import "./pages/workspace-refinements.css";
+// Montage·외부 부품 조정은 레이어 밖이라 마지막에 불러옵니다.
+import "./design/montage.css";

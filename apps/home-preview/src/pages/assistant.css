@@ -1,626 +1,627 @@
-/* AI 연구 도우미: 대화 · 작업 오버뷰 · 사용량
+/* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
+@layer margin {
+  /* AI 연구 도우미: 대화 · 작업 오버뷰 · 사용량
    이 화면의 배치 규칙은 이 파일 한 곳에만 둡니다. */
-.assistant-experience {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-.assistant-experience > .page-header {
-  margin-bottom: var(--spacing-16);
-}
-.assistant-experience > .experience-toolbar {
-  margin-bottom: var(--spacing-16);
-}
+  .assistant-experience {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .assistant-experience > .page-header {
+    margin-bottom: var(--spacing-16);
+  }
+  .assistant-experience > .experience-toolbar {
+    margin-bottom: var(--spacing-16);
+  }
 
-/* 대화: 왼쪽 대화 목록 + 오른쪽 대화 면(내용은 가운데 760px 열) */
-.ai-workspace {
-  --chat-column: 760px;
-  display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  gap: var(--spacing-16);
-  height: max(520px, calc(100dvh - 300px));
-}
-.conversation-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-  min-height: 0;
-  overflow-y: auto;
-}
-.conversation-list > [data-slot="button"] {
-  width: 100%;
-  margin-bottom: var(--spacing-12);
-}
-.conversation-list > button:not([data-slot="button"]) {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-10);
-  min-height: 40px;
-  padding: 0 var(--spacing-12);
-  border: 0;
-  border-radius: var(--radius-10);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--typography-label1-fontSize);
-  text-align: left;
-  transition:
-    background-color 140ms ease-out,
-    color 140ms ease-out;
-}
-.conversation-list > button:not([data-slot="button"]) span {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.conversation-list > button:not([data-slot="button"]):hover {
-  background: var(--hover-fill);
-  color: var(--text);
-}
-.conversation-list > button.active {
-  background: var(--selected-fill);
-  color: var(--semantic-foreground-brand-primary);
-  box-shadow: inset 0 0 0 1px var(--selected-line);
-  font-weight: 600;
-}
-
-.ai-chat-main {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto auto;
-  min-width: 0;
-  min-height: 0;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-20);
-  background: var(--surface);
-  overflow: hidden;
-}
-.chat-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-24);
-  min-height: 0;
-  padding: var(--spacing-32)
-    max(var(--spacing-24), calc((100% - var(--chat-column)) / 2));
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
-/* 첫 화면은 남은 높이의 가운데에, 넘치면 위에서부터 보이게(safe). */
-.chat-scroll:has(> .assistant-welcome) {
-  justify-content: safe center;
-}
-.assistant-welcome {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.assistant-welcome > .margin-mascot {
-  box-shadow: var(--semantic-elevation-shadow-normal-medium);
-}
-.assistant-welcome h2 {
-  margin: var(--spacing-20) 0 var(--spacing-8);
-  color: var(--text);
-  font-size: var(--typography-title3-fontSize);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.35;
-}
-.assistant-welcome p {
-  max-width: 34em;
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--typography-body2-fontSize);
-  line-height: 1.6;
-  word-break: keep-all;
-}
-.assistant-prompts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-8);
-  width: 100%;
-  margin-top: var(--spacing-32);
-}
-.assistant-prompts button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--spacing-16);
-  min-height: 104px;
-  padding: var(--spacing-14) var(--spacing-16);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-14);
-  background: var(--surface);
-  color: var(--text);
-  font-size: var(--typography-label1-fontSize);
-  line-height: 1.5;
-  text-align: left;
-  word-break: keep-all;
-  transition:
-    border-color 160ms ease-out,
-    background-color 160ms ease-out,
-    transform 160ms ease-out;
-}
-.assistant-prompts button svg {
-  flex-shrink: 0;
-  color: var(--semantic-foreground-brand-primary);
-}
-.assistant-prompts button:hover {
-  border-color: var(--hover-line);
-  background: var(--hover-fill);
-}
-.assistant-prompts button:active {
-  transform: scale(0.98);
-}
-
-.ai-message {
-  display: grid;
-  gap: 6px;
-  max-width: min(720px, 88%);
-}
-.ai-message > div {
-  font-size: 15px;
-  line-height: 1.75;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.ai-message.user {
-  align-self: flex-end;
-  justify-items: end;
-}
-.ai-message.user > div {
-  padding: 11px 16px;
-  border-radius: 16px 16px 4px 16px;
-  background: var(--brand-soft);
-  color: var(--text);
-}
-.ai-message.assistant > div {
-  padding: 2px 0;
-}
-.message-role {
-  font-size: 12px;
-  font-weight: 550;
-  color: var(--text-secondary);
-}
-.ai-processing {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  align-self: flex-start;
-  padding: 12px 18px 12px 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-muted);
-  color: var(--brand);
-}
-.ai-processing strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 550;
-  color: var(--text);
-}
-.ai-processing small {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* 입력창: 대화 면 안에서 가장 높은 면. 초점이 오면 브랜드 테두리와 고리. */
-.ai-composer {
-  display: grid;
-  gap: var(--spacing-8);
-  width: min(calc(100% - var(--spacing-32)), var(--chat-column));
-  margin: 0 auto;
-  padding: var(--spacing-12) var(--spacing-12) var(--spacing-10);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-20);
-  background: var(--surface-raised);
-  box-shadow: var(--semantic-elevation-shadow-normal-medium);
-  transition:
-    border-color 160ms ease-out,
-    box-shadow 160ms ease-out;
-}
-.ai-composer:focus-within {
-  border-color: var(--semantic-line-brand-strong);
-  box-shadow:
-    0 0 0 4px var(--selected-fill),
-    var(--semantic-elevation-shadow-normal-medium);
-}
-.ai-composer textarea {
-  width: 100%;
-  min-height: 56px;
-  max-height: 220px;
-  padding: var(--spacing-4) var(--spacing-6);
-  border: 0;
-  outline: none;
-  resize: none;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: var(--typography-body2-fontSize);
-  line-height: 1.6;
-  field-sizing: content;
-}
-.ai-composer textarea::placeholder {
-  color: var(--text-tertiary);
-}
-.ai-composer > p[role="status"] {
-  padding: 0 var(--spacing-6);
-  font-size: var(--typography-caption1-fontSize);
-  color: var(--text-secondary);
-}
-.context-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-6);
-}
-.context-chips:empty {
-  display: none;
-}
-.context-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-6);
-  max-width: 100%;
-  min-height: 28px;
-  padding: 3px 4px 3px 9px;
-  border-radius: var(--radius-8);
-  background: var(--selected-fill);
-  color: var(--semantic-foreground-brand-primary);
-  font-size: var(--typography-label2-fontSize);
-  font-weight: 500;
-}
-.context-chip > span {
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.context-chip button {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: inherit;
-}
-.context-chip button:hover {
-  background: var(--selected-fill);
-}
-.composer-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-6);
-  flex-wrap: wrap;
-}
-.composer-actions .icon-button {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-10);
-  color: var(--text-secondary);
-}
-.composer-actions .icon-button:hover:not(:disabled) {
-  background: var(--hover-fill);
-  color: var(--text);
-}
-.composer-actions .rms-choice {
-  width: auto;
-  min-width: 0;
-  min-height: 36px;
-  padding: 6px 10px;
-  gap: 8px;
-  border-color: transparent;
-  background: var(--hover-fill);
-  font-size: var(--typography-label2-fontSize);
-  box-shadow: none;
-}
-.composer-actions .rms-choice:hover:not(:disabled) {
-  border-color: var(--line-strong);
-}
-.composer-actions > [data-slot="button"]:last-child,
-.composer-actions > button[type="submit"],
-.composer-actions > button[aria-label="실행 중단"] {
-  margin-left: auto;
-}
-.ai-chat-main > .rms-error {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 10px 20px 0;
-}
-.composer-hint {
-  padding: var(--spacing-8) var(--spacing-24) var(--spacing-14);
-  color: var(--text-tertiary);
-  font-size: var(--typography-caption1-fontSize);
-  text-align: center;
-}
-
-/* 자료 선택 */
-.source-picker {
-  display: grid;
-  /* In a height-capped scroll list, auto rows shrink to min-height and the
-     secondary label spills over the row border. Size rows to their content. */
-  grid-auto-rows: max-content;
-  gap: 6px;
-  max-height: min(60dvh, 520px);
-  overflow-y: auto;
-}
-.source-picker > button:not([data-slot="button"]) > span {
-  flex: 1;
-}
-.source-picker > [data-slot="button"] {
-  justify-content: center;
-  margin-bottom: 6px;
-}
-.source-picker h3 {
-  margin: 14px 0 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.source-picker > button:not([data-slot="button"]) {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-height: 48px;
-  padding: 11px 12px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 14px;
-  text-align: left;
-  transition:
-    border-color 140ms ease-out,
-    background-color 140ms ease-out;
-}
-.source-picker > button:not([data-slot="button"]) svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: var(--text-secondary);
-}
-.source-picker > button:not([data-slot="button"]):hover {
-  border-color: var(--hover-line);
-  background: var(--hover-fill);
-}
-.source-picker small {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* 작업 오버뷰 */
-.agent-overview {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-.agent-overview-hero {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 28px;
-  padding: 28px 32px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: linear-gradient(120deg, var(--brand-soft), var(--surface) 62%);
-  color: var(--brand);
-}
-.agent-overview-hero .card-label {
-  margin-bottom: 10px;
-  color: var(--text);
-}
-.agent-overview-hero h3 {
-  font-size: 22px;
-  line-height: 1.45;
-  font-weight: 600;
-  letter-spacing: -0.6px;
-  color: var(--text);
-}
-.agent-overview-hero p {
-  margin-top: 8px;
-  max-width: 560px;
-  font-size: 14px;
-  line-height: 1.8;
-  color: var(--text-secondary);
-}
-.candidate-overview-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
-}
-.candidate-overview-row > div:first-child {
-  min-width: 0;
-}
-.candidate-overview-row h3 {
-  margin: 10px 0 6px !important;
-}
-.candidate-overview-row blockquote {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--surface-muted);
-  font-size: 13px;
-  line-height: 1.7;
-}
-.candidate-overview-row blockquote small {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 11px;
-  font-weight: 550;
-  color: var(--text-secondary);
-}
-.candidate-overview-row .button-row {
-  flex-shrink: 0;
-}
-.experience-panel p.candidate-assumption {
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--warning);
-}
-.run-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--line);
-}
-.run-row > svg {
-  flex-shrink: 0;
-  color: var(--text-secondary);
-}
-.run-row > div {
-  flex: 1;
-  min-width: 0;
-}
-.run-row strong {
-  font-size: 14px;
-  font-weight: 550;
-}
-.run-row small {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.experience-panel .run-row p {
-  margin-top: 4px;
-  font-size: 13px;
-  color: var(--danger);
-}
-
-/* 사용량 */
-.ai-usage-breakdown {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-  margin-top: 20px;
-}
-.ai-usage-breakdown > div {
-  display: grid;
-  gap: 6px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-}
-.ai-usage-breakdown strong {
-  font-size: 13px;
-  font-weight: 550;
-  color: var(--text-secondary);
-}
-.ai-usage-breakdown span {
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-  font-variant-numeric: tabular-nums;
-}
-.ai-usage-breakdown small {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* md 미만: 대화 목록은 위쪽 가로 줄로, 대화 면이 화면 높이를 채웁니다. */
-@media (max-width: 991px) {
+  /* 대화: 왼쪽 대화 목록 + 오른쪽 대화 면(내용은 가운데 760px 열) */
   .ai-workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: var(--spacing-12);
-    height: max(520px, calc(100dvh - 320px));
+    --chat-column: 760px;
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: var(--spacing-16);
+    height: max(520px, calc(100dvh - 300px));
   }
   .conversation-list {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-6);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .conversation-list > * {
-    flex-shrink: 0;
-    max-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    min-height: 0;
+    overflow-y: auto;
   }
   .conversation-list > [data-slot="button"] {
-    width: auto;
-    margin: 0;
+    margin-bottom: var(--spacing-12);
   }
-  .assistant-prompts {
-    grid-template-columns: 1fr;
-  }
-  .assistant-prompts button {
-    flex-direction: row;
+  .conversation-list > button:not([data-slot="button"]) {
+    display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: var(--spacing-12);
-    min-height: 52px;
+    gap: var(--spacing-10);
+    min-height: 40px;
+    padding: 0 var(--spacing-12);
+    border: 0;
+    border-radius: var(--radius-10);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    text-align: left;
+    transition:
+      background-color 140ms ease-out,
+      color 140ms ease-out;
   }
-  .agent-overview {
-    grid-template-columns: 1fr;
+  .conversation-list > button:not([data-slot="button"]) span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
-  .agent-overview-hero {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    padding: 24px;
+  .conversation-list > button:not([data-slot="button"]):hover {
+    background: var(--hover-fill);
+    color: var(--text);
   }
-}
-@media (max-width: 767px) {
-  .ai-workspace {
-    height: max(480px, calc(100dvh - 250px));
+  .conversation-list > button.active {
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+    box-shadow: inset 0 0 0 1px var(--selected-line);
+    font-weight: 600;
   }
+
   .ai-chat-main {
-    border-radius: var(--radius-16);
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto auto;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-20);
+    background: var(--surface);
+    overflow: hidden;
   }
   .chat-scroll {
-    padding: var(--spacing-24) var(--spacing-16);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-24);
+    min-height: 0;
+    padding: var(--spacing-32)
+      max(var(--spacing-24), calc((100% - var(--chat-column)) / 2));
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  /* 첫 화면은 남은 높이의 가운데에, 넘치면 위에서부터 보이게(safe). */
+  .chat-scroll:has(> .assistant-welcome) {
+    justify-content: safe center;
+  }
+  .assistant-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
   .assistant-welcome > .margin-mascot {
-    --mascot-size: 48px !important;
+    box-shadow: var(--semantic-elevation-shadow-normal-medium);
   }
   .assistant-welcome h2 {
-    margin-top: var(--spacing-14);
-    font-size: var(--typography-heading1-fontSize);
+    margin: var(--spacing-20) 0 var(--spacing-8);
+    color: var(--text);
+    font-size: var(--typography-title3-fontSize);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
   }
   .assistant-welcome p {
-    font-size: var(--typography-label1-fontSize);
+    max-width: 34em;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-body2-fontSize);
+    line-height: 1.6;
+    word-break: keep-all;
   }
-  /* 휴대폰: 예시 질문은 가로로 넘겨 보는 한 줄로 높이를 아낍니다. */
   .assistant-prompts {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--spacing-8);
-    margin-top: var(--spacing-20);
-    margin-inline: calc(var(--spacing-16) * -1);
-    padding-inline: var(--spacing-16);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+    width: 100%;
+    margin-top: var(--spacing-32);
   }
   .assistant-prompts button {
-    flex: 0 0 auto;
-    max-width: 240px;
-    min-height: 44px;
-    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-16);
+    min-height: 104px;
+    padding: var(--spacing-14) var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-14);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    line-height: 1.5;
+    text-align: left;
+    word-break: keep-all;
+    transition:
+      border-color 160ms ease-out,
+      background-color 160ms ease-out,
+      transform 160ms ease-out;
   }
+  .assistant-prompts button svg {
+    flex-shrink: 0;
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .assistant-prompts button:hover {
+    border-color: var(--hover-line);
+    background: var(--hover-fill);
+  }
+  .assistant-prompts button:active {
+    transform: scale(0.98);
+  }
+
+  .ai-message {
+    display: grid;
+    gap: 6px;
+    max-width: min(720px, 88%);
+  }
+  .ai-message > div {
+    font-size: 15px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .ai-message.user {
+    align-self: flex-end;
+    justify-items: end;
+  }
+  .ai-message.user > div {
+    padding: 11px 16px;
+    border-radius: 16px 16px 4px 16px;
+    background: var(--brand-soft);
+    color: var(--text);
+  }
+  .ai-message.assistant > div {
+    padding: 2px 0;
+  }
+  .message-role {
+    font-size: 12px;
+    font-weight: 550;
+    color: var(--text-secondary);
+  }
+  .ai-processing {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    align-self: flex-start;
+    padding: 12px 18px 12px 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface-muted);
+    color: var(--brand);
+  }
+  .ai-processing strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 550;
+    color: var(--text);
+  }
+  .ai-processing small {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* 입력창: 대화 면 안에서 가장 높은 면. 초점이 오면 브랜드 테두리와 고리. */
   .ai-composer {
-    width: calc(100% - var(--spacing-16));
+    display: grid;
+    gap: var(--spacing-8);
+    width: min(calc(100% - var(--spacing-32)), var(--chat-column));
+    margin: 0 auto;
+    padding: var(--spacing-12) var(--spacing-12) var(--spacing-10);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-20);
+    background: var(--surface-raised);
+    box-shadow: var(--semantic-elevation-shadow-normal-medium);
+    transition:
+      border-color 160ms ease-out,
+      box-shadow 160ms ease-out;
   }
-  .composer-actions > .rms-choice {
-    order: -1;
-    flex: 1 1 calc(50% - 4px);
-    min-width: 0;
+  .ai-composer:focus-within {
+    border-color: var(--semantic-line-brand-strong);
+    box-shadow:
+      0 0 0 4px var(--selected-fill),
+      var(--semantic-elevation-shadow-normal-medium);
   }
-  .composer-hint {
+  .ai-composer textarea {
+    width: 100%;
+    min-height: 56px;
+    max-height: 220px;
+    padding: var(--spacing-4) var(--spacing-6);
+    border: 0;
+    outline: none;
+    resize: none;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-body2-fontSize);
+    line-height: 1.6;
+    field-sizing: content;
+  }
+  .ai-composer textarea::placeholder {
+    color: var(--text-tertiary);
+  }
+  .ai-composer > p[role="status"] {
+    padding: 0 var(--spacing-6);
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--text-secondary);
+  }
+  .context-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-6);
+  }
+  .context-chips:empty {
     display: none;
   }
-  .candidate-overview-row {
-    flex-direction: column;
-  }
-  .ai-message {
+  .context-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
     max-width: 100%;
+    min-height: 28px;
+    padding: 3px 4px 3px 9px;
+    border-radius: var(--radius-8);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 500;
+  }
+  .context-chip > span {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .context-chip button {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+  }
+  .context-chip button:hover {
+    background: var(--selected-fill);
+  }
+  .composer-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    flex-wrap: wrap;
+  }
+  .composer-actions .icon-button {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-10);
+    color: var(--text-secondary);
+  }
+  .composer-actions .icon-button:hover:not(:disabled) {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .composer-actions .rms-choice {
+    width: auto;
+    min-width: 0;
+    min-height: 36px;
+    padding: 6px 10px;
+    gap: 8px;
+    border-color: transparent;
+    background: var(--hover-fill);
+    font-size: var(--typography-label2-fontSize);
+    box-shadow: none;
+  }
+  .composer-actions .rms-choice:hover:not(:disabled) {
+    border-color: var(--line-strong);
+  }
+  .composer-actions > [data-slot="button"]:last-child,
+  .composer-actions > button[type="submit"],
+  .composer-actions > button[aria-label="실행 중단"] {
+    margin-left: auto;
+  }
+  .ai-chat-main > .rms-error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 10px 20px 0;
+  }
+  .composer-hint {
+    padding: var(--spacing-8) var(--spacing-24) var(--spacing-14);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    text-align: center;
+  }
+
+  /* 자료 선택 */
+  .source-picker {
+    display: grid;
+    /* In a height-capped scroll list, auto rows shrink to min-height and the
+     secondary label spills over the row border. Size rows to their content. */
+    grid-auto-rows: max-content;
+    gap: 6px;
+    max-height: min(60dvh, 520px);
+    overflow-y: auto;
+  }
+  .source-picker > button:not([data-slot="button"]) > span {
+    flex: 1;
+  }
+  .source-picker > [data-slot="button"] {
+    justify-content: center;
+    margin-bottom: 6px;
+  }
+  .source-picker h3 {
+    margin: 14px 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .source-picker > button:not([data-slot="button"]) {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 48px;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    text-align: left;
+    transition:
+      border-color 140ms ease-out,
+      background-color 140ms ease-out;
+  }
+  .source-picker > button:not([data-slot="button"]) svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--text-secondary);
+  }
+  .source-picker > button:not([data-slot="button"]):hover {
+    border-color: var(--hover-line);
+    background: var(--hover-fill);
+  }
+  .source-picker small {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* 작업 오버뷰 */
+  .agent-overview {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .agent-overview-hero {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 28px;
+    padding: 28px 32px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(120deg, var(--brand-soft), var(--surface) 62%);
+    color: var(--brand);
+  }
+  .agent-overview-hero .card-label {
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .agent-overview-hero h3 {
+    font-size: 22px;
+    line-height: 1.45;
+    font-weight: 600;
+    letter-spacing: -0.6px;
+    color: var(--text);
+  }
+  .agent-overview-hero p {
+    margin-top: 8px;
+    max-width: 560px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+  .candidate-overview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .candidate-overview-row > div:first-child {
+    min-width: 0;
+  }
+  .candidate-overview-row h3 {
+    margin: 10px 0 6px !important;
+  }
+  .candidate-overview-row blockquote {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--surface-muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .candidate-overview-row blockquote small {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 550;
+    color: var(--text-secondary);
+  }
+  .candidate-overview-row .button-row {
+    flex-shrink: 0;
+  }
+  .experience-panel p.candidate-assumption {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--warning);
+  }
+  .run-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .run-row > svg {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+  .run-row > div {
+    flex: 1;
+    min-width: 0;
+  }
+  .run-row strong {
+    font-size: 14px;
+    font-weight: 550;
+  }
+  .run-row small {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .experience-panel .run-row p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--danger);
+  }
+
+  /* 사용량 */
+  .ai-usage-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .ai-usage-breakdown > div {
+    display: grid;
+    gap: 6px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+  }
+  .ai-usage-breakdown strong {
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--text-secondary);
+  }
+  .ai-usage-breakdown span {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .ai-usage-breakdown small {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* md 미만: 대화 목록은 위쪽 가로 줄로, 대화 면이 화면 높이를 채웁니다. */
+  @media (max-width: 991px) {
+    .ai-workspace {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: var(--spacing-12);
+      height: max(520px, calc(100dvh - 320px));
+    }
+    .conversation-list {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--spacing-6);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .conversation-list > * {
+      flex-shrink: 0;
+      max-width: 200px;
+    }
+    .conversation-list > [data-slot="button"] {
+      margin: 0;
+    }
+    .assistant-prompts {
+      grid-template-columns: 1fr;
+    }
+    .assistant-prompts button {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: var(--spacing-12);
+      min-height: 52px;
+    }
+    .agent-overview {
+      grid-template-columns: 1fr;
+    }
+    .agent-overview-hero {
+      grid-template-columns: 1fr;
+      gap: 18px;
+      padding: 24px;
+    }
+  }
+  @media (max-width: 767px) {
+    .ai-workspace {
+      height: max(480px, calc(100dvh - 250px));
+    }
+    .ai-chat-main {
+      border-radius: var(--radius-16);
+    }
+    .chat-scroll {
+      padding: var(--spacing-24) var(--spacing-16);
+    }
+    .assistant-welcome > .margin-mascot {
+      --mascot-size: 48px !important;
+    }
+    .assistant-welcome h2 {
+      margin-top: var(--spacing-14);
+      font-size: var(--typography-heading1-fontSize);
+    }
+    .assistant-welcome p {
+      font-size: var(--typography-label1-fontSize);
+    }
+    /* 휴대폰: 예시 질문은 가로로 넘겨 보는 한 줄로 높이를 아낍니다. */
+    .assistant-prompts {
+      display: flex;
+      gap: var(--spacing-8);
+      margin-top: var(--spacing-20);
+      margin-inline: calc(var(--spacing-16) * -1);
+      padding-inline: var(--spacing-16);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .assistant-prompts button {
+      flex: 0 0 auto;
+      max-width: 240px;
+      min-height: 44px;
+      scroll-snap-align: start;
+    }
+    .ai-composer {
+      width: calc(100% - var(--spacing-16));
+    }
+    .composer-actions > .rms-choice {
+      order: -1;
+      flex: 1 1 calc(50% - 4px);
+      min-width: 0;
+    }
+    .composer-hint {
+      display: none;
+    }
+    .candidate-overview-row {
+      flex-direction: column;
+    }
+    .ai-message {
+      max-width: 100%;
+    }
   }
 }

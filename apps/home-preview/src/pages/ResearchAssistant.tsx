@@ -710,6 +710,7 @@ export function ResearchAssistant() {
           <aside className="conversation-list">
             <Button
               variant="outline"
+              fullWidth="desktop"
               disabled={running}
               onClick={() => {
                 setConversation(null);

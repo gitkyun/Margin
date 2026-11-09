@@ -1,0 +1,192 @@
+/*
+ * Montage·외부 부품 조정 (레이어 없음)
+ *
+ * 마진 화면 CSS는 모두 `@layer margin` 안에 있어서, 레이어 없는 Montage
+ * 부품 스타일(Emotion)과 외부 라이브러리 CSS를 덮지 못합니다.
+ * 부품 모양을 일부러 바꿔야 할 때만 이 파일에 적습니다.
+ *   - Montage 부품: data-component·data-role 선택자로 너비·배치만 조정
+ *   - FullCalendar·sonner: Montage 토큰으로 테마를 입힘
+ * 색·크기·모서리는 Montage 토큰(--semantic-*, --typography-*, --radius-*)만 씁니다.
+ */
+
+/* from expansion.css */
+/* 보기 전환(Segments) — Montage SegmentedControl 위에 너비·개수만 정합니다. */
+.rms-segments[data-component="segmented-control"] {
+  flex: none;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rms-segments.is-fill[data-component="segmented-control"] {
+  width: 100%;
+}
+.rms-segments:not(.is-fill) [data-component="segmented-control-item"] {
+  flex: 0 0 auto;
+  padding-inline: var(--spacing-12);
+}
+.rms-segments [data-role="segmented-control-item-text"] {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+}
+.rms-segments [data-component="segmented-control-item"][data-active="true"] {
+  font-weight: 600;
+}
+.segment-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-4);
+  background: var(--semantic-surface-neutral-secondary);
+  color: inherit;
+  font-size: var(--typography-caption1-fontSize);
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+[data-component="segmented-control-item"][data-active="true"] .segment-count {
+  background: var(--semantic-surface-brand-subtle);
+  color: var(--semantic-foreground-brand-primary);
+}
+/* 다크: Montage 기본 선택 면(#212225)이 트랙보다 어두워 보여 한 단계 밝은 면으로 띄웁니다. */
+[data-theme="dark"]
+  [data-component="segmented-control"]
+  [data-role="segmented-control-motion"],
+[data-theme="dark"]
+  [data-component="segmented-control-item"][data-active="true"][data-ssr-motion="true"] {
+  background-color: var(--atomic-coolNeutral-30);
+  box-shadow: var(--semantic-elevation-shadow-normal-small);
+}
+.rms-calendar {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  margin: 20px 0;
+  color: var(--text);
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: var(--surface);
+  --fc-neutral-bg-color: var(--surface-soft);
+  --fc-today-bg-color: var(--primary-soft);
+}
+.rms-calendar h2 {
+  font-size: 20px !important;
+}
+.rms-calendar .fc {
+  --fc-border-color: var(--border);
+  --fc-button-bg-color: var(--primary);
+  --fc-button-border-color: var(--primary);
+  font-family: inherit;
+}
+.rms-calendar a {
+  color: inherit;
+  text-decoration: none;
+}
+@media (max-width: 767px) {
+  .rms-calendar {
+    padding: 10px;
+    overflow: hidden;
+  }
+  .rms-calendar .fc-header-toolbar {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+/* 공통 툴팁(Hint): 이름 한 줄 + 요약 한 줄 */
+.margin-hint-anchor.is-inline {
+  display: inline-flex;
+}
+.margin-hint-anchor.is-block {
+  display: block;
+}
+.margin-hint-body {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+.margin-hint-body > strong {
+  font-weight: 600;
+}
+.margin-hint-body > span {
+  opacity: 0.78;
+  font-variant-numeric: tabular-nums;
+}
+
+/* from pages/screens.css */
+/* ── 캘린더 (FullCalendar) ─────────────────────────────── */
+.rms-calendar {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--surface);
+  --fc-border-color: var(--line);
+  --fc-page-bg-color: var(--surface);
+  --fc-neutral-bg-color: var(--surface-muted);
+  --fc-today-bg-color: color-mix(in srgb, var(--tone-blue) 6%, transparent);
+  --fc-event-bg-color: var(--brand-soft);
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: var(--brand);
+  --fc-button-bg-color: var(--surface);
+  --fc-button-border-color: var(--line-strong);
+  --fc-button-text-color: var(--text);
+  --fc-button-hover-bg-color: var(--surface-muted);
+  --fc-button-hover-border-color: var(--line-strong);
+  --fc-button-active-bg-color: var(--surface-sunken);
+  --fc-button-active-border-color: var(--line-strong);
+  font-size: 13px;
+}
+.rms-calendar .fc .fc-toolbar-title {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.rms-calendar .fc .fc-button {
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 550;
+  padding: 5px 10px;
+  box-shadow: none;
+}
+.rms-calendar .fc .fc-button-primary:not(:disabled).fc-button-active {
+  color: var(--text);
+}
+.rms-calendar .fc .fc-col-header-cell-cushion,
+.rms-calendar .fc .fc-daygrid-day-number {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.rms-calendar .fc .fc-event {
+  border-radius: 6px;
+  padding: 1px 4px;
+  font-weight: 550;
+}
+.rms-calendar .fc .fc-scrollgrid {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* from reference.css */
+.segment-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1;
+  background: var(--surface-sunken);
+  color: var(--text-tertiary);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+/* 좁은 화면에서 숨기는 Montage 버튼: 레이어 안 display:none은 Montage display를 이기지 못합니다. */
+@media (max-width: 700px) {
+  .student-task-row > [data-slot="button"] {
+    display: none;
+  }
+}

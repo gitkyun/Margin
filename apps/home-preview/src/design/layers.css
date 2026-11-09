@@ -1,0 +1,8 @@
+/*
+ * 캐스케이드 레이어 순서. main.tsx에서 가장 먼저 불러옵니다.
+ * 컴포넌트가 불러오는 CSS가 먼저 실행돼도 순서가 바뀌지 않게 여기서 정합니다.
+ *   theme·base·components·utilities: Tailwind
+ *   margin: 마진 화면 CSS
+ * 레이어 밖(Montage 부품, design/tokens.css, design/montage.css)이 모든 레이어를 이깁니다.
+ */
+@layer theme, base, components, utilities, margin;

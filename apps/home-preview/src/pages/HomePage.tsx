@@ -18,6 +18,7 @@ import { Icon } from "@/components/icons";
 import { EmptyState } from "@/components/common";
 import { selectNextMeeting } from "@/lib/home-meeting";
 import "./research-home.css";
+import { toggleDone } from "@/lib/task-status";
 
 export function HomePage() {
   const { researchId = "" } = useParams();
@@ -108,7 +109,7 @@ export function HomePage() {
     try {
       await save("tasks", {
         ...task,
-        status: task.status === "done" ? "todo" : "done",
+        status: toggleDone(task.status),
       });
     } catch (error) {
       toast.error((error as Error).message);
@@ -366,7 +367,7 @@ export function HomePage() {
                       질문 {questions.length}
                     </Link>
                   </div>
-                  <Button className="rh-primary" asChild>
+                  <Button className="rh-primary" fullWidth="mobile" asChild>
                     <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
                       미팅 준비하기 <Icon name="arrow-right" size={16} />
                     </Link>
@@ -380,7 +381,7 @@ export function HomePage() {
                 </span>
                 <h3>다음 미팅이 아직 없어요</h3>
                 <p>날짜를 잡기 전에도 보여줄 결과와 질문부터 남길 수 있어요.</p>
-                <Button className="rh-primary" asChild>
+                <Button className="rh-primary" fullWidth="mobile" asChild>
                   <Link to={`${base}/meetings?new=1`}>
                     미팅 만들기 <Icon name="plus" size={16} />
                   </Link>

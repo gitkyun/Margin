@@ -228,17 +228,19 @@ export function ReviewsPage() {
             { value: "stopped", label: "공유 중지" },
           ]}
         />
-        <Input
-          className="review-search"
-          aria-label="검토 요청 찾기"
-          placeholder="제목이나 교수 이메일로 찾기"
-          value={search}
-          onChange={(
-            e: ChangeEvent<
-              HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-            >,
-          ) => setSearch(e.target.value)}
-        />
+        <div className="review-search">
+          <Input
+            width="100%"
+            aria-label="검토 요청 찾기"
+            placeholder="제목이나 교수 이메일로 찾기"
+            value={search}
+            onChange={(
+              e: ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
       {!requests.length ? (
         <EmptyState

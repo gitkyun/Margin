@@ -1,208 +1,211 @@
-/* User-supplied Margin identity; opaque mascot tiles preserve the original blue artwork. */
-/* One wordmark size for the public header/footer and the workspace sidebar (AGENTS.md: keep them equal). */
-:root {
-  /* 실제 서비스 헤더(Linear 22px·Wanted 32px 상자)에 맞춘 한 벌 크기 */
-  --margin-wordmark-width: 70px;
-  --margin-wordmark-height: 22px;
-  --margin-mark-width: 24px;
-  --margin-mark-height: 26px;
-}
-.margin-brand-mark {
-  display: inline-grid;
-  width: var(--margin-mark-width);
-  height: var(--margin-mark-height);
-  flex: 0 0 auto;
-  place-items: center;
-}
-.margin-brand-mark > img {
-  grid-area: 1 / 1;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.margin-wordmark {
-  display: inline-grid;
-  width: var(--margin-wordmark-width);
-  height: var(--margin-wordmark-height);
-  flex: 0 0 auto;
-}
-.margin-wordmark > img {
-  grid-area: 1 / 1;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.margin-theme-dark {
-  display: none !important;
-}
-[data-theme="dark"] .margin-theme-light {
-  display: none !important;
-}
-[data-theme="dark"] .margin-theme-dark {
-  display: block !important;
-}
-.floating-workspace .brand {
-  gap: 4px;
-}
-.floating-workspace .brand .margin-brand-mark {
-  width: var(--margin-mark-width);
-  height: var(--margin-mark-height);
-}
-.floating-workspace .brand .margin-wordmark {
-  width: var(--margin-wordmark-width);
-  height: var(--margin-wordmark-height);
-}
-.floating-workspace.sidebar-collapsed .brand .margin-wordmark {
-  display: none;
-}
-.lp-brand {
-  gap: 4px;
-}
-.lp-brand .margin-wordmark {
-  width: var(--margin-wordmark-width);
-  height: var(--margin-wordmark-height);
-}
-.lp-brand .margin-brand-mark {
-  width: var(--margin-mark-width);
-  height: var(--margin-mark-height);
-}
-.lp-mark.margin-brand-mark {
-  background: transparent;
-  border-radius: 0;
-}
-.lp-close > .margin-brand-mark {
-  width: 48px;
-  height: 52px;
-  margin: 0 auto 18px;
-}
-.margin-mascot {
-  display: inline-block;
-  width: var(--mascot-size);
-  height: var(--mascot-size);
-  flex: 0 0 var(--mascot-size);
-  overflow: hidden;
-  vertical-align: middle;
-  border-radius: 27%;
-  background: #0068ff;
-}
-.margin-mascot > img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.margin-mascot.is-working > img {
-  animation: margin-attending 2.4s ease-in-out infinite;
-}
-@keyframes margin-attending {
-  0%,
-  100% {
-    transform: scale(1);
+/* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
+@layer margin {
+  /* User-supplied Margin identity; opaque mascot tiles preserve the original blue artwork. */
+  /* One wordmark size for the public header/footer and the workspace sidebar (AGENTS.md: keep them equal). */
+  :root {
+    /* 실제 서비스 헤더(Linear 22px·Wanted 32px 상자)에 맞춘 한 벌 크기 */
+    --margin-wordmark-width: 70px;
+    --margin-wordmark-height: 22px;
+    --margin-mark-width: 24px;
+    --margin-mark-height: 26px;
   }
-  50% {
-    transform: scale(1.045);
+  .margin-brand-mark {
+    display: inline-grid;
+    width: var(--margin-mark-width);
+    height: var(--margin-mark-height);
+    flex: 0 0 auto;
+    place-items: center;
   }
-}
-.lp-cute-chat > .margin-mascot {
-  position: absolute;
-  top: -20px;
-  left: 22px;
-  box-shadow: var(--semantic-elevation-shadow-normal-small);
-}
-.rh-assistant > .margin-mascot {
-  margin-bottom: 16px;
-  box-shadow: var(--semantic-elevation-shadow-normal-medium);
-}
-
-.message-role {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.margin-depth-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-.margin-depth-option > svg {
-  flex-shrink: 0;
-  color: var(--tone-blue, var(--brand));
-}
-.margin-depth-help {
-  font-size: 12px;
-  line-height: 1.65;
-  color: var(--text-secondary);
-  padding: 6px 2px 0;
-  margin: 0;
-}
-.margin-result-note {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  padding: 14px 0 20px;
-}
-.margin-result-note strong,
-.margin-result-note small {
-  display: block;
-}
-.margin-result-note strong {
-  font-size: 14px;
-}
-.margin-result-note small {
-  color: var(--text-secondary);
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.6;
-}
-.margin-error-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.margin-error-content > span:last-child {
-  flex: 1;
-  min-width: 0;
-}
-.ai-workbench-title .margin-mascot {
-  margin-right: 2px;
-}
-@media (prefers-reduced-motion: reduce) {
+  .margin-brand-mark > img {
+    grid-area: 1 / 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .margin-wordmark {
+    display: inline-grid;
+    width: var(--margin-wordmark-width);
+    height: var(--margin-wordmark-height);
+    flex: 0 0 auto;
+  }
+  .margin-wordmark > img {
+    grid-area: 1 / 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .margin-theme-dark {
+    display: none !important;
+  }
+  [data-theme="dark"] .margin-theme-light {
+    display: none !important;
+  }
+  [data-theme="dark"] .margin-theme-dark {
+    display: block !important;
+  }
+  .floating-workspace .brand {
+    gap: 4px;
+  }
+  .floating-workspace .brand .margin-brand-mark {
+    width: var(--margin-mark-width);
+    height: var(--margin-mark-height);
+  }
+  .floating-workspace .brand .margin-wordmark {
+    width: var(--margin-wordmark-width);
+    height: var(--margin-wordmark-height);
+  }
+  .floating-workspace.sidebar-collapsed .brand .margin-wordmark {
+    display: none;
+  }
+  .lp-brand {
+    gap: 4px;
+  }
+  .lp-brand .margin-wordmark {
+    width: var(--margin-wordmark-width);
+    height: var(--margin-wordmark-height);
+  }
+  .lp-brand .margin-brand-mark {
+    width: var(--margin-mark-width);
+    height: var(--margin-mark-height);
+  }
+  .lp-mark.margin-brand-mark {
+    background: transparent;
+    border-radius: 0;
+  }
+  .lp-close > .margin-brand-mark {
+    width: 48px;
+    height: 52px;
+    margin: 0 auto 18px;
+  }
+  .margin-mascot {
+    display: inline-block;
+    width: var(--mascot-size);
+    height: var(--mascot-size);
+    flex: 0 0 var(--mascot-size);
+    overflow: hidden;
+    vertical-align: middle;
+    border-radius: 27%;
+    background: #0068ff;
+  }
+  .margin-mascot > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
   .margin-mascot.is-working > img {
-    animation: none;
+    animation: margin-attending 2.4s ease-in-out infinite;
   }
-}
-.margin-review-settings {
-  margin: 12px 0 16px;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 12px;
-}
-.margin-review-settings > summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-secondary);
-  list-style: none;
-}
-.margin-review-settings > summary::-webkit-details-marker {
-  display: none;
-}
-.margin-review-settings[open] > summary > svg {
-  transform: rotate(180deg);
-}
-.margin-review-fields {
-  display: grid;
-  gap: 14px;
-  padding: 10px 0;
-}
-.margin-review-fields small {
-  display: block;
-  font-size: 12px;
-  line-height: 1.65;
-  color: var(--text-secondary);
+  @keyframes margin-attending {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.045);
+    }
+  }
+  .lp-cute-chat > .margin-mascot {
+    position: absolute;
+    top: -20px;
+    left: 22px;
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+  }
+  .rh-assistant > .margin-mascot {
+    margin-bottom: 16px;
+    box-shadow: var(--semantic-elevation-shadow-normal-medium);
+  }
+
+  .message-role {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .margin-depth-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .margin-depth-option > svg {
+    flex-shrink: 0;
+    color: var(--tone-blue, var(--brand));
+  }
+  .margin-depth-help {
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    padding: 6px 2px 0;
+    margin: 0;
+  }
+  .margin-result-note {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 0 20px;
+  }
+  .margin-result-note strong,
+  .margin-result-note small {
+    display: block;
+  }
+  .margin-result-note strong {
+    font-size: 14px;
+  }
+  .margin-result-note small {
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .margin-error-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .margin-error-content > span:last-child {
+    flex: 1;
+    min-width: 0;
+  }
+  .ai-workbench-title .margin-mascot {
+    margin-right: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .margin-mascot.is-working > img {
+      animation: none;
+    }
+  }
+  .margin-review-settings {
+    margin: 12px 0 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+  .margin-review-settings > summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-secondary);
+    list-style: none;
+  }
+  .margin-review-settings > summary::-webkit-details-marker {
+    display: none;
+  }
+  .margin-review-settings[open] > summary > svg {
+    transform: rotate(180deg);
+  }
+  .margin-review-fields {
+    display: grid;
+    gap: 14px;
+    padding: 10px 0;
+  }
+  .margin-review-fields small {
+    display: block;
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
 }
