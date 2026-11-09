@@ -3,7 +3,12 @@ import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useAICapabilities } from "@/lib/ai-capabilities";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, modeLabels } from "@/lib/experience";
 import { assertConnected } from "@/lib/supabase";
@@ -51,6 +56,7 @@ const stateLabel: Record<string, string> = {
 export function ResearchAssistant() {
   const { researchId = "" } = useParams(),
     w = useExperience(),
+    navigate = useNavigate(),
     { data, user, save, runAI, mode, refresh } = w,
     [params, setParams] = useSearchParams(),
     tab = params.get("tab") ?? "chat";
@@ -487,13 +493,33 @@ export function ResearchAssistant() {
           visibility: "private",
         };
       }
-      await w.action("rms_adopt_candidate", {
-        candidateId: adopting.id,
-        kind: targetKind,
-        value: targetValue,
-      });
+      const saved = await w.action<{ id?: string } | null>(
+        "rms_adopt_candidate",
+        {
+          candidateId: adopting.id,
+          kind: targetKind,
+          value: targetValue,
+        },
+      );
       setAdopting(null);
-      toast.success("선택한 내용을 나만 볼 수 있는 기록으로 저장했어요.");
+      // 만든 기록으로 바로 갈 수 있게 알림에 ‘열기’를 붙입니다(검수 H-4).
+      const savedId = saved?.id ?? (targetValue.id as string | undefined);
+      const href =
+        targetKind === "feedback" && savedId
+          ? `/r/${researchId}/feedback/${savedId}`
+          : targetKind === "tasks" && savedId
+            ? `/r/${researchId}/tasks/${savedId}`
+            : targetKind === "plans" && feedback
+              ? `/r/${researchId}/feedback/${feedback.id}`
+              : meeting
+                ? `/r/${researchId}/meetings/${meeting.id}?tab=questions`
+                : undefined;
+      toast.success(
+        "선택한 내용을 나만 볼 수 있는 기록으로 저장했어요.",
+        href
+          ? { action: { label: "열기", onClick: () => navigate(href) } }
+          : undefined,
+      );
     } catch (e) {
       toast.error((e as Error).message);
     } finally {

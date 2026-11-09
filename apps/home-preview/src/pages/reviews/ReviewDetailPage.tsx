@@ -134,6 +134,35 @@ function CommentThread({
 }
 
 /**
+ * 교수가 이 항목에 결과를 남긴 뒤 다음에 할 일을 알려 줍니다(검수 H-3).
+ * 이 검토 요청 안의 항목만 셉니다. 여러 학생을 모아 보는 화면이 아닙니다.
+ * ‘승인’·‘완료’라는 말은 쓰지 않습니다(docs/design/ux-writing.md).
+ */
+function ProfessorProgress({
+  pending,
+  onNext,
+}: {
+  pending: ReviewItem[];
+  onNext: (item: ReviewItem) => void;
+}) {
+  if (!pending.length)
+    return (
+      <div className="review-progress is-done" role="status">
+        <Icon name="check-circle" size={16} />
+        <p>이 요청의 모든 항목에 결과를 남겼어요. 학생에게 알림으로 보여요.</p>
+      </div>
+    );
+  return (
+    <div className="review-progress" role="status">
+      <p>결과를 남기지 않은 항목 {pending.length}개</p>
+      <Button size="sm" onClick={() => onNext(pending[0])}>
+        다음 항목
+        <Icon name="arrow-right" size={14} />
+      </Button>
+    </div>
+  );
+}
+/**
  * `embedded`: 학생이 앱 셸 안에서 열 때. 셸이 로고·계정 메뉴·<main>을 이미 그리므로
  * 이 화면은 그것들을 다시 그리지 않습니다(2026-11-09 검수 E-7).
  */
@@ -796,6 +825,20 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                       )}
                     </div>
                   )}
+                  {/* ‘추가 수정 필요’를 받은 학생이 고칠 곳으로 바로 갑니다(검수 H-1).
+                      교수 결과와 학생의 수정 결과 상태는 합치지 않고 길만 이어 줍니다. */}
+                  {isOwner &&
+                    response?.result === "changes_requested" &&
+                    privateResult && (
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          to={`/r/${request.researchId}/results/${privateResult.id}`}
+                        >
+                          수정 결과에서 고치기
+                          <Icon name="arrow-right" size={14} />
+                        </Link>
+                      </Button>
+                    )}
                   {canRespond ? (
                     <form
                       className="review-response-form"
@@ -899,6 +942,18 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                           ? `이 항목은 ${rounds[0]?.number ?? round.number}차 검토가 있어 ${round.number}차에는 응답할 수 없어요. 최신 검토에서 결과를 남겨 주세요.`
                           : "공유 중일 때 응답할 수 있어요."}
                     </p>
+                  )}
+                  {isProfessor && canWrite && response && (
+                    <ProfessorProgress
+                      pending={items.filter(
+                        (record) =>
+                          !latestResponse(
+                            data,
+                            latestRound(data, record.id)?.id,
+                          ),
+                      )}
+                      onNext={selectItem}
+                    />
                   )}
                   {response && (
                     <button

@@ -150,8 +150,15 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-week-empty {
-    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
     padding: var(--spacing-8) 0 var(--spacing-4);
+  }
+  .rh-week-empty > p {
+    margin: 0;
     color: var(--text-tertiary);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
