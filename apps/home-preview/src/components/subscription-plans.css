@@ -6,7 +6,8 @@
   }
   .subscription-heading h2 {
     margin: 0 0 8px;
-    font-size: 22px;
+    font-size: var(--typography-heading1-fontSize);
+    letter-spacing: var(--typography-heading1-letterSpacing);
   }
   .subscription-heading p {
     color: var(--text-secondary);
@@ -27,7 +28,7 @@
     min-width: 0;
     padding: 28px 24px;
     border: 1px solid var(--line);
-    border-radius: 20px;
+    border-radius: var(--radius-20);
     background: var(--surface);
   }
   .subscription-card-top {
@@ -43,27 +44,29 @@
     width: 44px;
     height: 44px;
     background: var(--surface-muted);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
   }
   .subscription-status {
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     background: var(--surface-muted);
     padding: 5px 9px;
-    border-radius: 7px;
+    border-radius: var(--radius-8);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .subscription-card h3 {
-    font-size: 25px;
-    font-weight: 600;
-    letter-spacing: -0.7px;
+    font-size: var(--typography-title3-fontSize);
+    font-weight: 700;
+    letter-spacing: var(--typography-title3-letterSpacing);
     margin: 0 0 9px;
   }
   .subscription-card .subscription-line {
     margin: 0;
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1Reading-lineHeight);
     color: var(--text-secondary);
     min-height: 44px;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .subscription-price {
     min-height: 82px;
@@ -72,22 +75,23 @@
     align-items: center;
   }
   .subscription-price strong {
-    font-size: 40px;
-    font-weight: 600;
-    letter-spacing: -1.7px;
+    font-size: var(--typography-display2-fontSize);
+    font-weight: 700;
+    letter-spacing: var(--typography-display2-letterSpacing);
   }
   .subscription-price .subscription-coming {
-    font-size: 26px;
-    letter-spacing: -0.8px;
+    font-size: var(--typography-title2-fontSize);
+    letter-spacing: var(--typography-title2-letterSpacing);
   }
   .subscription-price span {
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .subscription-button {
     min-height: 44px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     padding: 10px 12px;
     background: var(--surface);
     color: var(--text);
@@ -95,11 +99,12 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
     font-weight: 600;
     transition:
       background 0.15s,
       transform 0.15s;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .subscription-button:hover {
     background: var(--surface-muted);
@@ -126,8 +131,9 @@
     display: flex;
     gap: 10px;
     align-items: flex-start;
-    font-size: 14px;
-    line-height: 1.55;
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .subscription-card li svg,
   .subscription-detail-list svg {
@@ -139,16 +145,18 @@
     margin: 26px 0 0;
     padding-top: 22px;
     border-top: 1px solid var(--line);
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    line-height: 1.65;
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .subscription-disclosure {
     margin: 20px 0 0;
     text-align: center;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    line-height: 1.7;
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .subscription-detail-list {
     display: grid;
@@ -166,14 +174,15 @@
     min-height: 42px;
     padding: 10px 13px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     display: flex;
     align-items: center;
     gap: 8px;
     background: var(--surface-muted);
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
-  @media (max-width: 1100px) {
+  @media (max-width: 1199px) {
     .settings-body .subscription-grid {
       grid-template-columns: 1fr;
     }
@@ -199,7 +208,7 @@
       grid-column: 1/-1;
     }
   }
-  @media (max-width: 760px) {
+  @media (max-width: 767px) {
     .subscription-grid {
       grid-template-columns: 1fr;
       gap: 16px;

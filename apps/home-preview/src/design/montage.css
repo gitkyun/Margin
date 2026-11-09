@@ -43,7 +43,6 @@
   font-weight: 600;
   line-height: 18px;
   text-align: center;
-  font-variant-numeric: tabular-nums;
 }
 [data-component="segmented-control-item"][data-active="true"] .segment-count {
   background: var(--semantic-surface-brand-subtle);
@@ -60,21 +59,22 @@
 }
 .rms-calendar {
   padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-16);
   background: var(--surface);
   margin: 20px 0;
   color: var(--text);
-  --fc-border-color: var(--border);
+  --fc-border-color: var(--line);
   --fc-page-bg-color: var(--surface);
-  --fc-neutral-bg-color: var(--surface-soft);
-  --fc-today-bg-color: var(--primary-soft);
+  --fc-neutral-bg-color: var(--surface-muted);
+  --fc-today-bg-color: var(--brand-soft);
 }
 .rms-calendar h2 {
-  font-size: 20px !important;
+  font-size: var(--typography-heading2-fontSize) !important;
+  letter-spacing: var(--typography-heading2-letterSpacing);
 }
 .rms-calendar .fc {
-  --fc-border-color: var(--border);
+  --fc-border-color: var(--line);
   --fc-button-bg-color: var(--primary);
   --fc-button-border-color: var(--primary);
   font-family: inherit;
@@ -110,7 +110,6 @@
 }
 .margin-hint-body > span {
   opacity: 0.78;
-  font-variant-numeric: tabular-nums;
 }
 
 /* from pages/screens.css */
@@ -118,13 +117,13 @@
 .rms-calendar {
   margin-top: 18px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   padding: 14px;
   background: var(--surface);
   --fc-border-color: var(--line);
   --fc-page-bg-color: var(--surface);
   --fc-neutral-bg-color: var(--surface-muted);
-  --fc-today-bg-color: color-mix(in srgb, var(--tone-blue) 6%, transparent);
+  --fc-today-bg-color: color-mix(in srgb, var(--brand) 6%, transparent);
   --fc-event-bg-color: var(--brand-soft);
   --fc-event-border-color: transparent;
   --fc-event-text-color: var(--brand);
@@ -135,19 +134,21 @@
   --fc-button-hover-border-color: var(--line-strong);
   --fc-button-active-bg-color: var(--surface-sunken);
   --fc-button-active-border-color: var(--line-strong);
-  font-size: 13px;
+  font-size: var(--typography-label2-fontSize);
+  letter-spacing: var(--typography-label2-letterSpacing);
 }
 .rms-calendar .fc .fc-toolbar-title {
-  font-size: 17px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+  font-size: var(--typography-headline2-fontSize);
+  font-weight: 600;
+  letter-spacing: var(--typography-headline2-letterSpacing);
 }
 .rms-calendar .fc .fc-button {
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 550;
+  border-radius: var(--radius-8);
+  font-size: var(--typography-label2-fontSize);
+  font-weight: 600;
   padding: 5px 10px;
   box-shadow: none;
+  letter-spacing: var(--typography-label2-letterSpacing);
 }
 .rms-calendar .fc .fc-button-primary:not(:disabled).fc-button-active {
   color: var(--text);
@@ -155,15 +156,14 @@
 .rms-calendar .fc .fc-col-header-cell-cushion,
 .rms-calendar .fc .fc-daygrid-day-number {
   color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
 }
 .rms-calendar .fc .fc-event {
-  border-radius: 6px;
+  border-radius: var(--radius-8);
   padding: 1px 4px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .rms-calendar .fc .fc-scrollgrid {
-  border-radius: 10px;
+  border-radius: var(--radius-10);
   overflow: hidden;
 }
 
@@ -174,18 +174,18 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: 5px;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
+  border-radius: var(--radius-4);
+  font-size: var(--typography-caption2-fontSize);
   font-weight: 500;
   line-height: 1;
   background: var(--surface-sunken);
   color: var(--text-tertiary);
   box-shadow: inset 0 0 0 1px var(--line);
+  letter-spacing: var(--typography-caption2-letterSpacing);
 }
 
 /* 좁은 화면에서 숨기는 Montage 버튼: 레이어 안 display:none은 Montage display를 이기지 못합니다. */
-@media (max-width: 700px) {
+@media (max-width: 767px) {
   .student-task-row > [data-slot="button"] {
     display: none;
   }

@@ -3,12 +3,10 @@
   body {
     background: var(--canvas);
   }
-  .tabular,
-  .kpi-cell strong,
-  .meeting-readiness b,
-  .count-chip,
-  time {
-    font-variant-numeric: tabular-nums;
+  /* 단축키 표시도 본문 글꼴(Pretendard)로 씁니다. 고정폭 글꼴은 숫자를 다른 글꼴처럼 보이게 합니다. */
+  kbd,
+  samp {
+    font-family: inherit;
   }
 
   /* ── Shell ─────────────────────────────────────────────── */
@@ -31,14 +29,14 @@
     padding: 2px 2px 14px;
   }
   .floating-workspace .brand {
-    font-size: 17px;
-    letter-spacing: -0.02em;
+    font-size: var(--typography-headline2-fontSize);
+    letter-spacing: var(--typography-headline2-letterSpacing);
     gap: 9px;
   }
   .floating-workspace .brand-icon {
     width: 26px;
     height: 26px;
-    border-radius: 7px;
+    border-radius: var(--radius-8);
     background: var(--text);
     color: var(--surface);
   }
@@ -51,7 +49,7 @@
     min-height: 40px;
     padding: 7px 9px;
     margin-bottom: 10px;
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     border: 0;
     background: var(--surface);
     box-shadow: var(--raise-shadow);
@@ -62,19 +60,19 @@
   .floating-workspace .workspace-symbol {
     width: 22px;
     height: 22px;
-    border-radius: 6px;
+    border-radius: var(--radius-8);
   }
   .sidebar-search {
     min-height: 34px;
     padding: 6px 9px;
     margin-bottom: 14px;
-    font-size: 13px;
-    border-radius: 9px;
+    font-size: var(--typography-label2-fontSize);
+    border-radius: var(--radius-10);
     border: 1px solid var(--line-strong);
     background: color-mix(in srgb, var(--surface) 55%, transparent);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .sidebar-search kbd {
-    font-family: var(--font-mono);
     color: var(--text-tertiary);
     background: var(--surface);
   }
@@ -85,11 +83,12 @@
     min-height: 34px;
     padding: 7px 10px;
     gap: 10px;
-    border-radius: 8px;
-    font-size: 13.5px;
+    border-radius: var(--radius-8);
+    font-size: var(--typography-label1-fontSize);
     font-weight: 500;
     color: var(--text-secondary);
     border: 0;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .floating-workspace .nav-item > svg {
     width: 18px;
@@ -114,7 +113,7 @@
     margin-top: 10px !important;
     padding-top: 7px !important;
     border-top: 0 !important;
-    border-radius: 8px !important;
+    border-radius: var(--radius-8) !important;
     position: relative;
   }
   .floating-workspace .assistant-nav::before {
@@ -134,20 +133,20 @@
     margin: 10px 0 0;
     padding: 10px 11px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     background: var(--surface);
     box-shadow: var(--raise-shadow);
   }
   .sidebar-usage strong {
-    font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--typography-caption2-fontSize);
     color: var(--text);
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .floating-workspace .profile-button {
     margin-top: 8px;
     padding: 7px 8px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     background: transparent;
   }
   .floating-workspace .profile-button:hover {
@@ -156,11 +155,12 @@
   .floating-workspace .profile-button .avatar {
     width: 28px;
     height: 28px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .floating-workspace .main-shell {
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: var(--surface);
     box-shadow: var(--panel-shadow);
     min-height: calc(100dvh - 16px);
@@ -174,7 +174,8 @@
   }
   .floating-workspace .breadcrumbs {
     gap: 8px;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .floating-workspace .breadcrumbs > a {
     color: var(--text-tertiary);
@@ -183,13 +184,14 @@
     color: var(--line-strong);
   }
   .floating-workspace .breadcrumbs > strong {
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     font-weight: 600;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .floating-workspace .topbar .icon-button {
     min-width: 32px;
     min-height: 32px;
-    border-radius: 8px;
+    border-radius: var(--radius-8);
     color: var(--text-secondary);
   }
   .floating-workspace .topbar .icon-button:hover {
@@ -199,10 +201,11 @@
   .floating-workspace .preview-banner {
     min-height: 34px;
     padding: 6px 24px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     border-bottom: 1px solid var(--line);
     background: var(--surface-muted);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .floating-workspace .workspace-content {
     padding: 28px 32px 40px;
@@ -210,9 +213,10 @@
   }
   .floating-workspace .workspace-footer {
     padding: 18px 32px 22px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-tertiary);
     border-top: 1px solid var(--line);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .floating-workspace.sidebar-collapsed {
     --rail-width: 60px;
@@ -228,25 +232,27 @@
   /* ── Page heading ──────────────────────────────────────── */
   .dashboard-heading h1,
   .page-header h1 {
-    font-size: 28px;
-    line-height: 1.2;
-    letter-spacing: -0.025em;
-    font-weight: 650;
+    font-size: var(--typography-title2-fontSize);
+    line-height: var(--typography-title2-lineHeight);
+    letter-spacing: var(--typography-title2-letterSpacing);
+    font-weight: 700;
   }
   .dashboard-heading p,
   .page-header p {
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
 
   /* ── Status pills: dot + label (Veyra / Noticeline) ────── */
   .status-badge {
     gap: 6px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 550;
+    border-radius: var(--radius-full);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
     padding: 2px 9px 2px 8px;
     min-height: 22px;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .status-badge .badge-dot {
     width: 6px;
@@ -261,17 +267,17 @@
     background: var(--tone-gray);
   }
   .count-chip {
-    font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--typography-caption2-fontSize);
     min-width: 22px;
     height: 20px;
     padding: 0 6px;
-    border-radius: 6px;
+    border-radius: var(--radius-8);
     display: inline-grid;
     place-items: center;
     background: var(--surface-muted);
     border: 1px solid var(--line);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
 
   /* ── KPI strip (Noticeline / Orvyn) ────────────────────── */
@@ -279,7 +285,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: var(--surface-muted);
     padding: 4px;
     gap: 4px;
@@ -291,7 +297,7 @@
     gap: 8px;
     min-width: 0;
     padding: 13px 14px 14px;
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     background: var(--surface);
     box-shadow: 0 0 0 1px var(--line);
     color: var(--text);
@@ -301,8 +307,9 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: 12.5px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .kpi-label > svg {
     margin-left: auto;
@@ -322,31 +329,31 @@
     flex-shrink: 0;
   }
   .kpi-dot.blue {
-    background: var(--tone-blue);
+    background: var(--brand);
   }
   .kpi-dot.green {
-    background: var(--tone-green);
+    background: var(--success);
   }
   .kpi-dot.amber {
-    background: var(--tone-amber);
+    background: var(--warning);
   }
   .kpi-dot.red {
-    background: var(--tone-red);
+    background: var(--danger);
   }
   .kpi-cell strong {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    font-size: 26px;
+    font-size: var(--typography-title2-fontSize);
     line-height: 1;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    letter-spacing: var(--typography-title2-letterSpacing);
     min-width: 0;
   }
   .kpi-cell strong small {
-    font-size: 12px;
-    font-weight: 450;
-    letter-spacing: 0;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    letter-spacing: var(--typography-caption1-letterSpacing);
     color: var(--text-tertiary);
     overflow: hidden;
     white-space: nowrap;
@@ -360,16 +367,16 @@
   }
   .kpi-bar i {
     flex: 1;
-    border-radius: 9px;
+    border-radius: var(--radius-10);
     background: var(--surface-sunken);
     box-shadow: inset 0 0 0 1px var(--line);
   }
   .kpi-bar i.on {
-    background: var(--tone-blue);
+    background: var(--brand);
     box-shadow: none;
   }
   .kpi-bar i.warn {
-    background: var(--tone-red);
+    background: var(--danger);
     box-shadow: none;
   }
 
@@ -378,7 +385,7 @@
   .floating-workspace .surface,
   .experience-panel {
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: var(--surface);
     box-shadow: none;
   }
@@ -386,16 +393,17 @@
     background: var(--surface);
   }
   .card-label h2 {
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .card-label > svg {
     color: var(--text-tertiary);
   }
   .card-label > a {
-    font-size: 12.5px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .card-label > a:hover {
     color: var(--text);
@@ -404,17 +412,16 @@
   /* ── Upload progress ticks (disarto upload) ────────────── */
   .upload-progress strong,
   .upload-dropzone > span:not(.upload-symbol) {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    letter-spacing: 0.02em;
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .upload-progress progress {
     height: 10px;
-    border-radius: 2px;
+    border-radius: var(--radius-4);
     background: transparent;
   }
   .upload-progress progress::-webkit-progress-bar {
-    border-radius: 2px;
+    border-radius: var(--radius-4);
     background: repeating-linear-gradient(
       90deg,
       var(--line-strong) 0 2px,
@@ -422,7 +429,7 @@
     );
   }
   .upload-progress progress::-webkit-progress-value {
-    border-radius: 2px;
+    border-radius: var(--radius-4);
     background: repeating-linear-gradient(
       90deg,
       var(--primary) 0 2px,
@@ -439,31 +446,32 @@
 
   /* ── Insight callout (Noticeline "AI insight") ─────────── */
   .ai-insight {
-    border: 1px solid color-mix(in srgb, var(--tone-blue) 28%, var(--line));
-    background: color-mix(in srgb, var(--tone-blue) 7%, var(--surface));
-    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--line));
+    background: color-mix(in srgb, var(--brand) 7%, var(--surface));
+    border-radius: var(--radius-10);
     padding: 10px 12px;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .ai-insight > strong {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
-    color: var(--tone-blue);
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--brand);
     margin-bottom: 4px;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* ── Mono meta (disarto) ──────────────────────────────── */
   .mono-meta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.04em;
+    font-size: var(--typography-caption2-fontSize);
+    letter-spacing: var(--typography-caption2-letterSpacing);
     color: var(--text-tertiary);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 991px) {
     .floating-workspace {
       padding: 0;
     }
@@ -487,9 +495,10 @@
       padding: 11px 12px 12px;
     }
     .kpi-cell strong {
-      font-size: 22px;
+      font-size: var(--typography-heading1-fontSize);
       flex-wrap: wrap;
       row-gap: 4px;
+      letter-spacing: var(--typography-heading1-letterSpacing);
     }
   }
   @media (prefers-reduced-motion: reduce) {

@@ -158,10 +158,11 @@
     max-width: min(720px, 88%);
   }
   .ai-message > div {
-    font-size: 15px;
-    line-height: 1.75;
+    font-size: var(--typography-body2-fontSize);
+    line-height: var(--typography-body2Reading-lineHeight);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+    letter-spacing: var(--typography-body2-letterSpacing);
   }
   .ai-message.user {
     align-self: flex-end;
@@ -169,7 +170,8 @@
   }
   .ai-message.user > div {
     padding: 11px 16px;
-    border-radius: 16px 16px 4px 16px;
+    border-radius: var(--radius-16) var(--radius-16) var(--radius-4)
+      var(--radius-16);
     background: var(--brand-soft);
     color: var(--text);
   }
@@ -177,9 +179,10 @@
     padding: 2px 0;
   }
   .message-role {
-    font-size: 12px;
-    font-weight: 550;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .ai-processing {
     display: flex;
@@ -188,21 +191,23 @@
     align-self: flex-start;
     padding: 12px 18px 12px 12px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: var(--surface-muted);
     color: var(--brand);
   }
   .ai-processing strong {
     display: block;
-    font-size: 14px;
-    font-weight: 550;
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
     color: var(--text);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .ai-processing small {
     display: block;
     margin-top: 3px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* 입력창: 대화 면 안에서 가장 높은 면. 초점이 오면 브랜드 테두리와 고리. */
@@ -282,7 +287,7 @@
     width: 22px;
     height: 22px;
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--radius-8);
     background: transparent;
     color: inherit;
   }
@@ -357,9 +362,10 @@
   }
   .source-picker h3 {
     margin: 14px 0 4px;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     font-weight: 600;
     color: var(--text-secondary);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .source-picker > button:not([data-slot="button"]) {
     display: flex;
@@ -368,14 +374,15 @@
     min-height: 48px;
     padding: 11px 12px;
     border: 1px solid var(--line);
-    border-radius: 11px;
+    border-radius: var(--radius-12);
     background: var(--surface);
     color: var(--text);
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
     text-align: left;
     transition:
       border-color 140ms ease-out,
       background-color 140ms ease-out;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .source-picker > button:not([data-slot="button"]) svg {
     flex-shrink: 0;
@@ -389,8 +396,9 @@
   .source-picker small {
     display: block;
     margin-top: 3px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* 작업 오버뷰 */
@@ -407,7 +415,7 @@
     gap: 28px;
     padding: 28px 32px;
     border: 1px solid var(--line);
-    border-radius: 18px;
+    border-radius: var(--radius-16);
     background: linear-gradient(120deg, var(--brand-soft), var(--surface) 62%);
     color: var(--brand);
   }
@@ -416,18 +424,19 @@
     color: var(--text);
   }
   .agent-overview-hero h3 {
-    font-size: 22px;
-    line-height: 1.45;
+    font-size: var(--typography-heading1-fontSize);
+    line-height: var(--typography-heading1-lineHeight);
     font-weight: 600;
-    letter-spacing: -0.6px;
+    letter-spacing: var(--typography-heading1-letterSpacing);
     color: var(--text);
   }
   .agent-overview-hero p {
     margin-top: 8px;
     max-width: 560px;
-    font-size: 14px;
-    line-height: 1.8;
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1Reading-lineHeight);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .candidate-overview-row {
     display: flex;
@@ -446,25 +455,28 @@
   .candidate-overview-row blockquote {
     margin-top: 10px;
     padding: 10px 12px;
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     background: var(--surface-muted);
-    font-size: 13px;
-    line-height: 1.7;
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .candidate-overview-row blockquote small {
     display: block;
     margin-bottom: 4px;
-    font-size: 11px;
-    font-weight: 550;
+    font-size: var(--typography-caption2-fontSize);
+    font-weight: 600;
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .candidate-overview-row .button-row {
     flex-shrink: 0;
   }
   .experience-panel p.candidate-assumption {
     margin-top: 8px;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--warning);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .run-row {
     display: flex;
@@ -482,19 +494,22 @@
     min-width: 0;
   }
   .run-row strong {
-    font-size: 14px;
-    font-weight: 550;
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .run-row small {
     display: block;
     margin-top: 3px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .experience-panel .run-row p {
     margin-top: 4px;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--danger);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
 
   /* 사용량 */
@@ -509,23 +524,24 @@
     gap: 6px;
     padding: 18px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: var(--surface);
   }
   .ai-usage-breakdown strong {
-    font-size: 13px;
-    font-weight: 550;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
     color: var(--text-secondary);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .ai-usage-breakdown span {
-    font-size: 24px;
-    font-weight: 600;
-    letter-spacing: -0.5px;
-    font-variant-numeric: tabular-nums;
+    font-size: var(--typography-title3-fontSize);
+    font-weight: 700;
+    letter-spacing: var(--typography-title3-letterSpacing);
   }
   .ai-usage-breakdown small {
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* md 미만: 대화 목록은 위쪽 가로 줄로, 대화 면이 화면 높이를 채웁니다. */

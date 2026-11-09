@@ -15,7 +15,7 @@
     gap: 12px;
     padding: 10px 10px 14px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: var(--surface-muted);
     color: var(--text);
     transition:
@@ -28,7 +28,7 @@
   .document-tile-paper {
     aspect-ratio: 4 / 3;
     padding: 16px 16px 0;
-    border-radius: 9px;
+    border-radius: var(--radius-10);
     background: var(--surface);
     box-shadow: 0 0 0 1px var(--line);
     overflow: hidden;
@@ -43,23 +43,25 @@
   }
   .document-tile-paper > span {
     display: inline-block;
-    font-size: 11px;
+    font-size: var(--typography-caption2-fontSize);
     font-weight: 600;
     color: var(--text-tertiary);
     margin-bottom: 8px;
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .document-tile-paper h3 {
-    font-size: 14px;
-    font-weight: 650;
-    line-height: 1.35;
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    line-height: var(--typography-label1-lineHeight);
     margin: 0 0 6px;
-    letter-spacing: -0.01em;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .document-tile-paper p {
-    font-size: 11.5px;
-    line-height: 1.6;
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
     color: var(--text-secondary);
     margin: 0;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .document-tile > div:last-child {
     display: flex;
@@ -68,15 +70,17 @@
     padding: 0 4px;
   }
   .document-tile > div:last-child strong {
-    font-size: 13.5px;
+    font-size: var(--typography-label1-fontSize);
     font-weight: 600;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .document-tile > div:last-child small {
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-tertiary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* ── 편집 화면 ─────────────────────────────────────────── */
@@ -104,9 +108,10 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
     width: fit-content;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .writing-heading .text-link:hover {
     color: var(--text);
@@ -117,11 +122,11 @@
     background: transparent;
     padding: 2px 0;
     font: inherit;
-    font-size: 26px;
-    font-weight: 650;
-    letter-spacing: -0.025em;
+    font-size: var(--typography-title2-fontSize);
+    font-weight: 700;
+    letter-spacing: var(--typography-title2-letterSpacing);
     color: var(--text);
-    border-radius: 6px;
+    border-radius: var(--radius-8);
   }
   .document-title-input:focus-visible {
     outline: 2px solid var(--brand);
@@ -131,9 +136,9 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 12.5px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-tertiary);
-    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .writing-meta > span + span::before {
     content: "·";
@@ -167,33 +172,36 @@
     gap: 2px;
   }
   .writing-outline h2 {
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
     color: var(--text-tertiary);
     margin: 0 0 6px 8px;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .writing-outline > button {
     text-align: left;
     border: 0;
     background: transparent;
     padding: 6px 8px;
-    border-radius: 7px;
-    font-size: 13px;
+    border-radius: var(--radius-8);
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: pointer;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .writing-outline > button:hover {
     background: var(--surface-muted);
     color: var(--text);
   }
   .writing-outline > p {
-    font-size: 12.5px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-tertiary);
     margin: 0 8px;
-    line-height: 1.55;
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .writing-outline .field {
     margin-top: 18px;
@@ -206,7 +214,7 @@
     margin: 0 auto;
     padding: 44px 56px 140px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: var(--surface);
     box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   }
@@ -215,34 +223,36 @@
   .rms-document-editor {
     padding: 0;
     outline: none;
-    font-size: 16px;
-    line-height: 1.8;
+    font-size: var(--typography-body1-fontSize);
+    line-height: var(--typography-body1Reading-lineHeight);
     color: var(--text);
     min-height: 420px;
     word-break: keep-all;
     overflow-wrap: anywhere;
+    letter-spacing: var(--typography-body1-letterSpacing);
   }
   .rms-document-editor > * + * {
     margin-top: 0.85em;
   }
   .rms-document-editor h1 {
-    font-size: 26px;
-    line-height: 1.3;
+    font-size: var(--typography-title2-fontSize);
+    line-height: var(--typography-title2-lineHeight);
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: var(--typography-title2-letterSpacing);
     margin-top: 1.4em;
   }
   .rms-document-editor h2 {
-    font-size: 20px;
-    line-height: 1.4;
-    font-weight: 650;
-    letter-spacing: -0.015em;
+    font-size: var(--typography-heading2-fontSize);
+    line-height: var(--typography-heading2-lineHeight);
+    font-weight: 600;
+    letter-spacing: var(--typography-heading2-letterSpacing);
     margin-top: 1.6em;
   }
   .rms-document-editor h3 {
-    font-size: 17px;
-    font-weight: 650;
+    font-size: var(--typography-headline2-fontSize);
+    font-weight: 600;
     margin-top: 1.4em;
+    letter-spacing: var(--typography-headline2-letterSpacing);
   }
   .rms-document-editor > :first-child {
     margin-top: 0;
@@ -269,8 +279,9 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
     margin: 1.2em 0;
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .rms-document-editor th,
   .rms-document-editor td {
@@ -317,7 +328,7 @@
     overflow-x: auto;
     scrollbar-width: thin;
     padding: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     background: color-mix(in srgb, var(--surface) 94%, transparent);
     box-shadow:
       0 0 0 1px var(--line),
@@ -330,7 +341,7 @@
     display: grid;
     place-items: center;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
@@ -368,7 +379,7 @@
     width: auto;
     min-width: 104px;
     margin-left: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     height: 40px;
     padding: 0 16px;
     white-space: nowrap;
@@ -378,11 +389,12 @@
     margin-left: 6px;
   }
   .editor-dock span[class^="format-"] {
-    font-size: 15px;
+    font-size: var(--typography-body2-fontSize);
     line-height: 1;
+    letter-spacing: var(--typography-body2-letterSpacing);
   }
   .format-bold {
-    font-weight: 800;
+    font-weight: 700;
   }
   .format-italic {
     font-style: italic;
@@ -391,18 +403,21 @@
   }
   .editor-dock .format-heading {
     font-weight: 700;
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .editor-dock .format-bulletList {
-    font-size: 18px;
+    font-size: var(--typography-headline1-fontSize);
+    letter-spacing: var(--typography-headline1-letterSpacing);
   }
   .editor-dock-wrap > p {
     margin: 0;
-    font-size: 11.5px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-tertiary);
     background: color-mix(in srgb, var(--surface) 80%, transparent);
     padding: 1px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-8);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* ── 버전 비교 ─────────────────────────────────────────── */
@@ -422,17 +437,18 @@
   }
   .text-comparison {
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius-12);
     overflow: hidden;
   }
   .diff-legend {
     display: flex;
     gap: 16px;
     padding: 8px 14px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     background: var(--surface-muted);
     border-bottom: 1px solid var(--line);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .diff-legend span {
     display: inline-flex;
@@ -442,47 +458,48 @@
   .diff-legend i {
     width: 10px;
     height: 10px;
-    border-radius: 3px;
+    border-radius: var(--radius-4);
   }
   .diff-legend i.removed {
-    background: color-mix(in srgb, var(--tone-red) 30%, var(--surface));
+    background: color-mix(in srgb, var(--danger) 30%, var(--surface));
   }
   .diff-legend i.added {
-    background: color-mix(in srgb, var(--tone-green) 30%, var(--surface));
+    background: color-mix(in srgb, var(--success) 30%, var(--surface));
   }
   .diff-content {
     max-height: min(56dvh, 520px);
     overflow: auto;
     padding: 16px 18px;
-    font-size: 14.5px;
-    line-height: 1.85;
+    font-size: var(--typography-body2-fontSize);
+    line-height: var(--typography-body2Reading-lineHeight);
     white-space: pre-wrap;
     word-break: keep-all;
     overflow-wrap: anywhere;
+    letter-spacing: var(--typography-body2-letterSpacing);
   }
   .diff-content ins {
     text-decoration: none;
-    background: color-mix(in srgb, var(--tone-green) 18%, transparent);
+    background: color-mix(in srgb, var(--success) 18%, transparent);
     color: var(--text);
-    border-radius: 3px;
+    border-radius: var(--radius-4);
     padding: 0 1px;
   }
   .diff-content del {
-    background: color-mix(in srgb, var(--tone-red) 16%, transparent);
+    background: color-mix(in srgb, var(--danger) 16%, transparent);
     color: var(--text-secondary);
-    text-decoration-color: var(--tone-red);
-    border-radius: 3px;
+    text-decoration-color: var(--danger);
+    border-radius: var(--radius-4);
     padding: 0 1px;
   }
   .pdf-export-preview {
     width: 100%;
     height: min(70dvh, 760px);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     background: var(--surface-muted);
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1199px) {
     .writing-heading {
       flex-wrap: wrap;
       align-items: flex-start;
@@ -495,7 +512,7 @@
       max-width: 100%;
     }
   }
-  @media (max-width: 1024px) {
+  @media (max-width: 991px) {
     .writing-layout {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -503,10 +520,10 @@
       position: static;
       padding: 12px;
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: var(--radius-12);
     }
   }
-  @media (max-width: 720px) {
+  @media (max-width: 767px) {
     .editor-dock > i {
       margin: 0 2px;
     }
@@ -518,11 +535,12 @@
       flex-wrap: wrap;
     }
     .document-title-input {
-      font-size: 22px;
+      font-size: var(--typography-heading1-fontSize);
+      letter-spacing: var(--typography-heading1-letterSpacing);
     }
     .writing-paper {
       padding: 24px 18px 120px;
-      border-radius: 12px;
+      border-radius: var(--radius-12);
     }
     .editor-dock {
       max-width: calc(100vw - 24px);
@@ -551,14 +569,15 @@
   .rms-control-tooltip {
     z-index: 100;
     padding: 7px 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-8);
     background: var(--text);
     color: var(--surface);
     box-shadow: var(--shadow-pop);
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
     user-select: none;
     animation: tooltip-arrive 120ms ease-out;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rms-control-tooltip svg {
     fill: var(--text);

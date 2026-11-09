@@ -7,13 +7,13 @@
   }
   .app-shell.floating-workspace .sidebar {
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: var(--radius-16);
     padding: 12px 10px 10px;
   }
   .app-shell.floating-workspace .nav-item {
     border: 0;
     box-shadow: none;
-    border-radius: 9px;
+    border-radius: var(--radius-10);
     min-height: 40px;
     transition:
       background 150ms ease,
@@ -65,7 +65,7 @@
     padding: 0;
     margin: 0;
     border: 0;
-    border-radius: 99px;
+    border-radius: var(--radius-full);
     position: relative;
     background: var(--line-strong);
     box-sizing: border-box;
@@ -98,13 +98,15 @@
     border-top: 1px solid var(--line);
   }
   .password-settings h3 {
-    font-size: 18px;
+    font-size: var(--typography-headline1-fontSize);
     margin: 0 0 8px;
+    letter-spacing: var(--typography-headline1-letterSpacing);
   }
   .password-settings > p {
     margin: 0 0 20px;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .password-settings form {
     display: grid;
@@ -128,7 +130,7 @@
     padding: 16px;
     background: var(--surface-muted);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius-12);
   }
   .writing-layout .writing-outline .field {
     max-width: 340px;
@@ -165,7 +167,7 @@
     height: auto;
     gap: 3px;
     padding: 8px;
-    border-radius: 16px;
+    border-radius: var(--radius-16);
   }
   .editor-dock-wrap .editor-dock > button:not([data-slot="button"]) {
     width: 38px;
@@ -186,7 +188,7 @@
     inset: 3px -3px -3px 3px;
     border: 1px solid var(--line-strong);
     background: var(--surface-muted);
-    border-radius: 7px;
+    border-radius: var(--radius-8);
     transform: rotate(6deg);
     transition: transform 180ms ease;
     z-index: -1;
@@ -198,7 +200,7 @@
     object-fit: contain;
     background: var(--semantic-static-white);
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius-8);
   }
   .material-preview-badge .preview-fallback {
     display: flex;
@@ -208,10 +210,11 @@
     gap: 4px;
     height: 64px;
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius-8);
     background: var(--surface-muted);
     color: var(--text-secondary);
-    font-size: 10px;
+    font-size: var(--typography-caption2-fontSize);
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .material-list-row:hover .material-preview-badge::before,
   .material-list-row:focus-visible .material-preview-badge::before {
@@ -225,7 +228,7 @@
     margin-top: 24px;
     padding: 20px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius-12);
   }
   .pending-deletions > div {
     display: flex;
@@ -266,7 +269,7 @@
     padding: 24px;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 18px;
+    border-radius: var(--radius-16);
   }
   .rh-home .rh-quick-text {
     min-width: 0;
@@ -280,7 +283,7 @@
   .rh-home .rh-quick-actions {
     gap: 16px;
   }
-  @media (max-width: 600px) {
+  @media (max-width: 767px) {
     .rh-home .rh-work,
     .rh-home .rh-writing,
     .rh-home .rh-attention {
@@ -297,7 +300,8 @@
   .student-filter-row > label {
     white-space: nowrap;
     flex-shrink: 0;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .student-filter-row .select-field-host {
     min-width: 144px;
@@ -321,7 +325,7 @@
     margin: 16px 24px;
     padding: 16px;
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: var(--radius-12);
     background: var(--surface);
   }
   .ai-unanswered p {
@@ -348,10 +352,10 @@
   }
 
   /* Accessibility pass, 2026-11-08 (docs/design/ui-quality.md).
-   Brand text on brand tints uses --brand-ink so it reads at 4.5:1+. */
+   Brand text on brand tints uses --brand so it reads at 4.5:1+. */
   .app-shell.floating-workspace .nav-item.active,
   .tone-blue {
-    color: var(--brand-ink);
+    color: var(--brand);
   }
   /* Text links in the shell chrome get at least a 24px target (WCAG 2.5.8). */
   .floating-workspace .breadcrumbs > a {
@@ -406,7 +410,7 @@
   }
   /* Current tab in the 피드백 · 할 일 · 수정 결과 switcher: brand text on a tint. */
   .work-tabs a[aria-current="page"] {
-    color: var(--brand-ink);
+    color: var(--brand);
   }
   /* Small text buttons: at least a 24px target (WCAG 2.5.8). */
   .review-history-button,
@@ -419,7 +423,7 @@
   }
   /* Task rows on phones: show the description on up to two lines instead of
    cutting it to a single ellipsised line (the detail view has the rest). */
-  @media (max-width: 600px) {
+  @media (max-width: 767px) {
     .task-row-text small {
       white-space: normal;
       display: -webkit-box;
@@ -477,7 +481,7 @@
   }
   /* Selected material folder ("전체"): brand text on a brand tint. */
   .folder-all[aria-pressed="true"] {
-    color: var(--brand-ink);
+    color: var(--brand);
   }
   /* Task list: the title is a flex container (priority icon + text), so its
    text is an anonymous flex item. overflow-wrap:anywhere lowers its

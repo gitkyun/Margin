@@ -130,7 +130,7 @@
   }
   .margin-depth-option > svg {
     flex-shrink: 0;
-    color: var(--tone-blue, var(--brand));
+    color: var(--brand);
   }
   .margin-depth-help {
     font-size: 12px;

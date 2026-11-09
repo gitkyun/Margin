@@ -12,26 +12,27 @@
     align-items: center;
     padding: 3px;
     gap: 2px;
-    border-radius: 12px;
+    border-radius: var(--radius-12);
     background: var(--surface-muted);
   }
   .lp-footer-theme button {
     min-height: 40px;
     padding: 0 10px;
     border: 0;
-    border-radius: 9px;
+    border-radius: var(--radius-10);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     background: transparent;
     color: var(--text-secondary);
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     line-height: 1;
     transition:
       background 160ms ease,
       color 160ms ease,
       box-shadow 160ms ease;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .lp-footer-theme button[aria-pressed="true"] {
     background: var(--surface);
@@ -51,8 +52,9 @@
     border: 0;
     background: transparent;
     color: var(--text);
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     white-space: nowrap;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .lp-back-to-top svg {
     transition: transform 180ms ease;
@@ -60,7 +62,7 @@
   .lp-back-to-top:hover svg {
     transform: translateY(-3px);
   }
-  @media (max-width: 600px) {
+  @media (max-width: 767px) {
     .lp-footer-controls {
       width: 100%;
       justify-content: space-between;

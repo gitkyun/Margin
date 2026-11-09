@@ -25,7 +25,6 @@
     var(--semantic-background-neutral-primary-rgb),
     var(--opacity-88)
   );
-  --glass: var(--topbar);
 
   /* 글자 */
   --text: var(--semantic-foreground-neutral-primary);
@@ -35,11 +34,9 @@
   /* 선 */
   --line: var(--semantic-line-neutral-secondary);
   --line-strong: var(--semantic-line-neutral-primary);
-  --input-line: var(--semantic-line-neutral-primary);
 
   /* 브랜드 */
   --brand: var(--semantic-foreground-brand-primary);
-  --brand-ink: var(--semantic-foreground-brand-primary);
   --primary: var(--semantic-surface-brand-primary);
   --brand-soft: var(--semantic-surface-brand-subtle);
 
@@ -49,10 +46,6 @@
   --danger: var(--semantic-foreground-negative-primary);
   --danger-soft: var(--semantic-surface-negative-primary);
   --danger-line: var(--semantic-line-negative-primary);
-  --tone-blue: var(--semantic-foreground-brand-primary);
-  --tone-green: var(--semantic-foreground-positive-primary);
-  --tone-amber: var(--semantic-foreground-cautionary-primary);
-  --tone-red: var(--semantic-foreground-negative-primary);
   --tone-gray: var(--semantic-foreground-neutral-quaternary);
 
   /* 상호작용 — 누를 수 있는 카드·행은 이 두 값만 씁니다 */
@@ -72,8 +65,6 @@
   /* 앱 배치 값(색 아님) */
   --rail-width: 238px;
   --shell-gap: var(--spacing-14);
-  --font-mono:
-    "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
 }
 
 /*
@@ -90,19 +81,4 @@
     var(--semantic-surface-brand-primary-rgb),
     var(--opacity-16)
   );
-}
-
-/* 이전 이름. 쓰는 곳을 옮기면 지웁니다(migration.md). */
-:root {
-  --border: var(--line);
-  --muted: var(--text-secondary);
-  --surface-soft: var(--surface-muted);
-  --primary-soft: var(--brand-soft);
-}
-
-/* 연구 홈 전용 별칭 */
-.rh-home {
-  --rh-soft-blue: var(--semantic-surface-brand-subtle);
-  --rh-blue-line: var(--semantic-line-brand-primary);
-  --rh-hover: var(--semantic-surface-neutral-tertiary);
 }

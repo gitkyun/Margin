@@ -49,10 +49,11 @@
     background: var(--surface);
     border: 1px solid var(--line);
     box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-    border-radius: 10px;
+    border-radius: var(--radius-10);
     color: var(--text-secondary);
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     white-space: nowrap;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .rms-merge-paths {
     position: absolute;
@@ -73,7 +74,7 @@
     padding: 17px 18px;
     margin: 79px auto 0;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: var(--radius-16);
     background: var(--surface);
     box-shadow: var(--semantic-elevation-shadow-normal-medium);
     color: var(--text);
@@ -84,14 +85,16 @@
     flex: 1;
   }
   .rms-merge-result strong {
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
     font-weight: 600;
-    line-height: 1.4;
+    line-height: var(--typography-label1-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .rms-merge-result div > span {
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rms-merge-result > svg {
     color: var(--text-tertiary);
@@ -106,17 +109,17 @@
     justify-content: center;
     gap: 7px;
     border: 1px solid var(--semantic-line-brand-primary);
-    border-radius: 14px;
+    border-radius: var(--radius-14);
     background: linear-gradient(140deg, #e8f4ff, #b9d7ff);
     box-shadow:
       inset 0 2px 3px #ffffff9c,
       var(--semantic-elevation-shadow-normal-xsmall);
-    color: var(--brand-ink);
+    color: var(--brand);
   }
   .rms-assistant-glyph > span {
     width: 4px;
     height: 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-4);
     background: currentColor;
     transform: translateY(-2px);
   }
@@ -127,7 +130,7 @@
     left: 16px;
     top: 26px;
     border-bottom: 1.5px solid currentColor;
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 var(--radius-8) var(--radius-8);
   }
   .rms-merge-suggestions {
     display: flex;
@@ -140,21 +143,22 @@
     display: inline-flex;
     gap: 5px;
     align-items: center;
-    font-size: 11px;
+    font-size: var(--typography-caption2-fontSize);
     color: var(--text-tertiary);
     background: rgba(
       var(--semantic-background-neutral-primary-rgb),
       var(--opacity-74)
     );
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: var(--radius-8);
     padding: 4px 7px;
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .rms-spotlight-card {
     position: relative;
     overflow: hidden;
     isolation: isolate;
-    border-radius: 24px;
+    border-radius: var(--radius-24);
     background: var(--surface-muted);
   }
   .rms-spotlight-light {
@@ -183,7 +187,7 @@
     height: 280px;
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 15px;
+    border-radius: var(--radius-16);
     background: var(--surface);
     box-shadow: var(--semantic-elevation-shadow-normal-medium);
   }
@@ -194,26 +198,28 @@
     background: var(--surface);
   }
   .rms-compare-sheet > span:first-child {
-    font-size: 11px;
-    line-height: 1.5;
+    font-size: var(--typography-caption2-fontSize);
+    line-height: var(--typography-caption2-lineHeight);
     display: block;
     margin-bottom: 12px;
     color: var(--text-tertiary);
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .rms-compare-sheet h4 {
     margin: 0 0 18px;
-    font-size: 17px;
+    font-size: var(--typography-headline2-fontSize);
     font-weight: 600;
-    letter-spacing: -0.4px;
-    line-height: 1.5;
+    letter-spacing: var(--typography-headline2-letterSpacing);
+    line-height: var(--typography-headline2-lineHeight);
     color: var(--text);
   }
   .rms-compare-sheet p {
     color: var(--text-secondary);
-    font-size: 13px;
-    line-height: 1.9;
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
     max-width: 340px;
     margin: 0;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   /* 두 판이 겹쳐 있으므로 반투명 채움 대신 불투명 배경을 씁니다. */
   .rms-compare-before {
@@ -229,8 +235,9 @@
     margin: 0;
     padding-left: 18px;
     color: var(--text-secondary);
-    font-size: 12px;
-    line-height: 1.9;
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rms-compare-after li + li {
     margin-top: 7px;
@@ -285,11 +292,12 @@
     align-items: center;
     justify-content: center;
     margin-top: 16px;
-    font-size: 11px;
+    font-size: var(--typography-caption2-fontSize);
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: var(--typography-caption2-lineHeight);
+    letter-spacing: var(--typography-caption2-letterSpacing);
   }
-  @media (max-width: 600px) {
+  @media (max-width: 767px) {
     .rms-merge-flow {
       padding: 24px 12px 18px;
     }
@@ -311,19 +319,23 @@
       gap: 10px;
     }
     .rms-merge-result strong {
-      font-size: 13px;
+      font-size: var(--typography-label2-fontSize);
+      letter-spacing: var(--typography-label2-letterSpacing);
     }
     .rms-merge-result div > span {
-      font-size: 11px;
+      font-size: var(--typography-caption2-fontSize);
+      letter-spacing: var(--typography-caption2-letterSpacing);
     }
     .rms-compare-sheet {
       padding: 24px 20px;
     }
     .rms-compare-sheet h4 {
-      font-size: 15px;
+      font-size: var(--typography-body2-fontSize);
+      letter-spacing: var(--typography-body2-letterSpacing);
     }
     .rms-compare-after ol {
-      font-size: 11px;
+      font-size: var(--typography-caption2-fontSize);
+      letter-spacing: var(--typography-caption2-letterSpacing);
     }
     .rms-compare-stage {
       height: 285px;
