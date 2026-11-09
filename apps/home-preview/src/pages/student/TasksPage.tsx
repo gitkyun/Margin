@@ -152,11 +152,10 @@ export function TasksPage() {
     );
   return (
     <div className="student-page">
-      <WorkTabs researchId={researchId} selected="tasks" />
       {current ? (
         <>
-          <BackLink to={`/r/${researchId}/tasks`}>할 일 목록</BackLink>
           <PageHeader
+            back={<BackLink to={`/r/${researchId}/tasks`}>할 일 목록</BackLink>}
             title={current.title}
             description="상태와 기한을 바꾸고 관련 기록을 확인하세요."
             actions={
@@ -352,6 +351,7 @@ export function TasksPage() {
         <>
           <PageHeader
             title="할 일"
+            tabs={<WorkTabs researchId={researchId} selected="tasks" />}
             description="미팅 준비에 포함하지 않은 할 일까지 모두 볼 수 있어요."
             actions={
               <Button onClick={startCreate}>
@@ -443,7 +443,6 @@ export function TasksPage() {
                       to={`/r/${researchId}/tasks/${task.id}`}
                     >
                       <strong>
-                        {task.title}
                         {task.priority === "high" && (
                           <span
                             className="priority-dot"
@@ -451,6 +450,7 @@ export function TasksPage() {
                             aria-label="우선순위 높음"
                           />
                         )}
+                        {task.title}
                       </strong>
                       <small>
                         {task.origin && <>{originLabels[task.origin]} · </>}

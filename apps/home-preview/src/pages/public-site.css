@@ -137,40 +137,14 @@
   .lp-button:hover svg {
     transform: translate(2px, -2px);
   }
-  .lp-button-dark {
-    background: var(--semantic-surface-neutral-inverse);
-    color: var(--semantic-foreground-neutral-inverse);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
+  /* 파란 브랜드 면(소개 마지막 띠) 위의 주 행동만 흰 버튼으로 둡니다(docs/design/patterns.md §1). */
+  .lp-button-on-brand {
+    background: var(--semantic-static-white);
+    color: var(--semantic-foreground-brand-primary);
+    box-shadow: var(--semantic-elevation-shadow-normal-medium);
   }
-  .lp-button-dark:hover {
-    background: rgba(
-      var(--semantic-surface-neutral-inverse-rgb),
-      var(--opacity-88)
-    );
-    box-shadow: var(--semantic-elevation-shadow-normal-small);
-  }
-  /* 다크에서 흰 버튼은 화면에서 가장 밝은 면이 되어 위계를 깨므로 브랜드 파랑을 씁니다. */
-  [data-theme="dark"] .lp-button-dark {
-    background: var(--semantic-surface-brand-primary);
-    color: var(--semantic-static-white);
-  }
-  [data-theme="dark"] .lp-button-dark:hover {
-    background: var(--semantic-surface-brand-strong);
-  }
-  .lp-button-light {
-    color: var(--text);
-    background: var(--surface);
-    border-color: var(--line);
-  }
-  .lp-button-light:hover {
-    background: var(--surface-muted);
-  }
-  .lp-button-small {
-    min-height: 40px;
-    font-size: var(--typography-label1-fontSize);
-    padding: 0 16px;
-    border-radius: var(--radius-10);
-    gap: 6px;
+  .lp-button-on-brand:hover {
+    background: rgba(var(--semantic-static-white-rgb), var(--opacity-88));
   }
   .lp-menu-toggle {
     display: none;
@@ -1229,7 +1203,7 @@
       transform var(--motion-duration-enter);
   }
   .lp-capability:hover {
-    background: var(--brand-soft);
+    background: var(--hover-fill);
     transform: translateY(-4px);
   }
   .lp-capability:hover .lp-capability-arrow {
@@ -1551,14 +1525,6 @@
   [data-theme="dark"] .lp-footer {
     background: linear-gradient(180deg, transparent 10%, #25427f 85%);
   }
-  .lp-close .lp-button-dark {
-    background: var(--semantic-static-white);
-    color: var(--atomic-blue-30);
-    box-shadow: var(--semantic-elevation-shadow-normal-medium);
-  }
-  .lp-close .lp-button-dark:hover {
-    background: var(--atomic-blue-95);
-  }
   [data-theme="dark"] .lp-close > .lp-mark {
     color: var(--atomic-blue-50);
   }
@@ -1750,10 +1716,6 @@
     .lp-brand {
       font-size: var(--typography-heading1-fontSize);
       letter-spacing: var(--typography-heading1-letterSpacing);
-    }
-    .lp-button-small {
-      padding: 10px 13px;
-      min-height: 40px;
     }
     .lp-hero {
       padding: 35px 14px 0;
@@ -2116,10 +2078,12 @@
       opacity var(--motion-duration-micro),
       transform var(--motion-duration-micro);
   }
-  .lp-tour-index button:hover,
+  .lp-tour-index button:hover {
+    background: var(--hover-fill);
+  }
   .lp-tour-index button[aria-pressed="true"] {
-    background: var(--brand-soft);
-    color: var(--primary);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
   }
   .lp-tour-index button[aria-pressed="true"] > svg:last-child,
   .lp-tour-index button:hover > svg:last-child {

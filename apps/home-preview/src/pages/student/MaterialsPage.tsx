@@ -294,8 +294,10 @@ export function MaterialsPage() {
     <div className="student-page">
       {current ? (
         <>
-          <BackLink to={`/r/${researchId}/materials`}>자료 목록</BackLink>
           <PageHeader
+            back={
+              <BackLink to={`/r/${researchId}/materials`}>자료 목록</BackLink>
+            }
             title={current.title}
             description={`${materialTypes[current.type]} · ${current.externalUrl ? "링크" : "PDF 파일"}`}
             actions={

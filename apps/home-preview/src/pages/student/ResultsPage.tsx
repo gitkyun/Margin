@@ -91,11 +91,14 @@ export function ResultsPage() {
     );
   return (
     <div className="student-page">
-      <WorkTabs researchId={researchId} selected="results" />
       {current ? (
         <>
-          <BackLink to={`/r/${researchId}/results`}>수정 결과 목록</BackLink>
           <PageHeader
+            back={
+              <BackLink to={`/r/${researchId}/results`}>
+                수정 결과 목록
+              </BackLink>
+            }
             title={current.title}
             description="실제로 고친 내용과 근거를 기록해요."
             actions={
@@ -244,6 +247,7 @@ export function ResultsPage() {
         <>
           <PageHeader
             title="수정 결과"
+            tabs={<WorkTabs researchId={researchId} selected="results" />}
             description="실제로 고친 내용과 근거를 기록하고, 필요한 것만 검토 요청에 넣을 수 있어요."
             actions={
               <Button onClick={startCreate}>

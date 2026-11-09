@@ -102,7 +102,7 @@
   }
   .lp-header nav .lp-nav-panel a:hover,
   .lp-header nav .lp-nav-panel a[data-highlighted] {
-    background: var(--brand-soft);
+    background: var(--hover-fill);
     color: var(--text);
   }
   .lp-header nav .lp-nav-panel-bottom {

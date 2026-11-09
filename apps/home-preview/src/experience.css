@@ -566,8 +566,8 @@
     letter-spacing: var(--typography-caption2-letterSpacing);
   }
   .role-choice .selected {
-    border-color: var(--brand);
-    background: var(--brand-soft);
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
   }
   .auth-switch {
     margin-top: 22px !important;
@@ -724,9 +724,6 @@
     color: var(--text);
     border-color: var(--line);
     box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-  }
-  .floating-workspace .nav-item.active > svg {
-    color: var(--brand);
   }
   .floating-workspace .nav-item:hover {
     background: color-mix(in srgb, var(--surface) 65%, transparent);
@@ -1001,8 +998,8 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .settings-layout > nav button[aria-current] {
-    background: var(--surface-muted);
-    color: var(--text);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
   }
   .settings-body {
     max-width: 650px;
@@ -1690,8 +1687,8 @@
       color: var(--text-secondary);
     }
     .rms-mobile-sheet .nav-item.active {
-      color: var(--brand);
-      background: var(--surface-muted);
+      color: var(--semantic-foreground-brand-primary);
+      background: var(--selected-fill);
     }
     .rms-mobile-sheet .sidebar-bottom {
       margin-top: auto;

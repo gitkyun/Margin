@@ -17,26 +17,59 @@ import {
 } from "@montage-ui/core";
 import { Icon } from "./icons";
 import { Button } from "@/components/ui/button";
+/**
+ * 화면 머리. 순서는 docs/design/patterns.md §2로 고정합니다:
+ * 뒤로 → 제목·상태 배지·행동 → 설명 → 탭 → 도구 줄.
+ * 화면에서 머리 요소를 따로 쌓지 말고 이 자리(back·status·tabs·toolbar)를 씁니다.
+ */
 export function PageHeader({
   title,
   description,
   actions,
   eyebrow,
+  back,
+  status,
+  tabs,
+  toolbar,
 }: {
   title: string;
-  description?: string;
+  description?: ReactNode;
   actions?: ReactNode;
   eyebrow?: string;
+  /** 상세 화면의 BackLink. */
+  back?: ReactNode;
+  /** 제목 옆 상태 배지. */
+  status?: ReactNode;
+  /** 다른 내용 묶음으로 가는 탭(Montage Tab). */
+  tabs?: ReactNode;
+  /** 보기 전환·찾기·거르기 줄. */
+  toolbar?: ReactNode;
 }) {
-  return (
-    <header className="page-header">
+  const header = (
+    <header className={tabs ? "page-header has-tabs" : "page-header"}>
       <div>
         {eyebrow && <div className="page-eyebrow">{eyebrow}</div>}
-        <h1 className="page-title">{title}</h1>
+        {status ? (
+          <div className="page-title-row">
+            <h1 className="page-title">{title}</h1>
+            {status}
+          </div>
+        ) : (
+          <h1 className="page-title">{title}</h1>
+        )}
         {description && <p className="page-description">{description}</p>}
       </div>
       {actions && <div className="page-actions">{actions}</div>}
     </header>
+  );
+  if (!back && !tabs && !toolbar) return header;
+  return (
+    <>
+      {back}
+      {header}
+      {tabs}
+      {toolbar && <div className="page-toolbar">{toolbar}</div>}
+    </>
   );
 }
 /**
@@ -75,18 +108,28 @@ const BADGE_COLOR: Record<Exclude<BadgeTone, "neutral">, ThemeColorsToken> = {
   amber: "semantic.foreground.cautionary.primary",
   red: "semantic.foreground.negative.primary",
 };
-/** 상태 표시. 모양은 Montage ContentBadge(small·solid)가 맡습니다. */
+/**
+ * 상태 표시. 모양은 Montage ContentBadge(small)가 맡습니다.
+ * 학생 작업 상태는 solid, 교수 결과는 outlined + 아이콘으로 모양을 나눕니다
+ * (docs/design/patterns.md §1, 작업 완료와 교수 결과를 합치지 않음).
+ */
 export function StatusBadge({
   children,
   tone = "neutral",
+  variant = "solid",
+  icon,
 }: {
   children: ReactNode;
   tone?: BadgeTone;
+  variant?: "solid" | "outlined";
+  icon?: ReactNode;
 }) {
   return (
     <ContentBadge
       className={`status-badge tone-${tone}`}
       size="small"
+      variant={variant}
+      leadingContent={icon}
       color={tone === "neutral" ? "neutral" : "accent"}
       accentColor={tone === "neutral" ? undefined : BADGE_COLOR[tone]}
     >
