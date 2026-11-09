@@ -575,16 +575,17 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             <section className="surface">
               <div className="section-heading">
                 <h2>수정 결과</h2>
-                <button
+                <Button
+                  variant="link"
+                  size="sm"
                   type="button"
-                  className="student-text-link"
                   onClick={() =>
                     setResultDraft(newResultDraft(researchId, { feedback }))
                   }
                 >
                   작성
                   <Icon name="plus" size={14} />
-                </button>
+                </Button>
               </div>
               {/* Opened in place so this feedback stays behind the dialog. */}
               <ResultEditorDialog

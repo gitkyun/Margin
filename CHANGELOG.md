@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- 남아 있던 직접 만든 버튼(`.rms-action`·`.text-link`·`.icon-button` 등)을 Montage Button·TextButton·IconButton으로 바꿈. 화면 테마 고르기와 홈 ‘내 할 일/연구 전체’도 보기 전환 토글(SegmentedControl)로 통일.
+- 화면 안 탭(피드백·할 일·수정 결과, 미팅 준비·기록·결정, 검토 화면 휴대폰 탭)을 Montage Tab(밑줄 표시)으로 통일.
 - 공통 부품을 Montage로 교체: 대화상자 26개(Modal, 휴대폰에서는 아래에서 올라오는 시트), 계정·연구 전환 메뉴(Menu, 현재 연구에 체크), 선택 상자 65곳(Select), 체크박스 16개·알림 스위치(Checkbox·Switch), 상태 표시 30곳(ContentBadge), 빈 화면(FallbackView), 불러오는 중(Skeleton). 선택 상자 안 검색 칸은 Montage Select에 없어 없앰.
 - 목록 위 검색 칸을 40px(Montage medium)로 줄여 보기 전환·선택 상자와 높이를 맞춤. 여러 줄 입력은 기본으로 줄 전체 너비.
 - 글자 체계를 Montage 타이포그래피 토큰으로 통일: 글자 크기 840곳을 caption2~display1 단계로 옮기고(9·10·12.5·13.5·23px 같은 눈금 밖 값 제거), 줄 간격·자간을 같은 단계 값으로 맞춤. 굵기는 400·500·600(제목 700)만 씀.

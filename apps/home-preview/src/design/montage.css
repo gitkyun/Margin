@@ -1,6 +1,9 @@
 /*
  * Montage·외부 부품 조정 (레이어 없음)
  *
+ * Montage(Emotion) 스타일은 이 파일보다 나중에 들어오므로, 같은 속성을 바꿀 때는
+ * 클래스 하나보다 구체적인 선택자(예: `.x[role="tablist"]`)를 씁니다.
+ *
  * 마진 화면 CSS는 모두 `@layer margin` 안에 있어서, 레이어 없는 Montage
  * 부품 스타일(Emotion)과 외부 라이브러리 CSS를 덮지 못합니다.
  * 부품 모양을 일부러 바꿔야 할 때만 이 파일에 적습니다.
@@ -209,6 +212,28 @@
   line-height: var(--typography-caption1-lineHeight);
   font-weight: 400;
 }
-.margin-menu-divider {
+.margin-menu-divider.margin-menu-divider {
   margin-block: var(--spacing-8);
+}
+
+/* 화면 안 탭(Montage Tab): 위아래 여백만 정합니다. */
+.work-tabs[role="tablist"],
+.tabs-line[role="tablist"] {
+  margin-block: 0 var(--spacing-24);
+}
+.student-page .tabs-line[role="tablist"] {
+  margin-top: var(--spacing-24);
+}
+.margin-tab-count.margin-tab-count {
+  margin-left: var(--spacing-6);
+}
+/* 검토 화면의 문서·응답 전환 탭은 휴대폰에서만 보입니다. */
+.review-mobile-tabs[role="tablist"] {
+  display: none;
+}
+@media (max-width: 767px) {
+  .review-mobile-tabs[role="tablist"] {
+    display: flex;
+    margin-bottom: var(--spacing-20);
+  }
 }

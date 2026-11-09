@@ -1002,9 +1002,6 @@
     flex: 1;
     padding: 60px 20px;
   }
-  .review-mobile-tabs {
-    display: none;
-  }
   @media (min-width: 1600px) {
     .review-reading-grid {
       grid-template-columns: minmax(0, 1fr) 380px;
@@ -1212,27 +1209,6 @@
       flex-direction: row;
       align-items: center;
       gap: 9px;
-    }
-    .review-mobile-tabs {
-      display: flex;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 20px;
-      gap: 24px;
-    }
-    .review-mobile-tabs > button {
-      border: 0;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      background: none;
-      color: var(--text-secondary);
-      font-size: var(--typography-label2-fontSize);
-      padding: 12px 0;
-      letter-spacing: var(--typography-label2-letterSpacing);
-    }
-    .review-mobile-tabs > button[aria-selected="true"] {
-      color: var(--text);
-      border-bottom-color: var(--text);
-      font-weight: 600;
     }
     .review-reading-grid {
       display: block;

@@ -88,37 +88,6 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .subscription-button {
-    min-height: 44px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-10);
-    padding: 10px 12px;
-    background: var(--surface);
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 600;
-    transition:
-      background 0.15s,
-      transform 0.15s;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .subscription-button:hover {
-    background: var(--surface-muted);
-    transform: translateY(-1px);
-  }
-  .subscription-button-primary {
-    color: var(--semantic-static-white);
-    background: var(--primary);
-    border-color: var(--primary);
-  }
-  .subscription-button-primary:hover {
-    color: var(--semantic-static-white);
-    background: var(--semantic-surface-brand-strong);
-  }
   .subscription-card ul {
     padding: 24px 0 0;
     margin: 0;
@@ -224,14 +193,6 @@
     }
     .subscription-price {
       min-height: 78px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .subscription-button {
-      transition: none;
-    }
-    .subscription-button:hover {
-      transform: none;
     }
   }
 }

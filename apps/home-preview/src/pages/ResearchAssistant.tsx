@@ -872,16 +872,16 @@ export function ResearchAssistant() {
                 }}
               />
               <div className="composer-actions">
-                <button
-                  className="icon-button"
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   type="button"
-                  title="자료 선택·첨부"
                   aria-label="자료 선택·첨부"
                   disabled={running || uploading}
                   onClick={() => setPicker(true)}
                 >
                   <Icon name="clip" size={20} />
-                </button>
+                </Button>
                 <Choice
                   compact
                   value={task}

@@ -462,10 +462,12 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     <div className="writing-page">
       <header className="writing-heading">
         <div>
-          <Link className="text-link" to={`/r/${initial.researchId}/writing`}>
-            <Icon name="arrow-left" size={15} />
-            글쓰기
-          </Link>
+          <Button variant="link" size="sm" asChild>
+            <Link to={`/r/${initial.researchId}/writing`}>
+              <Icon name="arrow-left" size={15} />
+              글쓰기
+            </Link>
+          </Button>
           <input
             aria-label="문서 제목"
             className="document-title-input"

@@ -78,8 +78,9 @@ export function MaterialFolders({
     <aside className="folder-tree">
       <div className="section-heading">
         <h2>폴더</h2>
-        <button
-          className="icon-button"
+        <Button
+          variant="ghost"
+          size="icon-sm"
           aria-label="폴더 만들기"
           onClick={() => {
             setDraft({
@@ -91,7 +92,7 @@ export function MaterialFolders({
           }}
         >
           <Icon name="plus" size={17} />
-        </button>
+        </Button>
       </div>
       <button
         className="folder-all"

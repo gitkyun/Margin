@@ -297,9 +297,9 @@ export function WorkspaceShell({
         <Icon name="lock" size={32} />
         <h1>이 연구를 열 수 없어요</h1>
         <p>휴지통에 있거나 접근 권한이 없는 연구예요.</p>
-        <Link className="rms-action primary" to="/r">
-          내 연구로 돌아가기
-        </Link>
+        <Button asChild>
+          <Link to="/r">내 연구로 돌아가기</Link>
+        </Button>
       </div>
     );
   const menu = (

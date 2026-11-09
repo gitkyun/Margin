@@ -77,9 +77,9 @@ export function UsageDetails() {
       ) : usage.isError ? (
         <div className="inline-notice" role="alert">
           사용량을 불러오지 못했어요.{" "}
-          <button className="text-link" onClick={() => usage.refetch()}>
+          <Button variant="link" onClick={() => usage.refetch()}>
             다시 불러오기
-          </button>
+          </Button>
         </div>
       ) : usage.isPending ? (
         <p role="status">사용량을 불러오는 중</p>
@@ -210,20 +210,20 @@ export function AccountPage() {
                   <small>로그인 이메일은 여기서 바꿀 수 없어요.</small>
                 </label>
                 <div className="settings-form-actions">
-                  <button
-                    className="rms-action quiet"
+                  <Button
+                    variant="outline"
                     type="button"
                     disabled={busy}
                     onClick={() => setName(user.name)}
                   >
                     변경 취소
-                  </button>
-                  <button
-                    className="rms-action primary"
+                  </Button>
+                  <Button
+                    type="submit"
                     disabled={busy || name.trim() === user.name}
                   >
                     {busy ? "저장 중" : "저장"}
-                  </button>
+                  </Button>
                 </div>
               </form>
               <PasswordSettings />

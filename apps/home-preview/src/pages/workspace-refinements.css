@@ -404,10 +404,6 @@
   .workspace-footer a {
     white-space: nowrap;
   }
-  /* Current tab in the 피드백 · 할 일 · 수정 결과 switcher: brand text on a tint. */
-  .work-tabs a[aria-current="page"] {
-    color: var(--brand);
-  }
   /* Small text buttons: at least a 24px target (WCAG 2.5.8). */
   .review-history-button,
   .pdf-text > summary {

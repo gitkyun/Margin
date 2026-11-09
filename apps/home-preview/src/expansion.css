@@ -1811,26 +1811,6 @@
   .meeting-visibility .field {
     margin: 0;
   }
-  .work-tabs {
-    display: flex;
-    gap: 7px;
-    margin: 0 0 24px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--line);
-  }
-  .work-tabs a {
-    color: var(--text-secondary);
-    font-size: var(--typography-label1-fontSize);
-    padding: 9px 16px;
-    border-radius: var(--radius-10);
-    text-decoration: none;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .work-tabs a[aria-current="page"] {
-    color: var(--primary);
-    background: var(--brand-soft);
-    font-weight: 600;
-  }
   @media (max-width: 1199px) {
     .agent-overview {
       grid-template-columns: 1fr;

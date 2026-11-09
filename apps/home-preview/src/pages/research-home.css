@@ -544,33 +544,6 @@
   .rh-section-description > span {
     color: var(--line-strong);
   }
-  .rh-scope {
-    display: flex;
-    gap: 3px;
-    width: fit-content;
-    padding: 3px;
-    margin: 0 0 12px;
-    border-radius: var(--radius-10);
-    background: var(--surface-sunken);
-  }
-  .rh-scope button {
-    min-height: 32px;
-    padding: 5px 13px;
-    border: 0;
-    border-radius: var(--radius-8);
-    color: var(--text-secondary);
-    background: transparent;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: var(--typography-caption1-fontSize);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .rh-scope button[aria-pressed="true"] {
-    color: var(--text);
-    background: var(--surface);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-    font-weight: 600;
-  }
   .rh-task-list {
     border-top: 1px solid var(--line);
   }

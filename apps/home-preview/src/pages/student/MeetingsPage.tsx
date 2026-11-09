@@ -45,6 +45,7 @@ import {
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
 import { Checkbox } from "@montage-ui/core";
+import { Tabs } from "@/components/ui/tabs";
 
 const meetingFilters = [
   ["all", "전체"],
@@ -769,29 +770,21 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           }}
         />
       </div>
-      <div className="tabs-line" role="tablist" aria-label="미팅 내용">
-        {[
-          ["prepare", "준비"],
-          ["record", "기록"],
-          ["questions", "결정·질문"],
-        ].map(([value, label]) => (
-          <button
-            key={value}
-            role="tab"
-            aria-selected={tab === value}
-            className={tab === value ? "active" : ""}
-            onClick={() => void changeTab(value)}
-          >
-            {label}
-            {value === "questions" &&
-              linkedQuestions.filter((q) => q.status === "open").length > 0 && (
-                <span>
-                  {linkedQuestions.filter((q) => q.status === "open").length}
-                </span>
-              )}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        className="tabs-line"
+        label="미팅 내용"
+        value={tab}
+        onChange={(value) => void changeTab(value)}
+        options={[
+          { value: "prepare", label: "준비" },
+          { value: "record", label: "기록" },
+          {
+            value: "questions",
+            label: "결정·질문",
+            count: linkedQuestions.filter((q) => q.status === "open").length,
+          },
+        ]}
+      />
       {tab === "prepare" && (
         <div className="meeting-preparation">
           <section className="surface preparation-goal">

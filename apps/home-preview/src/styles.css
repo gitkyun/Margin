@@ -540,20 +540,6 @@
     font-weight: 500;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .text-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: 0;
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    padding: 3px 0;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .text-button:hover {
-    color: var(--brand);
-  }
   .muted {
     color: var(--text-secondary);
   }
@@ -664,25 +650,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-  }
-  .tabs-line {
-    display: flex;
-    gap: 24px;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 24px;
-  }
-  .tabs-line > button {
-    padding: 13px 1px;
-    border-bottom: 2px solid transparent;
-    font-size: var(--typography-label1-fontSize);
-    color: var(--text-secondary);
-    background: none;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .tabs-line > button.active {
-    border-bottom-color: var(--text);
-    color: var(--text);
-    font-weight: 600;
   }
 
   .list-layout {
@@ -1061,32 +1028,6 @@
   .previous-record > svg {
     color: var(--text-secondary);
   }
-  .theme-switch {
-    display: inline-flex;
-    gap: 3px;
-    border-radius: var(--radius-10);
-    padding: 3px;
-    background: var(--surface-muted);
-    border: 1px solid var(--line);
-  }
-  .theme-switch button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    border-radius: var(--radius-8);
-    padding: 6px 9px;
-    background: none;
-    border: 0;
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .theme-switch button[aria-pressed="true"] {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-  }
   .account-theme {
     padding: 9px 10px 12px;
   }
@@ -1096,12 +1037,6 @@
     color: var(--text-secondary);
     margin-bottom: 10px;
     letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .account-theme .theme-switch {
-    display: flex;
-  }
-  .account-theme .theme-switch button {
-    flex: 1;
   }
   .notifications-sheet {
     width: min(460px, 100vw) !important;
@@ -2027,12 +1962,6 @@
     }
     .login-top {
       padding: 25px 24px;
-    }
-    .login-top .theme-switch button {
-      padding: 6px;
-    }
-    .login-top .theme-switch button > span {
-      display: none;
     }
     .login-main {
       grid-template-columns: 1fr;

@@ -139,7 +139,7 @@ export function Segments({
 }: {
   value: string;
   onChange: (v: string) => void;
-  options: { value: string; label: string; count?: number }[];
+  options: { value: string; label: string; count?: number; icon?: ReactNode }[];
   label?: string;
   size?: "small" | "medium" | "large";
   fill?: boolean;
@@ -154,6 +154,7 @@ export function Segments({
     >
       {options.map((o) => (
         <SegmentedControlItem key={o.value} value={o.value}>
+          {o.icon}
           {o.label}
           {o.count !== undefined && (
             <small className="segment-count">{o.count}</small>

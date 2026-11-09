@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/common";
 import { selectNextMeeting } from "@/lib/home-meeting";
 import "./research-home.css";
 import { toggleDone } from "@/lib/task-status";
+import { Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 
 export function HomePage() {
@@ -404,22 +405,16 @@ export function HomePage() {
               </Link>
             </div>
             {isCollaborative && (
-              <div className="rh-scope" role="group" aria-label="할 일 범위">
-                <button
-                  type="button"
-                  aria-pressed={scope === "mine"}
-                  onClick={() => setScope("mine")}
-                >
-                  내 할 일
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={scope === "all"}
-                  onClick={() => setScope("all")}
-                >
-                  연구 전체
-                </button>
-              </div>
+              <Segments
+                label="할 일 범위"
+                size="small"
+                value={scope}
+                onChange={(next) => setScope(next as typeof scope)}
+                options={[
+                  { value: "mine", label: "내 할 일" },
+                  { value: "all", label: "연구 전체" },
+                ]}
+              />
             )}
             <div className="rh-task-list">
               {work.slice(0, 5).map((task) => (

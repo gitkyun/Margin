@@ -6,7 +6,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TextField, TextFieldContent } from "@montage-ui/core";
@@ -440,26 +441,18 @@ export function WorkTabs({
   researchId: string;
   selected: "feedback" | "tasks" | "results";
 }) {
+  const navigate = useNavigate();
   return (
-    <nav className="work-tabs" aria-label="피드백과 할 일">
-      <Link
-        to={`/r/${researchId}/feedback`}
-        aria-current={selected === "feedback" ? "page" : undefined}
-      >
-        피드백
-      </Link>
-      <Link
-        to={`/r/${researchId}/tasks`}
-        aria-current={selected === "tasks" ? "page" : undefined}
-      >
-        할 일
-      </Link>
-      <Link
-        to={`/r/${researchId}/results`}
-        aria-current={selected === "results" ? "page" : undefined}
-      >
-        수정 결과
-      </Link>
-    </nav>
+    <Tabs
+      className="work-tabs"
+      label="피드백과 할 일"
+      value={selected}
+      onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
+      options={[
+        { value: "feedback", label: "피드백" },
+        { value: "tasks", label: "할 일" },
+        { value: "results", label: "수정 결과" },
+      ]}
+    />
   );
 }

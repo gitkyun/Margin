@@ -16,6 +16,7 @@ import {
   type ThemeColorsToken,
 } from "@montage-ui/core";
 import { Icon } from "./icons";
+import { Button } from "@/components/ui/button";
 export function PageHeader({
   title,
   description,
@@ -138,6 +139,7 @@ export function Field({
     </div>
   );
 }
+/** 아이콘만 있는 버튼. Montage IconButton(normal)을 씁니다. */
 export function IconButton({
   label,
   onClick,
@@ -148,15 +150,9 @@ export function IconButton({
   children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      className="icon-button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-    >
+    <Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick}>
       {children}
-    </button>
+    </Button>
   );
 }
 export function LoadingState() {
@@ -256,9 +252,9 @@ export function ErrorNotice({
       <Icon name="warning" size={18} />
       <span>{message}</span>
       {retry && (
-        <button className="text-button" onClick={retry}>
+        <Button variant="link" onClick={retry}>
           다시 불러오기
-        </button>
+        </Button>
       )}
     </div>
   );

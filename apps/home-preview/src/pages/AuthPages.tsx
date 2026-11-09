@@ -100,10 +100,12 @@ export function LoginPage({
                 <Icon name="check-circle" size={23} />
                 <p>이미 로그인되어 있어요.</p>
               </div>
-              <Link className="rms-action primary full" to={target}>
-                {target === "/r" ? "내 연구 열기" : "계속하기"}
-                <Icon name="arrow-right" size={18} />
-              </Link>
+              <Button fullWidth size="lg" asChild>
+                <Link to={target}>
+                  {target === "/r" ? "내 연구 열기" : "계속하기"}
+                  <Icon name="arrow-right" size={18} />
+                </Link>
+              </Button>
             </>
           ) : (
             <form onSubmit={submit}>
@@ -144,13 +146,15 @@ export function LoginPage({
                   {error}
                 </p>
               )}
-              <button
-                className="rms-action primary full"
+              <Button
+                fullWidth
+                size="lg"
+                type="submit"
                 disabled={pending || !configured}
               >
                 {pending ? "로그인 중" : "로그인"}
                 <Icon name="arrow-right" size={18} />
-              </button>
+              </Button>
             </form>
           )}
           <p className="auth-switch">

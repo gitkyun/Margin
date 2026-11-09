@@ -62,6 +62,7 @@ import {
   timeText,
   versionForRound,
 } from "./helpers";
+import { Tabs } from "@/components/ui/tabs";
 
 function CommentThread({
   comment,
@@ -684,28 +685,16 @@ export function ReviewDetailPage() {
                 </button>
               </div>
             )}
-            <div
+            <Tabs
               className="review-mobile-tabs"
-              role="tablist"
-              aria-label="검토 영역"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mobilePanel === "document"}
-                onClick={() => setMobilePanel("document")}
-              >
-                수정 내용·파일
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={mobilePanel === "response"}
-                onClick={() => setMobilePanel("response")}
-              >
-                교수 응답·댓글
-              </button>
-            </div>
+              label="검토 영역"
+              value={mobilePanel}
+              onChange={(value) => setMobilePanel(value as typeof mobilePanel)}
+              options={[
+                { value: "document", label: "수정 내용·파일" },
+                { value: "response", label: "교수 응답·댓글" },
+              ]}
+            />
             <div className={`review-reading-grid show-${mobilePanel}`}>
               <section
                 className="review-document-column"

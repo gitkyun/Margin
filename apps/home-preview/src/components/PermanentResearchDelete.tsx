@@ -161,9 +161,9 @@ export function PendingResearchDeletions() {
     return (
       <div className="pending-deletions" role="alert">
         파일 삭제가 남은 연구를 불러오지 못했어요.{" "}
-        <button className="text-link" onClick={() => void jobs.refetch()}>
+        <Button variant="link" onClick={() => void jobs.refetch()}>
           다시 불러오기
-        </button>
+        </Button>
       </div>
     );
   if (!jobs.data?.length) return null;

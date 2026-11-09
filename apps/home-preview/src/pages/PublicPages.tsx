@@ -25,6 +25,7 @@ import {
   SpotlightCard,
   ComparePreview,
 } from "@/components/marketing/MarketingEffects";
+import { Button } from "@/components/ui/button";
 
 const journey = [
   {
@@ -947,10 +948,10 @@ export function SignupPage() {
                     </label>
                   ))}
                 </fieldset>
-                <button className="rms-action primary full" type="submit">
+                <Button fullWidth size="lg" type="submit">
                   가입 미리보기 마치기
                   <Icon name="arrow-right" size={18} />
-                </button>
+                </Button>
               </form>
               <p className="auth-switch">
                 발급받은 계정이 있나요? <Link to="/login">로그인</Link>
@@ -978,12 +979,14 @@ export function SignupPage() {
                 발급받은 계정으로 로그인
                 <Icon name="arrow-right" size={18} />
               </Link>
-              <button
-                className="rms-action quiet full"
+              <Button
+                variant="outline"
+                fullWidth
+                size="lg"
                 onClick={() => setStep(0)}
               >
                 입력 화면으로 돌아가기
-              </button>
+              </Button>
             </div>
           )}
         </div>
