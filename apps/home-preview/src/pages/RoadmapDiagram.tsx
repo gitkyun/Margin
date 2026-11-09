@@ -33,7 +33,7 @@ export default function RoadmapDiagram({
         style: {
           background: "var(--surface)",
           color: "var(--text)",
-          border: "1px solid var(--input-line)",
+          border: "1px solid var(--line-strong)",
           borderRadius: 12,
           padding: 20,
           width: 215,

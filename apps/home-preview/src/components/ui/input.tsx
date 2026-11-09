@@ -11,12 +11,21 @@ import { TextField } from "@montage-ui/core";
  * - 안쪽은 그대로 네이티브 `<input>`이라 FormNavigationGuard·IME 처리와
  *   폼 제출 동작이 바뀌지 않습니다.
  */
-export function Input({ ref, size: _size, ...props }: ComponentProps<"input">) {
+export function Input({
+  ref,
+  size: _size,
+  fieldSize = "large",
+  ...props
+}: ComponentProps<"input"> & {
+  /** Montage 크기: large 48px(폼 기본), medium 40px(목록 위 도구 줄) */
+  fieldSize?: "large" | "medium";
+}) {
   const invalid =
     props["aria-invalid"] === true || props["aria-invalid"] === "true";
   return (
     <TextField
       ref={ref}
+      size={fieldSize}
       status={invalid ? "negative" : "normal"}
       data-slot="input"
       {...(props as Record<string, unknown>)}

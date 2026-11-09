@@ -1,0 +1,88 @@
+/* 버전 비교 슬라이더. 위치·끌기는 react-compare-slider 인라인 스타일이 정하고, 모양만 여기서. */
+@layer margin {
+  .version-compare {
+    cursor: ew-resize;
+    touch-action: pan-y;
+    user-select: none;
+  }
+  .version-compare-line {
+    flex: 1;
+    width: 2px;
+    background: var(--semantic-line-brand-primary);
+  }
+  .version-compare-knob {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--semantic-line-brand-primary);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--brand);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+    pointer-events: auto;
+  }
+  .version-compare:hover .version-compare-knob {
+    background: var(--brand-soft);
+    border-color: var(--semantic-line-brand-strong);
+  }
+  /* 손잡이(role=slider) 자체는 라이브러리가 outline을 0으로 두므로 둥근 손잡이에 표시합니다. */
+  .version-compare-handle-root:focus-visible .version-compare-knob {
+    outline: 3px solid var(--semantic-line-brand-focus);
+    outline-offset: 3px;
+  }
+
+  /* 글쓰기 버전 비교 판 */
+  .version-sheet {
+    box-sizing: border-box;
+    height: 100%;
+    padding: var(--spacing-20) var(--spacing-24);
+    background: var(--surface);
+  }
+  .version-sheet.is-before {
+    background: var(--canvas);
+  }
+  .version-sheet-label {
+    display: inline-block;
+    margin-bottom: var(--spacing-10);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  /* 손잡이가 가운데 있어도 두 버전 이름이 다 보이도록 이후 버전 이름은 오른쪽에 둡니다. */
+  .version-sheet.is-after .version-sheet-label {
+    display: block;
+    color: var(--brand);
+    text-align: right;
+  }
+  .version-compare-scroll .version-sheet {
+    min-height: 180px;
+  }
+  .version-sheet-text {
+    color: var(--text);
+    font-size: var(--typography-body2Reading-fontSize);
+    line-height: var(--typography-body2Reading-lineHeight);
+    letter-spacing: var(--typography-body2Reading-letterSpacing);
+    white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .version-sheet.is-before .version-sheet-text {
+    color: var(--text-secondary);
+  }
+  .version-compare-scroll {
+    max-height: min(52vh, 480px);
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+  }
+  .version-compare-hint {
+    margin: var(--spacing-8) 0 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+}

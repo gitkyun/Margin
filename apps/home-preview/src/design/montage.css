@@ -1,0 +1,263 @@
+/*
+ * Montage·외부 부품 조정 (레이어 없음)
+ *
+ * Montage(Emotion) 스타일은 이 파일보다 나중에 들어오므로, 같은 속성을 바꿀 때는
+ * 클래스 하나보다 구체적인 선택자(예: `.x[role="tablist"]`)를 씁니다.
+ *
+ * 마진 화면 CSS는 모두 `@layer margin` 안에 있어서, 레이어 없는 Montage
+ * 부품 스타일(Emotion)과 외부 라이브러리 CSS를 덮지 못합니다.
+ * 부품 모양을 일부러 바꿔야 할 때만 이 파일에 적습니다.
+ *   - Montage 부품: data-component·data-role 선택자로 너비·배치만 조정
+ *   - FullCalendar·sonner: Montage 토큰으로 테마를 입힘
+ * 색·크기·모서리는 Montage 토큰(--semantic-*, --typography-*, --radius-*)만 씁니다.
+ */
+
+/* from expansion.css */
+/* 보기 전환(Segments) — Montage SegmentedControl 위에 너비·개수만 정합니다. */
+.rms-segments[data-component="segmented-control"] {
+  flex: none;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rms-segments.is-fill[data-component="segmented-control"] {
+  width: 100%;
+}
+.rms-segments:not(.is-fill) [data-component="segmented-control-item"] {
+  flex: 0 0 auto;
+  padding-inline: var(--spacing-12);
+}
+.rms-segments [data-role="segmented-control-item-text"] {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+}
+.rms-segments [data-component="segmented-control-item"][data-active="true"] {
+  font-weight: 600;
+}
+.segment-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-4);
+  background: var(--semantic-surface-neutral-secondary);
+  color: inherit;
+  font-size: var(--typography-caption1-fontSize);
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+[data-component="segmented-control-item"][data-active="true"] .segment-count {
+  background: var(--semantic-surface-brand-subtle);
+  color: var(--semantic-foreground-brand-primary);
+}
+/* 다크: Montage 기본 선택 면(#212225)이 트랙보다 어두워 보여 한 단계 밝은 면으로 띄웁니다. */
+[data-theme="dark"]
+  [data-component="segmented-control"]
+  [data-role="segmented-control-motion"],
+[data-theme="dark"]
+  [data-component="segmented-control-item"][data-active="true"][data-ssr-motion="true"] {
+  background-color: var(--atomic-coolNeutral-30);
+  box-shadow: var(--semantic-elevation-shadow-normal-small);
+}
+/* 공통 툴팁(Hint): 이름 한 줄 + 요약 한 줄 */
+.margin-hint-anchor.is-inline {
+  display: inline-flex;
+}
+.margin-hint-anchor.is-block {
+  display: block;
+}
+.margin-hint-body {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+.margin-hint-body > strong {
+  font-weight: 600;
+}
+.margin-hint-body > span {
+  opacity: 0.78;
+}
+
+/* from reference.css */
+.segment-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-4);
+  font-size: var(--typography-caption2-fontSize);
+  font-weight: 500;
+  line-height: 1;
+  background: var(--surface-sunken);
+  color: var(--text-tertiary);
+  box-shadow: inset 0 0 0 1px var(--line);
+  letter-spacing: var(--typography-caption2-letterSpacing);
+}
+
+/* 좁은 화면에서 숨기는 Montage 버튼: 레이어 안 display:none은 Montage display를 이기지 못합니다. */
+@media (max-width: 767px) {
+  .student-task-row > [data-slot="button"] {
+    display: none;
+  }
+}
+
+/* 동작 메뉴(Montage Menu) 머리글: Montage 메뉴 그룹 제목과 같은 글자 단계 */
+.margin-menu-label {
+  display: grid;
+  gap: 2px;
+  padding: var(--spacing-8) var(--spacing-16) var(--spacing-4);
+  color: var(--semantic-foreground-neutral-primary);
+  font-size: var(--typography-label1-fontSize);
+  line-height: var(--typography-label1-lineHeight);
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.margin-menu-label :is(small, span) {
+  color: var(--semantic-foreground-neutral-tertiary);
+  font-size: var(--typography-caption1-fontSize);
+  line-height: var(--typography-caption1-lineHeight);
+  font-weight: 400;
+}
+.margin-menu-divider.margin-menu-divider {
+  margin-block: var(--spacing-8);
+}
+
+/* 화면 안 탭(Montage Tab): 위아래 여백만 정합니다. */
+.work-tabs[role="tablist"],
+.tabs-line[role="tablist"] {
+  margin-block: 0 var(--spacing-24);
+}
+.student-page .tabs-line[role="tablist"] {
+  margin-top: var(--spacing-24);
+}
+.margin-tab-count.margin-tab-count {
+  margin-left: var(--spacing-6);
+}
+/* 검토 화면의 문서·응답 전환 탭은 휴대폰에서만 보입니다. */
+.review-mobile-tabs[role="tablist"] {
+  display: none;
+}
+@media (max-width: 767px) {
+  .review-mobile-tabs[role="tablist"] {
+    display: flex;
+    margin-bottom: var(--spacing-20);
+  }
+}
+
+/*
+ * 큰 캘린더(FullCalendar v7 forma 테마). v7은 클래스 이름이 해시라 선택자 대신
+ * 테마 변수에 Montage 토큰을 넣습니다. 라이트·다크는 Montage 토큰이 알아서 바뀝니다.
+ */
+.rms-calendar {
+  margin-top: var(--spacing-16);
+  font-size: var(--typography-label2-fontSize);
+  line-height: var(--typography-label2-lineHeight);
+  letter-spacing: var(--typography-label2-letterSpacing);
+
+  --fc-forma-primary: var(--semantic-surface-brand-primary);
+  --fc-forma-primary-over: var(--semantic-surface-brand-strong);
+  --fc-forma-primary-down: var(--semantic-surface-brand-heavy);
+  --fc-forma-primary-foreground: var(--semantic-static-white);
+  --fc-forma-event: var(--semantic-surface-brand-primary);
+  --fc-forma-event-contrast: var(--semantic-static-white);
+  --fc-forma-background-event: var(--semantic-surface-brand-primary);
+  --fc-forma-highlight: rgba(
+    var(--semantic-surface-brand-primary-rgb),
+    var(--opacity-16)
+  );
+  --fc-forma-ring-color: var(--semantic-line-brand-focus);
+
+  --fc-forma-background: var(--surface);
+  --fc-forma-faint: var(--semantic-surface-neutral-tertiary);
+  --fc-forma-muted: var(--semantic-surface-neutral-secondary);
+  --fc-forma-strong: var(--semantic-surface-neutral-strong);
+  --fc-forma-stronger: var(--semantic-line-neutral-primary);
+  --fc-forma-strongest: var(--semantic-line-neutral-primary);
+
+  --fc-forma-foreground: var(--semantic-foreground-neutral-primary);
+  --fc-forma-faint-foreground: var(--semantic-foreground-neutral-quaternary);
+  --fc-forma-muted-foreground: var(--semantic-foreground-neutral-tertiary);
+
+  --fc-forma-border: var(--semantic-line-neutral-tertiary);
+  --fc-forma-muted-border: var(--semantic-line-neutral-tertiary);
+  --fc-forma-strong-border: var(--semantic-line-neutral-primary);
+}
+
+/*
+ * ⌘K 명령 팔레트: Montage Modal은 가운데 정렬이라 결과 수가 바뀌면 상자가 위아래로
+ * 움직입니다. 입력 칸 위치가 고정되도록 위쪽에 붙이고, 넓은 화면은 600px로 엽니다.
+ */
+.command-palette.command-palette {
+  align-self: flex-start;
+  margin-top: var(--spacing-16);
+}
+@media (min-width: 768px) {
+  .command-palette.command-palette {
+    width: 600px;
+    margin-top: 14vh;
+  }
+}
+
+/*
+ * 알림(sonner) — Montage Toast 모양을 따릅니다.
+ * 반투명 반전 면 + 32px 흐림, 모서리 12px, 흰 body2 굵은 글자.
+ * 종류는 색 배경 대신 아이콘 색으로만 구분합니다.
+ */
+[data-sonner-toast][data-styled="true"].margin-toast {
+  gap: var(--spacing-12);
+  padding: 11px var(--spacing-16);
+  border: 0;
+  border-radius: var(--radius-12);
+  background: rgba(
+    var(--semantic-surface-neutral-inverse-rgb),
+    var(--opacity-52)
+  );
+  box-shadow: none;
+  color: var(--semantic-static-white);
+  font-size: var(--typography-body2-fontSize);
+  line-height: var(--typography-body2-lineHeight);
+  letter-spacing: var(--typography-body2-letterSpacing);
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-title] {
+  font-weight: var(--typography-body2-weight-bold);
+  line-height: inherit;
+  word-break: keep-all;
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-description] {
+  color: rgba(var(--semantic-static-white-rgb), var(--opacity-88));
+  word-break: keep-all;
+}
+.margin-toast[data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--semantic-foreground-positive-primary);
+}
+.margin-toast[data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--semantic-foreground-negative-primary);
+}
+.margin-toast[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: var(--semantic-foreground-cautionary-primary);
+}
+.margin-toast[data-sonner-toast][data-type="info"] [data-icon] {
+  color: var(--semantic-foreground-brand-inverse);
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-button] {
+  height: auto;
+  padding: var(--spacing-4) var(--spacing-8);
+  border-radius: var(--radius-8);
+  background: transparent;
+  color: var(--semantic-foreground-brand-inverse);
+  font-size: var(--typography-label1-fontSize);
+  font-weight: var(--typography-body2-weight-bold);
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-close-button] {
+  border: 0;
+  background: rgba(
+    var(--semantic-surface-neutral-inverse-rgb),
+    var(--opacity-88)
+  );
+  color: var(--semantic-static-white);
+}

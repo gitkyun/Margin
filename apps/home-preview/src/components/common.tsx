@@ -6,7 +6,17 @@ import {
   type ReactNode,
   type ReactElement,
 } from "react";
+import {
+  ContentBadge,
+  FallbackView,
+  FallbackViewActionArea,
+  FallbackViewContent,
+  FallbackViewText,
+  Skeleton,
+  type ThemeColorsToken,
+} from "@montage-ui/core";
 import { Icon } from "./icons";
+import { Button } from "@/components/ui/button";
 export function PageHeader({
   title,
   description,
@@ -29,8 +39,11 @@ export function PageHeader({
     </header>
   );
 }
+/**
+ * 빈 화면. 모양은 Montage FallbackView(compact)가 맡습니다.
+ * Montage는 빈 화면에 그림을 두지 않으므로 `icon`은 받기만 하고 그리지 않습니다.
+ */
 export function EmptyState({
-  icon = "folder",
   title,
   description,
   action,
@@ -41,28 +54,44 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="empty-state">
-      <div className="empty-state-icon">
-        {typeof icon === "string" ? <Icon name={icon} size={28} /> : icon}
-      </div>
-      <h3>{title}</h3>
-      {description && <p>{description}</p>}
-      {action}
-    </div>
+    <FallbackView
+      className="empty-state"
+      padding="compact"
+      width="100%"
+      platform="mobile"
+      sm={{ platform: "desktop" }}
+    >
+      <FallbackViewContent>
+        <FallbackViewText title={title} description={description ?? ""} />
+      </FallbackViewContent>
+      {action && <FallbackViewActionArea>{action}</FallbackViewActionArea>}
+    </FallbackView>
   );
 }
+type BadgeTone = "neutral" | "blue" | "green" | "amber" | "red";
+const BADGE_COLOR: Record<Exclude<BadgeTone, "neutral">, ThemeColorsToken> = {
+  blue: "semantic.foreground.brand.primary",
+  green: "semantic.foreground.positive.primary",
+  amber: "semantic.foreground.cautionary.primary",
+  red: "semantic.foreground.negative.primary",
+};
+/** 상태 표시. 모양은 Montage ContentBadge(small·solid)가 맡습니다. */
 export function StatusBadge({
   children,
   tone = "neutral",
 }: {
   children: ReactNode;
-  tone?: "neutral" | "blue" | "green" | "amber" | "red";
+  tone?: BadgeTone;
 }) {
   return (
-    <span className={`status-badge tone-${tone}`}>
-      <span className="badge-dot" />
+    <ContentBadge
+      className={`status-badge tone-${tone}`}
+      size="small"
+      color={tone === "neutral" ? "neutral" : "accent"}
+      accentColor={tone === "neutral" ? undefined : BADGE_COLOR[tone]}
+    >
       {children}
-    </span>
+    </ContentBadge>
   );
 }
 export function Field({
@@ -110,6 +139,7 @@ export function Field({
     </div>
   );
 }
+/** 아이콘만 있는 버튼. Montage IconButton(normal)을 씁니다. */
 export function IconButton({
   label,
   onClick,
@@ -120,79 +150,108 @@ export function IconButton({
   children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      className="icon-button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-    >
+    <Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick}>
       {children}
-    </button>
+    </Button>
   );
 }
 export function LoadingState() {
   return (
     <div className="loading-state" role="status" aria-label="불러오는 중">
-      <div className="skeleton skeleton-title" />
-      <div className="skeleton skeleton-block" />
-      <div className="skeleton skeleton-row" />
-      <div className="skeleton skeleton-row" />
+      <Skeleton variant="text" width="40%" height={32} />
+      <Skeleton variant="rectangle" width="100%" height={160} radius={16} />
+      <Skeleton variant="text" width="100%" />
+      <Skeleton variant="text" width="100%" />
       <span className="sr-only">불러오는 중</span>
     </div>
   );
 }
 const SKELETON_NAV_ROWS = 7;
 const SKELETON_TASK_ROWS = 3;
-function SkeletonLines({ count }: { count: number }) {
+function SkeletonLines({
+  count,
+  height = 16,
+}: {
+  count: number;
+  height?: number;
+}) {
   return (
     <>
       {Array.from({ length: count }, (_, index) => (
-        <div key={index} className="skeleton skeleton-line" />
+        <Skeleton
+          key={index}
+          variant="rectangle"
+          width="100%"
+          height={height}
+          radius={8}
+        />
       ))}
     </>
   );
 }
+function SkeletonLabel() {
+  return <Skeleton variant="text" width="40%" />;
+}
 // Mirrors the shell and the research home bento so the first screen after
-// signing in keeps its layout while the workspace loads.
+// signing in keeps its layout while the workspace loads. 회색 막대는 Montage Skeleton.
 export function HomeSkeleton() {
   return (
     <div className="app-shell home-skeleton" role="status" aria-busy="true">
       <span className="sr-only">연구 홈을 불러오는 중</span>
       <aside className="sidebar" aria-hidden="true">
-        <div className="skeleton skeleton-brand" />
+        <Skeleton variant="rectangle" width={150} height={34} radius={8} />
         <div className="skeleton-nav">
-          <SkeletonLines count={SKELETON_NAV_ROWS} />
+          <SkeletonLines count={SKELETON_NAV_ROWS} height={36} />
         </div>
       </aside>
       <div className="main-shell" aria-hidden="true">
         <div className="topbar">
-          <div className="skeleton skeleton-crumb" />
-          <div className="skeleton skeleton-avatar" />
+          <Skeleton variant="text" width={180} />
+          <Skeleton variant="circle" width={30} height={30} />
         </div>
         <div className="workspace-content">
           <div className="page-header">
             <div>
-              <div className="skeleton skeleton-title" />
-              <div className="skeleton skeleton-line skeleton-short" />
+              <Skeleton
+                variant="rectangle"
+                width={210}
+                height={30}
+                radius={8}
+              />
+              <SkeletonLabel />
             </div>
           </div>
           <div className="home-bento">
             <section className="surface home-next">
-              <div className="skeleton skeleton-line skeleton-short" />
-              <div className="skeleton skeleton-heading" />
-              <div className="skeleton skeleton-panel" />
+              <SkeletonLabel />
+              <Skeleton
+                variant="rectangle"
+                width="60%"
+                height={28}
+                radius={8}
+              />
+              <Skeleton
+                variant="rectangle"
+                width="100%"
+                height={120}
+                radius={12}
+              />
             </section>
             <section className="surface home-responses">
-              <div className="skeleton skeleton-line skeleton-short" />
-              <div className="skeleton skeleton-panel" />
+              <SkeletonLabel />
+              <Skeleton
+                variant="rectangle"
+                width="100%"
+                height={120}
+                radius={12}
+              />
             </section>
             <section className="surface home-work">
-              <div className="skeleton skeleton-line skeleton-short" />
-              <SkeletonLines count={SKELETON_TASK_ROWS} />
+              <SkeletonLabel />
+              <SkeletonLines count={SKELETON_TASK_ROWS} height={48} />
             </section>
             <section className="surface home-preparation">
-              <div className="skeleton skeleton-line skeleton-short" />
+              <SkeletonLabel />
               <SkeletonLines count={2} />
             </section>
           </div>
@@ -228,9 +287,9 @@ export function ErrorNotice({
       <Icon name="warning" size={18} />
       <span>{message}</span>
       {retry && (
-        <button className="text-button" onClick={retry}>
+        <Button variant="link" onClick={retry}>
           다시 불러오기
-        </button>
+        </Button>
       )}
     </div>
   );

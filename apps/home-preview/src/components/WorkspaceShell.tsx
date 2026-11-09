@@ -1,5 +1,5 @@
 import { BrandMark, BrandWordmark } from "./brand/Brand";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Link,
   NavLink,
@@ -11,7 +11,12 @@ import {
 import { Suspense } from "react";
 import { toast } from "sonner";
 import { Icon } from "./icons";
-import { SearchField } from "./SearchField";
+import { Hint } from "./ui/hint";
+import { navPreview } from "@/lib/nav-preview";
+import { CommandPalette } from "./CommandPalette";
+import { RESEARCH_NAVIGATION } from "@/lib/command-items";
+import { goShortcutLabel } from "@/lib/go-shortcuts";
+import { useGoShortcuts } from "@/lib/use-go-shortcuts";
 import { Button } from "./ui/button";
 import { LoadingState } from "./common";
 import { useWorkspace } from "@/lib/workspace";
@@ -46,15 +51,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-const navigation = [
-  ["", "home", "연구 홈"],
-  ["planning", "flag", "계획·일정"],
-  ["meetings", "calendar", "미팅"],
-  ["writing", "file", "글쓰기"],
-  ["feedback", "feedback", "피드백·수정"],
-  ["materials", "folder", "자료"],
-  ["reviews", "send", "검토 요청"],
-];
+const navigation = RESEARCH_NAVIGATION;
 const activityTitles: Record<string, string> = {
   "새 기록이 추가되었습니다": "새 기록을 추가했어요",
   "연구 기록이 변경되었습니다": "기록을 수정했어요",
@@ -72,7 +69,7 @@ function AccountMenu() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger>
           <button
             className="profile-button"
             aria-label={`${user.name} ${user.email} 계정 메뉴`}
@@ -85,11 +82,7 @@ function AccountMenu() {
             <Icon name="chevron-down" size={14} />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="top"
-          align="start"
-          className="account-menu glass-surface"
-        >
+        <DropdownMenuContent side="top" align="start" className="account-menu">
           <DropdownMenuLabel>
             {user.name}
             <small className="menu-email">{user.email}</small>
@@ -188,10 +181,8 @@ export function WorkspaceShell({
     ),
     [mobile, setMobile] = useState(false),
     [search, setSearch] = useState(false),
-    [query, setQuery] = useState(""),
     [notifications, setNotifications] = useState(false);
   const usage = useAIUsage();
-  const searchInput = useRef<HTMLInputElement>(null);
   const updates = unreadReviewNotifications(data, user, researchId);
   const [notificationFilter, setNotificationFilter] = useState("unread");
   const events = data.events.filter(
@@ -208,6 +199,7 @@ export function WorkspaceShell({
         request.professorId === user.id && request.status === "shared",
     );
   const homeLabel = incomingOnly ? "받은 검토 요청" : "내 연구";
+  useGoShortcuts(research ? researchId : undefined);
   useEffect(() => setMobile(false), [location.pathname]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -219,63 +211,6 @@ export function WorkspaceShell({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const searchResults = research
-    ? [
-        ...data.documents
-          .filter((d) => d.researchId === researchId && !d.archivedAt)
-          .map((d) => ({
-            id: d.id,
-            title: d.title,
-            type: "문서",
-            path: "writing",
-            icon: "file",
-          })),
-        ...data.meetings
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "미팅",
-            path: "meetings",
-            icon: "calendar",
-          })),
-        ...data.feedback
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "피드백",
-            path: "feedback",
-            icon: "feedback",
-          })),
-        ...data.tasks
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "할 일",
-            path: "tasks",
-            icon: "tasks",
-          })),
-        ...data.materials
-          .filter((r) => r.researchId === researchId && !r.archivedAt)
-          .map((r) => ({
-            id: r.id,
-            title: r.title,
-            type: "자료",
-            path: "materials",
-            icon: "file",
-          })),
-      ]
-        .filter(
-          (r) =>
-            query.trim() &&
-            r.title
-              .toLocaleLowerCase()
-              .includes(query.trim().toLocaleLowerCase()),
-        )
-        .slice(0, 12)
-    : [];
   const current =
     location.pathname === "/account"
       ? "계정 설정"
@@ -299,9 +234,9 @@ export function WorkspaceShell({
         <Icon name="lock" size={32} />
         <h1>이 연구를 열 수 없어요</h1>
         <p>휴지통에 있거나 접근 권한이 없는 연구예요.</p>
-        <Link className="rms-action primary" to="/r">
-          내 연구로 돌아가기
-        </Link>
+        <Button asChild>
+          <Link to="/r">내 연구로 돌아가기</Link>
+        </Button>
       </div>
     );
   const menu = (
@@ -323,8 +258,8 @@ export function WorkspaceShell({
         </button>
       </div>
       {research && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <DropdownMenu value={researchId}>
+          <DropdownMenuTrigger>
             <button className="workspace-switch" title={research.name}>
               <span className="workspace-symbol">
                 <Icon name="book" size={17} />
@@ -333,10 +268,7 @@ export function WorkspaceShell({
               <Icon name="chevron-down" size={15} />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="workspace-menu glass-surface"
-            align="start"
-          >
+          <DropdownMenuContent className="workspace-menu" align="start">
             <DropdownMenuLabel>연구 전환</DropdownMenuLabel>
             {data.researches
               .filter(
@@ -345,11 +277,11 @@ export function WorkspaceShell({
               .map((r) => (
                 <DropdownMenuItem
                   key={r.id}
+                  value={r.id}
                   onSelect={() => navigate(`/r/${r.id}`)}
                 >
                   <Icon name="book" size={17} />
-                  <span title={r.name}>{r.name}</span>
-                  {r.id === researchId && <Icon name="check" size={15} />}
+                  {r.name}
                 </DropdownMenuItem>
               ))}
             <DropdownMenuSeparator />
@@ -374,20 +306,30 @@ export function WorkspaceShell({
       </button>
       <nav className="nav-list" aria-label="주요 메뉴">
         {research ? (
-          navigation.map(([path, icon, label]) => (
-            <NavLink
-              key={path}
-              title={label}
-              end={!path}
-              to={`/r/${researchId}${path ? "/" + path : ""}`}
-              className={({ isActive }) =>
-                `nav-item ${isActive || (path === "feedback" && (location.pathname.includes("/results") || location.pathname.includes("/tasks"))) ? "active" : ""}`
-              }
-            >
-              <Icon name={icon} size={20} />
-              <span>{label}</span>
-            </NavLink>
-          ))
+          navigation.map(([path, icon, label]) => {
+            const preview = navPreview(path, label, data, researchId ?? "");
+            return (
+              <Hint
+                key={path}
+                label={label}
+                detail={preview?.detail}
+                shortcut={goShortcutLabel(path)}
+                position="right-center"
+                display="block"
+              >
+                <NavLink
+                  end={!path}
+                  to={`/r/${researchId}${path ? "/" + path : ""}`}
+                  className={({ isActive }) =>
+                    `nav-item ${isActive || (path === "feedback" && (location.pathname.includes("/results") || location.pathname.includes("/tasks"))) ? "active" : ""}`
+                  }
+                >
+                  <Icon name={icon} size={20} />
+                  <span>{label}</span>
+                </NavLink>
+              </Hint>
+            );
+          })
         ) : (
           <NavLink to="/r" className="nav-item">
             <Icon name="grid" size={20} />
@@ -395,16 +337,22 @@ export function WorkspaceShell({
           </NavLink>
         )}
         {research && (
-          <NavLink
-            to={`/r/${researchId}/assistant`}
-            className={({ isActive }) =>
-              `nav-item assistant-nav ${isActive ? "active" : ""}`
-            }
-            title="연구 도우미 · 선택한 기록으로 AI 도움받기"
+          <Hint
+            label="연구 도우미"
+            detail="선택한 기록으로만 AI 도움을 받아요."
+            position="right-center"
+            display="block"
           >
-            <Icon name="sparkles" size={20} />
-            <span>연구 도우미</span>
-          </NavLink>
+            <NavLink
+              to={`/r/${researchId}/assistant`}
+              className={({ isActive }) =>
+                `nav-item assistant-nav ${isActive ? "active" : ""}`
+              }
+            >
+              <Icon name="sparkles" size={20} />
+              <span>연구 도우미</span>
+            </NavLink>
+          </Hint>
         )}
       </nav>
       <div className="sidebar-bottom">
@@ -508,22 +456,27 @@ export function WorkspaceShell({
             )}
           </div>
           <div className="topbar-right">
-            <Link
-              className="icon-button"
-              title="사용 안내"
-              aria-label="사용 안내"
-              to="/guide"
+            <Hint label="사용 안내">
+              <Link className="icon-button" aria-label="사용 안내" to="/guide">
+                <Icon name="help" size={19} />
+              </Link>
+            </Hint>
+            <Hint
+              label="알림"
+              detail={
+                totalUnread ? `새 알림 ${totalUnread}개` : "새 알림이 없어요."
+              }
+              position="bottom-end"
             >
-              <Icon name="help" size={19} />
-            </Link>
-            <button
-              className="icon-button notification-trigger"
-              aria-label={`새 알림 ${totalUnread}개 보기`}
-              onClick={() => setNotifications(true)}
-            >
-              <Icon name="bell" size={20} />
-              {totalUnread > 0 && <i />}
-            </button>
+              <button
+                className="icon-button notification-trigger"
+                aria-label={`새 알림 ${totalUnread}개 보기`}
+                onClick={() => setNotifications(true)}
+              >
+                <Icon name="bell" size={20} />
+                {totalUnread > 0 && <i />}
+              </button>
+            </Hint>
           </div>
         </header>
         {mode === "preview" && (
@@ -669,82 +622,11 @@ export function WorkspaceShell({
           </div>
         </SheetContent>
       </Sheet>
-      <Dialog open={search} onOpenChange={setSearch}>
-        <DialogContent
-          className="search-dialog"
-          onEscapeKeyDown={(event) => {
-            if (query) {
-              event.preventDefault();
-              setQuery("");
-              searchInput.current?.focus();
-            }
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              {research ? "이 연구에서 찾기" : "연구 찾기"}
-            </DialogTitle>
-            <DialogDescription>
-              {research
-                ? "문서, 미팅, 피드백, 할 일, 자료의 제목에서 찾아요."
-                : "연구 이름으로 찾아요. 연구 안의 기록은 연구를 연 뒤 찾을 수 있어요."}
-            </DialogDescription>
-          </DialogHeader>
-          <SearchField
-            className="workspace-command-search"
-            inputRef={searchInput}
-            autoFocus
-            value={query}
-            onValueChange={setQuery}
-            placeholder={research ? "기록 제목 검색" : "연구 이름 검색"}
-            aria-label={research ? "기록 제목 검색" : "연구 이름 검색"}
-          />
-          <div className="command-results">
-            {research ? (
-              query.trim() ? (
-                searchResults.length ? (
-                  searchResults.map((r) => (
-                    <Link
-                      key={r.path + r.id}
-                      to={`/r/${researchId}/${r.path}/${r.id}`}
-                      onClick={() => {
-                        setSearch(false);
-                        setQuery("");
-                      }}
-                    >
-                      <Icon name={r.icon} size={20} />
-                      <span>
-                        {r.title}
-                        <small>{r.type}</small>
-                      </span>
-                      <Icon name="arrow-up-right" size={16} />
-                    </Link>
-                  ))
-                ) : (
-                  <p>제목이 일치하는 기록이 없어요.</p>
-                )
-              ) : (
-                <p>찾을 제목을 입력하세요.</p>
-              )
-            ) : (
-              data.researches
-                .filter((r) =>
-                  r.name.toLowerCase().includes(query.toLowerCase()),
-                )
-                .map((r) => (
-                  <Link
-                    to={`/r/${r.id}`}
-                    key={r.id}
-                    onClick={() => setSearch(false)}
-                  >
-                    <Icon name="book" size={20} />
-                    {r.name}
-                  </Link>
-                ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CommandPalette
+        open={search}
+        onOpenChange={setSearch}
+        researchId={research ? researchId : undefined}
+      />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { AnimatedList } from "@/components/AnimatedList";
 import { VisibilityField } from "@/components/experience";
 import { RecordingPanel } from "@/components/RecordingPanel";
 import { SelectField } from "@/components/experience";
@@ -44,6 +45,8 @@ import {
   useSaving,
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
+import { Checkbox } from "@montage-ui/core";
+import { Tabs } from "@/components/ui/tabs";
 
 const meetingFilters = [
   ["all", "전체"],
@@ -195,7 +198,7 @@ export function MeetingsPage() {
           placeholder="미팅 이름으로 찾기"
         />
       </div>
-      <section className="surface meeting-list">
+      <AnimatedList className="surface meeting-list">
         {meetings.length ? (
           meetings.map((meeting) => (
             <Link
@@ -271,7 +274,7 @@ export function MeetingsPage() {
             }
           />
         )}
-      </section>
+      </AnimatedList>
       <FormDialog
         busy={form.saving}
         open={creating}
@@ -768,29 +771,21 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           }}
         />
       </div>
-      <div className="tabs-line" role="tablist" aria-label="미팅 내용">
-        {[
-          ["prepare", "준비"],
-          ["record", "기록"],
-          ["questions", "결정·질문"],
-        ].map(([value, label]) => (
-          <button
-            key={value}
-            role="tab"
-            aria-selected={tab === value}
-            className={tab === value ? "active" : ""}
-            onClick={() => void changeTab(value)}
-          >
-            {label}
-            {value === "questions" &&
-              linkedQuestions.filter((q) => q.status === "open").length > 0 && (
-                <span>
-                  {linkedQuestions.filter((q) => q.status === "open").length}
-                </span>
-              )}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        className="tabs-line"
+        label="미팅 내용"
+        value={tab}
+        onChange={(value) => void changeTab(value)}
+        options={[
+          { value: "prepare", label: "준비" },
+          { value: "record", label: "기록" },
+          {
+            value: "questions",
+            label: "결정·질문",
+            count: linkedQuestions.filter((q) => q.status === "open").length,
+          },
+        ]}
+      />
       {tab === "prepare" && (
         <div className="meeting-preparation">
           <section className="surface preparation-goal">
@@ -1252,12 +1247,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               .filter((t) => t.researchId === researchId)
               .map((task) => (
                 <label className="student-choice-row" key={task.id}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={taskIds.includes(task.id)}
-                    onChange={(e) =>
+                    onCheckedChange={(next) =>
                       setTaskIds((ids) =>
-                        e.target.checked
+                        next
                           ? [...ids, task.id]
                           : ids.filter((id) => id !== task.id),
                       )
@@ -1284,12 +1278,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               .filter((v) => v.researchId === researchId)
               .map((version) => (
                 <label className="student-choice-row" key={version.id}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={versionIds.includes(version.id)}
-                    onChange={(e) =>
+                    onCheckedChange={(next) =>
                       setVersionIds((ids) =>
-                        e.target.checked
+                        next
                           ? [...ids, version.id]
                           : ids.filter((id) => id !== version.id),
                       )
@@ -1319,12 +1312,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               .filter((q) => q.status === "open" || questionIds.includes(q.id))
               .map((question) => (
                 <label className="student-choice-row" key={question.id}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={questionIds.includes(question.id)}
-                    onChange={(e) =>
+                    onCheckedChange={(next) =>
                       setQuestionIds((ids) =>
-                        e.target.checked
+                        next
                           ? [...ids, question.id]
                           : ids.filter((id) => id !== question.id),
                       )

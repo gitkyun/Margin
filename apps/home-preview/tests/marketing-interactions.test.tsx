@@ -39,8 +39,10 @@ it("allows keyboard comparison at both endpoints and in steps", () => {
   expect(handle.getAttribute("aria-valuenow")).toBe("0");
   fireEvent.keyDown(handle, { key: "ArrowLeft" });
   expect(handle.getAttribute("aria-valuenow")).toBe("0");
-  fireEvent.keyDown(handle, { key: "ArrowRight", shiftKey: true });
-  expect(handle.getAttribute("aria-valuenow")).toBe("10");
+  fireEvent.keyDown(handle, { key: "ArrowRight" });
+  expect(handle.getAttribute("aria-valuenow")).toBe("5");
+  fireEvent.keyDown(handle, { key: "PageDown" });
+  expect(handle.getAttribute("aria-valuenow")).toBe("15");
   fireEvent.keyDown(handle, { key: "End" });
   expect(handle.getAttribute("aria-valuenow")).toBe("100");
 });

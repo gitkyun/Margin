@@ -1,10 +1,11 @@
+import { AnimatedList } from "@/components/AnimatedList";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
 import {
   MaterialUploadField,
   MaterialSubmitLabel,
 } from "./MaterialUploadField";
 import { MaterialFolders } from "@/components/MaterialFolders";
-import { SelectField } from "@/components/experience";
+import { Segments, SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -568,7 +569,7 @@ export function MaterialsPage() {
               placeholder="자료 이름으로 찾기"
             />
           </div>
-          <section className="surface material-list">
+          <AnimatedList className="surface material-list">
             {materials.length ? (
               materials.map((material) => {
                 const materialVersions = data.versions
@@ -642,7 +643,7 @@ export function MaterialsPage() {
                 }
               />
             )}
-          </section>
+          </AnimatedList>
         </>
       )}
       {pending && (
@@ -677,22 +678,18 @@ export function MaterialsPage() {
       >
         <form className="stack material-registration-form" onSubmit={register}>
           {!target && (
-            <div className="segmented">
-              <button
-                type="button"
-                className={registerMode === "file" ? "active" : ""}
-                onClick={() => setRegisterMode("file")}
-              >
-                PDF 파일
-              </button>
-              <button
-                type="button"
-                className={registerMode === "link" ? "active" : ""}
-                onClick={() => setRegisterMode("link")}
-              >
-                링크
-              </button>
-            </div>
+            <Segments
+              fill
+              label="자료 종류"
+              value={registerMode}
+              onChange={(value) =>
+                setRegisterMode(value as typeof registerMode)
+              }
+              options={[
+                { value: "file", label: "PDF 파일" },
+                { value: "link", label: "링크" },
+              ]}
+            />
           )}
           {draft && (
             <>

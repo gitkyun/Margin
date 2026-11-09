@@ -1,90 +1,95 @@
-.lp-footer-controls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-left: auto;
-}
-.lp-footer-theme {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px;
-  gap: 2px;
-  border-radius: 12px;
-  background: var(--surface-muted);
-}
-.lp-footer-theme button {
-  min-height: 40px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 9px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 1;
-  transition:
-    background 160ms ease,
-    color 160ms ease,
-    box-shadow 160ms ease;
-}
-.lp-footer-theme button[aria-pressed="true"] {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-}
-.lp-footer-theme button:hover {
-  color: var(--text);
-}
-.lp-back-to-top {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  gap: 8px;
-  padding: 0 6px;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font-size: 12px;
-  white-space: nowrap;
-}
-.lp-back-to-top svg {
-  transition: transform 180ms ease;
-}
-.lp-back-to-top:hover svg {
-  transform: translateY(-3px);
-}
-@media (max-width: 600px) {
+/* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
+@layer margin {
   .lp-footer-controls {
-    width: 100%;
-    justify-content: space-between;
-    margin: 4px 0 0;
-    gap: 12px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-left: auto;
+  }
+  .lp-footer-theme {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    gap: 2px;
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
   }
   .lp-footer-theme button {
-    padding-inline: 9px;
-    min-height: 44px;
+    min-height: 40px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--radius-10);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: 1;
+    transition:
+      background 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .lp-footer-theme button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
+  }
+  .lp-footer-theme button:hover {
+    color: var(--text);
   }
   .lp-back-to-top {
-    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    gap: 8px;
+    padding: 0 6px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: var(--typography-caption1-fontSize);
+    white-space: nowrap;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
-}
-@media (pointer: coarse) {
-  .lp-footer-theme button,
-  .lp-back-to-top {
-    min-height: 44px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lp-footer-theme button,
   .lp-back-to-top svg {
-    transition: none;
+    transition: transform 180ms ease;
   }
   .lp-back-to-top:hover svg {
-    transform: none;
+    transform: translateY(-3px);
+  }
+  @media (max-width: 767px) {
+    .lp-footer-controls {
+      width: 100%;
+      justify-content: space-between;
+      margin: 4px 0 0;
+      gap: 12px;
+    }
+    .lp-footer-theme button {
+      padding-inline: 9px;
+      min-height: 44px;
+    }
+    .lp-back-to-top {
+      min-height: 44px;
+    }
+  }
+  @media (pointer: coarse) {
+    .lp-footer-theme button,
+    .lp-back-to-top {
+      min-height: 44px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-footer-theme button,
+    .lp-back-to-top svg {
+      transition: none;
+    }
+    .lp-back-to-top:hover svg {
+      transform: none;
+    }
   }
 }

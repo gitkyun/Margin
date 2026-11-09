@@ -1,278 +1,287 @@
-/* Aceternity File Upload / Stateful Button interaction adapted to RMS. */
-.mu-field {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-.mu-dropzone {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 208px;
-  padding: 26px 20px;
-  border: 1px dashed var(--line-strong);
-  border-radius: 16px;
-  background: var(--surface-muted);
-  color: var(--text);
-  text-align: center;
-  cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    background 160ms ease;
-}
-.mu-dropzone:hover,
-.mu-dropzone.is-dragging {
-  border-color: var(--brand);
-  background: color-mix(in srgb, var(--brand-soft) 60%, var(--surface));
-}
-.mu-dropzone:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 3px;
-}
-.mu-dropzone:disabled {
-  cursor: default;
-  opacity: 0.72;
-}
-.mu-dropzone.has-file {
-  min-height: 150px;
-  gap: 8px;
-  padding: 20px;
-}
-.mu-grid {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(
-    ellipse at center,
-    rgba(var(--semantic-static-black-rgb), var(--opacity-43)),
-    transparent 72%
-  );
-  pointer-events: none;
-}
-.mu-file-stack {
-  position: relative;
-  width: 62px;
-  height: 61px;
-  margin-bottom: 4px;
-}
-.mu-sheet {
-  position: absolute;
-  inset: 7px 8px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-}
-.mu-sheet-back {
-  background: var(--brand-soft);
-  border-color: color-mix(in srgb, var(--brand) 20%, var(--line));
-}
-.mu-sheet-front {
-  display: grid;
-  place-items: center;
-  color: var(--brand);
-  box-shadow: var(--semantic-elevation-shadow-normal-small);
-}
-.mu-dropzone > strong {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-.mu-dropzone-hint {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-.mu-dropzone.has-file .mu-file-stack {
-  width: 48px;
-  height: 46px;
-  margin: 0;
-}
-.mu-dropzone.has-file .mu-sheet {
-  inset: 2px 5px;
-  border-radius: 10px;
-}
-.mu-file-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-  padding: 15px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-}
-.mu-pdf-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  gap: 1px;
-  width: 43px;
-  height: 50px;
-  border-radius: 9px;
-  color: var(--tone-red);
-  background: color-mix(in srgb, var(--tone-red) 8%, var(--surface));
-}
-.mu-pdf-icon small {
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-}
-.mu-file-info {
-  flex: 1;
-  min-width: 0;
-}
-.mu-file-info > strong {
-  display: block;
-  font-size: 13px;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-}
-.mu-file-info > div {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-.mu-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 7px;
-  border-radius: 5px;
-  color: var(--brand);
-  background: var(--brand-soft);
-  font-size: 11px;
-  font-weight: 550;
-}
-.mu-state::before {
-  content: "";
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.mu-remove {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border: 0;
-  border-radius: 9px;
-  color: var(--text-secondary);
-  background: transparent;
-  cursor: pointer;
-}
-.mu-remove:hover {
-  color: var(--tone-red);
-  background: var(--surface-muted);
-}
-.mu-remove:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-}
-.mu-transfer {
-  display: grid;
-  gap: 10px;
-  padding: 3px 2px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.mu-transfer-caption {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  line-height: 1.6;
-}
-.mu-transfer-caption > strong {
-  color: var(--brand);
-  font-variant-numeric: tabular-nums;
-}
-.mu-transfer progress {
-  width: 100%;
-  height: 5px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--surface-muted);
-  accent-color: var(--brand);
-  overflow: hidden;
-}
-.mu-transfer progress::-webkit-progress-bar {
-  background: var(--surface-muted);
-  border-radius: 999px;
-}
-.mu-transfer progress::-webkit-progress-value {
-  background: var(--brand);
-  border-radius: 999px;
-  transition: width 160ms linear;
-}
-.mu-transfer > button {
-  justify-self: end;
-}
-.mu-submit-label {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-}
-.mu-submit-icon {
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-}
-.mu-spinner {
-  display: block;
-  width: 14px;
-  height: 14px;
-  border: 1.5px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: mu-spin 700ms linear infinite;
-}
-@keyframes mu-spin {
-  to {
-    transform: rotate(360deg);
+/* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
+@layer margin {
+  /* Aceternity File Upload / Stateful Button interaction adapted to RMS. */
+  .mu-field {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
   }
-}
-@media (max-width: 600px) {
   .mu-dropzone {
-    min-height: 180px;
-    padding: 22px 16px;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 208px;
+    padding: 26px 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-16);
+    background: var(--surface-muted);
+    color: var(--text);
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color 160ms ease,
+      background 160ms ease;
+  }
+  .mu-dropzone:hover,
+  .mu-dropzone.is-dragging {
+    border-color: var(--hover-line);
+    background: var(--hover-fill);
+  }
+  .mu-dropzone:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+  }
+  .mu-dropzone:disabled {
+    cursor: default;
+    opacity: 0.72;
+  }
+  .mu-dropzone.has-file {
+    min-height: 150px;
+    gap: 8px;
+    padding: 20px;
+  }
+  .mu-grid {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(
+      ellipse at center,
+      rgba(var(--semantic-static-black-rgb), var(--opacity-43)),
+      transparent 72%
+    );
+    pointer-events: none;
+  }
+  .mu-file-stack {
+    position: relative;
+    width: 62px;
+    height: 61px;
+    margin-bottom: 4px;
+  }
+  .mu-sheet {
+    position: absolute;
+    inset: 7px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .mu-sheet-back {
+    background: var(--brand-soft);
+    border-color: color-mix(in srgb, var(--brand) 20%, var(--line));
+  }
+  .mu-sheet-front {
+    display: grid;
+    place-items: center;
+    color: var(--brand);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+  }
+  .mu-dropzone > strong {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    line-height: var(--typography-label1-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
+  }
+  .mu-dropzone-hint {
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--text-secondary);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .mu-dropzone.has-file .mu-file-stack {
+    width: 48px;
+    height: 46px;
+    margin: 0;
+  }
+  .mu-dropzone.has-file .mu-sheet {
+    inset: 2px 5px;
+    border-radius: var(--radius-10);
   }
   .mu-file-row {
-    gap: 10px;
-    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-14);
+    background: var(--surface);
+  }
+  .mu-pdf-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    gap: 1px;
+    width: 43px;
+    height: 50px;
+    border-radius: var(--radius-10);
+    color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  }
+  .mu-pdf-icon small {
+    font-size: var(--typography-caption2-fontSize);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: var(--typography-caption2-letterSpacing);
+  }
+  .mu-file-info {
+    flex: 1;
+    min-width: 0;
   }
   .mu-file-info > strong {
-    font-size: 13px;
+    display: block;
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    overflow-wrap: anywhere;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mu-dropzone,
+  .mu-file-info > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .mu-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 7px;
+    border-radius: var(--radius-4);
+    color: var(--brand);
+    background: var(--brand-soft);
+    font-size: var(--typography-caption2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption2-letterSpacing);
+  }
+  .mu-state::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .mu-remove {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: var(--radius-10);
+    color: var(--text-secondary);
+    background: transparent;
+    cursor: pointer;
+  }
+  .mu-remove:hover {
+    color: var(--danger);
+    background: var(--surface-muted);
+  }
+  .mu-remove:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .mu-transfer {
+    display: grid;
+    gap: 10px;
+    padding: 3px 2px;
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .mu-transfer-caption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    line-height: 1.6;
+  }
+  .mu-transfer-caption > strong {
+    color: var(--brand);
+  }
+  .mu-transfer progress {
+    width: 100%;
+    height: 5px;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+    accent-color: var(--brand);
+    overflow: hidden;
+  }
+  .mu-transfer progress::-webkit-progress-bar {
+    background: var(--surface-muted);
+    border-radius: var(--radius-full);
+  }
   .mu-transfer progress::-webkit-progress-value {
-    transition: none;
+    background: var(--brand);
+    border-radius: var(--radius-full);
+    transition: width 160ms linear;
+  }
+  .mu-transfer > button {
+    justify-self: end;
+  }
+  .mu-submit-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+  .mu-submit-icon {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
   }
   .mu-spinner {
-    animation: none;
+    display: block;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: mu-spin 700ms linear infinite;
+  }
+  @keyframes mu-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (max-width: 767px) {
+    .mu-dropzone {
+      min-height: 180px;
+      padding: 22px 16px;
+    }
+    .mu-file-row {
+      gap: 10px;
+      padding: 12px;
+    }
+    .mu-file-info > strong {
+      font-size: var(--typography-label2-fontSize);
+      letter-spacing: var(--typography-label2-letterSpacing);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mu-dropzone,
+    .mu-transfer progress::-webkit-progress-value {
+      transition: none;
+    }
+    .mu-spinner {
+      animation: none;
+    }
   }
 }

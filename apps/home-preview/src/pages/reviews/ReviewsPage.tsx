@@ -17,7 +17,8 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Segments } from "@/components/experience";
+import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -217,34 +218,30 @@ export function ReviewsPage() {
         }
       />
       <div className="page-toolbar review-list-toolbar">
-        <div className="segmented" aria-label="공유 상태">
-          {[
-            ["all", "전체"],
-            ["shared", "공유 중"],
-            ["stopped", "공유 중지"],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={filter === value}
-              className={filter === value ? "selected" : ""}
-              onClick={() => setFilter(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <Input
-          className="review-search"
-          aria-label="검토 요청 찾기"
-          placeholder="제목이나 교수 이메일로 찾기"
-          value={search}
-          onChange={(
-            e: ChangeEvent<
-              HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-            >,
-          ) => setSearch(e.target.value)}
+        <Segments
+          label="공유 상태"
+          value={filter}
+          onChange={(value) => setFilter(value as typeof filter)}
+          options={[
+            { value: "all", label: "전체" },
+            { value: "shared", label: "공유 중" },
+            { value: "stopped", label: "공유 중지" },
+          ]}
         />
+        <div className="review-search">
+          <Input
+            fieldSize="medium"
+            width="100%"
+            aria-label="검토 요청 찾기"
+            placeholder="제목이나 교수 이메일로 찾기"
+            value={search}
+            onChange={(
+              e: ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >,
+            ) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
       {!requests.length ? (
         <EmptyState
@@ -345,12 +342,8 @@ export function ReviewsPage() {
         <DialogContent
           showCloseButton={!busy}
           className="review-compose-dialog"
-          onEscapeKeyDown={(event: { preventDefault(): void }) => {
-            if (busy) event.preventDefault();
-          }}
-          onPointerDownOutside={(event: { preventDefault(): void }) =>
-            event.preventDefault()
-          }
+          disableEscapeKeyDownClose={busy}
+          disableOutsideClickClose
         >
           <DialogHeader>
             <DialogTitle>
@@ -414,9 +407,7 @@ export function ReviewsPage() {
                       <label className="review-pick-row" key={result.id}>
                         <Checkbox
                           checked={selected.includes(result.id)}
-                          onCheckedChange={(
-                            checked: boolean | "indeterminate",
-                          ) =>
+                          onCheckedChange={(checked: boolean) =>
                             setSelected((current) =>
                               checked
                                 ? [...current, result.id]

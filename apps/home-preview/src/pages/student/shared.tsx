@@ -6,9 +6,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateField, TimeField } from "@/components/ui/date-field";
 import { TextField, TextFieldContent } from "@montage-ui/core";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -173,12 +175,8 @@ export function FormDialog({
           className="student-dialog"
           showCloseButton={!busy}
           aria-busy={busy}
-          onEscapeKeyDown={(event: { preventDefault(): void }) => {
-            if (busy) event.preventDefault();
-          }}
-          onPointerDownOutside={(event: { preventDefault(): void }) => {
-            if (busy) event.preventDefault();
-          }}
+          disableEscapeKeyDownClose={busy}
+          disableOutsideClickClose={busy}
         >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
@@ -249,14 +247,30 @@ export function LabeledInput({
         {label}
         {required && <span className="required-mark"> *</span>}
       </span>
-      <Input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-      />
+      {type === "date" ? (
+        <DateField
+          value={value}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+        />
+      ) : type === "time" ? (
+        <TimeField
+          value={value}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+        />
+      ) : (
+        <Input
+          type={type}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          required={required}
+          disabled={disabled}
+        />
+      )}
       {hint && <small className="field-hint">{hint}</small>}
     </label>
   );
@@ -335,6 +349,10 @@ export function SearchInput({
   return (
     <TextField
       className="student-search"
+      // 좁은 화면에서는 줄 전체, 768px 이상에서는 내용 너비(Montage 반응형 속성)
+      size="medium"
+      width="100%"
+      sm={{ width: "auto" }}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
@@ -440,26 +458,18 @@ export function WorkTabs({
   researchId: string;
   selected: "feedback" | "tasks" | "results";
 }) {
+  const navigate = useNavigate();
   return (
-    <nav className="work-tabs" aria-label="피드백과 할 일">
-      <Link
-        to={`/r/${researchId}/feedback`}
-        aria-current={selected === "feedback" ? "page" : undefined}
-      >
-        피드백
-      </Link>
-      <Link
-        to={`/r/${researchId}/tasks`}
-        aria-current={selected === "tasks" ? "page" : undefined}
-      >
-        할 일
-      </Link>
-      <Link
-        to={`/r/${researchId}/results`}
-        aria-current={selected === "results" ? "page" : undefined}
-      >
-        수정 결과
-      </Link>
-    </nav>
+    <Tabs
+      className="work-tabs"
+      label="피드백과 할 일"
+      value={selected}
+      onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
+      options={[
+        { value: "feedback", label: "피드백" },
+        { value: "tasks", label: "할 일" },
+        { value: "results", label: "수정 결과" },
+      ]}
+    />
   );
 }

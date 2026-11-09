@@ -47,6 +47,11 @@ export type ButtonProps = Omit<ComponentPropsWithoutRef<"button">, "color"> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
+  /**
+   * 부모 너비를 꽉 채웁니다(Montage fullWidth). 버튼 너비는 CSS 대신 이 값으로 정합니다.
+   * "mobile"은 768px 아래에서만, "desktop"은 992px 이상에서만 채웁니다.
+   */
+  fullWidth?: boolean | "mobile" | "desktop";
 };
 
 const BUTTON_SIZE = {
@@ -94,12 +99,22 @@ function splitIcons(content: ReactNode) {
   return { leading, body: items, trailing };
 }
 
+/** Montage 반응형 속성은 모바일 우선(min-width)입니다. */
+function fullWidthProps(fullWidth: ButtonProps["fullWidth"]) {
+  if (fullWidth === "mobile")
+    return { fullWidth: true, sm: { fullWidth: false } };
+  if (fullWidth === "desktop")
+    return { fullWidth: false, md: { fullWidth: true } };
+  return { fullWidth: fullWidth ?? false };
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(
     {
       variant = "default",
       size = "default",
       asChild = false,
+      fullWidth,
       children,
       ...props
     },
@@ -164,6 +179,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <MontageButton
         {...shared}
         {...slots}
+        {...fullWidthProps(fullWidth)}
         size={montageSize}
         variant={variant === "outline" ? "outlined" : "solid"}
         color={

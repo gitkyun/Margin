@@ -9,6 +9,7 @@ import {
   DialogDescription,
 } from "./ui/dialog";
 import "./subscription-plans.css";
+import { Button } from "@/components/ui/button";
 
 const plans = [
   {
@@ -110,13 +111,10 @@ export function SubscriptionPlans({
                 <Icon name="arrow-right" size={16} />
               </Link>
             ) : (
-              <button
-                className="subscription-button"
-                onClick={() => setDetail(plan.id)}
-              >
+              <Button variant="link" onClick={() => setDetail(plan.id)}>
                 플랜 자세히 보기
                 <Icon name="chevron-right" size={16} />
-              </button>
+              </Button>
             )}
             <ul>
               {plan.features.map((feature) => (
@@ -152,12 +150,7 @@ export function SubscriptionPlans({
               </li>
             ))}
           </ul>
-          <button
-            className="rms-action primary"
-            onClick={() => setDetail(null)}
-          >
-            닫기
-          </button>
+          <Button onClick={() => setDetail(null)}>닫기</Button>
         </DialogContent>
       </Dialog>
     </section>

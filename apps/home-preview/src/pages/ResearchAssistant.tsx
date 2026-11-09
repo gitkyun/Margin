@@ -84,6 +84,7 @@ export function ResearchAssistant() {
     sequence = useRef(0),
     fileInput = useRef<HTMLInputElement>(null),
     end = useRef<HTMLDivElement>(null),
+    composerRef = useRef<HTMLTextAreaElement>(null),
     pendingFile = useRef<{
       file: File;
       record: Attachment;
@@ -114,6 +115,8 @@ export function ResearchAssistant() {
     [],
   );
   useEffect(() => {
+    // 첫 안내 화면에서는 아래로 끌어내리지 않아 캐릭터·제목이 잘리지 않게 합니다.
+    if (!messages.length && !running) return;
     end.current?.scrollIntoView({ block: "nearest" });
   }, [messages.length, running]);
   useEffect(() => {
@@ -504,6 +507,12 @@ export function ResearchAssistant() {
       <PageHeader
         title="연구 도우미"
         description="선택한 기록만 읽고 질문에 답하거나 수정 방법을 제안해요."
+        actions={
+          <span className="rms-pill">
+            <Icon name="lock" size={13} />
+            나만 볼 수 있는 공간
+          </span>
+        }
       />
       <div className="experience-toolbar">
         <Segments
@@ -515,10 +524,6 @@ export function ResearchAssistant() {
             { value: "usage", label: "사용량" },
           ]}
         />
-        <span className="rms-pill">
-          <Icon name="lock" size={13} />
-          나만 볼 수 있는 공간
-        </span>
       </div>
       {tab === "usage" ? (
         <>
@@ -705,6 +710,7 @@ export function ResearchAssistant() {
           <aside className="conversation-list">
             <Button
               variant="outline"
+              fullWidth="desktop"
               disabled={running}
               onClick={() => {
                 setConversation(null);
@@ -735,22 +741,30 @@ export function ResearchAssistant() {
             <div className="chat-scroll">
               {!messages.length ? (
                 <div className="assistant-welcome">
-                  <AssistantMascot state="ready" size={100} eager />
+                  <AssistantMascot state="ready" size={64} eager />
                   <h2>기록을 고르고 질문해 주세요</h2>
                   <p>
-                    클립 버튼으로 미팅 메모나 문서 같은 기록을 고르거나
-                    <br />
-                    파일을 첨부할 수 있어요.
+                    클립 버튼으로 미팅 메모나 문서 같은 기록을 고르거나 파일을
+                    첨부할 수 있어요.
                   </p>
                   <div className="assistant-prompts">
-                    {[
-                      "다음 미팅까지 할 일을 정리해 줘",
-                      "이 피드백의 수정 방법을 비교해 줘",
-                      "이 문단에서 더 구체화할 부분을 찾아 줘",
-                    ].map((t) => (
-                      <button key={t} onClick={() => setDraft(t)}>
-                        {t}
-                        <Icon name="arrow-up-right" size={15} />
+                    {(
+                      [
+                        ["tasks", "다음 미팅까지 할 일을 정리해 줘"],
+                        ["layers", "이 피드백의 수정 방법을 비교해 줘"],
+                        ["search", "이 문단에서 더 구체화할 부분을 찾아 줘"],
+                      ] as const
+                    ).map(([icon, t]) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => {
+                          setDraft(t);
+                          composerRef.current?.focus();
+                        }}
+                      >
+                        <Icon name={icon} size={18} />
+                        <span>{t}</span>
                       </button>
                     ))}
                   </div>
@@ -835,6 +849,7 @@ export function ResearchAssistant() {
                 ))}
               </div>
               <textarea
+                ref={composerRef}
                 aria-label="연구 도우미에게 질문"
                 placeholder={
                   contexts.length
@@ -857,17 +872,18 @@ export function ResearchAssistant() {
                 }}
               />
               <div className="composer-actions">
-                <button
-                  className="icon-button"
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   type="button"
-                  title="자료 선택·첨부"
                   aria-label="자료 선택·첨부"
                   disabled={running || uploading}
                   onClick={() => setPicker(true)}
                 >
                   <Icon name="clip" size={20} />
-                </button>
+                </Button>
                 <Choice
+                  compact
                   value={task}
                   onChange={(v) => setTask(v as AIInput["mode"])}
                   label="요청 종류"
@@ -878,6 +894,7 @@ export function ResearchAssistant() {
                   }))}
                 />
                 <Choice
+                  compact
                   value={allowedModel?.id ?? ""}
                   onChange={setModel}
                   disabled={running || !caps.data}
@@ -898,6 +915,7 @@ export function ResearchAssistant() {
                 />
                 {!!allowedModel?.thinking.length && (
                   <Choice
+                    compact
                     label="답변 깊이"
                     value={thinking}
                     onChange={setThinking}

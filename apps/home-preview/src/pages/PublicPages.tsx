@@ -17,15 +17,20 @@ import { FooterControls } from "@/components/marketing/FooterControls";
 import { FooterGlyphField } from "@/components/marketing/FooterGlyphField";
 import { PublicNavigation } from "@/components/marketing/PublicNavigation";
 import {
+  WorkflowStack,
+  useStackedWorkflow,
+} from "@/components/marketing/WorkflowStack";
+import {
   MergeFlow,
   SpotlightCard,
   ComparePreview,
 } from "@/components/marketing/MarketingEffects";
+import { Button } from "@/components/ui/button";
 
 const journey = [
   {
     label: "미팅 기록",
-    icon: "microphone",
+    icon: "mic",
     title: "미팅 원문에서 피드백을 골라내요",
     body: "녹음과 한국어 전사로 미팅을 남기고, 피드백, 결정 사항, 질문을 나눠 정리하세요.",
     color: "blue",
@@ -336,6 +341,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
   const [scene, setScene] = useState(0),
     [feature, setFeature] = useState(0);
   const reduced = useReducedMotion();
+  const stacked = useStackedWorkflow();
   return (
     <PublicFrame signedIn={signedIn}>
       <section className="lp-hero">
@@ -421,6 +427,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           <SpotlightCard className="lp-feature-card lp-feature-wide">
             <div className="lp-feature-visual lp-merge-visual">
               <MergeFlow />
+              <div className="lp-feature-peek" aria-hidden="true" inert>
+                <ProductPreview index={0} />
+              </div>
             </div>
             <div className="lp-feature-copy">
               <span className="lp-feature-icon">
@@ -431,6 +440,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 미팅 메모에서 정리한 피드백은 원문과 함께 남아요.
                 <br />할 일에서도 연결된 피드백을 바로 확인할 수 있어요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=meeting">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
           <SpotlightCard className="lp-feature-card lp-feature-ai">
@@ -454,6 +466,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                   <Icon name="arrow-up" size={17} />
                 </div>
               </div>
+              <div className="lp-feature-peek" aria-hidden="true" inert>
+                <ProductPreview index={1} />
+              </div>
             </div>
             <div className="lp-feature-copy">
               <span className="lp-feature-icon">
@@ -465,6 +480,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 <br />
                 나눠서 보여 줘요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=ai">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
           <SpotlightCard className="lp-feature-card lp-feature-writing">
@@ -482,6 +500,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <p>
                 비교할 버전은 직접 남기고, 고친 내용은 수정 결과로 정리하세요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=writing">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
           <SpotlightCard className="lp-feature-card lp-feature-review">
@@ -502,6 +523,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                   <Icon name="check-circle" size={22} />
                 </div>
               </div>
+              <div className="lp-feature-peek" aria-hidden="true" inert>
+                <ProductPreview index={3} />
+              </div>
             </div>
             <div className="lp-feature-copy">
               <span className="lp-feature-icon">
@@ -512,50 +536,60 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 검토 링크를 만들어 직접 전달하면, 교수님이 항목마다 응답을
                 남겨요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=review">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
         </div>
       </section>
-      <section className="lp-workflow" id="workflow">
-        <div className="lp-workflow-select">
-          <h2>이렇게 사용해요</h2>
-          <div role="group" aria-label="기능별 사용 방법">
-            {journey.map((j, i) => (
-              <button
-                key={j.label}
-                onClick={() => setFeature(i)}
-                aria-pressed={feature === i}
-              >
-                <Icon name={j.icon} size={23} />
-                {j.label}
-                <Icon name="arrow-up-right" size={19} />
-              </button>
-            ))}
+      {stacked ? (
+        <WorkflowStack
+          steps={journey}
+          renderPreview={(i) => <ProductPreview index={i} />}
+        />
+      ) : (
+        <section className="lp-workflow" id="workflow">
+          <div className="lp-workflow-select">
+            <h2>이렇게 사용해요</h2>
+            <div role="group" aria-label="기능별 사용 방법">
+              {journey.map((j, i) => (
+                <button
+                  key={j.label}
+                  onClick={() => setFeature(i)}
+                  aria-pressed={feature === i}
+                >
+                  <Icon name={j.icon} size={23} />
+                  {j.label}
+                  <Icon name="arrow-up-right" size={19} />
+                </button>
+              ))}
+            </div>
+            <p>
+              직접 쓰든 AI 제안을 선택하든
+              <br />
+              기록은 같은 연구에 남아요.
+            </p>
           </div>
-          <p>
-            직접 쓰든 AI 제안을 선택하든
-            <br />
-            기록은 같은 연구에 남아요.
-          </p>
-        </div>
-        <div
-          className={`lp-workflow-preview lp-tone-${journey[feature].color}`}
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={feature}
-              initial={{ opacity: 0, y: reduced ? 0 : 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h3>{journey[feature].title}</h3>
-              <p>{journey[feature].body}</p>
-              <ProductPreview index={feature} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
+          <div
+            className={`lp-workflow-preview lp-tone-${journey[feature].color}`}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={feature}
+                initial={{ opacity: 0, y: reduced ? 0 : 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <h3>{journey[feature].title}</h3>
+                <p>{journey[feature].body}</p>
+                <ProductPreview index={feature} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
       <section className="lp-section lp-capabilities" id="ai-work">
         <div className="lp-section-heading">
           <h2>
@@ -568,7 +602,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
         <div className="lp-capability-row">
           {[
             {
-              icon: "microphone",
+              icon: "mic",
               title: "말한 내용은 기록으로",
               body: "녹음하면서 한국어 전사문도 함께 남길 수 있어요.",
             },
@@ -591,7 +625,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             <SpotlightCard key={c.title} className="lp-capability">
               <Link
                 className="lp-capability-link"
-                to={`/features?view=${({ microphone: "meeting", calendar: "meeting", folder: "writing", users: "review" } as Record<string, string>)[c.icon]}`}
+                to={`/features?view=${({ mic: "meeting", calendar: "meeting", folder: "writing", users: "review" } as Record<string, string>)[c.icon]}`}
               >
                 <Icon name={c.icon} size={27} />
                 <div>
@@ -935,10 +969,10 @@ export function SignupPage() {
                     </label>
                   ))}
                 </fieldset>
-                <button className="rms-action primary full" type="submit">
+                <Button fullWidth size="lg" type="submit">
                   가입 미리보기 마치기
                   <Icon name="arrow-right" size={18} />
-                </button>
+                </Button>
               </form>
               <p className="auth-switch">
                 발급받은 계정이 있나요? <Link to="/login">로그인</Link>
@@ -966,12 +1000,14 @@ export function SignupPage() {
                 발급받은 계정으로 로그인
                 <Icon name="arrow-right" size={18} />
               </Link>
-              <button
-                className="rms-action quiet full"
+              <Button
+                variant="outline"
+                fullWidth
+                size="lg"
                 onClick={() => setStep(0)}
               >
                 입력 화면으로 돌아가기
-              </button>
+              </Button>
             </div>
           )}
         </div>

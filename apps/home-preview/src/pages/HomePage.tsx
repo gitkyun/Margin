@@ -1,9 +1,15 @@
+import { RollingNumber } from "@/components/RollingNumber";
 import { AssistantMascot } from "@/components/brand/Brand";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
-import { formatDate, meetingLabels, taskLabels } from "@/lib/domain";
+import {
+  formatDate,
+  meetingLabels,
+  relativeDay,
+  taskLabels,
+} from "@/lib/domain";
 import {
   unreadReviewNotifications,
   notificationHref,
@@ -13,12 +19,18 @@ import { Icon } from "@/components/icons";
 import { EmptyState } from "@/components/common";
 import { selectNextMeeting } from "@/lib/home-meeting";
 import "./research-home.css";
+import { useTaskCompletion } from "@/lib/use-task-completion";
+import { AnimatePresence, motion } from "motion/react";
+import { taskRowMotion } from "@/components/task-row-motion";
+import { WeekStrip } from "@/components/home/WeekStrip";
+import { Segments } from "@/components/experience";
+import { Checkbox } from "@montage-ui/core";
 
 export function HomePage() {
   const { researchId = "" } = useParams();
   const { data, user, save } = useWorkspace();
+  const completion = useTaskCompletion(save);
   const [scope, setScope] = useState("mine");
-  const [busy, setBusy] = useState("");
   const research = data.researches.find((item) => item.id === researchId);
   if (!research) return <EmptyState title="연구를 찾을 수 없어요" />;
   const base = `/r/${researchId}`;
@@ -46,7 +58,8 @@ export function HomePage() {
     )
     .sort(
       (a, b) =>
-        Number(a.status === "done") - Number(b.status === "done") ||
+        Number(a.status === "done" && !completion.held.has(a.id)) -
+          Number(b.status === "done" && !completion.held.has(b.id)) ||
         Number(b.priority === "high") - Number(a.priority === "high") ||
         (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
     );
@@ -96,21 +109,6 @@ export function HomePage() {
   const attentionCount = updates.length + pending.length;
   const openCount = work.filter((task) => task.status !== "done").length;
   const completedCount = work.filter((task) => task.status === "done").length;
-  async function toggle(id: string) {
-    const task = tasks.find((item) => item.id === id);
-    if (!task) return;
-    setBusy(id);
-    try {
-      await save("tasks", {
-        ...task,
-        status: task.status === "done" ? "todo" : "done",
-      });
-    } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setBusy("");
-    }
-  }
   return (
     <div className="rh-home">
       <header className="rh-intro">
@@ -246,6 +244,7 @@ export function HomePage() {
       </section>
       <div className="rh-columns">
         <div className="rh-main-column">
+          <WeekStrip data={data} researchId={research.id} />
           <section className="rh-meeting" aria-labelledby="rh-meeting-heading">
             <div className="rh-section-heading">
               <h2 id="rh-meeting-heading">
@@ -262,13 +261,19 @@ export function HomePage() {
                   <div className="rh-date-tile" aria-hidden="true">
                     {next.date ? (
                       <>
-                        <span>{Number(next.date.slice(5, 7))}월</span>
+                        <span className="rh-date-month">
+                          {Number(next.date.slice(5, 7))}월
+                        </span>
                         <strong>{Number(next.date.slice(8, 10))}</strong>
+                        <small>
+                          {formatDate(next.date, { weekday: "short" })}
+                        </small>
                       </>
                     ) : (
                       <>
-                        <Icon name="calendar" size={23} />
-                        <span>날짜 미정</span>
+                        <span className="rh-date-month">날짜</span>
+                        <Icon name="calendar" size={20} />
+                        <small>미정</small>
                       </>
                     )}
                   </div>
@@ -276,6 +281,11 @@ export function HomePage() {
                     <p>
                       {formatDate(next.date)}
                       {next.time && ` · ${next.time}`}
+                      {relativeDay(next.date) && (
+                        <span className="rh-dday">
+                          {relativeDay(next.date)}
+                        </span>
+                      )}
                     </p>
                     <h3>
                       <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
@@ -293,7 +303,7 @@ export function HomePage() {
                 <div className="rh-preparation-heading">
                   <h4>미팅까지 준비할 일</h4>
                   <span>
-                    {prepared}
+                    <RollingNumber value={prepared} />
                     <span className="rh-muted">
                       {" "}
                       / {preparation.length}개 완료
@@ -350,7 +360,7 @@ export function HomePage() {
                       질문 {questions.length}
                     </Link>
                   </div>
-                  <Button className="rh-primary" asChild>
+                  <Button className="rh-primary" fullWidth="mobile" asChild>
                     <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
                       미팅 준비하기 <Icon name="arrow-right" size={16} />
                     </Link>
@@ -364,7 +374,7 @@ export function HomePage() {
                 </span>
                 <h3>다음 미팅이 아직 없어요</h3>
                 <p>날짜를 잡기 전에도 보여줄 결과와 질문부터 남길 수 있어요.</p>
-                <Button className="rh-primary" asChild>
+                <Button className="rh-primary" fullWidth="mobile" asChild>
                   <Link to={`${base}/meetings?new=1`}>
                     미팅 만들기 <Icon name="plus" size={16} />
                   </Link>
@@ -377,8 +387,8 @@ export function HomePage() {
               <div>
                 <h2 id="rh-work-heading">남은 할 일</h2>
                 <p className="rh-section-description">
-                  {openCount}개 남음<span>·</span>
-                  {completedCount}개 완료
+                  <RollingNumber value={openCount} />개 남음<span>·</span>
+                  <RollingNumber value={completedCount} />개 완료
                 </p>
               </div>
               <Link className="rh-text-link" to={`${base}/tasks`}>
@@ -386,66 +396,62 @@ export function HomePage() {
               </Link>
             </div>
             {isCollaborative && (
-              <div className="rh-scope" role="group" aria-label="할 일 범위">
-                <button
-                  type="button"
-                  aria-pressed={scope === "mine"}
-                  onClick={() => setScope("mine")}
-                >
-                  내 할 일
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={scope === "all"}
-                  onClick={() => setScope("all")}
-                >
-                  연구 전체
-                </button>
-              </div>
+              <Segments
+                label="할 일 범위"
+                size="small"
+                value={scope}
+                onChange={(next) => setScope(next as typeof scope)}
+                options={[
+                  { value: "mine", label: "내 할 일" },
+                  { value: "all", label: "연구 전체" },
+                ]}
+              />
             )}
             <div className="rh-task-list">
-              {work.slice(0, 5).map((task) => (
-                <div
-                  className={`rh-task ${task.status === "done" ? "rh-is-complete" : ""}`}
-                  key={task.id}
-                >
-                  <input
-                    type="checkbox"
-                    aria-label={`${task.title} 완료`}
-                    checked={task.status === "done"}
-                    disabled={busy === task.id}
-                    onChange={() => void toggle(task.id)}
-                  />
-                  <Link
-                    className="rh-task-copy"
-                    to={`${base}/tasks/${task.id}`}
+              <AnimatePresence initial={false}>
+                {work.slice(0, 5).map((task) => (
+                  <motion.div
+                    {...taskRowMotion}
+                    className={`rh-task ${task.status === "done" ? "rh-is-complete" : ""}`}
+                    key={task.id}
                   >
-                    <strong>{task.title}</strong>
-                    <span>
-                      {isCollaborative && (
-                        <>
-                          {members.find(
-                            (member) => member.userId === task.assigneeId,
-                          )?.name ?? "담당 미지정"}
-                          <i>·</i>
-                        </>
-                      )}
-                      {task.dueDate
-                        ? `${task.status !== "done" && task.dueDate < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }) ? "기한 지남 · " : ""}${formatDate(task.dueDate)}`
-                        : "기한 없음"}
+                    <Checkbox
+                      aria-label={`${task.title} 완료`}
+                      checked={task.status === "done"}
+                      disabled={completion.busy.has(task.id)}
+                      onCheckedChange={() => void completion.toggle(task)}
+                    />
+                    <Link
+                      className="rh-task-copy"
+                      to={`${base}/tasks/${task.id}`}
+                    >
+                      <strong>{task.title}</strong>
+                      <span>
+                        {isCollaborative && (
+                          <>
+                            {members.find(
+                              (member) => member.userId === task.assigneeId,
+                            )?.name ?? "담당 미지정"}
+                            <i>·</i>
+                          </>
+                        )}
+                        {task.dueDate
+                          ? `${task.status !== "done" && task.dueDate < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }) ? "기한 지남 · " : ""}${formatDate(task.dueDate)}`
+                          : "기한 없음"}
+                      </span>
+                    </Link>
+                    <span
+                      className={`rh-badge ${task.status === "done" ? "rh-badge-green" : task.priority === "high" ? "rh-badge-amber" : "rh-badge-neutral"}`}
+                    >
+                      {task.status === "done"
+                        ? taskLabels.done
+                        : task.priority === "high"
+                          ? "우선"
+                          : taskLabels[task.status]}
                     </span>
-                  </Link>
-                  <span
-                    className={`rh-badge ${task.status === "done" ? "rh-badge-green" : task.priority === "high" ? "rh-badge-amber" : "rh-badge-neutral"}`}
-                  >
-                    {task.status === "done"
-                      ? taskLabels.done
-                      : task.priority === "high"
-                        ? "우선"
-                        : taskLabels[task.status]}
-                  </span>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
               {!work.length && (
                 <div className="rh-list-empty">
                   <Icon name="tasks" size={22} />
@@ -519,7 +525,9 @@ export function HomePage() {
               <h2 id="rh-attention-heading">
                 확인할 내용
                 {attentionCount > 0 && (
-                  <span className="rh-count">{attentionCount}</span>
+                  <span className="rh-count">
+                    <RollingNumber value={attentionCount} />
+                  </span>
                 )}
               </h2>
               <Icon name="bell" size={18} />

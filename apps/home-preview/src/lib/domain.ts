@@ -468,6 +468,18 @@ export function formatDate(
     options ?? { month: "long", day: "numeric", weekday: "short" },
   ).format(new Date(`${date.slice(0, 10)}T12:00:00`));
 }
+const DAY_MS = 86_400_000;
+/** 오늘 기준 남은 날 수를 ‘오늘·내일·3일 뒤·2일 지남’으로 씁니다. */
+export function relativeDay(date?: string | null, today = new Date()) {
+  if (!date) return null;
+  const target = new Date(`${date.slice(0, 10)}T12:00:00`);
+  const base = new Date(today);
+  base.setHours(12, 0, 0, 0);
+  const days = Math.round((target.getTime() - base.getTime()) / DAY_MS);
+  if (days === 0) return "오늘";
+  if (days === 1) return "내일";
+  return days > 0 ? `${days}일 뒤` : `${-days}일 지남`;
+}
 export function safeUrl(value: string): string | null {
   try {
     const url = new URL(value);
