@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useAICapabilities } from "@/lib/ai-capabilities";
@@ -864,7 +865,7 @@ export function ResearchAssistant() {
                   if (
                     (e.metaKey || e.ctrlKey) &&
                     e.key === "Enter" &&
-                    !e.nativeEvent.isComposing
+                    !isImeComposing(e)
                   ) {
                     e.preventDefault();
                     void send();

@@ -66,7 +66,7 @@ VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npm run dev -- --port 5174
 | 도구 | 쓰는 곳 |
 |---|---|
 | 브라우저 직접 확인 | 모든 변경. 스크롤·입력·클릭·키보드 |
-| Playwright 스크립트 | 여러 너비·테마 스크린샷, 아래 자동 검사 |
+| `apps/home-preview/scripts/qa/screens.mjs` | 미리보기 모드에서 25개 화면 × 너비 × 테마 캡처, 아래 자동 검사, 역할별 계산된 스타일 비교(`capture` → `compare`). 설치된 Chrome만 쓰고 결과는 임시 폴더에 둡니다(커밋하지 않음). 화면 목록은 `scripts/qa/routes.mjs` |
 | axe-core | WCAG 2.2 AA 자동 검사(대비·이름·구조) |
 | Stageshow `scripts/layout.mjs` | 컨트롤·여백 맞춤 검사. `film.mjs --gate`는 Stageshow 키트로 만든 무대(`.ss-stage`)에서만 동작하므로 일반 화면에는 쓰지 않습니다. |
 
@@ -89,7 +89,7 @@ VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npm run dev -- --port 5174
 | 좁은 입력창 선택 버튼이 ‘연구 …’로 잘림 | 4개 컨트롤이 한 줄 고정 | 480px 이하에서 선택 버튼만 첫 줄로 (`order:-1`) |
 | 새 슬로건이 360px에서 4줄 | 52px 고정 | `clamp(34px, 11.6vw, 52px)`로 두 줄 유지 |
 | 대화상자를 닫으면 포커스가 페이지 맨 앞으로 | 상태로 연 대화상자 + 자식의 `autoFocus`가 Radix보다 먼저 포커스를 옮김 | `Dialog`/`Sheet` 루트가 열리는 렌더에서 포커스를 기억했다 복귀 (`components/ui/dialog.jsx`, `sheet.jsx`) |
-| 한글 조합 중 Enter로 질문 추가·선택·전송 | `keydown`에서 `isComposing` 미확인 | `!e.nativeEvent.isComposing` (테스트: `tests/controls.test.tsx`) |
+| 한글 조합 중 Enter로 질문 추가·선택·전송 | `keydown`에서 `isComposing` 미확인 | `!e.nativeEvent.isComposing` (`src/lib/ime.ts`의 `isImeComposing`, 테스트: `tests/ime.test.tsx`) |
 | 24px 미만 텍스트 링크·요약 | 인라인 링크 높이 18~21px | `min-height: 24px`(셸·푸터·PDF 요약·이력 버튼) |
 | 선택 상자 이름이 보이는 값과 다름 | `aria-label`이 라벨만 | ‘라벨, 현재 값’으로 이름 지정 (`components/experience.tsx`) |
 | 서버 오류가 합니다체·영문 필드 키(‘title 입력을…’)로 보임 | DB/Edge Function 문구를 그대로 표시 | `src/lib/server-messages.ts`로 변환, 모든 throw 지점에서 적용 |
