@@ -16,7 +16,7 @@
     background: var(--surface-muted);
     border-radius: var(--radius-8);
     transform: rotate(6deg);
-    transition: transform 180ms ease;
+    transition: transform var(--motion-duration-micro) ease;
     z-index: -1;
   }
   .material-preview-badge canvas {
@@ -498,10 +498,11 @@
     border-radius: var(--radius-4);
     flex-shrink: 0;
   }
+  /* 읽기 전용 완료 체크는 Montage Checkbox 체크 상태와 같은 모양(검수 D-4). */
   .student-check-indicator.checked {
-    background: var(--text-secondary);
-    color: var(--surface);
-    border-color: var(--text-secondary);
+    background: var(--semantic-surface-brand-primary);
+    color: var(--semantic-static-white);
+    border-color: var(--semantic-surface-brand-primary);
   }
   .student-question-row {
     display: flex;
@@ -1336,8 +1337,8 @@
     text-align: center;
     background: var(--surface-muted);
     transition:
-      background 0.15s,
-      border-color 0.15s;
+      background var(--motion-duration-micro),
+      border-color var(--motion-duration-micro);
   }
   .upload-dropzone.dragging {
     background: var(--brand-soft);
@@ -1600,6 +1601,12 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       letter-spacing: var(--typography-label2-letterSpacing);
+    }
+    /* 두 줄로 자를 때도 우선순위 점이 첫 줄 앞에 남도록(검수 F-6). */
+    .task-row-text strong > .priority-dot {
+      display: inline-block;
+      margin-right: var(--spacing-6);
+      vertical-align: middle;
     }
     .task-row-text small {
       font-size: var(--typography-caption2-fontSize);

@@ -83,7 +83,7 @@ function ReviewRoute() {
   const q = data.reviews.find((r) => r.id === requestId);
   return q && data.researches.some((r) => r.id === q.researchId) ? (
     <Shell researchOverride={q.researchId}>
-      <ReviewDetailPage />
+      <ReviewDetailPage embedded />
     </Shell>
   ) : (
     <ReviewDetailPage />

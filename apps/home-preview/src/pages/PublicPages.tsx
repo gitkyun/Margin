@@ -120,13 +120,12 @@ export function PublicFrame({
                 로그인
               </Link>
             )}
-            <Link
-              className="lp-button lp-button-dark lp-button-small"
-              to={signedIn ? "/r" : "/signup"}
-            >
-              {signedIn ? "내 연구 열기" : "시작하기"}
-              <Icon name="arrow-up-right" size={16} />
-            </Link>
+            <Button asChild>
+              <Link to={signedIn ? "/r" : "/signup"}>
+                {signedIn ? "내 연구 열기" : "시작하기"}
+                <Icon name="arrow-up-right" size={16} />
+              </Link>
+            </Button>
             <button
               className="lp-menu-toggle"
               aria-label="메뉴"
@@ -363,17 +362,18 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             고친 내용은 교수님께 검토를 요청할 수 있어요.
           </p>
           <div className="lp-hero-actions">
-            <Link
-              className="lp-button lp-button-dark"
-              to={signedIn ? "/r" : "/signup"}
-            >
-              {signedIn ? "내 연구 열기" : "시작하기"}
-              <Icon name="arrow-up-right" size={19} />
-            </Link>
-            <a className="lp-button lp-button-light" href="#workflow">
-              사용 방법 보기
-              <Icon name="chevron-down" size={16} />
-            </a>
+            <Button asChild size="lg">
+              <Link to={signedIn ? "/r" : "/signup"}>
+                {signedIn ? "내 연구 열기" : "시작하기"}
+                <Icon name="arrow-up-right" size={19} />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <a href="#workflow">
+                사용 방법 보기
+                <Icon name="chevron-down" size={16} />
+              </a>
+            </Button>
           </div>
         </div>
         <div className="lp-hero-stage">
@@ -701,7 +701,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
         </h2>
         <p>지난 기록을 다시 찾는 시간이 줄어요.</p>
         <Link
-          className="lp-button lp-button-dark"
+          className="lp-button lp-button-on-brand"
           to={signedIn ? "/r" : "/login"}
         >
           {signedIn ? "내 연구 열기" : "마진 시작하기"}
@@ -828,13 +828,12 @@ export function FeatureTourPage({ signedIn = false }: { signedIn?: boolean }) {
         </dl>
         <div className="lp-destination-next">
           <span>연구를 만들고 미팅 기록부터 시작하세요.</span>
-          <Link
-            className="lp-button lp-button-dark"
-            to={signedIn ? "/r" : "/login"}
-          >
-            {signedIn ? "내 연구 열기" : "로그인"}
-            <Icon name="arrow-right" size={18} />
-          </Link>
+          <Button asChild size="lg">
+            <Link to={signedIn ? "/r" : "/login"}>
+              {signedIn ? "내 연구 열기" : "로그인"}
+              <Icon name="arrow-right" size={18} />
+            </Link>
+          </Button>
         </div>
       </section>
     </PublicFrame>

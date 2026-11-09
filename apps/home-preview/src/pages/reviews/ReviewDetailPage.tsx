@@ -133,7 +133,11 @@ function CommentThread({
   );
 }
 
-export function ReviewDetailPage() {
+/**
+ * `embedded`: 학생이 앱 셸 안에서 열 때. 셸이 로고·계정 메뉴·<main>을 이미 그리므로
+ * 이 화면은 그것들을 다시 그리지 않습니다(2026-11-09 검수 E-7).
+ */
+export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const { requestId = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -479,24 +483,31 @@ export function ReviewDetailPage() {
         </Link>
       </main>
     );
+  const Root = embedded ? "div" : "main";
   return (
-    <main className="review-workspace">
+    <Root className="review-workspace">
       <header className="review-workspace-header">
         <div className="review-header-left">
           <Link
             className="review-brand"
-            to={isOwner ? `/r/${request.researchId}/reviews` : "/r"}
+            to={isOwner || embedded ? `/r/${request.researchId}/reviews` : "/r"}
             aria-label={
-              isOwner
-                ? "마진(Margin) 검토 요청 목록으로 돌아가기"
-                : "마진(Margin) 홈"
+              embedded
+                ? "검토 요청 목록으로 돌아가기"
+                : isOwner
+                  ? "마진(Margin) 검토 요청 목록으로 돌아가기"
+                  : "마진(Margin) 홈"
             }
           >
-            {isOwner && <Icon name="arrow-left" size={21} />}
-            <BrandMark />
-            <BrandWordmark />
+            {(isOwner || embedded) && <Icon name="arrow-left" size={21} />}
+            {!embedded && (
+              <>
+                <BrandMark />
+                <BrandWordmark />
+              </>
+            )}
           </Link>
-          <span className="review-header-divider" />
+          {!embedded && <span className="review-header-divider" />}
           <div>
             <h1>{request.title}</h1>
             <p>
@@ -541,34 +552,36 @@ export function ReviewDetailPage() {
               </Button>
             </>
           ) : null}
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <button
-                className="review-account-button"
-                aria-label={`${user.name} 계정 메뉴`}
-              >
-                {user.name.slice(0, 1) || "나"}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="review-account-menu">
-              <DropdownMenuLabel>
-                <strong>{user.name}</strong>
-                <span>{user.email}</span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() => navigate("/account?tab=appearance")}
-              >
-                <Icon name="monitor" size={16} />
-                화면 설정
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => void context.signOut()}>
-                <Icon name="logout" size={16} />
-                로그아웃
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {!embedded && (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <button
+                  className="review-account-button"
+                  aria-label={`${user.name} 계정 메뉴`}
+                >
+                  {user.name.slice(0, 1) || "나"}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="review-account-menu">
+                <DropdownMenuLabel>
+                  <strong>{user.name}</strong>
+                  <span>{user.email}</span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => navigate("/account?tab=appearance")}
+                >
+                  <Icon name="monitor" size={16} />
+                  화면 설정
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => void context.signOut()}>
+                  <Icon name="logout" size={16} />
+                  로그아웃
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </header>
       {mode === "preview" && (
@@ -1232,6 +1245,6 @@ export function ReviewDetailPage() {
           )}
         </DialogContent>
       </Dialog>
-    </main>
+    </Root>
   );
 }

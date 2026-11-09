@@ -16,7 +16,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    transition: opacity 0.3s;
+    transition: opacity var(--motion-duration-page);
   }
   .rms-cloud-content {
     position: relative;
@@ -167,7 +167,7 @@
     z-index: -1;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--motion-duration-enter);
   }
   .rms-spotlight-card:hover .rms-spotlight-light,
   .rms-spotlight-card:focus-within .rms-spotlight-light {
