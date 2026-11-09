@@ -1,5 +1,6 @@
 import { friendlyError } from "@/lib/supabase";
 import { StatusBadge } from "@/components/common";
+import { Icon } from "@/components/icons";
 import {
   responseLabels,
   type MaterialVersion,
@@ -99,9 +100,23 @@ export function versionForRound(
     updatedAt: round.createdAt,
   };
 }
+/** 교수 결과. 학생 작업 상태(채운 배지)와 섞이지 않게 테두리 배지 + 고정 아이콘으로 표시합니다. */
 export function ResponseStatus({ response }: { response?: ReviewResponse }) {
   return (
     <StatusBadge
+      variant="outlined"
+      icon={
+        <Icon
+          name={
+            response?.result === "changes_requested"
+              ? "edit"
+              : response?.result === "confirmed"
+                ? "check-circle"
+                : "clock"
+          }
+          size={12}
+        />
+      }
       tone={
         response?.result === "changes_requested"
           ? "amber"

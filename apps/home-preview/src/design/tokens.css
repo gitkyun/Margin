@@ -14,6 +14,13 @@
  * 금지: hex 색상표 만들기, 다른 파일에 다크 전용 색 블록 추가하기.
  */
 :root {
+  /* 움직임 3단계(docs/design/patterns.md §3). Montage에는 움직임 토큰이 없습니다. */
+  --motion-duration-micro: 120ms;
+  --motion-duration-enter: 200ms;
+  --motion-duration-exit: 160ms;
+  --motion-duration-page: 300ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-exit: cubic-bezier(0.3, 0, 1, 1);
   /* 배경·면 */
   --canvas: var(--semantic-background-neutral-secondary);
   --surface: var(--semantic-background-neutral-primary);

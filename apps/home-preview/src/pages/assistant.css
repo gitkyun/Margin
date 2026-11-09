@@ -9,9 +9,6 @@
   .assistant-experience > .page-header {
     margin-bottom: var(--spacing-16);
   }
-  .assistant-experience > .experience-toolbar {
-    margin-bottom: var(--spacing-16);
-  }
 
   /* 대화: 왼쪽 대화 목록 + 오른쪽 대화 면(내용은 가운데 760px 열) */
   .ai-workspace {
@@ -44,8 +41,8 @@
     font-size: var(--typography-label1-fontSize);
     text-align: left;
     transition:
-      background-color 140ms ease-out,
-      color 140ms ease-out;
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
   }
   .conversation-list > button:not([data-slot="button"]) span {
     overflow: hidden;
@@ -136,9 +133,9 @@
     text-align: left;
     word-break: keep-all;
     transition:
-      border-color 160ms ease-out,
-      background-color 160ms ease-out,
-      transform 160ms ease-out;
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-micro) ease-out;
   }
   .assistant-prompts button svg {
     flex-shrink: 0;
@@ -222,8 +219,8 @@
     background: var(--surface-raised);
     box-shadow: var(--semantic-elevation-shadow-normal-medium);
     transition:
-      border-color 160ms ease-out,
-      box-shadow 160ms ease-out;
+      border-color var(--motion-duration-micro) ease-out,
+      box-shadow var(--motion-duration-micro) ease-out;
   }
   .ai-composer:focus-within {
     border-color: var(--semantic-line-brand-strong);
@@ -275,7 +272,9 @@
     font-size: var(--typography-label2-fontSize);
     font-weight: 500;
   }
+  /* 칩 안 제목: 한 줄 말줄임, 전체 이름은 title·aria-label로(검수 F-2). */
   .context-chip > span {
+    min-width: 0;
     max-width: 220px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -366,8 +365,8 @@
     font-size: var(--typography-label1-fontSize);
     text-align: left;
     transition:
-      border-color 140ms ease-out,
-      background-color 140ms ease-out;
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .source-picker > button:not([data-slot="button"]) svg {
@@ -645,8 +644,8 @@
     flex-shrink: 0;
   }
   .source-picker > button[aria-pressed="true"] {
-    border-color: var(--brand);
-    background: var(--brand-soft);
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
   }
   .source-picker button > span {
     min-width: 0;
