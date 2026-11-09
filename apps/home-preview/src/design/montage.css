@@ -24,6 +24,42 @@
 .rms-segments.is-fill[data-component="segmented-control"] {
   width: 100%;
 }
+
+/*
+ * 가로로 넘치는 보기 전환·설정 메뉴: 스크롤바를 숨긴 대신 남은 쪽 끝을 흐려
+ * 더 있다는 것을 보여 줍니다(검수 F-7). 넘치지 않으면 스크롤 타임라인이 비활성이라
+ * 흐림이 생기지 않고, 끝까지 밀면 흐림이 사라집니다. 지원하지 않는 브라우저는 그대로.
+ */
+@property --scroll-edge-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes margin-scroll-edge {
+  from {
+    --scroll-edge-end: 28px;
+  }
+  to {
+    --scroll-edge-end: 0px;
+  }
+}
+@supports (animation-timeline: scroll()) {
+  .rms-segments[data-component="segmented-control"],
+  .settings-layout > nav {
+    animation: margin-scroll-edge linear both;
+    animation-timeline: scroll(self inline);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black calc(100% - var(--scroll-edge-end)),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      black calc(100% - var(--scroll-edge-end)),
+      transparent
+    );
+  }
+}
 .rms-segments:not(.is-fill) [data-component="segmented-control-item"] {
   flex: 0 0 auto;
   padding-inline: var(--spacing-12);

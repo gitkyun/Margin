@@ -833,8 +833,10 @@ export function ResearchAssistant() {
                 {contexts.map((c, i) => (
                   <span className="context-chip" key={`${c.kind}-${c.id}`}>
                     <Icon name="file" size={14} />
-                    {c.title}
-                    {c.page && ` · ${c.page}쪽`}
+                    <span title={c.page ? `${c.title} · ${c.page}쪽` : c.title}>
+                      {c.title}
+                      {c.page && ` · ${c.page}쪽`}
+                    </span>
                     <button
                       type="button"
                       disabled={running}
