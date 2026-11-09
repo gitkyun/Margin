@@ -35,6 +35,7 @@ import {
   LoadingState,
 } from "@/components/common";
 import { Choice, Segments } from "@/components/experience";
+import { Tabs } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -129,33 +130,37 @@ export function PlanningPage() {
             {tab !== "roadmap" ? "시간 조율 시작" : "단계 추가"}
           </Button>
         }
-      />
-      <div className="experience-toolbar">
-        <Segments
-          label="계획 화면"
-          value={tab}
-          onChange={(v) => setParams({ tab: v })}
-          options={[
-            { value: "roadmap", label: "연구 로드맵" },
-            { value: "calendar", label: "캘린더" },
-            {
-              value: "schedule",
-              label: "시간 조율",
-              count: polls.filter((p) => p.status === "open").length,
-            },
-          ]}
-        />
-        {tab === "roadmap" && (
-          <Segments
-            value={view}
-            onChange={setView}
+        tabs={
+          <Tabs
+            className="tabs-line"
+            label="계획 화면"
+            value={tab}
+            onChange={(v) => setParams({ tab: v })}
             options={[
-              { value: "timeline", label: "시간순" },
-              { value: "diagram", label: "관계도" },
+              { value: "roadmap", label: "연구 로드맵" },
+              { value: "calendar", label: "캘린더" },
+              {
+                value: "schedule",
+                label: "시간 조율",
+                count: polls.filter((p) => p.status === "open").length,
+              },
             ]}
           />
-        )}
-      </div>
+        }
+        toolbar={
+          tab === "roadmap" ? (
+            <Segments
+              label="로드맵 보기"
+              value={view}
+              onChange={setView}
+              options={[
+                { value: "timeline", label: "시간순" },
+                { value: "diagram", label: "관계도" },
+              ]}
+            />
+          ) : undefined
+        }
+      />
       {error && <p className="rms-error">{error}</p>}
       {tab === "roadmap" ? (
         <>

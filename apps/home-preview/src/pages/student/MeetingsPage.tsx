@@ -730,17 +730,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   ];
   return (
     <div className="student-page">
-      <BackLink to={`/r/${researchId}/meetings`}>미팅 목록</BackLink>
       <PageHeader
+        back={<BackLink to={`/r/${researchId}/meetings`}>미팅 목록</BackLink>}
         title={meeting.title}
         description={`${formatDate(meeting.date)}${meeting.time ? ` · ${meeting.time}` : ""}`}
+        status={
+          <StatusBadge tone={meeting.status === "recorded" ? "green" : "blue"}>
+            {meetingLabels[meeting.status]}
+          </StatusBadge>
+        }
         actions={
           <div className="button-row">
-            <StatusBadge
-              tone={meeting.status === "recorded" ? "green" : "blue"}
-            >
-              {meetingLabels[meeting.status]}
-            </StatusBadge>
             <Button
               variant="outline"
               onClick={() => {
