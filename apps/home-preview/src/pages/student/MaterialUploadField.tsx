@@ -32,8 +32,8 @@ export function MaterialUploadField({
   const percentage = Math.min(100, Math.max(0, progress ?? 0));
   const fileSize = file
     ? file.size >= 1048576
-      ? `${(file.size / 1048576).toFixed(1)} MB`
-      : `${Math.max(1, Math.round(file.size / 1024))} KB`
+      ? `${(file.size / 1048576).toFixed(1)}MB`
+      : `${Math.max(1, Math.round(file.size / 1024))}KB`
     : "";
   return (
     <div className="mu-field">
@@ -93,13 +93,13 @@ export function MaterialUploadField({
         </span>
         <strong>
           {file
-            ? "파일을 바꾸려면 클릭하거나 끌어 놓으세요"
-            : "여기에 PDF를 놓아주세요"}
+            ? "다른 파일로 바꾸려면 누르거나 끌어다 놓아 주세요"
+            : "여기에 PDF를 끌어다 놓아 주세요"}
         </strong>
         <span id={hintId} className="mu-dropzone-hint">
           {file
-            ? "등록 전까지 다른 파일로 바꿀 수 있습니다"
-            : "또는 클릭해서 파일 선택 · 최대 20 MB"}
+            ? "등록하기 전까지 바꿀 수 있어요"
+            : "또는 눌러서 파일 선택 · 20MB 이하"}
         </span>
       </motion.button>
       <AnimatePresence initial={false}>
@@ -122,11 +122,11 @@ export function MaterialUploadField({
                 <span>{fileSize}</span>
                 <span className="mu-state">
                   {connecting
-                    ? "자료 연결 중"
+                    ? "자료에 등록 중"
                     : transferring
                       ? "업로드 중"
                       : pending
-                        ? "파일 저장 완료 · 연결 대기"
+                        ? "업로드됨 · 등록 전"
                         : "선택됨"}
                 </span>
               </div>
@@ -150,8 +150,8 @@ export function MaterialUploadField({
           <div className="mu-transfer-caption">
             <span>
               {connecting
-                ? "업로드를 마쳤습니다. 자료에 연결하고 있어요."
-                : "파일을 안전하게 올리고 있어요."}
+                ? "파일을 올렸어요. 자료에 등록하는 중이에요."
+                : "파일을 올리는 중이에요."}
             </span>
             <strong>
               {connecting ? (
@@ -164,7 +164,7 @@ export function MaterialUploadField({
           <progress
             max={100}
             value={percentage}
-            aria-label="파일 업로드 진행"
+            aria-label="파일 업로드 진행률"
           />
           {transferring && (
             <Button type="button" variant="ghost" size="sm" onClick={onAbort}>

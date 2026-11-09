@@ -200,10 +200,8 @@ export function FormDialog({
       <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
         <DialogContent className="student-dialog">
           <DialogHeader>
-            <DialogTitle>작성 중인 내용을 닫을까요?</DialogTitle>
-            <DialogDescription>
-              저장하지 않은 변경 내용은 사라집니다.
-            </DialogDescription>
+            <DialogTitle>저장하지 않고 닫을까요?</DialogTitle>
+            <DialogDescription>입력한 내용은 사라져요.</DialogDescription>
           </DialogHeader>
           <div className="form-actions">
             <Button variant="outline" onClick={() => setDiscardOpen(false)}>
@@ -217,7 +215,7 @@ export function FormDialog({
                 onOpenChange(false);
               }}
             >
-              변경 버리고 닫기
+              버리고 닫기
             </Button>
           </div>
         </DialogContent>
@@ -382,7 +380,7 @@ export function useSaving() {
       setError(
         e instanceof Error
           ? e.message
-          : "저장하지 못했습니다. 입력한 내용은 남아 있습니다.",
+          : "저장하지 못했어요. 입력한 내용은 그대로 있어요.",
       );
     } finally {
       pending.current = false;
@@ -411,7 +409,7 @@ export function SaveActions({
         취소
       </Button>
       <Button type="submit" disabled={saving}>
-        {saving ? "저장 중…" : label}
+        {saving ? "저장 중" : label}
       </Button>
     </div>
   );
@@ -439,7 +437,7 @@ export function WorkTabs({
   selected: "feedback" | "tasks" | "results";
 }) {
   return (
-    <nav className="work-tabs" aria-label="피드백과 작업">
+    <nav className="work-tabs" aria-label="피드백과 할 일">
       <Link
         to={`/r/${researchId}/feedback`}
         aria-current={selected === "feedback" ? "page" : undefined}

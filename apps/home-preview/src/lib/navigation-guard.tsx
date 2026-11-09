@@ -107,7 +107,7 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
       blocker.proceed();
     } catch {
       setDiscardError(
-        "작성 내용을 정리하지 못했습니다. 계속 편집한 뒤 다시 이동해 주세요.",
+        "작성한 내용을 버리지 못했어요. 내용은 그대로 있으니 다시 시도해 주세요.",
       );
     }
   }
@@ -125,13 +125,13 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
           <DialogHeader>
             <DialogTitle>
               {summary.busy
-                ? "저장하는 동안 잠시 기다려 주세요."
-                : "저장하지 않은 내용이 있습니다."}
+                ? "아직 저장하는 중이에요"
+                : "저장하지 않고 이동할까요?"}
             </DialogTitle>
             <DialogDescription>
               {summary.busy
-                ? "저장이 끝나기 전에는 이동할 수 없습니다. 이 화면에서 계속 편집할 수 있습니다."
-                : "계속 편집하거나 작성한 내용을 버리고 이동할 수 있습니다."}
+                ? "저장이 끝난 뒤에 이동할 수 있어요."
+                : "저장하지 않은 내용은 사라져요."}
             </DialogDescription>
           </DialogHeader>
           {summary.labels.length > 0 && <p>{summary.labels.join(" · ")}</p>}

@@ -427,20 +427,20 @@ export const emptyWorkspace = (): WorkspaceData => ({
   reads: [],
 });
 export const taskLabels = {
-  todo: "진행 전",
+  todo: "시작 전",
   doing: "진행 중",
   done: "완료",
 } as const;
 export const originLabels = {
   manual: "직접 작성",
-  ai: "AI 제안에서 작성",
+  ai: "AI 제안에서 선택",
 } as const;
 export const feedbackLabels = {
-  unprocessed: "처리 전",
+  unprocessed: "시작 전",
   in_progress: "진행 중",
-  recorded: "반영 기록 있음",
+  recorded: "수정 결과 있음",
   held: "보류",
-  unchanged: "미수정 결정",
+  unchanged: "고치지 않음",
 } as const;
 export const meetingLabels = {
   preparing: "준비 중",

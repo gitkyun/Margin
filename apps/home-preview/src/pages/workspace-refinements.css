@@ -411,3 +411,154 @@
 .ai-source-controls label {
   white-space: nowrap;
 }
+
+/* Accessibility pass, 2026-11-08 (docs/design/ui-quality.md).
+   Brand text on brand tints uses --brand-ink so it reads at 4.5:1+. */
+.app-shell.floating-workspace .nav-item:hover,
+.app-shell.floating-workspace .nav-item.active,
+.tone-blue {
+  color: var(--brand-ink);
+}
+/* Text links in the shell chrome get at least a 24px target (WCAG 2.5.8). */
+.floating-workspace .breadcrumbs > a {
+  min-height: 24px;
+  line-height: 24px;
+}
+.preview-banner > a,
+.workspace-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+/* Status screens centre their text; the icon is a block svg, so centre it too. */
+.not-found > svg,
+.connection-error > svg {
+  display: block;
+  margin-inline: auto;
+}
+/* Settings tabs on phones: a single scrollable row. Tabs keep their labels on
+   one line instead of shrinking into 2-3 line stacks ("AI / 기본 / 설정"). */
+@media (max-width: 768px) {
+  .settings-layout > nav {
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -4px;
+    padding-inline: 4px;
+    scroll-padding-inline: 4px;
+  }
+  .settings-layout > nav::-webkit-scrollbar {
+    display: none;
+  }
+  .settings-layout > nav button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+/* Assistant composer on phones: the mode and model choices get their own row
+   so their labels stay readable ("연구 대화", model name) instead of "연구 …". */
+@media (max-width: 480px) {
+  .composer-actions > .rms-choice {
+    order: -1;
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+}
+/* On phones the preview-banner link is icon-only: keep a 24px square target. */
+.preview-banner > a {
+  min-width: 24px;
+  justify-content: center;
+}
+/* The workspace footer was dimmed with opacity 0.75, dropping its text to
+   3.2:1. Keep it at full strength; on phones let it wrap as two lines
+   instead of breaking the link label ("자료·개인정보 / 안내"). */
+.workspace-footer {
+  opacity: 1;
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.workspace-footer a {
+  white-space: nowrap;
+}
+/* Current tab in the 피드백 · 할 일 · 수정 결과 switcher: brand text on a tint. */
+.work-tabs a[aria-current="page"] {
+  color: var(--brand-ink);
+}
+/* Small text buttons: at least a 24px target (WCAG 2.5.8). */
+.review-history-button,
+.pdf-text > summary {
+  min-height: 24px;
+}
+.pdf-text > summary {
+  display: flex;
+  align-items: center;
+}
+/* Task rows on phones: show the description on up to two lines instead of
+   cutting it to a single ellipsised line (the detail view has the rest). */
+@media (max-width: 600px) {
+  .task-row-text small {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}
+/* Long content (interaction QA, 2026-11-09) ------------------------------ */
+/* Page titles: a long unbroken title used to push the header actions (편집)
+   past the panel edge, where overflow:clip hid them. Let the title column
+   shrink and break only tokens that cannot fit (keep-all still keeps words). */
+.page-header > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.page-title {
+  overflow-wrap: anywhere;
+}
+/* The received-feedback card reused .feedback-origin, an inline label class,
+   and was laid out as one squeezed row. Keep the card a normal block. */
+.surface.feedback-origin {
+  display: block;
+  font-size: inherit;
+  color: inherit;
+}
+/* Dialogs: one shrinkable column so a long name or file name wraps inside
+   instead of widening the dialog past the screen (WCAG 1.4.10). */
+[data-slot="dialog-content"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+[data-slot="dialog-content"] > *,
+.student-choice-row > span,
+.field {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* Research switcher: two lines before cutting, so studies that share their
+   opening words stay distinguishable. */
+.workspace-menu [role="menuitem"] > span {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+/* ⌘K results: titles wrap instead of being cut mid-character; icons keep size. */
+.command-results > a > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.command-results > a > svg {
+  flex: none;
+}
+/* Selected material folder ("전체"): brand text on a brand tint. */
+.folder-all[aria-pressed="true"] {
+  color: var(--brand-ink);
+}
+/* Task list: the title is a flex container (priority icon + text), so its
+   text is an anonymous flex item. overflow-wrap:anywhere lowers its
+   min-content so a long unbroken title wraps instead of painting over the
+   status and due-date columns. */
+.task-row-text strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

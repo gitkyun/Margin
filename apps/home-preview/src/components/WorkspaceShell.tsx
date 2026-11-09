@@ -52,10 +52,19 @@ const navigation = [
   ["planning", "flag", "계획·일정"],
   ["meetings", "calendar", "미팅"],
   ["writing", "file", "글쓰기"],
-  ["feedback", "feedback", "피드백·작업"],
+  ["feedback", "feedback", "피드백·수정"],
   ["materials", "folder", "자료"],
   ["reviews", "send", "검토 요청"],
 ];
+const activityTitles: Record<string, string> = {
+  "새 기록이 추가되었습니다": "새 기록을 추가했어요",
+  "연구 기록이 변경되었습니다": "기록을 수정했어요",
+  "공동연구에 참여했습니다": "공동연구에 참여했어요",
+  "수정 결과를 검토에 공개했습니다": "검토 요청에 수정 결과를 넣었어요",
+  "새 차수의 재확인을 요청했습니다": "다시 확인을 요청했어요",
+  "미팅 시간이 확정되었습니다": "미팅 시간을 정했어요",
+  "시간 조율이 취소되었습니다": "시간 조율을 취소했어요",
+};
 function AccountMenu() {
   const { user, mode, signOut } = useWorkspace(),
     navigate = useNavigate();
@@ -67,7 +76,7 @@ function AccountMenu() {
         <DropdownMenuTrigger asChild>
           <button
             className="profile-button"
-            aria-label={`${user.name} 프로필 메뉴`}
+            aria-label={`${user.name} ${user.email} 계정 메뉴`}
           >
             <span className="avatar">{user.name.slice(0, 1)}</span>
             <span>
@@ -104,7 +113,7 @@ function AccountMenu() {
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/guide")}>
             <Icon name="help" size={17} />
-            서비스 안내
+            사용 안내
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setLogoutOpen(true)}>
             <Icon name="logout" size={17} />
@@ -120,10 +129,15 @@ function AccountMenu() {
       >
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>로그아웃할까요?</DialogTitle>
+            <DialogTitle>
+              {mode === "preview"
+                ? "로그인 화면으로 이동할까요?"
+                : "로그아웃할까요?"}
+            </DialogTitle>
             <DialogDescription>
-              저장한 연구 기록은 유지됩니다. 저장하지 않은 입력은 먼저 저장해
-              주세요.
+              {mode === "preview"
+                ? "미리보기 기록은 이 브라우저에 그대로 남아요."
+                : "저장한 기록은 그대로 남아요. 저장하지 않은 입력은 사라지니 먼저 저장해 주세요."}
             </DialogDescription>
           </DialogHeader>
           <div className="form-actions">
@@ -132,7 +146,7 @@ function AccountMenu() {
               disabled={loggingOut}
               onClick={() => setLogoutOpen(false)}
             >
-              계속 사용
+              취소
             </Button>
             <Button
               disabled={loggingOut}
@@ -148,7 +162,11 @@ function AccountMenu() {
                 }
               }}
             >
-              {loggingOut ? "로그아웃 중" : "로그아웃"}
+              {mode === "preview"
+                ? "이동"
+                : loggingOut
+                  ? "로그아웃 중"
+                  : "로그아웃"}
             </Button>
           </div>
         </DialogContent>
@@ -184,6 +202,13 @@ export function WorkspaceShell({
   );
   const newEvents = events.filter((e) => !e.readAt);
   const totalUnread = updates.length + newEvents.length;
+  const incomingOnly =
+    data.researches.length === 0 &&
+    data.reviews.some(
+      (request) =>
+        request.professorId === user.id && request.status === "shared",
+    );
+  const homeLabel = incomingOnly ? "받은 검토 요청" : "내 연구";
   useEffect(() => setMobile(false), [location.pathname]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -258,23 +283,23 @@ export function WorkspaceShell({
       : location.pathname.endsWith("/settings")
         ? "연구 설정"
         : location.pathname.endsWith("/assistant")
-          ? "AI 연구 도우미"
+          ? "연구 도우미"
           : location.pathname.includes("/tasks")
             ? "할 일"
             : location.pathname.includes("/results")
               ? "수정 결과"
               : (navigation.find(
                   ([path]) => path && location.pathname.includes("/" + path),
-                )?.[2] ?? (research ? "연구 홈" : "내 연구"));
+                )?.[2] ?? (research ? "연구 홈" : homeLabel));
   useEffect(() => {
-    document.title = `${current}${research ? ` · ${research.name}` : ""} · Margin`;
+    document.title = `${current}${research ? ` · ${research.name}` : ""} · 마진`;
   }, [current, research?.name]);
   if (researchId && (!research || research.deletedAt))
     return (
       <div className="not-found">
         <Icon name="lock" size={32} />
-        <h1>이 연구를 열 수 없습니다.</h1>
-        <p>계정과 접근 가능한 연구를 확인해 주세요.</p>
+        <h1>이 연구를 열 수 없어요</h1>
+        <p>휴지통에 있거나 접근 권한이 없는 연구예요.</p>
         <Link className="rms-action primary" to="/r">
           내 연구로 돌아가기
         </Link>
@@ -283,7 +308,7 @@ export function WorkspaceShell({
   const menu = (
     <>
       <div className="sidebar-brand">
-        <Link to="/r" className="brand" aria-label="Margin 내 연구">
+        <Link to="/r" className="brand" aria-label="마진(Margin) 내 연구">
           <BrandMark />
           <BrandWordmark />
         </Link>
@@ -324,7 +349,7 @@ export function WorkspaceShell({
                   onSelect={() => navigate(`/r/${r.id}`)}
                 >
                   <Icon name="book" size={17} />
-                  <span>{r.name}</span>
+                  <span title={r.name}>{r.name}</span>
                   {r.id === researchId && <Icon name="check" size={15} />}
                 </DropdownMenuItem>
               ))}
@@ -367,7 +392,7 @@ export function WorkspaceShell({
         ) : (
           <NavLink to="/r" className="nav-item">
             <Icon name="grid" size={20} />
-            <span>내 연구</span>
+            <span>{homeLabel}</span>
           </NavLink>
         )}
         {research && (
@@ -414,17 +439,17 @@ export function WorkspaceShell({
             <strong>
               {usage.data
                 ? `${usage.data.total} / ${usage.data.limit}`
-                : "집계 보기"}
+                : "보기"}
             </strong>
           </div>
           {usage.data ? (
             <progress
               max={usage.data.limit}
               value={usage.data.total}
-              aria-label="AI 요청 사용량"
+              aria-label="최근 24시간 AI 사용량"
             />
           ) : (
-            <small>선택한 기록으로만 실행합니다.</small>
+            <small>선택한 기록으로만 실행해요.</small>
           )}
         </Link>
         <AccountMenu />
@@ -444,10 +469,20 @@ export function WorkspaceShell({
           <SheetHeader className="sr-only">
             <SheetTitle>연구 메뉴</SheetTitle>
             <SheetDescription>
-              연구를 전환하고 작업 화면으로 이동합니다.
+              다른 연구로 바꾸거나 화면을 이동해요.
             </SheetDescription>
           </SheetHeader>
-          {menu}
+          {/* Close the sheet on any link tap, including the current page's
+              link (a same-path tap does not change location.pathname). */}
+          <div
+            style={{ display: "contents" }}
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest("a[href]"))
+                setMobile(false);
+            }}
+          >
+            {menu}
+          </div>
         </SheetContent>
       </Sheet>
       <div className="main-shell">
@@ -460,8 +495,11 @@ export function WorkspaceShell({
             >
               <Icon name="menu" />
             </button>
-            <Link to={research ? `/r/${researchId}` : "/r"}>
-              {research?.name ?? "내 연구"}
+            <Link
+              to={research ? `/r/${researchId}` : "/r"}
+              title={research?.name}
+            >
+              {research?.name ?? homeLabel}
             </Link>
             {research && (
               <>
@@ -473,15 +511,15 @@ export function WorkspaceShell({
           <div className="topbar-right">
             <Link
               className="icon-button"
-              title="서비스 안내"
-              aria-label="서비스 안내"
+              title="사용 안내"
+              aria-label="사용 안내"
               to="/guide"
             >
               <Icon name="help" size={19} />
             </Link>
             <button
               className="icon-button notification-trigger"
-              aria-label={`알림 ${totalUnread}개`}
+              aria-label={`새 알림 ${totalUnread}개 보기`}
               onClick={() => setNotifications(true)}
             >
               <Icon name="bell" size={20} />
@@ -492,9 +530,9 @@ export function WorkspaceShell({
         {mode === "preview" && (
           <div className="preview-banner">
             <Icon name="info" size={15} />
-            <span>미리보기 · 이 브라우저에 가상 기록을 저장합니다.</span>
+            <span>미리보기 · 가상 기록은 이 브라우저에만 저장돼요.</span>
             <Link to="/login">
-              실제 계정 로그인
+              로그인 화면으로
               <Icon name="arrow-up-right" size={14} />
             </Link>
           </div>
@@ -502,7 +540,9 @@ export function WorkspaceShell({
         {research?.archivedAt && (
           <div className="archived-banner" role="status">
             <Icon name="folder" size={17} />
-            <span>보관한 연구입니다. 기록과 공유한 검토는 유지됩니다.</span>
+            <span>
+              보관한 연구예요. 기록과 공유 중인 검토 요청은 그대로예요.
+            </span>
             <Link to={`/r/${researchId}/settings?tab=lifecycle`}>
               연구 복원하기
             </Link>
@@ -514,7 +554,7 @@ export function WorkspaceShell({
           </Suspense>
         </main>
         <footer className="workspace-footer">
-          <span>Margin · 지난 지도를, 다음 연구로.</span>
+          <span>마진 · 흩어진 기록을 모아, 다음 연구가 되도록</span>
           <Link to="/privacy">자료·개인정보 안내</Link>
         </footer>
       </div>
@@ -523,7 +563,9 @@ export function WorkspaceShell({
           <SheetHeader>
             <SheetTitle>알림</SheetTitle>
             <SheetDescription>
-              교수 의견·담당 작업·공동연구·미팅 소식을 확인하세요.
+              {data.researches.length === 0
+                ? "검토 요청과 댓글, 미팅 시간 조율 소식을 확인하세요."
+                : "교수 응답과 댓글, 담당 할 일, 미팅 일정, 공동연구 소식을 확인하세요."}
             </SheetDescription>
           </SheetHeader>
           <div className="notification-content">
@@ -543,7 +585,7 @@ export function WorkspaceShell({
                   void markEvent().catch((e) => toast.error(friendlyError(e)))
                 }
               >
-                공동 알림 모두 읽음
+                검토 알림 빼고 모두 읽음
               </Button>
             </div>
             <AnimatedList>
@@ -575,7 +617,7 @@ export function WorkspaceShell({
                     </span>
                     <div>
                       <strong>
-                        {e.actorName} · {e.title}
+                        {e.actorName} · {activityTitles[e.title] ?? e.title}
                       </strong>
                       <p>{e.message}</p>
                       <small>
@@ -622,8 +664,7 @@ export function WorkspaceShell({
                 : newEvents.length) ? (
               <div className="calm-empty">
                 <Icon name="bell" size={30} />
-                <h3>새 알림이 없습니다.</h3>
-                <p>응답이 도착하면 여기서 이어서 볼 수 있습니다.</p>
+                <h3>확인할 새 소식이 없어요.</h3>
               </div>
             ) : null}
           </div>
@@ -642,12 +683,12 @@ export function WorkspaceShell({
         >
           <DialogHeader>
             <DialogTitle>
-              {research ? "이 연구에서 찾기" : "내 연구 찾기"}
+              {research ? "이 연구에서 찾기" : "연구 찾기"}
             </DialogTitle>
             <DialogDescription>
               {research
-                ? "미팅·피드백·할 일·자료의 제목을 찾습니다."
-                : "연구를 선택하면 그 안의 기록을 찾을 수 있습니다."}
+                ? "문서, 미팅, 피드백, 할 일, 자료의 제목에서 찾아요."
+                : "연구 이름으로 찾아요. 연구 안의 기록은 연구를 연 뒤 찾을 수 있어요."}
             </DialogDescription>
           </DialogHeader>
           <SearchField
@@ -657,7 +698,7 @@ export function WorkspaceShell({
             value={query}
             onValueChange={setQuery}
             placeholder={research ? "기록 제목 검색" : "연구 이름 검색"}
-            aria-label="찾을 제목"
+            aria-label={research ? "기록 제목 검색" : "연구 이름 검색"}
           />
           <div className="command-results">
             {research ? (
@@ -681,10 +722,10 @@ export function WorkspaceShell({
                     </Link>
                   ))
                 ) : (
-                  <p>조건에 맞는 기록이 없습니다.</p>
+                  <p>제목이 일치하는 기록이 없어요.</p>
                 )
               ) : (
-                <p>찾고 싶은 제목을 입력하세요.</p>
+                <p>찾을 제목을 입력하세요.</p>
               )
             ) : (
               data.researches

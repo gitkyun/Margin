@@ -34,7 +34,7 @@ export function timeText(value?: string) {
 export function errorText(e: unknown) {
   return e instanceof Error
     ? friendlyError(e)
-    : "요청을 처리하지 못했습니다. 다시 시도해 주세요.";
+    : "요청을 처리하지 못했어요. 다시 시도해 주세요.";
 }
 export function latestRound(data: WorkspaceData, itemId: string) {
   return data.rounds
@@ -55,7 +55,7 @@ export function latestResponse(data: WorkspaceData, roundId?: string) {
 }
 export function evidenceIssue(result: RevisionResult, data: WorkspaceData) {
   if (!result.title.trim() || !result.description.trim())
-    return "제목과 실제 수정 설명이 필요합니다.";
+    return "제목과 수정한 내용을 적어 주세요.";
   if (
     result.kind === "document" &&
     (!result.versionId ||
@@ -64,7 +64,7 @@ export function evidenceIssue(result: RevisionResult, data: WorkspaceData) {
       ) ||
       !result.location.trim())
   )
-    return "문서 검토에는 보존 파일과 확인 위치가 필요합니다.";
+    return "문서 수정에는 파일과 볼 위치가 필요해요. 수정 결과에서 추가해 주세요.";
   return "";
 }
 export function sourceExcerpt(result: RevisionResult, data: WorkspaceData) {

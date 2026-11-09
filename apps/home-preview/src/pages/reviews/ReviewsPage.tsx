@@ -47,6 +47,7 @@ import {
   sourceExcerpt,
   timeText,
 } from "./helpers";
+import { localizeServerMessage } from "@/lib/server-messages";
 
 export function ReviewsPage() {
   const { researchId = "" } = useParams();
@@ -69,7 +70,7 @@ export function ReviewsPage() {
   const requestGuard = useNavigationGuard({
     dirty: open && (!!title.trim() || !!email.trim() || selected.length > 0),
     busy,
-    label: "교수 검토 요청",
+    label: "검토 요청",
     onDiscard: () => setOpen(false),
   });
   const results = useMemo(
@@ -143,10 +144,10 @@ export function ReviewsPage() {
   const validate = () => {
     if (!title.trim()) return "검토 요청 제목을 적어 주세요.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      return "검토할 교수 계정의 이메일을 확인해 주세요.";
+      return "이메일 형식이 맞지 않아요. 교수님 계정 이메일을 확인해 주세요.";
     if (email.trim().toLowerCase() === user.email.toLowerCase())
-      return "자신의 계정은 교수 검토자로 지정할 수 없습니다.";
-    if (!picks.length) return "보낼 수정 결과를 하나 이상 선택해 주세요.";
+      return "내 계정 이메일은 지정할 수 없어요. 교수님 계정 이메일을 적어 주세요.";
+    if (!picks.length) return "검토받을 수정 결과를 하나 이상 선택해 주세요.";
     for (const result of picks) {
       const issue = evidenceIssue(result, data);
       if (issue) return `${result.title}: ${issue}`;
@@ -166,7 +167,8 @@ export function ReviewsPage() {
           p_research_id: researchId,
           p_email: email.trim().toLowerCase(),
         });
-        if (response.error) throw new Error(response.error.message);
+        if (response.error)
+          throw new Error(localizeServerMessage(response.error.message));
       }
       setStep("preview");
     } catch (failure) {
@@ -192,7 +194,7 @@ export function ReviewsPage() {
       requestGuard.clear();
       setOpen(false);
       toast.success(
-        "검토 링크를 만들었습니다. 링크를 복사해 직접 전달해 주세요.",
+        "검토 링크를 만들었어요. 링크를 복사해서 교수님께 직접 전달해 주세요.",
       );
       navigate(`/reviews/${request.id}`);
     } catch (failure) {
@@ -206,7 +208,7 @@ export function ReviewsPage() {
     <div className="reviews-page">
       <PageHeader
         title="검토 요청"
-        description="보낸 수정 결과와 항목별 응답을 확인합니다."
+        description="교수님의 항목별 응답과 공유 상태를 확인하세요."
         actions={
           <Button onClick={begin}>
             <Icon name="plus" size={17} />
@@ -235,7 +237,7 @@ export function ReviewsPage() {
         <Input
           className="review-search"
           aria-label="검토 요청 찾기"
-          placeholder="제목 또는 교수 이메일 찾기"
+          placeholder="제목이나 교수 이메일로 찾기"
           value={search}
           onChange={(
             e: ChangeEvent<
@@ -248,13 +250,13 @@ export function ReviewsPage() {
         <EmptyState
           title={
             search || filter !== "all"
-              ? "조건에 맞는 검토 요청이 없습니다."
-              : "아직 보낸 검토 요청이 없습니다."
+              ? "조건에 맞는 검토 요청이 없어요"
+              : "아직 검토 요청이 없어요"
           }
           description={
             search || filter !== "all"
-              ? "찾기 조건을 바꿔 보세요."
-              : "수정한 내용과 근거를 모아 교수에게 확인을 요청하세요."
+              ? "검색어나 공유 상태를 바꿔 보세요."
+              : "수정 결과를 선택해 검토 링크를 만들고, 교수님께 직접 전달할 수 있어요."
           }
           action={
             !results.length ? (
@@ -303,7 +305,7 @@ export function ReviewsPage() {
                     {hasUnread && (
                       <span
                         className="review-new-dot"
-                        aria-label="새 댓글·응답"
+                        aria-label="새 응답·댓글 있음"
                       />
                     )}
                     <StatusBadge tone={sharingTone[request.status]}>
@@ -317,7 +319,7 @@ export function ReviewsPage() {
                     <span>항목 {responses.length}개</span>
                     {confirmed > 0 && (
                       <span className="review-count-confirmed">
-                        확인 {confirmed}개
+                        수정 내용 확인 {confirmed}개
                       </span>
                     )}
                     {changes > 0 && (
@@ -352,12 +354,12 @@ export function ReviewsPage() {
         >
           <DialogHeader>
             <DialogTitle>
-              {step === "compose" ? "교수 검토 준비" : "공유할 내용 확인"}
+              {step === "compose" ? "검토 요청 만들기" : "공유할 내용 확인"}
             </DialogTitle>
             <DialogDescription>
               {step === "compose"
-                ? "수정한 결과를 선택하고 검토할 교수 계정을 지정하세요."
-                : "아래 내용과 첨부 파일 전체가 지정한 교수 계정에 공개됩니다."}
+                ? "링크를 만들기 전에 교수님께 공개될 내용을 확인할 수 있어요."
+                : "링크를 만들면 아래 내용과 첨부 파일 전체가 지정한 교수 계정에 공개돼요."}
             </DialogDescription>
           </DialogHeader>
           {step === "compose" ? (
@@ -378,7 +380,7 @@ export function ReviewsPage() {
               <Field
                 label="교수 계정 이메일"
                 required
-                hint="서비스에 등록된 교수 계정으로만 열 수 있습니다."
+                hint="이 이메일로 등록된 마진 계정만 검토를 열 수 있어요."
               >
                 <Input
                   aria-label="교수 계정 이메일"
@@ -395,13 +397,14 @@ export function ReviewsPage() {
               </Field>
               <fieldset className="review-result-selection">
                 <legend>
-                  보낼 수정 결과 <span className="review-required">필수</span>
+                  검토받을 수정 결과{" "}
+                  <span className="review-required">필수</span>
                 </legend>
                 {!results.length ? (
                   <p className="muted">
-                    먼저 수정 결과를 작성해 주세요.{" "}
+                    아직 수정 결과가 없어요.{" "}
                     <Link to={`/r/${researchId}/results?new=1`}>
-                      수정 결과 작성하기
+                      수정 결과 작성
                     </Link>
                   </p>
                 ) : (
@@ -426,7 +429,7 @@ export function ReviewsPage() {
                           <small>{issue || result.description}</small>
                           {issue && (
                             <span className="review-evidence-warning">
-                              근거 보완 필요
+                              보완 필요
                             </span>
                           )}
                         </span>
@@ -438,8 +441,8 @@ export function ReviewsPage() {
               <div className="review-inline-note">
                 <Icon name="lock" size={17} />
                 <p>
-                  개인 메모·전체 할 일·선택하지 않은 AI 후보는 포함되지
-                  않습니다.
+                  개인 메모, 할 일 목록, AI 대화, 선택하지 않은 AI 제안은
+                  포함되지 않아요.
                 </p>
               </div>
               {error && (
@@ -457,7 +460,7 @@ export function ReviewsPage() {
                   취소
                 </Button>
                 <Button type="submit" disabled={busy || !results.length}>
-                  {busy ? "교수 계정 확인 중…" : "공유할 내용 확인"}
+                  {busy ? "교수 계정 확인 중" : "공유할 내용 확인"}
                   <Icon name="arrow-right" size={16} />
                 </Button>
               </div>
@@ -467,7 +470,7 @@ export function ReviewsPage() {
               <div className="review-preview-heading">
                 <StatusBadge tone="blue">교수에게 공개될 내용</StatusBadge>
                 <h3>{title}</h3>
-                <p className="muted">허용 계정 · {email}</p>
+                <p className="muted">열 수 있는 계정 · {email}</p>
               </div>
               {picks.map((result, index) => {
                 const version = data.versions.find(
@@ -510,7 +513,7 @@ export function ReviewsPage() {
                         <Icon name="chevron-down" size={16} />
                       </button>
                     ) : (
-                      <p className="meta">문서 외 작업 · 보존한 처리 설명</p>
+                      <p className="meta">파일 없음 · 설명으로 검토</p>
                     )}
                   </article>
                 );
@@ -523,8 +526,8 @@ export function ReviewsPage() {
               <p className="review-inline-note">
                 <Icon name="info" size={17} />
                 {picks.some((result) => !!result.versionId)
-                  ? "확인 위치는 읽기 안내입니다. 첨부한 PDF 전체를 열람할 수 있습니다."
-                  : "선택한 비문서 작업의 처리 설명이 공개됩니다."}
+                  ? "볼 위치는 먼저 볼 곳을 알려 줄 뿐이에요. 교수님은 첨부한 PDF 전체를 보고 내려받을 수 있어요."
+                  : "첨부 파일 없이 위의 설명이 공개돼요."}
               </p>
               {error && (
                 <p className="review-form-error" role="alert">
@@ -557,7 +560,8 @@ export function ReviewsPage() {
           <DialogHeader>
             <DialogTitle>검토 요청 작성을 닫을까요?</DialogTitle>
             <DialogDescription>
-              저장하지 않은 제목·교수 계정·선택 내용은 사라집니다.
+              입력한 제목과 교수 계정 이메일, 수정 결과 선택이 사라져요. 수정
+              결과는 그대로 남아요.
             </DialogDescription>
           </DialogHeader>
           <div className="form-actions">
@@ -565,7 +569,7 @@ export function ReviewsPage() {
               계속 작성
             </Button>
             <Button variant="destructive" onClick={close}>
-              변경 버리고 닫기
+              버리고 닫기
             </Button>
           </div>
         </DialogContent>

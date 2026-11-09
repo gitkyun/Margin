@@ -1,6 +1,7 @@
 import { assertConnected } from "./supabase";
 import { idbGet, idbSet, rpc } from "./repository";
 import type { SpeechSegment } from "./live-speech";
+import { localizeServerMessage } from "@/lib/server-messages";
 
 export interface LiveTranscript {
   id: string;
@@ -54,7 +55,7 @@ export async function getLiveTranscript(
     .eq("user_id", userId)
     .abortSignal(AbortSignal.timeout(25000))
     .maybeSingle();
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(localizeServerMessage(error.message));
   return data as LiveTranscript | null;
 }
 export async function saveLiveTranscript(
@@ -79,7 +80,7 @@ export async function saveLiveTranscript(
     old.revision !== input.revision
   )
     throw new Error(
-      "다른 창에서 전사문을 수정했습니다. 최신본과 비교해 주세요.",
+      "다른 창에서 전사문을 수정했어요. 지금 쓴 내용을 복사해 둔 뒤 새로고침해 주세요.",
     );
   const value: LiveTranscript = {
     ...input,

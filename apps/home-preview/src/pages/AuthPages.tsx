@@ -1,4 +1,7 @@
-import {PermanentResearchDelete, PendingResearchDeletions} from "@/components/PermanentResearchDelete";
+import {
+  PermanentResearchDelete,
+  PendingResearchDeletions,
+} from "@/components/PermanentResearchDelete";
 import { PublicFrame } from "./PublicPages";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
 export { ThemeSwitch } from "@/components/ThemeSwitch";
@@ -58,7 +61,7 @@ export function LoginPage({
       if (error)
         throw new Error(
           error.message?.includes("fetch")
-            ? "서버에 연결하지 못했습니다. 연결을 확인하고 다시 시도해 주세요."
+            ? "서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요."
             : "이메일과 비밀번호를 확인해 주세요.",
         );
       setPassword("");
@@ -74,33 +77,45 @@ export function LoginPage({
       <section className="signup-layout login-layout">
         <div className="auth-story">
           <h1>
-            다시 이어가는
+            지난 기록이
             <br />
-            나의 연구.
+            그대로 있어요
           </h1>
           <p>
-            지난 미팅의 기록과
+            미팅 기록, 피드백, 검토 요청을
             <br />
-            다음에 할 일이 기다리고 있어요.
+            로그인하면 바로 볼 수 있어요.
           </p>
-
         </div>
         <section className="auth-panel">
           <h2>로그인</h2>
-          <p>이메일로 로그인하고 연구를 이어가세요.</p>
+          <p>
+            {target.startsWith("/reviews/")
+              ? "학생이 검토 요청에 지정한 교수 계정 이메일로 로그인해 주세요."
+              : "발급받은 계정의 이메일로 로그인하세요."}
+          </p>
           {authenticated ? (
             <>
               <div className="signed-in-notice">
                 <Icon name="check-circle" size={23} />
-                <p>이미 로그인되어 있습니다.</p>
+                <p>이미 로그인되어 있어요.</p>
               </div>
               <Link className="rms-action primary full" to={target}>
-                작업 공간으로 이동
+                {target === "/r" ? "내 연구 열기" : "계속하기"}
                 <Icon name="arrow-right" size={18} />
               </Link>
             </>
           ) : (
             <form onSubmit={submit}>
+              {!configured && (
+                <div className="signed-in-notice" role="note">
+                  <Icon name="info" size={23} />
+                  <p>
+                    이 미리보기에서는 로그인할 수 없어요.{" "}
+                    <Link to="/r">가상 기록 보기</Link>
+                  </p>
+                </div>
+              )}
               <label className="field">
                 이메일
                 <input
@@ -122,7 +137,6 @@ export function LoginPage({
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="비밀번호를 입력하세요"
                   required
                   disabled={!configured || pending}
                 />
@@ -142,9 +156,8 @@ export function LoginPage({
             </form>
           )}
           <p className="auth-switch">
-            처음 오셨나요? <Link to="/signup">가입 과정 살펴보기</Link>
+            계정이 없나요? <Link to="/signup">가입 과정 미리보기</Link>
           </p>
-
         </section>
       </section>
     </PublicFrame>
@@ -175,7 +188,9 @@ export function ResearchSelectPage() {
       ? !!r.deletedAt
       : !r.deletedAt && (archivedView ? !!r.archivedAt : !r.archivedAt),
   );
-  const [trashTarget, setTrashTarget] = useState<(typeof data.researches)[number] | null>(null);
+  const [trashTarget, setTrashTarget] = useState<
+    (typeof data.researches)[number] | null
+  >(null);
   const [trashName, setTrashName] = useState("");
   const navigate = useNavigate();
   const createId = useRef(uid());
@@ -224,11 +239,11 @@ export function ResearchSelectPage() {
   return (
     <>
       <PageHeader
-        title={incomingOnly ? "공유받은 검토" : "내 연구"}
+        title={incomingOnly ? "받은 검토 요청" : "내 연구"}
         description={
           incomingOnly
-            ? "학생이 공유한 수정 결과를 열어 항목별로 검토하세요."
-            : "연구별로 기록과 자료를 나누고, 이어서 작업할 연구를 선택하세요."
+            ? "학생이 요청한 검토를 열어 항목마다 응답을 남겨 주세요."
+            : "연구마다 기록과 자료가 따로 관리돼요."
         }
         actions={
           !incomingOnly && (
@@ -242,9 +257,9 @@ export function ResearchSelectPage() {
       {sharedRequests.length > 0 && (
         <section
           className="shared-review-section"
-          aria-label="공유받은 검토 목록"
+          aria-label="받은 검토 요청 목록"
         >
-          {!incomingOnly && <h2>공유받은 검토</h2>}
+          {!incomingOnly && <h2>받은 검토 요청</h2>}
           <div className="shared-review-list">
             {sharedRequests.map((request) => {
               const events = newEvents.filter(
@@ -289,7 +304,7 @@ export function ResearchSelectPage() {
                 <p>
                   {data.events.find(
                     (e) => e.researchId === m.researchId && e.kind === "invite",
-                  )?.message ?? "연구 공간에 초대받았습니다."}
+                  )?.message ?? "연구에 초대받았어요."}
                 </p>
               </div>
               <Button
@@ -325,7 +340,7 @@ export function ResearchSelectPage() {
           <Link key={p.id} to={`/schedule/${p.id}`} className="invitation-row">
             <div>
               <h3>{p.title}</h3>
-              <p>미팅 시간 조율 · 가능한 시간을 알려주세요.</p>
+              <p>미팅 시간 조율 · 가능한 시간을 알려 주세요.</p>
             </div>
             <Icon name="arrow-right" size={18} />
           </Link>
@@ -373,25 +388,29 @@ export function ResearchSelectPage() {
                   <Icon name="book" size={24} />
                 </span>
                 <h2>{research.name}</h2>
-                <p>
-                  {research.description || "설명을 추가하지 않은 연구입니다."}
-                </p>
+                <p>{research.description || "설명이 없어요."}</p>
                 <span className="meta">
-                  {trashView ? "연구를 복원하면 기록을 확인할 수 있습니다." : <>
-                  {
-                    data.meetings.filter((m) => m.researchId === research.id)
-                      .length
-                  }
-                  개 미팅 ·{" "}
-                  {
-                    data.tasks.filter(
-                      (t) =>
-                        t.researchId === research.id && t.status !== "done",
-                    ).length
-                  }
-                  개 남은 작업
-                  <Icon name="arrow-up-right" size={16} />
-                  </>}
+                  {trashView ? (
+                    "복원하면 기록을 다시 볼 수 있어요."
+                  ) : (
+                    <>
+                      미팅{" "}
+                      {
+                        data.meetings.filter(
+                          (m) => m.researchId === research.id,
+                        ).length
+                      }
+                      개 · 남은 할 일{" "}
+                      {
+                        data.tasks.filter(
+                          (t) =>
+                            t.researchId === research.id && t.status !== "done",
+                        ).length
+                      }
+                      개
+                      <Icon name="arrow-up-right" size={16} />
+                    </>
+                  )}
                 </span>
               </Link>
               <div className="research-card-actions">
@@ -408,7 +427,7 @@ export function ResearchSelectPage() {
                           archivedAt: undefined,
                         });
                         toast.success(
-                          "복원했습니다. 교수 공유는 직접 다시 시작해 주세요.",
+                          "연구를 복원했어요. 검토 요청 공유는 직접 다시 시작해 주세요.",
                         );
                       } catch (e) {
                         toast.error(friendlyError(e));
@@ -424,17 +443,42 @@ export function ResearchSelectPage() {
                     <Link to={`/r/${research.id}/settings`}>연구 설정</Link>
                   </Button>
                 )}
-                {archivedView && research.ownerId === user.id && <Button variant="outline" disabled={pending} onClick={async () => {
-                  setPending(true);
-                  try { await saveResearch({ ...research, archivedAt: undefined }); toast.success("진행 중인 연구로 복원했습니다."); }
-                  catch (e) { toast.error(friendlyError(e)); } finally { setPending(false); }
-                }}>복원</Button>}
-                {trashView && research.ownerId === user.id && <PermanentResearchDelete id={research.id} name={research.name}/>}
+                {archivedView && research.ownerId === user.id && (
+                  <Button
+                    variant="outline"
+                    disabled={pending}
+                    onClick={async () => {
+                      setPending(true);
+                      try {
+                        await saveResearch({
+                          ...research,
+                          archivedAt: undefined,
+                        });
+                        toast.success("진행 중인 연구로 복원했어요.");
+                      } catch (e) {
+                        toast.error(friendlyError(e));
+                      } finally {
+                        setPending(false);
+                      }
+                    }}
+                  >
+                    복원
+                  </Button>
+                )}
+                {trashView && research.ownerId === user.id && (
+                  <PermanentResearchDelete
+                    id={research.id}
+                    name={research.name}
+                  />
+                )}
                 {!trashView && research.ownerId === user.id && (
                   <Button
                     variant="ghost"
                     disabled={pending}
-                    onClick={() => { setTrashTarget(research); setTrashName(""); }}
+                    onClick={() => {
+                      setTrashTarget(research);
+                      setTrashName("");
+                    }}
                   >
                     삭제
                   </Button>
@@ -448,16 +492,16 @@ export function ResearchSelectPage() {
           icon="book"
           title={
             trashView
-              ? "휴지통이 비어 있습니다."
+              ? "휴지통이 비어 있어요"
               : archivedView
-                ? "보관한 연구가 없습니다."
-                : "진행 중인 연구가 없습니다."
+                ? "보관한 연구가 없어요"
+                : "진행 중인 연구가 없어요"
           }
           description={
             trashView
-              ? "삭제한 연구는 이곳에서 복원할 수 있습니다. 자동으로 영구 삭제하지 않습니다."
+              ? "휴지통으로 옮긴 연구는 여기에서 복원할 수 있어요. 자동으로 완전히 삭제되지 않아요."
               : archivedView
-                ? "보관한 연구를 열어 설정에서 다시 복원할 수 있습니다."
+                ? "연구 설정에서 보관한 연구가 여기에 표시돼요."
                 : "연구를 만들거나 보관함의 연구를 복원하세요."
           }
           action={
@@ -468,16 +512,72 @@ export function ResearchSelectPage() {
           }
         />
       ) : null}
-      <Dialog open={!!trashTarget} onOpenChange={(open) => { if (!pending && !open) setTrashTarget(null); }}>
+      <Dialog
+        open={!!trashTarget}
+        onOpenChange={(open) => {
+          if (!pending && !open) setTrashTarget(null);
+        }}
+      >
         <DialogContent className="rms-dialog">
-          <DialogHeader><DialogTitle>연구를 휴지통으로 옮길까요?</DialogTitle><DialogDescription>기록은 보존되며 복원할 수 있습니다. 공동연구자와 교수의 접근은 중지됩니다. 확인을 위해 연구 이름을 입력해 주세요.</DialogDescription></DialogHeader>
-          <form onSubmit={async (e) => { e.preventDefault(); if (!trashTarget || pending || trashName !== trashTarget.name) return; setPending(true); try { await saveResearch({...trashTarget, deletedAt: new Date().toISOString()}); setTrashTarget(null); toast.success("휴지통으로 옮겼습니다. 휴지통에서 복원할 수 있습니다."); } catch(e) { toast.error(friendlyError(e)); } finally { setPending(false); } }}>
-            <label className="field">{trashTarget?.name}<Input value={trashName} onChange={e => setTrashName(e.target.value)} autoComplete="off" /></label>
-            <div className="button-row"><Button type="button" variant="outline" disabled={pending} onClick={() => setTrashTarget(null)}>취소</Button><Button type="submit" disabled={pending || trashName !== trashTarget?.name}>휴지통으로 이동</Button></div>
+          <DialogHeader>
+            <DialogTitle>연구를 휴지통으로 옮길까요?</DialogTitle>
+            <DialogDescription>
+              옮기면 공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토
+              요청이 중지돼 교수님도 볼 수 없어요. 휴지통에서 복원할 수 있지만,
+              검토 요청 공유는 자동으로 다시 시작되지 않아요. 확인을 위해 연구
+              이름을 입력해 주세요.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!trashTarget || pending || trashName !== trashTarget.name)
+                return;
+              setPending(true);
+              try {
+                await saveResearch({
+                  ...trashTarget,
+                  deletedAt: new Date().toISOString(),
+                });
+                setTrashTarget(null);
+                toast.success(
+                  "휴지통으로 옮겼어요. 휴지통에서 복원할 수 있어요.",
+                );
+              } catch (e) {
+                toast.error(friendlyError(e));
+              } finally {
+                setPending(false);
+              }
+            }}
+          >
+            <label className="field">
+              {trashTarget?.name}
+              <Input
+                value={trashName}
+                onChange={(e) => setTrashName(e.target.value)}
+                autoComplete="off"
+              />
+            </label>
+            <div className="button-row">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={pending}
+                onClick={() => setTrashTarget(null)}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                disabled={pending || trashName !== trashTarget?.name}
+              >
+                휴지통으로 옮기기
+              </Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
-      {trashView && <PendingResearchDeletions/>}
+      {trashView && <PendingResearchDeletions />}
       <Dialog
         open={open}
         onOpenChange={(nextOpen: boolean) => {
@@ -498,7 +598,7 @@ export function ResearchSelectPage() {
           <DialogHeader>
             <DialogTitle>연구 만들기</DialogTitle>
             <DialogDescription>
-              지도받는 연구 단위로 공간을 만듭니다.
+              지도받는 연구마다 하나씩 만들어요.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={create} className="stack">
@@ -512,11 +612,11 @@ export function ResearchSelectPage() {
                 placeholder="예: 대학원생의 연구 도구 사용 경험"
               />
             </Field>
-            <Field label="설명" hint="지금 적지 않아도 됩니다.">
+            <Field label="설명" hint="나중에 적어도 돼요.">
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="어떤 연구인지 짧게 적어 주세요."
+                placeholder="예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구"
               />
             </Field>
             <div className="form-actions">

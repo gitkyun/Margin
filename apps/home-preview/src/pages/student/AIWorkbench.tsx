@@ -81,7 +81,7 @@ export function AIWorkbench({
     if (
       candidates.length &&
       !window.confirm(
-        "현재 후보를 새 제안으로 바꿀까요? 저장하지 않은 편집은 사라집니다.",
+        "지금 보이는 AI 제안을 새 제안으로 바꿀까요? 저장하지 않은 편집 내용은 사라져요.",
       )
     )
       return;
@@ -116,7 +116,7 @@ export function AIWorkbench({
         setError(
           e instanceof Error
             ? e.message
-            : "제안을 불러오지 못했습니다. 직접 작성하거나 다시 시도하세요.",
+            : "AI 제안을 받지 못했어요. 다시 시도하거나 직접 작성해 주세요.",
         );
     } finally {
       if (current === sequence.current) setRunning(false);
@@ -127,7 +127,7 @@ export function AIWorkbench({
     controller.current?.abort();
     setRunning(false);
     setStopped(true);
-    setError("생성을 중단했습니다. 작성한 기록은 바뀌지 않았습니다.");
+    setError("제안받기를 중단했어요. 기록은 바뀌지 않았어요.");
   }
   function edit(index: number, change: Partial<AICandidate>) {
     setCandidates((items) =>
@@ -138,7 +138,7 @@ export function AIWorkbench({
     if (savingRef.current || saved.includes(index)) return;
     if (stale) {
       setError(
-        "AI를 실행한 뒤 원문이 바뀌었습니다. 현재 원문으로 다시 제안받아 주세요.",
+        "AI를 실행한 뒤 원문이 바뀌었어요. 바뀐 원문으로 다시 제안받아 주세요.",
       );
       return;
     }
@@ -146,7 +146,7 @@ export function AIWorkbench({
       !candidate.title.trim() ||
       !(candidate.method ?? candidate.body ?? "").trim()
     ) {
-      setError("제목과 내용을 입력하세요.");
+      setError("제목과 내용을 입력해 주세요.");
       return;
     }
     savingRef.current = true;
@@ -156,7 +156,11 @@ export function AIWorkbench({
       await onSave(candidate, candidateBases.current[index]);
       setSaved((ids) => [...ids, index]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "저장하지 못했습니다.");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "저장하지 못했어요. 입력한 내용은 그대로 있으니 다시 시도해 주세요.",
+      );
     } finally {
       savingRef.current = false;
       setSaving(null);
@@ -188,7 +192,7 @@ export function AIWorkbench({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="AI 영역 닫기"
+          aria-label={`${title} 닫기`}
           disabled={saving !== null}
           onClick={onClose}
         >
@@ -199,8 +203,8 @@ export function AIWorkbench({
         <span>사용할 범위</span>
         <strong>
           {input.mode === "organize_meeting"
-            ? "이 미팅에 저장된 원문 메모"
-            : "선택한 피드백과 연결된 원문"}
+            ? "이 미팅에 저장된 메모"
+            : "이 피드백의 내용"}
         </strong>
         <small>
           {input.sourceText.length.toLocaleString()}자
@@ -210,14 +214,14 @@ export function AIWorkbench({
       {selectedModel && (
         <details className="margin-review-settings">
           <summary>
-            이번 검토 설정
+            이번 실행 설정
             <Icon name="chevron-down" size={15} />
           </summary>
           <div className="margin-review-fields">
             <label className="field">
               AI 모델
               <Choice
-                label="이번 검토의 AI 모델"
+                label="AI 모델"
                 value={selectedModel.id}
                 disabled={running || saving !== null}
                 onChange={setSelectedModelId}
@@ -229,9 +233,9 @@ export function AIWorkbench({
             </label>
             {!!selectedModel.thinking.length && (
               <label className="field">
-                검토 깊이
+                답변 깊이
                 <Choice
-                  label="이번 검토의 깊이"
+                  label="답변 깊이"
                   value={depth}
                   disabled={running || saving !== null}
                   onChange={setPreferredDepth}
@@ -244,28 +248,31 @@ export function AIWorkbench({
         </details>
       )}
       <p className="ai-disclosure">
-        원문과 AI가 제안한 내용을 구분해 확인한 뒤 필요한 항목만 저장하세요.
+        {input.mode === "organize_meeting"
+          ? "원문과 AI 제안을 구분해 확인하고, 필요한 것만 저장하세요."
+          : "원문과 AI 제안을 구분해 확인하고, 필요한 것만 선택하세요."}
       </p>
       {mode === "preview" && (
         <p className="student-inline-note">
-          현재는 로컬 미리보기입니다. AI는 서버 연결 후 실행할 수 있습니다.
+          이 미리보기에서는 AI를 실행할 수 없어요.
         </p>
       )}
       {stale && (
         <p className="student-inline-note" role="status">
-          AI를 실행한 뒤 원문이 바뀌었습니다. 아래 후보는 이전 원문 기준이라
-          저장할 수 없습니다.
+          AI를 실행한 뒤 원문이 바뀌었어요. 아래 AI 제안은 바뀌기 전 원문을
+          기준으로 해서{" "}
+          {input.mode === "organize_meeting" ? "저장할" : "선택할"} 수 없어요.
         </p>
       )}
       <div className="button-row">
         {running ? (
           <Button variant="outline" onClick={cancel}>
-            생성 중단
+            중단
           </Button>
         ) : stale ? (
           <Button onClick={onRefresh} disabled={saving !== null}>
             <Icon name="refresh" size={16} />
-            현재 원문으로 다시 준비
+            바뀐 원문 불러오기
           </Button>
         ) : (
           <Button
@@ -283,7 +290,7 @@ export function AIWorkbench({
         <div className="ai-running" role="status">
           <span>
             {workMessages[input.mode]}
-            <small>완료되기 전에는 원문과 작업이 바뀌지 않습니다.</small>
+            <small>제안을 저장하기 전에는 기록이 바뀌지 않아요.</small>
           </span>
         </div>
       )}
@@ -294,8 +301,10 @@ export function AIWorkbench({
             <div>
               <strong>
                 {saved.length === candidates.length
-                  ? "선택한 내용을 기록에 남겼어요."
-                  : `${candidates.length}개 제안을 살펴보세요.`}
+                  ? input.mode === "organize_meeting"
+                    ? "AI 제안을 모두 저장했어요."
+                    : "AI 제안을 모두 선택했어요."
+                  : `AI 제안 ${candidates.length}개를 확인해 주세요.`}
               </strong>
               <small>
                 원문과 비교하고, 필요한 내용은 고쳐서 저장할 수 있어요.
@@ -308,9 +317,13 @@ export function AIWorkbench({
               key={index}
             >
               <div className="ai-candidate-number">
-                {input.mode === "organize_meeting" ? "정리 항목" : "수정 방안"}{" "}
+                {input.mode === "organize_meeting" ? "정리 항목" : "수정 방법"}{" "}
                 {index + 1}
-                {saved.includes(index) && <span>저장됨</span>}
+                {saved.includes(index) && (
+                  <span>
+                    {input.mode === "organize_meeting" ? "저장됨" : "선택됨"}
+                  </span>
+                )}
               </div>
               {input.mode === "organize_meeting" && (
                 <label className="field">
@@ -334,7 +347,7 @@ export function AIWorkbench({
               <label className="field">
                 <span className="field-name">제목</span>
                 <Input
-                  aria-label={`${index + 1}번 후보 제목`}
+                  aria-label={`제목 (AI 제안 ${index + 1})`}
                   value={candidate.title}
                   onChange={(e) => edit(index, { title: e.target.value })}
                   disabled={saving !== null || saved.includes(index)}
@@ -342,7 +355,7 @@ export function AIWorkbench({
               </label>
               {candidate.sourceQuote && (
                 <blockquote className="source-excerpt">
-                  <small>원문에서 확인한 내용</small>
+                  <small>원문 인용</small>
                   {candidate.sourceQuote}
                 </blockquote>
               )}
@@ -350,10 +363,10 @@ export function AIWorkbench({
                 <span className="field-name">
                   {input.mode === "organize_meeting"
                     ? "정리한 내용"
-                    : "제안하는 수정 방법"}
+                    : "어떻게 고칠지"}
                 </span>
                 <Textarea
-                  aria-label={`${index + 1}번 후보 내용`}
+                  aria-label={`${input.mode === "organize_meeting" ? "정리한 내용" : "어떻게 고칠지"} (AI 제안 ${index + 1})`}
                   value={candidate.method ?? candidate.body ?? ""}
                   onChange={(e) =>
                     edit(
@@ -381,7 +394,7 @@ export function AIWorkbench({
                     />
                   </label>
                   <label className="field">
-                    <span className="field-name">필요한 자료·추가 작업</span>
+                    <span className="field-name">필요한 자료·할 일</span>
                     <Textarea
                       value={candidate.requiredMaterials ?? ""}
                       onChange={(e) =>
@@ -407,21 +420,21 @@ export function AIWorkbench({
                 {saved.includes(index) ? (
                   <>
                     <Icon name="check" size={15} />
-                    저장됨
+                    {input.mode === "organize_meeting" ? "저장됨" : "선택됨"}
                   </>
                 ) : saving === index ? (
-                  "저장 중…"
+                  "저장 중"
                 ) : input.mode === "organize_meeting" ? (
                   "이 항목 저장"
                 ) : (
-                  "수정 방안 저장"
+                  "이 방법 선택"
                 )}
               </Button>
             </section>
           ))}
         </div>
       )}
-      {model && <p className="meta ai-model">실제 API 응답 · {model}</p>}
+      {model && <p className="meta ai-model">응답한 AI 모델 · {model}</p>}
     </aside>
   );
 }

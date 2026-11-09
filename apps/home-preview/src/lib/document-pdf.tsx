@@ -101,11 +101,11 @@ export async function documentPDF(
   Font.register({ family: "PretendardPDF", src: fontSource });
   const content = version.content as N;
   return pdf(
-    <Document title={version.title} author="Margin">
+    <Document title={version.title} author="마진">
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>{version.title}</Text>
         <Text style={styles.meta}>
-          보존 버전 {version.number} ·{" "}
+          v{version.number} ·{" "}
           {new Date(version.createdAt).toLocaleString("ko-KR")}
         </Text>
         {content.content?.map(block)}

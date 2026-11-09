@@ -20,7 +20,7 @@ export function HomePage() {
   const [scope, setScope] = useState("mine");
   const [busy, setBusy] = useState("");
   const research = data.researches.find((item) => item.id === researchId);
-  if (!research) return <EmptyState title="연구를 찾을 수 없습니다." />;
+  if (!research) return <EmptyState title="연구를 찾을 수 없어요" />;
   const base = `/r/${researchId}`;
   const meetings = data.meetings.filter(
     (m) =>
@@ -116,7 +116,7 @@ export function HomePage() {
       <header className="rh-intro">
         <div className="rh-intro-copy">
           <h1>{research.name}</h1>
-          <p>{research.description || "설명을 추가하지 않은 연구입니다."}</p>
+          <p>{research.description || "아직 연구 설명이 없어요."}</p>
           <Link className="rh-people" to={`${base}/settings?tab=members`}>
             {isCollaborative ? (
               <>
@@ -125,12 +125,12 @@ export function HomePage() {
                     <span key={member.userId}>{member.name.slice(0, 1)}</span>
                   ))}
                 </span>
-                <span>{members.length}명이 함께하는 연구</span>
+                <span>연구자 {members.length}명</span>
               </>
             ) : (
               <>
                 <Icon name="users" size={16} />
-                <span>함께할 연구자 초대</span>
+                <span>공동연구자 초대</span>
               </>
             )}
             <Icon name="chevron-right" size={14} />
@@ -139,8 +139,7 @@ export function HomePage() {
       </header>
       <section className="rh-quick-start" aria-labelledby="rh-start-heading">
         <div className="rh-section-heading">
-          <h2 id="rh-start-heading">지금 시작할 일</h2>
-          <span className="rh-quick-caption">기록부터 다음 준비까지</span>
+          <h2 id="rh-start-heading">바로 시작</h2>
         </div>
         <div className="rh-quick-actions">
           <Link
@@ -159,7 +158,7 @@ export function HomePage() {
               <small>
                 {next
                   ? `${next.title} · 녹음·전사 또는 메모`
-                  : "새 미팅을 만들고 녹음·메모 시작"}
+                  : "새 미팅을 만들어 녹음·메모"}
               </small>
             </span>
             <Icon name="arrow-up-right" size={18} />
@@ -177,7 +176,7 @@ export function HomePage() {
             </span>
             <span className="rh-quick-text">
               <strong>미팅 준비하기</strong>
-              <small>보여줄 작업과 질문 모으기</small>
+              <small>할 일·자료·질문 모으기</small>
             </span>
             <Icon name="arrow-up-right" size={18} />
           </Link>
@@ -187,7 +186,7 @@ export function HomePage() {
             </span>
             <span className="rh-quick-text">
               <strong>연구 글 쓰기</strong>
-              <small>계획서·원고의 첫 문장부터</small>
+              <small>새 연구 계획서 만들기</small>
             </span>
             <Icon name="arrow-up-right" size={18} />
           </Link>
@@ -195,9 +194,11 @@ export function HomePage() {
       </section>
       <section className="rh-phases" aria-labelledby="rh-phase-heading">
         <div className="rh-section-heading">
-          <h2 id="rh-phase-heading">연구 흐름</h2>
+          <h2 id="rh-phase-heading">연구 단계</h2>
           {current && (
-            <span className="rh-current-label">{current.title} 진행 중</span>
+            <span className="rh-current-label">
+              현재 단계 · {current.title}
+            </span>
           )}
           <Link className="rh-text-link" to={`${base}/planning`}>
             계획·일정 <Icon name="arrow-up-right" size={15} />
@@ -238,7 +239,7 @@ export function HomePage() {
         ) : (
           <Link className="rh-phase-start" to={`${base}/planning`}>
             <Icon name="flag" size={18} />
-            <span>연구 단계와 주요 마감을 정해 보세요.</span>
+            <span>단계와 주요 목표 정하기</span>
             <Icon name="arrow-right" size={16} />
           </Link>
         )}
@@ -287,7 +288,7 @@ export function HomePage() {
                   </div>
                 </div>
                 <p className="rh-meeting-goal">
-                  {next.goal || "이번 미팅에서 함께 확인할 목표를 정해 보세요."}
+                  {next.goal || "보여줄 결과를 아직 정하지 않았어요."}
                 </p>
                 <div className="rh-preparation-heading">
                   <h4>미팅까지 준비할 일</h4>
@@ -303,7 +304,7 @@ export function HomePage() {
                   <div
                     className="rh-progress"
                     role="progressbar"
-                    aria-label="미팅 준비 작업"
+                    aria-label="미팅까지 준비할 일"
                     aria-valuemin={0}
                     aria-valuemax={preparation.length}
                     aria-valuenow={prepared}
@@ -334,8 +335,7 @@ export function HomePage() {
                   ))}
                   {!preparation.length && (
                     <p className="rh-inline-empty">
-                      준비할 작업을 골라두면 미팅 전까지 여기에서 확인할 수
-                      있습니다.
+                      아직 준비할 일을 고르지 않았어요.
                     </p>
                   )}
                 </div>
@@ -362,8 +362,8 @@ export function HomePage() {
                 <span className="rh-empty-calendar">
                   <Icon name="calendar" size={27} />
                 </span>
-                <h3>다음 미팅을 준비해 볼까요?</h3>
-                <p>날짜를 잡기 전에도 목표와 질문부터 남길 수 있어요.</p>
+                <h3>다음 미팅이 아직 없어요</h3>
+                <p>날짜를 잡기 전에도 보여줄 결과와 질문부터 남길 수 있어요.</p>
                 <Button className="rh-primary" asChild>
                   <Link to={`${base}/meetings?new=1`}>
                     미팅 만들기 <Icon name="plus" size={16} />
@@ -375,9 +375,10 @@ export function HomePage() {
           <section className="rh-work" aria-labelledby="rh-work-heading">
             <div className="rh-section-heading">
               <div>
-                <h2 id="rh-work-heading">이어갈 작업</h2>
+                <h2 id="rh-work-heading">남은 할 일</h2>
                 <p className="rh-section-description">
-                  남은 작업 {openCount}개<span>·</span>완료 {completedCount}개
+                  {openCount}개 남음<span>·</span>
+                  {completedCount}개 완료
                 </p>
               </div>
               <Link className="rh-text-link" to={`${base}/tasks`}>
@@ -385,13 +386,13 @@ export function HomePage() {
               </Link>
             </div>
             {isCollaborative && (
-              <div className="rh-scope" role="group" aria-label="작업 범위">
+              <div className="rh-scope" role="group" aria-label="할 일 범위">
                 <button
                   type="button"
                   aria-pressed={scope === "mine"}
                   onClick={() => setScope("mine")}
                 >
-                  내 작업
+                  내 할 일
                 </button>
                 <button
                   type="button"
@@ -448,7 +449,11 @@ export function HomePage() {
               {!work.length && (
                 <div className="rh-list-empty">
                   <Icon name="tasks" size={22} />
-                  <p>지금 이어갈 일을 하나 남겨 보세요.</p>
+                  <p>
+                    {isCollaborative && scope === "mine"
+                      ? "내 할 일이 없어요."
+                      : "아직 할 일이 없어요."}
+                  </p>
                 </div>
               )}
             </div>
@@ -458,7 +463,7 @@ export function HomePage() {
           </section>
           <section className="rh-writing" aria-labelledby="rh-writing-heading">
             <div className="rh-section-heading">
-              <h2 id="rh-writing-heading">이어서 작성</h2>
+              <h2 id="rh-writing-heading">최근 문서</h2>
               <Link className="rh-text-link" to={`${base}/writing`}>
                 글쓰기 <Icon name="arrow-up-right" size={15} />
               </Link>
@@ -484,9 +489,7 @@ export function HomePage() {
                     <small>
                       {new Date(document.updatedAt).toLocaleDateString("ko-KR")}
                       {isCollaborative && author && ` · ${author}`}
-                      {versionCount > 0
-                        ? ` · 저장한 버전 ${versionCount}개`
-                        : " · 작성 중"}
+                      {versionCount > 0 ? ` · 버전 ${versionCount}개` : ""}
                     </small>
                   </span>
                   <Icon name="arrow-up-right" size={16} />
@@ -499,8 +502,8 @@ export function HomePage() {
                   <Icon name="edit" size={22} />
                 </span>
                 <span>
-                  <strong>연구 계획서부터 첫 문장까지</strong>
-                  <small>새 문서를 열고 생각을 이어 적으세요.</small>
+                  <strong>아직 문서가 없어요</strong>
+                  <small>새 연구 계획서 만들기</small>
                 </span>
                 <Icon name="plus" size={18} />
               </Link>
@@ -546,8 +549,8 @@ export function HomePage() {
                   <Icon name="sparkles" size={18} />
                 </span>
                 <span>
-                  <strong>기다리는 AI 결과 {pending.length}개</strong>
-                  <p>내 기록에 반영할 내용을 선택해 주세요.</p>
+                  <strong>확인할 AI 제안 {pending.length}개</strong>
+                  <p>기록으로 남길 제안을 선택하세요.</p>
                 </span>
                 <Icon name="chevron-right" size={14} />
               </Link>
@@ -558,8 +561,10 @@ export function HomePage() {
                   <Icon name="check" size={18} />
                 </span>
                 <div>
-                  <strong>새 소식을 모두 확인했어요.</strong>
-                  <p>교수 의견이나 확인할 결과가 도착하면 여기에 모아둘게요.</p>
+                  <strong>확인할 새 소식이 없어요</strong>
+                  <p>
+                    교수 응답, 검토 댓글, 확인할 AI 제안이 생기면 여기에 보여요.
+                  </p>
                 </div>
               </div>
             )}
@@ -568,7 +573,7 @@ export function HomePage() {
                 <Icon name="flag" size={16} />
                 <span>
                   <small>
-                    다음 주요 마감 · {formatDate(milestone.dueDate)}
+                    다음 주요 목표 · {formatDate(milestone.dueDate)}
                   </small>
                   <strong>{milestone.title}</strong>
                 </span>
@@ -581,24 +586,22 @@ export function HomePage() {
             aria-labelledby="rh-assistant-heading"
           >
             <AssistantMascot state="ready" size={64} />
-            <h2 id="rh-assistant-heading">
-              메모에서
-              <br />
-              다음 작업으로.
-            </h2>
-            <p>미팅 기록을 정리하거나, 피드백에 맞는 수정 방법을 비교하세요.</p>
+            <h2 id="rh-assistant-heading">연구 도우미</h2>
+            <p>
+              지정한 기록을 바탕으로 할 일과 수정 방법을 제안해요. 선택한 제안만
+              내 기록에 남아요.
+            </p>
             <div className="rh-assistant-actions">
               <Link to={`${base}/assistant?mode=plan_research`}>
                 <span>
-                  <Icon name="tasks" size={16} />
-                  다음 작업 정리
+                  <Icon name="tasks" size={16} />할 일 정리
                 </span>
                 <Icon name="arrow-up-right" size={15} />
               </Link>
               <Link to={`${base}/assistant?mode=suggest_revisions`}>
                 <span>
                   <Icon name="layers" size={16} />
-                  수정 방법 비교
+                  수정 방법 제안
                 </span>
                 <Icon name="arrow-up-right" size={15} />
               </Link>
@@ -638,7 +641,7 @@ export function HomePage() {
             </ol>
             {!events.length && (
               <p className="rh-inline-empty">
-                기록을 남기고 작업을 진행하면 여기에 쌓입니다.
+                공동연구자의 활동이 여기에 보여요.
               </p>
             )}
           </section>

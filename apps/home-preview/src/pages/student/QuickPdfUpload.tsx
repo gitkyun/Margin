@@ -77,7 +77,9 @@ export function QuickPdfUpload({
         },
       );
       onUploaded(version);
-      toast.success(`${version.fileName} v${version.number}을 연결했습니다`);
+      toast.success(
+        `${version.fileName} v${version.number} 파일을 올리고 선택해 두었어요`,
+      );
       close();
     } catch (e) {
       setProgress(null);
@@ -88,15 +90,17 @@ export function QuickPdfUpload({
             JSON.stringify(e.uploadedVersion),
           );
         } catch {}
-        setError(`${e.message} 자료 메뉴에서 연결을 마칠 수 있습니다.`);
+        setError(
+          "파일은 올렸지만 자료에 등록하지 못했어요. 자료 화면에서 ‘등록 다시 시도’를 누르면 파일을 다시 올리지 않고 등록할 수 있어요.",
+        );
       } else if (e instanceof OrphanMaterialError) setError(e.message);
       else if (abort.signal.aborted)
-        setError("업로드를 중단했습니다. 같은 파일로 다시 시도할 수 있습니다.");
+        setError("업로드를 중단했어요. 같은 파일로 다시 시도할 수 있어요.");
       else
         setError(
           e instanceof Error
             ? e.message
-            : "파일을 올리지 못했습니다. 작성 중인 내용은 남아 있습니다.",
+            : "파일을 올리지 못했어요. 작성 중인 내용은 그대로 있어요.",
         );
     } finally {
       setBusy(false);
@@ -125,7 +129,7 @@ export function QuickPdfUpload({
         />
       </label>
       <label className="field">
-        <span className="field-name">등록 위치</span>
+        <span className="field-name">올릴 자료</span>
         <SelectField
           className="native-select"
           value={targetId}
@@ -144,11 +148,15 @@ export function QuickPdfUpload({
         <div className="upload-progress">
           <div>
             <span>
-              {progress === 100 ? "자료에 연결 중…" : "파일 업로드 중"}
+              {progress === 100 ? "자료에 등록 중" : "파일 업로드 중"}
             </span>
             <strong>{Math.round(progress)}%</strong>
           </div>
-          <progress max={100} value={progress} />
+          <progress
+            max={100}
+            value={progress}
+            aria-label="파일 업로드 진행률"
+          />
         </div>
       )}
       <ErrorNotice error={error} />
@@ -165,7 +173,7 @@ export function QuickPdfUpload({
         ) : (
           <>
             <Button type="button" size="sm" disabled={!file} onClick={submit}>
-              올리고 연결
+              올리기
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={close}>
               닫기

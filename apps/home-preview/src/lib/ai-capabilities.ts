@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useExperience } from "./experience";
 import { assertConnected } from "./supabase";
+import { localizeServerMessage } from "@/lib/server-messages";
 export function useAICapabilities() {
   const { mode } = useExperience();
   return useQuery({
@@ -21,7 +22,11 @@ export function useAICapabilities() {
       );
       const b = await r.json();
       if (!r.ok)
-        throw new Error(b.error?.message ?? "모델 설정을 불러오지 못했습니다.");
+        throw new Error(
+          localizeServerMessage(
+            b.error?.message ?? "AI 모델 정보를 불러오지 못했어요.",
+          ),
+        );
       return b as {
         models: { id: string; label: string; thinking: string[] }[];
       };

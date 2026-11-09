@@ -4,10 +4,10 @@ import { Icon } from "@/components/icons";
 import "./public-navigation.css";
 
 const features = [
-  ["meeting", "microphone", "미팅과 기록", "말한 내용에서 다음 할 일까지"],
-  ["ai", "sparkles", "AI와 수정 방안", "선택한 근거로 방법 비교하기"],
-  ["writing", "edit", "작성과 버전 비교", "바뀐 문장과 수정 이유 남기기"],
-  ["review", "check-circle", "교수 검토", "보낸 버전에 항목별 의견 받기"],
+  ["meeting", "microphone", "미팅과 기록", "녹음·전사와 피드백 정리"],
+  ["ai", "sparkles", "AI와 수정 방법", "선택한 기록으로 제안받기"],
+  ["writing", "edit", "작성과 버전 비교", "버전별로 바뀐 문장 비교하기"],
+  ["review", "check-circle", "교수 검토", "항목마다 교수님 응답 받기"],
 ];
 
 export function PublicNavigation({
@@ -114,7 +114,7 @@ export function PublicNavigation({
           to={signedIn ? "/r" : "/signup"}
           onClick={onNavigate}
         >
-          {signedIn ? "연구 이어가기" : "시작하기"}
+          {signedIn ? "내 연구 열기" : "시작하기"}
           <Icon name="arrow-right" size={16} />
         </Link>
       </div>

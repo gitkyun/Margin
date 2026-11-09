@@ -24,7 +24,7 @@ export function MergeFlow({ className = "" }: { className?: string }) {
     <div
       ref={ref}
       className={`rms-merge-flow ${className}`}
-      aria-label="미팅 메모, 피드백, 연구 자료를 선택해 연구 도우미에게 전달하는 예시"
+      aria-label="미팅 메모, 피드백, 연구 자료 중 선택한 기록을 연구 도우미가 읽고 제안하는 예시"
     >
       <div className="rms-merge-sources">
         {[
@@ -77,8 +77,8 @@ export function MergeFlow({ className = "" }: { className?: string }) {
       <div className="rms-merge-result">
         <AssistantGlyph />
         <div>
-          <strong>선택한 기록을 읽는 도우미</strong>
-          <span>선택한 맥락으로, 다음 작업까지.</span>
+          <strong>연구 도우미</strong>
+          <span>선택한 기록만 읽어요</span>
         </div>
         <Icon name="arrow-right" size={18} />
       </div>
@@ -89,11 +89,10 @@ export function MergeFlow({ className = "" }: { className?: string }) {
         </span>
         <span>
           <Icon name="layers" size={13} />
-          수정 방안
+          수정 방법
         </span>
         <span>
-          <Icon name="tasks" size={13} />
-          다음 작업
+          <Icon name="tasks" size={13} />할 일 제안
         </span>
       </div>
     </div>
@@ -159,7 +158,7 @@ export function ComparePreview({
       <div ref={stageRef} className="rms-compare-stage">
         <div className="rms-compare-sheet rms-compare-after">
           <span>수정 버전</span>
-          <h4>비교 기준을 구체적으로.</h4>
+          <h4>비교 기준을 구체적으로</h4>
           <ol>
             {after.split("\n").map((line, i) => (
               <li key={`${i}-${line}`}>{line}</li>

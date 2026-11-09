@@ -12,6 +12,7 @@ import {
 } from "./ui/dialog";
 import { Icon } from "./icons";
 import { toast } from "sonner";
+import { localizeServerMessage } from "@/lib/server-messages";
 
 export function PermanentResearchDelete({
   id,
@@ -60,9 +61,9 @@ export function PermanentResearchDelete({
           <DialogHeader>
             <DialogTitle>연구를 완전히 삭제할까요?</DialogTitle>
             <DialogDescription>
-              ‘{name}’의 미팅·원고·자료·녹음·검토 기록과 보존 파일을 삭제합니다.
-              공동연구자의 기록도 포함되며 복원할 수 없습니다. 이미 내려받은
-              파일은 삭제되지 않습니다.
+              ‘{name}’의 미팅, 원고, 자료, 녹음, 검토 기록과 올린 파일을 모두
+              삭제해요. 공동연구자가 남긴 기록도 함께 삭제되고 되돌릴 수 없어요.
+              이미 내려받은 파일은 지워지지 않아요.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -73,17 +74,17 @@ export function PermanentResearchDelete({
               setError("");
               try {
                 if (w.mode !== "connected")
-                  throw new Error("로그인한 계정에서 삭제할 수 있습니다.");
+                  throw new Error("미리보기에서는 완전히 삭제할 수 없어요.");
                 const { data, error } =
                   await assertConnected().functions.invoke("delete-research", {
                     body: { researchId: id, confirmationName: confirmation },
                   });
                 if (error) {
-                  let message =
-                    "삭제를 완료하지 못했습니다. 휴지통에서 다시 시도해 주세요.";
+                  let message = "삭제하지 못했어요. 다시 시도해 주세요.";
                   try {
                     const body = await error.context?.json();
-                    if (body?.error) message = body.error;
+                    if (body?.error)
+                      message = localizeServerMessage(body.error);
                   } catch {
                     /* Use safe fallback. */
                   }
@@ -91,12 +92,13 @@ export function PermanentResearchDelete({
                 }
                 if (!data?.deleted)
                   throw new Error(
-                    data?.error ?? "삭제 결과를 확인하지 못했습니다.",
+                    data?.error ??
+                      "삭제 결과를 확인하지 못했어요. 새로고침한 뒤 휴지통을 확인해 주세요.",
                   );
                 await w.refresh();
                 setOpen(false);
                 setConfirmation("");
-                toast.success("연구와 보존 파일을 완전히 삭제했습니다.");
+                toast.success("연구와 올린 파일을 완전히 삭제했어요.");
               } catch (e) {
                 setError(friendlyError(e));
               } finally {
@@ -162,17 +164,20 @@ export function PendingResearchDeletions() {
   if (jobs.isError)
     return (
       <div className="pending-deletions" role="alert">
-        삭제 처리 내역을 불러오지 못했습니다.{" "}
+        파일 삭제가 남은 연구를 불러오지 못했어요.{" "}
         <button className="text-link" onClick={() => void jobs.refetch()}>
-          다시 확인
+          다시 불러오기
         </button>
       </div>
     );
   if (!jobs.data?.length) return null;
   return (
     <section className="pending-deletions">
-      <h2>파일 정리가 필요한 연구</h2>
-      <p>기록의 접근은 중지되었습니다. 남은 파일 삭제를 마무리하세요.</p>
+      <h2>파일 삭제가 남은 연구</h2>
+      <p>
+        기록은 삭제했지만 올린 파일이 남아 있을 수 있어요. 삭제를 마무리해
+        주세요.
+      </p>
       {jobs.data.map((job) => (
         <div key={job.id}>
           <strong>{job.name}</strong>

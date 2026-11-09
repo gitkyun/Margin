@@ -5,8 +5,27 @@ import { cn } from "@/lib/utils";
 import { XIcon } from "lucide-react";
 import { Dialog as SheetPrimitive } from "radix-ui";
 
-function Sheet({ ...props }) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />;
+const ReturnFocusContext = React.createContext(null);
+
+/**
+ * Controlled dialogs (opened from state, not a Trigger) lose their way back:
+ * inputs with autoFocus take focus before Radix records the opener, so on
+ * close focus fell to <body>. Remember the focused element in the render
+ * where `open` turns true — before any child mounts — and return to it on
+ * close (WCAG 2.4.3). Uncontrolled dialogs keep Radix's own trigger focus.
+ */
+function Sheet({ open, ...props }) {
+  const returnTo = React.useRef(null);
+  const wasOpen = React.useRef(false);
+  if (open && !wasOpen.current && typeof document !== "undefined") {
+    returnTo.current = document.activeElement;
+  }
+  wasOpen.current = !!open;
+  return (
+    <ReturnFocusContext.Provider value={open === undefined ? null : returnTo}>
+      <SheetPrimitive.Root data-slot="sheet" open={open} {...props} />
+    </ReturnFocusContext.Provider>
+  );
 }
 
 function SheetTrigger({ ...props }) {
@@ -34,18 +53,38 @@ function SheetOverlay({ className, ...props }) {
   );
 }
 
+function useReturnFocus(onCloseAutoFocus) {
+  const returnTo = React.useContext(ReturnFocusContext);
+  return (event) => {
+    onCloseAutoFocus?.(event);
+    if (event.defaultPrevented || !returnTo) return;
+    const target = returnTo.current;
+    if (
+      target instanceof HTMLElement &&
+      target !== document.body &&
+      target.isConnected
+    ) {
+      event.preventDefault();
+      target.focus();
+    }
+  };
+}
+
 function SheetContent({
   className,
   children,
+  onCloseAutoFocus,
   side = "right",
   showCloseButton = true,
   ...props
 }) {
+  const returnFocus = useReturnFocus(onCloseAutoFocus);
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
         data-slot="sheet-content"
+        onCloseAutoFocus={returnFocus}
         className={cn(
           "fixed z-50 flex flex-col gap-4 bg-background shadow-lg transition ease-in-out data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:animate-in data-[state=open]:duration-500",
           side === "right" &&
@@ -62,7 +101,7 @@ function SheetContent({
       >
         {children}
         {showCloseButton && (
-          <SheetPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-secondary">
+          <SheetPrimitive.Close className="absolute top-1.5 right-1.5 inline-flex size-11 items-center justify-center rounded-md opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-secondary">
             <XIcon className="size-4" />
             <span className="sr-only">닫기</span>
           </SheetPrimitive.Close>

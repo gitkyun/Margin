@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useWorkspace } from "@/lib/workspace";
+import { friendlyError } from "@/lib/supabase";
 import { privateBlob, uploadPrivate } from "@/lib/experience";
 import { recordBase, type Recording } from "@/lib/domain";
 import {
@@ -114,7 +115,7 @@ export function RecordingPanel({
   useNavigationGuard({
     dirty: state !== "idle",
     busy,
-    label: "저장하지 않은 녹음과 전사문",
+    label: "녹음과 전사문",
     onDiscard: discard,
   });
   useEffect(() => {
@@ -158,7 +159,7 @@ export function RecordingPanel({
     try {
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder)
         throw new Error(
-          "이 브라우저에서는 녹음을 사용할 수 없습니다. 최신 Chrome 또는 Safari에서 열어 주세요.",
+          "이 브라우저에서는 녹음할 수 없어요. 최신 Chrome이나 Safari에서 열어 주세요.",
         );
       const s = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (!live.current || gen !== generation.current) {
@@ -171,7 +172,12 @@ export function RecordingPanel({
         "audio/mp4",
         "audio/ogg;codecs=opus",
       ].find((t) => MediaRecorder.isTypeSupported(t));
-      const m = new MediaRecorder(s, mime ? { mimeType: mime } : undefined);
+      // 32kbps keeps a full 2-hour recording (about 29MB) under the 50MB upload
+      // limit; browser defaults (64-128kbps) can pass it before 2 hours.
+      const m = new MediaRecorder(s, {
+        ...(mime ? { mimeType: mime } : {}),
+        audioBitsPerSecond: 32000,
+      });
       media.current = m;
       chunks.current = [];
       setSeconds(0);
@@ -215,7 +221,7 @@ export function RecordingPanel({
       };
       m.onerror = () => {
         setError(
-          "녹음이 중단되었습니다. 남은 음성과 전사문을 확인해 저장해 주세요.",
+          "녹음이 중간에 멈췄어요. 멈추기 전까지의 음성과 전사문을 확인하고 저장해 주세요.",
         );
         stop();
       };
@@ -272,7 +278,7 @@ export function RecordingPanel({
       generation.current++;
       setError(
         (e as Error).name === "NotAllowedError"
-          ? "마이크 권한이 꺼져 있습니다. 브라우저의 사이트 설정에서 허용한 뒤 다시 시도하세요."
+          ? "마이크 권한이 꺼져 있어요. 브라우저의 사이트 설정에서 마이크를 허용한 뒤 다시 시도해 주세요."
           : (e as Error).message,
       );
       setState("idle");
@@ -370,12 +376,12 @@ export function RecordingPanel({
       setTranscript("");
       toast.success(
         recognitionConsent.current || transcript.trim()
-          ? "녹음과 전사문을 저장했습니다."
-          : "녹음을 저장했습니다.",
+          ? "녹음과 전사문을 저장했어요"
+          : "녹음을 저장했어요",
       );
     } catch (e) {
       setError(
-        `${(e as Error).message}${uploaded.current ? " 음성 파일은 다시 올리지 않습니다. 전사문과 저장 연결을 다시 시도할 수 있습니다." : " 녹음과 작성한 글은 이 화면에 남아 있습니다."}`,
+        `${friendlyError(e)}${uploaded.current ? " 음성 파일은 이미 올라갔고, 이 화면의 내용도 그대로 있어요. ‘저장 다시 시도’를 누르면 파일은 다시 올리지 않고 나머지만 저장해요." : " 녹음과 전사문은 이 화면에 그대로 있어요."}`,
       );
       setState("review");
     }
@@ -421,8 +427,8 @@ export function RecordingPanel({
       {state === "idle" ? (
         <div className="recording-start">
           <p>
-            말한 내용을 한국어로 받아 적습니다. 녹음과 전사문은 저장 전에 확인할
-            수 있습니다.
+            녹음하면서 말한 내용을 한국어로 받아 적을 수 있어요. 저장하기 전에
+            녹음을 들어 보고 전사문을 고칠 수 있어요.
           </p>
           <Button
             variant="outline"
@@ -441,7 +447,7 @@ export function RecordingPanel({
               width={620}
               height={72}
               ref={canvas}
-              aria-label="실제 마이크 음성 신호"
+              aria-label="마이크 입력 파형"
             />
             <strong>{durationText(seconds)}</strong>
           </div>
@@ -476,7 +482,7 @@ export function RecordingPanel({
                           : state === "finishing"
                             ? "마무리 중"
                             : speech.state === "listening"
-                              ? "듣고 있어요"
+                              ? "듣는 중"
                               : "연결 중"}
                   </span>
                 </div>
@@ -502,8 +508,8 @@ export function RecordingPanel({
                   ) : (
                     <p className="student-footnote">
                       {recognitionConsent.current
-                        ? "말을 시작하면 여기에 글자가 나타납니다."
-                        : "음성 인식을 켜지 않았습니다. 녹음을 마친 뒤 직접 기록할 수 있습니다."}
+                        ? "말을 시작하면 여기에 글자가 나타나요."
+                        : "실시간 전사 없이 음성만 녹음하고 있어요. 녹음을 마친 뒤 전사문을 직접 쓸 수 있어요."}
                     </p>
                   )}
                 </div>
@@ -529,33 +535,33 @@ export function RecordingPanel({
               <label className="transcript-field">
                 한국어 전사문
                 <textarea
-                  aria-label="저장할 한국어 전사문"
                   rows={8}
                   maxLength={100000}
                   value={transcript}
                   disabled={state === "uploading"}
                   onChange={(e) => setTranscript(e.target.value)}
-                  placeholder="인식한 문장이 없습니다. 원음을 들으며 직접 작성할 수 있습니다."
+                  placeholder="인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요."
                 />
               </label>
               <p className="student-footnote">
-                잘못 인식한 말은 고쳐 주세요. 전사문은 나만 볼 수 있으며, 처음
-                인식한 내용도 따로 보존합니다.
+                잘못 인식한 말은 고쳐 주세요. 처음 인식한 내용도 따로 저장돼요.
               </p>
               {speech.segments.some((p) => !p.final) && (
                 <p className="transcript-notice">
-                  확정되지 않은 문장이 포함되어 있습니다. 원음과 비교해 주세요.
+                  인식이 확정되지 않은 문장이 있어요. 녹음을 들으며 확인해
+                  주세요.
                 </p>
               )}
               {!!speech.warnings.length && (
                 <p className="transcript-notice">
-                  인식이 중단된 구간이 있을 수 있습니다. 녹음을 들으며 빠진 말을
-                  확인하세요.
+                  인식이 끊긴 구간이 있을 수 있어요. 녹음을 들으며 빠진 말을
+                  확인해 주세요.
                 </p>
               )}
               <VisibilityField value={visibility} onChange={setVisibility} />
               <p className="student-footnote">
-                공개 범위는 음성 파일에만 적용됩니다.
+                공개 범위는 음성 파일에만 적용돼요. 음성을 공유해도 전사문은
+                나만 볼 수 있어요.
               </p>
               {progress !== null && state === "uploading" && (
                 <progress max={100} value={progress} />
@@ -566,9 +572,7 @@ export function RecordingPanel({
                   disabled={state === "uploading"}
                   onClick={discard}
                 >
-                  {linked.current
-                    ? "저장된 녹음 유지·닫기"
-                    : "녹음·전사 버리기"}
+                  {linked.current ? "전사문 버리고 닫기" : "녹음·전사 버리기"}
                 </Button>
                 <Button
                   variant="outline"
@@ -650,11 +654,13 @@ export function RecordingPanel({
       <Dialog open={consent} onOpenChange={setConsent}>
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>녹음·음성 인식 동의를 확인해 주세요.</DialogTitle>
+            <DialogTitle>녹음을 시작할까요?</DialogTitle>
             <DialogDescription>
-              참여자에게 음성 기록을 알리고 동의를 받으세요. 실시간 전사를 켜면
-              음성이 브라우저 제공자의 인식 서버로 전송될 수 있으며 인터넷
-              연결이 필요합니다. 저장 전에는 내용을 확인하고 고칠 수 있습니다.
+              녹음하기 전에 참여자에게 알리고 동의를 받아 주세요. 실시간 전사를
+              켜면 음성이 브라우저 제공자의 음성 인식 서버로 전송될 수 있고
+              인터넷 연결이 필요해요. 녹음은 한 번에 최대 2시간이고, 2시간이
+              되면 자동으로 멈춰요. 음성 파일이 50MB를 넘으면 저장할 수 없으니
+              긴 미팅은 나눠서 녹음해 주세요.
             </DialogDescription>
           </DialogHeader>
           <label className="student-choice-row">
@@ -668,8 +674,8 @@ export function RecordingPanel({
           </label>
           {!speechSupported && (
             <p className="transcript-notice">
-              이 브라우저는 실시간 음성 인식을 지원하지 않습니다. 지원
-              브라우저에서 열거나 음성만 녹음할 수 있습니다.
+              이 브라우저는 실시간 전사를 지원하지 않아요. 음성만 녹음하거나
+              지원하는 브라우저에서 열어 주세요.
             </p>
           )}
           <label className="student-choice-row">
@@ -679,7 +685,7 @@ export function RecordingPanel({
               onChange={(e) => setAgree(e.target.checked)}
             />
             참여자에게 녹음{liveText && speechSupported ? "과 음성 인식" : ""}을
-            알리고 동의를 받았습니다.
+            알리고 동의를 받았어요.
           </label>
           <div className="bottom-actions">
             <Button variant="outline" onClick={() => setConsent(false)}>

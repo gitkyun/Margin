@@ -7,8 +7,27 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { Button } from "@/components/ui/button";
 
-function Dialog({ ...props }) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+const ReturnFocusContext = React.createContext(null);
+
+/**
+ * Controlled dialogs (opened from state, not a Trigger) lose their way back:
+ * inputs with autoFocus take focus before Radix records the opener, so on
+ * close focus fell to <body>. Remember the focused element in the render
+ * where `open` turns true — before any child mounts — and return to it on
+ * close (WCAG 2.4.3). Uncontrolled dialogs keep Radix's own trigger focus.
+ */
+function Dialog({ open, ...props }) {
+  const returnTo = React.useRef(null);
+  const wasOpen = React.useRef(false);
+  if (open && !wasOpen.current && typeof document !== "undefined") {
+    returnTo.current = document.activeElement;
+  }
+  wasOpen.current = !!open;
+  return (
+    <ReturnFocusContext.Provider value={open === undefined ? null : returnTo}>
+      <DialogPrimitive.Root data-slot="dialog" open={open} {...props} />
+    </ReturnFocusContext.Provider>
+  );
 }
 
 function DialogTrigger({ ...props }) {
@@ -36,17 +55,37 @@ function DialogOverlay({ className, ...props }) {
   );
 }
 
+function useReturnFocus(onCloseAutoFocus) {
+  const returnTo = React.useContext(ReturnFocusContext);
+  return (event) => {
+    onCloseAutoFocus?.(event);
+    if (event.defaultPrevented || !returnTo) return;
+    const target = returnTo.current;
+    if (
+      target instanceof HTMLElement &&
+      target !== document.body &&
+      target.isConnected
+    ) {
+      event.preventDefault();
+      target.focus();
+    }
+  };
+}
+
 function DialogContent({
   className,
   children,
+  onCloseAutoFocus,
   showCloseButton = true,
   ...props
 }) {
+  const returnFocus = useReturnFocus(onCloseAutoFocus);
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        onCloseAutoFocus={returnFocus}
         className={cn(
           "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg",
           className,
@@ -57,7 +96,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="absolute top-1.5 right-1.5 inline-flex size-11 items-center justify-center rounded-md opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
             <span className="sr-only">닫기</span>

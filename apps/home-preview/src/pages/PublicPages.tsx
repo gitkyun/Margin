@@ -25,29 +25,29 @@ const journey = [
   {
     label: "미팅 기록",
     icon: "microphone",
-    title: "메모 속 피드백을, 다음 행동으로.",
-    body: "녹음과 한국어 전사를 남기고, 원문에서 피드백·결정·질문을 골라 정리하세요.",
+    title: "미팅 원문에서 피드백을 골라내요",
+    body: "녹음과 한국어 전사로 미팅을 남기고, 피드백, 결정 사항, 질문을 나눠 정리하세요.",
     color: "blue",
   },
   {
-    label: "수정 방안",
+    label: "수정 방법",
     icon: "sparkles",
-    title: "정답 하나 대신, 선택할 수 있는 방법.",
-    body: "AI가 제안한 수정 방안과 가정을 읽고, 내 연구에 맞는 방법을 선택하세요.",
+    title: "정답 대신 고를 수 있는 수정 방법",
+    body: "연구 도우미가 제안한 수정 방법과 가정을 읽고, 내 연구에 맞는 방법을 선택하세요.",
     color: "sky",
   },
   {
     label: "원고 작성",
     icon: "edit",
-    title: "고친 내용과 이유가 함께 남도록.",
-    body: "원고를 작성하고 버전을 비교하세요. 검토할 때는 당시 파일을 그대로 보냅니다.",
+    title: "버전을 남기고 바뀐 문장을 비교해요",
+    body: "저장만으로는 버전이 생기지 않아요. 비교하고 싶은 시점에 직접 남기세요.",
     color: "azure",
   },
   {
     label: "교수 검토",
     icon: "check-circle",
-    title: "무엇을 확인받았는지, 분명하게.",
-    body: "수정 설명과 파일을 한 링크로 모으세요. 항목별 교수 의견은 보낸 버전에 남습니다.",
+    title: "항목마다 교수님 응답을 받아요",
+    body: "수정 설명과 파일을 검토 링크 하나로 묶어, 교수님께 직접 전달하세요.",
     color: "ice",
   },
 ];
@@ -99,7 +99,7 @@ export function PublicFrame({
       </a>
       <header className="lp-header">
         <div className="lp-nav-shell">
-          <Link to="/" className="lp-brand" aria-label="Margin 소개">
+          <Link to="/" className="lp-brand" aria-label="마진(Margin) 홈">
             <ResearchMark small />
             <BrandWordmark />
           </Link>
@@ -118,12 +118,12 @@ export function PublicFrame({
               className="lp-button lp-button-dark lp-button-small"
               to={signedIn ? "/r" : "/signup"}
             >
-              {signedIn ? "연구 이어가기" : "시작하기"}
+              {signedIn ? "내 연구 열기" : "시작하기"}
               <Icon name="arrow-up-right" size={16} />
             </Link>
             <button
               className="lp-menu-toggle"
-              aria-label="소개 메뉴"
+              aria-label="메뉴"
               aria-expanded={menu}
               onClick={() => setMenu(!menu)}
             >
@@ -137,17 +137,17 @@ export function PublicFrame({
         <FooterGlyphField />
         <div className="lp-footer-inner">
           <div className="lp-footer-intro">
-            <Link className="lp-brand" to="/" aria-label="Margin 홈">
+            <Link className="lp-brand" to="/" aria-label="마진(Margin) 홈">
               <ResearchMark />
               <BrandWordmark />
             </Link>
             <p>
-              미팅에서 나온 한마디가
+              미팅 기록과 피드백, 할 일, 원고 버전을
               <br />
-              다음 연구로 이어지는 곳.
+              연구별로 정리해요.
             </p>
             <Link className="lp-footer-start" to={signedIn ? "/r" : "/login"}>
-              연구 이어가기
+              내 연구 열기
               <Icon name="arrow-up-right" size={18} />
             </Link>
           </div>
@@ -156,29 +156,29 @@ export function PublicFrame({
               <h3>서비스</h3>
               <Link to="/">서비스 소개</Link>
               <Link to="/features">주요 기능</Link>
-              <Link to="/pricing">구독 플랜</Link>
+              <Link to="/pricing">플랜</Link>
               <Link to={signedIn ? "/r" : "/login"}>
                 {signedIn ? "내 연구" : "로그인"}
               </Link>
             </div>
             <div>
-              <h3>연구 흐름</h3>
+              <h3>기능</h3>
               <Link to="/features?view=meeting">미팅과 기록</Link>
-              <Link to="/features?view=ai">AI와 수정 방안</Link>
+              <Link to="/features?view=ai">AI와 수정 방법</Link>
               <Link to="/features?view=writing">작성과 버전 비교</Link>
               <Link to="/features?view=review">교수 검토</Link>
             </div>
             <div>
               <h3>도움말</h3>
-              <Link to="/guide">서비스 안내</Link>
+              <Link to="/guide">사용 안내</Link>
               <Link to="/guide#questions">자주 묻는 질문</Link>
               <Link to="/privacy">자료와 개인정보</Link>
-              <Link to="/signup">가입 과정 살펴보기</Link>
+              <Link to="/signup">가입 과정 미리보기</Link>
             </div>
           </div>
           <div className="lp-footer-bottom">
-            <span>© {new Date().getFullYear()} Margin</span>
-            <span>지난 지도를, 다음 연구로.</span>
+            <span>© {new Date().getFullYear()} 마진</span>
+            <span>흩어진 기록을 모아, 다음 연구가 되도록</span>
             <FooterControls />
           </div>
         </div>
@@ -205,11 +205,11 @@ function ProductPreview({ index }: { index: number }) {
         </span>
         <span>
           <Icon name="tasks" size={16} />
-          준비할 작업
+          결정 사항 1개
         </span>
         <span>
           <Icon name="help" size={16} />
-          다음 질문
+          질문 1개
         </span>
       </div>
     </div>,
@@ -217,7 +217,7 @@ function ProductPreview({ index }: { index: number }) {
       <div className="lp-assistant-name">
         <AssistantFace />
         <span>
-          연구 도우미<small>선택한 피드백으로 수정 방안 제안</small>
+          연구 도우미<small>선택한 피드백으로 수정 방법 제안</small>
         </span>
       </div>
       <div className="lp-method">
@@ -225,7 +225,8 @@ function ProductPreview({ index }: { index: number }) {
         <p className="lp-demo-title">세 가지 기준으로 비교표 다시 만들기</p>
         <p>연구 목적 · 자료 수집 방법 · 분석 관점</p>
         <span className="lp-example-selected">
-          <Icon name="check" size={14} />이 방법으로 준비
+          <Icon name="check" size={14} />
+          선택한 방법
         </span>
       </div>
       <div className="lp-method lp-method-alt">
@@ -234,7 +235,7 @@ function ProductPreview({ index }: { index: number }) {
       </div>
       <div className="lp-model-meta">
         <Icon name="sparkles" size={14} />
-        차근차근<em>사용 예시 · 실제 실행 아님</em>
+        보통<em>예시 · 실제 AI 결과 아님</em>
       </div>
     </div>,
     <div className="lp-preview-writing" key="writing">
@@ -243,7 +244,7 @@ function ProductPreview({ index }: { index: number }) {
           <Icon name="file" size={16} />
           연구 계획서
         </span>
-        <span>보존 버전 v2</span>
+        <span>버전 v2</span>
       </div>
       <p className="lp-demo-title">2. 선행연구 비교</p>
       <p>
@@ -258,7 +259,7 @@ function ProductPreview({ index }: { index: number }) {
       <div className="lp-version-bottom">
         <span>
           <Icon name="check-circle" size={14} />
-          수정 이유와 함께 저장
+          v1과 달라진 부분
         </span>
         <Icon name="layers" size={18} />
       </div>
@@ -266,14 +267,14 @@ function ProductPreview({ index }: { index: number }) {
     <div className="lp-preview-review" key="review">
       <span className="lp-preview-tag">
         <Icon name="lock" size={14} />
-        지정 교수에게 공유
+        지정 교수에게만 공개
       </span>
       <p className="lp-demo-title">선행연구 비교표 수정</p>
       <p>비교 기준을 세 가지로 나누고, 각 기준을 선택한 이유를 덧붙였습니다.</p>
       <div className="lp-review-file">
         <Icon name="file" size={23} />
         <span>
-          연구계획서_v2.pdf<small>4~5쪽 · 보낸 파일 보존</small>
+          연구계획서_v2.pdf<small>볼 위치 4~5쪽 · 보낸 파일 그대로</small>
         </span>
       </div>
       <div className="lp-reviewed">
@@ -290,7 +291,7 @@ function ProductPreview({ index }: { index: number }) {
           <i />
           <i />
         </span>
-        <span>나의 연구</span>
+        <span>내 연구</span>
         <span className="lp-window-example">사용 예시</span>
       </div>
       <div className="lp-window-body">
@@ -343,27 +344,27 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             논문을 쓰는 사람의 작업 공간
           </span>
           <h1>
-            <RevealLine>지난 지도를,</RevealLine>
+            <RevealLine>흩어진 기록을 모아,</RevealLine>
             <br />
             <RevealLine delay={0.12}>
-              <CoverText>다음 연구로.</CoverText>
+              <CoverText>다음 연구가 되도록</CoverText>
             </RevealLine>
           </h1>
           <p>
-            기록하고, 고치고, 확인받는 일.
+            미팅 메모, 피드백, 할 일, 원고 버전을 연구별로 정리하고
             <br />
-            흩어져 있던 연구의 흐름을 한곳에서 이어가세요.
+            고친 내용은 교수님께 검토를 요청할 수 있어요.
           </p>
           <div className="lp-hero-actions">
             <Link
               className="lp-button lp-button-dark"
               to={signedIn ? "/r" : "/signup"}
             >
-              {signedIn ? "연구 공간 열기" : "연구 시작하기"}
+              {signedIn ? "내 연구 열기" : "시작하기"}
               <Icon name="arrow-up-right" size={19} />
             </Link>
             <a className="lp-button lp-button-light" href="#workflow">
-              어떻게 쓰나요?
+              사용 방법 보기
               <Icon name="chevron-down" size={16} />
             </a>
           </div>
@@ -382,7 +383,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             <div
               className="lp-demo-tabs"
               role="group"
-              aria-label="연구 흐름 미리보기"
+              aria-label="기능 미리보기"
             >
               {journey.map((item, i) => (
                 <button
@@ -398,21 +399,21 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             <ProductPreview index={scene} />
           </div>
           <span className="lp-hero-caption">
-            미팅 메모부터 교수 확인까지, 같은 기록으로.
+            미팅 기록부터 교수 검토까지 한 연구에 모여요.
           </span>
         </div>
       </section>
       <section className="lp-section lp-features" id="features">
         <div className="lp-section-heading">
           <h2>
-            정리로 끝나지 않도록.
+            피드백은 할 일로,
             <br />
-            <RevealLine>다음 작업까지 연결하세요.</RevealLine>
+            <RevealLine>수정 결과는 검토 요청으로</RevealLine>
           </h2>
           <p>
-            미팅마다 다시 찾던 기록을 모으고,
+            지난 미팅 기록을 다시 뒤지지 않아도
             <br />
-            지금 필요한 일에 집중할 수 있게.
+            남은 할 일을 바로 확인할 수 있어요.
           </p>
         </div>
         <div className="lp-bento">
@@ -424,11 +425,10 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <span className="lp-feature-icon">
                 <Icon name="layers" size={22} />
               </span>
-              <h3>여러 기록, 하나의 맥락.</h3>
+              <h3>지난 피드백을 쉽게 찾아요</h3>
               <p>
-                미팅 메모와 피드백, 자료가 연결됩니다.
-                <br />
-                어떤 의견에서 시작한 작업인지 다시 찾을 수 있어요.
+                미팅 메모에서 정리한 피드백은 원문과 함께 남아요.
+                <br />할 일에서도 연결된 피드백을 바로 확인할 수 있어요.
               </p>
             </div>
           </SpotlightCard>
@@ -437,17 +437,17 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <div className="lp-cute-chat">
                 <AssistantFace size={64} />
                 <div className="lp-chat-bubble">
-                  비교표를 어떻게 고칠까요?<span>선택한 피드백 · 1개</span>
+                  비교표를 어떻게 고칠까요?<span>선택한 피드백 1개</span>
                 </div>
                 <div className="lp-chat-response">
-                  <Icon name="sparkles" size={17} />두 가지 방법을 비교해
-                  볼게요.
+                  <Icon name="sparkles" size={17} />
+                  수정 방법 두 가지를 제안할게요.
                 </div>
                 <div className="lp-chat-composer">
-                  <span>궁금한 내용을 적어보세요</span>
+                  <span>궁금한 내용을 적어 주세요</span>
                   <Icon name="paperclip" size={16} />
                   <span className="lp-think-chip">
-                    차근차근
+                    보통
                     <Icon name="chevron-down" size={11} />
                   </span>
                   <Icon name="arrow-up" size={17} />
@@ -458,10 +458,11 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <span className="lp-feature-icon">
                 <Icon name="sparkles" size={22} />
               </span>
-              <h3>생각을 이어주는 연구 도우미.</h3>
+              <h3>제안은 연구 도우미가, 선택은 내가</h3>
               <p>
-                원문에서 확인한 내용과 AI의 제안을 나눠 읽고,
-                <br />내 연구에 맞는 방법을 고릅니다.
+                원문에서 확인한 내용과 AI 제안, 확인할 가정을
+                <br />
+                나눠서 보여 줘요.
               </p>
             </div>
           </SpotlightCard>
@@ -476,8 +477,10 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <span className="lp-feature-icon">
                 <Icon name="edit" size={22} />
               </span>
-              <h3>원고는 바뀌어도, 맥락은 그대로.</h3>
-              <p>이전 버전과 바뀐 문장을 비교하고, 고친 이유를 남기세요.</p>
+              <h3>이전 원고와 바뀐 부분을 확인해요</h3>
+              <p>
+                비교할 버전은 직접 남기고, 고친 내용은 수정 결과로 정리하세요.
+              </p>
             </div>
           </SpotlightCard>
           <SpotlightCard className="lp-feature-card lp-feature-review">
@@ -486,7 +489,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 <div>
                   <Icon name="file" size={22} />
                   <span>
-                    연구계획서_v2.pdf<small>당시 설명과 파일을 함께 보존</small>
+                    연구계획서_v2.pdf<small>보낸 설명과 파일 그대로</small>
                   </span>
                   <span>v2</span>
                 </div>
@@ -503,15 +506,18 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <span className="lp-feature-icon">
                 <Icon name="check-circle" size={22} />
               </span>
-              <h3>교수님에게는 고른 결과만.</h3>
-              <p>수정한 항목을 한 링크로 보내고, 각 항목에 의견을 받습니다.</p>
+              <h3>교수님께는 검토 요청에 넣은 항목만 보여요</h3>
+              <p>
+                검토 링크를 만들어 직접 전달하면, 교수님이 항목마다 응답을
+                남겨요.
+              </p>
             </div>
           </SpotlightCard>
         </div>
       </section>
       <section className="lp-workflow" id="workflow">
         <div className="lp-workflow-select">
-          <h2>연구의 어느 순간에도.</h2>
+          <h2>이렇게 사용해요</h2>
           <div role="group" aria-label="기능별 사용 방법">
             {journey.map((j, i) => (
               <button
@@ -526,9 +532,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             ))}
           </div>
           <p>
-            직접 작성해도, AI의 도움을 받아도.
+            직접 쓰든 AI 제안을 선택하든
             <br />
-            기록은 같은 곳에 이어집니다.
+            기록은 같은 연구에 남아요.
           </p>
         </div>
         <div
@@ -552,33 +558,33 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
       <section className="lp-section lp-capabilities" id="ai-work">
         <div className="lp-section-heading">
           <h2>
-            복잡한 연구에도,
+            녹음부터 일정 조율까지,
             <br />
-            단정한 작업 공간.
+            연구에 필요한 기능
           </h2>
-          <p>필요할 때 열고, 필요한 만큼 사용하세요.</p>
+          <p>AI 없이도 기록, 자료, 일정 기능을 모두 쓸 수 있어요.</p>
         </div>
         <div className="lp-capability-row">
           {[
             {
               icon: "microphone",
               title: "말한 내용은 기록으로",
-              body: "녹음과 한국어 전사로 미팅을 남깁니다.",
+              body: "녹음하면서 한국어 전사문도 함께 남길 수 있어요.",
             },
             {
               icon: "calendar",
-              title: "다음 미팅은 분명하게",
-              body: "보여줄 작업과 질문, 준비할 자료를 모읍니다.",
+              title: "다음 미팅은 미리 준비",
+              body: "보여 드릴 할 일과 파일, 물어볼 질문을 모아 둬요.",
             },
             {
               icon: "folder",
               title: "자료는 찾기 쉽게",
-              body: "자료와 버전을 나누고 관련 기록으로 이동합니다.",
+              body: "파일은 버전별로 쌓이고, 그 파일을 쓴 기록으로 바로 갈 수 있어요.",
             },
             {
               icon: "users",
-              title: "함께할 때는 함께",
-              body: "참여자를 추가해 공동 기록과 일정을 나눕니다.",
+              title: "공동연구자와 함께",
+              body: "동료를 초대해 공동 기록을 함께 쓰고 미팅 시간을 조율해요.",
             },
           ].map((c) => (
             <SpotlightCard key={c.title} className="lp-capability">
@@ -601,8 +607,8 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
       </section>
       <section className="lp-section lp-pricing" id="plans">
         <div className="lp-section-heading lp-heading-centered">
-          <h2>연구의 크기에 맞는 플랜.</h2>
-          <p>혼자 시작하는 논문부터, 함께하는 연구까지.</p>
+          <h2>연구 규모에 맞는 플랜</h2>
+          <p>지금은 Free 플랜만 제공해요.</p>
         </div>
         <SubscriptionPlans publicView signedIn={signedIn} />
       </section>
@@ -614,7 +620,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             남아 있나요?
           </h2>
           <Link to="/guide">
-            서비스 안내 보기
+            사용 안내 보기
             <Icon name="arrow-up-right" size={17} />
           </Link>
         </div>
@@ -622,23 +628,23 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           {[
             [
               "AI 없이도 사용할 수 있나요?",
-              "네. 메모 정리부터 수정 방안, 작업과 교수 검토까지 직접 작성할 수 있습니다. AI는 선택한 기록으로 실행하고, 채택한 내용만 저장합니다.",
+              "네. 메모 정리부터 수정 방법, 할 일, 검토 요청까지 모두 AI 없이 할 수 있어요. AI는 선택한 기록으로만 실행되고, AI 제안은 직접 선택한 것만 기록에 들어가요. 선택하지 않은 AI 제안과 AI 대화도 저장되지만 나만 볼 수 있어요.",
             ],
             [
-              "교수님에게는 어디까지 보이나요?",
-              "지정한 교수 계정에 공유한 검토 항목과 첨부 파일만 공개됩니다. 개인 메모와 AI 대화, 미채택 제안은 자동 공유되지 않습니다.",
+              "교수님께는 어디까지 보이나요?",
+              "검토 요청에 넣은 항목과 첨부 파일만 지정한 교수 계정에 보여요. 개인 메모, AI 대화, 선택하지 않은 AI 제안은 교수님께 보이지 않아요.",
             ],
             [
               "동료와 함께 쓰려면 어떻게 하나요?",
-              "연구 설정에서 참여자를 추가하세요. 참여한 계정이 생기면 공동 기록과 작업, 일정 조율을 사용할 수 있습니다. 교수의 검토 권한은 공동 편집 권한과 다릅니다.",
+              "연구 설정에서 마진 계정이 있는 동료를 초대하세요. 동료가 수락하면 공동 기록과 할 일, 일정 조율을 함께 쓸 수 있어요. 교수님의 검토 권한은 공동 편집 권한과 달라요.",
             ],
             [
-              "다시 수정하면 이전 검토는 사라지나요?",
-              "보낸 설명과 파일, 교수 응답은 당시 버전에 남습니다. 바뀐 항목에 재확인을 요청하면 새 검토 차수가 추가됩니다.",
+              "다시 고치면 이전 검토는 사라지나요?",
+              "아니요. 보낸 설명, 파일, 교수님 응답은 그때 그대로 남아요. 고친 항목에 다시 확인을 요청하면 2차, 3차 검토로 따로 쌓여요.",
             ],
             [
               "지금 가입하거나 결제할 수 있나요?",
-              "현재 접속은 발급받은 계정으로 진행합니다. 가입 과정은 미리 살펴볼 수 있으며 실제 계정은 생성되지 않습니다. 유료 플랜의 결제는 아직 열리지 않았습니다.",
+              "아니요. 지금은 발급받은 계정으로만 로그인할 수 있어요. 가입 과정은 미리 볼 수 있지만 실제 계정은 만들어지지 않아요. 유료 플랜 결제도 아직 열리지 않았어요.",
             ],
           ].map(([q, a]) => (
             <details key={q}>
@@ -654,16 +660,16 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
       <section className="lp-close">
         <BrandMark inverse />
         <h2>
-          다음 미팅을,
+          다음 미팅은
           <br />
-          조금 더 분명하게.
+          고친 내용부터
         </h2>
-        <p>지난 기록을 찾는 시간에서, 연구를 이어가는 시간으로.</p>
+        <p>지난 기록을 다시 찾는 시간이 줄어요.</p>
         <Link
           className="lp-button lp-button-dark"
           to={signedIn ? "/r" : "/login"}
         >
-          {signedIn ? "연구 이어가기" : "Margin 시작하기"}
+          {signedIn ? "내 연구 열기" : "마진 시작하기"}
           <Icon name="arrow-up-right" size={20} />
         </Link>
       </section>
@@ -676,51 +682,54 @@ const tourDetails = [
   [
     [
       "남길 내용",
-      "미팅 메모, 녹음과 한국어 전사, 다음에 확인할 질문을 모읍니다.",
+      "미팅 메모, 녹음과 한국어 전사문, 다음에 물어볼 질문을 남겨요.",
     ],
     [
-      "이어지는 작업",
-      "원문을 보며 피드백·결정·질문을 직접 정리하거나 AI 정리 후보를 선택합니다.",
+      "정리하기",
+      "원문을 보며 피드백, 결정 사항, 질문을 직접 정리하거나 AI 제안 중 필요한 항목을 선택해요.",
     ],
     [
       "다음 미팅",
-      "할 일과 자료를 준비 목록에 넣고, 지난 기록으로 돌아갈 수 있습니다.",
+      "할 일과 자료를 다음 미팅 준비에 넣어 두고, 지난 기록도 다시 볼 수 있어요.",
     ],
   ],
   [
-    ["사용할 근거", "도움을 받을 피드백과 원문·자료 범위를 먼저 선택합니다."],
+    ["사용할 기록", "연구 도우미가 읽을 피드백과 원문, 자료를 먼저 선택해요."],
     [
       "읽고 판단하기",
-      "원문에서 확인한 내용, 제안하는 방법, 확인할 가정을 나누어 읽습니다.",
+      "원문에서 확인한 내용, 제안하는 수정 방법, 확인할 가정을 나눠서 보여 줘요.",
     ],
     [
-      "실제 반영",
-      "고른 방법을 편집해 저장하고 할 일로 연결합니다. 채택하지 않은 후보는 공유되지 않습니다.",
+      "선택한 다음",
+      "고른 방법은 고쳐서 저장하고, 필요하면 할 일로 만들어요. 선택하지 않은 AI 제안은 공유되지 않아요.",
     ],
   ],
   [
     [
       "작성할 문서",
-      "연구 계획서와 원고를 작성하고 명시적으로 보존 버전을 남깁니다.",
+      "연구 계획서와 원고를 쓰고, 비교할 버전은 저장과 따로 직접 남겨요.",
     ],
     [
-      "변경 비교",
-      "두 버전의 바뀐 문장을 비교합니다. 이전 내용을 복원해도 새로운 버전으로 남습니다.",
+      "버전 비교",
+      "두 버전에서 바뀐 문장을 비교해요. 이전 버전으로 되돌려도 기존 버전은 지워지지 않고 새 버전이 생겨요.",
     ],
     [
       "검토 준비",
-      "수정 설명과 당시 PDF를 묶어 교수에게 보낼 항목을 준비합니다.",
+      "수정 설명과 그 시점의 PDF를 묶어 검토 요청에 넣을 항목을 준비해요.",
     ],
   ],
   [
-    ["공유할 범위", "지정 교수 계정에 수정한 항목과 당시 파일만 공개합니다."],
     [
-      "항목별 의견",
-      "교수는 ‘수정 내용 확인’ 또는 이유 댓글을 포함한 ‘추가 수정 필요’를 남깁니다.",
+      "공개 범위",
+      "지정한 교수 계정에만 검토 요청에 넣은 항목과 그때의 파일을 공개해요.",
+    ],
+    [
+      "항목별 응답",
+      "교수님은 항목마다 ‘수정 내용 확인’ 또는 ‘추가 수정 필요’를 남기고, ‘추가 수정 필요’에는 이유를 댓글로 적어요.",
     ],
     [
       "다시 고친 뒤",
-      "바뀐 항목만 재확인을 요청합니다. 이전 파일과 응답은 당시 차수에 보존됩니다.",
+      "고친 항목만 다시 확인을 요청할 수 있어요. 새 검토가 2차, 3차로 추가되고 이전 파일과 응답은 그대로 남아요.",
     ],
   ],
 ];
@@ -735,8 +744,8 @@ export function FeatureTourPage({ signedIn = false }: { signedIn?: boolean }) {
     <PublicFrame signedIn={signedIn}>
       <section className="lp-section lp-destination">
         <div className="lp-destination-heading">
-          <h1>기록이 다음 연구로 이어지는 방법.</h1>
-          <p>미팅을 남기고, 방법을 고르고, 바꾼 결과를 확인받기까지.</p>
+          <h1>미팅부터 교수 검토까지</h1>
+          <p>기능마다 무엇을 남기고 다음에 무엇을 할 수 있는지 확인하세요.</p>
         </div>
         <div className="lp-tour-layout">
           <div
@@ -761,7 +770,7 @@ export function FeatureTourPage({ signedIn = false }: { signedIn?: boolean }) {
               </button>
             ))}
             <Link className="lp-tour-guide" to="/guide">
-              처음 사용한다면 <Icon name="arrow-up-right" size={16} />
+              처음이라면 사용 안내 보기 <Icon name="arrow-up-right" size={16} />
             </Link>
           </div>
           <div
@@ -783,12 +792,12 @@ export function FeatureTourPage({ signedIn = false }: { signedIn?: boolean }) {
           ))}
         </dl>
         <div className="lp-destination-next">
-          <span>기록을 연구로 이어가 볼까요?</span>
+          <span>연구를 만들고 미팅 기록부터 시작하세요.</span>
           <Link
             className="lp-button lp-button-dark"
             to={signedIn ? "/r" : "/login"}
           >
-            {signedIn ? "연구 공간 열기" : "시작하기"}
+            {signedIn ? "내 연구 열기" : "로그인"}
             <Icon name="arrow-right" size={18} />
           </Link>
         </div>
@@ -802,20 +811,21 @@ export function PricingPage({ signedIn = false }: { signedIn?: boolean }) {
     <PublicFrame signedIn={signedIn}>
       <section className="lp-section lp-destination lp-pricing">
         <div className="lp-destination-heading lp-heading-centered">
-          <h1>연구하는 방식에 맞는 플랜.</h1>
-          <p>기본 연구 공간으로 시작하고, 필요한 만큼 넓혀가세요.</p>
+          <h1>연구 방식에 맞는 플랜</h1>
+          <p>지금은 Free 플랜만 제공해요. Pro와 Team은 출시 예정이에요.</p>
         </div>
         <SubscriptionPlans publicView signedIn={signedIn} />
         <div className="lp-plan-help">
           <Icon name="users" size={24} />
           <div>
-            <h2>함께 쓴다고 Team 결제가 필요한가요?</h2>
+            <h2>함께 쓰려면 Team 플랜이 필요한가요?</h2>
             <p>
-              공동 기록은 연구에 참여자를 추가하면 사용할 수 있습니다. Team은
-              연구실 운영을 위한 후속 플랜이며, 현재 결제는 열리지 않았습니다.
+              아니요. 초대한 공동연구자가 수락하면 Free에서도 공동 기록을 쓸 수
+              있어요. Team은 연구실 운영을 위해 준비 중인 플랜이고, 결제는 아직
+              열리지 않았어요.
             </p>
             <Link to="/guide#questions">
-              사용 안내에서 더 알아보기 <Icon name="arrow-right" size={16} />
+              자주 묻는 질문 보기 <Icon name="arrow-right" size={16} />
             </Link>
           </div>
         </div>
@@ -835,33 +845,33 @@ export function SignupPage() {
       <section className="signup-layout">
         <div className="auth-story">
           <h1>
-            연구의 다음 장을
+            지난 미팅에서
             <br />
-            함께 열어보세요.
+            다음 미팅까지
           </h1>
           <p>
-            기록은 차곡차곡,
+            피드백, 할 일, 원고 버전, 교수님 응답을
             <br />
-            다음 할 일은 분명하게.
+            연구별로 모아 둬요.
           </p>
           <div className="auth-proof">
             <Icon name="lock" size={19} />
             <span>
-              개인 기록은 비공개로 시작합니다.
+              공동연구자가 참여하기 전에는 기록을 나만 볼 수 있어요.
               <br />
-              교수에게는 직접 고른 결과만 공유합니다.
+              교수님께는 검토 요청에 넣은 항목만 보여요.
             </span>
           </div>
         </div>
         <div className="auth-panel">
-          <span className="demo-label">회원가입 흐름 미리보기</span>
+          <span className="demo-label">가입 과정 미리보기</span>
           {step === 0 ? (
             <>
-              <h2>Margin 시작하기</h2>
+              <h2>마진 시작하기</h2>
               <p>
-                지금은 가입 과정을 살펴보는 시연 화면입니다.
+                가입 과정을 미리 보는 화면이에요.
                 <br />
-                입력한 정보는 서버로 전송하지 않습니다.
+                실제 계정은 만들어지지 않고, 입력한 정보는 서버로 보내지 않아요.
               </p>
               <form
                 onSubmit={(e) => {
@@ -879,7 +889,7 @@ export function SignupPage() {
                     autoComplete="off"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="이름을 입력하세요"
+                    placeholder="예: 홍길동"
                   />
                 </label>
                 <label className="field">
@@ -906,13 +916,13 @@ export function SignupPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={PASSWORD_HELP}
                   />
-                  <small>실제로 사용하는 비밀번호를 입력하지 마세요.</small>
+                  <small>실제로 쓰는 비밀번호는 입력하지 마세요.</small>
                 </label>
                 <fieldset className="role-choice">
                   <legend>어떤 목적으로 사용하나요?</legend>
                   {[
                     ["student", "학생", "내 연구 기록과 수정 관리"],
-                    ["professor", "교수", "공유받은 결과 검토"],
+                    ["professor", "교수", "학생의 검토 요청 확인"],
                   ].map(([v, l, d]) => (
                     <label key={v} className={role === v ? "selected" : ""}>
                       <input
@@ -928,7 +938,7 @@ export function SignupPage() {
                   ))}
                 </fieldset>
                 <button className="rms-action primary full" type="submit">
-                  가입 과정 미리보기
+                  가입 미리보기 마치기
                   <Icon name="arrow-right" size={18} />
                 </button>
               </form>
@@ -942,7 +952,7 @@ export function SignupPage() {
               <h2>
                 {name}님,
                 <br />
-                가입 과정을 확인했어요.
+                가입 미리보기를 마쳤어요
               </h2>
               <p>
                 {email}
@@ -950,12 +960,12 @@ export function SignupPage() {
                 선택한 이용 목적: {role === "student" ? "학생" : "교수"}
               </p>
               <p>
-                실제 계정은 생성되지 않았고,
+                실제 계정은 만들어지지 않았고,
                 <br />
-                인증 메일도 발송되지 않았습니다.
+                인증 메일도 보내지 않았어요.
               </p>
               <Link className="rms-action primary full" to="/login">
-                발급 계정으로 로그인
+                발급받은 계정으로 로그인
                 <Icon name="arrow-right" size={18} />
               </Link>
               <button
@@ -985,39 +995,39 @@ export function InfoPage({
           <Icon name="arrow-left" size={16} />
           서비스 소개
         </Link>
-        <h1>{privacy ? "자료와 개인정보" : "Margin 사용 안내"}</h1>
+        <h1>{privacy ? "자료와 개인정보" : "마진 사용 안내"}</h1>
         <p>
           {privacy
-            ? "현재 Margin는 수업 시연을 위한 제한 공개 서비스입니다. 아래 내용은 현재 구현 상태에 대한 안내이며 정식 서비스의 이용약관이나 개인정보 처리방침을 대신하지 않습니다."
-            : "미팅 기록에서 시작해 수정 방법을 고르고, 결과를 확인받은 뒤 다음 미팅을 준비합니다."}
+            ? "마진은 수업 시연을 위해 제한적으로 공개한 서비스예요. 아래 내용은 지금 구현된 상태를 설명하며, 정식 이용약관이나 개인정보 처리방침을 대신하지 않아요."
+            : "미팅 기록부터 교수 검토 요청까지, 기본 사용 순서를 안내해요."}
         </p>
         {(privacy
           ? [
               [
                 "개인 기록과 공유",
-                "로그인한 학생의 기록은 기본적으로 비공개입니다. 지정 교수에게 보낸 검토 항목과 당시 파일만 공유합니다.",
+                "공동연구자가 없으면 기록은 나만 볼 수 있어요. 공동연구자가 참여하면 ‘나만 보기’로 둔 기록을 뺀 나머지를 함께 봐요. 개인 메모, 녹음 전사문, AI 대화, 선택하지 않은 AI 제안은 항상 나만 볼 수 있어요. 교수님께는 검토 요청에 넣은 항목과 그때의 파일만 공개되고, 일정 조율에 초대하면 그 일정도 보여요.",
               ],
               [
                 "AI 처리",
-                "AI는 선택한 기록과 입력한 질문을 처리하도록 설계했습니다. 현재는 키를 연결하지 않아 실제 Gemini 응답이 생성되지 않습니다. 연결 검증에는 가상 자료만 사용합니다.",
+                "AI는 사용자가 선택한 기록과 입력한 질문만 처리하도록 설계했어요. 지금은 Gemini 키를 넣지 않아 실제 AI 응답이 만들어지지 않아요. 동작 확인에는 가상 자료만 써요.",
               ],
               [
                 "저장과 가입",
-                "연구 기록과 파일은 Supabase에 저장합니다. 회원가입 화면은 시연용이며 입력한 정보로 계정을 만들거나 메일을 보내지 않습니다.",
+                "연구 기록과 파일은 Supabase에 저장해요. 가입 화면은 미리보기용이라 입력한 정보로 계정을 만들거나 메일을 보내지 않아요.",
               ],
             ]
           : [
               [
-                "미팅을 남기세요",
-                "연구를 만들고 날짜가 정해졌거나 아직 미정인 미팅을 등록하세요. 메모는 자동 저장됩니다.",
+                "미팅 기록하기",
+                "연구를 만들고 미팅을 등록하세요. 날짜가 정해지지 않았어도 등록할 수 있어요. 메모는 자동으로 저장돼요.",
               ],
               [
-                "수정 방법을 고르세요",
-                "피드백을 직접 정리하거나 선택한 원문에서 AI 정리를 요청하세요. 필요한 작업과 수정 결과를 연결하세요.",
+                "수정 방법 고르기",
+                "피드백을 직접 정리하거나, 선택한 원문으로 AI 정리를 요청하세요. 고른 수정 방법은 할 일로 만들고, 고친 뒤에는 수정 결과로 남기세요.",
               ],
               [
-                "교수에게 결과를 보내세요",
-                "수정 설명, 파일, 확인 위치를 준비해 지정 교수에게 검토 링크를 전달하세요. 추가 수정이 필요하면 같은 항목에 재확인을 요청하세요.",
+                "교수님께 검토 요청하기",
+                "수정 설명, 파일, 먼저 볼 위치를 담아 검토 링크를 만들고, 교수님께 직접 전달해 주세요. 교수님은 항목마다 ‘수정 내용 확인’ 또는 ‘추가 수정 필요’를 남겨요. ‘추가 수정 필요’를 받은 항목은 고친 뒤 다시 확인을 요청할 수 있어요.",
               ],
             ]
         ).map(([title, body]) => (
@@ -1033,23 +1043,23 @@ export function InfoPage({
               {[
                 [
                   "AI를 꼭 사용해야 하나요?",
-                  "아니요. 메모·피드백·수정 방법과 할 일은 직접 작성할 수 있습니다. AI는 선택한 자료로 요청할 때만 실행합니다.",
+                  "아니요. 메모, 피드백, 수정 방법, 할 일은 모두 직접 쓸 수 있어요. AI는 기록을 선택해 요청할 때만 실행돼요.",
                 ],
                 [
                   "함께 연구하려면 어떻게 하나요?",
-                  "연구 설정의 참여자에서 동료를 추가하세요. 다른 활성 참여자가 생기면 공동 기록을 선택할 수 있습니다. 개인 메모와 AI 대화는 자동 공개되지 않습니다.",
+                  "연구 설정에서 마진 계정이 있는 동료를 초대하세요. 동료가 초대를 수락하면 기록을 공동 기록으로 지정할 수 있어요. 개인 메모와 AI 대화는 자동으로 공개되지 않아요.",
                 ],
                 [
-                  "교수에게 어떤 내용이 보이나요?",
-                  "지정한 교수 계정은 공유된 검토 항목과 당시 파일을 봅니다. 학생의 개인 메모·대화·전체 작업에는 접근하지 않습니다.",
+                  "교수님께는 어떤 내용이 보이나요?",
+                  "지정한 교수 계정에서는 검토 요청에 넣은 항목과 그때의 파일만 볼 수 있어요. 개인 메모, AI 대화, 다른 기록은 볼 수 없어요.",
                 ],
                 [
-                  "원고를 고치면 이전 확인은 어떻게 되나요?",
-                  "교수 응답은 보낸 당시 버전에 남습니다. 변경한 항목에 재확인을 요청하면 새 차수가 생깁니다.",
+                  "원고를 고치면 이전 응답은 어떻게 되나요?",
+                  "교수님 응답은 보낸 당시 내용과 함께 그대로 남아요. 고친 항목에 다시 확인을 요청하면 2차 검토가 새로 생겨요.",
                 ],
                 [
                   "지금 가입하거나 결제할 수 있나요?",
-                  "현재는 발급 계정으로 접속합니다. 가입 화면은 과정 미리보기이며 실제 계정·인증 메일을 만들지 않습니다. Free는 ₩0, Pro·Team은 출시 예정으로 결제는 열리지 않았습니다.",
+                  "아니요. 지금은 발급받은 계정으로만 로그인할 수 있어요. 가입 화면은 미리보기라 실제 계정이나 인증 메일이 만들어지지 않아요. Free는 ₩0이고, Pro와 Team은 출시 예정이라 결제는 아직 열리지 않았어요.",
                 ],
               ].map(([question, answer]) => (
                 <details key={question}>
@@ -1064,7 +1074,7 @@ export function InfoPage({
           </section>
         )}
         <Link className="rms-action primary" to={signedIn ? "/r" : "/login"}>
-          {signedIn ? "연구 이어가기" : "시작하기"}
+          {signedIn ? "내 연구 열기" : "시작하기"}
           <Icon name="arrow-right" size={17} />
         </Link>
       </article>

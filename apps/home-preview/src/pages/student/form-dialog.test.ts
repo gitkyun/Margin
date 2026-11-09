@@ -45,12 +45,12 @@ describe("저장 중 입력 보존", () => {
     fireEvent.click(screen.getByRole("button", { name: "닫기" }));
     expect(change).not.toHaveBeenCalled();
     expect(
-      screen.getByRole("heading", { name: "작성 중인 내용을 닫을까요?" }),
+      screen.getByRole("heading", { name: "저장하지 않고 닫을까요?" }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "계속 작성" }));
     expect(input.value).toBe("비교 기준 세 가지 추가");
     fireEvent.click(screen.getByRole("button", { name: "닫기" }));
-    fireEvent.click(screen.getByRole("button", { name: "변경 버리고 닫기" }));
+    fireEvent.click(screen.getByRole("button", { name: "버리고 닫기" }));
     expect(change).toHaveBeenCalledWith(false);
   });
 });

@@ -31,3 +31,6 @@ __pycache__/
 Thumbs.db
 
 **/supabase/.temp/
+
+# PDF test output (tests/document-pdf.test.ts)
+docs/development/pdf-check-*/

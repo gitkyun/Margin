@@ -13,6 +13,7 @@ import {
   type ReviewRound,
   type WorkspaceData,
 } from "./domain";
+import { localizeServerMessage } from "@/lib/server-messages";
 const DB_NAME = "rms-preview-v1";
 export function previewDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -24,7 +25,11 @@ export function previewDB(): Promise<IDBDatabase> {
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () =>
-      reject(new Error("브라우저의 미리보기 저장소를 열지 못했습니다."));
+      reject(
+        new Error(
+          "미리보기 기록을 열지 못했어요. 브라우저가 사이트 데이터 저장을 막고 있는지 확인해 주세요.",
+        ),
+      );
   });
 }
 export async function idbGet<T>(
@@ -98,7 +103,8 @@ export async function updatePreview(
     tx.onabort = () => {
       db.close();
       reject(
-        tx.error ?? new Error("저장하지 못했습니다. 작성한 내용은 유지됩니다."),
+        tx.error ??
+          new Error("저장하지 못했어요. 작성한 내용은 그대로 있어요."),
       );
     };
     tx.onerror = () => {
@@ -115,7 +121,9 @@ export async function rpc<T>(
     .rpc(name, args)
     .abortSignal(AbortSignal.timeout(25000));
   if (error)
-    throw Object.assign(new Error(error.message), { code: error.code });
+    throw Object.assign(new Error(localizeServerMessage(error.message)), {
+      code: error.code,
+    });
   return data as T;
 }
 export async function loadConnected(): Promise<WorkspaceData> {
@@ -126,7 +134,7 @@ export class UploadConnectionError extends Error {
   uploadedVersion: MaterialVersion;
   constructor(version: MaterialVersion) {
     super(
-      "파일 업로드는 끝났지만 자료에 연결하지 못했습니다. 파일을 다시 올리지 않고 연결만 다시 시도할 수 있습니다.",
+      "파일은 올렸지만 자료에 등록하지 못했어요. 파일을 다시 올리지 않고 등록만 다시 시도할 수 있어요.",
     );
     this.name = "UploadConnectionError";
     this.uploadedVersion = version;
@@ -141,15 +149,15 @@ export function validatePDF(file: File) {
   if (file.size > 20 * 1024 * 1024)
     throw new Error("20MB 이하의 PDF를 선택해 주세요.");
   if (file.size === 0)
-    throw new Error("내용이 없는 파일은 등록할 수 없습니다.");
+    throw new Error(
+      "빈 파일은 올릴 수 없어요. 내용이 있는 PDF를 선택해 주세요.",
+    );
 }
 export async function validatePDFHeader(file: File) {
   validatePDF(file);
   const header = await file.slice(0, 5).text();
   if (header !== "%PDF-")
-    throw new Error(
-      "PDF 형식을 확인할 수 없습니다. 다른 PDF 파일을 선택해 주세요.",
-    );
+    throw new Error("올바른 PDF 파일이 아니에요. 다른 PDF를 선택해 주세요.");
 }
 export async function uploadFile(
   file: File,
@@ -160,7 +168,8 @@ export async function uploadFile(
   signal?: AbortSignal,
 ): Promise<MaterialVersion> {
   await validatePDFHeader(file);
-  if (signal?.aborted) throw new DOMException("취소했습니다.", "AbortError");
+  if (signal?.aborted)
+    throw new DOMException("업로드를 취소했어요.", "AbortError");
   const id = uid(),
     time = now();
   const version: MaterialVersion = {
@@ -183,7 +192,7 @@ export async function uploadFile(
   const client = assertConnected();
   const { data, error } = await client.auth.getSession();
   if (error || !data.session)
-    throw new Error("로그인이 만료되었습니다. 다시 로그인해 주세요.");
+    throw new Error("로그인이 만료됐어요. 다시 로그인해 주세요.");
   const token = data.session.access_token;
   const url = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -210,22 +219,24 @@ export async function uploadFile(
       cleanup();
       xhr.status >= 200 && xhr.status < 300
         ? resolve()
-        : reject(
-            new Error("파일을 업로드하지 못했습니다. 다시 시도해 주세요."),
-          );
+        : reject(new Error("파일을 올리지 못했어요. 다시 시도해 주세요."));
     };
     xhr.onerror = () => {
       cleanup();
-      reject(new Error("연결이 끊겨 파일 업로드를 마치지 못했습니다."));
+      reject(
+        new Error(
+          "연결이 끊겨 파일을 끝까지 올리지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+        ),
+      );
     };
     xhr.onabort = () => {
       cleanup();
-      reject(new DOMException("업로드를 취소했습니다.", "AbortError"));
+      reject(new DOMException("업로드를 취소했어요.", "AbortError"));
     };
     signal?.addEventListener("abort", abort, { once: true });
     if (signal?.aborted && !complete) {
       cleanup();
-      reject(new DOMException("취소했습니다.", "AbortError"));
+      reject(new DOMException("업로드를 취소했어요.", "AbortError"));
       return;
     }
     xhr.send(file);
@@ -239,11 +250,17 @@ export async function getFile(
   if (mode === "preview") {
     if (version.storagePath.startsWith("/demo/")) {
       const response = await fetch(version.storagePath);
-      if (!response.ok) throw new Error("가상 PDF를 불러오지 못했습니다.");
+      if (!response.ok)
+        throw new Error(
+          "가상 PDF를 불러오지 못했어요. 새로고침한 뒤 다시 열어 주세요.",
+        );
       return response.blob();
     }
     const file = await idbGet<Blob>("files", version.storagePath);
-    if (!file) throw new Error("이 브라우저에 저장된 파일을 찾을 수 없습니다.");
+    if (!file)
+      throw new Error(
+        "이 브라우저에서 파일을 찾을 수 없어요. 미리보기에서 올린 파일은 올린 브라우저에서만 열 수 있어요.",
+      );
     return file;
   }
   const { data, error } = await assertConnected()
@@ -251,7 +268,7 @@ export async function getFile(
     .download(version.storagePath);
   if (error)
     throw new Error(
-      "파일을 열 수 없습니다. 공유 상태와 접근 계정을 확인해 주세요.",
+      "파일을 열 수 없어요. 공유 상태와 로그인한 계정을 확인해 주세요.",
     );
   return data;
 }
@@ -261,7 +278,8 @@ export async function executeAI(
 ): Promise<AIResult> {
   const client = assertConnected();
   const { data } = await client.auth.getSession();
-  if (!data.session) throw new Error("다시 로그인해 주세요.");
+  if (!data.session)
+    throw new Error("로그인이 만료됐어요. 다시 로그인해 주세요.");
   const response = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-assist`,
     {
@@ -279,14 +297,16 @@ export async function executeAI(
   try {
     payload = await response.json();
   } catch {
-    throw new Error("AI 응답을 읽지 못했습니다. 작성한 내용은 유지됩니다.");
+    throw new Error("AI 응답을 읽지 못했어요. 작성한 내용은 그대로 있어요.");
   }
   if (!response.ok)
     throw new Error(
-      payload?.error?.message ??
-        payload?.message ??
-        payload?.error ??
-        "AI 요청을 처리하지 못했습니다.",
+      localizeServerMessage(
+        payload?.error?.message ??
+          payload?.message ??
+          payload?.error ??
+          "AI 요청을 처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+      ),
     );
   return payload as AIResult;
 }
@@ -298,11 +318,11 @@ export function snapshotForResult(
   number: number,
 ): ReviewRound {
   const result = data.results.find((item) => item.id === resultId);
-  if (!result) throw new Error("수정 결과를 찾을 수 없습니다.");
+  if (!result) throw new Error("수정 결과를 찾을 수 없어요.");
   const version = data.versions.find((item) => item.id === result.versionId);
   if (!result.description.trim()) throw new Error("수정한 내용을 적어 주세요.");
   if (result.kind === "document" && (!version || !result.location.trim()))
-    throw new Error("문서 검토에는 보존 파일과 확인 위치가 필요합니다.");
+    throw new Error("문서 수정은 파일과 볼 위치를 지정해 주세요.");
   return {
     id: uid(),
     requestId,

@@ -35,7 +35,7 @@ export function BrandWordmark({ className = "" }: { className?: string }) {
     <span
       className={`margin-wordmark ${className}`}
       role="img"
-      aria-label="Margin"
+      aria-label="마진(Margin)"
     >
       <img
         className="margin-theme-light"

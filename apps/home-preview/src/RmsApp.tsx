@@ -148,9 +148,9 @@ function WorkspaceRoutes() {
     return (
       <div className="connection-error">
         <Icon name="lock" size={30} />
-        <h1>작업 공간을 불러오지 못했습니다.</h1>
+        <h1>기록을 불러오지 못했어요</h1>
         <ErrorNotice message={error} retry={() => void refresh()} />
-        <p>계정 연결과 연구 접근 권한을 확인해 주세요.</p>
+        <p>인터넷 연결과 로그인한 계정을 확인해 주세요.</p>
         <Button
           variant="outline"
           onClick={async () => {
@@ -167,9 +167,9 @@ function WorkspaceRoutes() {
         <aside className="workspace-refresh-notice" role="alert">
           <Icon name="warning" size={19} />
           <div>
-            <strong>최신 기록을 불러오지 못했습니다.</strong>
+            <strong>최신 기록을 불러오지 못했어요</strong>
             <p>
-              기존 화면과 작성 중인 내용은 유지됩니다. 연결을 확인한 뒤 다시
+              지금 화면과 작성 중인 내용은 그대로 있어요. 연결을 확인한 뒤 다시
               불러오세요.
             </p>
           </div>
@@ -241,8 +241,8 @@ function WorkspaceRoutes() {
           element={
             <div className="not-found">
               <span>404</span>
-              <h1>페이지를 찾을 수 없습니다.</h1>
-              <p>주소를 확인하거나 내 연구에서 다시 시작해 주세요.</p>
+              <h1>페이지를 찾을 수 없어요</h1>
+              <p>주소가 맞는지 확인해 주세요.</p>
               <Button asChild>
                 <Link to="/r">내 연구로 이동</Link>
               </Button>
@@ -282,20 +282,20 @@ export function App() {
     if (workspaceVisible && isWorkspaceShellPath(path)) return;
     const publicTitles: Record<string, string> = {
       "/features": "기능 둘러보기",
-      "/pricing": "구독 플랜",
+      "/pricing": "플랜",
       "/guide": "사용 안내",
       "/privacy": "자료와 개인정보",
     };
     const name =
       publicTitles[path] ??
       (path === "/"
-        ? "지난 지도를, 다음 연구로"
+        ? "흩어진 기록을 모아, 다음 연구가 되도록"
         : path === "/signup"
-          ? "회원가입 미리보기"
+          ? "가입 과정 미리보기"
           : path === "/login"
             ? "로그인"
             : path.includes("assistant")
-              ? "AI 연구 도우미"
+              ? "연구 도우미"
               : path.includes("settings")
                 ? "연구 설정"
                 : path === "/account"
@@ -320,8 +320,10 @@ export function App() {
                                     : "연구 홈"
                       : path.startsWith("/reviews")
                         ? "교수 검토"
-                        : "페이지를 찾을 수 없습니다");
-    document.title = `${name} · Margin`;
+                        : path.startsWith("/schedule")
+                          ? "미팅 시간 조율"
+                          : "페이지를 찾을 수 없어요");
+    document.title = `${name} · 마진`;
   }, [location.pathname, workspaceVisible]);
   if (location.pathname === "/") return <LandingPage signedIn={!!session} />;
   if (location.pathname === "/signup") return <SignupPage />;
@@ -345,8 +347,8 @@ export function App() {
       <PublicFrame signedIn={!!session} compact>
         <section className="not-found">
           <Icon name="search" size={32} />
-          <h1>페이지를 찾을 수 없습니다.</h1>
-          <p>주소를 확인하거나 첫 화면으로 이동해 주세요.</p>
+          <h1>페이지를 찾을 수 없어요</h1>
+          <p>주소가 맞는지 확인해 주세요.</p>
           <Button asChild>
             <Link to="/">첫 화면으로</Link>
           </Button>

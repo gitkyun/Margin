@@ -83,8 +83,8 @@ export function ResultsPage() {
       <>
         <BackLink to={`/r/${researchId}/results`}>수정 결과 목록</BackLink>
         <EmptyState
-          title="수정 결과를 열 수 없습니다"
-          description="현재 연구의 수정 결과 목록에서 다시 선택하세요."
+          title="수정 결과를 열 수 없어요"
+          description="수정 결과 목록에서 다시 선택해 주세요."
         />
       </>
     );
@@ -96,7 +96,7 @@ export function ResultsPage() {
           <BackLink to={`/r/${researchId}/results`}>수정 결과 목록</BackLink>
           <PageHeader
             title={current.title}
-            description="무엇을 바꿨는지와 확인할 자료를 함께 기록합니다."
+            description="실제로 고친 내용과 근거를 기록해요."
             actions={
               <div className="button-row">
                 <Button
@@ -109,12 +109,12 @@ export function ResultsPage() {
                 {ready ? (
                   <Button asChild>
                     <Link to={`/r/${researchId}/reviews?result=${current.id}`}>
-                      교수 검토 준비
+                      검토 요청 만들기
                       <Icon name="arrow-right" size={16} />
                     </Link>
                   </Button>
                 ) : (
-                  <Button disabled>교수 검토 준비</Button>
+                  <Button disabled>검토 요청 만들기</Button>
                 )}
               </div>
             }
@@ -124,7 +124,9 @@ export function ResultsPage() {
               <section className="surface result-body">
                 <div className="section-heading">
                   <h2>실제로 수정한 내용</h2>
-                  <StatusBadge tone="neutral">개인 저장본</StatusBadge>
+                  <StatusBadge tone="neutral">
+                    검토 요청에 넣으면 공개
+                  </StatusBadge>
                 </div>
                 <p className="student-body-text">{current.description}</p>
                 <div className="result-evidence">
@@ -140,8 +142,8 @@ export function ResultsPage() {
                       <span className="grow">
                         <strong>{version.fileName}</strong>
                         <small>
-                          보존 버전 v{version.number} ·{" "}
-                          {current.location || "확인 위치 미정"}
+                          파일 버전 v{version.number} ·{" "}
+                          {current.location || "볼 위치 없음"}
                         </small>
                       </span>
                       <Icon name="arrow-up-right" size={16} />
@@ -149,14 +151,14 @@ export function ResultsPage() {
                   ) : (
                     <p className="student-empty-inline">
                       {current.kind === "document"
-                        ? "아직 보존 파일을 연결하지 않았습니다."
-                        : "비문서 작업의 처리 설명을 근거로 사용합니다."}
+                        ? "아직 파일을 연결하지 않았어요."
+                        : "문서 외 수정이라 위에 적은 내용을 근거로 사용해요."}
                     </p>
                   )}
                   {current.kind === "document" && !ready && (
                     <p className="student-inline-note">
-                      개인 결과는 저장되었습니다. 교수 검토를 준비하려면 보존
-                      파일과 확인 위치를 추가하세요.
+                      수정 결과는 저장되어 있어요. 검토 요청을 만들려면 파일과
+                      볼 위치를 추가해 주세요.
                     </p>
                   )}
                 </div>
@@ -187,7 +189,7 @@ export function ResultsPage() {
             <aside className="stack">
               <section className="surface">
                 <div className="section-heading">
-                  <h2>교수에게 보낸 기록</h2>
+                  <h2>검토 요청</h2>
                 </div>
                 {linkedRequests.length ? (
                   linkedRequests.map((request) => (
@@ -205,16 +207,16 @@ export function ResultsPage() {
                   ))
                 ) : (
                   <p className="student-empty-inline">
-                    아직 교수 검토에 사용하지 않은 결과입니다.
+                    아직 검토 요청에 넣지 않았어요.
                   </p>
                 )}
                 <p className="student-footnote">
-                  개인 저장본을 수정해도 이미 보낸 설명과 자료는 바뀌지
-                  않습니다.
+                  여기서 고쳐도 이미 검토 요청에 넣은 설명과 파일은 바뀌지
+                  않아요.
                 </p>
               </section>
               <section className="surface">
-                <h2>관련 작업</h2>
+                <h2>연결한 할 일</h2>
                 {current.taskIds.length ? (
                   data.tasks
                     .filter((task) => current.taskIds.includes(task.id))
@@ -231,9 +233,7 @@ export function ResultsPage() {
                       </Link>
                     ))
                 ) : (
-                  <p className="student-empty-inline">
-                    연결한 작업이 없습니다.
-                  </p>
+                  <p className="student-empty-inline">연결한 할 일이 없어요.</p>
                 )}
               </section>
             </aside>
@@ -242,8 +242,8 @@ export function ResultsPage() {
       ) : (
         <>
           <PageHeader
-            title="피드백·수정"
-            description="실제 수정한 내용과 근거를 기록하고, 필요한 결과만 교수 검토에 사용하세요."
+            title="수정 결과"
+            description="실제로 고친 내용과 근거를 기록하고, 필요한 것만 검토 요청에 넣을 수 있어요."
             actions={
               <Button onClick={startCreate}>
                 <Icon name="plus" size={17} />
@@ -256,8 +256,8 @@ export function ResultsPage() {
             <div className="segmented">
               {[
                 ["all", "전체"],
-                ["private", "아직 보내지 않은 결과"],
-                ["shared", "검토에 사용한 결과"],
+                ["private", "검토 요청 전"],
+                ["shared", "검토 요청에 포함"],
               ].map(([value, label]) => (
                 <button
                   key={value}
@@ -300,13 +300,13 @@ export function ResultsPage() {
                         {file
                           ? `${file.fileName} · v${file.number}`
                           : result.kind === "document"
-                            ? "보존 파일 미연결"
-                            : "비문서 작업"}
+                            ? "파일 없음"
+                            : "문서 외 수정"}
                         {result.location ? ` · ${result.location}` : ""}
                       </small>
                     </span>
                     <StatusBadge tone={count ? "blue" : "neutral"}>
-                      {count ? `검토 ${count}건에 사용` : "개인 저장본"}
+                      {count ? `검토 요청 ${count}건` : "요청 전"}
                     </StatusBadge>
                     <Icon name="chevron-right" size={17} />
                   </Link>
@@ -316,10 +316,10 @@ export function ResultsPage() {
               <EmptyState
                 title={
                   search || filter !== "all"
-                    ? "조건에 맞는 수정 결과가 없습니다"
-                    : "아직 수정 결과가 없습니다"
+                    ? "조건에 맞는 수정 결과가 없어요"
+                    : "아직 수정 결과가 없어요"
                 }
-                description="무엇을 바꿨는지 먼저 기록하고, 근거 자료와 교수 검토는 이어서 준비할 수 있습니다."
+                description="고친 내용을 먼저 기록하고, 파일과 검토 요청은 나중에 준비할 수 있어요."
                 action={
                   <Button variant="outline" onClick={startCreate}>
                     수정 결과 작성

@@ -34,7 +34,7 @@ function assertUnchanged(
 ) {
   if (current && current.updatedAt !== incoming.updatedAt)
     throw new Error(
-      "다른 창에서 이 기록을 수정했습니다. 작성한 내용은 유지됩니다. 최신 기록을 확인한 뒤 다시 저장해 주세요.",
+      "다른 창에서 이 기록이 바뀌었어요. 작성한 내용은 그대로 있으니 복사해 둔 뒤 새로고침해 주세요.",
     );
 }
 const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
@@ -156,7 +156,7 @@ export function WorkspaceProvider({
           }
         }
         const index = data.meetings.findIndex((m) => m.id === meeting.id);
-        if (index < 0) throw new Error("미팅을 찾을 수 없습니다.");
+        if (index < 0) throw new Error("미팅을 찾을 수 없어요.");
         assertUnchanged(data.meetings[index], meeting);
         data.meetings[index] = { ...meeting, updatedAt: now() };
       });
@@ -228,7 +228,7 @@ export function WorkspaceProvider({
           const record = data.results.find(
             (r) => r.id === resultId && r.researchId === input.researchId,
           );
-          if (!record) throw new Error("수정 결과를 찾을 수 없습니다.");
+          if (!record) throw new Error("수정 결과를 찾을 수 없어요.");
           const item = {
             id: uid(),
             requestId: result.id,
@@ -257,7 +257,9 @@ export function WorkspaceProvider({
       await localChange((data) => {
         const request = data.reviews.find((r) => r.id === input.requestId);
         if (!request || request.status !== "shared")
-          throw new Error("공유 중인 검토에서 재확인을 요청할 수 있습니다.");
+          throw new Error(
+            "공유 중인 검토 요청에서만 다시 확인을 요청할 수 있어요.",
+          );
         const rounds = data.rounds.filter((r) => r.itemId === input.itemId);
         data.rounds.push(
           snapshotForResult(
@@ -273,7 +275,7 @@ export function WorkspaceProvider({
     async respond(input) {
       if (mode === "preview")
         throw new Error(
-          "교수 응답은 실제 교수 계정으로 로그인한 뒤 남길 수 있습니다.",
+          "교수 응답은 실제 교수 계정으로 로그인한 뒤 남길 수 있어요.",
         );
       await rpc("rms_respond", { p_input: input });
       await refresh();
@@ -376,7 +378,7 @@ export function WorkspaceProvider({
         });
         if (error)
           throw new Error(
-            "로그아웃하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.",
+            "로그아웃하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
           );
       }
       cache.clear();
@@ -390,6 +392,6 @@ export function WorkspaceProvider({
 }
 export function useWorkspace() {
   const context = useContext(WorkspaceContext);
-  if (!context) throw new Error("작업 공간을 불러오지 못했습니다.");
+  if (!context) throw new Error("화면을 불러오지 못했어요. 새로고침해 주세요.");
   return context;
 }

@@ -98,7 +98,7 @@ export function homeKpis(input: HomeKpiInput): HomeKpi[] {
   return [
     meetingKpi(input),
     {
-      label: "열린 작업",
+      label: "남은 할 일",
       value: String(open),
       context: `전체 ${tasks.length}개`,
       tone: open ? "blue" : "green",
@@ -108,13 +108,13 @@ export function homeKpis(input: HomeKpiInput): HomeKpi[] {
     {
       label: "확인할 내용",
       value: String(attention),
-      context: attention ? "교수 의견·AI 결과" : "모두 확인",
+      context: attention ? "검토 알림·AI 제안" : "새 소식 없음",
       tone: attention ? "red" : "gray",
       to: attention ? attentionHref : `${base}/reviews`,
       bar: [],
     },
     {
-      label: "작성 중인 문서",
+      label: "문서",
       value: String(docs.length),
       context: `버전 ${versionCount}개`,
       tone: "gray",

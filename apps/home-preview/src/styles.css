@@ -88,6 +88,24 @@ body {
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  /* Korean: break between words, not inside them; long tokens (file names,
+     URLs) may still break so nothing overflows. See docs/design/ui-quality.md. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+p,
+li,
+dd,
+dt,
+label,
+small {
+  text-wrap: pretty;
 }
 button,
 input,

@@ -10,7 +10,10 @@ export async function changeAccountPassword(
 ) {
   const policyError = validateNewPassword(next);
   if (policyError) throw new Error(policyError);
-  if (next !== confirmation) throw new Error("새 비밀번호가 서로 다릅니다.");
+  if (next !== confirmation)
+    throw new Error(
+      "새 비밀번호와 확인용 비밀번호가 달라요. 같은 비밀번호를 입력해 주세요.",
+    );
   if (current === next)
     throw new Error("현재 비밀번호와 다른 비밀번호를 입력해 주세요.");
   const verifier = createPasswordVerificationClient();

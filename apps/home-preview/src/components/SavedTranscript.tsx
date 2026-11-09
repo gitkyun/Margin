@@ -46,7 +46,7 @@ export function SavedTranscript({
   useNavigationGuard({
     dirty,
     busy: saving,
-    label: "저장하지 않은 전사문",
+    label: "수정 중인 전사문",
     onDiscard: () => {
       setDraft(null);
       base.current = null;
@@ -69,7 +69,7 @@ export function SavedTranscript({
       );
       setDraft(null);
       base.current = null;
-      toast.success("전사문을 저장했습니다.");
+      toast.success("전사문을 저장했어요");
     } catch (e) {
       setError((e as Error).message);
       if ((e as Error & { code?: string }).code === "PT409")
@@ -87,7 +87,7 @@ export function SavedTranscript({
   if (query.isError)
     return (
       <div className="transcript-notice" role="alert">
-        전사문을 불러오지 못했습니다.{" "}
+        전사문을 불러오지 못했어요.{" "}
         <Button
           size="sm"
           variant="outline"
@@ -112,19 +112,18 @@ export function SavedTranscript({
       </summary>
       <div className="transcript-content">
         <p className="student-footnote">
-          음성 인식 초안입니다. 원음을 들으며 전문용어와 빠진 말을 확인하세요.
-          녹음을 공유해도 이 전사문은 공개되지 않습니다.
+          자동으로 인식한 문장은 틀릴 수 있어요. 녹음을 들으며 전문용어와 빠진
+          말을 확인해 주세요. 음성을 공유해도 이 전사문은 나만 볼 수 있어요.
         </p>
         {current.warnings.length > 0 && (
           <div className="transcript-notice">
-            일부 구간의 인식이 끊겼거나 확정되지 않았을 수 있습니다. 원음과
-            비교해 주세요.
+            일부 구간은 인식이 끊겼거나 확정되지 않았을 수 있어요. 녹음과 비교해
+            주세요.
           </div>
         )}
         {draft === null ? (
           <div className="transcript-text">
-            {value ||
-              "인식한 문장이 없습니다. 원음을 들으며 직접 작성할 수 있습니다."}
+            {value || "인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요."}
           </div>
         ) : (
           <label className="transcript-field">
@@ -140,14 +139,14 @@ export function SavedTranscript({
         )}
         {error && (
           <p role="alert" className="rms-error">
-            {error} 작성한 글은 이 화면에 남아 있습니다.
+            {error} 작성한 글은 이 화면에 그대로 있어요.
           </p>
         )}
         {conflict && (
           <div className="transcript-notice">
-            <strong>다른 창에서 저장한 내용이 있습니다.</strong>
+            <strong>다른 창에서 저장한 전사문이 있어요.</strong>
             <details>
-              <summary>최신 저장본 비교</summary>
+              <summary>최신 저장본과 비교하기</summary>
               <p className="transcript-text">{current.edited_text}</p>
             </details>
             <Button
@@ -158,11 +157,11 @@ export function SavedTranscript({
                 setError("");
               }}
             >
-              내 작성본을 유지하고 최신본 기준으로 저장하기
+              내 작성 내용 유지
             </Button>
             <p className="student-footnote">
-              위 최신본과 비교한 뒤 누르세요. 이후 저장하면 내 작성본으로 새
-              수정본을 남깁니다.
+              최신 저장본과 비교한 뒤 눌러 주세요. 그다음 ‘전사문 저장’을 누르면
+              최신 저장본이 내 작성 내용으로 바뀌어요.
             </p>
           </div>
         )}
@@ -176,7 +175,7 @@ export function SavedTranscript({
               </p>
             ))
           ) : (
-            <p>자동으로 인식한 문장이 없습니다.</p>
+            <p>자동으로 인식한 문장이 없어요.</p>
           )}
         </details>
         <div className="button-row">
@@ -243,8 +242,8 @@ export function SavedTranscript({
             <DialogTitle>전사문을 미팅 메모에 추가할까요?</DialogTitle>
             <DialogDescription>
               {memoShared
-                ? "이 미팅의 메모는 공동연구자에게 공개됩니다. 비공개 전사문을 추가하면 해당 내용도 함께 공개됩니다."
-                : "현재 작성 중인 메모 뒤에 저장한 전사문을 추가합니다. 기존 메모는 지우지 않으며, 미팅 메모의 저장 상태를 확인해 주세요."}
+                ? "이 미팅 메모는 공동연구자에게 공개돼 있어요. 전사문을 추가하면 나만 보던 내용도 공동연구자가 볼 수 있어요."
+                : "저장한 전사문을 지금 메모 끝에 붙여요. 기존 메모는 지워지지 않아요."}
             </DialogDescription>
           </DialogHeader>
           <div className="bottom-actions">
@@ -259,7 +258,7 @@ export function SavedTranscript({
                   );
                   setAppend(false);
                   toast.success(
-                    "미팅 메모에 추가했습니다. 메모 저장 상태를 확인하세요.",
+                    "미팅 메모에 추가했어요. 메모가 저장됐는지 확인해 주세요.",
                   );
                 } catch (e) {
                   toast.error((e as Error).message);

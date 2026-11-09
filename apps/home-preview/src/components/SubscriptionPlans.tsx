@@ -15,40 +15,40 @@ const plans = [
     id: "free",
     name: "Free",
     icon: "book",
-    line: "내 연구를 차근차근 시작할 때",
+    line: "논문 지도 기록을 시작할 때",
     features: [
       "미팅 기록과 다음 미팅 준비",
-      "원고 작성과 보존 버전",
+      "원고 작성과 버전 비교",
       "피드백·할 일·교수 검토",
       "선택한 기록으로 AI 실행",
     ],
-    note: "기록부터 검토까지, 기본 연구 공간",
+    note: "미팅 기록부터 교수 검토까지 기본 기능을 모두 담았어요.",
   },
   {
     id: "pro",
     name: "Pro",
     icon: "sparkles",
-    line: "AI와 함께 더 깊이 연구할 때",
+    line: "AI를 더 많이 쓰고 싶을 때",
     features: [
       "Free의 모든 기능",
-      "확장된 AI 사용량",
-      "긴 문서와 자료를 함께 검토",
-      "심화 분석을 위한 모델 옵션",
+      "더 많은 AI 사용량",
+      "AI로 긴 문서와 자료 함께 읽기",
+      "깊은 분석용 AI 모델 선택",
     ],
-    note: "제공 범위와 가격은 출시 시 안내합니다.",
+    note: "가격과 제공 범위는 출시할 때 안내할게요.",
   },
   {
     id: "team",
     name: "Team",
     icon: "users",
-    line: "동료와 같은 맥락에서 일할 때",
+    line: "연구실 단위로 관리할 때",
     features: [
       "Pro의 모든 기능",
       "연구실 단위 사용량 관리",
       "구성원과 연구 공간 관리",
-      "팀 운영을 위한 지원",
+      "팀 운영 지원",
     ],
-    note: "공동 기록은 연구에 참여자를 추가하면 사용할 수 있습니다.",
+    note: "공동 기록은 Team이 아니어도 공동연구자를 초대하면 쓸 수 있어요.",
   },
 ];
 export function SubscriptionPlans({
@@ -68,7 +68,7 @@ export function SubscriptionPlans({
       {!publicView && (
         <div className="subscription-heading">
           <h2>플랜</h2>
-          <p>연구하는 방식에 맞춰 선택하세요.</p>
+          <p>플랜별 제공 기능을 비교할 수 있어요.</p>
         </div>
       )}
       <div className="subscription-grid">
@@ -104,8 +104,8 @@ export function SubscriptionPlans({
               >
                 {publicView
                   ? signedIn
-                    ? "내 연구로"
-                    : "무료로 시작하기"
+                    ? "내 연구 열기"
+                    : "가입 과정 미리보기"
                   : "내 연구로 돌아가기"}
                 <Icon name="arrow-right" size={16} />
               </Link>
@@ -131,8 +131,8 @@ export function SubscriptionPlans({
         ))}
       </div>
       <p className="subscription-disclosure">
-        유료 플랜은 준비 중입니다. 지금은 결제되거나 이용 권한이 변경되지
-        않습니다.
+        유료 플랜은 준비 중이에요. 지금은 결제되지 않고, 이용 권한도 바뀌지
+        않아요.
       </p>
       <Dialog open={!!detail} onOpenChange={(open) => !open && setDetail(null)}>
         <DialogContent>
@@ -141,8 +141,8 @@ export function SubscriptionPlans({
             <DialogDescription>{selected?.line}</DialogDescription>
           </DialogHeader>
           <p>
-            현재는 플랜의 구성을 미리 살펴볼 수 있습니다. 가격과 상세 제공
-            범위는 출시할 때 안내합니다.
+            지금은 플랜 구성만 미리 볼 수 있어요. 가격과 자세한 제공 범위는
+            출시할 때 안내할게요.
           </p>
           <ul className="subscription-detail-list">
             {selected?.features.map((f) => (
@@ -156,7 +156,7 @@ export function SubscriptionPlans({
             className="rms-action primary"
             onClick={() => setDetail(null)}
           >
-            확인
+            닫기
           </button>
         </DialogContent>
       </Dialog>

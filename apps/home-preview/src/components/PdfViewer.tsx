@@ -18,7 +18,17 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
     [retry, setRetry] = useState(0),
     [text, setText] = useState("");
   const host = useRef<HTMLDivElement>(null),
-    canvas = useRef<HTMLCanvasElement>(null);
+    canvas = useRef<HTMLCanvasElement>(null),
+    prevButton = useRef<HTMLButtonElement>(null),
+    nextButton = useRef<HTMLButtonElement>(null),
+    // A paging button disables itself at the first/last page; after that
+    // render, move keyboard focus to the other one (WCAG 2.4.3).
+    refocus = useRef<"prev" | "next" | null>(null);
+  useEffect(() => {
+    const target = refocus.current;
+    refocus.current = null;
+    if (target) (target === "prev" ? prevButton : nextButton).current?.focus();
+  });
   useEffect(() => {
     let active = true;
     let loaded: PDFDocumentProxy | null = null;
@@ -81,7 +91,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
       target.style.width = `${viewport.width}px`;
       target.style.height = `${viewport.height}px`;
       const ctx = target.getContext("2d");
-      if (!ctx) throw new Error("PDF를 표시할 수 없습니다.");
+      if (!ctx) throw new Error("PDF를 표시할 수 없어요.");
       render = pdfPage.render({
         canvas: target,
         canvasContext: ctx,
@@ -101,7 +111,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
     })().catch((e) => {
       if (active && e?.name !== "RenderingCancelledException") {
         setError(
-          "이 페이지를 표시하지 못했습니다. PDF 파일을 내려받아 확인할 수 있습니다.",
+          "이 페이지를 표시하지 못했어요. 파일은 그대로 저장되어 있으니 내려받아 확인해 주세요.",
         );
         setLoading(false);
       }
@@ -132,20 +142,29 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
             variant="ghost"
             size="icon-sm"
             aria-label="이전 페이지"
+            ref={prevButton}
             disabled={!doc || page <= 1}
-            onClick={() => setPage((p) => p - 1)}
+            onClick={() => {
+              // The button disables itself on page 1; keep keyboard focus.
+              if (page - 1 <= 1) refocus.current = "next";
+              setPage((p) => p - 1);
+            }}
           >
             <Icon name="chevron-left" size={16} />
           </Button>
-          <span className="pdf-page-number">
+          <span className="pdf-page-number" role="status" aria-atomic="true">
             {page} / {doc?.numPages ?? "—"}
           </span>
           <Button
             variant="ghost"
             size="icon-sm"
             aria-label="다음 페이지"
+            ref={nextButton}
             disabled={!doc || page >= doc.numPages}
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => {
+              if (doc && page + 1 >= doc.numPages) refocus.current = "prev";
+              setPage((p) => p + 1);
+            }}
           >
             <Icon name="chevron-right" size={16} />
           </Button>
@@ -158,7 +177,9 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           >
             <Icon name="minus" size={16} />
           </Button>
-          <span className="pdf-zoom">{Math.round(zoom * 100)}%</span>
+          <span className="pdf-zoom" role="status" aria-atomic="true">
+            {Math.round(zoom * 100)}%
+          </span>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -171,7 +192,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="PDF 다운로드"
+            aria-label="PDF 내려받기"
             disabled={!blob}
             onClick={download}
           >
@@ -201,7 +222,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
       {doc && (
         <details className="pdf-text">
           <summary>이 페이지 텍스트 보기</summary>
-          <p>{text || "추출할 수 있는 텍스트가 없습니다."}</p>
+          <p>{text || "이 페이지에는 읽을 수 있는 텍스트가 없어요."}</p>
         </details>
       )}
     </div>

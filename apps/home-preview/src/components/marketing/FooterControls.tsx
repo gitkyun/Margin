@@ -54,7 +54,7 @@ export function FooterControls() {
         className="lp-back-to-top"
         type="button"
         onClick={(event) => scrollToTop(event.currentTarget)}
-        aria-label="페이지 맨 위로 이동"
+        aria-label="맨 위로 이동"
       >
         맨 위로
         <Icon name="arrow-up" size={16} />

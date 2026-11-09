@@ -60,6 +60,11 @@ export function Choice({
     onChange(value);
     setOpen(false);
   }
+  const current = options.find((o) => o.value === value);
+  const currentText = current
+    ? (current.search ??
+      (typeof current.label === "string" ? current.label : ""))
+    : "";
   return (
     <Popover.Root
       open={open}
@@ -80,11 +85,13 @@ export function Choice({
           className="rms-choice"
           id={fieldId}
           disabled={disabled}
-          aria-label={label}
+          // The button shows only the current value; name it "label, value" so
+          // the visible text is part of the accessible name (WCAG 2.5.3).
+          aria-label={currentText ? `${label}, ${currentText}` : label}
           aria-haspopup="listbox"
           data-draft-value={value}
         >
-          <span>{options.find((o) => o.value === value)?.label ?? "선택"}</span>
+          <span>{current?.label ?? "선택"}</span>
           <Icon name="chevron-down" size={16} />
         </button>
       </Popover.Trigger>
@@ -127,7 +134,12 @@ export function Choice({
                 (active + filtered.length - 1) % Math.max(filtered.length, 1),
               );
             }
-            if (e.key === "Enter" && filtered[active]) {
+            // 한글 조합을 끝내는 Enter는 선택으로 처리하지 않는다.
+            if (
+              e.key === "Enter" &&
+              !e.nativeEvent.isComposing &&
+              filtered[active]
+            ) {
               e.preventDefault();
               select(filtered[active].value);
             }
@@ -185,7 +197,7 @@ export function Choice({
                 </span>
               </button>
             ))}
-            {!filtered.length && <p>검색 결과가 없습니다.</p>}
+            {!filtered.length && <p>검색 결과가 없어요.</p>}
           </div>
         </Popover.Content>
       </Popover.Portal>
@@ -424,7 +436,9 @@ export function VisibilityField({
   if (collaborative || value === "shared")
     options.push({
       value: "shared",
-      label: collaborative ? "공동연구자와 공유" : "공동 기록 · 참여자 없음",
+      label: collaborative
+        ? "공동연구자와 공유"
+        : "공동 기록 · 공동연구자 없음",
     });
   return (
     <div className="field visibility-field">
@@ -444,8 +458,8 @@ export function VisibilityField({
       )}
       <small>
         {collaborative
-          ? "교수에게는 검토 요청에서 선택한 내용만 공개됩니다."
-          : "참여자를 추가하면 공동 기록을 나눌 수 있습니다."}
+          ? "교수님께는 검토 요청에 넣은 내용만 보여요."
+          : "공동연구자가 참여하면 기록을 공유할 수 있어요."}
       </small>
     </div>
   );

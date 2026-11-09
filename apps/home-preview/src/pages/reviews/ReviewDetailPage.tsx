@@ -91,9 +91,7 @@ function CommentThread({
       </div>
       <p className="review-comment-body">{comment.body}</p>
       <div className="review-comment-actions">
-        {comment.resolved && (
-          <StatusBadge tone="neutral">해결한 대화</StatusBadge>
-        )}
+        {comment.resolved && <StatusBadge tone="neutral">해결됨</StatusBadge>}
         {canWrite && (
           <>
             <button
@@ -108,7 +106,7 @@ function CommentThread({
               disabled={busy}
               onClick={() => onResolve(comment.id, !comment.resolved)}
             >
-              {comment.resolved ? "다시 열기" : "대화 해결"}
+              {comment.resolved ? "다시 열기" : "해결로 표시"}
             </button>
           </>
         )}
@@ -160,6 +158,7 @@ export function ReviewDetailPage() {
   const rounds = data.rounds
     .filter((r) => r.itemId === item?.id && r.requestId === requestId)
     .sort((a, b) => b.number - a.number);
+  const nextRoundNumber = (rounds[0]?.number ?? 0) + 1;
   const round = rounds.find((r) => r.id === params.get("round")) ?? rounds[0];
   // Pin the opened round so background refresh never replaces an in-progress response.
   useEffect(() => {
@@ -307,7 +306,7 @@ export function ReviewDetailPage() {
     }
     const chosenResult = draft.result;
     if (draft.result === "changes_requested" && !draft.comment.trim()) {
-      setError("추가로 수정할 내용을 댓글에 적어 주세요.");
+      setError("추가로 수정할 내용을 적어 주세요.");
       return;
     }
     const saved = await doAction(
@@ -318,7 +317,7 @@ export function ReviewDetailPage() {
           result: chosenResult,
           comment: draft.comment.trim(),
         }),
-      "이 항목의 검토 결과를 저장했습니다.",
+      "이 항목의 검토 결과를 저장했어요.",
     );
     if (saved)
       setResponseDrafts((current) => {
@@ -338,7 +337,7 @@ export function ReviewDetailPage() {
           body: commentDrafts[round.id].trim(),
           parentId: replyTo[round.id]?.id,
         }),
-      "댓글을 남겼습니다.",
+      "댓글을 남겼어요.",
     );
     if (saved) {
       setCommentDrafts((current) => ({ ...current, [round.id]: "" }));
@@ -351,10 +350,14 @@ export function ReviewDetailPage() {
       if (item) url.searchParams.set("item", item.id);
       if (round) url.searchParams.set("round", round.id);
       await navigator.clipboard.writeText(url.href);
-      toast.success("링크를 복사했습니다. 지정한 교수에게 직접 전달해 주세요.");
+      toast.success(
+        request?.status === "stopped"
+          ? "링크를 복사했어요. 공유를 중지한 상태라 다시 공유해야 교수님이 열 수 있어요."
+          : "링크를 복사했어요. 교수님께 직접 전달해 주세요.",
+      );
     } catch {
       toast.error(
-        "링크를 복사하지 못했습니다. 주소 표시줄의 링크를 복사해 주세요.",
+        "링크를 복사하지 못했어요. 브라우저 주소창의 링크를 복사해 주세요.",
       );
     }
   };
@@ -367,7 +370,9 @@ export function ReviewDetailPage() {
       changeEmail &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sharingEmail.trim())
     ) {
-      setError("교수 계정 이메일을 확인해 주세요.");
+      setError(
+        "이메일 형식이 맞지 않아요. 교수님 계정 이메일을 확인해 주세요.",
+      );
       return;
     }
     const saved = await doAction(
@@ -378,9 +383,11 @@ export function ReviewDetailPage() {
           status,
           changeEmail ? sharingEmail.trim().toLowerCase() : undefined,
         ),
-      status === "stopped"
-        ? "공유를 중지했습니다. 기존 검토 이력은 유지됩니다."
-        : "공유 설정을 저장했습니다.",
+      request.status === status
+        ? "공유 설정을 저장했어요."
+        : status === "stopped"
+          ? "공유를 중지했어요. 지금까지의 검토 기록은 그대로 남아요."
+          : "다시 공유했어요. 교수님이 같은 링크로 열 수 있어요.",
     );
     if (saved) setSharingOpen(false);
   };
@@ -400,7 +407,7 @@ export function ReviewDetailPage() {
           resultId: privateResult.id,
           requestKey: recheckKey.current,
         }),
-      "선택한 항목에 새 검토 차수를 만들었습니다.",
+      `${nextRoundNumber}차 검토를 만들었어요. 교수님은 같은 검토 링크에서 볼 수 있어요.`,
     );
     if (saved) {
       recheckKey.current = uid();
@@ -441,12 +448,12 @@ export function ReviewDetailPage() {
           <BrandWordmark />
         </span>
         <EmptyState
-          title="이 검토를 열 수 없습니다."
-          description="공유가 중지되었거나 현재 계정에 접근 권한이 없습니다."
+          title="이 검토를 열 수 없어요"
+          description="공유가 중지되었거나 지금 로그인한 계정에 열람 권한이 없어요. 학생이 지정한 교수 계정으로 로그인했는지 확인해 주세요."
           action={
             <div className="button-row">
               <Button variant="outline" onClick={() => void refresh()}>
-                다시 확인
+                다시 불러오기
               </Button>
               <Button onClick={() => void context.signOut()}>
                 다른 계정으로 로그인
@@ -459,9 +466,9 @@ export function ReviewDetailPage() {
             {workspaceError}
           </p>
         )}
-        <p className="meta">현재 로그인 계정 · {user.email}</p>
+        <p className="meta">로그인한 계정 · {user.email}</p>
         <Link className="review-return" to="/r">
-          내 작업 공간으로 이동
+          내 연구로 이동
         </Link>
       </main>
     );
@@ -472,7 +479,11 @@ export function ReviewDetailPage() {
           <Link
             className="review-brand"
             to={isOwner ? `/r/${request.researchId}/reviews` : "/r"}
-            aria-label={isOwner ? "검토 요청 목록으로 돌아가기" : "Margin"}
+            aria-label={
+              isOwner
+                ? "마진(Margin) 검토 요청 목록으로 돌아가기"
+                : "마진(Margin) 홈"
+            }
           >
             {isOwner && <Icon name="arrow-left" size={21} />}
             <BrandMark />
@@ -496,6 +507,7 @@ export function ReviewDetailPage() {
           <Button
             size="sm"
             variant="outline"
+            aria-label="새로고침"
             onClick={() => void refresh()}
             disabled={!!busy}
           >
@@ -524,7 +536,10 @@ export function ReviewDetailPage() {
           ) : null}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="review-account-button" aria-label="계정 메뉴">
+              <button
+                className="review-account-button"
+                aria-label={`${user.name} 계정 메뉴`}
+              >
                 {user.name.slice(0, 1) || "나"}
               </button>
             </DropdownMenuTrigger>
@@ -552,14 +567,15 @@ export function ReviewDetailPage() {
       {mode === "preview" && (
         <div className="review-preview-banner">
           <Icon name="info" size={15} />
-          로컬 미리보기 · 실제 교수 로그인과 서버 연결 전입니다.
+          로컬 미리보기예요. 서버 연결 전이라 교수 계정으로 열거나 응답할 수
+          없어요.
         </div>
       )}
       {request.status === "stopped" && (
         <div className="review-stopped-banner">
           <Icon name="lock" size={16} />
-          공유를 중지한 검토입니다. 교수는 열 수 없으며, 학생의 검토 이력은
-          유지됩니다.
+          공유를 중지한 검토예요. 교수님은 열 수 없고, 지금까지의 검토 기록은
+          그대로 남아요.
         </div>
       )}
       <div className="review-workspace-body">
@@ -594,16 +610,16 @@ export function ReviewDetailPage() {
           <div className="review-sidebar-note">
             <Icon name="lock" size={15} />
             <p>
-              이 요청에 포함된 내용만 공개됩니다. 학생의 개인 기록은 공유되지
-              않습니다.
+              이 요청에 담긴 내용만 공개돼요. 학생의 개인 기록은 공유되지
+              않아요.
             </p>
           </div>
         </aside>
         {!item || !round ? (
           <div className="review-no-item">
             <EmptyState
-              title="아직 검토 항목이 없습니다."
-              description="수정 결과를 선택해 검토 요청을 구성해 주세요."
+              title="표시할 검토 항목이 없어요"
+              description="새로고침한 뒤 다시 확인해 주세요."
             />
           </div>
         ) : (
@@ -648,7 +664,7 @@ export function ReviewDetailPage() {
                     }}
                   >
                     <Icon name="refresh" size={15} />
-                    재확인 요청
+                    다시 확인 요청
                   </Button>
                 )}
               </div>
@@ -656,7 +672,7 @@ export function ReviewDetailPage() {
             {round.id !== rounds[0]?.id && (
               <div className="review-earlier-note">
                 <Icon name="clock" size={16} />
-                이전 차수입니다. 당시의 설명·자료·응답을 보여줍니다.
+                이전 차수예요. 당시의 설명, 파일, 응답을 그대로 보여 줘요.
                 <button type="button" onClick={() => selectRound(rounds[0].id)}>
                   최신 차수 열기
                 </button>
@@ -673,7 +689,7 @@ export function ReviewDetailPage() {
                 aria-selected={mobilePanel === "document"}
                 onClick={() => setMobilePanel("document")}
               >
-                수정 내용·자료
+                수정 내용·파일
               </button>
               <button
                 type="button"
@@ -687,7 +703,7 @@ export function ReviewDetailPage() {
             <div className={`review-reading-grid show-${mobilePanel}`}>
               <section
                 className="review-document-column"
-                aria-label="수정 내용과 자료"
+                aria-label="수정 내용과 파일"
               >
                 <article className="review-description-card">
                   <div className="review-description-meta">
@@ -713,7 +729,7 @@ export function ReviewDetailPage() {
                     <div className="review-location">
                       <Icon name="eye" size={16} />
                       <span>
-                        확인 위치<strong>{round.location}</strong>
+                        먼저 볼 위치<strong>{round.location}</strong>
                       </span>
                     </div>
                   )}
@@ -721,22 +737,22 @@ export function ReviewDetailPage() {
                 {version ? (
                   <section
                     className="review-pdf-section"
-                    aria-label="보존 파일"
+                    aria-label="보낸 당시 파일"
                   >
                     <div className="review-file-heading">
                       <Icon name="file" size={17} />
                       <strong>{version.fileName}</strong>
-                      <span>보존 파일</span>
+                      <span>보낸 당시 파일</span>
                     </div>
                     <PdfViewer key={round.id} version={version} />
                     <p className="review-file-note">
-                      표시한 위치 외에도 첨부한 PDF 전체를 열람할 수 있습니다.
+                      먼저 볼 위치뿐 아니라 PDF 전체를 볼 수 있어요.
                     </p>
                   </section>
                 ) : round.versionId ? (
                   <div className="review-missing-file" role="status">
                     <Icon name="file" size={23} />
-                    <p>파일 정보를 불러오지 못했습니다.</p>
+                    <p>파일 정보를 불러오지 못했어요.</p>
                     <Button variant="outline" onClick={() => void refresh()}>
                       다시 불러오기
                     </Button>
@@ -744,10 +760,7 @@ export function ReviewDetailPage() {
                 ) : (
                   <div className="review-nondocument">
                     <Icon name="file" size={19} />
-                    <p>
-                      문서 외 작업입니다. 위의 보존된 처리 설명을 기준으로
-                      검토합니다.
-                    </p>
+                    <p>첨부 파일 없이 위의 설명으로 검토하는 항목이에요.</p>
                   </div>
                 )}
               </section>
@@ -765,12 +778,12 @@ export function ReviewDetailPage() {
                       <span className="meta">
                         {response.userId === user.id
                           ? "내가 남긴 응답"
-                          : "검토 계정의 응답"}{" "}
+                          : "교수가 남긴 응답"}{" "}
                         · {timeText(response.updatedAt)}
                       </span>
                       {response.comment && <p>{response.comment}</p>}
                       {response.createdAt !== response.updatedAt && (
-                        <span className="review-edited-label">응답 수정됨</span>
+                        <span className="review-edited-label">응답 변경됨</span>
                       )}
                     </div>
                   )}
@@ -781,7 +794,7 @@ export function ReviewDetailPage() {
                     >
                       <fieldset>
                         <legend>
-                          {ownResponse ? "내 응답 수정" : "이 항목의 검토 결과"}
+                          {ownResponse ? "내 응답 변경" : "이 항목의 검토 결과"}
                         </legend>
                         <label
                           className={`review-response-option ${draft.result === "confirmed" ? "selected" : ""}`}
@@ -825,20 +838,20 @@ export function ReviewDetailPage() {
                         label={
                           draft.result === "changes_requested"
                             ? "추가로 수정할 내용"
-                            : "댓글"
+                            : "응답 댓글"
                         }
                         required={draft.result === "changes_requested"}
                         hint={
                           draft.result === "changes_requested"
                             ? "무엇을 더 고쳐야 하는지 알려 주세요."
-                            : "필요한 의견이 있을 때 남겨 주세요."
+                            : "필요할 때만 남겨 주세요."
                         }
                       >
                         <Textarea
                           aria-label={
                             draft.result === "changes_requested"
                               ? "추가로 수정할 내용"
-                              : "검토 응답 댓글"
+                              : "응답 댓글"
                           }
                           value={draft.comment}
                           maxLength={10000}
@@ -857,7 +870,7 @@ export function ReviewDetailPage() {
                           placeholder={
                             draft.result === "changes_requested"
                               ? "예: 연구 목적에 맞는 비교 기준을 하나 더 보완해 주세요."
-                              : "댓글은 선택입니다."
+                              : "예: 표 2의 출처 표기를 확인했어요."
                           }
                         />
                       </Field>
@@ -865,17 +878,17 @@ export function ReviewDetailPage() {
                         {busy === "response"
                           ? "저장 중"
                           : ownResponse
-                            ? "응답 수정 저장"
+                            ? "변경 내용 저장"
                             : "검토 결과 저장"}
                       </Button>
                     </form>
                   ) : (
                     <p className="review-response-help">
                       {isOwner
-                        ? "교수의 검토 결과입니다. 읽음이나 댓글 작성은 작업 완료·반영 상태를 바꾸지 않습니다."
+                        ? "교수님 응답은 여기에 보여요. 응답, 댓글, 읽음 표시는 할 일과 피드백 상태를 바꾸지 않아요."
                         : isProfessor && canWrite
-                          ? "이 항목에 새 차수가 있어 이전 차수에는 응답할 수 없습니다. 최신 차수에서 결과를 남겨 주세요."
-                          : "공유 상태를 확인한 뒤 응답할 수 있습니다."}
+                          ? "이 항목은 새 차수가 있어 이 차수에는 응답할 수 없어요. 최신 차수에서 결과를 남겨 주세요."
+                          : "공유 중일 때 응답할 수 있어요."}
                     </p>
                   )}
                   {response && (
@@ -890,14 +903,14 @@ export function ReviewDetailPage() {
                         ? "이력 불러오는 중"
                         : historyOpen
                           ? "응답 변경 이력 닫기"
-                          : "응답 변경 이력"}
+                          : "응답 변경 이력 보기"}
                     </button>
                   )}
                   {historyOpen && (
                     <div className="review-response-history">
                       {!history[round.id]?.length ? (
                         <p className="meta">
-                          이 차수의 이전 응답 변경 기록이 없습니다.
+                          이 차수에서 응답을 바꾼 기록이 없어요.
                         </p>
                       ) : (
                         history[round.id].map((r, index) => (
@@ -917,10 +930,7 @@ export function ReviewDetailPage() {
                     <span className="meta">{comments.length}</span>
                   </div>
                   {!comments.length && (
-                    <p className="review-no-comments">
-                      아직 댓글이 없습니다. 검토 의견이나 진행 상황을 남겨
-                      보세요.
-                    </p>
+                    <p className="review-no-comments">아직 댓글이 없어요.</p>
                   )}
                   {comments
                     .filter(
@@ -950,8 +960,8 @@ export function ReviewDetailPage() {
                             `resolve-${id}`,
                             () => resolveComment(id, value),
                             value
-                              ? "댓글 대화를 해결로 표시했습니다."
-                              : "댓글 대화를 다시 열었습니다.",
+                              ? "대화를 해결로 표시했어요."
+                              : "대화를 다시 열었어요.",
                           )
                         }
                       />
@@ -1003,7 +1013,11 @@ export function ReviewDetailPage() {
                             [round.id]: e.target.value,
                           }))
                         }
-                        placeholder="확인한 내용이나 진행 상황을 남겨 주세요."
+                        placeholder={
+                          isProfessor
+                            ? "예: 그림 2의 범례도 함께 확인해 주세요."
+                            : "예: 표 제목은 다음 검토 때 함께 고칠게요."
+                        }
                       />
                       <Button
                         type="submit"
@@ -1020,7 +1034,7 @@ export function ReviewDetailPage() {
                     </form>
                   )}
                   <p className="review-comments-help">
-                    대화 해결은 교수 결과나 할 일 상태를 변경하지 않습니다.
+                    해결로 표시해도 교수 응답은 바뀌지 않아요.
                   </p>
                 </section>
                 {error && !sharingOpen && !recheckOpen && (
@@ -1052,7 +1066,7 @@ export function ReviewDetailPage() {
           <DialogHeader>
             <DialogTitle>공유 설정</DialogTitle>
             <DialogDescription>
-              지정한 교수 계정만 검토를 열 수 있습니다.
+              지정한 교수 계정만 이 검토를 열 수 있어요.
             </DialogDescription>
           </DialogHeader>
           <div className="review-sharing-current">
@@ -1061,9 +1075,9 @@ export function ReviewDetailPage() {
               {sharingLabels[request.status]}
             </StatusBadge>
           </div>
-          <Field label="허용할 교수 계정 이메일" required>
+          <Field label="교수 계정 이메일" required>
             <Input
-              aria-label="허용할 교수 계정 이메일"
+              aria-label="교수 계정 이메일"
               type="email"
               value={sharingEmail}
               onChange={(
@@ -1074,8 +1088,8 @@ export function ReviewDetailPage() {
             />
           </Field>
           <p className="review-settings-note">
-            계정을 바꾸면 이전 교수의 새 접근은 차단됩니다. 당시 응답과 작성자
-            기록은 유지됩니다.
+            이메일을 바꾸면 이전 교수님 계정으로는 더 이상 열 수 없어요. 이미
+            남긴 응답과 댓글은 그대로 남고, 새로 지정한 교수님도 볼 수 있어요.
           </p>
           {error && (
             <p className="review-form-error" role="alert">
@@ -1105,8 +1119,8 @@ export function ReviewDetailPage() {
           <div className="review-sharing-stop">
             <p>
               {request.status === "stopped"
-                ? "허용 계정에 다시 검토를 공개합니다."
-                : "공유를 중지해도 기존 검토 이력은 유지됩니다. 이미 내려받은 파일까지 회수되지는 않습니다."}
+                ? "다시 공유하면 위 이메일의 교수 계정이 이 검토를 열 수 있어요."
+                : "공유를 중지하면 교수님은 이 검토를 열 수 없어요. 지금까지의 검토 기록은 그대로 남지만, 이미 내려받은 파일은 회수할 수 없어요."}
             </p>
             <Button
               variant="outline"
@@ -1141,19 +1155,21 @@ export function ReviewDetailPage() {
           }
         >
           <DialogHeader>
-            <DialogTitle>이 항목 재확인 요청</DialogTitle>
+            <DialogTitle>이 항목만 다시 확인을 요청할까요?</DialogTitle>
             <DialogDescription>
-              선택한 항목만 새 차수로 보냅니다. 이전 자료·응답과 다른 항목의
-              결과는 유지됩니다.
+              {nextRoundNumber}차 검토로 새로 요청해요. 이전 차수의 설명, 파일,
+              응답은 그대로 남고, 다른 항목은 바뀌지 않아요.
             </DialogDescription>
           </DialogHeader>
           {privateResult ? (
             <>
               <div className="review-preview-item">
-                <span className="meta">새로 보낼 수정 결과</span>
+                <span className="meta">
+                  {nextRoundNumber}차 검토에 담길 수정 결과
+                </span>
                 <h3>{privateResult.title}</h3>
                 <p className="review-preserved-description">
-                  {privateResult.description || "수정 설명을 작성해 주세요."}
+                  {privateResult.description || "수정한 내용이 비어 있어요."}
                 </p>
                 {privateVersion && (
                   <div className="review-file-chip">
@@ -1162,7 +1178,7 @@ export function ReviewDetailPage() {
                       <strong>{privateVersion.fileName}</strong>
                       <small>
                         v{privateVersion.number} ·{" "}
-                        {privateResult.location || "확인 위치 미입력"}
+                        {privateResult.location || "볼 위치 없음"}
                       </small>
                     </span>
                   </div>
@@ -1176,7 +1192,7 @@ export function ReviewDetailPage() {
                   className="review-text-link"
                   to={`/r/${request.researchId}/results/${privateResult.id}`}
                 >
-                  개인 수정 결과에서 설명·근거 편집
+                  수정 결과에서 고치기
                   <Icon name="arrow-right" size={14} />
                 </Link>
               </div>
@@ -1187,7 +1203,9 @@ export function ReviewDetailPage() {
                     setRecheckConfirmed(!!value)
                   }
                 />
-                <span>보낼 설명과 근거 파일 전체를 확인했습니다.</span>
+                <span>
+                  설명과 파일 전체가 교수님께 공개되는 것을 확인했어요.
+                </span>
               </label>
               {error && (
                 <p className="review-form-error" role="alert">
@@ -1211,13 +1229,15 @@ export function ReviewDetailPage() {
                   onClick={submitRecheck}
                 >
                   {busy === "recheck"
-                    ? "요청 저장 중"
-                    : `${(rounds[0]?.number ?? 0) + 1}차 검토 요청`}
+                    ? "요청하는 중"
+                    : `${nextRoundNumber}차 검토 요청`}
                 </Button>
               </div>
             </>
           ) : (
-            <p className="muted">연결된 개인 수정 결과를 찾을 수 없습니다.</p>
+            <p className="muted">
+              이 항목과 연결된 수정 결과를 찾을 수 없어요.
+            </p>
           )}
         </DialogContent>
       </Dialog>

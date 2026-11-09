@@ -44,7 +44,7 @@ import { Icon } from "@/components/icons";
 import { UsageDetails } from "./SettingsPage";
 const stateLabel: Record<string, string> = {
   running: "실행 중",
-  complete: "완료",
+  complete: "성공",
   failed: "실패",
   cancelled: "중단",
 };
@@ -138,7 +138,7 @@ export function ResearchAssistant() {
       } catch {
         setContexts([]);
         setError(
-          "선택한 문단을 불러오지 못했습니다. 글쓰기에서 문단을 다시 선택해 주세요.",
+          "선택한 문단을 불러오지 못했어요. 문서가 바뀌었을 수 있으니 글쓰기에서 문단을 다시 선택해 주세요.",
         );
         return;
       }
@@ -203,7 +203,7 @@ export function ResearchAssistant() {
       return;
     }
     if (contexts.length >= 8) {
-      toast.info("한 번에 최대 8개까지 선택할 수 있습니다.");
+      toast.info("한 번에 8개까지 선택할 수 있어요.");
       return;
     }
     setContexts((v) =>
@@ -240,7 +240,7 @@ export function ResearchAssistant() {
       if (file) {
         const ext = file.name.split(".").at(-1)?.toLowerCase();
         if (!["pdf", "txt", "md"].includes(ext ?? ""))
-          throw new Error("PDF·TXT·MD 파일을 선택해 주세요.");
+          throw new Error("PDF, TXT, MD 파일만 첨부할 수 있어요.");
         let text = "",
           type =
             ext === "pdf"
@@ -251,12 +251,14 @@ export function ResearchAssistant() {
         const cleanFile = new File([file], file.name, { type });
         if (ext === "pdf") {
           if ((await file.slice(0, 5).text()) !== "%PDF-")
-            throw new Error("PDF 형식을 확인해 주세요.");
+            throw new Error(
+              "PDF 파일을 읽지 못했어요. 올바른 PDF 파일인지 확인해 주세요.",
+            );
           text = (await readPDFPage(file, page)).text;
         } else text = await file.text();
         if (text.length > 80000)
           throw new Error(
-            "텍스트가 너무 깁니다. 8만 자 이하로 나누어 첨부해 주세요.",
+            "글자 수가 너무 많아요. 8만 자 이하로 나눠서 첨부해 주세요.",
           );
         const base = recordBase(researchId);
         p = {
@@ -292,7 +294,7 @@ export function ResearchAssistant() {
         title: saved.title,
       });
       pendingFile.current = null;
-      toast.success("개인 대화에 자료를 첨부했습니다.");
+      toast.success("자료를 첨부했어요. 나만 볼 수 있어요.");
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -308,7 +310,7 @@ export function ResearchAssistant() {
       (contexts.length !== 1 || contexts[0]?.kind !== "meetings")
     ) {
       setError(
-        "정리할 미팅 메모 하나를 선택해 주세요. 다른 자료는 별도 대화에서 사용할 수 있습니다.",
+        "미팅 정리는 미팅 메모 하나로만 할 수 있어요. 다른 자료는 새 대화에서 사용해 주세요.",
       );
       setPicker(true);
       return;
@@ -398,11 +400,11 @@ export function ResearchAssistant() {
         await w.cancelRun(id);
       } catch {
         setError(
-          "중단 상태를 저장하지 못했습니다. 이 화면에는 결과를 적용하지 않습니다.",
+          "이 화면에서는 멈췄지만 중단 요청을 저장하지 못했어요. 결과가 나와도 이 대화에는 넣지 않아요.",
         );
       }
     }
-    toast.info("실행을 중단했습니다. 질문은 유지됩니다.");
+    toast.info("실행을 중단했어요. 질문은 그대로 있어요.");
   }
   function adopt(c: SavedAICandidate) {
     setAdopting(c);
@@ -488,7 +490,7 @@ export function ResearchAssistant() {
         value: targetValue,
       });
       setAdopting(null);
-      toast.success("선택한 내용을 개인 기록으로 저장했습니다.");
+      toast.success("선택한 내용을 나만 볼 수 있는 기록으로 저장했어요.");
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -499,7 +501,7 @@ export function ResearchAssistant() {
     <div className="assistant-experience">
       <PageHeader
         title="연구 도우미"
-        description="선택한 기록을 읽고, 다음 연구를 함께 구체화합니다."
+        description="선택한 기록만 읽고 질문에 답하거나 수정 방법을 제안해요."
       />
       <div className="experience-toolbar">
         <Segments
@@ -507,7 +509,7 @@ export function ResearchAssistant() {
           onChange={(v) => setParams({ tab: v })}
           options={[
             { value: "chat", label: "대화" },
-            { value: "overview", label: "작업 현황", count: pending.length },
+            { value: "overview", label: "AI 제안", count: pending.length },
             { value: "usage", label: "사용량" },
           ]}
         />
@@ -537,7 +539,7 @@ export function ResearchAssistant() {
                   <strong>{label}</strong>
                   <span>{items.length}회</span>
                   <small>
-                    완료 {items.filter((r) => r.status === "complete").length}회
+                    성공 {items.filter((r) => r.status === "complete").length}회
                     · 총 {Math.round(duration)}초
                   </small>
                 </div>
@@ -566,7 +568,7 @@ export function ResearchAssistant() {
                   tone={working ? "blue" : pending.length ? "amber" : "neutral"}
                 >
                   {working
-                    ? "작업 중"
+                    ? "실행 중"
                     : pending.length
                       ? "확인할 제안 있음"
                       : "대기 중"}
@@ -576,12 +578,12 @@ export function ResearchAssistant() {
                 {working
                   ? modeLabels[currentTask]
                   : pending.length
-                    ? `살펴볼 제안이 ${pending.length}개 있어요.`
-                    : "필요한 순간, 선택한 기록으로"}
+                    ? `확인할 AI 제안이 ${pending.length}개 있어요`
+                    : "확인할 AI 제안이 없어요"}
               </h3>
               <p>
-                원문 정리와 수정 제안을 돕습니다. 실제 기록으로 남길지는 내가
-                결정합니다.
+                제안을 기록으로 남길지는 직접 선택해요. 선택하지 않은 제안은
+                나만 볼 수 있어요.
               </p>
             </div>
             <Button
@@ -593,7 +595,7 @@ export function ResearchAssistant() {
           </MagicCard>
           <section className="experience-panel">
             <div className="section-heading">
-              <h2>채택을 기다리는 결과</h2>
+              <h2>확인할 AI 제안</h2>
               <span className="count-chip">{pending.length}</span>
             </div>
             <AnimatedList>
@@ -607,7 +609,7 @@ export function ResearchAssistant() {
                     <p>{c.candidate.body ?? c.candidate.method}</p>
                     {c.candidate.sourceQuote && (
                       <blockquote>
-                        <small>원문에서 확인한 내용</small>
+                        <small>원문 인용</small>
                         {c.candidate.sourceQuote}
                       </blockquote>
                     )}
@@ -639,18 +641,16 @@ export function ResearchAssistant() {
                       variant="outline"
                       onClick={() => adopt(c)}
                     >
-                      편집 후 채택
+                      선택하기
                     </Button>
                   </div>
                 </article>
               ))}
             </AnimatedList>
-            {!pending.length && (
-              <p>AI 작업을 실행하면 결과를 이곳에서 검토할 수 있습니다.</p>
-            )}
+            {!pending.length && <p>AI 제안이 나오면 여기에 표시돼요.</p>}
           </section>
           <section className="experience-panel">
-            <h2>실행 이력</h2>
+            <h2>실행 기록</h2>
             {runs.map((r) => (
               <div className="run-row" key={r.id}>
                 <Icon
@@ -694,7 +694,7 @@ export function ResearchAssistant() {
               </div>
             ))}
             {!runs.length && (
-              <p className="quiet-placeholder">아직 실행한 작업이 없습니다.</p>
+              <p className="quiet-placeholder">아직 실행 기록이 없어요.</p>
             )}
           </section>
         </div>
@@ -734,17 +734,17 @@ export function ResearchAssistant() {
               {!messages.length ? (
                 <div className="assistant-welcome">
                   <AssistantMascot state="ready" size={100} eager />
-                  <h2>어디부터 함께 살펴볼까요?</h2>
+                  <h2>기록을 고르고 질문해 주세요</h2>
                   <p>
-                    미팅 기록이나 자료를 고르고
+                    클립 버튼으로 미팅 메모나 문서 같은 기록을 고르거나
                     <br />
-                    정리하고 싶은 내용을 알려주세요.
+                    파일을 첨부할 수 있어요.
                   </p>
                   <div className="assistant-prompts">
                     {[
                       "다음 미팅까지 할 일을 정리해 줘",
                       "이 피드백의 수정 방법을 비교해 줘",
-                      "이 문단에서 더 구체화할 부분을 찾아줘",
+                      "이 문단에서 더 구체화할 부분을 찾아 줘",
                     ].map((t) => (
                       <button key={t} onClick={() => setDraft(t)}>
                         {t}
@@ -770,8 +770,8 @@ export function ResearchAssistant() {
                 <div className="ai-unanswered" role="status">
                   <Icon name="info" size={17} />
                   <span>
-                    이 질문의 답변이 아직 없습니다. 선택한 자료와 질문을 확인해
-                    다시 요청할 수 있습니다.
+                    이 질문에는 아직 답변이 없어요. 선택한 기록과 질문을 확인한
+                    뒤 다시 보낼 수 있어요.
                   </span>
                   <Button
                     variant="outline"
@@ -779,7 +779,7 @@ export function ResearchAssistant() {
                       setDraft(messages.at(-1)?.text ?? "");
                     }}
                   >
-                    다시 작성
+                    질문 불러오기
                   </Button>
                 </div>
               )}
@@ -795,9 +795,7 @@ export function ResearchAssistant() {
                     <strong>
                       {workMessages[task] ?? "선택한 기록을 살펴보고 있어요."}
                     </strong>
-                    <small>
-                      결과가 나와도 기록은 자동으로 바뀌지 않습니다.
-                    </small>
+                    <small>답변이 나와도 연구 기록은 바뀌지 않아요.</small>
                   </div>
                 </div>
               )}
@@ -838,15 +836,19 @@ export function ResearchAssistant() {
                 aria-label="연구 도우미에게 질문"
                 placeholder={
                   contexts.length
-                    ? "선택한 기록에서 무엇을 살펴볼까요?"
-                    : "먼저 사용할 기록이나 자료를 선택하세요."
+                    ? "예: 이 기록에서 먼저 고칠 부분을 찾아 줘"
+                    : "먼저 사용할 기록이나 자료를 선택해 주세요."
                 }
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 maxLength={2000}
                 rows={3}
                 onKeyDown={(e) => {
-                  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                  if (
+                    (e.metaKey || e.ctrlKey) &&
+                    e.key === "Enter" &&
+                    !e.nativeEvent.isComposing
+                  ) {
                     e.preventDefault();
                     void send();
                   }
@@ -866,7 +868,7 @@ export function ResearchAssistant() {
                 <Choice
                   value={task}
                   onChange={(v) => setTask(v as AIInput["mode"])}
-                  label="도움받을 작업"
+                  label="요청 종류"
                   disabled={running}
                   options={Object.entries(modeLabels).map(([value, label]) => ({
                     value,
@@ -886,15 +888,15 @@ export function ResearchAssistant() {
                       {
                         value: "",
                         label: caps.isError
-                          ? "모델 연결 확인 필요"
-                          : "모델 확인 중",
+                          ? "모델 정보 없음"
+                          : "모델 불러오는 중",
                       },
                     ]
                   }
                 />
                 {!!allowedModel?.thinking.length && (
                   <Choice
-                    label="검토 깊이"
+                    label="답변 깊이"
                     value={thinking}
                     onChange={setThinking}
                     disabled={running}
@@ -919,7 +921,7 @@ export function ResearchAssistant() {
                   <Button
                     type="button"
                     size="icon"
-                    aria-label="AI 실행 중단"
+                    aria-label="실행 중단"
                     onClick={() => void cancel()}
                   >
                     <Icon name="stop" size={17} />
@@ -928,7 +930,7 @@ export function ResearchAssistant() {
                   <Button
                     type="submit"
                     size="icon"
-                    aria-label="질문 전송"
+                    aria-label="질문 보내기"
                     disabled={!draft.trim() || !contexts.length || uploading}
                   >
                     <Icon name="arrow-up" size={19} />
@@ -944,9 +946,9 @@ export function ResearchAssistant() {
             </form>
             {caps.isError && (
               <p className="rms-error" role="alert">
-                모델 정보를 불러오지 못했습니다.{" "}
+                AI 모델 정보를 불러오지 못했어요.{" "}
                 <button type="button" onClick={() => void caps.refetch()}>
-                  다시 확인
+                  다시 불러오기
                 </button>
               </p>
             )}
@@ -963,7 +965,7 @@ export function ResearchAssistant() {
                     pendingFile.current ? void attach() : void send()
                   }
                 >
-                  다시 시도
+                  {pendingFile.current ? "등록 다시 시도" : "질문 다시 보내기"}
                 </Button>
               </div>
             )}
@@ -971,8 +973,10 @@ export function ResearchAssistant() {
               <p className="margin-depth-help">{reviewDepthHints[thinking]}</p>
             )}
             <p className="composer-hint">
-              선택한 {contexts.length}개 기록만 사용합니다. ⌘/Ctrl + Enter로
-              전송
+              {contexts.length
+                ? `선택한 기록 ${contexts.length}개만 사용해요. `
+                : ""}
+              보내기: ⌘/Ctrl + Enter
             </p>
           </section>
         </div>
@@ -990,8 +994,8 @@ export function ResearchAssistant() {
             <DialogTitle>사용할 자료 선택</DialogTitle>
             <DialogDescription>
               {task === "organize_meeting"
-                ? "정리할 미팅 메모 하나를 선택하세요."
-                : "선택한 기록과 구간만 사용합니다. 첨부 파일은 나만 볼 수 있습니다."}
+                ? "정리할 미팅 메모를 하나 선택해 주세요."
+                : "선택한 기록과 페이지만 사용해요. 첨부한 파일은 나만 볼 수 있어요."}
             </DialogDescription>
           </DialogHeader>
           <div className="source-picker">
@@ -1023,9 +1027,9 @@ export function ResearchAssistant() {
                           meetings: "미팅 메모",
                           feedback: "피드백",
                           documents: "문서",
-                          tasks: "작업",
+                          tasks: "할 일",
                           phases: "연구 단계",
-                          attachments: "개인 첨부",
+                          attachments: "내 첨부 파일",
                         } as Record<string, string>
                       )[c.kind]
                     }
@@ -1041,7 +1045,7 @@ export function ResearchAssistant() {
                 />
               </button>
             ))}
-            <h3>PDF 보존 자료</h3>
+            <h3>PDF 파일</h3>
             <label className="field">
               읽을 페이지
               <input
@@ -1077,7 +1081,7 @@ export function ResearchAssistant() {
             // Outside the scrolling list so the confirm action stays visible.
             <div className="bottom-actions">
               <Button onClick={() => setPicker(false)}>
-                선택 완료 · {contexts.length}개
+                선택 마치기 · {contexts.length}개
               </Button>
             </div>
           )}
@@ -1091,13 +1095,13 @@ export function ResearchAssistant() {
       >
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>내용을 확인하고 채택하세요.</DialogTitle>
+            <DialogTitle>AI 제안 선택</DialogTitle>
             <DialogDescription>
               {adopting?.mode === "organize_meeting"
-                ? "정리한 항목을 개인 기록으로 저장합니다."
+                ? "정리한 항목을 나만 볼 수 있는 기록으로 저장해요."
                 : adopting?.mode === "suggest_revisions"
-                  ? "수정 방안으로 저장합니다."
-                  : "작업으로 저장합니다. 문서는 직접 수정하며 교수 확인 상태는 바뀌지 않습니다."}
+                  ? "수정 방법으로 저장해요. 나만 볼 수 있어요."
+                  : "나만 볼 수 있는 할 일로 저장해요. 문서는 바뀌지 않고, 교수 응답도 그대로예요."}
             </DialogDescription>
           </DialogHeader>
           <label className="field">
@@ -1132,7 +1136,7 @@ export function ResearchAssistant() {
               }
               onClick={() => void saveCandidate()}
             >
-              채택하고 저장
+              선택하고 저장
             </Button>
           </div>
         </DialogContent>

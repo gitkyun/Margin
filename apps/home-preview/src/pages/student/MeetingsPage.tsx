@@ -16,6 +16,7 @@ import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { useNavigationGuard } from "@/lib/navigation-guard";
+import { friendlyError } from "@/lib/supabase";
 import {
   formatDate,
   meetingLabels,
@@ -46,10 +47,10 @@ import { filterCounts } from "@/lib/filter-counts";
 
 const meetingFilters = [
   ["all", "전체"],
-  ["upcoming", "준비 중"],
-  ["past", "지난 기록"],
+  ["upcoming", "예정"],
+  ["past", "지난 미팅"],
   ["undated", "날짜 미정"],
-  ["cancelled", "취소"],
+  ["cancelled", "취소됨"],
 ] as const;
 
 function meetingMatches(item: Meeting, filter: string): boolean {
@@ -108,8 +109,8 @@ export function MeetingsPage() {
       <>
         <BackLink to={`/r/${researchId}/meetings`}>미팅 목록</BackLink>
         <EmptyState
-          title="미팅을 열 수 없습니다"
-          description="목록으로 돌아가 현재 연구의 미팅을 선택하세요."
+          title="미팅을 열 수 없어요"
+          description="이 연구에서 미팅을 찾을 수 없어요. 미팅 목록에서 다시 선택해 주세요."
         />
       </>
     );
@@ -142,7 +143,7 @@ export function MeetingsPage() {
   async function create(event: React.FormEvent) {
     event.preventDefault();
     if (!title.trim()) {
-      form.setError("미팅 이름을 입력하세요.");
+      form.setError("미팅 이름을 입력해 주세요.");
       return;
     }
     await form.perform(async () => {
@@ -165,18 +166,18 @@ export function MeetingsPage() {
       navigate(
         `/r/${researchId}/meetings/${meeting.id}?tab=${pageParams.get("intent") === "record" ? "record#meeting-recording" : "prepare"}`,
       );
-      toast.success("미팅을 만들었습니다");
+      toast.success("미팅을 만들었어요");
     });
   }
   return (
     <div className="student-page">
       <PageHeader
         title="미팅"
-        description="다음 지도 준비와 지난 미팅 기록을 이어서 확인하세요."
+        description="다음 미팅을 준비하고 지난 기록을 확인하세요."
         actions={
           <Button onClick={openCreate}>
             <Icon name="plus" size={17} />
-            미팅 추가
+            미팅 만들기
           </Button>
         }
       />
@@ -221,11 +222,11 @@ export function MeetingsPage() {
                 <span>
                   {meeting.goal ||
                     meeting.memo ||
-                    "준비할 작업과 자료를 연결해 보세요."}
+                    "보여줄 결과를 아직 정하지 않았어요."}
                 </span>
                 <small>
                   {formatDate(meeting.date)}
-                  {meeting.time ? ` · ${meeting.time}` : ""} · 연결 작업{" "}
+                  {meeting.time ? ` · ${meeting.time}` : ""} · 할 일{" "}
                   {meeting.taskIds.length}개
                 </small>
               </span>
@@ -246,14 +247,12 @@ export function MeetingsPage() {
         ) : (
           <EmptyState
             title={
-              hasMeetings
-                ? "조건에 맞는 미팅이 없습니다"
-                : "아직 미팅이 없습니다"
+              hasMeetings ? "조건에 맞는 미팅이 없어요" : "아직 미팅이 없어요"
             }
             description={
               hasMeetings
-                ? "다른 이름이나 범위로 찾거나 조건을 초기화해 보세요."
-                : "날짜가 정해지지 않아도 다음 미팅을 준비할 수 있습니다."
+                ? undefined
+                : "날짜를 정하지 않아도 미팅을 만들 수 있어요."
             }
             action={
               hasMeetings ? (
@@ -267,7 +266,7 @@ export function MeetingsPage() {
                   조건 초기화
                 </Button>
               ) : (
-                <Button onClick={openCreate}>첫 미팅 만들기</Button>
+                <Button onClick={openCreate}>미팅 만들기</Button>
               )
             }
           />
@@ -280,12 +279,12 @@ export function MeetingsPage() {
         title={
           pageParams.get("intent") === "record"
             ? "기록할 미팅 만들기"
-            : "미팅 추가"
+            : "미팅 만들기"
         }
         description={
           pageParams.get("intent") === "record"
-            ? "미팅 이름을 정하면 녹음·전사와 메모 화면으로 이어집니다. 날짜는 나중에 정해도 됩니다."
-            : "날짜는 나중에 정해도 됩니다."
+            ? "미팅을 만들면 녹음·전사와 메모를 하는 기록 탭으로 이동해요. 날짜는 나중에 정해도 돼요."
+            : "날짜는 나중에 정해도 돼요."
         }
       >
         <form onSubmit={create} className="stack">
@@ -429,7 +428,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       setMemoConflict(true);
       setMemoState("error");
       setMemoError(
-        "다른 창에서 저장한 메모가 있거나, 복원한 메모의 원래 저장본을 확인할 수 없습니다. 내용을 비교한 뒤 저장 방법을 선택하세요.",
+        "다른 창이나 공동연구자가 메모를 먼저 저장했을 수 있어요. 작성한 내용은 그대로 있어요. 저장본과 비교한 뒤 저장 방법을 골라 주세요.",
       );
       return null;
     }
@@ -459,11 +458,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       return stored;
     } catch (e) {
       setMemoState("error");
-      setMemoError(
-        e instanceof Error
-          ? e.message
-          : "메모를 저장하지 못했습니다. 입력한 내용은 남아 있습니다.",
-      );
+      setMemoError(`${friendlyError(e)} 입력한 메모는 그대로 있어요.`);
       return null;
     } finally {
       memoPending.current = false;
@@ -494,7 +489,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       setMemoConflict(true);
       setMemoState("error");
       setMemoError(
-        "저장된 원문이 변경되었습니다. 내 작성 내용은 그대로 남아 있습니다. 내용을 비교한 뒤 저장 방법을 선택하세요.",
+        "저장된 메모가 바뀌었어요. 작성한 내용은 그대로 있어요. 저장본과 비교한 뒤 저장 방법을 골라 주세요.",
       );
     }
   }, [meeting.memo, meeting.memoRevision]);
@@ -588,14 +583,14 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         questions.filter((item) => selectedIds.includes(item.id)),
       );
       setPreparing(false);
-      toast.success("미팅 준비를 저장했습니다");
+      toast.success("미팅 준비를 저장했어요");
     });
   }
   async function openAI() {
     const stored = await commitMemo();
     if (!stored) return;
     if (!stored.memo.trim()) {
-      toast.error("먼저 미팅 메모를 작성하세요.");
+      toast.error("AI로 정리할 메모가 없어요. 메모를 먼저 작성해 주세요.");
       return;
     }
     const source = { text: stored.memo, revision: stored.memoRevision };
@@ -657,7 +652,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           : {}),
       });
     }
-    toast.success("선택한 항목을 저장했습니다");
+    toast.success("선택한 AI 제안을 저장했어요");
   }
   function openEntry(kind: "feedback" | "decision" | "question") {
     entryBase.current = recordBase(researchId);
@@ -669,7 +664,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   async function storeEntry(event: React.FormEvent) {
     event.preventDefault();
     if (!entryBody.trim() || (entry === "feedback" && !entryTitle.trim())) {
-      entryForm.setError("필수 내용을 입력하세요.");
+      entryForm.setError("필수 항목을 입력해 주세요.");
       return;
     }
     await entryForm.perform(async () => {
@@ -709,7 +704,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         );
       }
       setEntry(null);
-      toast.success("저장했습니다");
+      toast.success("저장했어요");
     });
   }
   async function toggleQuestion(question: Question) {
@@ -720,7 +715,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       });
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : "질문 상태를 저장하지 못했습니다",
+        e instanceof Error
+          ? e.message
+          : "질문 상태를 바꾸지 못했어요. 다시 시도해 주세요.",
       );
     }
   }
@@ -756,7 +753,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               }}
             >
               <Icon name="edit" size={16} />
-              미팅 정보
+              미팅 정보 편집
             </Button>
           </div>
         }
@@ -804,13 +801,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 준비 편집
               </Button>
             </div>
-            <h2>
-              {meeting.goal || "다음 미팅에서 보여줄 결과를 정해 보세요."}
-            </h2>
+            <h2>{meeting.goal || "아직 정하지 않았어요"}</h2>
             <div className="preparation-summary">
               <span>
-                <Icon name="check" size={15} />
-                선택 작업 {linkedTasks.length}개
+                <Icon name="check" size={15} />할 일 {linkedTasks.length}개
               </span>
               <span>
                 <Icon name="file" size={15} />
@@ -834,21 +828,21 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       nextMeetingId: meeting.id,
                     })
                       .then(() =>
-                        toast.success("홈의 준비 대상 미팅으로 선택했습니다"),
+                        toast.success("홈의 다음 미팅으로 지정했어요"),
                       )
                       .catch((e) => toast.error(e.message));
                   }}
                 >
-                  홈의 준비 대상으로 선택
+                  홈의 다음 미팅으로 지정
                 </Button>
               )}
           </section>
           <div className="preparation-columns">
             <section className="surface">
               <div className="section-heading">
-                <h2>준비할 작업</h2>
+                <h2>할 일</h2>
                 <Button variant="ghost" size="sm" onClick={beginPreparation}>
-                  목록 정리
+                  할 일 고르기
                 </Button>
               </div>
               {linkedTasks.length ? (
@@ -888,24 +882,23 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 ))
               ) : (
                 <EmptyState
-                  title="연결한 작업이 없습니다"
-                  description="기존 할 일에서 이번 미팅에 준비할 작업을 고르세요."
+                  title="이번 미팅에 고른 할 일이 없어요"
                   action={
                     <Button variant="outline" onClick={beginPreparation}>
-                      작업 고르기
+                      할 일 고르기
                     </Button>
                   }
                 />
               )}
               <p className="student-footnote">
-                작업의 기한과 진행 상태는 미팅 준비와 별도로 유지됩니다.
+                할 일의 기한과 진행 상태는 미팅 준비와 따로 관리돼요.
               </p>
             </section>
             <section className="surface">
               <div className="section-heading">
                 <h2>보여줄 자료</h2>
                 <Button variant="ghost" size="sm" onClick={beginPreparation}>
-                  자료 선택
+                  자료 고르기
                 </Button>
               </div>
               {linkedVersions.length ? (
@@ -920,14 +913,15 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     </span>
                     <span className="grow">
                       <strong>{version.fileName}</strong>
-                      <small>보존 파일 · v{version.number}</small>
+                      <small>파일 v{version.number}</small>
                     </span>
                     <Icon name="arrow-up-right" size={15} />
                   </Link>
                 ))
               ) : (
                 <p className="student-empty-inline">
-                  자료를 고르면 선택한 버전 그대로 준비에 연결됩니다.
+                  고른 자료가 없어요. 자료를 고르면 그 버전 그대로 준비에
+                  추가돼요.
                 </p>
               )}
               <div className="student-subsection">
@@ -937,7 +931,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => openEntry("question")}
-                    aria-label="미팅 질문 추가"
+                    aria-label="질문 추가"
                   >
                     <Icon name="plus" size={16} />
                   </Button>
@@ -952,9 +946,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       </div>
                     ))
                 ) : (
-                  <p className="student-empty-inline">
-                    다음 지도에서 확인할 질문을 남겨 두세요.
-                  </p>
+                  <p className="student-empty-inline">물어볼 질문이 없어요.</p>
                 )}
               </div>
             </section>
@@ -973,7 +965,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               onAppend={(text) => {
                 if ((draftMemo.current + text).length > 50000)
                   throw new Error(
-                    "미팅 메모가 너무 깁니다. 필요한 구간만 복사해 추가해 주세요.",
+                    "미팅 메모가 50,000자를 넘게 돼서 전사문을 추가하지 않았어요. 필요한 부분만 복사해 붙여 넣어 주세요.",
                   );
                 setMemo(draftMemo.current + text);
               }}
@@ -984,7 +976,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 <span />
                 {memoState === "saved"
                   ? mode === "preview"
-                    ? "로컬 저장됨"
+                    ? "이 브라우저에 저장됨"
                     : "저장됨"
                   : memoState === "saving"
                     ? "저장 중"
@@ -994,8 +986,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               </span>
             </div>
             <p className="student-footnote">
-              들은 내용이나 기존 메모를 그대로 작성하세요. 정리 항목은 원문과
-              따로 저장됩니다.
+              들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한
+              피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.
             </p>
             <Textarea
               className="meeting-memo"
@@ -1017,24 +1009,22 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               onBlur={() => {
                 void commitMemo();
               }}
-              placeholder={
-                "미팅에서 나눈 내용을 기록하세요.\n\n교수님의 피드백, 결정한 내용, 다시 확인할 질문을 함께 적어도 됩니다."
-              }
+              placeholder="예: 교수님 피드백, 결정한 내용, 다시 확인할 질문"
             />
             <ErrorNotice error={memoError} />
             {memoConflict ? (
               <div className="stack">
                 <details className="student-details">
                   <summary>
-                    현재 저장본 비교하기 · 원문 v{meeting.memoRevision}
+                    저장본과 비교하기 · 원문 v{meeting.memoRevision}
                   </summary>
                   <p className="student-body-text">
-                    {meeting.memo || "저장된 메모가 없습니다."}
+                    {meeting.memo || "저장된 메모가 없어요."}
                   </p>
                 </details>
                 <div className="button-row">
                   <Button variant="outline" onClick={loadSavedMemo}>
-                    저장본 불러오기
+                    저장본으로 바꾸기
                   </Button>
                   <Button
                     disabled={memoState === "saving"}
@@ -1057,12 +1047,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                         toast.error(
                           e instanceof Error
                             ? e.message
-                            : "저장본을 확인하지 못했습니다",
+                            : "저장본을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",
                         ),
                       )
                     }
                   >
-                    새 저장본 확인
+                    최신 저장본 확인
                   </Button>
                 </div>
               )
@@ -1111,8 +1101,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 ))
               ) : (
                 <p className="student-empty-inline">
-                  필요한 내용을 직접 추가하거나 AI 정리 후보에서 선택해
-                  저장하세요.
+                  저장한 피드백이 없어요. 직접 추가하거나 AI 제안에서 골라
+                  저장할 수 있어요.
                 </p>
               )}
             </div>
@@ -1142,7 +1132,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 onClick={() => openEntry("decision")}
               >
                 <Icon name="plus" size={15} />
-                추가
+                결정 추가
               </Button>
             </div>
             {decisions.length ? (
@@ -1162,7 +1152,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               ))
             ) : (
               <EmptyState
-                title="기록한 결정 사항이 없습니다"
+                title="기록한 결정 사항이 없어요"
                 description="미팅에서 정한 방향과 이유를 남겨 두세요."
               />
             )}
@@ -1176,7 +1166,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 onClick={() => openEntry("question")}
               >
                 <Icon name="plus" size={15} />
-                추가
+                질문 추가
               </Button>
             </div>
             {linkedQuestions.length ? (
@@ -1219,7 +1209,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                           questionForm.setError(null);
                         }}
                       >
-                        다른 미팅 준비에 연결
+                        다른 미팅 준비에 추가
                         <Icon name="arrow-right" size={13} />
                       </Button>
                     )}
@@ -1228,7 +1218,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               ))
             ) : (
               <EmptyState
-                title="아직 질문이 없습니다"
+                title="아직 질문이 없어요"
                 description="다음에 확인할 질문을 남겨 두세요."
               />
             )}
@@ -1242,7 +1232,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           if (!prepForm.saving) setPreparing(open);
         }}
         title="미팅 준비 편집"
-        description="고른 작업과 자료의 원본은 바뀌지 않습니다."
+        description="여기서 고르거나 빼도 할 일과 자료는 바뀌지 않아요."
       >
         <form onSubmit={storePreparation} className="stack">
           <label className="field">
@@ -1257,7 +1247,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             />
           </label>
           <div className="student-picker">
-            <h3>포함할 작업</h3>
+            <h3>할 일</h3>
             {data.tasks
               .filter((t) => t.researchId === researchId)
               .map((task) => (
@@ -1284,12 +1274,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               ))}
             {!data.tasks.some((t) => t.researchId === researchId) && (
               <p className="student-empty-inline">
-                할 일 메뉴에서 작업을 추가할 수 있습니다.
+                아직 할 일이 없어요. 할 일 메뉴에서 만들 수 있어요.
               </p>
             )}
           </div>
           <div className="student-picker">
-            <h3>보존 자료</h3>
+            <h3>보여줄 자료</h3>
             {data.versions
               .filter((v) => v.researchId === researchId)
               .map((version) => (
@@ -1307,13 +1297,13 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   />
                   <span>
                     {version.fileName}
-                    <small>v{version.number} · 보존 파일</small>
+                    <small>파일 v{version.number}</small>
                   </span>
                 </label>
               ))}
             {!data.versions.some((v) => v.researchId === researchId) && (
               <p className="student-empty-inline">
-                아직 보존 파일이 없습니다. 여기서 바로 PDF를 올릴 수 있습니다.
+                아직 올린 파일이 없어요. 여기서 바로 PDF를 올릴 수 있어요.
               </p>
             )}
             <QuickPdfUpload
@@ -1324,7 +1314,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             />
           </div>
           <div className="student-picker">
-            <h3>준비할 질문</h3>
+            <h3>물어볼 질문</h3>
             {allQuestions
               .filter((q) => q.status === "open" || questionIds.includes(q.id))
               .map((question) => (
@@ -1347,12 +1337,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               <Input
                 value={newQuestion}
                 onChange={(e) => setNewQuestion(e.target.value)}
-                placeholder="새 질문을 적어 주세요"
+                placeholder="예: 설문 문항 수를 줄여도 될까요?"
                 aria-label="준비에 추가할 질문"
                 onKeyDown={(e) => {
+                  // 한글 조합을 끝내는 Enter로 질문이 덜 쓴 채 추가되지 않게 한다.
                   if (e.key === "Enter") {
+                    // Enter here adds a question; it must never submit the
+                    // surrounding form, and the Enter that finishes Korean
+                    // composition must not add a half-typed question.
                     e.preventDefault();
-                    addDraftQuestion();
+                    if (!e.nativeEvent.isComposing && e.keyCode !== 229)
+                      addDraftQuestion();
                   }
                 }}
               />
@@ -1379,7 +1374,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         busy={metaForm.saving}
         open={editingMeta}
         onOpenChange={setEditingMeta}
-        title="미팅 정보"
+        title="미팅 정보 편집"
       >
         <form
           className="stack"
@@ -1387,7 +1382,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             event.preventDefault();
             void metaForm.perform(async () => {
               if (!meta.title.trim())
-                throw new Error("미팅 이름을 입력하세요.");
+                throw new Error("미팅 이름을 입력해 주세요.");
               await save("meetings", {
                 ...metaBase.current,
                 title: meta.title.trim(),
@@ -1396,7 +1391,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 status: meta.status,
               });
               setEditingMeta(false);
-              toast.success("미팅 정보를 저장했습니다");
+              toast.success("미팅 정보를 저장했어요");
             });
           }}
         >
@@ -1422,7 +1417,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             />
           </div>
           <label className="field">
-            <span className="field-name">기록 상태</span>
+            <span className="field-name">미팅 상태</span>
             <SelectField
               className="native-select"
               value={meta.status}
@@ -1441,7 +1436,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             </SelectField>
           </label>
           <p className="student-inline-note">
-            일정이나 기록 상태를 바꿔도 연결한 작업의 기한은 바뀌지 않습니다.
+            날짜나 상태를 바꿔도 고른 할 일의 기한은 바뀌지 않아요.
           </p>
           <ErrorNotice error={metaForm.error} />
           <SaveActions
@@ -1484,7 +1479,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               rows={5}
             />
           </label>
-          <p className="student-footnote">직접 쓴 내용으로 저장됩니다.</p>
+          <p className="student-footnote">직접 작성한 항목으로 저장돼요.</p>
           <ErrorNotice error={entryForm.error} />
           <SaveActions
             saving={entryForm.saving}
@@ -1498,8 +1493,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         onOpenChange={(open) => {
           if (!open) setLinkQuestionId(null);
         }}
-        title="다른 미팅 준비에 연결"
-        description="같은 질문을 연결합니다. 원래 질문은 복제하지 않습니다."
+        title="다른 미팅 준비에 추가"
+        description="질문을 복사하지 않고 같은 질문을 추가해요. 해결 여부도 함께 바뀌어요."
       >
         <form
           className="stack"
@@ -1510,7 +1505,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 (m) => m.id === targetMeetingId,
               );
               if (!target || !linkQuestionId)
-                throw new Error("미팅을 선택하세요.");
+                throw new Error("미팅을 선택해 주세요.");
               await save("meetings", {
                 ...target,
                 questionIds: [
@@ -1518,12 +1513,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 ],
               });
               setLinkQuestionId(null);
-              toast.success("선택한 미팅에 질문을 연결했습니다");
+              toast.success("선택한 미팅 준비에 질문을 추가했어요");
             });
           }}
         >
           <label className="field">
-            <span className="field-name">준비할 미팅</span>
+            <span className="field-name">추가할 미팅</span>
             <SelectField
               className="native-select"
               value={targetMeetingId}
@@ -1549,7 +1544,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           <SaveActions
             saving={questionForm.saving}
             onCancel={() => setLinkQuestionId(null)}
-            label="질문 연결"
+            label="추가"
           />
         </form>
       </FormDialog>

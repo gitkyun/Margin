@@ -158,7 +158,7 @@ describe("recording and live Korean text", () => {
     act(() => Recognition.instances[0].result("비교표를 보완하세요.", true));
     fireEvent.click(screen.getByRole("button", { name: "녹음 마치기" }));
     const input = await screen.findByRole("textbox", {
-      name: "저장할 한국어 전사문",
+      name: "한국어 전사문",
     });
     fireEvent.change(input, {
       target: { value: "선행연구 비교표를 보완하세요." },
@@ -195,13 +195,13 @@ describe("recording and live Korean text", () => {
     await begin();
     act(() => Recognition.instances[0].result("저장할 문장", true));
     fireEvent.click(screen.getByRole("button", { name: "녹음 마치기" }));
-    await screen.findByRole("textbox", { name: "저장할 한국어 전사문" });
+    await screen.findByRole("textbox", { name: "한국어 전사문" });
     fireEvent.click(screen.getByRole("button", { name: "녹음·전사 저장" }));
     await screen.findByRole("button", { name: "저장 다시 시도" });
     expect(
       (
         screen.getByRole("textbox", {
-          name: "저장할 한국어 전사문",
+          name: "한국어 전사문",
         }) as HTMLTextAreaElement
       ).value,
     ).toBe("저장할 문장");
@@ -217,9 +217,7 @@ describe("recording and live Korean text", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "녹음 시작" })).toBeTruthy(),
     );
-    expect(
-      screen.queryByRole("textbox", { name: "저장할 한국어 전사문" }),
-    ).toBeNull();
+    expect(screen.queryByRole("textbox", { name: "한국어 전사문" })).toBeNull();
     expect(mocks.save).not.toHaveBeenCalled();
   });
   it("reports microphone denial without inventing a transcript", async () => {

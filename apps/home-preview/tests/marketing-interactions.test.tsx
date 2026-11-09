@@ -73,7 +73,7 @@ it("mobile entry links respect the existing signed-in session", () => {
     </MemoryRouter>,
   );
   expect(screen.queryByRole("link", { name: "로그인" })).toBeNull();
-  const entry = screen.getByRole("link", { name: "연구 이어가기" });
+  const entry = screen.getByRole("link", { name: "내 연구 열기" });
   expect(entry.getAttribute("href")).toBe("/r");
   fireEvent.click(entry);
   expect(close).toHaveBeenCalledOnce();

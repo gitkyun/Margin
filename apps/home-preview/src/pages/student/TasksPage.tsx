@@ -100,12 +100,14 @@ export function TasksPage() {
       });
       toast.success(
         task.status === "done"
-          ? "작업을 다시 열었습니다"
-          : "작업을 완료로 표시했습니다",
+          ? "할 일을 진행 중으로 되돌렸어요"
+          : "할 일을 완료로 표시했어요",
       );
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : "작업 상태를 저장하지 못했습니다",
+        e instanceof Error
+          ? e.message
+          : "할 일 상태를 저장하지 못했어요. 다시 시도해 주세요.",
       );
     } finally {
       setBusyIds((ids) => ids.filter((id) => id !== task.id));
@@ -157,8 +159,8 @@ export function TasksPage() {
       <>
         <BackLink to={`/r/${researchId}/tasks`}>할 일 목록</BackLink>
         <EmptyState
-          title="작업을 열 수 없습니다"
-          description="현재 연구의 할 일 목록에서 다시 선택하세요."
+          title="할 일을 열 수 없어요"
+          description="이 연구에서 할 일을 찾을 수 없어요. 할 일 목록에서 다시 선택해 주세요."
         />
       </>
     );
@@ -170,7 +172,7 @@ export function TasksPage() {
           <BackLink to={`/r/${researchId}/tasks`}>할 일 목록</BackLink>
           <PageHeader
             title={current.title}
-            description="진행과 기한을 관리하고 실제 수정 결과로 이어가세요."
+            description="상태와 기한을 바꾸고 관련 기록을 확인하세요."
             actions={
               <Button
                 variant="outline"
@@ -179,15 +181,14 @@ export function TasksPage() {
                   form.setError(null);
                 }}
               >
-                <Icon name="edit" size={16} />
-                작업 편집
+                <Icon name="edit" size={16} />할 일 편집
               </Button>
             }
           />
           <div className="task-detail-grid">
             <section className="surface task-detail-main">
               <div className="section-heading">
-                <h2>작업 내용</h2>
+                <h2>할 일 내용</h2>
                 <StatusBadge
                   tone={
                     current.status === "done"
@@ -204,7 +205,7 @@ export function TasksPage() {
                 <p className="meta">{originLabels[current.origin]}</p>
               )}
               <p className="student-body-text">
-                {current.description || "상세 설명이 없습니다."}
+                {current.description || "설명이 없어요."}
               </p>
               <div className="task-property-grid">
                 <div>
@@ -225,7 +226,7 @@ export function TasksPage() {
                   onClick={() => void quickToggle(current)}
                 >
                   <Icon name="check" size={16} />
-                  {current.status === "done" ? "작업 다시 열기" : "완료로 표시"}
+                  {current.status === "done" ? "완료 취소" : "완료로 표시"}
                 </Button>
                 <Button
                   variant="outline"
@@ -237,11 +238,11 @@ export function TasksPage() {
                 </Button>
               </div>
               <p className="student-footnote">
-                작업 완료는 학생의 반영 기록·교수의 확인과 별개입니다.
+                할 일 완료는 수정 결과 작성이나 교수 검토와 별개예요.
               </p>
             </section>
             <aside className="surface">
-              <h2>연결된 기록</h2>
+              <h2>관련 기록</h2>
               {current.feedbackIds.length > 0 && (
                 <div className="student-subsection">
                   <h3>피드백</h3>
@@ -263,14 +264,14 @@ export function TasksPage() {
               )}
               {current.planId && (
                 <div className="student-subsection">
-                  <h3>수정 방안</h3>
+                  <h3>수정 방법</h3>
                   <p className="student-body-text">
                     {data.plans.find((p) => p.id === current.planId)?.title ??
-                      "연결한 방안"}
+                      "연결한 수정 방법"}
                   </p>
                   {data.plans.find((p) => p.id === current.planId)?.status ===
                     "cancelled" && (
-                    <StatusBadge tone="neutral">채택 취소된 방안</StatusBadge>
+                    <StatusBadge tone="neutral">선택 취소됨</StatusBadge>
                   )}
                 </div>
               )}
@@ -295,7 +296,7 @@ export function TasksPage() {
                     ))
                 ) : (
                   <p className="student-empty-inline">
-                    아직 연결한 미팅이 없습니다.
+                    아직 미팅 준비에 포함하지 않았어요.
                   </p>
                 )}
               </div>
@@ -336,7 +337,7 @@ export function TasksPage() {
                   setBusyIds((ids) => [...ids, current.id]);
                   try {
                     await save("tasks", { ...current, archivedAt: undefined });
-                    toast.success("작업을 복원했습니다");
+                    toast.success("할 일을 복원했어요");
                   } catch (e) {
                     toast.error((e as Error).message);
                   } finally {
@@ -344,8 +345,7 @@ export function TasksPage() {
                   }
                 }}
               >
-                <Icon name="archive" size={15} />
-                작업 복원
+                <Icon name="archive" size={15} />할 일 복원
               </Button>
             ) : (
               <Button
@@ -355,8 +355,7 @@ export function TasksPage() {
                   deleteForm.setError(null);
                 }}
               >
-                <Icon name="archive" size={15} />
-                작업 보관
+                <Icon name="archive" size={15} />할 일 보관
               </Button>
             )}
           </div>
@@ -365,7 +364,7 @@ export function TasksPage() {
         <>
           <PageHeader
             title="할 일"
-            description="미팅에 포함하지 않은 작업까지 한곳에서 확인하세요."
+            description="미팅 준비에 포함하지 않은 할 일까지 모두 볼 수 있어요."
             actions={
               <Button onClick={startCreate}>
                 <Icon name="plus" size={17} />할 일 추가
@@ -376,9 +375,9 @@ export function TasksPage() {
             <Segments
               value={filter}
               onChange={setFilter}
-              label="작업 상태"
+              label="할 일 상태"
               options={[
-                { value: "active", label: "진행할 작업" },
+                { value: "active", label: "남은 할 일" },
                 { value: "done", label: "완료" },
                 { value: "all", label: "전체" },
                 { value: "archived", label: "보관함" },
@@ -398,7 +397,7 @@ export function TasksPage() {
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
               >
-                <option value="all">전체 작업</option>
+                <option value="all">전체 할 일</option>
                 {data.meetings
                   .filter(
                     (m) =>
@@ -426,12 +425,12 @@ export function TasksPage() {
                 ))}
               </SelectField>
             </label>
-            <span className="meta">{tasks.length}개 작업</span>
+            <span className="meta">할 일 {tasks.length}개</span>
           </div>
           <section className="surface task-table">
             <div className="task-table-head">
-              <span>작업</span>
-              <span>진행</span>
+              <span>할 일</span>
+              <span>상태</span>
               <span>기한</span>
               <span />
             </div>
@@ -446,7 +445,7 @@ export function TasksPage() {
                     checked={task.status === "done"}
                     onChange={() => void quickToggle(task)}
                     disabled={!!task.archivedAt || busyIds.includes(task.id)}
-                    aria-label={`${task.title} 완료 상태 변경`}
+                    aria-label={`${task.title} 완료`}
                   />
                   <Link
                     className="task-row-text"
@@ -457,14 +456,17 @@ export function TasksPage() {
                       {task.priority === "high" && (
                         <span
                           className="priority-dot"
-                          aria-label="높은 우선순위"
+                          role="img"
+                          aria-label="우선순위 높음"
                         />
                       )}
                     </strong>
                     <small>
                       {task.origin && <>{originLabels[task.origin]} · </>}
                       {task.description ||
-                        `${task.feedbackIds.length}개 피드백 연결`}
+                        (task.feedbackIds.length
+                          ? `관련 피드백 ${task.feedbackIds.length}개`
+                          : "관련 피드백 없음")}
                     </small>
                   </Link>
                   <StatusBadge
@@ -510,8 +512,7 @@ export function TasksPage() {
               ))
             ) : hasTasks ? (
               <EmptyState
-                title="조건에 맞는 작업이 없습니다"
-                description="검색어나 필터를 바꾸거나 조건을 초기화해 보세요."
+                title="조건에 맞는 할 일이 없어요"
                 action={
                   <Button variant="outline" onClick={resetFilters}>
                     조건 초기화
@@ -520,8 +521,8 @@ export function TasksPage() {
               />
             ) : (
               <EmptyState
-                title="아직 작업이 없습니다"
-                description="직접 할 일을 추가하거나 피드백의 수정 방안에서 만들어 보세요."
+                title="아직 할 일이 없어요"
+                description="직접 추가하거나 피드백의 수정 방법에서 만들 수 있어요."
                 action={
                   <Button variant="outline" onClick={startCreate}>
                     할 일 추가
@@ -540,7 +541,7 @@ export function TasksPage() {
         }}
         title={
           draft && data.tasks.some((t) => t.id === draft.id)
-            ? "작업 편집"
+            ? "할 일 편집"
             : "할 일 추가"
         }
       >
@@ -549,7 +550,7 @@ export function TasksPage() {
           onSubmit={(event) => {
             event.preventDefault();
             if (!draft || !draft.title.trim()) {
-              form.setError("할 일의 제목을 입력하세요.");
+              form.setError("제목을 입력해 주세요.");
               return;
             }
             void form.perform(async () => {
@@ -559,7 +560,7 @@ export function TasksPage() {
                 description: draft.description.trim(),
               });
               setDraft(null);
-              toast.success("작업을 저장했습니다");
+              toast.success("할 일을 저장했어요");
               if (!taskId) navigate(`/r/${researchId}/tasks/${item.id}`);
             });
           }}
@@ -567,13 +568,13 @@ export function TasksPage() {
           {draft && (
             <>
               <LabeledInput
-                label="할 일"
+                label="제목"
                 required
                 value={draft.title}
                 onChange={(title) => setDraft((v) => (v ? { ...v, title } : v))}
               />
               <LabeledText
-                label="작업 내용"
+                label="설명"
                 value={draft.description}
                 onChange={(description) =>
                   setDraft((v) => (v ? { ...v, description } : v))
@@ -636,7 +637,7 @@ export function TasksPage() {
                 <label className="field">
                   담당자
                   <SelectField
-                    aria-label="작업 담당자"
+                    aria-label="담당자"
                     value={draft.assigneeId ?? ""}
                     onChange={(e) =>
                       setDraft({
@@ -661,7 +662,7 @@ export function TasksPage() {
                 <label className="field">
                   연구 단계
                   <SelectField
-                    aria-label="연결할 연구 단계"
+                    aria-label="연구 단계"
                     value={draft.phaseId ?? ""}
                     onChange={(e) =>
                       setDraft({
@@ -670,7 +671,7 @@ export function TasksPage() {
                       })
                     }
                   >
-                    <option value="">연결하지 않음</option>
+                    <option value="">단계 미지정</option>
                     {data.phases
                       .filter(
                         (p) => p.researchId === researchId && !p.archivedAt,
@@ -688,7 +689,7 @@ export function TasksPage() {
                 onChange={(visibility) => setDraft({ ...draft, visibility })}
               />
               <div className="student-picker">
-                <h3>연결할 피드백</h3>
+                <h3>관련 피드백</h3>
                 {data.feedback
                   .filter((f) => f.researchId === researchId)
                   .map((feedback) => (
@@ -716,7 +717,7 @@ export function TasksPage() {
                   ))}
                 {!data.feedback.some((f) => f.researchId === researchId) && (
                   <p className="student-empty-inline">
-                    피드백 없이도 작업을 저장할 수 있습니다.
+                    피드백 없이도 저장할 수 있어요.
                   </p>
                 )}
               </div>
@@ -738,9 +739,9 @@ export function TasksPage() {
                     }}
                   />
                   <span>
-                    수정 방안 연결 유지
+                    수정 방법 연결 유지
                     <small>
-                      해제해도 방안이나 이 작업이 삭제되지는 않습니다.
+                      해제해도 수정 방법과 이 할 일은 지워지지 않아요.
                     </small>
                   </span>
                 </label>
@@ -758,7 +759,7 @@ export function TasksPage() {
           if (!open) setLinkTask(null);
         }}
         title="미팅 준비에 포함"
-        description="기존 작업을 그대로 연결합니다. 작업의 기한은 유지됩니다."
+        description="할 일을 복사하지 않고 그대로 넣어요. 기한은 바뀌지 않아요."
       >
         <form
           className="stack"
@@ -766,13 +767,14 @@ export function TasksPage() {
             event.preventDefault();
             void linkForm.perform(async () => {
               const meeting = data.meetings.find((m) => m.id === meetingId);
-              if (!meeting || !linkTask) throw new Error("미팅을 선택하세요.");
+              if (!meeting || !linkTask)
+                throw new Error("미팅을 선택해 주세요.");
               await save("meetings", {
                 ...meeting,
                 taskIds: [...new Set([...meeting.taskIds, linkTask.id])],
               });
               setLinkTask(null);
-              toast.success("미팅 준비에 포함했습니다");
+              toast.success("미팅 준비에 포함했어요");
             });
           }}
         >
@@ -823,13 +825,11 @@ export function TasksPage() {
         busy={deleteForm.saving}
         open={deleting}
         onOpenChange={setDeleting}
-        title="작업 보관"
-        description="목록에서 숨기고 보관함으로 옮깁니다. 연결된 미팅과 수정 결과는 남으며 언제든 복원할 수 있습니다."
+        title="할 일을 보관할까요?"
+        description="보관함으로 옮겨요. 연결된 미팅과 수정 결과는 그대로 있고, 보관함에서 복원할 수 있어요."
       >
         <div className="stack">
-          <p className="student-body-text">
-            ‘{current?.title}’ 작업을 보관합니다.
-          </p>
+          <p className="student-body-text">‘{current?.title}’</p>
           <ErrorNotice error={deleteForm.error} />
           <div className="form-actions">
             <Button variant="outline" onClick={() => setDeleting(false)}>
@@ -844,11 +844,11 @@ export function TasksPage() {
                     await remove("tasks", current.id);
                     setDeleting(false);
                     navigate(`/r/${researchId}/tasks`);
-                    toast.success("작업을 보관했습니다");
+                    toast.success("할 일을 보관했어요");
                   });
               }}
             >
-              작업 보관
+              보관
             </Button>
           </div>
         </div>

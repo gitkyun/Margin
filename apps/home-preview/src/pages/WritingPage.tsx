@@ -137,7 +137,7 @@ export function WritingPage() {
     <div className="experience-page">
       <PageHeader
         title="글쓰기"
-        description="계획서부터 원고까지, 기록과 수정 과정을 함께 남깁니다."
+        description="계획서와 원고를 쓰고, 버전을 남겨 비교할 수 있어요."
         actions={
           <div className="button-row">
             <Button
@@ -171,8 +171,7 @@ export function WritingPage() {
                 : "연구 계획서 만들기"}
             </DialogTitle>
             <DialogDescription>
-              제목을 정한 뒤 작성 공간을 만듭니다. 문서는 나만 보기로
-              시작합니다.
+              만든 문서는 처음에 나만 볼 수 있어요.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -226,7 +225,7 @@ export function WritingPage() {
                     : "연구 노트"}
               </span>
               <h3>{d.title}</h3>
-              <p>{d.text.slice(0, 180) || "첫 문장을 시작해 보세요."}</p>
+              <p>{d.text.slice(0, 180) || "아직 내용이 없어요."}</p>
             </div>
             <div>
               <strong>{d.title}</strong>
@@ -245,11 +244,11 @@ export function WritingPage() {
       {!docs.length && !creating && (
         <EmptyState
           icon="file"
-          title="연구의 첫 문장을 남겨 보세요."
-          description="저장한 버전은 비교하고, 검토용 PDF로 만들 수 있습니다."
+          title="아직 문서가 없어요"
+          description="쓴 내용은 검토용 PDF로 만들어 자료로 등록할 수 있어요."
           action={
             <Button variant="outline" onClick={() => beginCreate()}>
-              계획서 작성
+              계획서 만들기
             </Button>
           }
         />
@@ -313,6 +312,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       attributes: { class: "rms-document-editor", "aria-label": "문서 본문" },
     },
     onUpdate: ({ editor }) => {
+      if (discarded.current) return;
       setDirty(true);
       localStorage.setItem(
         key,
@@ -325,7 +325,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     },
   });
   useEffect(() => {
-    if (dirty && editor)
+    if (dirty && editor && !discarded.current)
       try {
         localStorage.setItem(
           key,
@@ -337,11 +337,23 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         );
       } catch {}
   }, [title, dirty, base.updatedAt]);
-  useNavigationGuard({ dirty, busy: !!busy, label: "문서 초안" });
+  const discarded = useRef(false);
+  useNavigationGuard({
+    dirty,
+    busy: !!busy,
+    label: "문서 초안",
+    // "버리고 이동" must not leave the draft to come back on the next visit.
+    onDiscard: () => {
+      discarded.current = true;
+      try {
+        localStorage.removeItem(key);
+      } catch {}
+    },
+  });
   useEffect(() => {
     if (!restored) return;
     // 같은 id로 띄워 개발 모드 이중 실행에서도 안내가 한 번만 보이게 한다.
-    toast.info("이 브라우저에 남아 있는 작성본을 복원했습니다.", {
+    toast.info("저장하지 않은 내용을 이 브라우저에서 불러왔어요.", {
       id: `writing-draft-${initial.id}`,
     });
   }, [restored, initial.id]);
@@ -351,6 +363,32 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     },
     [preview],
   );
+  function saveNow() {
+    void action("save", async () => {
+      await persist();
+      toast.success("문서를 저장했어요.");
+    });
+  }
+  // Cmd/Ctrl+S saves the document instead of opening the browser's
+  // "Save page" dialog.
+  const saveShortcut = useRef(saveNow);
+  saveShortcut.current = () => {
+    if (!busy && title.trim()) saveNow();
+  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        !e.altKey &&
+        e.key.toLowerCase() === "s"
+      ) {
+        e.preventDefault();
+        saveShortcut.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   async function persist() {
     if (!editor || !title.trim()) throw new Error("문서 제목을 적어 주세요.");
     const input = {
@@ -444,7 +482,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               {busy ? "저장 중" : dirty ? "저장하지 않은 변경" : "저장됨"}
             </span>
             <span>{editor?.getText().length ?? 0}자</span>
-            <span>수정 {base.revision}회</span>
+            <span>저장 {base.revision}회</span>
           </div>
         </div>
         <div className="button-row">
@@ -474,15 +512,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           >
             검토용 PDF
           </Button>
-          <Button
-            disabled={!!busy || !title.trim()}
-            onClick={() =>
-              void action("save", async () => {
-                await persist();
-                toast.success("문서를 저장했습니다.");
-              })
-            }
-          >
+          <Button disabled={!!busy || !title.trim()} onClick={saveNow}>
             {busy === "save" ? "저장 중" : "저장"}
           </Button>
         </div>
@@ -517,7 +547,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 </button>
               ))
             ) : (
-              <p>제목을 추가하면 목차가 생깁니다.</p>
+              <p>소제목을 넣으면 목차가 생겨요.</p>
             )}
             <VisibilityField
               value={visibility}
@@ -535,7 +565,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       <div className="editor-dock-wrap">
         <div className="editor-dock" role="toolbar" aria-label="문서 서식">
           <DockItem
-            label="목차 표시"
+            label="목차·공개 범위"
             onClick={() => setOutline(!outline)}
             active={outline}
           >
@@ -664,13 +694,13 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             }}
           >
             <Icon name="sparkles" size={16} />
-            {editor?.state.selection.empty ? "AI 검토" : "선택 문단 검토"}
+            {editor?.state.selection.empty ? "AI 검토" : "선택 부분 AI 검토"}
           </Button>
         </div>
         <p>
           {dirty
-            ? "먼저 작성본을 저장하세요."
-            : "문단을 선택하면 해당 부분만, 선택하지 않으면 저장한 본문을 검토합니다."}
+            ? "저장한 뒤에 AI 검토를 할 수 있어요."
+            : "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토할 수 있어요."}
         </p>
       </div>
       <Dialog
@@ -681,10 +711,10 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       >
         <DialogContent className="rms-dialog wide-dialog">
           <DialogHeader>
-            <DialogTitle>다른 연구자가 먼저 저장했습니다.</DialogTitle>
+            <DialogTitle>다른 창이나 공동연구자가 먼저 저장했어요</DialogTitle>
             <DialogDescription>
-              내 작성본은 유지됩니다. 차이를 확인하고 어느 내용으로 이어갈지
-              선택하세요.
+              내가 쓴 내용은 아직 그대로 있어요. 저장된 내용으로 바꾸면 이
+              내용은 사라지니, 달라진 부분을 확인하고 선택해 주세요.
             </DialogDescription>
           </DialogHeader>
           <TextComparison
@@ -706,7 +736,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 }
               }}
             >
-              최신본으로 바꾸기
+              저장된 내용으로 바꾸기
             </Button>
             <Button
               onClick={() => {
@@ -715,12 +745,12 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   setConflict(null);
                   setError("");
                   toast.info(
-                    "내 작성본을 유지했습니다. 확인 후 저장해 주세요.",
+                    "내가 쓴 내용을 유지했어요. 저장하면 먼저 저장된 내용을 덮어써요.",
                   );
                 }
               }}
             >
-              내 작성본으로 이어가기
+              내가 쓴 내용 유지
             </Button>
           </div>
         </DialogContent>
@@ -730,7 +760,9 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           <DialogHeader>
             <DialogTitle>문서 버전</DialogTitle>
             <DialogDescription>
-              변경 이력을 비교합니다. 복원해도 이전 버전을 지우지 않습니다.
+              되돌리면 문서가 선택한 버전 내용으로 바뀌고, 이 내용이 새 버전으로
+              남아요. 기존 버전은 지워지지 않아요. 지금 내용도 남기려면 먼저
+              ‘지금 버전 남기기’를 눌러 주세요.
             </DialogDescription>
           </DialogHeader>
           <div className="comparison-selects">
@@ -739,7 +771,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               value={from}
               onChange={setFrom}
               options={[
-                { value: "", label: "비교할 이전 버전 선택" },
+                { value: "", label: "비교할 버전 선택" },
                 ...versionList.map((v) => ({
                   value: v.id,
                   label: `v${v.number} · ${new Date(v.createdAt).toLocaleString("ko-KR")}`,
@@ -752,7 +784,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               value={to}
               onChange={setTo}
               options={[
-                { value: "draft", label: "현재 작성본" },
+                { value: "draft", label: "지금 쓰는 내용" },
                 ...versionList.map((v) => ({
                   value: v.id,
                   label: `v${v.number}`,
@@ -764,8 +796,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             <TextComparison before={before} after={after} />
           ) : (
             <p className="quiet-placeholder">
-              저장은 작성 중인 내용을 갱신합니다. ‘현재 버전 보존’으로 비교할
-              기준을 남기면 작성 중인 내용과 비교할 수 있습니다.
+              저장만 해서는 버전이 생기지 않아요. ‘지금 버전 남기기’로 버전을
+              남기면 이후에 고친 내용과 비교할 수 있어요.
             </p>
           )}
           <div className="bottom-actions">
@@ -795,11 +827,15 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   setDirty(false);
                   setVersionsOpen(false);
                   localStorage.removeItem(key);
-                  toast.success("선택한 내용을 새 버전으로 복원했습니다.");
+                  toast.success(
+                    `v${v.number} 내용으로 되돌리고 새 버전으로 남겼어요.`,
+                  );
                 })
               }
             >
-              선택한 이전 버전으로 복원
+              {from
+                ? `v${versionList.find((v) => v.id === from)?.number} 내용으로 되돌리기`
+                : "되돌리기"}
             </Button>
             <Button
               disabled={!!busy}
@@ -808,11 +844,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   const version = await keepVersion();
                   setFrom(version.id);
                   setTo("draft");
-                  toast.success("보존 버전을 저장했습니다.");
+                  toast.success("지금 내용을 저장하고 새 버전으로 남겼어요.");
                 })
               }
             >
-              현재 버전 보존
+              지금 버전 남기기
             </Button>
           </div>
         </DialogContent>
@@ -825,15 +861,15 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       >
         <DialogContent className="rms-dialog wide-dialog">
           <DialogHeader>
-            <DialogTitle>검토용 PDF 확인</DialogTitle>
+            <DialogTitle>검토용 PDF 미리보기</DialogTitle>
             <DialogDescription>
-              페이지 나눔과 표를 확인한 뒤 자료로 등록하세요. 이 파일은 이후
-              원고 변경과 별도로 보존됩니다.
+              지금 내용을 새 버전으로 남기고 만든 PDF예요. 자료로 등록한 PDF는
+              문서를 더 고쳐도 바뀌지 않아요.
             </DialogDescription>
           </DialogHeader>
           {preview && (
             <iframe
-              title="생성한 검토용 PDF"
+              title="검토용 PDF 미리보기"
               src={preview.url}
               className="pdf-export-preview"
             />
@@ -854,7 +890,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   const pending = pendingPDF.current;
                   pending.material ??= await save("materials", {
                     ...recordBase(initial.researchId),
-                    title: `${preview.version.title} · v${preview.version.number}`,
+                    title: `${preview.version.title} · 문서 v${preview.version.number}`,
                     type: "draft",
                     visibility,
                   });
@@ -880,7 +916,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   pendingPDF.current = {};
                   setPreview(null);
                   toast.success(
-                    "보존 PDF를 등록했습니다. 수정한 내용을 이어서 적어 주세요.",
+                    "PDF를 자료로 등록했어요. 수정 결과에 고친 내용을 적어 주세요.",
                   );
                   if (versionId)
                     navigate(
@@ -889,7 +925,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 })
               }
             >
-              {busy === "register" ? "등록 중" : "등록하고 수정 결과 작성"}
+              {busy === "register" ? "등록 중" : "등록하고 수정 결과 쓰기"}
             </Button>
           </div>
         </DialogContent>

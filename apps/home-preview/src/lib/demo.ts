@@ -33,8 +33,7 @@ export function buildDemo(ownerId = previewUser.id): WorkspaceData {
       id: rid,
       ownerId,
       name: "연구 도구 사용 경험",
-      description:
-        "대학원생의 연구 기록과 협업 경험을 살펴보는 가상 연구입니다.",
+      description: "대학원생의 연구 기록과 협업 경험을 살펴보는 가상 연구예요.",
       nextMeetingId: meetingId,
       createdAt: time,
       updatedAt: time,

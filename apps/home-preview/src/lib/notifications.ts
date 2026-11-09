@@ -85,8 +85,8 @@ export function unreadReviewNotifications(
         kind: "round",
         message:
           round.number > 1
-            ? "새 차수의 수정 결과가 도착했습니다."
-            : "검토할 수정 결과가 도착했습니다.",
+            ? "다시 확인을 요청한 수정 결과가 있어요."
+            : "검토할 수정 결과가 있어요.",
         tone: "blue",
         createdAt: round.createdAt,
       });
@@ -99,8 +99,8 @@ export function unreadReviewNotifications(
           kind: "response",
           message:
             response.result === "changes_requested"
-              ? "교수가 추가 수정 의견을 남겼습니다."
-              : "교수가 수정 내용을 확인했습니다.",
+              ? "교수님이 ‘추가 수정 필요’를 남겼어요."
+              : "교수님이 ‘수정 내용 확인’을 남겼어요.",
           excerpt: response.comment || undefined,
           tone: response.result === "changes_requested" ? "amber" : "green",
           createdAt: response.updatedAt,
@@ -112,7 +112,7 @@ export function unreadReviewNotifications(
       add(round, {
         id: `comment:${comment.id}`,
         kind: "comment",
-        message: `${comment.authorName || "검토 참여자"}${comment.parentId ? "님이 답글을 남겼습니다." : "님이 댓글을 남겼습니다."}`,
+        message: `${comment.authorName || "검토 참여자"}${comment.parentId ? "님이 답글을 남겼어요." : "님이 댓글을 남겼어요."}`,
         excerpt: comment.body,
         tone: "blue",
         createdAt: comment.createdAt,

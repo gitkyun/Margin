@@ -123,6 +123,7 @@ export function MaterialFolders({
                 <span>{f.title}</span>
                 <button
                   type="button"
+                  aria-label={`${f.title} 폴더 복원`}
                   disabled={busy}
                   onClick={async () => {
                     setBusy(true);
@@ -134,7 +135,7 @@ export function MaterialFolders({
                           : undefined,
                         archivedAt: undefined,
                       });
-                      toast.success("폴더를 복원했습니다");
+                      toast.success("폴더를 복원했어요");
                     } catch (e) {
                       toast.error((e as Error).message);
                     } finally {
@@ -160,8 +161,8 @@ export function MaterialFolders({
                 : "폴더 만들기"}
             </DialogTitle>
             <DialogDescription>
-              자료를 주제나 작업에 맞게 묶습니다. 폴더를 보관해도 안의 자료와
-              검토 기록은 남습니다.
+              자료를 주제별로 묶을 수 있어요. 폴더를 보관해도 안의 자료와 검토
+              기록은 그대로 남아요.
             </DialogDescription>
           </DialogHeader>
           {draft && (
@@ -196,7 +197,7 @@ export function MaterialFolders({
                 />
               </label>
               <label className="field">
-                위치
+                상위 폴더
                 <Choice
                   label="상위 폴더"
                   value={draft.parentId ?? ""}
@@ -204,7 +205,7 @@ export function MaterialFolders({
                     setDraft({ ...draft, parentId: v || undefined })
                   }
                   options={[
-                    { value: "", label: "최상위" },
+                    { value: "", label: "없음" },
                     ...folders
                       .filter((f) => f.id !== draft.id)
                       .map((f) => ({ value: f.id, label: f.title })),

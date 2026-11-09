@@ -46,15 +46,15 @@ export function speechText(parts: SpeechSegment[]): string {
 }
 const messages: Record<string, string> = {
   "not-allowed":
-    "음성 인식 권한이 꺼져 있습니다. 사이트의 마이크 권한을 확인하고 다시 연결해 주세요.",
+    "음성 인식 권한이 꺼져 있어요. 녹음은 계속돼요. 브라우저나 기기 설정에서 음성 인식을 허용한 뒤 다시 연결해 주세요.",
   "service-not-allowed":
-    "이 브라우저에서 음성 인식 서비스를 사용할 수 없습니다. 다른 지원 브라우저에서 다시 시도해 주세요.",
+    "이 브라우저에서는 음성 인식 서비스를 쓸 수 없어요. 녹음은 계속돼요. 실시간 전사는 지원하는 다른 브라우저에서 다시 시도해 주세요.",
   "audio-capture":
-    "음성 인식에서 마이크를 읽지 못했습니다. 녹음 상태를 확인해 주세요.",
+    "음성 인식이 마이크 소리를 받지 못했어요. 녹음이 계속되고 있는지 확인해 주세요.",
   network:
-    "음성 인식 연결이 끊겼습니다. 인터넷 연결을 확인한 뒤 다시 연결해 주세요.",
+    "음성 인식 연결이 끊겼어요. 녹음은 계속돼요. 인터넷 연결을 확인한 뒤 다시 연결해 주세요.",
   "language-not-supported":
-    "이 브라우저의 음성 인식에서 한국어를 사용할 수 없습니다.",
+    "이 브라우저의 음성 인식은 한국어를 지원하지 않아요. 녹음은 계속돼요. 실시간 전사는 다른 브라우저에서 시도해 주세요.",
 };
 export class KoreanLiveSpeech {
   private engine: BrowserRecognition | null = null;
@@ -99,7 +99,7 @@ export class KoreanLiveSpeech {
     if (!this.Constructor) {
       this.state = "unsupported";
       this.warn(
-        "이 브라우저는 실시간 음성 인식을 지원하지 않습니다. 녹음은 계속되며, 마친 뒤 직접 글을 적을 수 있습니다.",
+        "이 브라우저는 실시간 전사를 지원하지 않아요. 녹음은 계속되고, 녹음을 마친 뒤 전사문을 직접 쓸 수 있어요.",
       );
       this.emit();
       return;
@@ -120,7 +120,7 @@ export class KoreanLiveSpeech {
       this.wanted = false;
       this.state = "error";
       this.warn(
-        "이 환경에서 음성 인식을 열지 못했습니다. 녹음은 계속되며, 다른 지원 브라우저에서 다시 시도할 수 있습니다.",
+        "이 브라우저에서 음성 인식을 열지 못했어요. 녹음은 계속돼요. 실시간 전사는 지원하는 다른 브라우저에서 다시 시도해 주세요.",
       );
       this.emit();
       return;
@@ -150,7 +150,7 @@ export class KoreanLiveSpeech {
       this.emptyEnds = 0;
       if (this.snapshot().text.length > 50000) {
         this.warn(
-          "전사문 길이 한도에 도달했습니다. 녹음을 마치고 내용을 저장해 주세요.",
+          "전사문이 50,000자에 닿아 실시간 전사를 멈췄어요. 녹음을 마치고 저장해 주세요.",
         );
         void this.finish();
       }
@@ -163,7 +163,7 @@ export class KoreanLiveSpeech {
       this.state = "error";
       this.warn(
         messages[event.error] ??
-          "음성 인식이 멈췄습니다. 이미 나온 글자는 남아 있습니다. 다시 연결해 주세요.",
+          "음성 인식이 멈췄어요. 녹음은 계속되고, 이미 받아 적은 글자도 그대로 있어요. 다시 연결해 주세요.",
       );
       this.emit();
       try {
@@ -179,7 +179,7 @@ export class KoreanLiveSpeech {
       this.wanted = false;
       this.state = "error";
       this.warn(
-        "음성 인식을 시작하지 못했습니다. 마이크 권한을 확인한 뒤 다시 연결해 주세요.",
+        "음성 인식을 시작하지 못했어요. 녹음은 계속돼요. 마이크 권한을 확인한 뒤 다시 연결해 주세요.",
       );
       this.ended(engine);
     }
@@ -203,7 +203,7 @@ export class KoreanLiveSpeech {
         this.wanted = false;
         this.state = "error";
         this.warn(
-          "음성 인식이 반복해서 종료되었습니다. 녹음은 계속됩니다. 준비되면 다시 연결해 주세요.",
+          "한동안 인식된 말이 없어 음성 인식을 멈췄어요. 녹음은 계속돼요. 다시 받아 적으려면 ‘음성 인식 다시 연결’을 눌러 주세요.",
         );
       } else {
         this.state = "starting";
@@ -237,7 +237,7 @@ export class KoreanLiveSpeech {
       if (this.engine !== engine) return;
       if (this.current.some((part) => !part.final))
         this.warn(
-          "마지막 문장은 인식 확정을 기다리지 못했습니다. 원음과 비교해 주세요.",
+          "마지막 문장은 인식이 확정되지 않았어요. 녹음을 들으며 확인해 주세요.",
         );
       // Seal before abort, whose synchronous end event differs by browser.
       this.ended(engine);

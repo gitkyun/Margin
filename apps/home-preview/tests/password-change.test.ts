@@ -24,7 +24,7 @@ it("rejects mismatched or short passwords before any sign-in", async () => {
   ).rejects.toThrow("8자");
   await expect(
     changeAccountPassword(user, "old-secret", "new-secret", "different"),
-  ).rejects.toThrow("서로 다릅니다");
+  ).rejects.toThrow("비밀번호가 달라요");
   expect(auth.verify).not.toHaveBeenCalled();
   expect(auth.update).not.toHaveBeenCalled();
 });

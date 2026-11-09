@@ -65,9 +65,9 @@ describe("homeKpis", () => {
 
     expect(kpis.map((k) => [k.label, k.value, k.context])).toEqual([
       ["다음 미팅", "D-3", "준비 1/2"],
-      ["열린 작업", "2", "전체 3개"],
-      ["확인할 내용", "2", "교수 의견·AI 결과"],
-      ["작성 중인 문서", "1", "버전 2개"],
+      ["남은 할 일", "2", "전체 3개"],
+      ["확인할 내용", "2", "검토 알림·AI 제안"],
+      ["문서", "1", "버전 2개"],
     ]);
     expect(kpis[0].to).toBe("/r/abc/meetings/m1?tab=prepare");
     expect(kpis[2]).toMatchObject({ tone: "red", to: "/reviews/x" });
@@ -88,7 +88,7 @@ describe("homeKpis", () => {
     expect(kpis.map((k) => [k.value, k.context, k.tone])).toEqual([
       ["미정", "일정 없음", "gray"],
       ["0", "전체 0개", "green"],
-      ["0", "모두 확인", "gray"],
+      ["0", "새 소식 없음", "gray"],
       ["0", "버전 0개", "gray"],
     ]);
     expect(kpis[0].to).toBe("/r/abc/meetings");

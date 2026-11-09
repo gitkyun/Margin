@@ -40,9 +40,9 @@ import { filterCounts } from "@/lib/filter-counts";
 
 const feedbackFilters = [
   ["all", "전체"],
-  ["unprocessed", "처리 전"],
+  ["unprocessed", "시작 전"],
   ["in_progress", "진행 중"],
-  ["recorded", "반영 기록 있음"],
+  ["recorded", "수정 결과 있음"],
   ["held", "보류"],
 ] as const;
 
@@ -67,8 +67,8 @@ export function FeedbackPage() {
       <>
         <BackLink to={`/r/${researchId}/feedback`}>피드백 목록</BackLink>
         <EmptyState
-          title="피드백을 열 수 없습니다"
-          description="현재 연구의 피드백 목록에서 다시 선택하세요."
+          title="피드백을 열 수 없어요"
+          description="피드백 목록에서 다시 선택해 주세요."
         />
       </>
     );
@@ -100,8 +100,8 @@ export function FeedbackPage() {
     <div className="student-page">
       <WorkTabs researchId={researchId} selected="feedback" />
       <PageHeader
-        title="피드백·수정"
-        description="받은 피드백을 이해하고, 수정 방법과 실제 결과를 이어서 기록하세요."
+        title="피드백"
+        description="받은 피드백마다 수정 방법을 정하고 고친 내용을 기록하세요."
         actions={
           <Button onClick={openCreate}>
             <Icon name="plus" size={17} />
@@ -112,7 +112,7 @@ export function FeedbackPage() {
 
       <div className="page-toolbar">
         <FilterSegments
-          label="피드백 처리 상태"
+          label="피드백 상태"
           options={feedbackFilters}
           value={filter}
           onChange={setFilter}
@@ -142,9 +142,9 @@ export function FeedbackPage() {
                   {item.origin && <>{originLabels[item.origin]} · </>}
                   {item.meetingId
                     ? (data.meetings.find((m) => m.id === item.meetingId)
-                        ?.title ?? "연결 미팅")
-                    : "학생 저장"}{" "}
-                  · 연결 작업{" "}
+                        ?.title ?? "미팅에서 저장")
+                    : "미팅 없이 추가"}{" "}
+                  · 할 일{" "}
                   {
                     data.tasks.filter((t) => t.feedbackIds.includes(item.id))
                       .length
@@ -172,10 +172,10 @@ export function FeedbackPage() {
           <EmptyState
             title={
               search || filter !== "all"
-                ? "조건에 맞는 피드백이 없습니다"
-                : "아직 피드백이 없습니다"
+                ? "조건에 맞는 피드백이 없어요"
+                : "아직 피드백이 없어요"
             }
-            description="미팅 기록에서 내용을 가져오거나 직접 추가할 수 있습니다."
+            description="미팅 기록에서 저장하거나 직접 추가할 수 있어요."
             action={
               <Button variant="outline" onClick={openCreate}>
                 피드백 추가
@@ -189,14 +189,14 @@ export function FeedbackPage() {
         open={creating}
         onOpenChange={setCreating}
         title="피드백 직접 추가"
-        description="직접 작성한 피드백으로 저장됩니다."
+        description="직접 작성한 피드백으로 저장돼요."
       >
         <form
           className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!title.trim() || !body.trim()) {
-              form.setError("제목과 피드백 내용을 입력하세요.");
+              form.setError("제목과 피드백 내용을 입력해 주세요.");
               return;
             }
             void form.perform(async () => {
@@ -211,7 +211,7 @@ export function FeedbackPage() {
               });
               setCreating(false);
               navigate(`/r/${researchId}/feedback/${item.id}`);
-              toast.success("피드백을 저장했습니다");
+              toast.success("피드백을 저장했어요");
             });
           }}
         >
@@ -299,7 +299,9 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           ? candidate.sourceQuote
           : undefined,
     });
-    toast.success("수정 방안을 저장했습니다");
+    toast.success(
+      "이 방법을 선택했어요. 수정 방법에서 할 일로 만들 수 있어요.",
+    );
   }
   function createPlan() {
     setPlanDraft({
@@ -371,7 +373,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             {feedback.sourceQuote && (
               <blockquote className="source-excerpt">
                 <small>
-                  저장 당시 원문 발췌
+                  저장할 때 메모에서 옮긴 원문
                   {feedback.sourceMemoRevision
                     ? ` · v${feedback.sourceMemoRevision}`
                     : ""}
@@ -383,14 +385,13 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               <LinkChip
                 to={`/r/${researchId}/meetings/${meeting.id}?tab=record`}
               >
-                미팅 원문 열기
+                미팅 기록 열기
               </LinkChip>
             )}
             {feedback.notes && (
               <div className="student-private-note">
                 <span>
-                  <Icon name="lock" size={14} />
-                  나의 메모 · 비공개
+                  <Icon name="lock" size={14} />내 메모 · 비공개
                 </span>
                 <p>{feedback.notes}</p>
               </div>
@@ -399,13 +400,13 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           <section className="surface revision-plans">
             <div className="section-heading">
               <div>
-                <h2>수정 방안</h2>
+                <h2>수정 방법</h2>
                 <p className="meta">
-                  방안 채택은 방법을 고른 기록입니다. 실제 작업 진행과 완료는
-                  연결한 할 일에서 변경하세요.
+                  어떻게 고칠지 정한 뒤 할 일로 만들 수 있어요.
                 </p>
                 <p className="student-footnote">
-                  어떤 방법으로 고칠지 정하고 필요한 작업으로 연결하세요.
+                  방법을 선택해도 할 일이 완료되지는 않아요. 진행 상태는 할
+                  일에서 바꿔 주세요.
                 </p>
               </div>
               <div className="button-row">
@@ -425,7 +426,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   <article key={plan.id} className="saved-plan">
                     <div className="saved-plan-heading">
                       <span className="plan-index">
-                        방안 {index + 1}
+                        방법 {index + 1}
                         {plan.origin && <> · {originLabels[plan.origin]}</>}
                       </span>
                       <Button
@@ -450,7 +451,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     )}
                     {plan.requiredMaterials && (
                       <dl>
-                        <dt>필요한 자료·작업</dt>
+                        <dt>필요한 자료·준비할 것</dt>
                         <dd>{plan.requiredMaterials}</dd>
                       </dl>
                     )}
@@ -462,7 +463,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     )}
                     <div className="saved-plan-footer">
                       <span className="meta">
-                        연결 작업{" "}
+                        할 일{" "}
                         {tasks.filter((task) => task.planId === plan.id).length}
                         개
                       </span>
@@ -475,7 +476,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                             cancelForm.setError(null);
                           }}
                         >
-                          채택 취소
+                          선택 취소
                         </Button>
                         <Button
                           variant="outline"
@@ -491,11 +492,11 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 ))
             ) : (
               <EmptyState
-                title="아직 정한 수정 방안이 없습니다"
-                description="직접 방법을 적거나, 필요할 때 AI 제안을 비교해 보세요."
+                title="아직 정한 수정 방법이 없어요"
+                description="직접 적거나 AI 제안을 받아 비교할 수 있어요."
                 action={
                   <Button variant="outline" onClick={createPlan}>
-                    수정 방안 작성
+                    수정 방법 작성
                   </Button>
                 }
               />
@@ -503,7 +504,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             {plans.some((plan) => plan.status === "cancelled") && (
               <details className="student-details">
                 <summary>
-                  채택 취소한 방안{" "}
+                  선택 취소한 방법{" "}
                   {plans.filter((p) => p.status === "cancelled").length}개
                 </summary>
                 {plans
@@ -519,9 +520,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                         size="sm"
                         onClick={() =>
                           void save("plans", { ...plan, status: "saved" })
-                            .then(() =>
-                              toast.success("방안을 다시 선택했습니다"),
-                            )
+                            .then(() => toast.success("방법을 다시 선택했어요"))
                             .catch((e) => toast.error(e.message))
                         }
                       >
@@ -535,7 +534,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           <div className="student-two-column">
             <section className="surface">
               <div className="section-heading">
-                <h2>연결한 작업</h2>
+                <h2>연결한 할 일</h2>
                 <Link
                   className="student-text-link"
                   to={`/r/${researchId}/tasks?feedback=${feedback.id}&new=1`}
@@ -569,7 +568,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 ))
               ) : (
                 <p className="student-empty-inline">
-                  수정 방안에서 작업을 만들거나 기존 할 일을 연결할 수 있습니다.
+                  수정 방법에서 할 일을 만들거나 기존 할 일을 연결할 수 있어요.
                 </p>
               )}
             </section>
@@ -602,14 +601,19 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   >
                     <span className="grow">
                       <strong>{result.title}</strong>
-                      <small>{result.location || "개인 저장본"}</small>
+                      <small>
+                        {result.location ||
+                          (result.kind === "document"
+                            ? "볼 위치 없음"
+                            : "문서 외 수정")}
+                      </small>
                     </span>
                     <Icon name="chevron-right" size={15} />
                   </Link>
                 ))
               ) : (
                 <p className="student-empty-inline">
-                  실제로 바꾼 내용과 근거 자료를 기록하세요.
+                  아직 수정 결과가 없어요. 실제로 고친 내용을 기록해 주세요.
                 </p>
               )}
             </section>
@@ -618,7 +622,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         {aiInput && (
           <AIWorkbench
             key={aiRun}
-            title="수정 방안 제안"
+            title="수정 방법 제안"
             input={aiInput}
             hidden={!aiOpen}
             stale={aiStale}
@@ -633,14 +637,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         open={editing}
         onOpenChange={setEditing}
         title="피드백 편집"
-        description="나의 처리 상태는 작업 완료·교수 응답과 별도로 저장됩니다."
+        description="피드백 상태는 할 일 완료나 교수 응답과 따로 저장돼요."
       >
         <form
           className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!draft.title.trim() || !draft.body.trim()) {
-              editForm.setError("제목과 피드백 내용을 입력하세요.");
+              editForm.setError("제목과 피드백 내용을 입력해 주세요.");
               return;
             }
             void editForm.perform(async () => {
@@ -650,7 +654,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 body: draft.body.trim(),
               });
               setEditing(false);
-              toast.success("피드백을 저장했습니다");
+              toast.success("피드백을 저장했어요");
             });
           }}
         >
@@ -667,7 +671,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             onChange={(body) => setDraft((v) => ({ ...v, body }))}
           />
           <label className="field">
-            <span className="field-name">나의 처리 상태</span>
+            <span className="field-name">피드백 상태</span>
             <SelectField
               className="native-select"
               value={draft.status}
@@ -686,8 +690,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             </SelectField>
           </label>
           <LabeledText
-            label="나의 메모"
-            hint="교수에게 자동으로 공개되지 않습니다."
+            label="내 메모"
+            hint="나만 볼 수 있어요."
             value={draft.notes}
             onChange={(notes) => setDraft((v) => ({ ...v, notes }))}
           />
@@ -704,7 +708,11 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         onOpenChange={(open) => {
           if (!open) setPlanDraft(null);
         }}
-        title="수정 방안 작성"
+        title={
+          planDraft && plans.some((p) => p.id === planDraft.id)
+            ? "수정 방법 편집"
+            : "수정 방법 작성"
+        }
       >
         <form
           className="stack"
@@ -715,7 +723,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               !planDraft.title.trim() ||
               !planDraft.method.trim()
             ) {
-              planForm.setError("방안 이름과 수정 방법을 입력하세요.");
+              planForm.setError("제목과 ‘어떻게 고칠지’를 입력해 주세요.");
               return;
             }
             void planForm.perform(async () => {
@@ -725,14 +733,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 method: planDraft.method.trim(),
               });
               setPlanDraft(null);
-              toast.success("수정 방안을 저장했습니다");
+              toast.success("수정 방법을 저장했어요");
             });
           }}
         >
           {planDraft && (
             <>
               <LabeledInput
-                label="방안 이름"
+                label="제목"
                 required
                 value={planDraft.title}
                 onChange={(title) =>
@@ -740,7 +748,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 }
               />
               <LabeledText
-                label="어떻게 수정할지"
+                label="어떻게 고칠지"
                 required
                 value={planDraft.method}
                 onChange={(method) =>
@@ -756,7 +764,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 rows={2}
               />
               <LabeledText
-                label="필요한 자료·추가 작업"
+                label="필요한 자료·준비할 것"
                 value={planDraft.requiredMaterials}
                 onChange={(requiredMaterials) =>
                   setPlanDraft((v) => (v ? { ...v, requiredMaterials } : v))
@@ -787,14 +795,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           if (!open) setTaskPlan(null);
         }}
         title="할 일로 만들기"
-        description="선택한 방안과 이 피드백을 연결한 새 작업을 만듭니다."
+        description="이 피드백과 선택한 방법에 연결된 새 할 일을 만들어요."
       >
         <form
           className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!taskPlan || !taskTitle.trim()) {
-              taskForm.setError("할 일의 제목을 입력하세요.");
+              taskForm.setError("제목을 입력해 주세요.");
               return;
             }
             void taskForm.perform(async () => {
@@ -812,18 +820,18 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               });
               setTaskPlan(null);
               navigate(`/r/${researchId}/tasks/${task.id}`);
-              toast.success("할 일을 만들었습니다");
+              toast.success("할 일을 만들었어요");
             });
           }}
         >
           <LabeledInput
-            label="할 일"
+            label="제목"
             required
             value={taskTitle}
             onChange={setTaskTitle}
           />
           <LabeledText
-            label="작업 내용"
+            label="설명"
             value={taskDescription}
             onChange={setTaskDescription}
           />
@@ -841,18 +849,18 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         onOpenChange={(open) => {
           if (!open) setCancelPlan(null);
         }}
-        title="수정 방안 채택 취소"
-        description="이미 만든 작업은 삭제하지 않고 유지합니다."
+        title="이 방법의 선택을 취소할까요?"
+        description="‘선택 취소한 방법’으로 옮겨요. 나중에 다시 선택할 수 있어요."
       >
         <div className="stack">
           <p className="student-inline-note">
-            이 방안은 취소한 방안으로 옮겨집니다. 연결된 작업은 할 일 상세에서
-            방안 연결을 해제할 수 있습니다.
+            이미 만든 할 일은 그대로 남아요. 이 방법과의 연결은 할 일을 편집할
+            때 해제할 수 있어요.
           </p>
           <ErrorNotice error={cancelForm.error} />
           <div className="form-actions">
             <Button variant="outline" onClick={() => setCancelPlan(null)}>
-              돌아가기
+              닫기
             </Button>
             <Button
               disabled={cancelForm.saving}
@@ -862,12 +870,12 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     await save("plans", { ...cancelPlan, status: "cancelled" });
                     setCancelPlan(null);
                     toast.success(
-                      "방안 채택을 취소했습니다. 기존 작업은 유지됩니다.",
+                      "선택을 취소했어요. 만든 할 일은 그대로 있어요.",
                     );
                   });
               }}
             >
-              채택 취소
+              선택 취소
             </Button>
           </div>
         </div>
