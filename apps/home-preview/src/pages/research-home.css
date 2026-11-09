@@ -1291,3 +1291,43 @@
     }
   }
 }
+
+/* 예전 workspace-refinements.css에서 옮긴 규칙(같은 순서 유지) */
+@layer margin {
+  .rh-home .rh-quick-record {
+    background: var(--surface);
+    border-color: var(--line);
+  }
+  .rh-home .rh-quick-record .rh-quick-icon {
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+  }
+  /* Adopt the clone's section grouping without changing shared color or type tokens. */
+  .rh-home .rh-work,
+  .rh-home .rh-writing,
+  .rh-home .rh-attention {
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+  }
+  .rh-home .rh-quick-text {
+    min-width: 0;
+    flex: 1;
+  }
+  .rh-home .rh-quick-text small {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+  }
+  .rh-home .rh-quick-actions {
+    gap: 16px;
+  }
+  @media (max-width: 767px) {
+    .rh-home .rh-work,
+    .rh-home .rh-writing,
+    .rh-home .rh-attention {
+      padding: 18px;
+    }
+  }
+}

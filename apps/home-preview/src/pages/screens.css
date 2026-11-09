@@ -711,3 +711,14 @@
     }
   }
 }
+
+/* 예전 workspace-refinements.css에서 옮긴 규칙(같은 순서 유지) */
+@layer margin {
+  /* The received-feedback card reused .feedback-origin, an inline label class,
+   and was laid out as one squeezed row. Keep the card a normal block. */
+  .surface.feedback-origin {
+    display: block;
+    font-size: inherit;
+    color: inherit;
+  }
+}

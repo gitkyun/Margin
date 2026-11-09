@@ -627,3 +627,36 @@
     }
   }
 }
+
+/* 예전 workspace-refinements.css에서 옮긴 규칙(같은 순서 유지) */
+@layer margin {
+  .ai-unanswered {
+    margin: 16px 24px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .ai-unanswered p {
+    margin: 0 0 10px;
+    line-height: 1.6;
+  }
+  .source-picker > button {
+    flex-shrink: 0;
+  }
+  .source-picker > button[aria-pressed="true"] {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+  }
+  .source-picker button > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .source-picker small {
+    white-space: normal;
+    line-height: 1.6;
+  }
+  .ai-source-controls label {
+    white-space: nowrap;
+  }
+}

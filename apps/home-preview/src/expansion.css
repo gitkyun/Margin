@@ -1969,3 +1969,11 @@
     background: var(--surface) !important;
   }
 }
+
+/* 예전 workspace-refinements.css에서 옮긴 규칙(같은 순서 유지) */
+@layer margin {
+  /* Selected material folder ("전체"): brand text on a brand tint. */
+  .folder-all[aria-pressed="true"] {
+    color: var(--brand);
+  }
+}

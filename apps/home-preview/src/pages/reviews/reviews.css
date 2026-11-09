@@ -1,3 +1,16 @@
+/* 예전 workspace-refinements.css에서 옮긴 규칙. 이 파일보다 먼저 읽히던 규칙이라 맨 위에 둡니다. */
+@layer margin {
+  /* Small text buttons: at least a 24px target (WCAG 2.5.8). */
+  .review-history-button,
+  .pdf-text > summary {
+    min-height: 24px;
+  }
+  .pdf-text > summary {
+    display: flex;
+    align-items: center;
+  }
+}
+
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
   .reviews-page {

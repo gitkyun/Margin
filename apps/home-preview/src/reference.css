@@ -485,3 +485,188 @@
     }
   }
 }
+
+/* 예전 workspace-refinements.css에서 옮긴 규칙(같은 순서 유지) */
+@layer margin {
+  /* Workspace review, 2026-11-06: equal shell gutters and quiet, legible controls. */
+  .app-shell.floating-workspace {
+    padding: 8px;
+    gap: 8px;
+  }
+  .app-shell.floating-workspace .sidebar {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    padding: 12px 10px 10px;
+  }
+  .app-shell.floating-workspace .nav-item {
+    border: 0;
+    box-shadow: none;
+    border-radius: var(--radius-10);
+    min-height: 40px;
+    transition:
+      background 150ms ease,
+      color 150ms ease;
+  }
+  /* 호버는 중립 면, 선택은 브랜드 면 — 둘이 섞여 보이지 않게 나눕니다. */
+  .app-shell.floating-workspace .nav-item:hover {
+    background: var(--hover-fill);
+    color: var(--text);
+    box-shadow: none;
+  }
+  .app-shell.floating-workspace .nav-item.active {
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+    box-shadow: inset 0 0 0 1px var(--selected-line);
+    font-weight: 600;
+  }
+  .app-shell.floating-workspace .nav-item::before,
+  .app-shell.floating-workspace .nav-item::after {
+    display: none;
+  }
+  .research-view-switch {
+    margin: 24px 0;
+    padding: 0;
+  }
+  .password-settings {
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .password-settings h3 {
+    font-size: var(--typography-headline1-fontSize);
+    margin: 0 0 8px;
+    letter-spacing: var(--typography-headline1-letterSpacing);
+  }
+  .password-settings > p {
+    margin: 0 0 20px;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
+  }
+  .password-settings form {
+    display: grid;
+    gap: 18px;
+    max-width: 520px;
+  }
+  .password-settings .field {
+    margin: 0;
+  }
+  @media (max-width: 767px) {
+    .app-shell.floating-workspace {
+      padding: 0;
+      gap: 0;
+    }
+  }
+  .select-field-host {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* Accessibility pass, 2026-11-08 (docs/design/ui-quality.md).
+   Brand text on brand tints uses --brand so it reads at 4.5:1+. */
+  .app-shell.floating-workspace .nav-item.active,
+  .tone-blue {
+    color: var(--brand);
+  }
+  /* Text links in the shell chrome get at least a 24px target (WCAG 2.5.8). */
+  .floating-workspace .breadcrumbs > a {
+    min-height: 24px;
+    line-height: 24px;
+  }
+  .preview-banner > a,
+  .workspace-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+  /* Status screens centre their text; the icon is a block svg, so centre it too. */
+  .not-found > svg,
+  .connection-error > svg {
+    display: block;
+    margin-inline: auto;
+  }
+  @media (max-width: 767px) {
+    .settings-layout > nav {
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-inline: -4px;
+      padding-inline: 4px;
+      scroll-padding-inline: 4px;
+    }
+  }
+  @media (max-width: 767px) {
+    .settings-layout > nav::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  @media (max-width: 767px) {
+    .settings-layout > nav button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+  }
+  /* On phones the preview-banner link is icon-only: keep a 24px square target. */
+  .preview-banner > a {
+    min-width: 24px;
+    justify-content: center;
+  }
+  /* The workspace footer was dimmed with opacity 0.75, dropping its text to
+   3.2:1. Keep it at full strength; on phones let it wrap as two lines
+   instead of breaking the link label ("자료·개인정보 / 안내"). */
+  .workspace-footer {
+    opacity: 1;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .workspace-footer a {
+    white-space: nowrap;
+  }
+  /* Long content (interaction QA, 2026-11-09) ------------------------------ */
+  /* Page titles: a long unbroken title used to push the header actions (편집)
+   past the panel edge, where overflow:clip hid them. Let the title column
+   shrink and break only tokens that cannot fit (keep-all still keeps words). */
+  .page-header > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .page-title {
+    overflow-wrap: anywhere;
+  }
+  /* Dialogs: one shrinkable column so a long name or file name wraps inside
+   instead of widening the dialog past the screen (WCAG 1.4.10). */
+  [data-slot="dialog-content"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  [data-slot="dialog-content"] > *,
+  .student-choice-row > span,
+  .field {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 767px) {
+    .floating-workspace .workspace-content {
+      padding: var(--spacing-16) var(--spacing-16) var(--spacing-32);
+    }
+  }
+  @media (max-width: 767px) {
+    .page-header {
+      gap: var(--spacing-12);
+      margin-bottom: var(--spacing-16);
+    }
+  }
+  @media (max-width: 767px) {
+    .page-header h1,
+    .page-title {
+      font-size: var(--typography-heading1-fontSize);
+      line-height: 1.3;
+    }
+  }
+  @media (max-width: 767px) {
+    .page-header p,
+    .page-description {
+      margin-top: var(--spacing-4);
+      font-size: var(--typography-label2-fontSize);
+      line-height: 1.55;
+    }
+  }
+}

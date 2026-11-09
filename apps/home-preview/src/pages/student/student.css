@@ -1,3 +1,116 @@
+/* 예전 workspace-refinements.css에서 옮긴 규칙. 이 파일보다 먼저 읽히던 규칙이라 맨 위에 둡니다. */
+@layer margin {
+  .material-preview-badge {
+    position: relative;
+    display: block;
+    flex: 0 0 52px;
+    width: 52px;
+    height: 64px;
+    isolation: isolate;
+  }
+  .material-preview-badge::before {
+    content: "";
+    position: absolute;
+    inset: 3px -3px -3px 3px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface-muted);
+    border-radius: var(--radius-8);
+    transform: rotate(6deg);
+    transition: transform 180ms ease;
+    z-index: -1;
+  }
+  .material-preview-badge canvas {
+    display: block;
+    width: 52px;
+    height: 64px;
+    object-fit: contain;
+    background: var(--semantic-static-white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+  }
+  .material-preview-badge .preview-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    height: 64px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption2-fontSize);
+    letter-spacing: var(--typography-caption2-letterSpacing);
+  }
+  .material-list-row:hover .material-preview-badge::before,
+  .material-list-row:focus-visible .material-preview-badge::before {
+    transform: rotate(12deg) translateX(2px);
+  }
+  .material-list-row {
+    min-height: 100px;
+    gap: 18px;
+  }
+  .pending-deletions {
+    margin-top: 24px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+  }
+  .pending-deletions > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 16px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .material-preview-badge::before {
+      transition: none;
+    }
+  }
+  /* QA: stable labels, intrinsic controls and readable draft feedback. */
+  .student-filter-row {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+  }
+  .student-filter-row > label {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .student-filter-row .select-field-host {
+    min-width: 144px;
+  }
+  .material-registration-form {
+    min-height: 440px;
+    display: flex;
+    flex-direction: column;
+  }
+  .material-registration-form > .button-row:last-child {
+    margin-top: auto;
+    padding-top: 20px;
+  }
+  @media (max-width: 767px) {
+    .task-row-text small {
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+  }
+  /* Task list: the title is a flex container (priority icon + text), so its
+   text is an anonymous flex item. overflow-wrap:anywhere lowers its
+   min-content so a long unbroken title wraps instead of painting over the
+   status and due-date columns. */
+  .task-row-text strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
   .student-page {

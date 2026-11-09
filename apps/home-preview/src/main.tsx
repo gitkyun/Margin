@@ -64,6 +64,5 @@ import "./reference.css";
 import "./pages/public-site.css";
 import "./components/brand/brand.css";
 
-import "./pages/workspace-refinements.css";
 // Montage·외부 부품 조정은 레이어 밖이라 마지막에 불러옵니다.
 import "./design/montage.css";
