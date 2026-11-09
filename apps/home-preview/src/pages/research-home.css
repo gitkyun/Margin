@@ -29,9 +29,9 @@
   }
   .rh-home :is(a, button) {
     transition:
-      background-color 150ms ease,
-      color 150ms ease,
-      border-color 150ms ease;
+      background-color var(--motion-duration-micro) ease,
+      color var(--motion-duration-micro) ease,
+      border-color var(--motion-duration-micro) ease;
   }
   .rh-home a:focus-visible,
   .rh-home button:focus-visible,
@@ -416,7 +416,7 @@
     height: 100%;
     border-radius: inherit;
     background: var(--primary);
-    transition: width 180ms ease;
+    transition: width var(--motion-duration-micro) ease;
   }
   .rh-preparation-list {
     display: flex;

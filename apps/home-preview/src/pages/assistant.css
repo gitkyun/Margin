@@ -44,8 +44,8 @@
     font-size: var(--typography-label1-fontSize);
     text-align: left;
     transition:
-      background-color 140ms ease-out,
-      color 140ms ease-out;
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
   }
   .conversation-list > button:not([data-slot="button"]) span {
     overflow: hidden;
@@ -136,9 +136,9 @@
     text-align: left;
     word-break: keep-all;
     transition:
-      border-color 160ms ease-out,
-      background-color 160ms ease-out,
-      transform 160ms ease-out;
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-micro) ease-out;
   }
   .assistant-prompts button svg {
     flex-shrink: 0;
@@ -222,8 +222,8 @@
     background: var(--surface-raised);
     box-shadow: var(--semantic-elevation-shadow-normal-medium);
     transition:
-      border-color 160ms ease-out,
-      box-shadow 160ms ease-out;
+      border-color var(--motion-duration-micro) ease-out,
+      box-shadow var(--motion-duration-micro) ease-out;
   }
   .ai-composer:focus-within {
     border-color: var(--semantic-line-brand-strong);
@@ -366,8 +366,8 @@
     font-size: var(--typography-label1-fontSize);
     text-align: left;
     transition:
-      border-color 140ms ease-out,
-      background-color 140ms ease-out;
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .source-picker > button:not([data-slot="button"]) svg {

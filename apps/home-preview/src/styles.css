@@ -165,7 +165,7 @@
     display: flex;
     flex-direction: column;
     z-index: 30;
-    transition: width 160ms;
+    transition: width var(--motion-duration-micro);
   }
   .sidebar-brand {
     display: flex;
@@ -356,7 +356,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    transition: margin-left 160ms;
+    transition: margin-left var(--motion-duration-micro);
   }
   .topbar {
     height: 70px;
@@ -1313,7 +1313,7 @@
   }
   .research-card {
     padding: 26px;
-    transition: border-color 150ms;
+    transition: border-color var(--motion-duration-micro);
   }
   .research-card:hover {
     border-color: var(--hover-line);

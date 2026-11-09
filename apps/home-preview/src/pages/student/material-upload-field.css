@@ -25,8 +25,8 @@
     text-align: center;
     cursor: pointer;
     transition:
-      border-color 160ms ease,
-      background 160ms ease;
+      border-color var(--motion-duration-micro) ease,
+      background var(--motion-duration-micro) ease;
   }
   .mu-dropzone:hover,
   .mu-dropzone.is-dragging {
@@ -230,7 +230,7 @@
   .mu-transfer progress::-webkit-progress-value {
     background: var(--brand);
     border-radius: var(--radius-full);
-    transition: width 160ms linear;
+    transition: width var(--motion-duration-micro) linear;
   }
   .mu-transfer > button {
     justify-self: end;

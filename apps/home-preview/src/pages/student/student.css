@@ -16,7 +16,7 @@
     background: var(--surface-muted);
     border-radius: var(--radius-8);
     transform: rotate(6deg);
-    transition: transform 180ms ease;
+    transition: transform var(--motion-duration-micro) ease;
     z-index: -1;
   }
   .material-preview-badge canvas {
@@ -1336,8 +1336,8 @@
     text-align: center;
     background: var(--surface-muted);
     transition:
-      background 0.15s,
-      border-color 0.15s;
+      background var(--motion-duration-micro),
+      border-color var(--motion-duration-micro);
   }
   .upload-dropzone.dragging {
     background: var(--brand-soft);

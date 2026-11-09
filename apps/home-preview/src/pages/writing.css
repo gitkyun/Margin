@@ -19,8 +19,8 @@
     background: var(--surface-muted);
     color: var(--text);
     transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease;
+      border-color var(--motion-duration-micro) ease,
+      box-shadow var(--motion-duration-micro) ease;
   }
   .document-tile:hover {
     border-color: var(--hover-line);
