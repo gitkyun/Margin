@@ -1,4 +1,5 @@
 import { AnimatedList } from "@/components/AnimatedList";
+import { isImeComposing } from "@/lib/ime";
 import { VisibilityField } from "@/components/experience";
 import { RecordingPanel } from "@/components/RecordingPanel";
 import { SelectField } from "@/components/experience";
@@ -1338,8 +1339,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     // surrounding form, and the Enter that finishes Korean
                     // composition must not add a half-typed question.
                     e.preventDefault();
-                    if (!e.nativeEvent.isComposing && e.keyCode !== 229)
-                      addDraftQuestion();
+                    if (!isImeComposing(e)) addDraftQuestion();
                   }
                 }}
               />
