@@ -427,6 +427,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           <SpotlightCard className="lp-feature-card lp-feature-wide">
             <div className="lp-feature-visual lp-merge-visual">
               <MergeFlow />
+              <div className="lp-feature-peek" aria-hidden="true" inert>
+                <ProductPreview index={0} />
+              </div>
             </div>
             <div className="lp-feature-copy">
               <span className="lp-feature-icon">
@@ -437,6 +440,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 미팅 메모에서 정리한 피드백은 원문과 함께 남아요.
                 <br />할 일에서도 연결된 피드백을 바로 확인할 수 있어요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=meeting">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
           <SpotlightCard className="lp-feature-card lp-feature-ai">
@@ -460,6 +466,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                   <Icon name="arrow-up" size={17} />
                 </div>
               </div>
+              <div className="lp-feature-peek" aria-hidden="true" inert>
+                <ProductPreview index={1} />
+              </div>
             </div>
             <div className="lp-feature-copy">
               <span className="lp-feature-icon">
@@ -471,6 +480,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 <br />
                 나눠서 보여 줘요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=ai">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
           <SpotlightCard className="lp-feature-card lp-feature-writing">
@@ -488,6 +500,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <p>
                 비교할 버전은 직접 남기고, 고친 내용은 수정 결과로 정리하세요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=writing">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
           <SpotlightCard className="lp-feature-card lp-feature-review">
@@ -508,6 +523,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                   <Icon name="check-circle" size={22} />
                 </div>
               </div>
+              <div className="lp-feature-peek" aria-hidden="true" inert>
+                <ProductPreview index={3} />
+              </div>
             </div>
             <div className="lp-feature-copy">
               <span className="lp-feature-icon">
@@ -518,6 +536,9 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 검토 링크를 만들어 직접 전달하면, 교수님이 항목마다 응답을
                 남겨요.
               </p>
+              <Link className="lp-feature-more" to="/features?view=review">
+                자세히 보기 <Icon name="arrow-right" size={15} />
+              </Link>
             </div>
           </SpotlightCard>
         </div>

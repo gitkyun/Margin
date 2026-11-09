@@ -660,6 +660,76 @@
     position: relative;
     z-index: 1;
   }
+
+  /*
+   * 기능 카드 펼침: 카드에 올리거나(마우스) 안의 ‘자세히 보기’에 포커스가 가면
+   * 그림 자리에 실제 화면 미리보기 일부가 아래에서 위로 펼쳐집니다.
+   * 동작 줄이기 설정이면 움직임 없이 바로 바뀝니다. 터치 화면은 펼치지 않습니다.
+   */
+  .lp-feature-peek {
+    position: absolute;
+    inset: var(--spacing-20) var(--spacing-20) 0;
+    overflow: hidden;
+    border-radius: var(--radius-16) var(--radius-16) 0 0;
+    box-shadow: var(--shadow-pop);
+    opacity: 0;
+    clip-path: inset(100% 0 0 0);
+    transform: translateY(var(--spacing-16));
+    transition:
+      clip-path 0.34s cubic-bezier(0.2, 0, 0, 1),
+      transform 0.34s cubic-bezier(0.2, 0, 0, 1),
+      opacity 0.18s ease-out;
+    pointer-events: none;
+  }
+  .lp-feature-peek .lp-product-window {
+    width: max(100%, 640px);
+  }
+  .lp-feature-visual > :not(.lp-feature-peek) {
+    transition: opacity 0.2s ease-out;
+  }
+  .lp-feature-card:focus-within .lp-feature-peek {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+  .lp-feature-card:focus-within
+    .lp-feature-visual:has(.lp-feature-peek)
+    > :not(.lp-feature-peek) {
+    opacity: 0.12;
+  }
+  @media (hover: hover) {
+    .lp-feature-card:hover .lp-feature-peek {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+      transform: none;
+    }
+    .lp-feature-card:hover
+      .lp-feature-visual:has(.lp-feature-peek)
+      > :not(.lp-feature-peek) {
+      opacity: 0.12;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-feature-peek,
+    .lp-feature-visual > :not(.lp-feature-peek) {
+      transition: none;
+    }
+  }
+  .lp-feature-more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-12);
+    color: var(--brand);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label1-letterSpacing);
+    text-decoration: none;
+  }
+  .lp-feature-more:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   .lp-feature-icon {
     display: inline-flex;
     width: 35px;
