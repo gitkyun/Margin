@@ -442,7 +442,6 @@ export function TasksPage() {
                       to={`/r/${researchId}/tasks/${task.id}`}
                     >
                       <strong>
-                        {task.title}
                         {task.priority === "high" && (
                           <span
                             className="priority-dot"
@@ -450,6 +449,7 @@ export function TasksPage() {
                             aria-label="우선순위 높음"
                           />
                         )}
+                        {task.title}
                       </strong>
                       <small>
                         {task.origin && <>{originLabels[task.origin]} · </>}
