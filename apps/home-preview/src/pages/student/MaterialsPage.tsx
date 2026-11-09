@@ -1,3 +1,4 @@
+import { AnimatedList } from "@/components/AnimatedList";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
 import {
   MaterialUploadField,
@@ -568,7 +569,7 @@ export function MaterialsPage() {
               placeholder="자료 이름으로 찾기"
             />
           </div>
-          <section className="surface material-list">
+          <AnimatedList className="surface material-list">
             {materials.length ? (
               materials.map((material) => {
                 const materialVersions = data.versions
@@ -642,7 +643,7 @@ export function MaterialsPage() {
                 }
               />
             )}
-          </section>
+          </AnimatedList>
         </>
       )}
       {pending && (

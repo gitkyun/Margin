@@ -200,3 +200,64 @@
     margin-top: 14vh;
   }
 }
+
+/*
+ * 알림(sonner) — Montage Toast 모양을 따릅니다.
+ * 반투명 반전 면 + 32px 흐림, 모서리 12px, 흰 body2 굵은 글자.
+ * 종류는 색 배경 대신 아이콘 색으로만 구분합니다.
+ */
+[data-sonner-toast][data-styled="true"].margin-toast {
+  gap: var(--spacing-12);
+  padding: 11px var(--spacing-16);
+  border: 0;
+  border-radius: var(--radius-12);
+  background: rgba(
+    var(--semantic-surface-neutral-inverse-rgb),
+    var(--opacity-52)
+  );
+  box-shadow: none;
+  color: var(--semantic-static-white);
+  font-size: var(--typography-body2-fontSize);
+  line-height: var(--typography-body2-lineHeight);
+  letter-spacing: var(--typography-body2-letterSpacing);
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-title] {
+  font-weight: var(--typography-body2-weight-bold);
+  line-height: inherit;
+  word-break: keep-all;
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-description] {
+  color: rgba(var(--semantic-static-white-rgb), var(--opacity-88));
+  word-break: keep-all;
+}
+.margin-toast[data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--semantic-foreground-positive-primary);
+}
+.margin-toast[data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--semantic-foreground-negative-primary);
+}
+.margin-toast[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: var(--semantic-foreground-cautionary-primary);
+}
+.margin-toast[data-sonner-toast][data-type="info"] [data-icon] {
+  color: var(--semantic-foreground-brand-inverse);
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-button] {
+  height: auto;
+  padding: var(--spacing-4) var(--spacing-8);
+  border-radius: var(--radius-8);
+  background: transparent;
+  color: var(--semantic-foreground-brand-inverse);
+  font-size: var(--typography-label1-fontSize);
+  font-weight: var(--typography-body2-weight-bold);
+}
+.margin-toast[data-sonner-toast][data-styled="true"] [data-close-button] {
+  border: 0;
+  background: rgba(
+    var(--semantic-surface-neutral-inverse-rgb),
+    var(--opacity-88)
+  );
+  color: var(--semantic-static-white);
+}

@@ -1,3 +1,4 @@
+import { RollingNumber } from "@/components/RollingNumber";
 import { AssistantMascot } from "@/components/brand/Brand";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -302,7 +303,7 @@ export function HomePage() {
                 <div className="rh-preparation-heading">
                   <h4>미팅까지 준비할 일</h4>
                   <span>
-                    {prepared}
+                    <RollingNumber value={prepared} />
                     <span className="rh-muted">
                       {" "}
                       / {preparation.length}개 완료
@@ -386,8 +387,8 @@ export function HomePage() {
               <div>
                 <h2 id="rh-work-heading">남은 할 일</h2>
                 <p className="rh-section-description">
-                  {openCount}개 남음<span>·</span>
-                  {completedCount}개 완료
+                  <RollingNumber value={openCount} />개 남음<span>·</span>
+                  <RollingNumber value={completedCount} />개 완료
                 </p>
               </div>
               <Link className="rh-text-link" to={`${base}/tasks`}>
@@ -524,7 +525,9 @@ export function HomePage() {
               <h2 id="rh-attention-heading">
                 확인할 내용
                 {attentionCount > 0 && (
-                  <span className="rh-count">{attentionCount}</span>
+                  <span className="rh-count">
+                    <RollingNumber value={attentionCount} />
+                  </span>
                 )}
               </h2>
               <Icon name="bell" size={18} />

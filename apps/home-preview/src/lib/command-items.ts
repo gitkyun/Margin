@@ -1,6 +1,7 @@
 import type { WorkspaceData } from "./domain";
 import type { ThemePreference } from "./theme";
 import { commandFilter } from "./hangul-search";
+import { goShortcutLabel } from "./go-shortcuts";
 
 /** 연구 안 사이드바 메뉴: [경로, 아이콘, 이름]. 사이드바와 ⌘K 팔레트가 같이 씁니다. */
 export const RESEARCH_NAVIGATION = [
@@ -23,6 +24,8 @@ export interface CommandEntry {
   icon: string;
   /** 오른쪽에 작게 붙는 설명(기록 종류, 현재 테마 등) */
   hint?: string;
+  /** 오른쪽에 키 모양으로 보여 줄 단축키(예: "G H") */
+  shortcut?: string;
   /** 검색에 쓰는 말. 첫 번째는 항상 보이는 이름 */
   keywords: string[];
   action: CommandAction;
@@ -154,25 +157,41 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
   ];
   if (!researchId) return common;
   const base = `/r/${researchId}`;
+  const withShortcut = (entry: CommandEntry, path: string): CommandEntry => ({
+    ...entry,
+    shortcut: goShortcutLabel(path),
+  });
   return [
     ...RESEARCH_NAVIGATION.map(([path, icon, label]) =>
-      navigateEntry(
-        `go:${path || "home"}`,
-        label,
-        icon,
-        path ? `${base}/${path}` : base,
+      withShortcut(
+        navigateEntry(
+          `go:${path || "home"}`,
+          label,
+          icon,
+          path ? `${base}/${path}` : base,
+        ),
+        path,
       ),
     ),
-    navigateEntry("go:tasks", "할 일", "tasks", `${base}/tasks`),
-    navigateEntry("go:results", "수정 결과", "check", `${base}/results`),
-    navigateEntry(
-      "go:assistant",
-      "연구 도우미",
-      "sparkles",
-      `${base}/assistant`,
-      ["AI"],
+    withShortcut(
+      navigateEntry("go:tasks", "할 일", "tasks", `${base}/tasks`),
+      "tasks",
     ),
-    navigateEntry("go:settings", "연구 설정", "settings", `${base}/settings`),
+    navigateEntry("go:results", "수정 결과", "check", `${base}/results`),
+    withShortcut(
+      navigateEntry(
+        "go:assistant",
+        "연구 도우미",
+        "sparkles",
+        `${base}/assistant`,
+        ["AI"],
+      ),
+      "assistant",
+    ),
+    withShortcut(
+      navigateEntry("go:settings", "연구 설정", "settings", `${base}/settings`),
+      "settings",
+    ),
     ...common,
   ];
 }

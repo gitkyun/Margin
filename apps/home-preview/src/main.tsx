@@ -25,9 +25,9 @@ function ThemedToaster() {
   return (
     <Toaster
       position="bottom-right"
-      richColors
       closeButton
       theme={resolvedTheme}
+      toastOptions={{ className: "margin-toast" }}
     />
   );
 }

@@ -1,3 +1,4 @@
+import { AnimatedList } from "@/components/AnimatedList";
 import { VisibilityField } from "@/components/experience";
 import { RecordingPanel } from "@/components/RecordingPanel";
 import { SelectField } from "@/components/experience";
@@ -197,7 +198,7 @@ export function MeetingsPage() {
           placeholder="미팅 이름으로 찾기"
         />
       </div>
-      <section className="surface meeting-list">
+      <AnimatedList className="surface meeting-list">
         {meetings.length ? (
           meetings.map((meeting) => (
             <Link
@@ -273,7 +274,7 @@ export function MeetingsPage() {
             }
           />
         )}
-      </section>
+      </AnimatedList>
       <FormDialog
         busy={form.saving}
         open={creating}

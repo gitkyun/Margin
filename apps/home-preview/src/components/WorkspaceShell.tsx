@@ -15,6 +15,8 @@ import { Hint } from "./ui/hint";
 import { navPreview } from "@/lib/nav-preview";
 import { CommandPalette } from "./CommandPalette";
 import { RESEARCH_NAVIGATION } from "@/lib/command-items";
+import { goShortcutLabel } from "@/lib/go-shortcuts";
+import { useGoShortcuts } from "@/lib/use-go-shortcuts";
 import { Button } from "./ui/button";
 import { LoadingState } from "./common";
 import { useWorkspace } from "@/lib/workspace";
@@ -197,6 +199,7 @@ export function WorkspaceShell({
         request.professorId === user.id && request.status === "shared",
     );
   const homeLabel = incomingOnly ? "받은 검토 요청" : "내 연구";
+  useGoShortcuts(research ? researchId : undefined);
   useEffect(() => setMobile(false), [location.pathname]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
@@ -310,6 +313,7 @@ export function WorkspaceShell({
                 key={path}
                 label={label}
                 detail={preview?.detail}
+                shortcut={goShortcutLabel(path)}
                 position="right-center"
                 display="block"
               >

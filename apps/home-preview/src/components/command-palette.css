@@ -103,6 +103,12 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
+  .command-palette-keys {
+    display: inline-flex;
+    flex: none;
+    gap: var(--spacing-4);
+  }
+
   .command-palette-empty {
     padding: var(--spacing-32) var(--spacing-12);
     color: var(--semantic-foreground-neutral-tertiary);

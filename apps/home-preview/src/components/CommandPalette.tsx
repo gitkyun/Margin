@@ -96,7 +96,18 @@ export function CommandPalette({
                   >
                     <Icon name={entry.icon} size={18} />
                     <span className="command-palette-label">{entry.label}</span>
-                    {entry.hint && <small>{entry.hint}</small>}
+                    {entry.shortcut ? (
+                      <span
+                        className="command-palette-keys"
+                        aria-label={`단축키 ${entry.shortcut}`}
+                      >
+                        {entry.shortcut.split(" ").map((key) => (
+                          <kbd key={key}>{key}</kbd>
+                        ))}
+                      </span>
+                    ) : (
+                      entry.hint && <small>{entry.hint}</small>
+                    )}
                   </Command.Item>
                 ))}
               </Command.Group>

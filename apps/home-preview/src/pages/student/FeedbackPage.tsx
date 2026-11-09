@@ -1,3 +1,4 @@
+import { AnimatedList } from "@/components/AnimatedList";
 import { WorkTabs } from "./shared";
 import { SelectField } from "@/components/experience";
 import { useRef, useState } from "react";
@@ -124,7 +125,7 @@ export function FeedbackPage() {
           placeholder="피드백에서 찾기"
         />
       </div>
-      <section className="surface feedback-list">
+      <AnimatedList className="surface feedback-list">
         {items.length ? (
           items.map((item) => (
             <Link
@@ -183,7 +184,7 @@ export function FeedbackPage() {
             }
           />
         )}
-      </section>
+      </AnimatedList>
       <FormDialog
         busy={form.saving}
         open={creating}
