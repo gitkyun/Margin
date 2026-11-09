@@ -11,6 +11,7 @@ import {
 } from "react";
 import { Popover, Tooltip } from "radix-ui";
 import { useParams } from "react-router-dom";
+import { SegmentedControl, SegmentedControlItem } from "@montage-ui/core";
 import { useWorkspace } from "@/lib/workspace";
 import {
   motion,
@@ -261,60 +262,43 @@ export function SelectField(props: SelectHTMLAttributes<HTMLSelectElement>) {
     </span>
   );
 }
+/**
+ * 보기·필터 전환. 모양과 키보드 동작은 Montage SegmentedControl이 맡습니다
+ * (radiogroup, 좌우 화살표로 이동하며 바로 선택, 미끄러지는 선택 표시).
+ * 개수는 오른쪽 작은 숫자로 붙이고, `fill`은 폼 안에서 너비를 채울 때 씁니다.
+ */
 export function Segments({
   value,
   onChange,
   options,
   label = "보기 선택",
+  size = "medium",
+  fill = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string; count?: number }[];
   label?: string;
+  size?: "small" | "medium" | "large";
+  fill?: boolean;
 }) {
-  const id = useId(),
-    reduced = useReducedMotion();
   return (
-    <div className="rms-segments" role="tablist" aria-label={label}>
-      {options.map((o, i) => (
-        <button
-          role="tab"
-          key={o.value}
-          type="button"
-          aria-selected={o.value === value}
-          tabIndex={o.value === value ? 0 : -1}
-          onKeyDown={(e) => {
-            if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
-              e.preventDefault();
-              const next =
-                e.key === "Home"
-                  ? 0
-                  : e.key === "End"
-                    ? options.length - 1
-                    : (i + (e.key === "ArrowRight" ? 1 : -1) + options.length) %
-                      options.length;
-              onChange(options[next].value);
-              (
-                e.currentTarget.parentElement?.children[next] as HTMLElement
-              )?.focus();
-            }
-          }}
-          onClick={() => onChange(o.value)}
-        >
-          {o.value === value && (
-            <motion.span
-              className="segment-highlight"
-              layoutId={id}
-              transition={{ duration: reduced ? 0 : 0.18 }}
-            />
+    <SegmentedControl
+      className={`rms-segments${fill ? " is-fill" : ""}`}
+      aria-label={label}
+      value={value}
+      onValueChange={onChange}
+      size={size}
+    >
+      {options.map((o) => (
+        <SegmentedControlItem key={o.value} value={o.value}>
+          {o.label}
+          {o.count !== undefined && (
+            <small className="segment-count">{o.count}</small>
           )}
-          <span>
-            {o.label}
-            {o.count !== undefined && <small>{o.count}</small>}
-          </span>
-        </button>
+        </SegmentedControlItem>
       ))}
-    </div>
+    </SegmentedControl>
   );
 }
 // Motion-value pointer radius follows Magic UI's MIT Magic Card approach; opaque content stays readable.

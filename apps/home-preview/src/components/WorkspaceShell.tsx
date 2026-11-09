@@ -11,6 +11,8 @@ import {
 import { Suspense } from "react";
 import { toast } from "sonner";
 import { Icon } from "./icons";
+import { Hint } from "./ui/hint";
+import { navPreview } from "@/lib/nav-preview";
 import { SearchField } from "./SearchField";
 import { Button } from "./ui/button";
 import { LoadingState } from "./common";
@@ -374,20 +376,29 @@ export function WorkspaceShell({
       </button>
       <nav className="nav-list" aria-label="주요 메뉴">
         {research ? (
-          navigation.map(([path, icon, label]) => (
-            <NavLink
-              key={path}
-              title={label}
-              end={!path}
-              to={`/r/${researchId}${path ? "/" + path : ""}`}
-              className={({ isActive }) =>
-                `nav-item ${isActive || (path === "feedback" && (location.pathname.includes("/results") || location.pathname.includes("/tasks"))) ? "active" : ""}`
-              }
-            >
-              <Icon name={icon} size={20} />
-              <span>{label}</span>
-            </NavLink>
-          ))
+          navigation.map(([path, icon, label]) => {
+            const preview = navPreview(path, label, data, researchId ?? "");
+            return (
+              <Hint
+                key={path}
+                label={label}
+                detail={preview?.detail}
+                position="right-center"
+                display="block"
+              >
+                <NavLink
+                  end={!path}
+                  to={`/r/${researchId}${path ? "/" + path : ""}`}
+                  className={({ isActive }) =>
+                    `nav-item ${isActive || (path === "feedback" && (location.pathname.includes("/results") || location.pathname.includes("/tasks"))) ? "active" : ""}`
+                  }
+                >
+                  <Icon name={icon} size={20} />
+                  <span>{label}</span>
+                </NavLink>
+              </Hint>
+            );
+          })
         ) : (
           <NavLink to="/r" className="nav-item">
             <Icon name="grid" size={20} />
@@ -395,16 +406,22 @@ export function WorkspaceShell({
           </NavLink>
         )}
         {research && (
-          <NavLink
-            to={`/r/${researchId}/assistant`}
-            className={({ isActive }) =>
-              `nav-item assistant-nav ${isActive ? "active" : ""}`
-            }
-            title="연구 도우미 · 선택한 기록으로 AI 도움받기"
+          <Hint
+            label="연구 도우미"
+            detail="선택한 기록으로만 AI 도움을 받아요."
+            position="right-center"
+            display="block"
           >
-            <Icon name="sparkles" size={20} />
-            <span>연구 도우미</span>
-          </NavLink>
+            <NavLink
+              to={`/r/${researchId}/assistant`}
+              className={({ isActive }) =>
+                `nav-item assistant-nav ${isActive ? "active" : ""}`
+              }
+            >
+              <Icon name="sparkles" size={20} />
+              <span>연구 도우미</span>
+            </NavLink>
+          </Hint>
         )}
       </nav>
       <div className="sidebar-bottom">
@@ -508,22 +525,27 @@ export function WorkspaceShell({
             )}
           </div>
           <div className="topbar-right">
-            <Link
-              className="icon-button"
-              title="사용 안내"
-              aria-label="사용 안내"
-              to="/guide"
+            <Hint label="사용 안내">
+              <Link className="icon-button" aria-label="사용 안내" to="/guide">
+                <Icon name="help" size={19} />
+              </Link>
+            </Hint>
+            <Hint
+              label="알림"
+              detail={
+                totalUnread ? `새 알림 ${totalUnread}개` : "새 알림이 없어요."
+              }
+              position="bottom-end"
             >
-              <Icon name="help" size={19} />
-            </Link>
-            <button
-              className="icon-button notification-trigger"
-              aria-label={`새 알림 ${totalUnread}개 보기`}
-              onClick={() => setNotifications(true)}
-            >
-              <Icon name="bell" size={20} />
-              {totalUnread > 0 && <i />}
-            </button>
+              <button
+                className="icon-button notification-trigger"
+                aria-label={`새 알림 ${totalUnread}개 보기`}
+                onClick={() => setNotifications(true)}
+              >
+                <Icon name="bell" size={20} />
+                {totalUnread > 0 && <i />}
+              </button>
+            </Hint>
           </div>
         </header>
         {mode === "preview" && (

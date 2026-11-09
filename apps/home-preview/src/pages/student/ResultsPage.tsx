@@ -7,6 +7,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Segments } from "@/components/experience";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
@@ -253,22 +254,16 @@ export function ResultsPage() {
           />
 
           <div className="page-toolbar">
-            <div className="segmented">
-              {[
-                ["all", "전체"],
-                ["private", "검토 요청 전"],
-                ["shared", "검토 요청에 포함"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  className={filter === value ? "active" : ""}
-                  aria-pressed={filter === value}
-                  onClick={() => setFilter(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <Segments
+              label="검토 요청 포함 여부"
+              value={filter}
+              onChange={(value) => setFilter(value as typeof filter)}
+              options={[
+                { value: "all", label: "전체" },
+                { value: "private", label: "검토 요청 전" },
+                { value: "shared", label: "검토 요청에 포함" },
+              ]}
+            />
             <SearchInput
               value={search}
               onChange={setSearch}

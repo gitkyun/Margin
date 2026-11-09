@@ -17,6 +17,7 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Segments } from "@/components/experience";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -217,23 +218,16 @@ export function ReviewsPage() {
         }
       />
       <div className="page-toolbar review-list-toolbar">
-        <div className="segmented" aria-label="공유 상태">
-          {[
-            ["all", "전체"],
-            ["shared", "공유 중"],
-            ["stopped", "공유 중지"],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={filter === value}
-              className={filter === value ? "selected" : ""}
-              onClick={() => setFilter(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <Segments
+          label="공유 상태"
+          value={filter}
+          onChange={(value) => setFilter(value as typeof filter)}
+          options={[
+            { value: "all", label: "전체" },
+            { value: "shared", label: "공유 중" },
+            { value: "stopped", label: "공유 중지" },
+          ]}
+        />
         <Input
           className="review-search"
           aria-label="검토 요청 찾기"

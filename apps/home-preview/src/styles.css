@@ -747,27 +747,7 @@ textarea::placeholder {
   color: var(--text);
   font-weight: 600;
 }
-.segmented {
-  display: inline-flex;
-  gap: 3px;
-  padding: 3px;
-  background: var(--surface-muted);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-}
-.segmented > button {
-  border: 0;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 12px;
-  padding: 7px 12px;
-  border-radius: 7px;
-}
-.segmented > button.active {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-}
+
 .list-layout {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);
@@ -799,6 +779,7 @@ textarea::placeholder {
 }
 .page-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -1521,7 +1502,7 @@ textarea::placeholder {
   transition: border-color 150ms;
 }
 .research-card:hover {
-  border-color: var(--brand);
+  border-color: var(--hover-line);
 }
 .research-card-icon {
   display: grid;
@@ -2250,7 +2231,7 @@ textarea::placeholder {
   padding: 20px;
 }
 .shared-review-row:hover {
-  border-color: var(--brand);
+  border-color: var(--hover-line);
 }
 .shared-review-row > svg {
   flex-shrink: 0;

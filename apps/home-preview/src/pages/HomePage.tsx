@@ -3,7 +3,12 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
-import { formatDate, meetingLabels, taskLabels } from "@/lib/domain";
+import {
+  formatDate,
+  meetingLabels,
+  relativeDay,
+  taskLabels,
+} from "@/lib/domain";
 import {
   unreadReviewNotifications,
   notificationHref,
@@ -262,13 +267,19 @@ export function HomePage() {
                   <div className="rh-date-tile" aria-hidden="true">
                     {next.date ? (
                       <>
-                        <span>{Number(next.date.slice(5, 7))}월</span>
+                        <span className="rh-date-month">
+                          {Number(next.date.slice(5, 7))}월
+                        </span>
                         <strong>{Number(next.date.slice(8, 10))}</strong>
+                        <small>
+                          {formatDate(next.date, { weekday: "short" })}
+                        </small>
                       </>
                     ) : (
                       <>
-                        <Icon name="calendar" size={23} />
-                        <span>날짜 미정</span>
+                        <span className="rh-date-month">날짜</span>
+                        <Icon name="calendar" size={20} />
+                        <small>미정</small>
                       </>
                     )}
                   </div>
@@ -276,6 +287,11 @@ export function HomePage() {
                     <p>
                       {formatDate(next.date)}
                       {next.time && ` · ${next.time}`}
+                      {relativeDay(next.date) && (
+                        <span className="rh-dday">
+                          {relativeDay(next.date)}
+                        </span>
+                      )}
                     </p>
                     <h3>
                       <Link to={`${base}/meetings/${next.id}?tab=prepare`}>

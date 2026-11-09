@@ -7,7 +7,11 @@
  * Montage 컴포넌트를 바로 씁니다. 별칭 목록과 제거 계획은
  * docs/design/migration.md에 있습니다.
  *
- * 금지: 여기나 다른 파일에 hex 색상표를 다시 만들기, [data-theme="dark"] 블록 추가하기.
+ * 다크 표면 층위만 예외로 이 파일의 [data-theme="dark"] 블록에서 정합니다.
+ * Montage 기본 다크(바탕 #0F0F10)는 마진 화면에서 너무 어두워, 같은 Montage
+ * coolNeutral 단계 중 한 칸 밝은 값을 고릅니다(2026-11-09 결정, migration.md).
+ *
+ * 금지: hex 색상표 만들기, 다른 파일에 다크 전용 색 블록 추가하기.
  */
 :root {
   /* 배경·면 */
@@ -16,6 +20,7 @@
   --surface-muted: var(--semantic-surface-neutral-secondary);
   --surface-sunken: var(--semantic-surface-neutral-tertiary);
   --sidebar: var(--semantic-background-neutral-primary);
+  --surface-raised: var(--semantic-surface-elevated-primary);
   --topbar: rgba(
     var(--semantic-background-neutral-primary-rgb),
     var(--opacity-88)
@@ -50,6 +55,15 @@
   --tone-red: var(--semantic-foreground-negative-primary);
   --tone-gray: var(--semantic-foreground-neutral-quaternary);
 
+  /* 상호작용 — 누를 수 있는 카드·행은 이 두 값만 씁니다 */
+  --hover-line: var(--semantic-line-brand-strong);
+  --hover-fill: var(--semantic-surface-neutral-secondary);
+  --selected-fill: rgba(
+    var(--semantic-surface-brand-primary-rgb),
+    var(--opacity-8)
+  );
+  --selected-line: var(--semantic-line-brand-primary);
+
   /* 그림자 */
   --panel-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   --raise-shadow: var(--semantic-elevation-shadow-normal-small);
@@ -60,6 +74,22 @@
   --shell-gap: var(--spacing-14);
   --font-mono:
     "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+/*
+ * 다크 표면 층위: 바탕 < 작업 면 < 떠 있는 면.
+ * 바탕 coolNeutral-15, 카드·사이드바 17, 메뉴·선택 표시 22.
+ */
+[data-theme="dark"] {
+  --canvas: var(--atomic-coolNeutral-15);
+  --surface: var(--atomic-coolNeutral-17);
+  --sidebar: var(--atomic-coolNeutral-17);
+  --surface-raised: var(--atomic-coolNeutral-22);
+  --topbar: rgba(var(--atomic-coolNeutral-17-rgb), var(--opacity-88));
+  --selected-fill: rgba(
+    var(--semantic-surface-brand-primary-rgb),
+    var(--opacity-16)
+  );
 }
 
 /* 이전 이름. 쓰는 곳을 옮기면 지웁니다(migration.md). */

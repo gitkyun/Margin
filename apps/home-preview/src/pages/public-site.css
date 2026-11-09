@@ -14,7 +14,7 @@
   word-break: keep-all;
 }
 .lp-site section[id] {
-  scroll-margin-top: 104px;
+  scroll-margin-top: 84px;
 }
 .lp-header {
   position: sticky;
@@ -30,8 +30,8 @@
 .lp-nav-shell {
   max-width: 1280px;
   margin: auto;
-  min-height: 84px;
-  padding: 16px 32px;
+  min-height: 64px;
+  padding: 12px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -40,7 +40,7 @@
 .lp-brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
   font-size: 25px;
   font-weight: 600;
   letter-spacing: -1px;
@@ -114,13 +114,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  min-height: 50px;
-  padding: 13px 23px;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
   border: 1px solid transparent;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 550;
+  border-radius: var(--radius-12);
+  font-size: var(--typography-body2-fontSize);
+  font-weight: 600;
   line-height: 1.4;
   transition:
     transform 0.18s,
@@ -132,9 +132,6 @@
 }
 .lp-button:hover svg {
   transform: translate(2px, -2px);
-}
-.lp-button:hover {
-  transform: translateY(-2px);
 }
 .lp-button-dark {
   background: var(--semantic-surface-neutral-inverse);
@@ -148,6 +145,14 @@
   );
   box-shadow: var(--semantic-elevation-shadow-normal-small);
 }
+/* 다크에서 흰 버튼은 화면에서 가장 밝은 면이 되어 위계를 깨므로 브랜드 파랑을 씁니다. */
+[data-theme="dark"] .lp-button-dark {
+  background: var(--semantic-surface-brand-primary);
+  color: var(--semantic-static-white);
+}
+[data-theme="dark"] .lp-button-dark:hover {
+  background: var(--semantic-surface-brand-strong);
+}
 .lp-button-light {
   color: var(--text);
   background: var(--surface);
@@ -157,11 +162,11 @@
   background: var(--surface-muted);
 }
 .lp-button-small {
-  min-height: 42px;
-  font-size: 13px;
-  padding: 10px 16px;
-  border-radius: 9px;
-  gap: 12px;
+  min-height: 40px;
+  font-size: var(--typography-label1-fontSize);
+  padding: 0 16px;
+  border-radius: var(--radius-10);
+  gap: 6px;
 }
 .lp-menu-toggle {
   display: none;
@@ -904,6 +909,167 @@
 }
 .lp-workflow-preview .lp-mini-sidebar {
   display: none;
+}
+/* 넓은 화면 ‘이렇게 사용해요’: 왼쪽 단계 목록은 붙어 있고 오른쪽 카드가 쌓입니다. */
+.lp-workflow-stack {
+  overflow: visible;
+  align-items: start;
+  gap: var(--spacing-24);
+  border-radius: 0;
+  padding-inline: 32px;
+}
+.lp-workflow-stack .lp-workflow-select {
+  position: sticky;
+  top: 96px;
+  padding: 0;
+  background: transparent;
+}
+.lp-stack-rail {
+  padding: 40px 36px;
+  border-radius: var(--radius-24);
+  background: var(--surface-muted);
+}
+.lp-workflow-stack .lp-workflow-select button {
+  font-size: var(--typography-headline1-fontSize);
+}
+.lp-workflow-stack .lp-workflow-select button:hover {
+  transform: none;
+}
+.lp-workflow-stack .lp-workflow-select button > svg:last-child {
+  margin-left: 0;
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+.lp-workflow-stack .lp-workflow-select button[aria-pressed="true"] {
+  background: var(--surface-raised);
+}
+.lp-workflow-stack .lp-workflow-select button[aria-pressed="true"] > svg {
+  opacity: 1;
+  color: var(--semantic-foreground-brand-primary);
+}
+[data-theme="dark"] .lp-stack-rail {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.lp-stack-index {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 50%;
+  background: var(--semantic-surface-neutral-secondary);
+  color: var(--text-secondary);
+  font-size: var(--typography-caption1-fontSize);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.lp-workflow-stack button[aria-pressed="true"] .lp-stack-index {
+  background: var(--semantic-surface-brand-primary);
+  color: var(--semantic-static-white);
+}
+.lp-stack-progress {
+  height: 3px;
+  margin: 24px 18px 0;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--semantic-surface-neutral-secondary);
+}
+.lp-stack-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--semantic-surface-brand-primary);
+  transform-origin: left;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-stack-cards {
+  display: grid;
+  gap: 40px;
+  padding-bottom: 40px;
+}
+.lp-stack-card {
+  position: sticky;
+  top: calc(96px + var(--stack-index) * 18px);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  height: min(640px, calc(100dvh - 140px));
+  padding: 40px 44px 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-24);
+  box-shadow: var(--semantic-elevation-shadow-normal-medium);
+  transform-origin: center top;
+}
+/* 다음 카드가 덮을 때 지난 카드는 살짝 작아지고 흐려집니다(지원 브라우저만). */
+@supports (animation-timeline: view()) {
+  .lp-stack-card {
+    animation: lp-stack-recede linear both;
+    animation-timeline: view();
+    animation-range: exit -10% exit 60%;
+  }
+  @keyframes lp-stack-recede {
+    to {
+      transform: scale(0.94);
+      filter: brightness(0.92);
+    }
+  }
+}
+.lp-stack-card h3 {
+  margin: 0 0 10px;
+  font-size: var(--typography-title3-fontSize);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.35;
+}
+.lp-stack-card > p {
+  margin: 0 0 28px;
+  color: var(--text-secondary);
+  font-size: var(--typography-label1-fontSize);
+  line-height: 1.75;
+}
+.lp-stack-preview {
+  min-height: 0;
+}
+.lp-stack-preview .lp-product-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.lp-stack-preview .lp-window-body {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+.lp-stack-preview .lp-window-content {
+  padding: 22px;
+}
+.lp-stack-preview .lp-mini-sidebar {
+  display: none;
+}
+/* 카드 바탕은 불투명해야 아래 카드가 비치지 않습니다. */
+.lp-stack-card.lp-tone-blue,
+.lp-stack-card.lp-tone-ice {
+  background:
+    linear-gradient(var(--brand-soft), var(--brand-soft)), var(--surface);
+}
+.lp-stack-card.lp-tone-sky {
+  background:
+    linear-gradient(
+      var(--semantic-surface-accent-cyan),
+      var(--semantic-surface-accent-cyan)
+    ),
+    var(--surface);
+}
+.lp-stack-card.lp-tone-azure {
+  background:
+    linear-gradient(
+      rgba(var(--semantic-surface-brand-primary-rgb), var(--opacity-8)),
+      rgba(var(--semantic-surface-brand-primary-rgb), var(--opacity-8))
+    ),
+    var(--surface);
 }
 .lp-tone-sky {
   background: var(--semantic-surface-accent-cyan);

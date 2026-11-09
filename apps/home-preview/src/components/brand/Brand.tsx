@@ -1,6 +1,9 @@
 import type { CSSProperties } from "react";
 
-/** Supplied Margin artwork. The light/dark assets retain their original paths. */
+/**
+ * Supplied Margin artwork. The blue symbol is used in both themes so the brand
+ * colour survives dark mode; `inverse` is only for blue grounds (closing CTA).
+ */
 export function BrandMark({
   className = "",
   inverse = false,
@@ -11,21 +14,11 @@ export function BrandMark({
   return (
     <span className={`margin-brand-mark ${className}`} aria-hidden="true">
       <img
-        className={inverse ? "" : "margin-theme-light"}
         src={inverse ? "/brand/symbol-white.svg" : "/brand/symbol-blue.svg"}
         alt=""
         width="160"
         height="170"
       />
-      {!inverse && (
-        <img
-          className="margin-theme-dark"
-          src="/brand/symbol-white.svg"
-          alt=""
-          width="160"
-          height="170"
-        />
-      )}
     </span>
   );
 }

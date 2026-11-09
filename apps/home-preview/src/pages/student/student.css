@@ -1333,15 +1333,7 @@ button.student-text-link {
   .student-search {
     width: 100%;
   }
-  .student-page .segmented {
-    max-width: 100%;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    white-space: nowrap;
-  }
-  .student-page .segmented > button {
-    flex-shrink: 0;
-  }
+
   .meeting-list,
   .feedback-list,
   .results-list,

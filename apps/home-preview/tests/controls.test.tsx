@@ -123,7 +123,7 @@ describe("search and selection controls", () => {
     expect(document.activeElement).toBe(input);
     expect(screen.queryByRole("button", { name: "검색어 지우기" })).toBeNull();
   });
-  it("moves the selected filter and keyboard focus together", () => {
+  it("moves the selected filter and keyboard focus together", async () => {
     function Filters() {
       const [value, setValue] = useState("all");
       return (
@@ -139,11 +139,16 @@ describe("search and selection controls", () => {
       );
     }
     render(<Filters />);
-    fireEvent.keyDown(screen.getByRole("tab", { name: "전체" }), {
-      key: "End",
-    });
-    const selected = screen.getByRole("tab", { name: /완료/ });
-    expect(selected.getAttribute("aria-selected")).toBe("true");
+    // Montage SegmentedControl: radiogroup, 좌우 화살표로 이동하면 바로 선택됩니다.
+    const first = screen.getByRole("radio", { name: "전체" });
+    first.focus();
+    fireEvent.keyDown(first, { key: "ArrowRight" });
+    const selected = screen.getByRole("radio", { name: /완료/ });
+    // Radix 포커스 이동은 다음 틱에 일어납니다.
+    await waitFor(() =>
+      expect(selected.getAttribute("aria-checked")).toBe("true"),
+    );
     expect(document.activeElement).toBe(selected);
+    fireEvent.keyUp(selected, { key: "ArrowRight" });
   });
 });

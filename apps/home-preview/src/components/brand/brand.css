@@ -1,13 +1,16 @@
 /* User-supplied Margin identity; opaque mascot tiles preserve the original blue artwork. */
 /* One wordmark size for the public header/footer and the workspace sidebar (AGENTS.md: keep them equal). */
 :root {
-  --margin-wordmark-width: 86.8px;
-  --margin-wordmark-height: 28px;
+  /* 실제 서비스 헤더(Linear 22px·Wanted 32px 상자)에 맞춘 한 벌 크기 */
+  --margin-wordmark-width: 70px;
+  --margin-wordmark-height: 22px;
+  --margin-mark-width: 24px;
+  --margin-mark-height: 26px;
 }
 .margin-brand-mark {
   display: inline-grid;
-  width: 34px;
-  height: 36px;
+  width: var(--margin-mark-width);
+  height: var(--margin-mark-height);
   flex: 0 0 auto;
   place-items: center;
 }
@@ -20,8 +23,8 @@
 }
 .margin-wordmark {
   display: inline-grid;
-  width: 112px;
-  height: 36px;
+  width: var(--margin-wordmark-width);
+  height: var(--margin-wordmark-height);
   flex: 0 0 auto;
 }
 .margin-wordmark > img {
@@ -41,11 +44,11 @@
   display: block !important;
 }
 .floating-workspace .brand {
-  gap: 3px;
+  gap: 4px;
 }
 .floating-workspace .brand .margin-brand-mark {
-  width: 30px;
-  height: 32px;
+  width: var(--margin-mark-width);
+  height: var(--margin-mark-height);
 }
 .floating-workspace .brand .margin-wordmark {
   width: var(--margin-wordmark-width);
@@ -62,8 +65,8 @@
   height: var(--margin-wordmark-height);
 }
 .lp-brand .margin-brand-mark {
-  width: 36px;
-  height: 38px;
+  width: var(--margin-mark-width);
+  height: var(--margin-mark-height);
 }
 .lp-mark.margin-brand-mark {
   background: transparent;
@@ -73,14 +76,6 @@
   width: 48px;
   height: 52px;
   margin: 0 auto 18px;
-}
-.review-brand .margin-brand-mark {
-  width: 28px;
-  height: 30px;
-}
-.review-brand .margin-wordmark {
-  width: 102px;
-  height: 34px;
 }
 .margin-mascot {
   display: inline-block;
@@ -120,10 +115,7 @@
   margin-bottom: 16px;
   box-shadow: var(--semantic-elevation-shadow-normal-medium);
 }
-.assistant-welcome > .margin-mascot {
-  margin-bottom: 4px;
-  box-shadow: var(--semantic-elevation-shadow-normal-large);
-}
+
 .message-role {
   display: flex;
   gap: 8px;
@@ -176,16 +168,6 @@
 .ai-workbench-title .margin-mascot {
   margin-right: 2px;
 }
-@media (max-width: 600px) {
-  .lp-brand .margin-wordmark {
-    width: 84px;
-    height: 27.2px;
-  }
-  .lp-brand .margin-brand-mark {
-    width: 30px;
-    height: 32px;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .margin-mascot.is-working > img {
     animation: none;
@@ -223,10 +205,4 @@
   font-size: 12px;
   line-height: 1.65;
   color: var(--text-secondary);
-}
-@media (max-width: 600px) {
-  .review-brand .margin-wordmark {
-    width: 86px;
-    height: 30px;
-  }
 }

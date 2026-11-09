@@ -17,6 +17,10 @@ import { FooterControls } from "@/components/marketing/FooterControls";
 import { FooterGlyphField } from "@/components/marketing/FooterGlyphField";
 import { PublicNavigation } from "@/components/marketing/PublicNavigation";
 import {
+  WorkflowStack,
+  useStackedWorkflow,
+} from "@/components/marketing/WorkflowStack";
+import {
   MergeFlow,
   SpotlightCard,
   ComparePreview,
@@ -25,7 +29,7 @@ import {
 const journey = [
   {
     label: "미팅 기록",
-    icon: "microphone",
+    icon: "mic",
     title: "미팅 원문에서 피드백을 골라내요",
     body: "녹음과 한국어 전사로 미팅을 남기고, 피드백, 결정 사항, 질문을 나눠 정리하세요.",
     color: "blue",
@@ -336,6 +340,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
   const [scene, setScene] = useState(0),
     [feature, setFeature] = useState(0);
   const reduced = useReducedMotion();
+  const stacked = useStackedWorkflow();
   return (
     <PublicFrame signedIn={signedIn}>
       <section className="lp-hero">
@@ -516,46 +521,53 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           </SpotlightCard>
         </div>
       </section>
-      <section className="lp-workflow" id="workflow">
-        <div className="lp-workflow-select">
-          <h2>이렇게 사용해요</h2>
-          <div role="group" aria-label="기능별 사용 방법">
-            {journey.map((j, i) => (
-              <button
-                key={j.label}
-                onClick={() => setFeature(i)}
-                aria-pressed={feature === i}
-              >
-                <Icon name={j.icon} size={23} />
-                {j.label}
-                <Icon name="arrow-up-right" size={19} />
-              </button>
-            ))}
+      {stacked ? (
+        <WorkflowStack
+          steps={journey}
+          renderPreview={(i) => <ProductPreview index={i} />}
+        />
+      ) : (
+        <section className="lp-workflow" id="workflow">
+          <div className="lp-workflow-select">
+            <h2>이렇게 사용해요</h2>
+            <div role="group" aria-label="기능별 사용 방법">
+              {journey.map((j, i) => (
+                <button
+                  key={j.label}
+                  onClick={() => setFeature(i)}
+                  aria-pressed={feature === i}
+                >
+                  <Icon name={j.icon} size={23} />
+                  {j.label}
+                  <Icon name="arrow-up-right" size={19} />
+                </button>
+              ))}
+            </div>
+            <p>
+              직접 쓰든 AI 제안을 선택하든
+              <br />
+              기록은 같은 연구에 남아요.
+            </p>
           </div>
-          <p>
-            직접 쓰든 AI 제안을 선택하든
-            <br />
-            기록은 같은 연구에 남아요.
-          </p>
-        </div>
-        <div
-          className={`lp-workflow-preview lp-tone-${journey[feature].color}`}
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={feature}
-              initial={{ opacity: 0, y: reduced ? 0 : 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h3>{journey[feature].title}</h3>
-              <p>{journey[feature].body}</p>
-              <ProductPreview index={feature} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
+          <div
+            className={`lp-workflow-preview lp-tone-${journey[feature].color}`}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={feature}
+                initial={{ opacity: 0, y: reduced ? 0 : 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <h3>{journey[feature].title}</h3>
+                <p>{journey[feature].body}</p>
+                <ProductPreview index={feature} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
       <section className="lp-section lp-capabilities" id="ai-work">
         <div className="lp-section-heading">
           <h2>
@@ -568,7 +580,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
         <div className="lp-capability-row">
           {[
             {
-              icon: "microphone",
+              icon: "mic",
               title: "말한 내용은 기록으로",
               body: "녹음하면서 한국어 전사문도 함께 남길 수 있어요.",
             },
@@ -591,7 +603,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             <SpotlightCard key={c.title} className="lp-capability">
               <Link
                 className="lp-capability-link"
-                to={`/features?view=${({ microphone: "meeting", calendar: "meeting", folder: "writing", users: "review" } as Record<string, string>)[c.icon]}`}
+                to={`/features?view=${({ mic: "meeting", calendar: "meeting", folder: "writing", users: "review" } as Record<string, string>)[c.icon]}`}
               >
                 <Icon name={c.icon} size={27} />
                 <div>

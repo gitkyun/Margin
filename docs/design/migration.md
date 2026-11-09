@@ -46,6 +46,15 @@
 
 **주의**: `--surface-muted`·`--surface-sunken`·`--brand-soft`는 Montage 정의대로 반투명입니다. 두 판을 겹쳐 그리는 곳(예: 소개 화면 비교 데모)은 불투명한 `--canvas`·`--surface`를 써야 아래가 비치지 않습니다.
 
+## 2-1. 2026-11-09 다듬기에서 정한 것
+
+- **다크 표면 층위.** Montage 기본 다크는 바탕이 `#0F0F10`이라 마진 화면에서 너무 어두웠습니다. 새 색을 만들지 않고 같은 Montage `coolNeutral` 단계 중에서 고릅니다: 바탕 15, 작업 면·사이드바 17, 떠 있는 면(`--surface-raised`) 22. 이 선택은 `src/design/tokens.css`의 `[data-theme="dark"]` 블록 한 곳에만 둡니다.
+- **상호작용 토큰.** `--hover-line`(누를 수 있는 카드 테두리), `--hover-fill`(호버 면), `--selected-fill`·`--selected-line`(선택 면·테두리). 호버는 중립, 선택은 브랜드로 나눕니다. 카드 호버에서 위로 들썩이는 움직임은 쓰지 않습니다.
+- **보기 전환.** `Segments`는 Montage `SegmentedControl` 위에 개수 표시만 더합니다. 화면마다 만들던 `.segmented`·`.rms-segments` 자체 CSS는 지웠습니다. 다크에서는 Montage 선택 면이 트랙보다 어두워 보여 `coolNeutral-30`으로 띄웁니다.
+- **툴팁.** `components/ui/hint.tsx`의 `Hint`(Montage Tooltip). 이름 한 줄 + 요약 한 줄. 사이드바 요약은 `lib/nav-preview.ts`가 지금 연구의 기록에서만 셉니다.
+- **연구 도우미 배치.** 이 화면 규칙은 `pages/assistant.css` 한 곳으로 모았습니다(`expansion.css`·`experience.css`·`workspace-refinements.css`·`brand.css`에서 제거).
+- **로고 크기.** 심볼 24×26, 글자 70×22px 한 벌을 공개 헤더·사이드바·교수 검토 화면이 함께 씁니다(`--margin-*` 변수).
+
 ## 3. 남은 일
 
 우선순위 순서입니다. 각 단계는 화면을 직접 보며 확인할 수 있는 크기로 나눕니다.

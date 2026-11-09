@@ -28,8 +28,8 @@
 }
 .mu-dropzone:hover,
 .mu-dropzone.is-dragging {
-  border-color: var(--brand);
-  background: color-mix(in srgb, var(--brand-soft) 60%, var(--surface));
+  border-color: var(--hover-line);
+  background: var(--hover-fill);
 }
 .mu-dropzone:focus-visible {
   outline: 2px solid var(--brand);
