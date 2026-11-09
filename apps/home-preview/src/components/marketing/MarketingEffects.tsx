@@ -1,5 +1,5 @@
 import { AssistantMascot } from "@/components/brand/Brand";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import {
   motion,
   useInView,
@@ -7,6 +7,7 @@ import {
   useMotionValue,
   useReducedMotion,
 } from "motion/react";
+import { VersionCompareSlider } from "@/components/VersionCompareSlider";
 import { Icon } from "@/components/icons";
 import "./marketing-effects.css";
 
@@ -133,7 +134,7 @@ export function SpotlightCard({
   );
 }
 
-/** The visible divider is the slider; pointer capture lets it reach either edge. */
+/** 소개 페이지 글쓰기 카드의 버전 비교. 글쓰기 화면과 같은 VersionCompareSlider를 씁니다. */
 export function ComparePreview({
   before = "선행연구를 조금 더 보완하면 좋겠습니다. 비교 기준을 명확히 하고, 다음 미팅에 설명해 주세요.",
   after = "비교 기준을 연구 목적 · 자료 수집 방식 · 분석 관점으로 나눕니다.\n선행연구 5편을 같은 기준으로 비교합니다.\n선택한 기준과 이유를 다음 미팅에서 설명합니다.",
@@ -143,96 +144,33 @@ export function ComparePreview({
   after?: string;
   className?: string;
 }) {
-  const stageRef = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
-  const [position, setPosition] = useState(48);
-  function moveTo(clientX: number) {
-    const box = stageRef.current?.getBoundingClientRect();
-    if (!box?.width) return;
-    setPosition(
-      Math.min(100, Math.max(0, ((clientX - box.left) / box.width) * 100)),
-    );
-  }
   return (
     <div className={`rms-compare-preview ${className}`}>
-      <div ref={stageRef} className="rms-compare-stage">
-        <div className="rms-compare-sheet rms-compare-after">
-          <span>수정 버전</span>
-          <h4>비교 기준을 구체적으로</h4>
-          <ol>
-            {after.split("\n").map((line, i) => (
-              <li key={`${i}-${line}`}>{line}</li>
-            ))}
-          </ol>
-        </div>
-        <div
-          className="rms-compare-sheet rms-compare-before"
-          style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
-        >
-          <span>이전 버전</span>
-          <h4>핵심만 적었던 문장</h4>
-          <p>{before}</p>
-          <span className="rms-compare-pencil">
-            <Icon name="edit" size={20} />
-          </span>
-        </div>
-        <div
-          className="rms-compare-divider"
-          style={{ left: `${position}%` }}
-          aria-hidden="true"
-        />
-        <button
-          type="button"
-          className="rms-compare-handle"
-          role="slider"
-          aria-label="이전 버전과 수정 버전 비교"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(position)}
-          aria-valuetext={`이전 버전 ${Math.round(position)}%, 수정 버전 ${100 - Math.round(position)}%`}
-          style={{ left: `clamp(23px, ${position}%, calc(100% - 23px))` }}
-          onPointerDown={(event) => {
-            event.preventDefault();
-            event.currentTarget.focus({ preventScroll: true });
-            dragging.current = true;
-            event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-          onPointerMove={(event) => dragging.current && moveTo(event.clientX)}
-          onPointerUp={(event) => {
-            if (dragging.current) moveTo(event.clientX);
-            dragging.current = false;
-            if (event.currentTarget.hasPointerCapture(event.pointerId))
-              event.currentTarget.releasePointerCapture(event.pointerId);
-          }}
-          onPointerCancel={() => {
-            dragging.current = false;
-          }}
-          onLostPointerCapture={() => {
-            dragging.current = false;
-          }}
-          onKeyDown={(event) => {
-            const step = event.shiftKey ? 10 : 5;
-            const delta = ["ArrowLeft", "ArrowDown"].includes(event.key)
-              ? -step
-              : ["ArrowRight", "ArrowUp"].includes(event.key)
-                ? step
-                : null;
-            if (delta !== null || event.key === "Home" || event.key === "End") {
-              event.preventDefault();
-              setPosition((value) =>
-                event.key === "Home"
-                  ? 0
-                  : event.key === "End"
-                    ? 100
-                    : Math.max(0, Math.min(100, value + (delta ?? 0))),
-              );
-            }
-          }}
-        >
-          <Icon name="chevron-left" size={15} />
-          <Icon name="chevron-right" size={15} />
-        </button>
-      </div>
+      <VersionCompareSlider
+        className="rms-compare-stage"
+        defaultPosition={48}
+        before={
+          <div className="rms-compare-sheet rms-compare-before">
+            <span>이전 버전</span>
+            <h4>핵심만 적었던 문장</h4>
+            <p>{before}</p>
+            <span className="rms-compare-pencil">
+              <Icon name="edit" size={20} />
+            </span>
+          </div>
+        }
+        after={
+          <div className="rms-compare-sheet rms-compare-after">
+            <span>수정 버전</span>
+            <h4>비교 기준을 구체적으로</h4>
+            <ol>
+              {after.split("\n").map((line, i) => (
+                <li key={`${i}-${line}`}>{line}</li>
+              ))}
+            </ol>
+          </div>
+        }
+      />
       <p className="rms-compare-hint">
         가운데 화살표를 좌우로 움직여 비교하세요.
       </p>

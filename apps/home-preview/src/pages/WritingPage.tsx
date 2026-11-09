@@ -48,6 +48,10 @@ import {
   VisibilityField,
   Segments,
 } from "@/components/experience";
+import {
+  VersionCompareSlider,
+  VersionSheet,
+} from "@/components/VersionCompareSlider";
 export function TextComparison({
   before,
   after,
@@ -283,6 +287,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     [versionsOpen, setVersionsOpen] = useState(false),
     [from, setFrom] = useState(""),
     [to, setTo] = useState("draft"),
+    [compareView, setCompareView] = useState<"changes" | "slide">("changes"),
     [error, setError] = useState(""),
     [preview, setPreview] = useState<{
       blob: Blob;
@@ -453,6 +458,15 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         (n) =>
           n.content?.map((c) => ("text" in c ? c.text : "")).join("") ?? "",
       ) ?? [];
+  const fromVersion = versionList.find((v) => v.id === from),
+    toVersion = versionList.find((v) => v.id === to),
+    beforeLabel = fromVersion ? `v${fromVersion.number}` : "이전 버전",
+    afterLabel =
+      to === "draft"
+        ? "지금 쓰는 내용"
+        : toVersion
+          ? `v${toVersion.number}`
+          : "이후 버전";
   const before = versionList.find((v) => v.id === from)?.text ?? "",
     after =
       to === "draft"
@@ -795,7 +809,47 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             />
           </div>
           {from ? (
-            <TextComparison before={before} after={after} />
+            <>
+              <Segments
+                label="비교 방식"
+                size="small"
+                value={compareView}
+                onChange={(next) => setCompareView(next as typeof compareView)}
+                options={[
+                  { value: "changes", label: "바뀐 부분" },
+                  { value: "slide", label: "밀어서 비교" },
+                ]}
+              />
+              {compareView === "changes" ? (
+                <TextComparison before={before} after={after} />
+              ) : (
+                <div>
+                  <div className="version-compare-scroll">
+                    <VersionCompareSlider
+                      label={`${beforeLabel} · ${afterLabel} 비교`}
+                      before={
+                        <VersionSheet
+                          tone="before"
+                          label={beforeLabel}
+                          text={before}
+                        />
+                      }
+                      after={
+                        <VersionSheet
+                          tone="after"
+                          label={afterLabel}
+                          text={after}
+                        />
+                      }
+                    />
+                  </div>
+                  <p className="version-compare-hint">
+                    가운데 손잡이를 끌거나, 손잡이에 포커스를 두고 좌우 방향키로
+                    5%씩 옮겨요.
+                  </p>
+                </div>
+              )}
+            </>
           ) : (
             <p className="quiet-placeholder">
               저장만 해서는 버전이 생기지 않아요. ‘지금 버전 남기기’로 버전을

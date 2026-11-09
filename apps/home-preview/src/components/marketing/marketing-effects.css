@@ -182,7 +182,6 @@
     margin: 0 auto;
   }
   .rms-compare-stage {
-    position: relative;
     isolation: isolate;
     height: 280px;
     overflow: hidden;
@@ -192,8 +191,8 @@
     box-shadow: var(--semantic-elevation-shadow-normal-medium);
   }
   .rms-compare-sheet {
-    position: absolute;
-    inset: 0;
+    box-sizing: border-box;
+    height: 100%;
     padding: 28px;
     background: var(--surface);
   }
@@ -246,45 +245,6 @@
     display: block;
     margin-top: 23px;
     color: var(--text-tertiary);
-  }
-  .rms-compare-divider {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--semantic-line-brand-primary);
-    pointer-events: none;
-  }
-  .rms-compare-handle {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    background: var(--surface);
-    border: 1px solid var(--semantic-line-brand-primary);
-    color: var(--brand);
-    box-shadow: var(--semantic-elevation-shadow-normal-small);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    padding: 0;
-    cursor: ew-resize;
-    touch-action: none;
-    user-select: none;
-    z-index: 2;
-  }
-  .rms-compare-handle:hover,
-  .rms-compare-handle:active {
-    background: var(--brand-soft);
-    border-color: var(--semantic-line-brand-strong);
-  }
-  .rms-compare-handle:focus-visible {
-    outline: 3px solid var(--brand);
-    outline-offset: 4px;
   }
   .rms-compare-hint {
     display: flex;
