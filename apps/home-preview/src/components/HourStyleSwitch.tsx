@@ -9,9 +9,9 @@ import {
 } from "@/lib/time-format";
 
 const OPTIONS: { value: HourPreference; label: string }[] = [
-  { value: "auto", label: "기기 설정 따르기" },
-  { value: "12h", label: "12시간제" },
   { value: "24h", label: "24시간제" },
+  { value: "12h", label: "12시간제" },
+  { value: "auto", label: "기기 설정 따르기" },
 ];
 
 /** 계정 설정의 시각 표기 선택. 이 브라우저에만 저장하고, 고른 값의 예시를 바로 보여 줍니다. */

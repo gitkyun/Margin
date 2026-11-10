@@ -177,9 +177,8 @@ export function AccountPage() {
                 </p>
                 <HourStyleSwitch />
                 <p className="settings-note">
-                  ‘기기 설정 따르기’는 브라우저가 알려 주는 값을 써요. 기기에서
-                  24시간제를 켜 뒀는데 오전/오후로 보이면 ‘24시간제’를 직접 골라
-                  주세요.
+                  기본은 24시간제예요. ‘기기 설정 따르기’는 브라우저가 알려 주는
+                  값을 써서, 기기 설정과 다르게 보일 수 있어요.
                 </p>
               </section>
             </>

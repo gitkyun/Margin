@@ -75,27 +75,31 @@ describe("날짜와 함께 쓰는 시각, 입력 칸", () => {
 });
 
 describe("직접 고른 시각 표기", () => {
-  beforeEach(() => saveHourPreference("auto"));
+  beforeEach(() => saveHourPreference("24h"));
 
-  it("고른 값이 기기 설정보다 먼저다", () => {
-    saveHourPreference("24h");
+  it("고른 적이 없으면 24시간제가 기본이다", () => {
+    expect(localStorage.getItem("margin-hour-style")).toBeNull();
     expect(readHourPreference()).toBe("24h");
     expect(hourStyle()).toBe("24h");
     expect(formatClock("14:30")).toBe("14:30");
+  });
+
+  it("12시간제를 고르면 오전·오후로 쓴다", () => {
     saveHourPreference("12h");
-    expect(hourStyle()).toBe("12h");
+    expect(readHourPreference()).toBe("12h");
     expect(formatClock("14:30")).toBe("오후 2:30");
   });
 
-  it("‘기기 설정 따르기’로 돌리면 저장한 값을 지운다", () => {
-    saveHourPreference("24h");
+  it("‘기기 설정 따르기’를 고르면 기기 값을 쓰고, 기본으로 돌리면 저장 값을 지운다", () => {
     saveHourPreference("auto");
     expect(readHourPreference()).toBe("auto");
+    expect(localStorage.getItem("margin-hour-style")).toBe("auto");
+    saveHourPreference("24h");
     expect(localStorage.getItem("margin-hour-style")).toBeNull();
   });
 
-  it("알 수 없는 저장 값은 ‘기기 설정 따르기’로 본다", () => {
+  it("알 수 없는 저장 값은 기본값(24시간제)으로 본다", () => {
     localStorage.setItem("margin-hour-style", "36h");
-    expect(readHourPreference()).toBe("auto");
+    expect(readHourPreference()).toBe("24h");
   });
 });

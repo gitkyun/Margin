@@ -1,6 +1,6 @@
 /**
- * 시각 표기 기준 하나. 접속한 기기(브라우저)의 시간 표시 방식을 따라
- * 12시간제(오전/오후) 또는 24시간제로 통일하고, 읽지 못하면 24시간제로 씁니다.
+ * 시각 표기 기준 하나. 기본은 24시간제이고, 계정 설정에서 12시간제(오전/오후)나
+ * ‘기기 설정 따르기’로 바꿀 수 있습니다. 기기 설정을 읽지 못하면 24시간제로 씁니다.
  * 저장 값(`HH:mm`, ISO 타임스탬프)은 바꾸지 않고 화면 표기와 입력 칸 모양만 정합니다.
  */
 export type HourStyle = "12h" | "24h";
@@ -22,18 +22,19 @@ export function detectHourStyle(
   }
 }
 
-/** 계정 설정에서 고르는 값. ‘기기 설정 따르기’가 기본입니다. */
+/** 계정 설정에서 고르는 값. 24시간제가 기본입니다(2026-11-11 결정). */
 export type HourPreference = "auto" | HourStyle;
 
 const PREFERENCE_KEY = "margin-hour-style";
+const DEFAULT_PREFERENCE: HourPreference = "24h";
 
-/** 이 브라우저에 저장한 선택. 없거나 읽지 못하면 ‘기기 설정 따르기’. */
+/** 이 브라우저에 저장한 선택. 없거나 읽지 못하면 기본값인 24시간제. */
 export function readHourPreference(): HourPreference {
   try {
     const saved = localStorage.getItem(PREFERENCE_KEY);
-    return saved === "12h" || saved === "24h" ? saved : "auto";
+    return saved === "12h" || saved === "auto" ? saved : DEFAULT_PREFERENCE;
   } catch {
-    return "auto";
+    return DEFAULT_PREFERENCE;
   }
 }
 
@@ -41,17 +42,18 @@ export function readHourPreference(): HourPreference {
 export function saveHourPreference(preference: HourPreference): void {
   cached = undefined;
   try {
-    if (preference === "auto") localStorage.removeItem(PREFERENCE_KEY);
+    if (preference === DEFAULT_PREFERENCE)
+      localStorage.removeItem(PREFERENCE_KEY);
     else localStorage.setItem(PREFERENCE_KEY, preference);
   } catch {
-    // 저장소를 쓸 수 없으면 기기 설정을 따릅니다.
+    // 저장소를 쓸 수 없으면 기본값(24시간제)을 씁니다.
   }
 }
 
 let cached: HourStyle | undefined;
 
 /**
- * 지금 쓰는 시각 표기 방식. 직접 고른 값이 있으면 그 값을, 없으면 기기 설정을 따릅니다.
+ * 지금 쓰는 시각 표기 방식. 고른 값이 없으면 24시간제, ‘기기 설정 따르기’를 고르면 기기 값을 씁니다.
  * 브라우저에 따라 운영체제의 24시간제 설정을 알려 주지 않아(크롬 등) 직접 고를 수 있게 했습니다.
  */
 export function hourStyle(): HourStyle {
