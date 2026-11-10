@@ -118,7 +118,11 @@ PR #18 "Montage 4.2.0 통일과 새 기능 다섯 가지"(`main` `e6589b9`)의 �
 | 날 `<button>` | 41 + motion 2 | — | 레이아웃 전용 외 0 |
 | `[data-theme="dark"]` 규칙 | 12 | 12 | 브랜드 그림 외 0 |
 | `montage.css` 규칙 | 35(Montage 직접 수정 13) | — | 늘지 않음 |
+<<<<<<< chore/css-important-cleanup
 | 레이어 안 `!important` | 82 | 53 → 33(4차 C) | 줄어드는 방향만 |
+=======
+| 레이어 안 `!important` | 82 | 53 | 줄어드는 방향만 |
+>>>>>>> main
 | 별칭 토큰 | 28 | — | 면 층위·선택 채움만 |
 
 ### B·D. 색
