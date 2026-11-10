@@ -729,14 +729,6 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
-  .composer-hint {
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    margin: 0 24px 16px;
-    line-height: var(--typography-caption1-lineHeight);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .ai-processing {
     display: flex;
     align-items: center;
@@ -1328,5 +1320,48 @@
   /* Selected material folder ("전체"): brand text on a brand tint. */
   .folder-all[aria-pressed="true"] {
     color: var(--brand);
+  }
+
+  /* 결정 기록 목록(미팅 화면의 여백 패널). 학생 화면 밖에서도 쓸 수 있게 공용 시트에 둡니다. */
+  .decision-log {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .decision-log > li {
+    display: grid;
+    gap: var(--spacing-4);
+    padding: var(--spacing-14) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .decision-log > li:last-child {
+    border-bottom: 0;
+  }
+  .decision-log p {
+    margin: 0;
+  }
+  .decision-log-text {
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 500;
+    line-height: var(--typography-label1Reading-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
+  }
+  .decision-log-reason,
+  .decision-log-link,
+  .decision-log small {
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .decision-log small,
+  .decision-log small a {
+    color: var(--text-tertiary);
+  }
+  .decision-log > li.is-replaced .decision-log-text {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
   }
 }

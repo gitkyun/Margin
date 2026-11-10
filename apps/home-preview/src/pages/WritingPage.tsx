@@ -1,14 +1,3 @@
-import {
-  Bold,
-  Italic,
-  Heading2,
-  List,
-  ListOrdered,
-  Quote,
-  Strikethrough,
-  Redo2,
-  RemoveFormatting,
-} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -50,12 +39,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Choice,
-  DockItem,
-  VisibilityField,
-  Segments,
-} from "@/components/experience";
+import { Choice, VisibilityField, Segments } from "@/components/experience";
+import { EditorToolbar } from "./writing/EditorToolbar";
 import {
   VersionCompareSlider,
   VersionSheet,
@@ -326,7 +311,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       TableKit.configure({ table: { resizable: true } }),
     ],
     content: restored?.content ?? initial.content,
-    // 도크의 눌림 상태·글자 수·표 행 추가 버튼이 커서 이동과 입력을 따라가게 한다.
+    // 도구 줄의 눌림 상태·글자 수·표 행 추가 버튼이 커서 이동과 입력을 따라가게 한다.
     shouldRerenderOnTransaction: true,
     editorProps: {
       attributes: { class: "rms-document-editor", "aria-label": "문서 본문" },
@@ -559,6 +544,36 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           {error}
         </div>
       )}
+      <EditorToolbar
+        editor={editor}
+        outlineOpen={outline}
+        onToggleOutline={() => setOutline(!outline)}
+        aiDisabled={dirty || !!busy || !editor?.getText().trim()}
+        aiHint={
+          dirty
+            ? "저장한 뒤에 AI 검토를 할 수 있어요."
+            : "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토해요."
+        }
+        onAiReview={() => {
+          const selection = editor?.state.selection;
+          const text =
+            selection && !selection.empty
+              ? editor?.state.doc
+                  .textBetween(selection.from, selection.to, "\n\n")
+                  .trim()
+              : "";
+          const selectionKey = `rms-ai-selection:${user.id}:${initial.id}`;
+          if (text)
+            sessionStorage.setItem(
+              selectionKey,
+              JSON.stringify({ revision: base.revision, text }),
+            );
+          else sessionStorage.removeItem(selectionKey);
+          navigate(
+            `/r/${initial.researchId}/assistant?mode=review_writing&document=${initial.id}${text ? "&selection=1" : ""}`,
+          );
+        }}
+      />
       <div className="writing-layout">
         {outline && (
           <aside className="writing-outline">
@@ -677,147 +692,6 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           )}
         </PanelFrame>
       </MarginPanel>
-      <div className="editor-dock-wrap">
-        <div className="editor-dock" role="toolbar" aria-label="문서 서식">
-          <DockItem
-            label="목차·공개 범위"
-            onClick={() => setOutline(!outline)}
-            active={outline}
-          >
-            <Icon name="menu" size={18} />
-          </DockItem>
-          <i />
-          {[
-            {
-              type: "bold",
-              label: "굵게",
-              glyph: Bold,
-              run: () => editor?.chain().focus().toggleBold().run(),
-            },
-            {
-              type: "italic",
-              label: "기울임",
-              glyph: Italic,
-              run: () => editor?.chain().focus().toggleItalic().run(),
-            },
-            {
-              type: "strike",
-              label: "취소선",
-              glyph: Strikethrough,
-              run: () => editor?.chain().focus().toggleStrike().run(),
-            },
-            {
-              type: "heading",
-              label: "소제목",
-              glyph: Heading2,
-              run: () =>
-                editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-            },
-            {
-              type: "bulletList",
-              label: "글머리 목록",
-              glyph: List,
-              run: () => editor?.chain().focus().toggleBulletList().run(),
-            },
-            {
-              type: "orderedList",
-              label: "번호 목록",
-              glyph: ListOrdered,
-              run: () => editor?.chain().focus().toggleOrderedList().run(),
-            },
-            {
-              type: "blockquote",
-              label: "인용문",
-              glyph: Quote,
-              run: () => editor?.chain().focus().toggleBlockquote().run(),
-            },
-          ].map(({ type, label, glyph: Glyph, run }) => (
-            <DockItem
-              key={type}
-              label={label}
-              active={editor?.isActive(type)}
-              onClick={run}
-            >
-              <Glyph size={18} />
-            </DockItem>
-          ))}
-          <DockItem
-            label="서식 지우기"
-            onClick={() =>
-              editor?.chain().focus().unsetAllMarks().clearNodes().run()
-            }
-          >
-            <RemoveFormatting size={18} />
-          </DockItem>
-          <DockItem
-            label="표 추가"
-            onClick={() =>
-              editor
-                ?.chain()
-                .focus()
-                .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-                .run()
-            }
-          >
-            <Icon name="grid" size={18} />
-          </DockItem>
-          {editor?.isActive("table") && (
-            <DockItem
-              label="행 추가"
-              onClick={() => editor.chain().focus().addRowAfter().run()}
-            >
-              <Icon name="plus" size={18} />
-            </DockItem>
-          )}
-          <i />
-          <DockItem
-            label="실행 취소"
-            onClick={() => editor?.chain().focus().undo().run()}
-            disabled={!editor?.can().undo()}
-          >
-            <Icon name="undo" size={18} />
-          </DockItem>
-          <DockItem
-            label="다시 실행"
-            onClick={() => editor?.chain().focus().redo().run()}
-            disabled={!editor?.can().redo()}
-          >
-            <Redo2 size={18} />
-          </DockItem>
-          <Button
-            size="sm"
-            disabled={dirty || !!busy || !editor?.getText().trim()}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              const selection = editor?.state.selection;
-              const text =
-                selection && !selection.empty
-                  ? editor?.state.doc
-                      .textBetween(selection.from, selection.to, "\n\n")
-                      .trim()
-                  : "";
-              const selectionKey = `rms-ai-selection:${user.id}:${initial.id}`;
-              if (text)
-                sessionStorage.setItem(
-                  selectionKey,
-                  JSON.stringify({ revision: base.revision, text }),
-                );
-              else sessionStorage.removeItem(selectionKey);
-              navigate(
-                `/r/${initial.researchId}/assistant?mode=review_writing&document=${initial.id}${text ? "&selection=1" : ""}`,
-              );
-            }}
-          >
-            <Icon name="sparkles" size={16} />
-            {editor?.state.selection.empty ? "AI 검토" : "선택 부분 AI 검토"}
-          </Button>
-        </div>
-        <p>
-          {dirty
-            ? "저장한 뒤에 AI 검토를 할 수 있어요."
-            : "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토할 수 있어요."}
-        </p>
-      </div>
       <Dialog
         open={!!conflict}
         onOpenChange={(v) => {

@@ -477,6 +477,11 @@
     line-height: 24px;
   }
   .preview-banner > a,
+  .workspace-footer-links {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4) var(--spacing-16);
+  }
   .workspace-footer a {
     display: inline-flex;
     align-items: center;

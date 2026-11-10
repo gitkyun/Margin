@@ -190,14 +190,7 @@ export function WeekStrip({ data, researchId }: WeekStripProps) {
             ))}
           </ul>
         ) : (
-          <div className="rh-week-empty">
-            <p>이날은 미팅도 마감도 없어요.</p>
-            <Button asChild variant="link" size="sm">
-              <Link to={`/r/${researchId}/meetings?new=1&date=${day.key}`}>
-                이날 미팅 만들기
-              </Link>
-            </Button>
-          </div>
+          <p className="rh-week-empty">이날은 미팅도 마감도 없어요.</p>
         )}
       </div>
     </section>
