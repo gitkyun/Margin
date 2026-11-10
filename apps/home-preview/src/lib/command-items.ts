@@ -62,27 +62,43 @@ interface RecordEntry extends CommandEntry {
   updatedAt: string;
 }
 
-/** 이 연구의 보관하지 않은 기록(문서·미팅·피드백·할 일·자료·수정 결과). */
+/** 이 연구의 보관하지 않은 기록(문서·미팅·피드백·할 일·자료·수정 결과·검토 요청). */
 export function recordEntries(
-  data: Pick<WorkspaceData, RecordKey>,
+  data: Pick<WorkspaceData, RecordKey> &
+    Partial<Pick<WorkspaceData, "reviews">>,
   researchId: string,
 ): RecordEntry[] {
-  return RECORD_KINDS.flatMap((kind) =>
-    (data[kind.key] as TitledRecord[])
-      .filter((r) => r.researchId === researchId && !r.archivedAt)
-      .map((r) => ({
-        id: `record:${kind.key}:${r.id}`,
-        label: r.title || "제목 없음",
-        icon: kind.icon,
-        hint: kind.type,
-        keywords: [r.title, kind.type],
-        updatedAt: r.updatedAt,
-        action: {
-          kind: "navigate" as const,
-          to: `/r/${researchId}/${kind.path}/${r.id}`,
-        },
-      })),
-  );
+  // 검토 요청은 연구 밖 주소(/reviews/:id)라 따로 붙입니다.
+  const reviews: RecordEntry[] = (data.reviews ?? [])
+    .filter((r) => r.researchId === researchId)
+    .map((r) => ({
+      id: `record:reviews:${r.id}`,
+      label: r.title || "제목 없음",
+      icon: "send",
+      hint: "검토 요청",
+      keywords: [r.title, "검토 요청", r.professorEmail],
+      updatedAt: r.updatedAt,
+      action: { kind: "navigate" as const, to: `/reviews/${r.id}` },
+    }));
+  return [
+    ...RECORD_KINDS.flatMap((kind) =>
+      (data[kind.key] as TitledRecord[])
+        .filter((r) => r.researchId === researchId && !r.archivedAt)
+        .map((r) => ({
+          id: `record:${kind.key}:${r.id}`,
+          label: r.title || "제목 없음",
+          icon: kind.icon,
+          hint: kind.type,
+          keywords: [r.title, kind.type],
+          updatedAt: r.updatedAt,
+          action: {
+            kind: "navigate" as const,
+            to: `/r/${researchId}/${kind.path}/${r.id}`,
+          },
+        })),
+    ),
+    ...reviews,
+  ];
 }
 
 /** 최근에 고친 기록 몇 개(빈 입력일 때 맨 위에 보여 줌). */
@@ -138,6 +154,20 @@ function createEntries(researchId: string | undefined): CommandEntry[] {
       "할 일 만들기",
       "투두",
     ]),
+    navigateEntry(
+      "create:result",
+      "수정 결과 작성",
+      "check",
+      `${base}/results?new=1`,
+      ["수정 결과 만들기", "고친 내용"],
+    ),
+    navigateEntry(
+      "create:review",
+      "검토 요청 만들기",
+      "send",
+      `${base}/reviews?new=1`,
+      ["교수 검토", "리뷰 요청"],
+    ),
     navigateEntry(
       "create:writing",
       "글 새로 쓰기",
