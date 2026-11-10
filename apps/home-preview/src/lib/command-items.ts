@@ -174,10 +174,6 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
         path,
       ),
     ),
-    withShortcut(
-      navigateEntry("go:tasks", "할 일", "tasks", `${base}/tasks`),
-      "tasks",
-    ),
     navigateEntry("go:results", "수정 결과", "check", `${base}/results`),
     withShortcut(
       navigateEntry(
