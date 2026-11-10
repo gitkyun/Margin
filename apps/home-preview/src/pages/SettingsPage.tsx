@@ -381,7 +381,9 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
           </p>
         )}
         <div className="bottom-actions">
-          <Button disabled={busy}>{busy ? "저장 중" : "저장"}</Button>
+          <Button type="submit" disabled={busy}>
+            {busy ? "저장 중" : "저장"}
+          </Button>
         </div>
       </form>
     </section>
@@ -520,7 +522,10 @@ export function ResearchSettingsPage() {
                   >
                     변경 취소
                   </Button>
-                  <Button disabled={busy || !name.trim() || !dirty}>
+                  <Button
+                    type="submit"
+                    disabled={busy || !name.trim() || !dirty}
+                  >
                     {busy ? "저장 중" : "저장"}
                   </Button>
                 </div>
@@ -619,7 +624,9 @@ export function ResearchSettingsPage() {
                     검토 요청을 만들어 수정 결과를 교수님께 공유할 수 있어요.
                   </p>
                   <div className="bottom-actions">
-                    <Button disabled={busy || !email.trim()}>초대하기</Button>
+                    <Button type="submit" disabled={busy || !email.trim()}>
+                      초대하기
+                    </Button>
                   </div>
                 </form>
               )}

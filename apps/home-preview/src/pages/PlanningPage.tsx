@@ -580,7 +580,9 @@ export function PlanningPage() {
                 >
                   취소
                 </Button>
-                <Button disabled={busy}>단계 저장</Button>
+                <Button type="submit" disabled={busy}>
+                  단계 저장
+                </Button>
               </div>
             </form>
           )}
@@ -700,7 +702,9 @@ export function PlanningPage() {
                 >
                   취소
                 </Button>
-                <Button disabled={busy}>목표 저장</Button>
+                <Button type="submit" disabled={busy}>
+                  목표 저장
+                </Button>
               </div>
             </form>
           )}
@@ -862,7 +866,7 @@ function PollCreate({
             >
               취소
             </Button>
-            <Button disabled={busy}>
+            <Button type="submit" disabled={busy}>
               {busy ? "보내는 중" : "응답 요청 보내기"}
             </Button>
           </div>
