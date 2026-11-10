@@ -28,8 +28,10 @@ import {
   type AIInput,
   type AICandidate,
   type BaseRecord,
+  type Decision,
   type Meeting,
   type Question,
+  type Task,
 } from "@/lib/domain";
 import { AIWorkbench } from "./AIWorkbench";
 import { isAISourceStale } from "./ai-source";
@@ -327,6 +329,7 @@ export function MeetingsPage() {
 }
 
 function MeetingDetail({ meeting }: { meeting: Meeting }) {
+  const navigate = useNavigate();
   const { data, save, savePreparation, saveResearch, refresh, mode } =
     useWorkspace();
   const [params, setParams] = useSearchParams();
@@ -349,6 +352,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [questionIds, setQuestionIds] = useState(meeting.questionIds);
   const [draftQuestions, setDraftQuestions] = useState<Question[]>([]);
   const [newQuestion, setNewQuestion] = useState("");
+  const [draftTasks, setDraftTasks] = useState<Task[]>([]);
+  const [newTask, setNewTask] = useState("");
   const prepForm = useSaving();
   const draftKey = `rms-meeting-draft-${meeting.id}`;
   const [restoredDraft] = useState(() => {
@@ -402,6 +407,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [entryTitle, setEntryTitle] = useState("");
   const [entryBody, setEntryBody] = useState("");
   const entryForm = useSaving();
+  // 결정 사항에서 바로 할 일을 만듭니다(검수 H-5). 미팅 준비 목록과는 따로 저장돼요.
+  const [taskFrom, setTaskFrom] = useState<Decision | null>(null);
+  const [taskTitle, setTaskTitle] = useState("");
+  const taskForm = useSaving();
   const [linkQuestionId, setLinkQuestionId] = useState<string | null>(null);
   const [targetMeetingId, setTargetMeetingId] = useState("");
   const questionForm = useSaving();
@@ -537,6 +546,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     setQuestionIds([...meeting.questionIds]);
     setDraftQuestions([]);
     setNewQuestion("");
+    setDraftTasks([]);
+    setNewTask("");
     prepForm.setError(null);
     setPreparing(true);
   }
@@ -552,6 +563,53 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     setDraftQuestions((items) => [...items, question]);
     setQuestionIds((ids) => [...ids, question.id]);
     setNewQuestion("");
+  }
+  function draftTask(title: string, description = ""): Task {
+    return {
+      ...recordBase(researchId),
+      origin: "manual",
+      title,
+      description,
+      status: "todo",
+      dueDate: null,
+      priority: "normal",
+      visibility: "private",
+      feedbackIds: [],
+    };
+  }
+  function addDraftTask() {
+    if (!newTask.trim()) return;
+    const task = draftTask(newTask.trim());
+    setDraftTasks((items) => [...items, task]);
+    setTaskIds((ids) => [...ids, task.id]);
+    setNewTask("");
+  }
+  function openTaskFrom(decision: Decision) {
+    setTaskFrom(decision);
+    setTaskTitle(decision.text.split("\n")[0].slice(0, 80));
+    taskForm.setError(null);
+  }
+  async function storeTaskFrom(event: React.FormEvent) {
+    event.preventDefault();
+    if (!taskFrom) return;
+    if (!taskTitle.trim()) {
+      taskForm.setError("할 일 이름을 적어 주세요.");
+      return;
+    }
+    const task = draftTask(
+      taskTitle.trim(),
+      `${meeting.title} 결정 사항: ${taskFrom.text}`,
+    );
+    await taskForm.perform(async () => {
+      await save("tasks", task);
+      setTaskFrom(null);
+      toast.success("할 일을 만들었어요", {
+        action: {
+          label: "열기",
+          onClick: () => navigate(`/r/${researchId}/tasks/${task.id}`),
+        },
+      });
+    });
   }
   async function storePreparation(event: React.FormEvent) {
     event.preventDefault();
@@ -575,12 +633,26 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       setQuestionIds(selectedIds);
       setNewQuestion("");
     }
+    let tasks = draftTasks;
+    let selectedTaskIds = taskIds;
+    if (newTask.trim()) {
+      const task = draftTask(newTask.trim());
+      tasks = [...draftTasks, task];
+      selectedTaskIds = [...taskIds, task.id];
+      setDraftTasks(tasks);
+      setTaskIds(selectedTaskIds);
+      setNewTask("");
+    }
     await prepForm.perform(async () => {
+      // 준비에서 새로 적은 할 일은 고른 것만 먼저 만들고, 그다음 준비를 저장합니다.
+      for (const task of tasks.filter((t) => selectedTaskIds.includes(t.id)))
+        await save("tasks", task);
+      setDraftTasks([]);
       await savePreparation(
         {
           ...prepBase.current,
           goal: goal.trim(),
-          taskIds,
+          taskIds: selectedTaskIds,
           versionIds,
           questionIds: selectedIds,
         },
@@ -1144,6 +1216,13 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       </span>
                     )}
                   </p>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => openTaskFrom(decision)}
+                  >
+                    할 일로 만들기
+                  </Button>
                 </div>
               ))
             ) : (
@@ -1228,7 +1307,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           if (!prepForm.saving) setPreparing(open);
         }}
         title="미팅 준비 편집"
-        description="여기서 고르거나 빼도 할 일과 자료는 바뀌지 않아요."
+        description="여기서 고르거나 빼도 기존 할 일과 자료는 바뀌지 않아요. 새로 적은 할 일은 저장할 때 만들어져요."
       >
         <form onSubmit={storePreparation} className="stack">
           <label className="field">
@@ -1267,11 +1346,46 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   </span>
                 </label>
               ))}
-            {!data.tasks.some((t) => t.researchId === researchId) && (
-              <p className="student-empty-inline">
-                아직 할 일이 없어요. 할 일 메뉴에서 만들 수 있어요.
-              </p>
-            )}
+            {draftTasks.map((task) => (
+              <label className="student-choice-row" key={task.id}>
+                <Checkbox
+                  checked={taskIds.includes(task.id)}
+                  onCheckedChange={(next) =>
+                    setTaskIds((ids) =>
+                      next
+                        ? [...ids, task.id]
+                        : ids.filter((id) => id !== task.id),
+                    )
+                  }
+                />
+                <span>
+                  {task.title}
+                  <small>새 할 일 · 저장하면 만들어져요</small>
+                </span>
+              </label>
+            ))}
+            <div className="inline-form">
+              <Input
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                placeholder="예: 비교 기준 표에 근거 문헌 추가"
+                aria-label="준비에 추가할 새 할 일"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!isImeComposing(e)) addDraftTask();
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                aria-label="새 할 일 추가"
+                onClick={addDraftTask}
+              >
+                <Icon name="plus" size={16} />
+              </Button>
+            </div>
           </div>
           <div className="student-picker">
             <h3>보여줄 자료</h3>
@@ -1476,6 +1590,33 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           <SaveActions
             saving={entryForm.saving}
             onCancel={() => setEntry(null)}
+          />
+        </form>
+      </FormDialog>
+      <FormDialog
+        busy={taskForm.saving}
+        open={taskFrom !== null}
+        onOpenChange={(open) => {
+          if (!open) setTaskFrom(null);
+        }}
+        title="할 일로 만들기"
+        description="결정 사항은 그대로 두고, 할 일 목록에 새 할 일을 만들어요. 기한과 우선순위는 할 일 화면에서 정할 수 있어요."
+      >
+        <form className="stack" onSubmit={storeTaskFrom}>
+          <LabeledInput
+            label="할 일 이름"
+            required
+            value={taskTitle}
+            onChange={setTaskTitle}
+          />
+          <p className="student-footnote">
+            설명에 이 미팅과 결정 사항이 함께 적혀요.
+          </p>
+          <ErrorNotice error={taskForm.error} />
+          <SaveActions
+            saving={taskForm.saving}
+            onCancel={() => setTaskFrom(null)}
+            label="할 일 만들기"
           />
         </form>
       </FormDialog>
