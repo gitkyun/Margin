@@ -123,12 +123,24 @@ export function PlanningPage() {
         title="계획·일정"
         description="연구 단계와 중요한 일정을 확인하세요."
         actions={
-          <Button
-            onClick={() => (tab !== "roadmap" ? setPollOpen(true) : newPhase())}
-          >
-            <Icon name="plus" size={17} />
-            {tab !== "roadmap" ? "시간 조율 시작" : "단계 추가"}
-          </Button>
+          // 탭마다 그 탭에서 만드는 것 하나만 주 행동으로 둡니다.
+          tab === "calendar" ? (
+            <Button asChild>
+              <Link to={`/r/${researchId}/meetings?new=1`}>
+                <Icon name="plus" size={17} />
+                미팅 만들기
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              onClick={() =>
+                tab === "schedule" ? setPollOpen(true) : newPhase()
+              }
+            >
+              <Icon name="plus" size={17} />
+              {tab === "schedule" ? "시간 조율 시작" : "단계 추가"}
+            </Button>
+          )
         }
         tabs={
           <Tabs
@@ -177,7 +189,11 @@ export function PlanningPage() {
             <EmptyState
               icon="flag"
               title="아직 연구 단계가 없어요"
-              description="기본 단계로 시작한 뒤 이름과 순서를 바꿀 수 있어요."
+              points={[
+                "기본 단계 여섯 개로 시작해요",
+                "이름과 순서, 기간을 내 연구에 맞게 바꿔요",
+                "지금 단계가 연구 홈에 보여요",
+              ]}
               action={
                 <Button
                   disabled={busy}

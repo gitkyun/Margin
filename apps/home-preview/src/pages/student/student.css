@@ -113,8 +113,14 @@
 
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
+  /* 목록·상세 본문은 최대 1040px. PDF를 나란히 보는 자료 상세만 넓게 씁니다. */
   .student-page {
     min-width: 0;
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+  .student-page:has(.material-detail-layout) {
+    max-width: none;
   }
   .student-page .surface {
     min-width: 0;
@@ -1003,6 +1009,56 @@
   .material-preview-facts dd {
     margin: 0;
     overflow-wrap: anywhere;
+  }
+  .result-response-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-16);
+    flex-wrap: wrap;
+  }
+  .result-response-summary .meta {
+    margin: var(--spacing-4) 0 0;
+  }
+  .result-response {
+    display: grid;
+    gap: var(--spacing-8);
+    padding-bottom: var(--spacing-16);
+    border-bottom: 1px solid var(--line);
+  }
+  .result-response-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .result-response-head strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .result-response > small,
+  .result-response-comments small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .result-response-comments {
+    display: grid;
+    gap: var(--spacing-8);
+    margin: 0;
+    padding: 0;
+    font-size: var(--typography-label1-fontSize);
+    list-style: none;
+  }
+  .result-response-comments small {
+    display: block;
+  }
+  .meeting-panel-goal {
+    margin: 0;
+    padding: var(--spacing-10) var(--spacing-12);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+    font-size: var(--typography-label1-fontSize);
+    line-height: 1.6;
   }
   .ai-candidate-note {
     color: var(--text-secondary);

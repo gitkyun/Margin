@@ -214,9 +214,8 @@
     margin: 0 auto;
     padding: 44px 56px 140px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-14);
+    border-radius: var(--radius-12);
     background: var(--surface);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   }
 
   /* ── 본문 서식 (Tiptap) ───────────────────────────────── */
@@ -635,5 +634,19 @@
       min-width: 36px;
       height: 40px;
     }
+  }
+}
+
+@layer margin {
+  /* 여백 패널의 버전 줄(버튼) */
+  .writing-version-row {
+    width: 100%;
+    border-inline: 0;
+    border-top: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
   }
 }

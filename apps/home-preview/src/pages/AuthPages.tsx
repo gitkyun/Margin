@@ -7,6 +7,12 @@ import { ThemeSwitch } from "@/components/ThemeSwitch";
 export { ThemeSwitch } from "@/components/ThemeSwitch";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
 import { formatDateTime } from "@/lib/domain";
@@ -430,16 +436,29 @@ export function ResearchSelectPage() {
                   />
                 )}
                 {!trashView && research.ownerId === user.id && (
-                  <Button
-                    variant="ghost"
-                    disabled={pending}
-                    onClick={() => {
-                      setTrashTarget(research);
-                      setTrashName("");
-                    }}
-                  >
-                    휴지통으로 옮기기
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={pending}
+                        aria-label={`${research.name} 더보기`}
+                      >
+                        <Icon name="more" size={18} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setTrashTarget(research);
+                          setTrashName("");
+                        }}
+                      >
+                        <Icon name="trash" size={16} />
+                        휴지통으로 옮기기
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
             </div>

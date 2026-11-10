@@ -42,7 +42,7 @@
     text-align: center;
   }
   .assistant-welcome > .margin-mascot {
-    box-shadow: var(--semantic-elevation-shadow-normal-medium);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
   }
   .assistant-welcome h2 {
     margin: var(--spacing-20) 0 var(--spacing-8);
@@ -165,18 +165,15 @@
     width: 100%;
     padding: var(--spacing-12) var(--spacing-12) var(--spacing-10);
     border: 1px solid var(--line-strong);
-    border-radius: var(--radius-20);
+    border-radius: var(--radius-12);
     background: var(--surface-raised);
-    box-shadow: var(--semantic-elevation-shadow-normal-medium);
     transition:
       border-color var(--motion-duration-micro) ease-out,
       box-shadow var(--motion-duration-micro) ease-out;
   }
   .ai-composer:focus-within {
     border-color: var(--semantic-line-brand-strong);
-    box-shadow:
-      0 0 0 4px var(--selected-fill),
-      var(--semantic-elevation-shadow-normal-medium);
+    box-shadow: 0 0 0 4px var(--selected-fill);
   }
   .ai-composer textarea {
     width: 100%;

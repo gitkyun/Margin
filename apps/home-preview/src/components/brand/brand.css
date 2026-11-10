@@ -113,10 +113,6 @@
     left: 22px;
     box-shadow: var(--semantic-elevation-shadow-normal-small);
   }
-  .rh-assistant > .margin-mascot {
-    margin-bottom: 16px;
-    box-shadow: var(--semantic-elevation-shadow-normal-medium);
-  }
 
   .message-role {
     display: flex;

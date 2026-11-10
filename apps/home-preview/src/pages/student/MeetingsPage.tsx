@@ -34,7 +34,7 @@ import {
   type Task,
 } from "@/lib/domain";
 import { AIWorkbench } from "./AIWorkbench";
-import { MarginPanel } from "@/components/margin-panel/MarginPanel";
+import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { isAISourceStale } from "./ai-source";
 import { QuickPdfUpload } from "./QuickPdfUpload";
 import { hasMemoConflict, restoreMemoDraft } from "./memo-draft";
@@ -397,7 +397,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   );
   const entryBase = useRef<BaseRecord | null>(null);
   const [aiInput, setAiInput] = useState<AIInput | null>(null);
-  const [aiOpen, setAiOpen] = useState(false);
+  // 여백 패널: 준비(목표·질문·자료)와 도우미(메모 정리)
+  const [panelTab, setPanelTab] = useState<"prepared" | "assistant">(
+    "prepared",
+  );
+  const [panelOpen, setPanelOpen] = useState(false);
+  const aiOpen = panelOpen && panelTab === "assistant";
   const aiStale =
     !!aiInput &&
     isAISourceStale(aiInput, {
@@ -681,7 +686,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         sourceText: source.text,
         sourceRevision: source.revision,
       });
-    setAiOpen(true);
+    setPanelTab("assistant");
+    setPanelOpen(true);
   }
   async function saveCandidate(candidate: AICandidate, base: BaseRecord) {
     const body = (candidate.body ?? candidate.title).trim();
@@ -1182,22 +1188,99 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             </div>
           </section>
           <MarginPanel
-            label="메모 정리"
-            open={!!aiInput && aiOpen}
-            onOpen={() => void openAI()}
-            onClose={() => setAiOpen(false)}
+            label="준비한 내용과 연구 도우미"
+            open={panelOpen}
+            onOpen={() => setPanelOpen(true)}
+            onClose={() => setPanelOpen(false)}
           >
-            {aiInput && (
-              <AIWorkbench
-                key={aiInput.sourceRevision}
-                title="메모 정리"
-                input={aiInput}
-                stale={aiStale}
-                onClose={() => setAiOpen(false)}
-                onRefresh={() => void openAI()}
-                onSave={saveCandidate}
-              />
-            )}
+            <PanelFrame
+              title="이 미팅"
+              onClose={() => setPanelOpen(false)}
+              tab={panelTab}
+              onTab={(value) =>
+                value === "assistant" ? void openAI() : setPanelTab("prepared")
+              }
+              tabs={[
+                {
+                  value: "prepared",
+                  label: "준비",
+                  count: preparedQuestions.length + linkedVersions.length,
+                },
+                { value: "assistant", label: "도우미" },
+              ]}
+            >
+              {panelTab === "prepared" && (
+                <div className="panel-frame-body">
+                  <h3>이번 미팅에서 보여줄 결과</h3>
+                  <p className="meeting-panel-goal">
+                    {meeting.goal || "아직 정하지 않았어요."}
+                  </p>
+                  <h3>
+                    준비한 질문
+                    <span className="count-chip">
+                      {preparedQuestions.length}
+                    </span>
+                  </h3>
+                  {preparedQuestions.map((question) => (
+                    <div className="student-simple-row" key={question.id}>
+                      <span className="grow">
+                        <strong>{question.text}</strong>
+                      </span>
+                      <StatusBadge
+                        tone={
+                          question.status === "resolved" ? "green" : "neutral"
+                        }
+                      >
+                        {question.status === "resolved" ? "해결" : "열림"}
+                      </StatusBadge>
+                    </div>
+                  ))}
+                  {!preparedQuestions.length && (
+                    <p className="student-empty-inline">
+                      준비한 질문이 없어요.
+                    </p>
+                  )}
+                  <h3>
+                    보여줄 자료
+                    <span className="count-chip">{linkedVersions.length}</span>
+                  </h3>
+                  {linkedVersions.map((version) => (
+                    <Link
+                      className="student-simple-row"
+                      key={version.id}
+                      to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
+                      state={back(meeting.title)}
+                    >
+                      <span className="grow">
+                        <strong>{version.fileName}</strong>
+                        <small>v{version.number}</small>
+                      </span>
+                      <Icon name="arrow-up-right" size={15} />
+                    </Link>
+                  ))}
+                  {!linkedVersions.length && (
+                    <p className="student-empty-inline">
+                      보여줄 자료를 고르지 않았어요.
+                    </p>
+                  )}
+                  <p className="panel-frame-note">
+                    준비 탭에서 바꾼 내용이 여기에 보여요.
+                  </p>
+                </div>
+              )}
+              {panelTab === "assistant" && aiInput && (
+                <AIWorkbench
+                  key={aiInput.sourceRevision}
+                  embedded
+                  title="메모 정리"
+                  input={aiInput}
+                  stale={aiStale}
+                  onClose={() => setPanelOpen(false)}
+                  onRefresh={() => void openAI()}
+                  onSave={saveCandidate}
+                />
+              )}
+            </PanelFrame>
           </MarginPanel>
         </div>
       }

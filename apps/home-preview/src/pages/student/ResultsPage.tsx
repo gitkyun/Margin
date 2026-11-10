@@ -15,6 +15,13 @@ import type { RevisionResult } from "@/lib/domain";
 import { BackLink, SearchInput } from "./shared";
 import { ResultEditorDialog } from "./ResultEditorDialog";
 import { newResultDraft } from "./result-draft";
+import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
+import {
+  ResponseStatus,
+  latestResponse,
+  latestRound,
+  timeText,
+} from "@/pages/reviews/helpers";
 
 export function ResultsPage() {
   const { researchId = "", resultId } = useParams();
@@ -25,6 +32,9 @@ export function ResultsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [draft, setDraft] = useState<RevisionResult | null>(null);
+  // 여백 패널: 응답(교수 결과와 댓글)과 연결(이 결과와 이어진 기록)
+  const [panelTab, setPanelTab] = useState<"responses" | "links">("responses");
+  const [panelOpen, setPanelOpen] = useState(false);
   const current = data.results.find(
     (result) => result.id === resultId && result.researchId === researchId,
   );
@@ -124,127 +134,113 @@ export function ResultsPage() {
               </div>
             }
           />
-          <div className="result-detail-grid">
-            <div className="stack">
-              <section className="surface result-body">
-                <div className="section-heading">
-                  <h2>실제로 수정한 내용</h2>
-                  <StatusBadge tone="neutral">
-                    검토 요청에 넣으면 공개
-                  </StatusBadge>
-                </div>
-                <p className="student-body-text">{current.description}</p>
-                <div className="result-evidence">
-                  <h3>확인할 근거</h3>
-                  {version ? (
+          <div className="stack result-detail">
+            <section className="surface result-response-summary">
+              <div>
+                <h2>교수 응답</h2>
+                <p className="meta">
+                  {linkedItems.length
+                    ? `검토 요청 ${linkedRequests.length}건에 넣었어요. 응답과 댓글은 패널에서 볼 수 있어요.`
+                    : "아직 검토 요청에 넣지 않았어요."}
+                </p>
+              </div>
+              <div className="button-row">
+                {linkedItems.map((item) => (
+                  <ResponseStatus
+                    key={item.id}
+                    response={latestResponse(
+                      data,
+                      latestRound(data, item.id)?.id,
+                    )}
+                  />
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setPanelTab(linkedItems.length ? "responses" : "links");
+                    setPanelOpen(true);
+                  }}
+                >
+                  {linkedItems.length ? "응답 보기" : "연결된 기록 보기"}
+                </Button>
+              </div>
+            </section>
+            <section className="surface result-body">
+              <div className="section-heading">
+                <h2>실제로 수정한 내용</h2>
+                <StatusBadge tone="neutral">
+                  검토 요청에 넣으면 공개
+                </StatusBadge>
+              </div>
+              <p className="student-body-text">{current.description}</p>
+              <div className="result-evidence">
+                <h3>확인할 근거</h3>
+                {version ? (
+                  <Link
+                    className="student-simple-row"
+                    to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
+                    state={back(current.title)}
+                  >
+                    <span className="student-file-symbol">
+                      <Icon name="file" size={20} />
+                    </span>
+                    <span className="grow">
+                      <strong>{version.fileName}</strong>
+                      <small>
+                        파일 버전 v{version.number} ·{" "}
+                        {current.location || "볼 위치 없음"}
+                      </small>
+                    </span>
+                    <Icon name="arrow-up-right" size={16} />
+                  </Link>
+                ) : (
+                  <p className="student-empty-inline">
+                    {current.kind === "document"
+                      ? "아직 파일을 연결하지 않았어요."
+                      : "문서 외 수정이라 위에 적은 내용을 근거로 사용해요."}
+                  </p>
+                )}
+                {current.kind === "document" && !ready && (
+                  <p className="student-inline-note">
+                    수정 결과는 저장되어 있어요. 검토 요청을 만들려면 파일과 볼
+                    위치를 추가해 주세요.
+                  </p>
+                )}
+              </div>
+            </section>
+            {current.feedbackIds.length > 0 && (
+              <section className="surface">
+                <h2>연결한 피드백</h2>
+                {data.feedback
+                  .filter((feedback) =>
+                    current.feedbackIds.includes(feedback.id),
+                  )
+                  .map((feedback) => (
                     <Link
                       className="student-simple-row"
-                      to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
+                      key={feedback.id}
+                      to={`/r/${researchId}/feedback/${feedback.id}`}
                       state={back(current.title)}
                     >
-                      <span className="student-file-symbol">
-                        <Icon name="file" size={20} />
-                      </span>
                       <span className="grow">
-                        <strong>{version.fileName}</strong>
-                        <small>
-                          파일 버전 v{version.number} ·{" "}
-                          {current.location || "볼 위치 없음"}
-                        </small>
-                      </span>
-                      <Icon name="arrow-up-right" size={16} />
-                    </Link>
-                  ) : (
-                    <p className="student-empty-inline">
-                      {current.kind === "document"
-                        ? "아직 파일을 연결하지 않았어요."
-                        : "문서 외 수정이라 위에 적은 내용을 근거로 사용해요."}
-                    </p>
-                  )}
-                  {current.kind === "document" && !ready && (
-                    <p className="student-inline-note">
-                      수정 결과는 저장되어 있어요. 검토 요청을 만들려면 파일과
-                      볼 위치를 추가해 주세요.
-                    </p>
-                  )}
-                </div>
-              </section>
-              {current.feedbackIds.length > 0 && (
-                <section className="surface">
-                  <h2>연결한 피드백</h2>
-                  {data.feedback
-                    .filter((feedback) =>
-                      current.feedbackIds.includes(feedback.id),
-                    )
-                    .map((feedback) => (
-                      <Link
-                        className="student-simple-row"
-                        key={feedback.id}
-                        to={`/r/${researchId}/feedback/${feedback.id}`}
-                        state={back(current.title)}
-                      >
-                        <span className="grow">
-                          <strong>{feedback.title}</strong>
-                          <small>{feedback.body}</small>
-                        </span>
-                        <Icon name="chevron-right" size={16} />
-                      </Link>
-                    ))}
-                </section>
-              )}
-            </div>
-            <aside className="stack">
-              <section className="surface">
-                <div className="section-heading">
-                  <h2>검토 요청</h2>
-                </div>
-                {linkedRequests.length ? (
-                  linkedRequests.map((request) => (
-                    <Link
-                      className="student-simple-row"
-                      key={request.id}
-                      to={`/reviews/${request.id}`}
-                    >
-                      <span className="grow">
-                        <strong>{request.title}</strong>
-                        <small>{request.professorEmail}</small>
+                        <strong>{feedback.title}</strong>
+                        <small>{feedback.body}</small>
                       </span>
                       <Icon name="chevron-right" size={16} />
                     </Link>
-                  ))
-                ) : (
-                  <p className="student-empty-inline">
-                    아직 검토 요청에 넣지 않았어요.
-                  </p>
-                )}
-                <p className="student-footnote">
-                  여기서 고쳐도 이미 검토 요청에 넣은 설명과 파일은 바뀌지
-                  않아요.
-                </p>
+                  ))}
               </section>
-              <section className="surface">
-                <h2>연결한 할 일</h2>
-                {current.taskIds.length ? (
-                  data.tasks
-                    .filter((task) => current.taskIds.includes(task.id))
-                    .map((task) => (
-                      <Link
-                        className="student-simple-row"
-                        key={task.id}
-                        to={`/r/${researchId}/tasks/${task.id}`}
-                        state={back(current.title)}
-                      >
-                        <span className="grow">
-                          <strong>{task.title}</strong>
-                        </span>
-                        <Icon name="chevron-right" size={15} />
-                      </Link>
-                    ))
-                ) : (
-                  <p className="student-empty-inline">연결한 할 일이 없어요.</p>
-                )}
-              </section>
-            </aside>
+            )}
+            <ResultPanel
+              researchId={researchId}
+              result={current}
+              open={panelOpen}
+              tab={panelTab}
+              onTab={setPanelTab}
+              onOpen={() => setPanelOpen(true)}
+              onClose={() => setPanelOpen(false)}
+            />
           </div>
         </>
       ) : (
@@ -340,5 +336,167 @@ export function ResultsPage() {
         onSaved={(result) => navigate(`/r/${researchId}/results/${result.id}`)}
       />
     </div>
+  );
+}
+
+interface ResultPanelProps {
+  researchId: string;
+  result: RevisionResult;
+  open: boolean;
+  tab: "responses" | "links";
+  onTab(tab: "responses" | "links"): void;
+  onOpen(): void;
+  onClose(): void;
+}
+
+/**
+ * 수정 결과의 여백 패널. 응답 탭은 검토 요청마다 최신 차수의 교수 결과와 댓글을 보여 줍니다.
+ * 교수 결과는 학생의 작업 완료·반영 기록과 따로 표시합니다.
+ */
+function ResultPanel({
+  researchId,
+  result,
+  open,
+  tab,
+  onTab,
+  onOpen,
+  onClose,
+}: ResultPanelProps) {
+  const { data } = useWorkspace();
+  const back = useBackState();
+  const items = data.reviewItems.filter((item) => item.resultId === result.id);
+  const tasks = data.tasks.filter((task) => result.taskIds.includes(task.id));
+  const feedback = data.feedback.filter((item) =>
+    result.feedbackIds.includes(item.id),
+  );
+  return (
+    <MarginPanel
+      label="교수 응답과 연결된 기록"
+      open={open}
+      onOpen={onOpen}
+      onClose={onClose}
+    >
+      <PanelFrame
+        title="이 수정 결과"
+        onClose={onClose}
+        tab={tab}
+        onTab={(value) => onTab(value as "responses" | "links")}
+        tabs={[
+          { value: "responses", label: "응답", count: items.length },
+          {
+            value: "links",
+            label: "연결",
+            count: tasks.length + feedback.length,
+          },
+        ]}
+      >
+        {tab === "responses" && (
+          <div className="panel-frame-body">
+            {items.map((item) => {
+              const request = data.reviews.find(
+                (review) => review.id === item.requestId,
+              );
+              const round = latestRound(data, item.id);
+              const response = latestResponse(data, round?.id);
+              const comments = data.comments.filter(
+                (comment) => comment.roundId === round?.id,
+              );
+              return (
+                <article className="result-response" key={item.id}>
+                  <div className="result-response-head">
+                    <strong>{request?.title ?? item.title}</strong>
+                    <ResponseStatus response={response} />
+                  </div>
+                  <small>
+                    {round ? `${round.number}차` : "차수 없음"}
+                    {response ? ` · ${timeText(response.createdAt)}` : ""}
+                  </small>
+                  {response?.comment && (
+                    <blockquote className="source-excerpt">
+                      <small>교수 응답</small>
+                      {response.comment}
+                    </blockquote>
+                  )}
+                  {comments.length > 0 && (
+                    <ul className="result-response-comments">
+                      {comments.map((comment) => (
+                        <li key={comment.id}>
+                          <small>
+                            {comment.authorName}
+                            {comment.resolved ? " · 해결됨" : ""}
+                          </small>
+                          {comment.body}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {request && (
+                    <Link
+                      className="student-text-link"
+                      to={`/reviews/${request.id}`}
+                    >
+                      검토 요청 열기
+                      <Icon name="arrow-right" size={14} />
+                    </Link>
+                  )}
+                </article>
+              );
+            })}
+            {!items.length && (
+              <p className="student-empty-inline">
+                아직 검토 요청에 넣지 않았어요. 넣으면 교수 응답이 여기에
+                보여요.
+              </p>
+            )}
+            <p className="panel-frame-note">
+              여기서 고쳐도 이미 검토 요청에 넣은 설명과 파일은 바뀌지 않아요.
+              댓글 해결과 교수 결과는 따로 기록돼요.
+            </p>
+          </div>
+        )}
+        {tab === "links" && (
+          <div className="panel-frame-body">
+            <h3>
+              피드백<span className="count-chip">{feedback.length}</span>
+            </h3>
+            {feedback.map((item) => (
+              <Link
+                className="student-simple-row"
+                key={item.id}
+                to={`/r/${researchId}/feedback/${item.id}`}
+                state={back(result.title)}
+              >
+                <span className="grow">
+                  <strong>{item.title}</strong>
+                </span>
+                <Icon name="chevron-right" size={15} />
+              </Link>
+            ))}
+            {!feedback.length && (
+              <p className="student-empty-inline">연결한 피드백이 없어요.</p>
+            )}
+            <h3>
+              할 일<span className="count-chip">{tasks.length}</span>
+            </h3>
+            {tasks.map((task) => (
+              <Link
+                className="student-simple-row"
+                key={task.id}
+                to={`/r/${researchId}/tasks/${task.id}`}
+                state={back(result.title)}
+              >
+                <span className="grow">
+                  <strong>{task.title}</strong>
+                </span>
+                <Icon name="chevron-right" size={15} />
+              </Link>
+            ))}
+            {!tasks.length && (
+              <p className="student-empty-inline">연결한 할 일이 없어요.</p>
+            )}
+          </div>
+        )}
+      </PanelFrame>
+    </MarginPanel>
   );
 }
