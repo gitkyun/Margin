@@ -10,14 +10,15 @@
     line-height: var(--typography-label1Reading-lineHeight);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
-  .rh-home :is(h1, h2, h3, h4, p, ol) {
+  /* 초기화 규칙은 :where로 특이도를 낮춰, 뒤의 부품 규칙이 !important 없이 이기게 합니다. */
+  .rh-home :where(h1, h2, h3, h4, p, ol) {
     margin: 0;
   }
-  .rh-home :is(ol, ul) {
+  .rh-home :where(ol, ul) {
     padding: 0;
     list-style: none;
   }
-  .rh-home a {
+  .rh-home :where(a) {
     color: inherit;
     text-decoration: none;
   }
@@ -72,19 +73,19 @@
     letter-spacing: var(--typography-body2-letterSpacing);
   }
   .rh-people {
-    display: inline-flex !important;
+    display: inline-flex;
     width: fit-content;
     align-items: center;
     gap: 7px;
     min-height: 36px;
     margin-top: 14px;
     border-radius: var(--radius-8);
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .rh-people:hover {
-    color: var(--brand) !important;
+    color: var(--brand);
   }
   .rh-avatars {
     display: flex;
@@ -131,19 +132,19 @@
     color: var(--text-tertiary);
   }
   .rh-text-link {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
     flex: 0 0 auto;
     min-height: 32px;
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     font-weight: 500;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .rh-text-link:hover {
-    color: var(--brand) !important;
+    color: var(--brand);
   }
   .rh-phases {
     margin-bottom: 30px;
@@ -169,7 +170,7 @@
     overflow-x: auto;
     scrollbar-width: thin;
     gap: 16px;
-    padding: 1px 0 5px !important;
+    padding: 1px 0 5px;
   }
   .rh-phase-track li {
     position: relative;
@@ -231,17 +232,17 @@
     color: var(--brand);
   }
   .rh-phase-start {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 10px;
     min-height: 42px;
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
   }
   .rh-phase-start > svg:last-child {
     margin-left: auto;
   }
   .rh-phase-start:hover {
-    color: var(--brand) !important;
+    color: var(--brand);
   }
   .rh-columns {
     display: grid;
@@ -375,7 +376,7 @@
     background: var(--surface-muted);
   }
   .rh-meeting-goal {
-    margin-top: 21px !important;
+    margin-top: 21px;
     padding-bottom: 23px;
     border-bottom: 1px solid var(--line);
     color: var(--text-secondary);
@@ -425,7 +426,7 @@
     margin-top: 10px;
   }
   .rh-preparation-item {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 10px;
     min-height: 41px;
@@ -537,7 +538,7 @@
   .rh-section-description {
     display: flex;
     gap: 7px;
-    margin-top: 5px !important;
+    margin-top: 5px;
     color: var(--text-tertiary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -569,7 +570,7 @@
     cursor: wait;
   }
   .rh-task-copy {
-    display: flex !important;
+    display: flex;
     flex: 1;
     min-width: 0;
     flex-direction: column;
@@ -617,7 +618,7 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .rh-add-link {
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 7px;
@@ -625,19 +626,19 @@
     min-height: 42px;
     margin-top: 10px;
     border-radius: var(--radius-8);
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .rh-add-link:hover {
-    color: var(--brand) !important;
+    color: var(--brand);
     background: var(--surface-sunken);
   }
   .rh-writing .rh-section-heading {
     margin-bottom: 6px;
   }
   .rh-document {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 13px;
     min-height: 82px;
@@ -680,7 +681,7 @@
     color: var(--brand);
   }
   .rh-writing-empty {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 13px;
     min-height: 107px;
@@ -730,7 +731,7 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-attention-row {
-    display: flex !important;
+    display: flex;
     align-items: flex-start;
     gap: 11px;
     padding: 15px 0;
@@ -802,7 +803,7 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-deadline {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 11px;
     margin-top: 17px;
@@ -878,7 +879,7 @@
     margin-top: 21px;
   }
   .rh-assistant-actions a {
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -916,7 +917,7 @@
     background: var(--line);
   }
   .rh-activity-list a {
-    display: flex !important;
+    display: flex;
     align-items: flex-start;
     gap: 14px;
     padding: 10px 0 16px;
@@ -1112,7 +1113,7 @@
       letter-spacing: var(--typography-caption2-letterSpacing);
     }
     .rh-meeting-goal {
-      margin-top: 18px !important;
+      margin-top: 18px;
       font-size: var(--typography-label1-fontSize);
       letter-spacing: var(--typography-label1-letterSpacing);
     }
@@ -1176,7 +1177,7 @@
     gap: 12px;
   }
   .rh-quick-action {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 13px;
     min-height: 108px;
