@@ -10,6 +10,7 @@ export const RESEARCH_NAVIGATION = [
   ["meetings", "calendar", "미팅"],
   ["writing", "file", "글쓰기"],
   ["feedback", "feedback", "피드백·수정"],
+  ["tasks", "tasks", "할 일"],
   ["materials", "folder", "자료"],
   ["reviews", "send", "검토 요청"],
 ] as const;
