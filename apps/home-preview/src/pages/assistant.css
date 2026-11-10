@@ -435,7 +435,7 @@
     min-width: 0;
   }
   .candidate-overview-row h3 {
-    margin: 10px 0 6px !important;
+    margin: 10px 0 6px;
   }
   .candidate-overview-row blockquote {
     margin-top: 10px;
