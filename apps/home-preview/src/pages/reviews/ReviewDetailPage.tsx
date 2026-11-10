@@ -16,6 +16,8 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useBackState } from "@/pages/student/shared";
+import { useBusyKey } from "@/lib/use-busy-key";
 import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -187,6 +189,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   } = context;
   const { theme, setTheme, resolvedTheme } = useTheme();
   const request = data.reviews.find((r) => r.id === requestId);
+  const back = useBackState();
   const items = data.reviewItems.filter((r) => r.requestId === requestId);
   const queryRound = data.rounds.find(
     (r) => r.id === params.get("round") && r.requestId === requestId,
@@ -235,7 +238,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const [replyTo, setReplyTo] = useState<
     Record<string, ReviewComment | undefined>
   >({});
-  const [busy, setBusy] = useState("");
+  const { busy, run: runBusy } = useBusyKey();
   const [error, setError] = useState("");
   const [sharingOpen, setSharingOpen] = useState(false);
   const [sharingEmail, setSharingEmail] = useState("");
@@ -288,21 +291,18 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     key: string,
     operation: () => Promise<unknown>,
     success?: string,
-  ) => {
-    if (busy) return false;
-    setBusy(key);
-    setError("");
-    try {
-      await operation();
-      if (success) toast.success(success);
-      return true;
-    } catch (failure) {
-      setError(errorText(failure));
-      return false;
-    } finally {
-      setBusy("");
-    }
-  };
+  ) =>
+    (await runBusy(key, async () => {
+      setError("");
+      try {
+        await operation();
+        if (success) toast.success(success);
+        return true;
+      } catch (failure) {
+        setError(errorText(failure));
+        return false;
+      }
+    })) ?? false;
   useEffect(() => {
     if (!round || !canRead) return;
     const key = `${round.id}:${response?.updatedAt ?? ""}:${comments.at(-1)?.createdAt ?? ""}`;
@@ -837,6 +837,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                       <Button asChild variant="outline" size="sm">
                         <Link
                           to={`/r/${request.researchId}/results/${privateResult.id}`}
+                          state={back(request.title)}
                         >
                           수정 결과에서 고치기
                           <Icon name="arrow-right" size={14} />
@@ -1255,6 +1256,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                 <Link
                   className="review-text-link"
                   to={`/r/${request.researchId}/results/${privateResult.id}`}
+                  state={back(request.title)}
                 >
                   수정 결과에서 고치기
                   <Icon name="arrow-right" size={14} />
