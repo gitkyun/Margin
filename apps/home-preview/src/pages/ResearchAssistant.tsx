@@ -4,6 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useAICapabilities } from "@/lib/ai-capabilities";
 import {
+  AI_NOT_CONFIGURED_MESSAGE,
+  AINotConfiguredError,
+  useAINotConfigured,
+} from "@/lib/ai-availability";
+import {
   Link,
   useNavigate,
   useParams,
@@ -96,6 +101,7 @@ export function ResearchAssistant() {
     [candidateTitle, setCandidateTitle] = useState(""),
     [candidateBody, setCandidateBody] = useState(""),
     [saveBusy, setSaveBusy] = useState(false);
+  const aiNotConfigured = useAINotConfigured();
   const caps = useAICapabilities(),
     allowedModel =
       caps.data?.models.find((m) => m.id === model) ?? caps.data?.models[0],
@@ -407,8 +413,9 @@ export function ResearchAssistant() {
       setConversation(saved);
       setDraft("");
     } catch (e) {
+      // 연결 전이면 아래 '쓸 수 없음' 안내가 대신 보여요(다시 보내기를 권하지 않음).
       if (seq === sequence.current && !controller.signal.aborted)
-        setError((e as Error).message);
+        setError(e instanceof AINotConfiguredError ? "" : (e as Error).message);
     } finally {
       if (seq === sequence.current) {
         setRunning(false);
@@ -558,8 +565,9 @@ export function ResearchAssistant() {
     setDraft("");
     setError("");
   }
-  // 미리보기에서는 AI를 실행할 수 없어요. 예시 답변이나 진행률을 만들어 보여 주지 않습니다.
-  const unavailable = mode === "preview";
+  // 미리보기이거나 서버에 AI가 아직 연결되지 않았으면 실행할 수 없어요.
+  // 예시 답변·진행률·모델 설정을 만들어 보여 주지 않습니다.
+  const unavailable = mode === "preview" || aiNotConfigured;
   const models = caps.data?.models ?? [];
   return (
     <div className="assistant-experience">
@@ -690,7 +698,9 @@ export function ResearchAssistant() {
         {unavailable && (
           <p className="assistant-unavailable" role="status">
             <Icon name="info" size={16} />
-            지금은 연구 도우미를 쓸 수 없어요. 직접 작성은 그대로 할 수 있어요.
+            {aiNotConfigured
+              ? AI_NOT_CONFIGURED_MESSAGE
+              : "지금은 연구 도우미를 쓸 수 없어요. 직접 작성은 그대로 할 수 있어요."}
           </p>
         )}
         <form
@@ -711,7 +721,9 @@ export function ResearchAssistant() {
             aria-label="연구 도우미에게 질문"
             placeholder={
               unavailable
-                ? "미리보기에서는 질문을 보낼 수 없어요."
+                ? aiNotConfigured
+                  ? "연구 도우미가 연결되면 질문을 보낼 수 있어요."
+                  : "미리보기에서는 질문을 보낼 수 없어요."
                 : contexts.length
                   ? "첨부한 기록에 대해 물어보세요"
                   : "기록이나 파일을 첨부하고 질문해 주세요"
@@ -757,7 +769,7 @@ export function ResearchAssistant() {
               }))}
             />
             {/* 고를 모델이 둘 이상일 때만 보입니다. 연결 전에는 모델 이름을 보여 주지 않아요. */}
-            {models.length > 1 && (
+            {!unavailable && models.length > 1 && (
               <Choice
                 compact
                 value={allowedModel?.id ?? ""}
@@ -770,7 +782,7 @@ export function ResearchAssistant() {
                 }))}
               />
             )}
-            {!!allowedModel?.thinking.length && (
+            {!unavailable && !!allowedModel?.thinking.length && (
               <Choice
                 compact
                 label="답변 깊이"
