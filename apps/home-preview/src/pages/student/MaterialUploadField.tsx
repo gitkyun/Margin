@@ -132,15 +132,16 @@ export function MaterialUploadField({
               </div>
             </div>
             {!busy && !pending && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 className="mu-remove"
                 aria-label={`${file.name} 선택 해제`}
                 title="파일 선택 해제"
                 onClick={onClear}
               >
                 <Icon name="close" size={17} />
-              </button>
+              </Button>
             )}
           </motion.div>
         )}
