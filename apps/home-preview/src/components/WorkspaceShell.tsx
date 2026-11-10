@@ -324,7 +324,7 @@ export function WorkspaceShell({
                   end={!path}
                   to={`/r/${researchId}${path ? "/" + path : ""}`}
                   className={({ isActive }) =>
-                    `nav-item ${isActive || (path === "feedback" && (location.pathname.includes("/results") || location.pathname.includes("/tasks"))) ? "active" : ""}`
+                    `nav-item ${isActive || (path === "feedback" && location.pathname.includes("/results")) ? "active" : ""}`
                   }
                 >
                   <Icon name={icon} size={20} />
