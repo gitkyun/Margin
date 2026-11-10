@@ -12,7 +12,11 @@ import { Field } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { StartGlow } from "@/components/StartGlow";
 import { HomePreview } from "@/components/onboarding/HomePreview";
-import { ServiceIntro } from "@/components/onboarding/ServiceIntro";
+import { IntroStage } from "@/components/onboarding/IntroStage";
+import {
+  ServiceIntro,
+  type IntroScene,
+} from "@/components/onboarding/ServiceIntro";
 import { StepMeter } from "@/components/onboarding/StepMeter";
 import { isIntroSeen, markIntroSeen, shouldShowIntro } from "@/lib/intro";
 import { useWorkspace } from "@/lib/workspace";
@@ -101,6 +105,10 @@ export function OnboardingPage() {
       forced: params.get("intro") === "1",
     }),
   );
+
+  const [scene, setScene] = useState<IntroScene>({ slide: 0, flowIndex: 0 });
+  // 마지막 장은 곧 채울 연구 홈 미리보기를 보여 줍니다.
+  const staged = intro && scene.slide < 2;
 
   function endIntro() {
     markIntroSeen();
@@ -254,7 +262,7 @@ export function OnboardingPage() {
           )}
         </header>
         {intro ? (
-          <ServiceIntro onDone={endIntro} />
+          <ServiceIntro onDone={endIntro} onScene={setScene} />
         ) : (
           <form
             className="ob-form"
@@ -493,20 +501,26 @@ export function OnboardingPage() {
         )}
       </div>
       <div className={`ob-preview-side ${reviewing ? "ob-preview-full" : ""}`}>
-        <HomePreview
-          name={name}
-          description={description}
-          phaseTitle={phaseTitle}
-          meeting={previewMeeting}
-          leadLabel={
-            previewMeeting !== undefined
-              ? onboardingLeadLabel(meetingAnswer, today)
-              : undefined
-          }
-          today={today}
-        />
+        {staged ? (
+          <IntroStage slide={scene.slide} flowIndex={scene.flowIndex} />
+        ) : (
+          <HomePreview
+            name={name}
+            description={description}
+            phaseTitle={phaseTitle}
+            meeting={previewMeeting}
+            leadLabel={
+              previewMeeting !== undefined
+                ? onboardingLeadLabel(meetingAnswer, today)
+                : undefined
+            }
+            today={today}
+          />
+        )}
         <p className="ob-preview-note">
-          미리보기예요. 답한 내용이 내 연구 홈에 이렇게 보여요.
+          {staged
+            ? "예시 그림이에요. 실제 기록이 아니에요."
+            : "미리보기예요. 답한 내용이 내 연구 홈에 이렇게 보여요."}
         </p>
       </div>
     </div>

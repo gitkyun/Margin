@@ -34,6 +34,8 @@ export interface IntroFlowStep {
   icon: string;
   label: string;
   text: string;
+  /** 오른쪽 장면에 보여 주는 예시. 피드백 한 건이 단계를 따라가는 모습입니다. */
+  example: string;
 }
 
 /** 사이드바 ‘지도 흐름’과 같은 순서·이름입니다. */
@@ -42,26 +44,31 @@ export const INTRO_FLOW: IntroFlowStep[] = [
     icon: "calendar",
     label: "미팅",
     text: "지도 미팅을 메모나 녹음으로 남겨요.",
+    example: "예: “연구 질문이 너무 넓다”는 말을 메모에 적었어요.",
   },
   {
     icon: "feedback",
     label: "피드백",
     text: "미팅에서 받은 말을 한 건씩 정리해요.",
+    example: "예: 연구 질문이 넓어요. 범위를 좁혀 보세요.",
   },
   {
     icon: "tasks",
     label: "할 일",
     text: "고칠 것을 할 일로 만들어요.",
+    example: "예: 연구 질문을 두 개로 줄이기",
   },
   {
     icon: "edit",
     label: "수정 결과",
     text: "어떻게 고쳤는지 적어 둬요.",
+    example: "예: 질문을 두 개로 줄이고 2장을 고쳤어요.",
   },
   {
     icon: "send",
     label: "검토 요청",
     text: "고친 내용을 교수님께 확인받아요.",
+    example: "예: 교수님이 ‘수정 내용 확인’으로 답했어요.",
   },
 ];
 
