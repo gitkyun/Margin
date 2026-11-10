@@ -1,4 +1,9 @@
 import { assertConnected, supabase } from "./supabase";
+import {
+  AI_NOT_CONFIGURED_CODE,
+  AINotConfiguredError,
+  markAINotConfigured,
+} from "./ai-availability";
 import { buildDemo } from "./demo";
 import {
   emptyWorkspace,
@@ -298,6 +303,10 @@ export async function executeAI(
     payload = await response.json();
   } catch {
     throw new Error("AI 응답을 읽지 못했어요. 작성한 내용은 그대로 있어요.");
+  }
+  if (!response.ok && payload?.error?.code === AI_NOT_CONFIGURED_CODE) {
+    markAINotConfigured();
+    throw new AINotConfiguredError();
   }
   if (!response.ok)
     throw new Error(
