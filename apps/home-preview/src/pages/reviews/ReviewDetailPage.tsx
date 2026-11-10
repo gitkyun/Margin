@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useBackState } from "@/pages/student/shared";
+import { useBusyKey } from "@/lib/use-busy-key";
 import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -237,7 +238,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const [replyTo, setReplyTo] = useState<
     Record<string, ReviewComment | undefined>
   >({});
-  const [busy, setBusy] = useState("");
+  const { busy, run: runBusy } = useBusyKey();
   const [error, setError] = useState("");
   const [sharingOpen, setSharingOpen] = useState(false);
   const [sharingEmail, setSharingEmail] = useState("");
@@ -290,21 +291,18 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     key: string,
     operation: () => Promise<unknown>,
     success?: string,
-  ) => {
-    if (busy) return false;
-    setBusy(key);
-    setError("");
-    try {
-      await operation();
-      if (success) toast.success(success);
-      return true;
-    } catch (failure) {
-      setError(errorText(failure));
-      return false;
-    } finally {
-      setBusy("");
-    }
-  };
+  ) =>
+    (await runBusy(key, async () => {
+      setError("");
+      try {
+        await operation();
+        if (success) toast.success(success);
+        return true;
+      } catch (failure) {
+        setError(errorText(failure));
+        return false;
+      }
+    })) ?? false;
   useEffect(() => {
     if (!round || !canRead) return;
     const key = `${round.id}:${response?.updatedAt ?? ""}:${comments.at(-1)?.createdAt ?? ""}`;
