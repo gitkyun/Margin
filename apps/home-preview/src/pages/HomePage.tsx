@@ -1,6 +1,6 @@
 import { RollingNumber } from "@/components/RollingNumber";
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
 import {
@@ -29,6 +29,8 @@ import { useTaskCompletion } from "@/lib/use-task-completion";
 import { AnimatePresence, motion } from "motion/react";
 import { useTaskRowMotion } from "@/components/task-row-motion";
 import { WeekStrip } from "@/components/home/WeekStrip";
+import { HomeTour } from "@/components/home/HomeTour";
+import { isTourSeen, markTourSeen, shouldShowTour } from "@/lib/tour";
 import { ResearchDirection } from "@/components/home/ResearchDirection";
 import { planExcerpt } from "@/lib/research-direction";
 import { friendlyError } from "@/lib/supabase";
@@ -44,6 +46,25 @@ export function HomePage() {
   const [scope, setScope] = useState("mine");
   // 방금 닫은 연구를 기억합니다. 다른 연구로 바꾸면 그 연구의 저장된 상태를 다시 봅니다.
   const [hiddenFor, setHiddenFor] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const forcedTour = params.get("tour") === "1";
+  const [tour, setTour] = useState(false);
+  // 홈이 자리 잡은 뒤(온보딩에서 커지는 전환 포함)에 안내를 엽니다.
+  useEffect(() => {
+    if (!shouldShowTour({ seen: isTourSeen(), forced: forcedTour })) return;
+    const timer = window.setTimeout(() => setTour(true), 500);
+    return () => window.clearTimeout(timer);
+  }, [forcedTour]);
+
+  function endTour() {
+    markTourSeen();
+    setTour(false);
+    if (params.has("tour")) {
+      const rest = new URLSearchParams(params);
+      rest.delete("tour");
+      setParams(rest, { replace: true });
+    }
+  }
   const checklistHidden =
     hiddenFor === researchId || isStartChecklistHidden(researchId);
   const research = data.researches.find((item) => item.id === researchId);
@@ -141,6 +162,9 @@ export function HomePage() {
   const showQuickStart = !next && openCount === 0 && !showChecklist;
   return (
     <div className="rh-home">
+      {tour && (
+        <HomeTour onDone={endTour} onUnavailable={() => setTour(false)} />
+      )}
       <header className="rh-intro">
         <div className="rh-intro-copy">
           <h1>{research.name}</h1>

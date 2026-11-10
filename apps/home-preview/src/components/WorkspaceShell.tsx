@@ -416,7 +416,11 @@ export function WorkspaceShell({
       <nav className="nav-list" aria-label="주요 메뉴">
         {research ? (
           NAV_GROUPS.map((group) => (
-            <div className="nav-group" key={group.label ?? "home"}>
+            <div
+              className="nav-group"
+              key={group.label ?? "home"}
+              data-tour={group.label === "지도 흐름" ? "flow" : undefined}
+            >
               {group.label && <p className="nav-group-label">{group.label}</p>}
               {navigation
                 .filter(([path]) => group.paths.includes(path))
