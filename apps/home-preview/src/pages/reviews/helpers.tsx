@@ -129,3 +129,18 @@ export function ResponseStatus({ response }: { response?: ReviewResponse }) {
     </StatusBadge>
   );
 }
+
+/**
+ * 이 연구의 검토 요청에 이미 쓴 교수 이메일. 가장 최근에 쓴 순서로, 겹치지 않게 돌려줍니다.
+ * 검토 요청을 만들 때 다시 입력하지 않고 고르는 데 씁니다.
+ */
+export function knownProfessorEmails(
+  reviews: { researchId: string; professorEmail: string; createdAt: string }[],
+  researchId: string,
+): string[] {
+  const recentFirst = reviews
+    .filter((r) => r.researchId === researchId && r.professorEmail.trim())
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((r) => r.professorEmail.trim().toLowerCase());
+  return [...new Set(recentFirst)];
+}

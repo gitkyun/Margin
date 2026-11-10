@@ -11,6 +11,7 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, modeLabels } from "@/lib/experience";
+import { Hint } from "@/components/ui/hint";
 import { assertConnected } from "@/lib/supabase";
 import { readPDFPage } from "@/lib/pdf-text";
 import { useNavigationGuard } from "@/lib/navigation-guard";
@@ -46,7 +47,6 @@ import {
   workMessages,
   reviewDepthOptions,
   resolveReviewDepth,
-  reviewDepthHints,
   researchModelLabel,
 } from "@/lib/assistant-presentation";
 import {
@@ -615,20 +615,15 @@ export function ResearchAssistant() {
           {!messages.length ? (
             <div className="assistant-welcome">
               <AssistantMascot state="ready" size={64} eager />
-              <h2>기록을 고르고 질문해 주세요</h2>
-              <p>
-                근거에서 미팅 메모나 문서 같은 기록을 고르거나 파일을 첨부할 수
-                있어요. 고른 기록만 읽어요.
-              </p>
+              <h2>무엇을 도와드릴까요?</h2>
+              <p>미팅 메모, 문서, 파일을 첨부하면 그 기록만 읽고 답해요.</p>
               {!unavailable && (
                 <div className="assistant-prompts">
-                  {(
-                    [
-                      ["tasks", "다음 미팅까지 할 일을 정리해 줘"],
-                      ["layers", "이 피드백의 수정 방법을 비교해 줘"],
-                      ["search", "이 문단에서 더 구체화할 부분을 찾아 줘"],
-                    ] as const
-                  ).map(([icon, t]) => (
+                  {[
+                    "다음 미팅까지 할 일을 정리해 줘",
+                    "이 피드백의 수정 방법을 비교해 줘",
+                    "이 문단에서 더 구체화할 부분을 찾아 줘",
+                  ].map((t) => (
                     <button
                       key={t}
                       type="button"
@@ -637,8 +632,7 @@ export function ResearchAssistant() {
                         composerRef.current?.focus();
                       }}
                     >
-                      <Icon name={icon} size={18} />
-                      <span>{t}</span>
+                      {t}
                     </button>
                   ))}
                 </div>
@@ -719,41 +713,38 @@ export function ResearchAssistant() {
               unavailable
                 ? "미리보기에서는 질문을 보낼 수 없어요."
                 : contexts.length
-                  ? "예: 이 기록에서 먼저 고칠 부분을 찾아 줘"
-                  : "먼저 근거로 쓸 기록이나 자료를 골라 주세요."
+                  ? "첨부한 기록에 대해 물어보세요"
+                  : "기록이나 파일을 첨부하고 질문해 주세요"
             }
             value={draft}
             disabled={unavailable}
             onChange={(e) => setDraft(e.target.value)}
             maxLength={2000}
-            rows={3}
+            rows={1}
             onKeyDown={(e) => {
-              if (
-                (e.metaKey || e.ctrlKey) &&
-                e.key === "Enter" &&
-                !isImeComposing(e)
-              ) {
+              // 다른 AI 입력창과 같게: Enter로 보내고 Shift+Enter로 줄을 바꿉니다.
+              if (e.key === "Enter" && !e.shiftKey && !isImeComposing(e)) {
                 e.preventDefault();
                 void send();
               }
             }}
           />
           <div className="composer-actions">
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              className="composer-sources"
-              aria-label={
-                contexts.length
-                  ? `근거 ${contexts.length}개, 바꾸기`
-                  : "근거 고르기"
-              }
-              onClick={() => openPanel("sources")}
-            >
-              <Icon name="clip" size={16} />
-              {contexts.length ? `근거 ${contexts.length}개` : "근거 고르기"}
-            </Button>
+            <Hint label="기록·파일 첨부" position="top-center">
+              <button
+                type="button"
+                className="composer-attach"
+                aria-label={
+                  contexts.length
+                    ? `첨부한 기록 ${contexts.length}개, 바꾸기`
+                    : "기록·파일 첨부"
+                }
+                onClick={() => openPanel("sources")}
+              >
+                <Icon name="plus" size={20} />
+                {!!contexts.length && <span>{contexts.length}</span>}
+              </button>
+            </Hint>
             <Choice
               compact
               value={task}
@@ -790,15 +781,7 @@ export function ResearchAssistant() {
                   (option) => ({
                     ...option,
                     search: option.label,
-                    label: (
-                      <span
-                        className="margin-depth-option"
-                        title={reviewDepthHints[option.value]}
-                      >
-                        <Icon name="layers" size={15} />
-                        {option.label}
-                      </span>
-                    ),
+                    label: option.label,
                   }),
                 )}
               />
@@ -860,15 +843,6 @@ export function ResearchAssistant() {
               {pendingFile.current ? "등록 다시 시도" : "질문 다시 보내기"}
             </Button>
           </div>
-        )}
-        {!!allowedModel?.thinking.length && reviewDepthHints[thinking] && (
-          <p className="margin-depth-help">{reviewDepthHints[thinking]}</p>
-        )}
-        {!unavailable && (
-          <p className="composer-hint">
-            {contexts.length ? `고른 근거 ${contexts.length}개만 읽어요. ` : ""}
-            보내기: ⌘/Ctrl + Enter
-          </p>
         )}
       </section>
       <MarginPanel

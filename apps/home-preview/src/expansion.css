@@ -729,14 +729,6 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
-  .composer-hint {
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    margin: 0 24px 16px;
-    line-height: var(--typography-caption1-lineHeight);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .ai-processing {
     display: flex;
     align-items: center;

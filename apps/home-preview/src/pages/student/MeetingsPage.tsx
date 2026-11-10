@@ -214,16 +214,18 @@ export function MeetingsPage() {
               <span
                 className={`meeting-date-tile ${!meeting.date ? "is-undated" : ""}`}
               >
-                <small>
-                  {meeting.date
-                    ? `${new Date(`${meeting.date}T12:00:00`).getMonth() + 1}월`
-                    : "일정"}
-                </small>
-                <strong>
-                  {meeting.date
-                    ? new Date(`${meeting.date}T12:00:00`).getDate()
-                    : "미정"}
-                </strong>
+                {meeting.date ? (
+                  <>
+                    <small>
+                      {new Date(`${meeting.date}T12:00:00`).getMonth() + 1}월
+                    </small>
+                    <strong>
+                      {new Date(`${meeting.date}T12:00:00`).getDate()}
+                    </strong>
+                  </>
+                ) : (
+                  <Icon name="calendar" size={20} />
+                )}
               </span>
               <span className="meeting-row-copy">
                 <strong>{meeting.title}</strong>

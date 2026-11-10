@@ -154,7 +154,7 @@
     display: grid;
     grid-template-columns: 208px minmax(0, 1fr);
     gap: 28px;
-    padding-top: 24px;
+    padding-top: 16px;
     flex: 1;
   }
   .writing-layout:not(:has(.writing-outline)) {
@@ -212,10 +212,81 @@
     max-width: 760px;
     width: 100%;
     margin: 0 auto;
-    padding: 44px 56px 140px;
+    padding: 44px 56px 72px;
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
     background: var(--surface);
+  }
+
+  /* ── 서식 도구 줄: 문서 위에 붙어 따라옵니다 ───────────── */
+  .editor-toolbar {
+    position: sticky;
+    top: var(--spacing-8);
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-16);
+    padding: var(--spacing-6) var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .editor-tool {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .editor-tool:hover:not(:disabled) {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .editor-tool[aria-pressed="true"] {
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .editor-tool:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+  .editor-tool:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 1px;
+  }
+  .editor-toolbar > i {
+    flex: none;
+    width: 1px;
+    height: 20px;
+    margin: 0 var(--spacing-6);
+    background: var(--line);
+  }
+  .editor-toolbar > .rms-choice {
+    flex: none;
+  }
+  .editor-toolbar-end {
+    flex: none;
+    margin-left: auto;
+    padding-left: var(--spacing-8);
+  }
+  /* 좁은 화면: 가로로 밀어 숨기지 않고 두 줄로 접어 모든 도구가 보이게 합니다. */
+  @media (max-width: 767px) {
+    .editor-toolbar {
+      flex-wrap: wrap;
+      row-gap: var(--spacing-4);
+      overflow-x: visible;
+    }
+    .editor-toolbar > i {
+      display: none;
+    }
   }
 
   /* ── 본문 서식 (Tiptap) ───────────────────────────────── */
@@ -301,105 +372,6 @@
     background: var(--brand-soft);
     opacity: 0.6;
     pointer-events: none;
-  }
-
-  /* ── 하단 서식 도크 (Apple Music 재생바·macOS Dock) ────── */
-  .editor-dock-wrap {
-    position: sticky;
-    bottom: 18px;
-    z-index: 6;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    margin-top: -96px;
-    padding-top: 28px;
-    pointer-events: none;
-  }
-  .editor-dock-wrap > * {
-    pointer-events: auto;
-  }
-  .editor-dock {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    padding: 6px;
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--surface) 94%, transparent);
-    box-shadow:
-      0 0 0 1px var(--line),
-      var(--semantic-elevation-shadow-normal-large);
-  }
-  .editor-dock > button:not([data-slot="button"]) {
-    flex: none;
-    width: 40px;
-    height: 40px;
-    display: grid;
-    place-items: center;
-    border: 0;
-    border-radius: var(--radius-full);
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transform-origin: bottom center;
-  }
-  .editor-dock > button:not([data-slot="button"]):hover {
-    background: var(--surface-muted);
-    color: var(--text);
-  }
-  .editor-dock > button:not([data-slot="button"])[aria-pressed="true"] {
-    background: var(--selected-fill);
-    color: var(--semantic-foreground-brand-primary);
-  }
-  .editor-dock > button:not([data-slot="button"]):disabled {
-    opacity: 0.38;
-    cursor: not-allowed;
-  }
-  .editor-dock > button:not([data-slot="button"]):focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 2px;
-  }
-  .editor-dock > i {
-    flex: none;
-    width: 1px;
-    height: 22px;
-    margin: 0 6px;
-    background: var(--line-strong);
-  }
-  .editor-dock > a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-    gap: 7px;
-    width: auto;
-    min-width: 104px;
-    margin-left: 6px;
-    border-radius: var(--radius-full);
-    height: 40px;
-    padding: 0 16px;
-    white-space: nowrap;
-  }
-  .editor-dock > [data-slot="button"] {
-    flex: none;
-    margin-left: 6px;
-  }
-  .editor-dock span[class^="format-"] {
-    font-size: var(--typography-body2-fontSize);
-    line-height: 1;
-    letter-spacing: var(--typography-body2-letterSpacing);
-  }
-  .editor-dock-wrap > p {
-    margin: 0;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-tertiary);
-    background: color-mix(in srgb, var(--surface) 80%, transparent);
-    padding: 1px 8px;
-    border-radius: var(--radius-8);
-    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* ── 버전 비교 ─────────────────────────────────────────── */
@@ -506,9 +478,6 @@
     }
   }
   @media (max-width: 767px) {
-    .editor-dock > i {
-      margin: 0 2px;
-    }
     .writing-heading {
       flex-direction: column;
       align-items: stretch;
@@ -521,18 +490,8 @@
       letter-spacing: var(--typography-heading1-letterSpacing);
     }
     .writing-paper {
-      padding: 24px 18px 120px;
+      padding: 24px 18px 64px;
       border-radius: var(--radius-12);
-    }
-    .editor-dock {
-      max-width: calc(100vw - 24px);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .editor-dock > button:not([data-slot="button"]) {
-      width: 36px;
-      height: 36px;
-      flex-shrink: 0;
     }
     .comparison-selects {
       grid-template-columns: 1fr;
@@ -584,7 +543,7 @@
     max-width: 820px;
     min-width: 0;
     margin: 0 auto;
-    padding: 40px clamp(24px, 4vw, 64px) 160px;
+    padding: 40px clamp(24px, 4vw, 64px) 72px;
   }
   .writing-save-status {
     display: inline-flex;
@@ -596,28 +555,6 @@
   .writing-meta .writing-save-status::before {
     display: none;
   }
-  .editor-dock-wrap {
-    width: 100%;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .editor-dock-wrap .editor-dock {
-    max-width: 100%;
-    width: max-content;
-    flex-wrap: wrap;
-    justify-content: center;
-    height: auto;
-    gap: 3px;
-    padding: 8px;
-    border-radius: var(--radius-16);
-  }
-  .editor-dock-wrap .editor-dock > button:not([data-slot="button"]) {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-  }
   @media (max-width: 767px) {
     .writing-heading {
       flex-wrap: wrap;
@@ -625,14 +562,7 @@
   }
   @media (max-width: 767px) {
     .writing-layout .writing-paper {
-      padding: 28px 22px 160px;
-    }
-  }
-  @media (max-width: 767px) {
-    .editor-dock-wrap .editor-dock > button:not([data-slot="button"]) {
-      width: 36px;
-      min-width: 36px;
-      height: 40px;
+      padding: 28px 22px 64px;
     }
   }
 }

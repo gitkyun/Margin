@@ -52,7 +52,6 @@ describe("buildCommands", () => {
     const sections = buildCommands({
       data: fixture(),
       researchId: RESEARCH,
-      theme: "dark",
       searching: false,
     });
     expect(ids(sections, "recent")).toEqual([
@@ -69,7 +68,6 @@ describe("buildCommands", () => {
     const sections = buildCommands({
       data: fixture(),
       researchId: RESEARCH,
-      theme: "dark",
       searching: true,
     });
     const records = ids(sections, "records");
@@ -83,7 +81,6 @@ describe("buildCommands", () => {
     const sections = buildCommands({
       data: fixture(),
       researchId: RESEARCH,
-      theme: "dark",
       searching: false,
     });
     const create = sections.find((s) => s.id === "create")!.entries;
@@ -93,28 +90,17 @@ describe("buildCommands", () => {
     });
   });
 
-  it("outside a research lists researches and no research pages", () => {
+  it("outside a research lists researches, no research pages and no theme entries", () => {
     const sections = buildCommands({
       data: fixture(),
-      theme: "light",
       searching: false,
     });
     expect(sections.map((s) => s.id)).toEqual([
       "create",
       "go",
       "researches",
-      "theme",
     ]);
     expect(ids(sections, "go")).not.toContain("go:planning");
-  });
-
-  it("marks the current theme", () => {
-    const theme = buildCommands({
-      data: fixture(),
-      theme: "light",
-      searching: false,
-    }).find((s) => s.id === "theme")!.entries;
-    expect(theme.find((e) => e.hint === "지금")?.id).toBe("theme:light");
   });
 });
 
@@ -123,7 +109,6 @@ describe("rankSections", () => {
     const sections = buildCommands({
       data: fixture(),
       researchId: RESEARCH,
-      theme: "dark",
       searching: true,
     });
     const ranked = rankSections(sections, "ㅁㅌ");
@@ -135,7 +120,6 @@ describe("rankSections", () => {
     const sections = buildCommands({
       data: fixture(),
       researchId: RESEARCH,
-      theme: "dark",
       searching: false,
     });
     expect(rankSections(sections, " ")).toEqual(sections);
