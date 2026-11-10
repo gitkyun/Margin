@@ -16,6 +16,7 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useBackState } from "@/pages/student/shared";
 import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -187,6 +188,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   } = context;
   const { theme, setTheme, resolvedTheme } = useTheme();
   const request = data.reviews.find((r) => r.id === requestId);
+  const back = useBackState();
   const items = data.reviewItems.filter((r) => r.requestId === requestId);
   const queryRound = data.rounds.find(
     (r) => r.id === params.get("round") && r.requestId === requestId,
@@ -837,6 +839,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                       <Button asChild variant="outline" size="sm">
                         <Link
                           to={`/r/${request.researchId}/results/${privateResult.id}`}
+                          state={back(request.title)}
                         >
                           수정 결과에서 고치기
                           <Icon name="arrow-right" size={14} />
@@ -1255,6 +1258,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                 <Link
                   className="review-text-link"
                   to={`/r/${request.researchId}/results/${privateResult.id}`}
+                  state={back(request.title)}
                 >
                   수정 결과에서 고치기
                   <Icon name="arrow-right" size={14} />

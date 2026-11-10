@@ -367,12 +367,14 @@ export function SearchInput({
 }
 /** 다른 상세 화면으로 갈 때 함께 넘기는 '돌아올 곳'(location.state). */
 export type BackState = { from?: { path: string; label: string } };
-/** 앱 안의 연구 화면 주소만 돌아올 곳으로 받습니다. */
+/** 앱 안의 연구 화면·검토 요청 주소만 돌아올 곳으로 받습니다. */
 export function readBackState(state: unknown): BackState["from"] | null {
   const from = (state as BackState | null)?.from;
   if (!from || typeof from.path !== "string" || typeof from.label !== "string")
     return null;
-  return from.path.startsWith("/r/") && from.label.trim() ? from : null;
+  const inApp =
+    from.path.startsWith("/r/") || from.path.startsWith("/reviews/");
+  return inApp && from.label.trim() ? from : null;
 }
 /**
  * 지금 화면을 '돌아올 곳'으로 넘기는 state를 만듭니다.
