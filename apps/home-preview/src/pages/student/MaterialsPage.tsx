@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { PdfViewer } from "@/components/PdfViewer";
+import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
+import { queryUp } from "@/design/responsive";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { UploadConnectionError } from "@/lib/repository";
@@ -64,6 +66,8 @@ function byteSize(bytes: number) {
 }
 export function MaterialsPage() {
   const { researchId = "", materialId } = useParams();
+  // 넓은 화면(1200px 이상)에서는 행을 누르면 여백 패널에 미리보기를 엽니다.
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const back = useBackState();
   const { data, save, upload, remove } = useWorkspace();
   const navigate = useNavigate();
@@ -586,6 +590,20 @@ export function MaterialsPage() {
                     key={material.id}
                     className="material-list-row"
                     to={`/r/${researchId}/materials/${material.id}`}
+                    aria-current={
+                      previewId === material.id ? "true" : undefined
+                    }
+                    onClick={(event) => {
+                      if (
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        !window.matchMedia?.(queryUp("lg")).matches
+                      )
+                        return;
+                      event.preventDefault();
+                      setPreviewId(material.id);
+                    }}
                   >
                     {!material.externalUrl && materialVersions[0] ? (
                       <MaterialPreviewBadge version={materialVersions[0]} />
@@ -650,6 +668,11 @@ export function MaterialsPage() {
               />
             )}
           </AnimatedList>
+          <MaterialPreviewPanel
+            researchId={researchId}
+            materialId={previewId}
+            onClose={() => setPreviewId(null)}
+          />
         </>
       )}
       {pending && (
@@ -862,5 +885,122 @@ export function MaterialsPage() {
         </form>
       </FormDialog>
     </div>
+  );
+}
+
+/** 자료 목록에서 고른 자료의 요약. 파일 내용은 전체 화면에서 엽니다. */
+function MaterialPreviewPanel({
+  researchId,
+  materialId,
+  onClose,
+}: {
+  researchId: string;
+  materialId: string | null;
+  onClose(): void;
+}) {
+  const { data } = useWorkspace();
+  const material = data.materials.find(
+    (item) => item.id === materialId && item.researchId === researchId,
+  );
+  const versions = data.versions
+    .filter((version) => version.materialId === material?.id)
+    .sort((a, b) => b.number - a.number);
+  const versionIds = new Set(versions.map((version) => version.id));
+  const results = data.results.filter(
+    (result) => result.versionId && versionIds.has(result.versionId),
+  );
+  const meetings = data.meetings.filter((meeting) =>
+    meeting.versionIds.some((id) => versionIds.has(id)),
+  );
+  const day = (value: string) =>
+    new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(new Date(value));
+  return (
+    <MarginPanel label="자료 미리보기" open={!!material} onClose={onClose}>
+      {material && (
+        <PanelFrame title="자료 미리보기" onClose={onClose}>
+          <div className="panel-frame-body material-preview-panel">
+            <strong className="material-preview-title">{material.title}</strong>
+            <dl className="material-preview-facts">
+              <div>
+                <dt>종류</dt>
+                <dd>
+                  {materialTypes[material.type]}
+                  {material.externalUrl ? " · 링크" : ""}
+                </dd>
+              </div>
+              {!material.externalUrl && (
+                <div>
+                  <dt>버전</dt>
+                  <dd>
+                    {versions.length
+                      ? `${versions.length}개 · 최신 v${versions[0].number}`
+                      : "파일 없음"}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>올린 날</dt>
+                <dd>{day(versions[0]?.createdAt ?? material.createdAt)}</dd>
+              </div>
+              {versions[0] && (
+                <div>
+                  <dt>파일</dt>
+                  <dd>
+                    {versions[0].fileName} · {byteSize(versions[0].size)}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            <Button asChild>
+              <Link to={`/r/${researchId}/materials/${material.id}`}>
+                전체 화면으로 열기
+                <Icon name="arrow-right" size={15} />
+              </Link>
+            </Button>
+            <h3>
+              이 자료를 쓴 기록
+              <span className="count-chip">
+                {results.length + meetings.length}
+              </span>
+            </h3>
+            {results.map((result) => (
+              <Link
+                key={result.id}
+                className="student-simple-row"
+                to={`/r/${researchId}/results/${result.id}`}
+              >
+                <span className="grow">
+                  <strong>{result.title}</strong>
+                  <small>수정 결과</small>
+                </span>
+                <Icon name="chevron-right" size={15} />
+              </Link>
+            ))}
+            {meetings.map((meeting) => (
+              <Link
+                key={meeting.id}
+                className="student-simple-row"
+                to={`/r/${researchId}/meetings/${meeting.id}?tab=prepare`}
+              >
+                <span className="grow">
+                  <strong>{meeting.title}</strong>
+                  <small>미팅 준비</small>
+                </span>
+                <Icon name="chevron-right" size={15} />
+              </Link>
+            ))}
+            {!results.length && !meetings.length && (
+              <p className="student-empty-inline">
+                아직 이 자료를 쓴 기록이 없어요.
+              </p>
+            )}
+          </div>
+        </PanelFrame>
+      )}
+    </MarginPanel>
   );
 }

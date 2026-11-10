@@ -113,8 +113,14 @@
 
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
+  /* 목록·상세 본문은 최대 1040px. PDF를 나란히 보는 자료 상세만 넓게 씁니다. */
   .student-page {
     min-width: 0;
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+  .student-page:has(.material-detail-layout) {
+    max-width: none;
   }
   .student-page .surface {
     min-width: 0;
@@ -241,6 +247,14 @@
     text-decoration: none;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
+  /* 글자와 아이콘이 한 줄에 놓이는 작은 링크(추가 +, 열기 →) */
+  .student-text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    min-height: 24px;
+    white-space: nowrap;
+  }
   .student-back:hover,
   .student-text-link:hover {
     color: var(--brand);
@@ -302,14 +316,6 @@
     margin: 0;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .student-empty-inline {
-    color: var(--text-secondary);
-    font-size: var(--typography-label2-fontSize);
-    line-height: var(--typography-label2-lineHeight);
-    padding: 14px 0;
-    margin: 0;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
   .student-body-text {
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
@@ -318,41 +324,6 @@
     margin: 20px 0;
     color: var(--text);
     letter-spacing: var(--typography-body2-letterSpacing);
-  }
-  .student-simple-row {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 12px;
-    padding: 17px 0;
-    border-bottom: 1px solid var(--line);
-    color: var(--text);
-    text-decoration: none;
-  }
-  .student-simple-row:last-child {
-    border-bottom: 0;
-  }
-  .student-simple-row > svg {
-    flex-shrink: 0;
-    color: var(--text-secondary);
-  }
-  .student-simple-row strong {
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    font-weight: 600;
-    display: block;
-    overflow-wrap: anywhere;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .student-simple-row small {
-    display: block;
-    margin-top: 5px;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    line-height: var(--typography-caption1-lineHeight);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .student-subsection {
     margin-top: 24px;
@@ -557,9 +528,6 @@
     margin-top: 26px;
     align-items: start;
   }
-  .record-layout.with-ai {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 410px);
-  }
   .memo-surface {
     padding-bottom: 20px;
   }
@@ -740,12 +708,10 @@
   }
   .feedback-detail-layout {
     display: grid;
-    grid-template-columns: 1fr;
+    /* 1fr만 쓰면 열이 내용 최소 폭(375px)만큼 넓어져 360px에서 카드가 잘립니다. */
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
     gap: 24px;
-  }
-  .feedback-detail-layout.with-ai {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
   }
   .feedback-body {
     font-size: var(--typography-headline2-fontSize);
@@ -907,6 +873,162 @@
     font-size: var(--typography-body1-fontSize);
     font-weight: 600;
     letter-spacing: var(--typography-body1-letterSpacing);
+  }
+  /* 피드백 진행 줄: 칸마다 자기 상태만. 전체 완료율은 만들지 않습니다. */
+  .feedback-progress {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin: 0 0 var(--spacing-20);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    list-style: none;
+    overflow: hidden;
+  }
+  .feedback-progress > li {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+    padding: var(--spacing-10) var(--spacing-14);
+    border-left: 1px solid var(--line);
+  }
+  .feedback-progress > li:first-child {
+    border-left: 0;
+  }
+  .feedback-progress > li:has(> button) {
+    padding: 0;
+  }
+  .feedback-progress button {
+    display: grid;
+    gap: var(--spacing-2);
+    width: 100%;
+    padding: var(--spacing-10) var(--spacing-14);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--motion-duration-micro) ease-out;
+  }
+  .feedback-progress button:hover {
+    background: var(--hover-fill);
+  }
+  .feedback-progress span {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .feedback-progress strong {
+    overflow: hidden;
+    color: var(--text-tertiary);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .feedback-progress > li[data-filled="true"] strong {
+    color: var(--text);
+  }
+  @media (max-width: 767px) {
+    .feedback-progress {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .feedback-progress > li {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .feedback-progress > li:nth-child(-n + 2) {
+      border-top: 0;
+    }
+    .feedback-progress > li:nth-child(even) {
+      border-left: 1px solid var(--line);
+    }
+    .feedback-progress > li:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+  .material-list-row[aria-current="true"] {
+    background: var(--selected-fill);
+  }
+  .material-preview-title {
+    font-size: var(--typography-headline2-fontSize);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .material-preview-facts {
+    display: grid;
+    gap: var(--spacing-8);
+    margin: 0;
+    padding: var(--spacing-12) var(--spacing-14);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+    font-size: var(--typography-label1-fontSize);
+  }
+  .material-preview-facts > div {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: var(--spacing-8);
+  }
+  .material-preview-facts dt {
+    color: var(--text-secondary);
+  }
+  .material-preview-facts dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .result-response-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-16);
+    flex-wrap: wrap;
+  }
+  .result-response-summary .meta {
+    margin: var(--spacing-4) 0 0;
+  }
+  .result-response {
+    display: grid;
+    gap: var(--spacing-8);
+    padding-bottom: var(--spacing-16);
+    border-bottom: 1px solid var(--line);
+  }
+  .result-response-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .result-response-head strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .result-response > small,
+  .result-response-comments small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .result-response-comments {
+    display: grid;
+    gap: var(--spacing-8);
+    margin: 0;
+    padding: 0;
+    font-size: var(--typography-label1-fontSize);
+    list-style: none;
+  }
+  .result-response-comments small {
+    display: block;
+  }
+  .meeting-panel-goal {
+    margin: 0;
+    padding: var(--spacing-10) var(--spacing-12);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+    font-size: var(--typography-label1-fontSize);
+    line-height: 1.6;
+  }
+  .ai-candidate-note {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
   }
   .ai-scope {
     background: var(--surface-muted);
@@ -1386,15 +1508,8 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   @media (max-width: 1199px) {
-    .record-layout.with-ai,
-    .feedback-detail-layout.with-ai {
-      grid-template-columns: minmax(0, 1fr) 340px;
-    }
     .material-detail-layout {
       grid-template-columns: minmax(0, 1fr) 230px;
-    }
-    .feedback-detail-layout.with-ai .student-two-column {
-      grid-template-columns: 1fr;
     }
     .saved-plan-footer > .button-row {
       width: 100%;
@@ -1402,10 +1517,6 @@
     }
   }
   @media (max-width: 991px) {
-    .record-layout.with-ai,
-    .feedback-detail-layout.with-ai {
-      grid-template-columns: 1fr;
-    }
     .ai-workbench {
       max-width: none;
     }

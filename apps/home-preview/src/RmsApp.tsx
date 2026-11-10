@@ -71,6 +71,9 @@ import { LoginPage, ResearchSelectPage, ThemeSwitch } from "@/pages/AuthPages";
 const WritingPage = lazy(() =>
   import("@/pages/WritingPage").then((m) => ({ default: m.WritingPage })),
 );
+const OnboardingPage = lazy(() =>
+  import("@/pages/OnboardingPage").then((m) => ({ default: m.OnboardingPage })),
+);
 const PlanningPage = lazy(() =>
   import("@/pages/PlanningPage").then((m) => ({ default: m.PlanningPage })),
 );
@@ -176,6 +179,14 @@ function WorkspaceRoutes() {
           element={<LoginPage authenticated={configured} />}
         />
         <Route path="/" element={<LandingPage signedIn />} />
+        <Route
+          path="/r/new"
+          element={
+            <Suspense fallback={<LoadingState />}>
+              <OnboardingPage />
+            </Suspense>
+          }
+        />
         <Route element={<Shell />}>
           <Route path="/r" element={<ResearchSelectPage />} />
           <Route path="/account" element={<AccountPage />} />
@@ -292,29 +303,31 @@ export function App() {
                 ? "연구 설정"
                 : path === "/account"
                   ? "계정 설정"
-                  : path === "/r"
-                    ? "내 연구"
-                    : /^\/r\/[^/]+/.test(path)
-                      ? path.includes("/meetings")
-                        ? "미팅"
-                        : path.includes("/writing")
-                          ? "글쓰기"
-                          : path.includes("/tasks")
-                            ? "할 일"
-                            : path.includes("/feedback")
-                              ? "피드백"
-                              : path.includes("/materials")
-                                ? "자료"
-                                : path.includes("/results")
-                                  ? "수정 결과"
-                                  : path.includes("/planning")
-                                    ? "계획·일정"
-                                    : "연구 홈"
-                      : path.startsWith("/reviews")
-                        ? "교수 검토"
-                        : path.startsWith("/schedule")
-                          ? "미팅 시간 조율"
-                          : "페이지를 찾을 수 없어요");
+                  : path === "/r/new"
+                    ? "연구 만들기"
+                    : path === "/r"
+                      ? "내 연구"
+                      : /^\/r\/[^/]+/.test(path)
+                        ? path.includes("/meetings")
+                          ? "미팅"
+                          : path.includes("/writing")
+                            ? "글쓰기"
+                            : path.includes("/tasks")
+                              ? "할 일"
+                              : path.includes("/feedback")
+                                ? "피드백"
+                                : path.includes("/materials")
+                                  ? "자료"
+                                  : path.includes("/results")
+                                    ? "수정 결과"
+                                    : path.includes("/planning")
+                                      ? "계획·일정"
+                                      : "연구 홈"
+                        : path.startsWith("/reviews")
+                          ? "교수 검토"
+                          : path.startsWith("/schedule")
+                            ? "미팅 시간 조율"
+                            : "페이지를 찾을 수 없어요");
     document.title = `${name} · 마진`;
   }, [location.pathname, workspaceVisible]);
   if (location.pathname === "/") return <LandingPage signedIn={!!session} />;

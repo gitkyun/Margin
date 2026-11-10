@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
+import { feedbackProgress } from "@/lib/feedback-progress";
 import { useWorkspace } from "@/lib/workspace";
 import {
   feedbackLabels,
@@ -22,6 +23,7 @@ import {
   type RevisionResult,
 } from "@/lib/domain";
 import { AIWorkbench } from "./AIWorkbench";
+import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { ResultEditorDialog } from "./ResultEditorDialog";
 import { newResultDraft } from "./result-draft";
 import { isAISourceStale } from "./ai-source";
@@ -245,7 +247,10 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
   const navigate = useNavigate();
   const researchId = feedback.researchId;
   const [aiInput, setAiInput] = useState<AIInput | null>(null);
-  const [aiOpen, setAiOpen] = useState(false);
+  // 여백 패널: 연결(이 피드백과 이어진 기록)과 도우미(수정 방법 제안)
+  const [panelTab, setPanelTab] = useState<"links" | "assistant">("links");
+  const [panelOpen, setPanelOpen] = useState(false);
+  const aiOpen = panelOpen && panelTab === "assistant";
   const [aiRun, setAiRun] = useState(0);
   const [resultDraft, setResultDraft] = useState<RevisionResult | null>(null);
   const aiStale =
@@ -260,7 +265,12 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
       });
       setAiRun((value) => value + 1);
     }
-    setAiOpen(true);
+    setPanelTab("assistant");
+    setPanelOpen(true);
+  }
+  function openLinks() {
+    setPanelTab("links");
+    setPanelOpen(true);
   }
   const taskBase = useRef<BaseRecord | null>(null);
   const [editing, setEditing] = useState(false);
@@ -282,6 +292,15 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
     item.feedbackIds.includes(feedback.id),
   );
   const meeting = data.meetings.find((item) => item.id === feedback.meetingId);
+  const progress = feedbackProgress({
+    feedback,
+    plans,
+    tasks,
+    results,
+    reviewItems: data.reviewItems,
+    rounds: data.rounds,
+    responses: data.responses,
+  });
   async function saveCandidate(candidate: AICandidate, base: BaseRecord) {
     await save("plans", {
       ...base,
@@ -349,9 +368,28 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           </Button>
         }
       />
-      <div
-        className={`feedback-detail-layout ${aiInput && aiOpen ? "with-ai" : ""}`}
-      >
+      <ol className="feedback-progress" aria-label="이 피드백의 진행">
+        {progress.map((step) => (
+          <li key={step.key} data-filled={step.filled}>
+            {step.key === "tasks" ? (
+              <button
+                type="button"
+                onClick={openLinks}
+                aria-label={`할 일 ${step.value}, 연결된 기록 열기`}
+              >
+                <span>{step.label}</span>
+                <strong>{step.value}</strong>
+              </button>
+            ) : (
+              <>
+                <span>{step.label}</span>
+                <strong>{step.value}</strong>
+              </>
+            )}
+          </li>
+        ))}
+      </ol>
+      <div className="feedback-detail-layout">
         <div className="stack">
           <section className="surface feedback-origin">
             <div className="section-heading">
@@ -534,109 +572,174 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               </details>
             )}
           </section>
-          <div className="student-two-column">
-            <section className="surface">
-              <div className="section-heading">
-                <h2>연결한 할 일</h2>
+          <section className="surface">
+            <div className="section-heading">
+              <h2>수정 결과</h2>
+              <Button
+                variant="link"
+                size="sm"
+                type="button"
+                onClick={() =>
+                  setResultDraft(newResultDraft(researchId, { feedback }))
+                }
+              >
+                작성
+                <Icon name="plus" size={14} />
+              </Button>
+            </div>
+            {/* Opened in place so this feedback stays behind the dialog. */}
+            <ResultEditorDialog
+              researchId={researchId}
+              draft={resultDraft}
+              setDraft={setResultDraft}
+            />
+            {results.length ? (
+              results.map((result) => (
                 <Link
-                  className="student-text-link"
-                  to={`/r/${researchId}/tasks?feedback=${feedback.id}&new=1`}
+                  className="student-simple-row"
+                  key={result.id}
+                  to={`/r/${researchId}/results/${result.id}`}
+                  state={back(feedback.title)}
                 >
-                  추가
-                  <Icon name="plus" size={14} />
+                  <span className="grow">
+                    <strong>{result.title}</strong>
+                    <small>
+                      {result.location ||
+                        (result.kind === "document"
+                          ? "볼 위치 없음"
+                          : "문서 외 수정")}
+                    </small>
+                  </span>
+                  <Icon name="chevron-right" size={15} />
                 </Link>
-              </div>
-              {tasks.length ? (
-                tasks.map((task) => (
-                  <Link
-                    className="student-simple-row"
-                    key={task.id}
-                    to={`/r/${researchId}/tasks/${task.id}`}
-                    state={back(feedback.title)}
-                  >
-                    <span className="grow">
-                      <strong>{task.title}</strong>
-                    </span>
-                    <StatusBadge
-                      tone={
-                        task.status === "done"
-                          ? "green"
-                          : task.status === "doing"
-                            ? "blue"
-                            : "neutral"
-                      }
-                    >
-                      {taskLabels[task.status]}
-                    </StatusBadge>
-                  </Link>
-                ))
-              ) : (
-                <p className="student-empty-inline">
-                  수정 방법에서 할 일을 만들거나 기존 할 일을 연결할 수 있어요.
-                </p>
-              )}
-            </section>
-            <section className="surface">
-              <div className="section-heading">
-                <h2>수정 결과</h2>
-                <Button
-                  variant="link"
-                  size="sm"
-                  type="button"
-                  onClick={() =>
-                    setResultDraft(newResultDraft(researchId, { feedback }))
-                  }
-                >
-                  작성
-                  <Icon name="plus" size={14} />
-                </Button>
-              </div>
-              {/* Opened in place so this feedback stays behind the dialog. */}
-              <ResultEditorDialog
-                researchId={researchId}
-                draft={resultDraft}
-                setDraft={setResultDraft}
-              />
-              {results.length ? (
-                results.map((result) => (
-                  <Link
-                    className="student-simple-row"
-                    key={result.id}
-                    to={`/r/${researchId}/results/${result.id}`}
-                    state={back(feedback.title)}
-                  >
-                    <span className="grow">
-                      <strong>{result.title}</strong>
-                      <small>
-                        {result.location ||
-                          (result.kind === "document"
-                            ? "볼 위치 없음"
-                            : "문서 외 수정")}
-                      </small>
-                    </span>
-                    <Icon name="chevron-right" size={15} />
-                  </Link>
-                ))
-              ) : (
-                <p className="student-empty-inline">
-                  아직 수정 결과가 없어요. 실제로 고친 내용을 기록해 주세요.
-                </p>
-              )}
-            </section>
-          </div>
+              ))
+            ) : (
+              <p className="student-empty-inline">
+                아직 수정 결과가 없어요. 실제로 고친 내용을 기록해 주세요.
+              </p>
+            )}
+          </section>
         </div>
-        {aiInput && (
-          <AIWorkbench
-            key={aiRun}
-            title="수정 방법 제안"
-            input={aiInput}
-            hidden={!aiOpen}
-            stale={aiStale}
-            onClose={() => setAiOpen(false)}
-            onRefresh={openAI}
-            onSave={saveCandidate}
-          />
-        )}
+        <MarginPanel
+          label="연결된 기록과 연구 도우미"
+          open={panelOpen}
+          onOpen={() => setPanelOpen(true)}
+          onClose={() => setPanelOpen(false)}
+        >
+          <PanelFrame
+            title="이 피드백"
+            onClose={() => setPanelOpen(false)}
+            tab={panelTab}
+            onTab={(value) => (value === "assistant" ? openAI() : openLinks())}
+            tabs={[
+              {
+                value: "links",
+                label: "연결",
+                count: tasks.length + results.length + (meeting ? 1 : 0),
+              },
+              { value: "assistant", label: "도우미" },
+            ]}
+          >
+            {panelTab === "links" && (
+              <div className="panel-frame-body">
+                {meeting && (
+                  <>
+                    <h3>미팅</h3>
+                    <Link
+                      className="student-simple-row"
+                      to={`/r/${researchId}/meetings/${meeting.id}?tab=record`}
+                      state={back(feedback.title)}
+                    >
+                      <span className="grow">
+                        <strong>{meeting.title}</strong>
+                        <small>이 피드백을 정리한 미팅</small>
+                      </span>
+                      <Icon name="chevron-right" size={15} />
+                    </Link>
+                  </>
+                )}
+                <h3>
+                  할 일<span className="count-chip">{tasks.length}</span>
+                  <Link
+                    className="student-text-link"
+                    to={`/r/${researchId}/tasks?feedback=${feedback.id}&new=1`}
+                  >
+                    추가
+                    <Icon name="plus" size={14} />
+                  </Link>
+                </h3>
+                {tasks.length ? (
+                  tasks.map((task) => (
+                    <Link
+                      className="student-simple-row"
+                      key={task.id}
+                      to={`/r/${researchId}/tasks/${task.id}`}
+                      state={back(feedback.title)}
+                    >
+                      <span className="grow">
+                        <strong>{task.title}</strong>
+                      </span>
+                      <StatusBadge
+                        tone={
+                          task.status === "done"
+                            ? "green"
+                            : task.status === "doing"
+                              ? "blue"
+                              : "neutral"
+                        }
+                      >
+                        {taskLabels[task.status]}
+                      </StatusBadge>
+                    </Link>
+                  ))
+                ) : (
+                  <p className="student-empty-inline">
+                    수정 방법에서 할 일을 만들거나 기존 할 일을 연결할 수
+                    있어요.
+                  </p>
+                )}
+                <h3>
+                  수정 결과<span className="count-chip">{results.length}</span>
+                </h3>
+                {results.length ? (
+                  results.map((result) => (
+                    <Link
+                      className="student-simple-row"
+                      key={result.id}
+                      to={`/r/${researchId}/results/${result.id}`}
+                      state={back(feedback.title)}
+                    >
+                      <span className="grow">
+                        <strong>{result.title}</strong>
+                      </span>
+                      <Icon name="chevron-right" size={15} />
+                    </Link>
+                  ))
+                ) : (
+                  <p className="student-empty-inline">
+                    아직 수정 결과가 없어요.
+                  </p>
+                )}
+                <p className="panel-frame-note">
+                  할 일을 끝내도 수정 결과나 교수 확인이 바뀌지는 않아요. 칸마다
+                  따로 기록해요.
+                </p>
+              </div>
+            )}
+            {panelTab === "assistant" && aiInput && (
+              <AIWorkbench
+                key={aiRun}
+                embedded
+                title="수정 방법 제안"
+                input={aiInput}
+                stale={aiStale}
+                onClose={() => setPanelOpen(false)}
+                onRefresh={openAI}
+                onSave={saveCandidate}
+              />
+            )}
+          </PanelFrame>
+        </MarginPanel>
       </div>
       <FormDialog
         busy={editForm.saving}

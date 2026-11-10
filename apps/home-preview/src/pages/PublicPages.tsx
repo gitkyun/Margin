@@ -23,9 +23,13 @@ import {
 import {
   MergeFlow,
   SpotlightCard,
+  StartGlow,
   ComparePreview,
 } from "@/components/marketing/MarketingEffects";
 import { Button } from "@/components/ui/button";
+
+/** 히어로 제목 등장(최대 600ms)이 끝난 뒤에 시작 버튼 강조를 돌립니다. */
+const HERO_SETTLE_MS = 700;
 
 const journey = [
   {
@@ -362,12 +366,14 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             고친 내용은 교수님께 검토를 요청할 수 있어요.
           </p>
           <div className="lp-hero-actions">
-            <Button asChild size="lg">
-              <Link to={signedIn ? "/r" : "/signup"}>
-                {signedIn ? "내 연구 열기" : "시작하기"}
-                <Icon name="arrow-up-right" size={19} />
-              </Link>
-            </Button>
+            <StartGlow delay={HERO_SETTLE_MS}>
+              <Button asChild size="lg">
+                <Link to={signedIn ? "/r" : "/signup"}>
+                  {signedIn ? "내 연구 열기" : "시작하기"}
+                  <Icon name="arrow-up-right" size={19} />
+                </Link>
+              </Button>
+            </StartGlow>
             <Button asChild variant="outline" size="lg">
               <a href="#workflow">
                 사용 방법 보기
@@ -427,9 +433,6 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           <SpotlightCard className="lp-feature-card lp-feature-wide">
             <div className="lp-feature-visual lp-merge-visual">
               <MergeFlow />
-              <div className="lp-feature-peek" aria-hidden="true" inert>
-                <ProductPreview index={0} />
-              </div>
             </div>
             <div className="lp-feature-copy">
               <span className="lp-feature-icon">
@@ -465,9 +468,6 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                   </span>
                   <Icon name="arrow-up" size={17} />
                 </div>
-              </div>
-              <div className="lp-feature-peek" aria-hidden="true" inert>
-                <ProductPreview index={1} />
               </div>
             </div>
             <div className="lp-feature-copy">
@@ -522,9 +522,6 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                   </span>
                   <Icon name="check-circle" size={22} />
                 </div>
-              </div>
-              <div className="lp-feature-peek" aria-hidden="true" inert>
-                <ProductPreview index={3} />
               </div>
             </div>
             <div className="lp-feature-copy">
@@ -700,13 +697,15 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           고친 내용부터
         </h2>
         <p>지난 기록을 다시 찾는 시간이 줄어요.</p>
-        <Link
-          className="lp-button lp-button-on-brand"
-          to={signedIn ? "/r" : "/login"}
-        >
-          {signedIn ? "내 연구 열기" : "마진 시작하기"}
-          <Icon name="arrow-up-right" size={20} />
-        </Link>
+        <StartGlow tone="on-brand">
+          <Link
+            className="lp-button lp-button-on-brand"
+            to={signedIn ? "/r" : "/login"}
+          >
+            {signedIn ? "내 연구 열기" : "마진 시작하기"}
+            <Icon name="arrow-up-right" size={20} />
+          </Link>
+        </StartGlow>
       </section>
     </PublicFrame>
   );

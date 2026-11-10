@@ -675,15 +675,49 @@
     gap: 20px;
     margin-top: 20px;
   }
+  /* 기록 한 줄과 빈 안내: 학생 화면 밖(글쓰기·계획의 여백 패널)에서도 쓰여 공용 시트에 둡니다. */
   .student-simple-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 15px;
-    padding: 16px 0;
+    width: 100%;
+    gap: 12px;
+    padding: 17px 0;
     border-bottom: 1px solid var(--line);
-    text-decoration: none;
     color: var(--text);
+    text-decoration: none;
+  }
+  .student-simple-row:last-child {
+    border-bottom: 0;
+  }
+  .student-simple-row > svg {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+  .student-simple-row strong {
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1Reading-lineHeight);
+    font-weight: 600;
+    display: block;
+    overflow-wrap: anywhere;
+    letter-spacing: var(--typography-label1-letterSpacing);
+  }
+  .student-simple-row small {
+    display: block;
+    margin-top: 5px;
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--text-secondary);
+    line-height: var(--typography-caption1-lineHeight);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .student-empty-inline {
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    padding: 14px 0;
+    margin: 0;
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   /* Assistant: selected context, persisted chat, real executions. */
 
@@ -711,30 +745,6 @@
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .agent-overview {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 24px;
-  }
-  .agent-overview-hero {
-    grid-column: 1/-1;
-    padding: 28px;
-    display: flex;
-    align-items: center;
-    gap: 26px;
-  }
-  .agent-overview-hero h2 {
-    font-size: var(--typography-title3-fontSize);
-    margin: 8px 0;
-    letter-spacing: var(--typography-title3-letterSpacing);
-  }
-  .agent-overview-hero p {
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .run-row,
   .candidate-overview-row {
@@ -801,17 +811,6 @@
   .source-picker > button:hover {
     border-color: var(--hover-line);
     background: var(--hover-fill);
-  }
-  .ai-usage-breakdown {
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-16);
-  }
-  .ai-usage-breakdown > div {
-    padding: 12px 0;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--line);
   }
   /* Recording and settings: explicit consent, real time, no fabricated waveform. */
   .recording-panel {
@@ -1186,24 +1185,7 @@
     border-top: 1px solid var(--line);
     background: var(--surface-muted);
   }
-  .meeting-visibility {
-    width: min(100%, 280px);
-    margin: 0 0 24px;
-  }
-  .meeting-visibility .field {
-    margin: 0;
-  }
-  @media (max-width: 1199px) {
-    .agent-overview {
-      grid-template-columns: 1fr;
-    }
-  }
   @media (max-width: 767px) {
-    .agent-overview-hero {
-      flex-direction: column;
-      text-align: center;
-      padding: 20px;
-    }
     .phase-card-body .button-row {
       margin-top: 14px;
     }

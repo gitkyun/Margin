@@ -1,15 +1,20 @@
 import type { Meeting } from "./domain";
 
-/** Finished records must never become the home recording/preparation target. */
-export function selectNextMeeting(
-  meetings: Meeting[],
-  preferredId?: string | null,
-  today = new Intl.DateTimeFormat("en-CA", {
+/** 오늘 날짜(YYYY-MM-DD, 서울 기준). 미팅 날짜 문자열과 그대로 비교합니다. */
+export function seoulToday(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date()),
+  }).format(now);
+}
+
+/** Finished records must never become the home recording/preparation target. */
+export function selectNextMeeting(
+  meetings: Meeting[],
+  preferredId?: string | null,
+  today = seoulToday(),
 ) {
   const active = meetings.filter(
     (m) =>

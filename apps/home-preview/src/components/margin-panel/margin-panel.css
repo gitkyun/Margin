@@ -1,0 +1,178 @@
+/*
+ * 여백 패널: 본문 오른쪽에 붙는 연결·응답·도우미 자리.
+ * 본문과 같은 작업 면에 왼쪽 선 하나만 둡니다. 그림자는 본문을 덮는 시트일 때만 씁니다.
+ * 너비는 docs/design/patterns.md의 너비별 배치를 따릅니다.
+ */
+@layer margin {
+  .floating-workspace {
+    --margin-panel-width: 360px;
+  }
+  .workspace-body {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: stretch;
+  }
+  .workspace-body > .workspace-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .margin-panel {
+    position: sticky;
+    top: 52px;
+    align-self: flex-start;
+    flex: none;
+    width: var(--margin-panel-width);
+    height: calc(100dvh - 52px - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-left: 1px solid var(--line);
+    background: var(--surface);
+    border-bottom-right-radius: var(--radius-16);
+  }
+  .margin-panel[hidden] {
+    display: none;
+  }
+  .margin-panel:focus {
+    outline: none;
+  }
+  .margin-panel-backdrop {
+    display: none;
+  }
+  /* 패널 안에서는 카드 테두리를 벗깁니다(면은 패널이 맡음). */
+  .margin-panel .ai-workbench {
+    border: 0;
+    border-radius: 0;
+    padding: var(--spacing-20);
+  }
+  /* 패널 안쪽 공통 틀: 이름·닫기, 탭 줄, 탭 내용 */
+  .panel-frame {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  .panel-frame-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-16) var(--spacing-12) var(--spacing-4)
+      var(--spacing-20);
+  }
+  .panel-frame-head h2 {
+    margin: 0;
+    font-size: var(--typography-headline2-fontSize);
+    font-weight: 700;
+  }
+  .panel-frame > [role="tablist"],
+  .panel-frame > .tabs-line {
+    padding-inline: var(--spacing-20);
+    border-bottom: 1px solid var(--line);
+  }
+  .panel-frame-body {
+    display: grid;
+    align-content: start;
+    gap: var(--spacing-12);
+    padding: var(--spacing-16) var(--spacing-20) var(--spacing-24);
+  }
+  .panel-frame-body h3,
+  .panel-frame .source-picker h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .panel-frame-body h3 > a,
+  .panel-frame-body h3 > [data-slot="button"] {
+    margin-left: auto;
+  }
+  .panel-frame-note {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: 1.6;
+  }
+  .panel-frame-note a {
+    color: var(--semantic-foreground-brand-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  /* 틀 안에 들어간 도우미 작업 영역은 자기 닫기 버튼을 쓰지 않습니다. */
+  .panel-frame .ai-workbench {
+    padding-top: var(--spacing-12);
+  }
+  .topbar .margin-panel-toggle[aria-pressed="true"] {
+    color: var(--brand);
+    background: var(--selected-fill);
+  }
+
+  @media (min-width: 1600px) {
+    .floating-workspace {
+      --margin-panel-width: 400px;
+    }
+  }
+  @media (max-width: 1199px) {
+    .floating-workspace {
+      --margin-panel-width: 340px;
+    }
+  }
+  /* 768~991: 본문 위를 덮는 오른쪽 시트(최대 420px) */
+  @media (max-width: 991px) {
+    .margin-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      width: min(420px, 100vw);
+      height: 100dvh;
+      border-radius: 0;
+      box-shadow: var(--shadow-pop);
+      animation: margin-panel-in var(--motion-duration-enter)
+        var(--motion-ease-standard);
+    }
+    .margin-panel-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 39;
+      border: 0;
+      background: var(--semantic-material-dimmer, rgba(0, 0, 0, 0.4));
+      animation: margin-panel-fade var(--motion-duration-enter) ease-out;
+    }
+    @keyframes margin-panel-in {
+      from {
+        transform: translateX(24px);
+        opacity: 0;
+      }
+    }
+    @keyframes margin-panel-fade {
+      from {
+        opacity: 0;
+      }
+    }
+  }
+  /* 767 이하: 아래에서 올라오는 전체 높이 시트 */
+  @media (max-width: 767px) {
+    .margin-panel {
+      left: 0;
+      width: 100%;
+      border-left: 0;
+      animation-name: margin-panel-up;
+    }
+    @keyframes margin-panel-up {
+      from {
+        transform: translateY(24px);
+        opacity: 0;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .margin-panel,
+    .margin-panel-backdrop {
+      animation: none;
+    }
+  }
+}

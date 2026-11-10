@@ -92,6 +92,14 @@ describe("experience pages render with an empty research", () => {
     await page(HomePage);
     expect(screen.getByRole("heading", { name: "테스트 연구" })).toBeTruthy();
     expect(screen.getByText("다음 미팅이 아직 없어요")).toBeTruthy();
+    // 빈 연구에는 시작 체크리스트가 0/4로 보이고 주 행동은 미팅 만들기 하나입니다.
+    expect(screen.getByRole("heading", { name: /시작하기/ })).toBeTruthy();
+    expect(screen.getByText("0 / 4")).toBeTruthy();
+    expect(
+      screen
+        .getAllByRole("link", { name: /미팅 만들기/ })
+        .some((link) => link.getAttribute("data-action") === "create_meeting"),
+    ).toBe(true);
   });
   it("writing is usable without existing documents", async () => {
     const { WritingPage } = await import("../src/pages/WritingPage");
@@ -101,15 +109,31 @@ describe("experience pages render with an empty research", () => {
       screen.getAllByRole("button", { name: "계획서 만들기" }).length,
     ).toBeGreaterThan(0);
   });
-  it("assistant exposes three actual work views", async () => {
+  it("assistant keeps sources, suggestions and run history in the margin panel", async () => {
     const { ResearchAssistant } =
       await import("../src/pages/ResearchAssistant");
     await page(ResearchAssistant, "/r/r1/assistant");
-    expect(screen.getByRole("tab", { name: "대화" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("tab", { name: /AI 제안/ }));
+    // 대화 목록 열과 화면 탭(대화·AI 제안·사용량)은 없어요.
+    expect(screen.queryByRole("tab", { name: "대화" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "사용량" })).toBeNull();
+    expect(screen.getByRole("button", { name: /대화 기록/ })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: /근거/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole("tab", { name: /제안/ }));
+    await waitFor(() =>
+      expect(
+        screen.getByText("AI 제안이 나오면 여기에 표시돼요."),
+      ).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "기록" }));
     await waitFor(() =>
       expect(screen.getByText("아직 실행 기록이 없어요.")).toBeTruthy(),
     );
+  });
+  it("assistant opens the suggestions tab for the old overview address", async () => {
+    const { ResearchAssistant } =
+      await import("../src/pages/ResearchAssistant");
+    await page(ResearchAssistant, "/r/r1/assistant?tab=overview");
+    expect(screen.getByText("AI 제안이 나오면 여기에 표시돼요.")).toBeTruthy();
   });
   it("calendar and planning initialize without premium plugins", async () => {
     const { PlanningPage } = await import("../src/pages/PlanningPage");

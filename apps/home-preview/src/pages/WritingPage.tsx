@@ -10,6 +10,7 @@ import {
   RemoveFormatting,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TableKit } from "@tiptap/extension-table";
@@ -34,6 +35,12 @@ import {
 } from "@/lib/domain";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import {
@@ -144,19 +151,23 @@ export function WritingPage() {
         title="글쓰기"
         description="계획서와 원고를 쓰고, 버전을 남겨 비교할 수 있어요."
         actions={
-          <div className="button-row">
-            <Button
-              disabled={creating}
-              variant="outline"
-              onClick={() => beginCreate("manuscript")}
-            >
-              원고 만들기
-            </Button>
-            <Button disabled={creating} onClick={() => beginCreate()}>
-              <Icon name="plus" size={17} />
-              계획서 만들기
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button disabled={creating}>
+                <Icon name="plus" size={17} />
+                문서 만들기
+                <Icon name="chevron-down" size={15} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => beginCreate()}>
+                계획서
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => beginCreate("manuscript")}>
+                원고
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       />
       <Dialog
@@ -250,12 +261,12 @@ export function WritingPage() {
         <EmptyState
           icon="file"
           title="아직 문서가 없어요"
-          description="쓴 내용은 검토용 PDF로 만들어 자료로 등록할 수 있어요."
-          action={
-            <Button variant="outline" onClick={() => beginCreate()}>
-              계획서 만들기
-            </Button>
-          }
+          points={[
+            "계획서와 원고를 쓰고 버전을 남겨요",
+            "버전끼리 나란히 놓고 달라진 곳을 비교해요",
+            "검토용 PDF로 만들어 자료에 등록해요",
+          ]}
+          action={<Button onClick={() => beginCreate()}>계획서 만들기</Button>}
         />
       )}
     </div>
@@ -286,6 +297,9 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     [busy, setBusy] = useState(""),
     [conflict, setConflict] = useState<DocumentRecord | null>(null),
     [versionsOpen, setVersionsOpen] = useState(false),
+    // 여백 패널: 버전 목록과 이 문서를 넣은 목표
+    [infoOpen, setInfoOpen] = useState(false),
+    [infoTab, setInfoTab] = useState("versions"),
     [from, setFrom] = useState(""),
     [to, setTo] = useState("draft"),
     [compareView, setCompareView] = useState<"changes" | "slide">("changes"),
@@ -459,6 +473,12 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         (n) =>
           n.content?.map((c) => ("text" in c ? c.text : "")).join("") ?? "",
       ) ?? [];
+  const milestones = data.milestones.filter(
+    (milestone) =>
+      milestone.researchId === initial.researchId &&
+      !milestone.archivedAt &&
+      milestone.documentIds.includes(initial.id),
+  );
   const fromVersion = versionList.find((v) => v.id === from),
     toVersion = versionList.find((v) => v.id === to),
     beforeLabel = fromVersion ? `v${fromVersion.number}` : "이전 버전",
@@ -579,6 +599,84 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           <EditorContent editor={editor} />
         </div>
       </div>
+      <MarginPanel
+        label="문서 버전과 연결된 기록"
+        open={infoOpen}
+        onOpen={() => setInfoOpen(true)}
+        onClose={() => setInfoOpen(false)}
+      >
+        <PanelFrame
+          title="이 문서"
+          onClose={() => setInfoOpen(false)}
+          tab={infoTab}
+          onTab={setInfoTab}
+          tabs={[
+            { value: "versions", label: "버전", count: versionList.length },
+            { value: "links", label: "연결", count: milestones.length },
+          ]}
+        >
+          {infoTab === "versions" && (
+            <div className="panel-frame-body">
+              {[...versionList].reverse().map((v) => (
+                <button
+                  type="button"
+                  className="student-simple-row writing-version-row"
+                  key={v.id}
+                  disabled={!!busy}
+                  onClick={() => {
+                    setFrom(v.id);
+                    setTo("draft");
+                    setVersionsOpen(true);
+                  }}
+                >
+                  <span className="grow">
+                    <strong>v{v.number}</strong>
+                    <small>{formatDateTime(v.createdAt)}</small>
+                  </span>
+                  <Icon name="chevron-right" size={15} />
+                </button>
+              ))}
+              {!versionList.length && (
+                <p className="student-empty-inline">
+                  아직 남긴 버전이 없어요. ‘버전’에서 지금 내용을 버전으로 남길
+                  수 있어요.
+                </p>
+              )}
+              <p className="panel-frame-note">
+                버전을 누르면 지금 작성 중인 내용과 비교해요. 저장만으로는
+                버전이 생기지 않아요.
+              </p>
+            </div>
+          )}
+          {infoTab === "links" && (
+            <div className="panel-frame-body">
+              <h3>
+                목표<span className="count-chip">{milestones.length}</span>
+              </h3>
+              {milestones.map((milestone) => (
+                <Link
+                  className="student-simple-row"
+                  key={milestone.id}
+                  to={`/r/${initial.researchId}/planning`}
+                >
+                  <span className="grow">
+                    <strong>{milestone.title}</strong>
+                    <small>
+                      {milestone.status === "done" ? "끝남" : "진행 예정"}
+                    </small>
+                  </span>
+                  <Icon name="chevron-right" size={15} />
+                </Link>
+              ))}
+              {!milestones.length && (
+                <p className="student-empty-inline">
+                  계획·일정의 목표에 이 문서를 넣으면 여기에 보여요.
+                </p>
+              )}
+            </div>
+          )}
+        </PanelFrame>
+      </MarginPanel>
       <div className="editor-dock-wrap">
         <div className="editor-dock" role="toolbar" aria-label="문서 서식">
           <DockItem

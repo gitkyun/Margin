@@ -5,16 +5,20 @@ import {
 import { PublicFrame } from "./PublicPages";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
 export { ThemeSwitch } from "@/components/ThemeSwitch";
-import { useNavigationGuard } from "@/lib/navigation-guard";
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
-import { now, uid, formatDateTime } from "@/lib/domain";
+import { formatDateTime } from "@/lib/domain";
 import { configured, assertConnected, friendlyError } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -22,12 +26,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  PageHeader,
-  EmptyState,
-  Field,
-  StatusBadge,
-} from "@/components/common";
+import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useExperience } from "@/lib/experience";
 import { Segments } from "@/components/experience";
@@ -195,49 +194,12 @@ export function ResearchSelectPage() {
   >(null);
   const [trashName, setTrashName] = useState("");
   const navigate = useNavigate();
-  const createId = useRef(uid());
-  const [open, setOpen] = useState(false),
-    [name, setName] = useState(""),
-    [description, setDescription] = useState(""),
-    [pending, setPending] = useState(false);
-  useEffect(() => {
-    if (creationParams.get("new") === "1") {
-      setOpen(true);
-      const next = new URLSearchParams(creationParams);
-      next.delete("new");
-      setCreationParams(next, { replace: true });
-    }
-  }, [creationParams, setCreationParams]);
-  const researchGuard = useNavigationGuard({
-    dirty: open && (!!name.trim() || !!description.trim()),
-    busy: pending,
-    label: "새 연구",
-    onDiscard: () => setOpen(false),
-  });
-  async function create(event: FormEvent) {
-    event.preventDefault();
-    if (pending || !name.trim()) return;
-    setPending(true);
-    try {
-      const time = now();
-      const value = await saveResearch({
-        id: createId.current,
-        ownerId: user.id,
-        name: name.trim(),
-        description: description.trim(),
-        createdAt: time,
-        updatedAt: time,
-      });
-      createId.current = uid();
-      researchGuard.clear();
-      setOpen(false);
-      navigate(`/r/${value.id}`);
-    } catch (e) {
-      toast.error(friendlyError(e));
-    } finally {
-      setPending(false);
-    }
-  }
+  const [pending, setPending] = useState(false);
+  // 연구 만들기는 온보딩 화면(/r/new)이 맡습니다. 예전 주소(?new=1)도 그리로 보냅니다.
+  const wantsNew = creationParams.get("new") === "1";
+  const noResearchYet =
+    data.researches.length === 0 && !incomingOnly && invites.length === 0;
+  if (wantsNew || noResearchYet) return <Navigate to="/r/new" replace />;
   return (
     <>
       <PageHeader
@@ -249,7 +211,7 @@ export function ResearchSelectPage() {
         }
         actions={
           !incomingOnly && (
-            <Button onClick={() => setOpen(true)}>
+            <Button onClick={() => navigate("/r/new")}>
               <Icon name="plus" size={17} />
               연구 만들기
             </Button>
@@ -474,16 +436,29 @@ export function ResearchSelectPage() {
                   />
                 )}
                 {!trashView && research.ownerId === user.id && (
-                  <Button
-                    variant="ghost"
-                    disabled={pending}
-                    onClick={() => {
-                      setTrashTarget(research);
-                      setTrashName("");
-                    }}
-                  >
-                    휴지통으로 옮기기
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={pending}
+                        aria-label={`${research.name} 더보기`}
+                      >
+                        <Icon name="more" size={18} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          setTrashTarget(research);
+                          setTrashName("");
+                        }}
+                      >
+                        <Icon name="trash" size={16} />
+                        휴지통으로 옮기기
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
             </div>
@@ -507,7 +482,7 @@ export function ResearchSelectPage() {
                 : "연구를 만들거나 보관함의 연구를 복원하세요."
           }
           action={
-            <Button onClick={() => setOpen(true)}>
+            <Button onClick={() => navigate("/r/new")}>
               <Icon name="plus" size={16} />
               연구 만들기
             </Button>
@@ -580,59 +555,6 @@ export function ResearchSelectPage() {
         </DialogContent>
       </Dialog>
       {trashView && <PendingResearchDeletions />}
-      <Dialog
-        open={open}
-        onOpenChange={(nextOpen: boolean) => {
-          if (!pending) setOpen(nextOpen);
-        }}
-      >
-        <DialogContent
-          className="rms-dialog"
-          showCloseButton={!pending}
-          aria-busy={pending}
-          disableEscapeKeyDownClose={pending}
-          disableOutsideClickClose={pending}
-        >
-          <DialogHeader>
-            <DialogTitle>연구 만들기</DialogTitle>
-            <DialogDescription>
-              지도받는 연구마다 하나씩 만들어요.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={create} className="stack">
-            <Field label="연구 이름" required>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={120}
-                autoFocus
-                required
-                placeholder="예: 대학원생의 연구 도구 사용 경험"
-              />
-            </Field>
-            <Field label="설명" hint="나중에 적어도 돼요.">
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구"
-              />
-            </Field>
-            <div className="form-actions">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setOpen(false)}
-                disabled={pending}
-              >
-                취소
-              </Button>
-              <Button type="submit" disabled={pending || !name.trim()}>
-                연구 만들기
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

@@ -437,6 +437,37 @@
   .page-header.has-tabs {
     margin-bottom: var(--spacing-16);
   }
+  /* 빈 상태 부품(components/common.tsx EmptyState)의 아이콘과 요점 */
+  .empty-state-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+  }
+  .empty-state-points {
+    display: grid;
+    gap: var(--spacing-6);
+    margin: var(--spacing-4) 0 var(--spacing-12);
+    padding: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    list-style: none;
+    text-align: left;
+  }
+  .empty-state-points li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .empty-state-points svg {
+    flex-shrink: 0;
+    color: var(--semantic-foreground-brand-primary);
+  }
   .page-title-row {
     display: flex;
     flex-wrap: wrap;
@@ -471,10 +502,11 @@
     flex-shrink: 0;
     padding-top: 5px;
   }
+  /* 묶음(카드)은 12, 셸은 16. 안쪽 모서리가 바깥보다 작게(docs/design/patterns.md §1-1). */
   .surface {
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: var(--radius-16);
+    border-radius: var(--radius-12);
   }
   .section-heading {
     display: flex;

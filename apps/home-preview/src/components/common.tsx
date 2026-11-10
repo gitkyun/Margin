@@ -76,14 +76,23 @@ export function PageHeader({
  * 빈 화면. 모양은 Montage FallbackView(compact)가 맡습니다.
  * Montage는 빈 화면에 그림을 두지 않으므로 `icon`은 받기만 하고 그리지 않습니다.
  */
+/**
+ * 빈 상태는 이 부품 하나로 통일합니다: 아이콘, 한 줄 제목, 이 화면에서 하는 일
+ * 요점 2~3개, 주 행동 하나(docs/design/patterns.md).
+ */
 export function EmptyState({
+  icon,
   title,
   description,
+  points,
   action,
 }: {
+  /** 아이콘 이름(`@/components/icons`) 또는 직접 그린 요소 */
   icon?: ReactNode;
   title: string;
   description?: string;
+  /** 이 화면에서 하는 일 요점. 두세 개만 적습니다. */
+  points?: string[];
   action?: ReactNode;
 }) {
   return (
@@ -95,7 +104,22 @@ export function EmptyState({
       sm={{ platform: "desktop" }}
     >
       <FallbackViewContent>
+        {icon && (
+          <span className="empty-state-icon" aria-hidden="true">
+            {typeof icon === "string" ? <Icon name={icon} size={22} /> : icon}
+          </span>
+        )}
         <FallbackViewText title={title} description={description ?? ""} />
+        {!!points?.length && (
+          <ul className="empty-state-points">
+            {points.map((point) => (
+              <li key={point}>
+                <Icon name="check" size={14} />
+                {point}
+              </li>
+            ))}
+          </ul>
+        )}
       </FallbackViewContent>
       {action && <FallbackViewActionArea>{action}</FallbackViewActionArea>}
     </FallbackView>

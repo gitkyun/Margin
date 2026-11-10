@@ -11,6 +11,7 @@ export const ROUTES = [
   { name: "login", path: "/login" },
   { name: "signup", path: "/signup" },
   { name: "research-list", path: "/r" },
+  { name: "onboarding", path: "/r/new" },
   { name: "account", path: "/account" },
   { name: "home", path: ":research" },
   { name: "planning", path: ":research/planning" },

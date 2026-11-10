@@ -2,8 +2,9 @@
 @layer margin {
   /* AI 연구 도우미: 대화 · 작업 오버뷰 · 사용량
    이 화면의 배치 규칙은 이 파일 한 곳에만 둡니다. */
+  /* 작업대: 대화가 720px 열을 온전히 씁니다. 근거·제안·기록은 여백 패널에 있어요. */
   .assistant-experience {
-    max-width: 1400px;
+    max-width: 720px;
     margin: 0 auto;
   }
   .assistant-experience > .page-header {
@@ -11,72 +12,22 @@
   }
 
   /* 대화: 왼쪽 대화 목록 + 오른쪽 대화 면(내용은 가운데 760px 열) */
-  .ai-workspace {
-    --chat-column: 760px;
-    display: grid;
-    grid-template-columns: 232px minmax(0, 1fr);
-    gap: var(--spacing-16);
-    height: max(520px, calc(100dvh - 300px));
-  }
-  .conversation-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
-    min-height: 0;
-    overflow-y: auto;
-  }
-  .conversation-list > [data-slot="button"] {
-    margin-bottom: var(--spacing-12);
-  }
-  .conversation-list > button:not([data-slot="button"]) {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-10);
-    min-height: 40px;
-    padding: 0 var(--spacing-12);
-    border: 0;
-    border-radius: var(--radius-10);
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: var(--typography-label1-fontSize);
-    text-align: left;
-    transition:
-      background-color var(--motion-duration-micro) ease-out,
-      color var(--motion-duration-micro) ease-out;
-  }
-  .conversation-list > button:not([data-slot="button"]) span {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  .conversation-list > button:not([data-slot="button"]):hover {
-    background: var(--hover-fill);
-    color: var(--text);
-  }
-  .conversation-list > button.active {
-    background: var(--selected-fill);
-    color: var(--semantic-foreground-brand-primary);
-    box-shadow: inset 0 0 0 1px var(--selected-line);
-    font-weight: 600;
-  }
 
   .ai-chat-main {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) auto auto auto;
+    display: flex;
+    flex-direction: column;
     min-width: 0;
-    min-height: 0;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-20);
-    background: var(--surface);
-    overflow: hidden;
+    height: max(480px, calc(100dvh - 232px));
+  }
+  .ai-chat-main > .chat-scroll {
+    flex: 1;
   }
   .chat-scroll {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-24);
     min-height: 0;
-    padding: var(--spacing-32)
-      max(var(--spacing-24), calc((100% - var(--chat-column)) / 2));
+    padding: var(--spacing-24) 0;
     overflow-y: auto;
     scroll-behavior: smooth;
   }
@@ -91,7 +42,7 @@
     text-align: center;
   }
   .assistant-welcome > .margin-mascot {
-    box-shadow: var(--semantic-elevation-shadow-normal-medium);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
   }
   .assistant-welcome h2 {
     margin: var(--spacing-20) 0 var(--spacing-8);
@@ -211,22 +162,18 @@
   .ai-composer {
     display: grid;
     gap: var(--spacing-8);
-    width: min(calc(100% - var(--spacing-32)), var(--chat-column));
-    margin: 0 auto;
+    width: 100%;
     padding: var(--spacing-12) var(--spacing-12) var(--spacing-10);
     border: 1px solid var(--line-strong);
-    border-radius: var(--radius-20);
+    border-radius: var(--radius-12);
     background: var(--surface-raised);
-    box-shadow: var(--semantic-elevation-shadow-normal-medium);
     transition:
       border-color var(--motion-duration-micro) ease-out,
       box-shadow var(--motion-duration-micro) ease-out;
   }
   .ai-composer:focus-within {
     border-color: var(--semantic-line-brand-strong);
-    box-shadow:
-      0 0 0 4px var(--selected-fill),
-      var(--semantic-elevation-shadow-normal-medium);
+    box-shadow: 0 0 0 4px var(--selected-fill);
   }
   .ai-composer textarea {
     width: 100%;
@@ -306,7 +253,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin: 10px 20px 0;
+    margin: 10px 0 0;
   }
   .composer-hint {
     padding: var(--spacing-8) var(--spacing-24) var(--spacing-14);
@@ -374,42 +321,6 @@
   }
 
   /* 작업 오버뷰 */
-  .agent-overview {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-  .agent-overview-hero {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 28px;
-    padding: 28px 32px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-16);
-    background: linear-gradient(120deg, var(--brand-soft), var(--surface) 62%);
-    color: var(--brand);
-  }
-  .agent-overview-hero .card-label {
-    margin-bottom: 10px;
-    color: var(--text);
-  }
-  .agent-overview-hero h3 {
-    font-size: var(--typography-heading1-fontSize);
-    line-height: var(--typography-heading1-lineHeight);
-    font-weight: 600;
-    letter-spacing: var(--typography-heading1-letterSpacing);
-    color: var(--text);
-  }
-  .agent-overview-hero p {
-    margin-top: 8px;
-    max-width: 560px;
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
   .candidate-overview-row {
     display: flex;
     justify-content: space-between;
@@ -485,59 +396,9 @@
   }
 
   /* 사용량 */
-  .ai-usage-breakdown {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    margin-top: 20px;
-  }
-  .ai-usage-breakdown > div {
-    display: grid;
-    gap: 6px;
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-14);
-    background: var(--surface);
-  }
-  .ai-usage-breakdown strong {
-    font-size: var(--typography-label2-fontSize);
-    font-weight: 600;
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .ai-usage-breakdown span {
-    font-size: var(--typography-title3-fontSize);
-    font-weight: 700;
-    letter-spacing: var(--typography-title3-letterSpacing);
-  }
-  .ai-usage-breakdown small {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
 
   /* md 미만: 대화 목록은 위쪽 가로 줄로, 대화 면이 화면 높이를 채웁니다. */
   @media (max-width: 991px) {
-    .ai-workspace {
-      grid-template-columns: 1fr;
-      grid-template-rows: auto minmax(0, 1fr);
-      gap: var(--spacing-12);
-      height: max(520px, calc(100dvh - 320px));
-    }
-    .conversation-list {
-      flex-direction: row;
-      align-items: center;
-      gap: var(--spacing-6);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .conversation-list > * {
-      flex-shrink: 0;
-      max-width: 200px;
-    }
-    .conversation-list > [data-slot="button"] {
-      margin: 0;
-    }
     .assistant-prompts {
       grid-template-columns: 1fr;
     }
@@ -548,24 +409,10 @@
       gap: var(--spacing-12);
       min-height: 52px;
     }
-    .agent-overview {
-      grid-template-columns: 1fr;
-    }
-    .agent-overview-hero {
-      grid-template-columns: 1fr;
-      gap: 18px;
-      padding: 24px;
-    }
   }
   @media (max-width: 767px) {
-    .ai-workspace {
-      height: max(480px, calc(100dvh - 250px));
-    }
-    .ai-chat-main {
-      border-radius: var(--radius-16);
-    }
     .chat-scroll {
-      padding: var(--spacing-24) var(--spacing-16);
+      padding: var(--spacing-16) 0;
     }
     .assistant-welcome > .margin-mascot {
       --mascot-size: 48px !important;
@@ -594,9 +441,6 @@
       min-height: 44px;
       scroll-snap-align: start;
     }
-    .ai-composer {
-      width: calc(100% - var(--spacing-16));
-    }
     .composer-actions > .rms-choice {
       order: -1;
       flex: 1 1 calc(50% - 4px);
@@ -617,7 +461,7 @@
 /* 예전 workspace-refinements.css에서 옮긴 규칙(같은 순서 유지) */
 @layer margin {
   .ai-unanswered {
-    margin: 16px 24px;
+    margin: 16px 0;
     padding: 16px;
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
@@ -641,5 +485,100 @@
   .source-picker small {
     white-space: normal;
     line-height: 1.6;
+  }
+}
+
+/* 작업대의 여백 패널(근거·제안·기록)과 입력창의 근거 버튼 */
+@layer margin {
+  .assistant-sources {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .assistant-sources li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-height: 44px;
+    padding: var(--spacing-6) var(--spacing-6) var(--spacing-6)
+      var(--spacing-10);
+    border-radius: var(--radius-10);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+    font-size: var(--typography-label1-fontSize);
+  }
+  .assistant-sources li > svg {
+    flex-shrink: 0;
+  }
+  .assistant-sources li > span {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+  .assistant-sources small {
+    display: block;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-panel .source-picker {
+    max-height: none;
+    margin-top: var(--spacing-8);
+    padding: var(--spacing-16) 0 0;
+    border-top: 1px solid var(--line);
+    overflow: visible;
+  }
+  .assistant-panel .candidate-overview-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-10);
+    padding: var(--spacing-14) 0;
+  }
+  .assistant-panel .candidate-overview-row h4 {
+    margin: var(--spacing-8) 0 var(--spacing-4);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+  }
+  .assistant-panel .candidate-overview-row .button-row {
+    justify-content: flex-end;
+  }
+  .assistant-panel .run-row {
+    flex-wrap: wrap;
+    padding: var(--spacing-12) 0;
+  }
+  .assistant-panel .run-row > div {
+    flex: 1;
+  }
+  .assistant-unavailable {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin: 0 0 var(--spacing-8);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .assistant-unavailable > svg {
+    flex-shrink: 0;
+  }
+  .ai-composer textarea:disabled {
+    cursor: not-allowed;
+  }
+  .composer-actions > .composer-sources {
+    color: var(--text-secondary);
+  }
+  .assistant-history-menu {
+    max-width: min(360px, calc(100vw - 32px));
+    max-height: min(420px, 60dvh);
+    overflow-y: auto;
+  }
+  @media (max-width: 767px) {
+    .ai-chat-main {
+      height: max(440px, calc(100dvh - 250px));
+    }
+    .ai-composer {
+      width: 100%;
+    }
   }
 }

@@ -516,10 +516,13 @@
   .member-list + form {
     margin-top: 14px;
   }
+  /* 설정 행: 설명은 왼쪽, 조작은 오른쪽. 좁은 화면에서는 아래로 내려갑니다. */
   .lifecycle-block {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 8px;
     padding: 16px;
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
@@ -541,13 +544,30 @@
     line-height: var(--typography-label2-lineHeight);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .lifecycle-block [data-slot="button"] {
-    align-self: flex-start;
-    margin-top: 4px;
+  .lifecycle-block h3,
+  .lifecycle-block p {
+    grid-column: 1;
   }
+  .lifecycle-block [data-slot="button"] {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  .lifecycle-block .settings-note {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 767px) {
+    .lifecycle-block {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .lifecycle-block [data-slot="button"] {
+      grid-column: 1;
+      grid-row: auto;
+      justify-self: start;
+    }
+  }
+  /* 위험한 동작은 붉은 선만 씁니다(선·채움을 함께 쓰지 않음). */
   .danger-zone {
     border-color: var(--danger-line);
-    background: color-mix(in srgb, var(--danger-soft) 55%, var(--surface));
   }
   .danger-zone h3 {
     color: var(--danger);

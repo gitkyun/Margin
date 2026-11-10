@@ -443,7 +443,7 @@
   }
   .floating-workspace .surface {
     box-shadow: none;
-    border-radius: var(--radius-16);
+    border-radius: var(--radius-12);
   }
   .floating-workspace.sidebar-collapsed {
     --rail-width: 66px;
@@ -508,7 +508,7 @@
   }
   /* Settings and contextual conversation */
   .settings-page {
-    max-width: 1120px;
+    max-width: 1040px;
     margin: auto;
   }
   .settings-heading h1 {

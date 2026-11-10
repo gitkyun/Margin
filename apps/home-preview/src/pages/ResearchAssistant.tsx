@@ -23,12 +23,23 @@ import {
   type AIConversation,
   type Attachment,
   type SavedAICandidate,
-  formatDateTime,
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
-import { Choice, MagicCard, AnimatedList } from "@/components/experience";
-import { Tabs } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/common";
+import { Choice } from "@/components/experience";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MarginPanel } from "@/components/margin-panel/MarginPanel";
+import { queryDown } from "@/design/responsive";
+import {
+  AssistantPanel,
+  MAX_SOURCES,
+  type AssistantPanelTab,
+} from "./assistant/AssistantPanel";
 import { AssistantMascot } from "@/components/brand/Brand";
 import {
   workingMascot,
@@ -46,20 +57,26 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/icons";
-import { UsageDetails } from "./SettingsPage";
-const stateLabel: Record<string, string> = {
-  running: "실행 중",
-  complete: "성공",
-  failed: "실패",
-  cancelled: "중단",
-};
+
+/** md(992px) 미만에서는 패널이 본문을 덮으므로 처음에는 닫아 둡니다. */
+function panelStartsOpen(): boolean {
+  if (typeof window === "undefined" || !window.matchMedia) return true;
+  return !window.matchMedia(queryDown("md")).matches;
+}
 export function ResearchAssistant() {
   const { researchId = "" } = useParams(),
     w = useExperience(),
     navigate = useNavigate(),
     { data, user, save, runAI, mode, refresh } = w,
-    [params, setParams] = useSearchParams(),
-    tab = params.get("tab") ?? "chat";
+    [params] = useSearchParams(),
+    // 예전 주소(?tab=overview)는 패널의 제안 탭으로 엽니다.
+    wantsSuggestions = params.get("tab") === "overview";
+  const [panelTab, setPanelTab] = useState<AssistantPanelTab>(
+      wantsSuggestions ? "suggestions" : "sources",
+    ),
+    [panelOpen, setPanelOpen] = useState(
+      () => wantsSuggestions || panelStartsOpen(),
+    );
   const [conversation, setConversation] = useState<AIConversation | null>(null),
     [draft, setDraft] = useState(""),
     [contexts, setContexts] = useState<AIContext[]>([]),
@@ -72,7 +89,6 @@ export function ResearchAssistant() {
     ),
     [running, setRunning] = useState(false),
     [error, setError] = useState(""),
-    [picker, setPicker] = useState(false),
     [page, setPage] = useState(1),
     [uploading, setUploading] = useState(false),
     [uploadProgress, setUploadProgress] = useState<number | null>(null),
@@ -199,10 +215,13 @@ export function ResearchAssistant() {
       .filter((a) => a.researchId === researchId && !a.archivedAt)
       .map((a) => ({ kind: "attachments" as const, id: a.id, title: a.title })),
   ];
+  function openPanel(next: AssistantPanelTab) {
+    setPanelTab(next);
+    setPanelOpen(true);
+  }
   async function addContext(c: AIContext) {
     if (task === "organize_meeting") {
       setContexts([c]);
-      setPicker(false);
       return;
     }
     if (contexts.some((x) => x.kind === c.kind && x.id === c.id)) {
@@ -211,8 +230,8 @@ export function ResearchAssistant() {
       );
       return;
     }
-    if (contexts.length >= 8) {
-      toast.info("한 번에 8개까지 선택할 수 있어요.");
+    if (contexts.length >= MAX_SOURCES) {
+      toast.info(`한 번에 ${MAX_SOURCES}개까지 선택할 수 있어요.`);
       return;
     }
     setContexts((v) =>
@@ -321,7 +340,7 @@ export function ResearchAssistant() {
       setError(
         "미팅 정리는 미팅 메모 하나로만 할 수 있어요. 다른 자료는 새 대화에서 사용해 주세요.",
       );
-      setPicker(true);
+      openPanel("sources");
       return;
     }
     const seq = ++sequence.current,
@@ -526,514 +545,362 @@ export function ResearchAssistant() {
       setSaveBusy(false);
     }
   }
+  async function dismiss(c: SavedAICandidate) {
+    try {
+      await save("aiCandidates", { ...c, status: "dismissed" });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+  function startNew() {
+    setConversation(null);
+    setContexts([]);
+    setDraft("");
+    setError("");
+  }
+  // 미리보기에서는 AI를 실행할 수 없어요. 예시 답변이나 진행률을 만들어 보여 주지 않습니다.
+  const unavailable = mode === "preview";
+  const models = caps.data?.models ?? [];
   return (
     <div className="assistant-experience">
       <PageHeader
         title="연구 도우미"
-        description="선택한 기록만 읽고 질문에 답하거나 수정 방법을 제안해요."
+        description="고른 기록만 읽고 질문에 답하거나 수정 방법을 제안해요."
         status={
           <span className="rms-pill">
             <Icon name="lock" size={13} />
             나만 볼 수 있는 공간
           </span>
         }
-        tabs={
-          <Tabs
-            className="tabs-line"
-            label="연구 도우미 화면"
-            value={tab}
-            onChange={(v) => setParams({ tab: v })}
-            options={[
-              { value: "chat", label: "대화" },
-              { value: "overview", label: "AI 제안", count: pending.length },
-              { value: "usage", label: "사용량" },
-            ]}
-          />
-        }
-      />
-      {tab === "usage" ? (
-        <>
-          <UsageDetails />
-          <div className="ai-usage-breakdown">
-            {Object.entries(modeLabels).map(([key, label]) => {
-              const items = runs.filter((r) => r.mode === key),
-                duration = items
-                  .filter((r) => r.completedAt)
-                  .reduce(
-                    (n, r) =>
-                      n +
-                      (new Date(r.completedAt!).getTime() -
-                        new Date(r.createdAt).getTime()) /
-                        1000,
-                    0,
-                  );
-              return (
-                <div key={key}>
-                  <strong>{label}</strong>
-                  <span>{items.length}회</span>
-                  <small>
-                    성공 {items.filter((r) => r.status === "complete").length}회
-                    · 총 {Math.round(duration)}초
-                  </small>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      ) : tab === "overview" ? (
-        <div className="agent-overview">
-          <MagicCard className="agent-overview-hero">
-            <AssistantMascot
-              state={
-                working
-                  ? workingMascot(currentTask)
-                  : pending.length
-                    ? "idea"
-                    : "idle"
-              }
-              active={working}
-              size={80}
-            />
-            <div>
-              <div className="card-label">
-                <h2>연구 도우미</h2>
-                <StatusBadge
-                  tone={working ? "blue" : pending.length ? "amber" : "neutral"}
+        actions={
+          <>
+            <DropdownMenu value={conversation?.id}>
+              <DropdownMenuTrigger>
+                <Button
+                  variant="outline"
+                  disabled={running || !conversations.length}
                 >
-                  {working
-                    ? "실행 중"
-                    : pending.length
-                      ? "확인할 제안 있음"
-                      : "대기 중"}
-                </StatusBadge>
-              </div>
-              <h3>
-                {working
-                  ? modeLabels[currentTask]
-                  : pending.length
-                    ? `확인할 AI 제안이 ${pending.length}개 있어요`
-                    : "확인할 AI 제안이 없어요"}
-              </h3>
-              <p>
-                제안을 기록으로 남길지는 직접 선택해요. 선택하지 않은 제안은
-                나만 볼 수 있어요.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setParams({ tab: "chat" })}
-            >
-              대화 열기
-            </Button>
-          </MagicCard>
-          <section className="experience-panel">
-            <div className="section-heading">
-              <h2>확인할 AI 제안</h2>
-              <span className="count-chip">{pending.length}</span>
-            </div>
-            <AnimatedList>
-              {pending.map((c) => (
-                <article key={c.id} className="candidate-overview-row">
-                  <div>
-                    <span className="rms-pill">
-                      {modeLabels[c.mode ?? ""] ?? "AI 제안"}
-                    </span>
-                    <h3>{c.title}</h3>
-                    <p>{c.candidate.body ?? c.candidate.method}</p>
-                    {c.candidate.sourceQuote && (
-                      <blockquote>
-                        <small>원문 인용</small>
-                        {c.candidate.sourceQuote}
-                      </blockquote>
-                    )}
-                    {c.candidate.assumptions && (
-                      <p className="candidate-assumption">
-                        확인할 가정: {c.candidate.assumptions}
-                      </p>
-                    )}
-                  </div>
-                  <div className="button-row">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={async () => {
-                        try {
-                          await save("aiCandidates", {
-                            ...c,
-                            status: "dismissed",
-                          });
-                        } catch (e) {
-                          toast.error((e as Error).message);
-                        }
-                      }}
-                    >
-                      사용하지 않기
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => adopt(c)}
-                    >
-                      선택하기
-                    </Button>
-                  </div>
-                </article>
-              ))}
-            </AnimatedList>
-            {!pending.length && <p>AI 제안이 나오면 여기에 표시돼요.</p>}
-          </section>
-          <section className="experience-panel">
-            <h2>실행 기록</h2>
-            {runs.map((r) => (
-              <div className="run-row" key={r.id}>
-                <Icon
-                  name={
-                    r.status === "complete"
-                      ? "check"
-                      : r.status === "failed"
-                        ? "warning"
-                        : "sparkles"
-                  }
-                  size={18}
-                />
-                <div>
-                  <strong>{modeLabels[r.mode] ?? "연구 대화"}</strong>
-                  <small>
-                    {formatDateTime(r.createdAt)}
-                    {r.model && ` · ${r.model}`}
-                  </small>
-                  {r.error && <p>{r.error}</p>}
-                </div>
-                <StatusBadge
-                  tone={
-                    r.status === "complete"
-                      ? "green"
-                      : r.status === "failed"
-                        ? "red"
-                        : "neutral"
-                  }
-                >
-                  {stateLabel[r.status]}
-                </StatusBadge>
-                {r.status === "running" && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => void w.cancelRun(r.id)}
-                  >
-                    중단
-                  </Button>
-                )}
-              </div>
-            ))}
-            {!runs.length && (
-              <p className="quiet-placeholder">아직 실행 기록이 없어요.</p>
-            )}
-          </section>
-        </div>
-      ) : (
-        <div className="ai-workspace">
-          <aside className="conversation-list">
-            <Button
-              variant="outline"
-              fullWidth="desktop"
-              disabled={running}
-              onClick={() => {
-                setConversation(null);
-                setContexts([]);
-                setDraft("");
-                setError("");
-              }}
-            >
-              <Icon name="plus" size={16} />새 대화
-            </Button>
-            {conversations.map((c) => (
-              <button
-                key={c.id}
-                className={c.id === conversation?.id ? "active" : ""}
-                disabled={running}
-                onClick={() => {
-                  setConversation(c);
-                  setContexts(c.contexts);
-                  setError("");
-                }}
+                  <Icon name="chat" size={16} />
+                  대화 기록
+                  <Icon name="chevron-down" size={15} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="assistant-history-menu"
               >
-                <Icon name="chat" size={16} />
-                <span>{c.title}</span>
-              </button>
-            ))}
-          </aside>
-          <section className="ai-chat-main">
-            <div className="chat-scroll">
-              {!messages.length ? (
-                <div className="assistant-welcome">
-                  <AssistantMascot state="ready" size={64} eager />
-                  <h2>기록을 고르고 질문해 주세요</h2>
-                  <p>
-                    클립 버튼으로 미팅 메모나 문서 같은 기록을 고르거나 파일을
-                    첨부할 수 있어요.
-                  </p>
-                  <div className="assistant-prompts">
-                    {(
-                      [
-                        ["tasks", "다음 미팅까지 할 일을 정리해 줘"],
-                        ["layers", "이 피드백의 수정 방법을 비교해 줘"],
-                        ["search", "이 문단에서 더 구체화할 부분을 찾아 줘"],
-                      ] as const
-                    ).map(([icon, t]) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => {
-                          setDraft(t);
-                          composerRef.current?.focus();
-                        }}
-                      >
-                        <Icon name={icon} size={18} />
-                        <span>{t}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                messages.map((m, i) => (
-                  <article className={`ai-message ${m.role}`} key={i}>
-                    <span className="message-role">
-                      {m.role === "assistant" && (
-                        <AssistantMascot state="chatting" size={28} />
-                      )}
-                      {m.role === "user" ? "나" : "연구 도우미"}
-                    </span>
-                    <div>{m.text}</div>
-                  </article>
-                ))
-              )}
-              {!running && messages.at(-1)?.role === "user" && (
-                <div className="ai-unanswered" role="status">
-                  <Icon name="info" size={17} />
-                  <span>
-                    이 질문에는 아직 답변이 없어요. 선택한 기록과 질문을 확인한
-                    뒤 다시 보낼 수 있어요.
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setDraft(messages.at(-1)?.text ?? "");
+                {conversations.map((c) => (
+                  <DropdownMenuItem
+                    key={c.id}
+                    value={c.id}
+                    onSelect={() => {
+                      setConversation(c);
+                      setContexts(c.contexts);
+                      setError("");
                     }}
                   >
-                    질문 불러오기
-                  </Button>
+                    {c.title}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" disabled={running} onClick={startNew}>
+              <Icon name="plus" size={16} />새 대화
+            </Button>
+          </>
+        }
+      />
+      <section className="ai-chat-main">
+        <div className="chat-scroll">
+          {!messages.length ? (
+            <div className="assistant-welcome">
+              <AssistantMascot state="ready" size={64} eager />
+              <h2>기록을 고르고 질문해 주세요</h2>
+              <p>
+                근거에서 미팅 메모나 문서 같은 기록을 고르거나 파일을 첨부할 수
+                있어요. 고른 기록만 읽어요.
+              </p>
+              {!unavailable && (
+                <div className="assistant-prompts">
+                  {(
+                    [
+                      ["tasks", "다음 미팅까지 할 일을 정리해 줘"],
+                      ["layers", "이 피드백의 수정 방법을 비교해 줘"],
+                      ["search", "이 문단에서 더 구체화할 부분을 찾아 줘"],
+                    ] as const
+                  ).map(([icon, t]) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => {
+                        setDraft(t);
+                        composerRef.current?.focus();
+                      }}
+                    >
+                      <Icon name={icon} size={18} />
+                      <span>{t}</span>
+                    </button>
+                  ))}
                 </div>
               )}
-              {running && (
-                <div className="ai-processing" role="status">
-                  <AssistantMascot
-                    state={workingMascot(task)}
-                    active
-                    size={48}
-                    eager
-                  />
-                  <div>
-                    <strong>
-                      {workMessages[task] ?? "선택한 기록을 살펴보고 있어요."}
-                    </strong>
-                    <small>답변이 나와도 연구 기록은 바뀌지 않아요.</small>
-                  </div>
-                </div>
-              )}
-              <div ref={end} />
             </div>
-            <form
-              className="ai-composer"
-              onSubmit={(e) => {
+          ) : (
+            messages.map((m, i) => (
+              <article className={`ai-message ${m.role}`} key={i}>
+                <span className="message-role">
+                  {m.role === "assistant" && (
+                    <AssistantMascot state="chatting" size={28} />
+                  )}
+                  {m.role === "user" ? "나" : "연구 도우미"}
+                </span>
+                <div>{m.text}</div>
+              </article>
+            ))
+          )}
+          {!running && messages.at(-1)?.role === "user" && (
+            <div className="ai-unanswered" role="status">
+              <Icon name="info" size={17} />
+              <span>
+                이 질문에는 아직 답변이 없어요. 고른 기록과 질문을 확인한 뒤
+                다시 보낼 수 있어요.
+              </span>
+              <Button
+                variant="outline"
+                disabled={unavailable}
+                onClick={() => {
+                  setDraft(messages.at(-1)?.text ?? "");
+                }}
+              >
+                질문 불러오기
+              </Button>
+            </div>
+          )}
+          {running && (
+            <div className="ai-processing" role="status">
+              <AssistantMascot
+                state={workingMascot(task)}
+                active
+                size={48}
+                eager
+              />
+              <div>
+                <strong>
+                  {workMessages[task] ?? "고른 기록을 살펴보고 있어요."}
+                </strong>
+                <small>답변이 나와도 연구 기록은 바뀌지 않아요.</small>
+              </div>
+            </div>
+          )}
+          <div ref={end} />
+        </div>
+        {unavailable && (
+          <p className="assistant-unavailable" role="status">
+            <Icon name="info" size={16} />
+            지금은 연구 도우미를 쓸 수 없어요. 직접 작성은 그대로 할 수 있어요.
+          </p>
+        )}
+        <form
+          className="ai-composer"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (!uploading && !unavailable)
+              void attach(e.dataTransfer.files[0]);
+          }}
+        >
+          <textarea
+            ref={composerRef}
+            aria-label="연구 도우미에게 질문"
+            placeholder={
+              unavailable
+                ? "미리보기에서는 질문을 보낼 수 없어요."
+                : contexts.length
+                  ? "예: 이 기록에서 먼저 고칠 부분을 찾아 줘"
+                  : "먼저 근거로 쓸 기록이나 자료를 골라 주세요."
+            }
+            value={draft}
+            disabled={unavailable}
+            onChange={(e) => setDraft(e.target.value)}
+            maxLength={2000}
+            rows={3}
+            onKeyDown={(e) => {
+              if (
+                (e.metaKey || e.ctrlKey) &&
+                e.key === "Enter" &&
+                !isImeComposing(e)
+              ) {
                 e.preventDefault();
                 void send();
-              }}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (!uploading) void attach(e.dataTransfer.files[0]);
-              }}
+              }
+            }}
+          />
+          <div className="composer-actions">
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              className="composer-sources"
+              aria-label={
+                contexts.length
+                  ? `근거 ${contexts.length}개, 바꾸기`
+                  : "근거 고르기"
+              }
+              onClick={() => openPanel("sources")}
             >
-              <div className="context-chips">
-                {contexts.map((c, i) => (
-                  <span className="context-chip" key={`${c.kind}-${c.id}`}>
-                    <Icon name="file" size={14} />
-                    <span title={c.page ? `${c.title} · ${c.page}쪽` : c.title}>
-                      {c.title}
-                      {c.page && ` · ${c.page}쪽`}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      disabled={running}
-                      aria-label={`${c.title} 선택 해제`}
-                      onClick={() =>
-                        setContexts(contexts.filter((_, j) => j !== i))
-                      }
-                    >
-                      <Icon name="close" size={12} />
-                    </Button>
-                  </span>
-                ))}
-              </div>
-              <textarea
-                ref={composerRef}
-                aria-label="연구 도우미에게 질문"
-                placeholder={
-                  contexts.length
-                    ? "예: 이 기록에서 먼저 고칠 부분을 찾아 줘"
-                    : "먼저 사용할 기록이나 자료를 선택해 주세요."
-                }
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                maxLength={2000}
-                rows={3}
-                onKeyDown={(e) => {
-                  if (
-                    (e.metaKey || e.ctrlKey) &&
-                    e.key === "Enter" &&
-                    !isImeComposing(e)
-                  ) {
-                    e.preventDefault();
-                    void send();
-                  }
-                }}
+              <Icon name="clip" size={16} />
+              {contexts.length ? `근거 ${contexts.length}개` : "근거 고르기"}
+            </Button>
+            <Choice
+              compact
+              value={task}
+              onChange={(v) => setTask(v as AIInput["mode"])}
+              label="요청 종류"
+              disabled={running || unavailable}
+              options={Object.entries(modeLabels).map(([value, label]) => ({
+                value,
+                label,
+              }))}
+            />
+            {/* 고를 모델이 둘 이상일 때만 보입니다. 연결 전에는 모델 이름을 보여 주지 않아요. */}
+            {models.length > 1 && (
+              <Choice
+                compact
+                value={allowedModel?.id ?? ""}
+                onChange={setModel}
+                disabled={running}
+                label="AI 모델"
+                options={models.map((m) => ({
+                  value: m.id,
+                  label: researchModelLabel(m),
+                }))}
               />
-              <div className="composer-actions">
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  type="button"
-                  aria-label="자료 선택·첨부"
-                  disabled={running || uploading}
-                  onClick={() => setPicker(true)}
-                >
-                  <Icon name="clip" size={20} />
-                </Button>
-                <Choice
-                  compact
-                  value={task}
-                  onChange={(v) => setTask(v as AIInput["mode"])}
-                  label="요청 종류"
-                  disabled={running}
-                  options={Object.entries(modeLabels).map(([value, label]) => ({
-                    value,
-                    label,
-                  }))}
-                />
-                <Choice
-                  compact
-                  value={allowedModel?.id ?? ""}
-                  onChange={setModel}
-                  disabled={running || !caps.data}
-                  label="AI 모델"
-                  options={
-                    caps.data?.models.map((m) => ({
-                      value: m.id,
-                      label: researchModelLabel(m),
-                    })) ?? [
-                      {
-                        value: "",
-                        label: caps.isError
-                          ? "모델 정보 없음"
-                          : "모델 불러오는 중",
-                      },
-                    ]
-                  }
-                />
-                {!!allowedModel?.thinking.length && (
-                  <Choice
-                    compact
-                    label="답변 깊이"
-                    value={thinking}
-                    onChange={setThinking}
-                    disabled={running}
-                    options={reviewDepthOptions(allowedModel.thinking).map(
-                      (option) => ({
-                        ...option,
-                        search: option.label,
-                        label: (
-                          <span
-                            className="margin-depth-option"
-                            title={reviewDepthHints[option.value]}
-                          >
-                            <Icon name="layers" size={15} />
-                            {option.label}
-                          </span>
-                        ),
-                      }),
-                    )}
-                  />
-                )}{" "}
-                {running ? (
-                  <Button
-                    type="button"
-                    size="icon"
-                    aria-label="실행 중단"
-                    onClick={() => void cancel()}
-                  >
-                    <Icon name="stop" size={17} />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    size="icon"
-                    aria-label="질문 보내기"
-                    disabled={!draft.trim() || !contexts.length || uploading}
-                  >
-                    <Icon name="arrow-up" size={19} />
-                  </Button>
+            )}
+            {!!allowedModel?.thinking.length && (
+              <Choice
+                compact
+                label="답변 깊이"
+                value={thinking}
+                onChange={setThinking}
+                disabled={running}
+                options={reviewDepthOptions(allowedModel.thinking).map(
+                  (option) => ({
+                    ...option,
+                    search: option.label,
+                    label: (
+                      <span
+                        className="margin-depth-option"
+                        title={reviewDepthHints[option.value]}
+                      >
+                        <Icon name="layers" size={15} />
+                        {option.label}
+                      </span>
+                    ),
+                  }),
                 )}
-              </div>
-              {uploading && (
-                <p role="status">
-                  자료 준비 중
-                  {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
-                </p>
-              )}
-            </form>
-            {caps.isError && (
-              <p className="rms-error" role="alert">
-                AI 모델 정보를 불러오지 못했어요.{" "}
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => void caps.refetch()}
-                >
-                  다시 불러오기
-                </Button>
-              </p>
+              />
+            )}{" "}
+            {running ? (
+              <Button
+                type="button"
+                size="icon"
+                aria-label="실행 중단"
+                onClick={() => void cancel()}
+              >
+                <Icon name="stop" size={17} />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                size="icon"
+                aria-label="질문 보내기"
+                disabled={
+                  unavailable || !draft.trim() || !contexts.length || uploading
+                }
+              >
+                <Icon name="arrow-up" size={19} />
+              </Button>
             )}
-            {error && (
-              <div className="rms-error" role="alert">
-                <span className="margin-error-content">
-                  <AssistantMascot state="attention" size={36} />
-                  <span>{error}</span>
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    pendingFile.current ? void attach() : void send()
-                  }
-                >
-                  {pendingFile.current ? "등록 다시 시도" : "질문 다시 보내기"}
-                </Button>
-              </div>
-            )}
-            {!!allowedModel?.thinking.length && reviewDepthHints[thinking] && (
-              <p className="margin-depth-help">{reviewDepthHints[thinking]}</p>
-            )}
-            <p className="composer-hint">
-              {contexts.length
-                ? `선택한 기록 ${contexts.length}개만 사용해요. `
-                : ""}
-              보내기: ⌘/Ctrl + Enter
+          </div>
+          {uploading && (
+            <p role="status">
+              자료 준비 중
+              {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
             </p>
-          </section>
-        </div>
-      )}
+          )}
+        </form>
+        {caps.isError && (
+          <p className="rms-error" role="alert">
+            AI 모델 정보를 불러오지 못했어요.{" "}
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => void caps.refetch()}
+            >
+              다시 불러오기
+            </Button>
+          </p>
+        )}
+        {error && (
+          <div className="rms-error" role="alert">
+            <span className="margin-error-content">
+              <AssistantMascot state="attention" size={36} />
+              <span>{error}</span>
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                pendingFile.current ? void attach() : void send()
+              }
+            >
+              {pendingFile.current ? "등록 다시 시도" : "질문 다시 보내기"}
+            </Button>
+          </div>
+        )}
+        {!!allowedModel?.thinking.length && reviewDepthHints[thinking] && (
+          <p className="margin-depth-help">{reviewDepthHints[thinking]}</p>
+        )}
+        {!unavailable && (
+          <p className="composer-hint">
+            {contexts.length ? `고른 근거 ${contexts.length}개만 읽어요. ` : ""}
+            보내기: ⌘/Ctrl + Enter
+          </p>
+        )}
+      </section>
+      <MarginPanel
+        label="근거와 제안"
+        open={panelOpen}
+        onOpen={() => setPanelOpen(true)}
+        onClose={() => setPanelOpen(false)}
+      >
+        <AssistantPanel
+          tab={panelTab}
+          onTab={setPanelTab}
+          onClose={() => setPanelOpen(false)}
+          busy={running || uploading}
+          single={task === "organize_meeting"}
+          contexts={contexts}
+          sourceOptions={sourceOptions}
+          onToggleSource={(c) => void addContext(c)}
+          onRemoveSource={(index) =>
+            setContexts(contexts.filter((_, i) => i !== index))
+          }
+          onAttach={() => fileInput.current?.click()}
+          versions={data.versions.filter((v) => v.researchId === researchId)}
+          page={page}
+          onPage={setPage}
+          onAddPdf={(id) => void addPDF(id)}
+          pending={pending}
+          onAdopt={adopt}
+          onDismiss={(c) => void dismiss(c)}
+          runs={runs}
+          onCancelRun={(id) => void w.cancelRun(id)}
+        />
+      </MarginPanel>
       <input
         hidden
         type="file"
@@ -1041,104 +908,6 @@ export function ResearchAssistant() {
         ref={fileInput}
         onChange={(e) => void attach(e.target.files?.[0])}
       />
-      <Dialog open={picker} onOpenChange={setPicker}>
-        <DialogContent className="rms-dialog">
-          <DialogHeader>
-            <DialogTitle>사용할 자료 선택</DialogTitle>
-            <DialogDescription>
-              {task === "organize_meeting"
-                ? "정리할 미팅 메모를 하나 선택해 주세요."
-                : "선택한 기록과 페이지만 사용해요. 첨부한 파일은 나만 볼 수 있어요."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="source-picker">
-            <Button
-              variant="outline"
-              disabled={uploading}
-              onClick={() => fileInput.current?.click()}
-            >
-              <Icon name="upload" size={18} />
-              PDF·TXT·MD 첨부
-            </Button>
-            <h3>연구 기록</h3>
-            {sourceOptions.map((c) => (
-              <button
-                type="button"
-                key={`${c.kind}-${c.id}`}
-                onClick={() => void addContext(c)}
-                aria-pressed={contexts.some(
-                  (x) => x.kind === c.kind && x.id === c.id,
-                )}
-              >
-                <Icon name="file" size={17} />
-                <span>
-                  {c.title}
-                  <small>
-                    {
-                      (
-                        {
-                          meetings: "미팅 메모",
-                          feedback: "피드백",
-                          documents: "문서",
-                          tasks: "할 일",
-                          phases: "연구 단계",
-                          attachments: "내 첨부 파일",
-                        } as Record<string, string>
-                      )[c.kind]
-                    }
-                  </small>
-                </span>
-                <Icon
-                  name={
-                    contexts.some((x) => x.kind === c.kind && x.id === c.id)
-                      ? "check"
-                      : "plus"
-                  }
-                  size={16}
-                />
-              </button>
-            ))}
-            <h3>PDF 파일</h3>
-            <label className="field">
-              읽을 페이지
-              <Input
-                type="number"
-                min={1}
-                max={1000}
-                value={page}
-                onChange={(e) => setPage(Number(e.target.value))}
-              />
-            </label>
-            {data.versions
-              .filter((v) => v.researchId === researchId)
-              .map((v) => (
-                <button
-                  type="button"
-                  key={v.id}
-                  disabled={uploading}
-                  onClick={() => void addPDF(v.id)}
-                >
-                  <Icon name="file" size={17} />
-                  <span>
-                    {v.fileName}
-                    <small>
-                      v{v.number} · {page}쪽
-                    </small>
-                  </span>
-                  <Icon name="plus" size={16} />
-                </button>
-              ))}
-          </div>
-          {task !== "organize_meeting" && (
-            // Outside the scrolling list so the confirm action stays visible.
-            <div className="bottom-actions">
-              <Button onClick={() => setPicker(false)}>
-                선택 마치기 · {contexts.length}개
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
       <Dialog
         open={!!adopting}
         onOpenChange={(v) => {

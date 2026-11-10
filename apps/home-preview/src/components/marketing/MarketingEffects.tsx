@@ -11,6 +11,8 @@ import { VersionCompareSlider } from "@/components/VersionCompareSlider";
 import { Icon } from "@/components/icons";
 import "./marketing-effects.css";
 
+export { StartGlow } from "@/components/StartGlow";
+
 /** RMS illustration; merging paths borrow the connector idiom of Aceternity animated beams. */
 export function MergeFlow({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);

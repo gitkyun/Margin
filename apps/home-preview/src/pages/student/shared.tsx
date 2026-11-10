@@ -473,23 +473,23 @@ export function LinkChip({
   );
 }
 
+/** 피드백·수정 화면의 탭. 할 일은 사이드바 메뉴가 따로 있어 여기에 넣지 않습니다. */
 export function WorkTabs({
   researchId,
   selected,
 }: {
   researchId: string;
-  selected: "feedback" | "tasks" | "results";
+  selected: "feedback" | "results";
 }) {
   const navigate = useNavigate();
   return (
     <Tabs
       className="work-tabs"
-      label="피드백과 할 일"
+      label="피드백과 수정 결과"
       value={selected}
       onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
       options={[
         { value: "feedback", label: "피드백" },
-        { value: "tasks", label: "할 일" },
         { value: "results", label: "수정 결과" },
       ]}
     />

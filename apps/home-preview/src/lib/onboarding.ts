@@ -1,0 +1,111 @@
+import type { WorkspaceData } from "./domain";
+
+/** 온보딩 세 번째 질문(다음 지도 미팅)의 답 */
+export type MeetingAnswer =
+  | { kind: "dated"; date: string; time: string }
+  | { kind: "undated" }
+  | { kind: "just_finished" }
+  | { kind: "skip" };
+
+export interface OnboardingMeeting {
+  title: string;
+  date: string | null;
+  time: string | null;
+}
+
+const MEETING_TITLE = "지도 미팅";
+
+/** 답을 미팅 한 건으로 바꿉니다. 건너뛰면 만들지 않습니다. */
+export function onboardingMeeting(
+  answer: MeetingAnswer | null,
+  today: string,
+): OnboardingMeeting | null {
+  if (!answer || answer.kind === "skip") return null;
+  if (answer.kind === "just_finished")
+    return { title: MEETING_TITLE, date: today, time: null };
+  if (answer.kind === "dated" && answer.date)
+    return {
+      title: MEETING_TITLE,
+      date: answer.date,
+      time: answer.time || null,
+    };
+  return { title: MEETING_TITLE, date: null, time: null };
+}
+
+/** 미리보기에 보여 줄 홈의 주 행동 글자. lib/home-action.ts와 같은 규칙입니다. */
+export function onboardingLeadLabel(
+  answer: MeetingAnswer | null,
+  today: string,
+): string {
+  const meeting = onboardingMeeting(answer, today);
+  if (!meeting) return "미팅 만들기";
+  return meeting.date === today ? "기록 시작" : "미팅 준비하기";
+}
+
+export type ChecklistKey = "record" | "feedback" | "task" | "material";
+
+export interface ChecklistItem {
+  key: ChecklistKey;
+  label: string;
+  hint: string;
+  href: string;
+  done: boolean;
+}
+
+export type ChecklistData = Pick<
+  WorkspaceData,
+  "meetings" | "recordings" | "feedback" | "tasks" | "documents" | "materials"
+>;
+
+/**
+ * 시작 체크리스트. 새로 저장하는 값 없이 있는 기록에서 완료 여부를 계산합니다.
+ * (docs/design/product-design-plan.md 5.6)
+ */
+export function startChecklist(
+  data: ChecklistData,
+  researchId: string,
+): ChecklistItem[] {
+  const base = `/r/${researchId}`;
+  const mine = <T extends { researchId: string; archivedAt?: string }>(
+    list: T[],
+  ) =>
+    list.filter((item) => item.researchId === researchId && !item.archivedAt);
+  const meetings = mine(data.meetings);
+  const recorded = new Set(mine(data.recordings).map((item) => item.meetingId));
+  const hasRecord = meetings.some(
+    (meeting) => !!meeting.memo?.trim() || recorded.has(meeting.id),
+  );
+  const firstMeeting = meetings[0];
+  return [
+    {
+      key: "record",
+      label: "미팅 기록 남기기",
+      hint: "녹음하거나 메모를 붙여 넣어요.",
+      href: firstMeeting
+        ? `${base}/meetings/${firstMeeting.id}?tab=record#meeting-recording`
+        : `${base}/meetings?new=1&intent=record`,
+      done: hasRecord,
+    },
+    {
+      key: "feedback",
+      label: "피드백 한 건 정리하기",
+      hint: "받은 피드백을 원문과 함께 남겨요.",
+      href: `${base}/feedback`,
+      done: mine(data.feedback).length > 0,
+    },
+    {
+      key: "task",
+      label: "할 일 만들기",
+      hint: "다음 미팅까지 할 일을 적어요.",
+      href: `${base}/tasks?new=1`,
+      done: mine(data.tasks).length > 0,
+    },
+    {
+      key: "material",
+      label: "원고나 자료 올리기",
+      hint: "글을 쓰거나 파일을 올려요.",
+      href: `${base}/materials`,
+      done: mine(data.documents).length > 0 || mine(data.materials).length > 0,
+    },
+  ];
+}
