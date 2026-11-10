@@ -561,7 +561,7 @@
     grid-template-columns: minmax(0, 1fr) minmax(320px, 410px);
   }
   .memo-surface {
-    padding-bottom: 20px !important;
+    padding-bottom: 20px;
   }
   .meeting-memo {
     min-height: 390px;
@@ -960,20 +960,6 @@
     margin-top: 5px;
     letter-spacing: var(--typography-caption2-letterSpacing);
   }
-  .ai-dot-matrix {
-    display: grid;
-    grid-template-columns: repeat(5, 3px);
-    grid-template-rows: repeat(5, 3px);
-    gap: 4px;
-    flex-shrink: 0;
-    padding: 4px;
-  }
-  .ai-dot-matrix i {
-    display: block;
-    border-radius: 50%;
-    background: var(--brand);
-    animation: rms-ai-pulse 1.4s ease-in-out infinite;
-  }
   @keyframes rms-ai-pulse {
     0%,
     100% {
@@ -1041,7 +1027,7 @@
     margin-left: auto;
   }
   .task-table {
-    padding: 0 24px !important;
+    padding: 0 24px;
   }
   .task-table-head {
     display: grid;
@@ -1328,49 +1314,6 @@
   .external-reference > button {
     flex-shrink: 0;
   }
-  .upload-dropzone {
-    border: 1px dashed
-      color-mix(in srgb, var(--text-secondary) 35%, var(--line));
-    padding: 30px 20px;
-    border-radius: var(--radius-14);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    text-align: center;
-    background: var(--surface-muted);
-    transition:
-      background var(--motion-duration-micro),
-      border-color var(--motion-duration-micro);
-  }
-  .upload-dropzone.dragging {
-    background: var(--brand-soft);
-    border-color: var(--brand);
-  }
-  .upload-symbol {
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-14);
-    background: var(--surface);
-    color: var(--brand);
-    margin-bottom: 5px;
-  }
-  .upload-dropzone > strong {
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    font-weight: 600;
-    overflow-wrap: anywhere;
-    max-width: 100%;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .upload-dropzone > span:not(.upload-symbol) {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .upload-progress {
     margin-top: 16px;
   }
@@ -1582,7 +1525,7 @@
       margin: 0;
     }
     .task-table {
-      padding: 0 16px !important;
+      padding: 0 16px;
     }
     .task-table-head {
       grid-template-columns: 1fr 75px 52px;
@@ -1656,15 +1599,6 @@
     }
     .saved-plan {
       padding: 17px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ai-dot-matrix i {
-      animation: none;
-      opacity: 0.7;
-    }
-    .upload-dropzone {
-      transition: none;
     }
   }
 
