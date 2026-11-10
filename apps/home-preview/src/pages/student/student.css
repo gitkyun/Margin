@@ -532,6 +532,8 @@
     padding-bottom: 20px;
   }
   .meeting-memo {
+    display: block;
+    width: 100%;
     min-height: 390px;
     font-size: var(--typography-body1-fontSize);
     line-height: var(--typography-body1Reading-lineHeight);
