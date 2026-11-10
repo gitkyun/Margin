@@ -1,3 +1,4 @@
+import { formatClock } from "@/lib/time-format";
 import { useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -63,7 +64,7 @@ function meetingSummary(answer: MeetingAnswer | null, today: string): string {
   if (!meeting) return "미팅은 나중에 만들게요";
   if (answer?.kind === "just_finished") return "방금 미팅을 마쳤어요";
   if (!meeting.date) return "아직 안 잡혔어요";
-  return `${formatDate(meeting.date)}${meeting.time ? ` · ${meeting.time}` : ""}`;
+  return `${formatDate(meeting.date)}${meeting.time ? ` · ${formatClock(meeting.time)}` : ""}`;
 }
 
 /**
@@ -524,6 +525,7 @@ export function OnboardingPage() {
             }
             today={today}
             focus={(["name", "phase", "meeting"] as const)[step]}
+            advisorCount={parseAdvisorEmails(advisors).length}
           />
         )}
         <p className="ob-preview-note">

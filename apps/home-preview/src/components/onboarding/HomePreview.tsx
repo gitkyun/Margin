@@ -1,3 +1,4 @@
+import { formatClock } from "@/lib/time-format";
 import { useRef } from "react";
 import { BrandMark } from "@/components/brand/Brand";
 import { useZoomInto } from "@/lib/use-zoom-into";
@@ -19,6 +20,8 @@ export interface HomePreviewProps {
   today: string;
   /** 지금 묻는 질문이 채우는 자리. 전체 화면에서 그 자리로 확대해 들어갑니다. */
   focus?: "name" | "phase" | "meeting";
+  /** 첫 질문에서 적은 지도교수 수. 0이면 줄을 내지 않습니다. */
+  advisorCount?: number;
 }
 
 /** 오늘이 든 주(일~토)의 날짜 문자열 일곱 개 */
@@ -46,6 +49,7 @@ export function HomePreview({
   leadLabel,
   today,
   focus,
+  advisorCount = 0,
 }: HomePreviewProps) {
   const title = name.trim();
   const week = weekOf(today);
@@ -54,7 +58,14 @@ export function HomePreview({
   useZoomInto(frame, focus && `[data-part="${focus}"]`, focus ?? "whole", {
     zoomedValue: focus,
     // 답이 들어와 그 자리의 크기가 바뀌면 물러나지 않고 자리만 다시 맞춥니다.
-    refitKey: [title, phaseTitle, meeting?.date, meeting?.title].join("|"),
+    refitKey: [
+      title,
+      description.trim(),
+      advisorCount,
+      phaseTitle,
+      meeting?.date,
+      meeting?.title,
+    ].join("|"),
   });
   return (
     <div className="ob-window" ref={frame} aria-hidden="true" inert>
@@ -76,13 +87,11 @@ export function HomePreview({
         </div>
         <div className="ob-main">
           <div className="ob-head">
-            <div className="ob-head-copy">
+            <div className="ob-head-copy" data-part="name">
               {title ? (
-                <strong className="ob-title ob-filled" data-part="name">
-                  {title}
-                </strong>
+                <strong className="ob-title ob-filled">{title}</strong>
               ) : (
-                <i className="ob-skel ob-skel-title" data-part="name" />
+                <i className="ob-skel ob-skel-title" />
               )}
               {description.trim() ? (
                 <span className="ob-description ob-filled">
@@ -90,6 +99,12 @@ export function HomePreview({
                 </span>
               ) : (
                 <i className="ob-skel ob-skel-line" />
+              )}
+              {advisorCount > 0 && (
+                <span className="ob-phase ob-filled">
+                  <Icon name="users" size={12} />
+                  지도교수 {advisorCount}명
+                </span>
               )}
               {phaseTitle ? (
                 <span className="ob-phase ob-filled" data-part="phase">
@@ -133,7 +148,7 @@ export function HomePreview({
                     <span className="ob-meeting-copy">
                       <small>
                         {formatDate(meeting.date)}
-                        {meeting.time && ` · ${meeting.time}`}
+                        {meeting.time && ` · ${formatClock(meeting.time)}`}
                         {relativeDay(meeting.date) && (
                           <em>{relativeDay(meeting.date)}</em>
                         )}

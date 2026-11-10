@@ -1,3 +1,4 @@
+import { formatClock } from "@/lib/time-format";
 import {
   useEffect,
   useMemo,
@@ -43,10 +44,7 @@ function rangeLabel(days: WeekDay[]): string {
 }
 
 function timeLabel(time: string): string {
-  return new Intl.DateTimeFormat("ko-KR", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(`2000-01-01T${time}:00`));
+  return formatClock(time);
 }
 
 function countLabel(items: WeekItem[]): string {

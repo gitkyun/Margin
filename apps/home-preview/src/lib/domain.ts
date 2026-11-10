@@ -1,3 +1,4 @@
+import { timeParts } from "./time-format";
 export type ID = string;
 export type RecordOrigin = "manual" | "ai";
 export interface BaseRecord {
@@ -479,7 +480,7 @@ export function formatDate(
   ).format(new Date(`${date.slice(0, 10)}T12:00:00`));
 }
 /**
- * 기록 시각(ISO 타임스탬프)을 화면 표기 하나로 씁니다: ‘11월 9일 (월) 오후 2:00’.
+ * 기록 시각(ISO 타임스탬프)을 화면 표기 하나로 씁니다: ‘11월 9일 (월) 오후 2:00’(기기가 24시간제면 ‘14:00’, lib/time-format.ts).
  * 올해가 아니면 연도를 앞에 붙이고, 초는 쓰지 않습니다. `time: false`면 날짜만.
  */
 export function formatDateTime(
@@ -494,7 +495,7 @@ export function formatDateTime(
     month: "long",
     day: "numeric",
     weekday: "short",
-    ...(time && { hour: "numeric", minute: "2-digit" }),
+    ...(time && timeParts()),
   }).format(d);
 }
 const DAY_MS = 86_400_000;

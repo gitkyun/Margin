@@ -1,3 +1,4 @@
+import { timeParts } from "./time-format";
 import {
   Document,
   Page,
@@ -106,7 +107,12 @@ export async function documentPDF(
         <Text style={styles.title}>{version.title}</Text>
         <Text style={styles.meta}>
           v{version.number} ·{" "}
-          {new Date(version.createdAt).toLocaleString("ko-KR")}
+          {new Date(version.createdAt).toLocaleString("ko-KR", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            ...timeParts(),
+          })}
         </Text>
         {content.content?.map(block)}
         <Text

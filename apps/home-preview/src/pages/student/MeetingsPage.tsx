@@ -1,3 +1,4 @@
+import { formatClock } from "@/lib/time-format";
 import { AnimatedList } from "@/components/AnimatedList";
 import { isImeComposing } from "@/lib/ime";
 import { VisibilityField } from "@/components/experience";
@@ -245,8 +246,8 @@ export function MeetingsPage() {
                 </span>
                 <small>
                   {formatDate(meeting.date)}
-                  {meeting.time ? ` · ${meeting.time}` : ""} · 할 일{" "}
-                  {meeting.taskIds.length}개
+                  {meeting.time ? ` · ${formatClock(meeting.time)}` : ""} · 할
+                  일 {meeting.taskIds.length}개
                 </small>
               </span>
               <StatusBadge
@@ -864,7 +865,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       <PageHeader
         back={<BackLink to={`/r/${researchId}/meetings`}>미팅 목록</BackLink>}
         title={meeting.title}
-        description={`${formatDate(meeting.date)}${meeting.time ? ` · ${meeting.time}` : ""}`}
+        description={`${formatDate(meeting.date)}${meeting.time ? ` · ${formatClock(meeting.time)}` : ""}`}
         status={
           <>
             <StatusBadge
