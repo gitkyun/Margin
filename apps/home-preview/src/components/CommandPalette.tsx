@@ -5,7 +5,6 @@ import { ModalContainer, ModalHeading } from "@montage-ui/core";
 import { Dialog } from "./ui/dialog";
 import { Icon } from "./icons";
 import { useExperience } from "@/lib/experience";
-import { useTheme } from "@/lib/theme";
 import {
   buildCommands,
   rankSections,
@@ -32,16 +31,11 @@ export function CommandPalette({
 }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const { data } = useExperience();
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const searching = query.trim().length > 0;
   const sections = useMemo(
-    () =>
-      rankSections(
-        buildCommands({ data, researchId, theme, searching }),
-        query,
-      ),
-    [data, researchId, theme, searching, query],
+    () => rankSections(buildCommands({ data, researchId, searching }), query),
+    [data, researchId, searching, query],
   );
 
   function changeOpen(next: boolean) {
@@ -51,8 +45,7 @@ export function CommandPalette({
 
   function run(entry: CommandEntry) {
     changeOpen(false);
-    if (entry.action.kind === "theme") setTheme(entry.action.value);
-    else navigate(entry.action.to);
+    navigate(entry.action.to);
   }
 
   return (

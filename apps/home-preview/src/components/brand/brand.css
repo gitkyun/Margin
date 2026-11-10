@@ -119,22 +119,6 @@
     gap: 8px;
     align-items: center;
   }
-  .margin-depth-option {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .margin-depth-option > svg {
-    flex-shrink: 0;
-    color: var(--brand);
-  }
-  .margin-depth-help {
-    font-size: var(--typography-caption1-fontSize);
-    line-height: 1.65;
-    color: var(--text-secondary);
-    padding: 6px 2px 0;
-    margin: 0;
-  }
   .margin-result-note {
     display: flex;
     gap: 12px;

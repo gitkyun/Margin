@@ -32,24 +32,18 @@
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: var(--spacing-4);
   }
+  /* 날짜 한 칸: 네모 면 없이 숫자 원 하나로만 상태를 보여 줍니다(고른 날 = 채운 원, 오늘 = 브랜드 글자). */
   .rh-week-day {
     display: grid;
     justify-items: center;
-    gap: var(--spacing-4);
-    min-height: 76px;
+    gap: var(--spacing-6);
+    min-height: 80px;
     padding: var(--spacing-8) 0 var(--spacing-6);
-    border: 1px solid transparent;
+    border: 0;
     border-radius: var(--radius-12);
     background: transparent;
     color: var(--text);
     cursor: pointer;
-  }
-  .rh-week-day:hover {
-    background: var(--hover-fill);
-  }
-  .rh-week-day[aria-pressed="true"] {
-    border-color: var(--selected-line);
-    background: var(--selected-fill);
   }
   .rh-week-day:focus-visible {
     outline: 2px solid var(--semantic-line-brand-focus);
@@ -64,14 +58,22 @@
   .rh-week-number {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     font-size: var(--typography-headline2-fontSize);
     font-weight: 600;
     letter-spacing: var(--typography-headline2-letterSpacing);
+    transition: background-color var(--motion-duration-micro) ease-out;
   }
+  .rh-week-day:hover .rh-week-number {
+    background: var(--hover-fill);
+  }
+  .rh-week-day[aria-current="date"] .rh-week-weekday,
   .rh-week-day[aria-current="date"] .rh-week-number {
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .rh-week-day[aria-pressed="true"] .rh-week-number {
     background: var(--semantic-surface-brand-primary);
     color: var(--semantic-static-white);
   }
@@ -150,15 +152,8 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-week-empty {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-8);
-    padding: var(--spacing-8) 0 var(--spacing-4);
-  }
-  .rh-week-empty > p {
     margin: 0;
+    padding: var(--spacing-8) 0 var(--spacing-4);
     color: var(--text-tertiary);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
@@ -169,11 +164,11 @@
       padding: var(--spacing-12) var(--spacing-12) var(--spacing-10);
     }
     .rh-week-day {
-      min-height: 68px;
+      min-height: 72px;
     }
     .rh-week-number {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       font-size: var(--typography-body1-fontSize);
     }
   }
