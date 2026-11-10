@@ -1162,6 +1162,10 @@
   .rh-quick-start {
     margin-bottom: 32px;
   }
+  /* 홈은 다음 미팅·확인할 내용이 먼저, 바로 시작·연구 단계는 그 아래(검수 Q6). */
+  .rh-columns + .rh-quick-start {
+    margin-top: var(--spacing-40);
+  }
   .rh-quick-start .rh-section-heading {
     margin-bottom: 12px;
   }
