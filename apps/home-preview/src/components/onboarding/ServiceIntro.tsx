@@ -7,6 +7,13 @@ import { StepMeter } from "./StepMeter";
 interface ServiceIntroProps {
   /** 끝까지 봤거나 건너뛰었을 때. 이어서 연구 만들기 질문이 나옵니다. */
   onDone(): void;
+  /** 지금 장과 흐름 장에서 고른 단계. 오른쪽 장면이 이 값을 따라 움직입니다. */
+  onScene?(scene: IntroScene): void;
+}
+
+export interface IntroScene {
+  slide: number;
+  flowIndex: number;
 }
 
 const TITLES = [
@@ -19,9 +26,10 @@ const TITLES = [
  * 처음 온 사람에게 보여 주는 서비스 소개 세 장. 연구 만들기 질문 앞에 한 번 나오고
  * 어느 장에서든 건너뛸 수 있습니다. 아무것도 저장하지 않습니다.
  */
-export function ServiceIntro({ onDone }: ServiceIntroProps) {
+export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
   const [slide, setSlide] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [flowIndex, setFlowIndex] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
   const last = slide === INTRO_SLIDE_COUNT - 1;
@@ -30,6 +38,10 @@ export function ServiceIntro({ onDone }: ServiceIntroProps) {
   useEffect(() => {
     if (moved.current) heading.current?.focus();
   }, [slide]);
+
+  useEffect(() => {
+    onScene?.({ slide, flowIndex });
+  }, [onScene, slide, flowIndex]);
 
   function go(next: number) {
     moved.current = true;
@@ -62,18 +74,27 @@ export function ServiceIntro({ onDone }: ServiceIntroProps) {
         {slide === 1 && (
           <>
             <p className="ob-help">
-              기록이 다음 단계로 이어져요. 필요한 단계부터 써도 돼요.
+              기록이 다음 단계로 이어져요. 단계를 눌러 예시를 보세요.
             </p>
             <ol className="ob-intro-flow">
-              {INTRO_FLOW.map((step) => (
+              {INTRO_FLOW.map((step, index) => (
                 <li key={step.label}>
-                  <span className="ob-intro-icon" aria-hidden="true">
-                    <Icon name={step.icon} size={18} />
-                  </span>
-                  <span className="ob-intro-copy">
-                    <strong>{step.label}</strong>
-                    <span>{step.text}</span>
-                  </span>
+                  <button
+                    type="button"
+                    className="ob-intro-step"
+                    aria-pressed={index === flowIndex}
+                    onClick={() => setFlowIndex(index)}
+                    onFocus={() => setFlowIndex(index)}
+                    onPointerEnter={() => setFlowIndex(index)}
+                  >
+                    <span className="ob-intro-icon" aria-hidden="true">
+                      <Icon name={step.icon} size={18} />
+                    </span>
+                    <span className="ob-intro-copy">
+                      <strong>{step.label}</strong>
+                      <span>{step.text}</span>
+                    </span>
+                  </button>
                 </li>
               ))}
             </ol>

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { IntroStage } from "../src/components/onboarding/IntroStage";
 import { ServiceIntro } from "../src/components/onboarding/ServiceIntro";
 import {
   INTRO_FLOW,
@@ -68,6 +69,35 @@ describe("서비스 소개 화면", () => {
     fireEvent.click(screen.getByRole("button", { name: "이전" }));
     expect(direction()).toBe("back");
     expect(screen.getByText(`소개 1 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
+  });
+
+  it("흐름 단계를 누르면 그 단계가 골라지고 오른쪽 장면에 알린다", () => {
+    const scene = vi.fn();
+    render(<ServiceIntro onDone={() => {}} onScene={scene} />);
+    expect(scene).toHaveBeenLastCalledWith({ slide: 0, flowIndex: 0 });
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+    const step = screen.getByRole("button", { name: /수정 결과/ });
+    expect(step.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(step);
+    expect(step.getAttribute("aria-pressed")).toBe("true");
+    expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 3 });
+    // 키보드로 옮겨 가도 같은 단계가 골라져요.
+    fireEvent.focus(screen.getByRole("button", { name: /검토 요청/ }));
+    expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 4 });
+  });
+
+  it("장면은 고른 단계까지 선을 잇고 그 단계의 예시를 보여 준다", () => {
+    const { container } = render(<IntroStage slide={1} flowIndex={2} />);
+    const states = [...container.querySelectorAll(".ob-node")].map((node) =>
+      node.getAttribute("data-state"),
+    );
+    expect(states).toEqual(["done", "done", "active", null, null]);
+    expect(container.querySelector(".ob-flowcard")?.textContent).toContain(
+      INTRO_FLOW[2].example,
+    );
+    expect(
+      container.querySelector(".ob-stage")?.getAttribute("aria-hidden"),
+    ).toBe("true");
   });
 
   it("어느 장에서든 건너뛸 수 있다", () => {

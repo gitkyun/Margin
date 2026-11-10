@@ -121,7 +121,7 @@
   .ob-step {
     display: flex;
     flex-direction: column;
-    animation: ob-step-forward var(--motion-duration-enter)
+    animation: ob-step-forward var(--motion-duration-page)
       var(--motion-ease-standard);
   }
   .ob-step[data-dir="back"] {
@@ -130,13 +130,13 @@
   @keyframes ob-step-forward {
     from {
       opacity: 0;
-      transform: translateX(12px);
+      transform: translateX(32px);
     }
   }
   @keyframes ob-step-back {
     from {
       opacity: 0;
-      transform: translateX(-12px);
+      transform: translateX(-32px);
     }
   }
 
@@ -162,11 +162,34 @@
     padding: 0;
     list-style: none;
   }
-  .ob-intro-flow li {
+  /* 흐름 단계는 누르거나 가리키면 고르고, 오른쪽 장면이 그 단계로 움직입니다. */
+  .ob-intro-step {
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-12);
-    padding: var(--spacing-8) 0;
+    width: 100%;
+    padding: var(--spacing-8) var(--spacing-12);
+    border: 1px solid transparent;
+    border-radius: var(--radius-12);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
+  }
+  .ob-intro-step:hover {
+    border-color: var(--hover-line);
+  }
+  .ob-intro-step[aria-pressed="true"] {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+  }
+  .ob-intro-step:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 2px;
   }
   .ob-intro-icon {
     display: grid;
@@ -181,9 +204,13 @@
   .ob-intro-icon {
     transition:
       background-color var(--motion-duration-micro) ease-out,
-      color var(--motion-duration-micro) ease-out;
+      color var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-enter) var(--motion-ease-standard);
   }
-  .ob-intro-flow li:hover .ob-intro-icon {
+  .ob-intro-step[aria-pressed="true"] .ob-intro-icon {
+    transform: scale(1.08);
+  }
+  .ob-intro-step[aria-pressed="true"] .ob-intro-icon {
     background: var(--brand);
     color: var(--semantic-static-white);
   }
@@ -366,7 +393,181 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
     text-align: center;
   }
+  /* ── 소개 장면(오른쪽). 한 번만 움직이고 되풀이하지 않습니다. ───────── */
+  .ob-stage {
+    --stage-duration: calc(var(--motion-duration-page) * 2);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    place-items: center;
+    width: 100%;
+    max-width: 760px;
+    aspect-ratio: 16 / 10;
+    margin: 0 auto;
+    padding: var(--spacing-24);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    background: var(--surface);
+    box-shadow: var(--raise-shadow);
+    overflow: hidden;
+  }
+  /* 첫 장: 흩어져 있던 기록 세 줄이 ‘내 연구’ 안으로 모입니다. */
+  .ob-gather-home {
+    display: grid;
+    gap: var(--spacing-8);
+    width: 340px;
+    max-width: 100%;
+    padding: var(--spacing-20);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--canvas);
+    animation: ob-gather-home var(--stage-duration) var(--motion-ease-standard)
+      both;
+  }
+  .ob-gather-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+  }
+  .ob-gather-title .ob-rail-mark {
+    margin: 0;
+  }
+  .ob-gather-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-height: 48px;
+    padding: 0 var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface);
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 500;
+    animation: ob-gather-row var(--stage-duration) var(--motion-ease-standard)
+      both;
+  }
+  .ob-gather-row > svg {
+    flex: none;
+    color: var(--brand);
+  }
+  .ob-gather-row:nth-of-type(2) {
+    --from-x: -130px;
+    --from-y: -70px;
+    --from-turn: -9deg;
+  }
+  .ob-gather-row:nth-of-type(3) {
+    --from-x: 150px;
+    --from-y: -24px;
+    --from-turn: 7deg;
+  }
+  .ob-gather-row:nth-of-type(4) {
+    --from-x: -90px;
+    --from-y: 76px;
+    --from-turn: 5deg;
+  }
+  @keyframes ob-gather-row {
+    from {
+      opacity: 0.4;
+      transform: translate(var(--from-x), var(--from-y))
+        rotate(var(--from-turn));
+    }
+    35% {
+      opacity: 1;
+      transform: translate(var(--from-x), var(--from-y))
+        rotate(var(--from-turn));
+    }
+  }
+  @keyframes ob-gather-home {
+    from,
+    35% {
+      border-color: transparent;
+      background: transparent;
+    }
+  }
+  /* 둘째 장: 고른 단계까지 선이 이어지고 예시 카드가 바뀝니다. */
+  .ob-flowstage {
+    display: grid;
+    gap: var(--spacing-24);
+    width: 480px;
+    max-width: 100%;
+  }
+  .ob-track {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+  }
+  .ob-track-line {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    margin-top: -1px;
+    background: var(--line);
+  }
+  .ob-track-line i {
+    display: block;
+    height: 100%;
+    background: var(--brand);
+    transform-origin: left;
+    transition: transform var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  .ob-node {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text-tertiary);
+    transition:
+      transform var(--motion-duration-enter) var(--motion-ease-standard),
+      background-color var(--motion-duration-enter) ease-out,
+      border-color var(--motion-duration-enter) ease-out,
+      color var(--motion-duration-enter) ease-out;
+  }
+  .ob-node[data-state="done"] {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .ob-node[data-state="active"] {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--semantic-static-white);
+    transform: scale(1.2);
+  }
+  .ob-flowcard {
+    display: grid;
+    gap: var(--spacing-4);
+    padding: var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--canvas);
+    font-size: var(--typography-body2-fontSize);
+    line-height: var(--typography-body2-lineHeight);
+    letter-spacing: var(--typography-body2-letterSpacing);
+    word-break: keep-all;
+    animation: ob-flowcard var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  .ob-flowcard strong {
+    color: var(--brand);
+    font-weight: 600;
+  }
+  @keyframes ob-flowcard {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
   .ob-window {
+    animation: ob-window-in var(--motion-duration-page)
+      var(--motion-ease-standard);
     display: grid;
     grid-template-columns: 132px minmax(0, 1fr);
     gap: var(--spacing-8);
@@ -620,7 +821,27 @@
   @keyframes ob-fill {
     from {
       opacity: 0;
-      transform: translateY(4px);
+      transform: translateY(8px);
+    }
+  }
+  /* 방금 답이 반영된 자리를 옅은 브랜드 면으로 한 번 짚어 줍니다. */
+  .ob-window .ob-filled {
+    border-radius: var(--radius-4);
+    animation:
+      ob-fill var(--motion-duration-enter) var(--motion-ease-standard),
+      ob-mark calc(var(--motion-duration-page) * 3) ease-out;
+  }
+  @keyframes ob-mark {
+    from,
+    40% {
+      background-color: var(--selected-fill);
+      box-shadow: 0 0 0 4px var(--selected-fill);
+    }
+  }
+  @keyframes ob-window-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
     }
   }
 
@@ -672,6 +893,55 @@
       max-width: 560px;
       aspect-ratio: auto;
     }
+    /* 좁은 화면의 160px 띠에 맞게 장면을 줄입니다. */
+    .ob-stage {
+      max-width: 560px;
+      height: 144px;
+      aspect-ratio: auto;
+      padding: var(--spacing-8) var(--spacing-16);
+    }
+    .ob-gather-home {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: 100%;
+      padding: var(--spacing-12);
+    }
+    .ob-gather-title {
+      grid-column: 1 / -1;
+    }
+    .ob-gather-row {
+      min-height: 36px;
+      padding: 0 var(--spacing-8);
+      font-size: var(--typography-caption1-fontSize);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .ob-gather-row:nth-of-type(2) {
+      --from-x: -24px;
+      --from-y: -36px;
+    }
+    .ob-gather-row:nth-of-type(3) {
+      --from-x: 0px;
+      --from-y: 30px;
+    }
+    .ob-gather-row:nth-of-type(4) {
+      --from-x: 24px;
+      --from-y: -30px;
+    }
+    .ob-flowstage {
+      gap: var(--spacing-8);
+    }
+    .ob-node {
+      width: 32px;
+      height: 32px;
+    }
+    .ob-track-line {
+      left: 16px;
+      right: 16px;
+    }
+    .ob-flowcard {
+      padding: var(--spacing-8) var(--spacing-12);
+      font-size: var(--typography-label1-fontSize);
+    }
     .ob-rail {
       display: none;
     }
@@ -686,11 +956,28 @@
     .ob-date-fields {
       grid-template-columns: minmax(0, 1fr);
     }
+    /* 세 줄을 한 줄에 놓을 폭이 모자라 아이콘을 빼고 이름만 둡니다. */
+    .ob-gather-row {
+      justify-content: center;
+    }
+    .ob-gather-row > svg {
+      display: none;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .ob-filled,
-    .ob-step {
+    .ob-window .ob-filled,
+    .ob-window,
+    .ob-step,
+    .ob-gather-home,
+    .ob-gather-row,
+    .ob-flowcard {
       animation: none;
+    }
+    .ob-intro-step,
+    .ob-track-line i,
+    .ob-node {
+      transition: none;
     }
     .ob-answers button,
     .ob-choice,
