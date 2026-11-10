@@ -203,36 +203,6 @@
     line-height: var(--typography-label2-lineHeight);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  /* 이 문서를 ‘고칠 문서’로 고른 할 일(제목 아래 한 줄, 넘치면 줄바꿈). */
-  .writing-linked-tasks {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--spacing-6) var(--spacing-8);
-    margin-top: var(--spacing-8);
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .writing-linked-tasks > span {
-    color: var(--text-tertiary);
-  }
-  .writing-linked-tasks > a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-4);
-    min-height: 28px;
-    max-width: 100%;
-    padding: 0 var(--spacing-8);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    color: var(--text-secondary);
-    overflow-wrap: anywhere;
-    text-decoration: none;
-  }
-  .writing-linked-tasks > a:hover {
-    background: var(--hover-fill);
-    color: var(--text);
-  }
   .writing-outline .field {
     margin-top: 18px;
     padding-top: 16px;
