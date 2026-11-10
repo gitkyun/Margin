@@ -301,12 +301,27 @@
   .composer-actions > button[aria-label="실행 중단"] {
     margin-left: auto;
   }
+  /* 입력창 아래 안내·오류·답변 깊이 설명은 입력창과 같은 폭·왼쪽 선에 둡니다. */
+  .ai-chat-main > .rms-error,
+  .ai-chat-main > .composer-notice,
+  .ai-chat-main > .margin-depth-help {
+    box-sizing: border-box;
+    width: min(calc(100% - var(--spacing-32)), var(--chat-column));
+    margin: var(--spacing-10) auto 0;
+  }
   .ai-chat-main > .rms-error {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin: 10px 20px 0;
+    gap: var(--spacing-12);
+  }
+  .composer-notice {
+    padding: var(--spacing-10) var(--spacing-12);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
   }
   .composer-hint {
     padding: var(--spacing-8) var(--spacing-24) var(--spacing-14);
@@ -594,7 +609,10 @@
       min-height: 44px;
       scroll-snap-align: start;
     }
-    .ai-composer {
+    .ai-composer,
+    .ai-chat-main > .rms-error,
+    .ai-chat-main > .composer-notice,
+    .ai-chat-main > .margin-depth-help {
       width: calc(100% - var(--spacing-16));
     }
     .composer-actions > .rms-choice {

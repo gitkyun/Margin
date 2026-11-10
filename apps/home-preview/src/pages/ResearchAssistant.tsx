@@ -4,6 +4,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useAICapabilities } from "@/lib/ai-capabilities";
 import {
+  AI_NOT_CONFIGURED_MESSAGE,
+  useAINotConfigured,
+} from "@/lib/ai-availability";
+import {
   Link,
   useNavigate,
   useParams,
@@ -80,6 +84,7 @@ export function ResearchAssistant() {
     [candidateTitle, setCandidateTitle] = useState(""),
     [candidateBody, setCandidateBody] = useState(""),
     [saveBusy, setSaveBusy] = useState(false);
+  const aiNotConfigured = useAINotConfigured();
   const caps = useAICapabilities(),
     allowedModel =
       caps.data?.models.find((m) => m.id === model) ?? caps.data?.models[0],
@@ -924,25 +929,29 @@ export function ResearchAssistant() {
                 />
                 <Choice
                   compact
-                  value={allowedModel?.id ?? ""}
+                  value={
+                    aiNotConfigured ? "not-connected" : (allowedModel?.id ?? "")
+                  }
                   onChange={setModel}
-                  disabled={running || !caps.data}
+                  disabled={running || !caps.data || aiNotConfigured}
                   label="AI 모델"
                   options={
-                    caps.data?.models.map((m) => ({
-                      value: m.id,
-                      label: researchModelLabel(m),
-                    })) ?? [
-                      {
-                        value: "",
-                        label: caps.isError
-                          ? "모델 정보 없음"
-                          : "모델 불러오는 중",
-                      },
-                    ]
+                    aiNotConfigured
+                      ? [{ value: "not-connected", label: "연결 전" }]
+                      : (caps.data?.models.map((m) => ({
+                          value: m.id,
+                          label: researchModelLabel(m),
+                        })) ?? [
+                          {
+                            value: "",
+                            label: caps.isError
+                              ? "모델 정보 없음"
+                              : "모델 불러오는 중",
+                          },
+                        ])
                   }
                 />
-                {!!allowedModel?.thinking.length && (
+                {!aiNotConfigured && !!allowedModel?.thinking.length && (
                   <Choice
                     compact
                     label="답변 깊이"
@@ -980,7 +989,12 @@ export function ResearchAssistant() {
                     type="submit"
                     size="icon"
                     aria-label="질문 보내기"
-                    disabled={!draft.trim() || !contexts.length || uploading}
+                    disabled={
+                      !draft.trim() ||
+                      !contexts.length ||
+                      uploading ||
+                      aiNotConfigured
+                    }
                   >
                     <Icon name="arrow-up" size={19} />
                   </Button>
@@ -1005,26 +1019,38 @@ export function ResearchAssistant() {
                 </Button>
               </p>
             )}
-            {error && (
-              <div className="rms-error" role="alert">
-                <span className="margin-error-content">
-                  <AssistantMascot state="attention" size={36} />
-                  <span>{error}</span>
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    pendingFile.current ? void attach() : void send()
-                  }
-                >
-                  {pendingFile.current ? "등록 다시 시도" : "질문 다시 보내기"}
-                </Button>
-              </div>
+            {aiNotConfigured && !pendingFile.current ? (
+              <p className="composer-notice" role="status">
+                {AI_NOT_CONFIGURED_MESSAGE}
+              </p>
+            ) : (
+              error && (
+                <div className="rms-error" role="alert">
+                  <span className="margin-error-content">
+                    <AssistantMascot state="attention" size={36} />
+                    <span>{error}</span>
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      pendingFile.current ? void attach() : void send()
+                    }
+                  >
+                    {pendingFile.current
+                      ? "등록 다시 시도"
+                      : "질문 다시 보내기"}
+                  </Button>
+                </div>
+              )
             )}
-            {!!allowedModel?.thinking.length && reviewDepthHints[thinking] && (
-              <p className="margin-depth-help">{reviewDepthHints[thinking]}</p>
-            )}
+            {!aiNotConfigured &&
+              !!allowedModel?.thinking.length &&
+              reviewDepthHints[thinking] && (
+                <p className="margin-depth-help">
+                  {reviewDepthHints[thinking]}
+                </p>
+              )}
             <p className="composer-hint">
               {contexts.length
                 ? `선택한 기록 ${contexts.length}개만 사용해요. `
