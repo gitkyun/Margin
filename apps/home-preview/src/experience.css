@@ -159,8 +159,8 @@
     background: var(--selected-fill);
   }
   .auth-switch {
-    margin-top: 22px !important;
-    font-size: var(--typography-label2-fontSize) !important;
+    margin-top: 22px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
@@ -640,7 +640,7 @@
   }
   .settings-note {
     margin-top: 17px;
-    font-size: var(--typography-caption1-fontSize) !important;
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -940,7 +940,7 @@
     display: none;
   }
   .floating-workspace.sidebar-collapsed .sidebar-toggle {
-    display: flex !important;
+    display: flex;
   }
   .floating-workspace.sidebar-collapsed .sidebar-brand {
     justify-content: center;

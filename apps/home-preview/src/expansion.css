@@ -1,9 +1,9 @@
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
   .floating-workspace .sidebar {
-    background: var(--sidebar) !important;
-    backdrop-filter: none !important;
-    filter: none !important;
+    background: var(--sidebar);
+    backdrop-filter: none;
+    filter: none;
     border: 1px solid var(--line);
     box-shadow: var(--semantic-elevation-shadow-normal-small);
   }
@@ -46,12 +46,12 @@
     overflow: hidden;
   }
   .sidebar-collapsed .sidebar-toggle {
-    position: static !important;
+    position: static;
     width: 40px;
     height: 40px;
     margin: auto;
-    transform: none !important;
-    opacity: 1 !important;
+    transform: none;
+    opacity: 1;
   }
   .sidebar-collapsed .sidebar-search {
     padding: 10px;
@@ -720,7 +720,7 @@
   }
   .agent-overview-hero {
     grid-column: 1/-1;
-    padding: 28px !important;
+    padding: 28px;
     display: flex;
     align-items: center;
     gap: 26px;
@@ -1202,7 +1202,7 @@
     .agent-overview-hero {
       flex-direction: column;
       text-align: center;
-      padding: 20px !important;
+      padding: 20px;
     }
     .phase-card-body .button-row {
       margin-top: 14px;
@@ -1349,9 +1349,9 @@
     cursor: pointer;
   }
   .app-shell.floating-workspace .sidebar {
-    backdrop-filter: none !important;
-    filter: none !important;
-    background: var(--surface) !important;
+    backdrop-filter: none;
+    filter: none;
+    background: var(--surface);
   }
 }
 

@@ -561,7 +561,7 @@
     grid-template-columns: minmax(0, 1fr) minmax(320px, 410px);
   }
   .memo-surface {
-    padding-bottom: 20px !important;
+    padding-bottom: 20px;
   }
   .meeting-memo {
     min-height: 390px;
@@ -1027,7 +1027,7 @@
     margin-left: auto;
   }
   .task-table {
-    padding: 0 24px !important;
+    padding: 0 24px;
   }
   .task-table-head {
     display: grid;
@@ -1525,7 +1525,7 @@
       margin: 0;
     }
     .task-table {
-      padding: 0 16px !important;
+      padding: 0 16px;
     }
     .task-table-head {
       grid-template-columns: 1fr 75px 52px;
