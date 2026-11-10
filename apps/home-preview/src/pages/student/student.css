@@ -247,6 +247,14 @@
     text-decoration: none;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
+  /* 글자와 아이콘이 한 줄에 놓이는 작은 링크(추가 +, 열기 →) */
+  .student-text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    min-height: 24px;
+    white-space: nowrap;
+  }
   .student-back:hover,
   .student-text-link:hover {
     color: var(--brand);
@@ -308,14 +316,6 @@
     margin: 0;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .student-empty-inline {
-    color: var(--text-secondary);
-    font-size: var(--typography-label2-fontSize);
-    line-height: var(--typography-label2-lineHeight);
-    padding: 14px 0;
-    margin: 0;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
   .student-body-text {
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
@@ -324,41 +324,6 @@
     margin: 20px 0;
     color: var(--text);
     letter-spacing: var(--typography-body2-letterSpacing);
-  }
-  .student-simple-row {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 12px;
-    padding: 17px 0;
-    border-bottom: 1px solid var(--line);
-    color: var(--text);
-    text-decoration: none;
-  }
-  .student-simple-row:last-child {
-    border-bottom: 0;
-  }
-  .student-simple-row > svg {
-    flex-shrink: 0;
-    color: var(--text-secondary);
-  }
-  .student-simple-row strong {
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    font-weight: 600;
-    display: block;
-    overflow-wrap: anywhere;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .student-simple-row small {
-    display: block;
-    margin-top: 5px;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    line-height: var(--typography-caption1-lineHeight);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .student-subsection {
     margin-top: 24px;
@@ -743,7 +708,8 @@
   }
   .feedback-detail-layout {
     display: grid;
-    grid-template-columns: 1fr;
+    /* 1fr만 쓰면 열이 내용 최소 폭(375px)만큼 넓어져 360px에서 카드가 잘립니다. */
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
     gap: 24px;
   }

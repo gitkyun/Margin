@@ -447,7 +447,7 @@ export function ResearchSelectPage() {
                         <Icon name="more" size={18} />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="start">
                       <DropdownMenuItem
                         onSelect={() => {
                           setTrashTarget(research);

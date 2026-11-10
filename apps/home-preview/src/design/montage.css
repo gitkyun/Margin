@@ -159,6 +159,11 @@
 .student-page .tabs-line[role="tablist"] {
   margin-top: var(--spacing-24);
 }
+/* 여백 패널의 탭 줄: 이름·내용과 같은 왼쪽 선(20px)에서 시작하고 아래 간격은 내용 쪽 여백이 맡습니다. */
+.panel-frame > .tabs-line[role="tablist"] {
+  margin-block: 0;
+  padding-inline: var(--spacing-20);
+}
 .margin-tab-count.margin-tab-count {
   margin-left: var(--spacing-6);
 }
