@@ -124,14 +124,6 @@ const ReviewsPage = lazy(() =>
 const ReviewDetailPage = lazy(() =>
   import("@/pages/reviews").then((m) => ({ default: m.ReviewDetailPage })),
 );
-const navigation = [
-  { label: "홈", path: "", icon: "home" },
-  { label: "미팅", path: "meetings", icon: "calendar" },
-  { label: "피드백·수정", path: "feedback", icon: "feedback" },
-  { label: "할 일", path: "tasks", icon: "tasks" },
-  { label: "자료", path: "materials", icon: "folder" },
-  { label: "검토 요청", path: "reviews", icon: "send" },
-];
 function InitialLoading() {
   const location = useLocation();
   if (isHomeEntry(location.pathname, location.search)) return <HomeSkeleton />;
