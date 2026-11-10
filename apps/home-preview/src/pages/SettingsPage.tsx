@@ -25,6 +25,7 @@ import { useExperience } from "@/lib/experience";
 import { useAICapabilities } from "@/lib/ai-capabilities";
 import { Choice } from "@/components/experience";
 import { ThemeSwitch } from "./AuthPages";
+import { HourStyleSwitch } from "@/components/HourStyleSwitch";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
 import { AdvisorSettings } from "./settings/AdvisorSettings";
@@ -150,23 +151,38 @@ export function AccountPage() {
           ) : tab === "ai" ? (
             <PreferenceSettings kind="ai" />
           ) : tab === "appearance" ? (
-            <section className="settings-section">
-              <h2>화면 설정</h2>
-              <p>선택한 테마는 바로 적용되고, 이 브라우저에만 저장돼요.</p>
-              <div className="appearance-preview" aria-hidden="true">
-                <div />
-                <div>
-                  <span />
-                  <span />
-                  <span />
+            <>
+              <section className="settings-section">
+                <h2>화면 설정</h2>
+                <p>선택한 테마는 바로 적용되고, 이 브라우저에만 저장돼요.</p>
+                <div className="appearance-preview" aria-hidden="true">
+                  <div />
+                  <div>
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 </div>
-              </div>
-              <ThemeSwitch />
-              <p className="settings-note">
-                ‘시스템’을 고르면 기기의 라이트·다크 설정을 따라요. 기기에서
-                ‘동작 줄이기’를 켜면 장식 애니메이션도 줄어요.
-              </p>
-            </section>
+                <ThemeSwitch />
+                <p className="settings-note">
+                  ‘시스템’을 고르면 기기의 라이트·다크 설정을 따라요. 기기에서
+                  ‘동작 줄이기’를 켜면 장식 애니메이션도 줄어요.
+                </p>
+              </section>
+              <section className="settings-section">
+                <h2>시각 표기</h2>
+                <p>
+                  미팅 시각과 기록 시각, 시각 입력 칸에 함께 적용되고, 이
+                  브라우저에만 저장돼요.
+                </p>
+                <HourStyleSwitch />
+                <p className="settings-note">
+                  ‘기기 설정 따르기’는 브라우저가 알려 주는 값을 써요. 기기에서
+                  24시간제를 켜 뒀는데 오전/오후로 보이면 ‘24시간제’를 직접 골라
+                  주세요.
+                </p>
+              </section>
+            </>
           ) : (
             <section className="settings-section">
               <div className="profile-heading">

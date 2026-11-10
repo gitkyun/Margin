@@ -22,11 +22,42 @@ export function detectHourStyle(
   }
 }
 
+/** 계정 설정에서 고르는 값. ‘기기 설정 따르기’가 기본입니다. */
+export type HourPreference = "auto" | HourStyle;
+
+const PREFERENCE_KEY = "margin-hour-style";
+
+/** 이 브라우저에 저장한 선택. 없거나 읽지 못하면 ‘기기 설정 따르기’. */
+export function readHourPreference(): HourPreference {
+  try {
+    const saved = localStorage.getItem(PREFERENCE_KEY);
+    return saved === "12h" || saved === "24h" ? saved : "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+/** 선택을 이 브라우저에만 저장합니다(서버에 저장하지 않음). 다음에 그리는 화면부터 적용됩니다. */
+export function saveHourPreference(preference: HourPreference): void {
+  cached = undefined;
+  try {
+    if (preference === "auto") localStorage.removeItem(PREFERENCE_KEY);
+    else localStorage.setItem(PREFERENCE_KEY, preference);
+  } catch {
+    // 저장소를 쓸 수 없으면 기기 설정을 따릅니다.
+  }
+}
+
 let cached: HourStyle | undefined;
 
-/** 이 기기의 시각 표기 방식. 한 번 읽어 화면 전체가 같은 값을 씁니다. */
+/**
+ * 지금 쓰는 시각 표기 방식. 직접 고른 값이 있으면 그 값을, 없으면 기기 설정을 따릅니다.
+ * 브라우저에 따라 운영체제의 24시간제 설정을 알려 주지 않아(크롬 등) 직접 고를 수 있게 했습니다.
+ */
 export function hourStyle(): HourStyle {
-  cached ??= detectHourStyle();
+  if (cached) return cached;
+  const preference = readHourPreference();
+  cached = preference === "auto" ? detectHourStyle() : preference;
   return cached;
 }
 

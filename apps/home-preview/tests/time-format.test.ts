@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+// @vitest-environment jsdom
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   detectHourStyle,
   formatClock,
+  hourStyle,
+  readHourPreference,
+  saveHourPreference,
   timeFieldFormat,
   timeParts,
 } from "../src/lib/time-format";
@@ -67,5 +71,31 @@ describe("날짜와 함께 쓰는 시각, 입력 칸", () => {
       format: "HH:mm",
       placeholder: "00:00",
     });
+  });
+});
+
+describe("직접 고른 시각 표기", () => {
+  beforeEach(() => saveHourPreference("auto"));
+
+  it("고른 값이 기기 설정보다 먼저다", () => {
+    saveHourPreference("24h");
+    expect(readHourPreference()).toBe("24h");
+    expect(hourStyle()).toBe("24h");
+    expect(formatClock("14:30")).toBe("14:30");
+    saveHourPreference("12h");
+    expect(hourStyle()).toBe("12h");
+    expect(formatClock("14:30")).toBe("오후 2:30");
+  });
+
+  it("‘기기 설정 따르기’로 돌리면 저장한 값을 지운다", () => {
+    saveHourPreference("24h");
+    saveHourPreference("auto");
+    expect(readHourPreference()).toBe("auto");
+    expect(localStorage.getItem("margin-hour-style")).toBeNull();
+  });
+
+  it("알 수 없는 저장 값은 ‘기기 설정 따르기’로 본다", () => {
+    localStorage.setItem("margin-hour-style", "36h");
+    expect(readHourPreference()).toBe("auto");
   });
 });

@@ -563,6 +563,10 @@
     max-width: 650px;
     min-width: 0;
   }
+  /* 한 탭에 묶음이 둘 이상이면 사이를 띄웁니다(화면 설정 ↔ 시각 표기). */
+  .settings-section + .settings-section {
+    margin-top: var(--spacing-40);
+  }
   .settings-section h2 {
     font-size: var(--typography-headline1-fontSize);
     margin-bottom: 10px;

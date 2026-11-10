@@ -489,8 +489,9 @@
   .ob-window-canvas .ob-main {
     transition: background-color var(--motion-duration-page) ease-out;
   }
+  /* 미리보기의 이름·단계 묶음은 바탕 면 위에 바로 놓여 있어, 그 질문에서는 바탕을 어둡게 하지 않습니다. */
   .ob-stage-canvas[data-zoomed] .ob-stage-main,
-  .ob-window-canvas[data-zoomed] .ob-main {
+  .ob-window-canvas[data-zoomed="meeting"] .ob-main {
     background: var(--surface-muted);
     transition-duration: calc(var(--motion-duration-page) * 4);
   }
