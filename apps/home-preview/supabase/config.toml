@@ -15,7 +15,8 @@ additional_redirect_urls = ["http://localhost:4175"]
 enable_signup = false
 minimum_password_length = 8
 [auth.email]
-enabled = true
+# `enabled` is not a valid key in Supabase CLI 2.54.11 (the version CI pins);
+# email sign-in is on by default. Keep this file parseable by that CLI.
 enable_confirmations = true
 [storage]
 enabled = true
