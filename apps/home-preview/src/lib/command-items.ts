@@ -10,6 +10,7 @@ export const RESEARCH_NAVIGATION = [
   ["meetings", "calendar", "미팅"],
   ["writing", "file", "글쓰기"],
   ["feedback", "feedback", "피드백·수정"],
+  ["tasks", "tasks", "할 일"],
   ["materials", "folder", "자료"],
   ["reviews", "send", "검토 요청"],
 ] as const;
@@ -172,10 +173,6 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
         ),
         path,
       ),
-    ),
-    withShortcut(
-      navigateEntry("go:tasks", "할 일", "tasks", `${base}/tasks`),
-      "tasks",
     ),
     navigateEntry("go:results", "수정 결과", "check", `${base}/results`),
     withShortcut(

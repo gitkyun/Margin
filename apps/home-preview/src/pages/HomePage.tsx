@@ -137,113 +137,6 @@ export function HomePage() {
           </Link>
         </div>
       </header>
-      <section className="rh-quick-start" aria-labelledby="rh-start-heading">
-        <div className="rh-section-heading">
-          <h2 id="rh-start-heading">바로 시작</h2>
-        </div>
-        <div className="rh-quick-actions">
-          <Link
-            className="rh-quick-action rh-quick-record"
-            to={
-              next
-                ? `${base}/meetings/${next.id}?tab=record#meeting-recording`
-                : `${base}/meetings?new=1&intent=record`
-            }
-          >
-            <span className="rh-quick-icon">
-              <Icon name="mic" size={22} />
-            </span>
-            <span className="rh-quick-text">
-              <strong>피드백 기록하기</strong>
-              <small>
-                {next
-                  ? `${next.title} · 녹음·전사 또는 메모`
-                  : "새 미팅을 만들어 녹음·메모"}
-              </small>
-            </span>
-            <Icon name="arrow-up-right" size={18} />
-          </Link>
-          <Link
-            className="rh-quick-action"
-            to={
-              next
-                ? `${base}/meetings/${next.id}?tab=prepare`
-                : `${base}/meetings?new=1`
-            }
-          >
-            <span className="rh-quick-icon">
-              <Icon name="calendar" size={22} />
-            </span>
-            <span className="rh-quick-text">
-              <strong>미팅 준비하기</strong>
-              <small>할 일·자료·질문 모으기</small>
-            </span>
-            <Icon name="arrow-up-right" size={18} />
-          </Link>
-          <Link className="rh-quick-action" to={`${base}/writing?new=1`}>
-            <span className="rh-quick-icon">
-              <Icon name="edit" size={22} />
-            </span>
-            <span className="rh-quick-text">
-              <strong>연구 글 쓰기</strong>
-              <small>새 연구 계획서 만들기</small>
-            </span>
-            <Icon name="arrow-up-right" size={18} />
-          </Link>
-        </div>
-      </section>
-      <section className="rh-phases" aria-labelledby="rh-phase-heading">
-        <div className="rh-section-heading">
-          <h2 id="rh-phase-heading">연구 단계</h2>
-          {current && (
-            <span className="rh-current-label">
-              현재 단계 · {current.title}
-            </span>
-          )}
-          <Link className="rh-text-link" to={`${base}/planning`}>
-            계획·일정 <Icon name="arrow-up-right" size={15} />
-          </Link>
-        </div>
-        {phases.length ? (
-          <ol className="rh-phase-track">
-            {phases.map((phase, index) => (
-              <li
-                key={phase.id}
-                className={
-                  phase.id === current?.id
-                    ? "rh-phase-current"
-                    : phase.status === "done"
-                      ? "rh-phase-done"
-                      : ""
-                }
-              >
-                <Link
-                  to={`${base}/planning?phase=${phase.id}`}
-                  aria-current={phase.id === current?.id ? "step" : undefined}
-                >
-                  <span className="rh-phase-number" aria-hidden="true">
-                    {phase.status === "done" ? (
-                      <Icon name="check" size={13} />
-                    ) : (
-                      String(index + 1).padStart(2, "0")
-                    )}
-                  </span>
-                  <span>{phase.title}</span>
-                  {phase.id === current?.id && (
-                    <span className="rh-sr-only">현재 단계</span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <Link className="rh-phase-start" to={`${base}/planning`}>
-            <Icon name="flag" size={18} />
-            <span>단계와 주요 목표 정하기</span>
-            <Icon name="arrow-right" size={16} />
-          </Link>
-        )}
-      </section>
       <div className="rh-columns">
         <div className="rh-main-column">
           <WeekStrip data={data} researchId={research.id} />
@@ -657,6 +550,113 @@ export function HomePage() {
           </section>
         </aside>
       </div>
+      <section className="rh-quick-start" aria-labelledby="rh-start-heading">
+        <div className="rh-section-heading">
+          <h2 id="rh-start-heading">바로 시작</h2>
+        </div>
+        <div className="rh-quick-actions">
+          <Link
+            className="rh-quick-action rh-quick-record"
+            to={
+              next
+                ? `${base}/meetings/${next.id}?tab=record#meeting-recording`
+                : `${base}/meetings?new=1&intent=record`
+            }
+          >
+            <span className="rh-quick-icon">
+              <Icon name="mic" size={22} />
+            </span>
+            <span className="rh-quick-text">
+              <strong>피드백 기록하기</strong>
+              <small>
+                {next
+                  ? `${next.title} · 녹음·전사 또는 메모`
+                  : "새 미팅을 만들어 녹음·메모"}
+              </small>
+            </span>
+            <Icon name="arrow-up-right" size={18} />
+          </Link>
+          <Link
+            className="rh-quick-action"
+            to={
+              next
+                ? `${base}/meetings/${next.id}?tab=prepare`
+                : `${base}/meetings?new=1`
+            }
+          >
+            <span className="rh-quick-icon">
+              <Icon name="calendar" size={22} />
+            </span>
+            <span className="rh-quick-text">
+              <strong>미팅 준비하기</strong>
+              <small>할 일·자료·질문 모으기</small>
+            </span>
+            <Icon name="arrow-up-right" size={18} />
+          </Link>
+          <Link className="rh-quick-action" to={`${base}/writing?new=1`}>
+            <span className="rh-quick-icon">
+              <Icon name="edit" size={22} />
+            </span>
+            <span className="rh-quick-text">
+              <strong>연구 글 쓰기</strong>
+              <small>새 연구 계획서 만들기</small>
+            </span>
+            <Icon name="arrow-up-right" size={18} />
+          </Link>
+        </div>
+      </section>
+      <section className="rh-phases" aria-labelledby="rh-phase-heading">
+        <div className="rh-section-heading">
+          <h2 id="rh-phase-heading">연구 단계</h2>
+          {current && (
+            <span className="rh-current-label">
+              현재 단계 · {current.title}
+            </span>
+          )}
+          <Link className="rh-text-link" to={`${base}/planning`}>
+            계획·일정 <Icon name="arrow-up-right" size={15} />
+          </Link>
+        </div>
+        {phases.length ? (
+          <ol className="rh-phase-track">
+            {phases.map((phase, index) => (
+              <li
+                key={phase.id}
+                className={
+                  phase.id === current?.id
+                    ? "rh-phase-current"
+                    : phase.status === "done"
+                      ? "rh-phase-done"
+                      : ""
+                }
+              >
+                <Link
+                  to={`${base}/planning?phase=${phase.id}`}
+                  aria-current={phase.id === current?.id ? "step" : undefined}
+                >
+                  <span className="rh-phase-number" aria-hidden="true">
+                    {phase.status === "done" ? (
+                      <Icon name="check" size={13} />
+                    ) : (
+                      String(index + 1).padStart(2, "0")
+                    )}
+                  </span>
+                  <span>{phase.title}</span>
+                  {phase.id === current?.id && (
+                    <span className="rh-sr-only">현재 단계</span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <Link className="rh-phase-start" to={`${base}/planning`}>
+            <Icon name="flag" size={18} />
+            <span>단계와 주요 목표 정하기</span>
+            <Icon name="arrow-right" size={16} />
+          </Link>
+        )}
+      </section>
     </div>
   );
 }
