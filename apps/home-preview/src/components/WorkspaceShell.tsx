@@ -15,6 +15,7 @@ import { Icon } from "./icons";
 import { Hint } from "./ui/hint";
 import { navPreview } from "@/lib/nav-preview";
 import { CommandPalette } from "./CommandPalette";
+import { ShortcutHelp } from "./ShortcutHelp";
 import { RESEARCH_NAVIGATION } from "@/lib/command-items";
 import { goShortcutLabel } from "@/lib/go-shortcuts";
 import { useGoShortcuts } from "@/lib/use-go-shortcuts";
@@ -182,6 +183,7 @@ export function WorkspaceShell({
     ),
     [mobile, setMobile] = useState(false),
     [search, setSearch] = useState(false),
+    [shortcutsOpen, setShortcutsOpen] = useState(false),
     [notifications, setNotifications] = useState(false);
   const usage = useAIUsage();
   const updates = unreadReviewNotifications(data, user, researchId);
@@ -322,7 +324,7 @@ export function WorkspaceShell({
                   end={!path}
                   to={`/r/${researchId}${path ? "/" + path : ""}`}
                   className={({ isActive }) =>
-                    `nav-item ${isActive || (path === "feedback" && (location.pathname.includes("/results") || location.pathname.includes("/tasks"))) ? "active" : ""}`
+                    `nav-item ${isActive || (path === "feedback" && location.pathname.includes("/results")) ? "active" : ""}`
                   }
                 >
                   <Icon name={icon} size={20} />
@@ -457,7 +459,10 @@ export function WorkspaceShell({
             )}
           </div>
           <div className="topbar-right">
-            <Hint label="사용 안내">
+            <Hint
+              label="사용 안내"
+              detail="키보드 단축키는 ? 키로 볼 수 있어요."
+            >
               <Link className="icon-button" aria-label="사용 안내" to="/guide">
                 <Icon name="help" size={19} />
               </Link>
@@ -628,6 +633,7 @@ export function WorkspaceShell({
         onOpenChange={setSearch}
         researchId={research ? researchId : undefined}
       />
+      <ShortcutHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </div>
   );
 }

@@ -142,6 +142,15 @@ export function ReviewsPage() {
     setPreviewFile(null);
     setOpen(true);
   };
+  // ⌘K ‘검토 요청 만들기’(?new=1)로 들어오면 만들기 대화상자를 바로 엽니다.
+  useEffect(() => {
+    if (loading || params.get("new") !== "1") return;
+    const p = new URLSearchParams(params);
+    p.delete("new");
+    setParams(p, { replace: true });
+    begin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, loading]);
   const validate = () => {
     if (!title.trim()) return "검토 요청 제목을 적어 주세요.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))

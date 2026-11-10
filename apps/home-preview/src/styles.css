@@ -649,7 +649,9 @@
     display: flex;
     gap: 8px;
   }
-  .inline-form > input {
+  /* 입력 칸이 남은 너비를 채웁니다. Montage 입력은 감싸는 요소 안에 있어 첫 자식을 늘립니다. */
+  .inline-form > input,
+  .inline-form > :first-child {
     flex: 1;
     min-width: 0;
   }
