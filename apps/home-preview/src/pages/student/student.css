@@ -613,11 +613,14 @@
   }
   .student-decision {
     display: flex;
+    align-items: flex-start;
     gap: 11px;
     padding: 18px 0;
     border-bottom: 1px solid var(--line);
   }
   .student-decision p {
+    flex: 1;
+    min-width: 0;
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
     margin: 0;
