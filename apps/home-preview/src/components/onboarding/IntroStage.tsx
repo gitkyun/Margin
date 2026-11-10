@@ -7,6 +7,9 @@ interface IntroStageProps {
   flowIndex: number;
 }
 
+/** 전체 화면에서 확대해 들어갈 자리(그 단계의 핵심 컴포넌트 쪽). */
+const ZOOM_ORIGIN = ["18% 62%", "28% 42%", "18% 46%", "82% 60%", "28% 88%"];
+
 const SCATTERED = [
   { icon: "calendar", label: "미팅 메모", note: "지도 미팅에서 적은 말" },
   { icon: "feedback", label: "받은 피드백", note: "고치라고 들은 내용" },
@@ -24,14 +27,14 @@ function FlowScreen({ index }: { index: number }) {
           메모
         </span>
         <i className="ob-skel ob-skel-line ob-shot-extra" />
-        <p className="ob-shot-mark">{example}</p>
+        <p className="ob-shot-mark ob-shot-focus">{example}</p>
         <i className="ob-skel ob-skel-short ob-shot-extra" />
       </div>
     );
   if (index === 1)
     return (
       <>
-        <div className="ob-shot-card">
+        <div className="ob-shot-card ob-shot-focus">
           <span className="ob-shot-badge">시작 전</span>
           <p>{example}</p>
         </div>
@@ -44,7 +47,7 @@ function FlowScreen({ index }: { index: number }) {
   if (index === 2)
     return (
       <div className="ob-shot-card">
-        <p className="ob-shot-task">
+        <p className="ob-shot-task ob-shot-focus">
           <i className="ob-shot-check" />
           {example}
         </p>
@@ -67,7 +70,7 @@ function FlowScreen({ index }: { index: number }) {
           <i className="ob-skel ob-skel-line" />
           <i className="ob-skel ob-skel-short" />
         </div>
-        <div className="ob-shot-card">
+        <div className="ob-shot-card ob-shot-focus">
           <span className="ob-shot-label">바꾼 뒤</span>
           <p className="ob-shot-mark">{example}</p>
         </div>
@@ -80,7 +83,7 @@ function FlowScreen({ index }: { index: number }) {
         교수님께 보낸 요청
       </span>
       <p>{example}</p>
-      <p className="ob-shot-reply">
+      <p className="ob-shot-reply ob-shot-focus">
         <Icon name="check-circle" size={16} />
         교수님 응답
         <span className="ob-shot-badge">수정 내용 확인</span>
@@ -128,7 +131,11 @@ export function IntroStage({ slide, flowIndex }: IntroStageProps) {
       </div>
       {flow ? (
         <div className="ob-stage-main" key="flow">
-          <div className="ob-shot" key={step.label}>
+          <div
+            className="ob-shot"
+            key={step.label}
+            style={{ transformOrigin: ZOOM_ORIGIN[flowIndex] }}
+          >
             <p className="ob-shot-title">
               <Icon name={step.icon} size={18} />
               {step.label}

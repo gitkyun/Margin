@@ -91,8 +91,42 @@
   /* 단계 진행 막대. 넘어가면 다음 칸이 왼쪽부터 채워집니다(부품 단계 200ms). */
   .ob-meter {
     display: flex;
+    flex: 1;
     gap: var(--spacing-4);
     margin-bottom: var(--spacing-16);
+  }
+  .ob-meter-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-12);
+  }
+  /* 자동 넘김까지 남은 시간: 지금 칸이 일정한 속도로 찹니다. */
+  .ob-meter span[data-timed]::after {
+    transition: none;
+    animation: ob-meter-fill linear both;
+    animation-duration: inherit;
+  }
+  @keyframes ob-meter-fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  .ob-auto {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    flex: none;
+    margin-top: calc(var(--spacing-12) * -1);
+    padding: var(--spacing-8) 0;
+    border: 0;
+    background: none;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    cursor: pointer;
+  }
+  .ob-auto:hover {
+    color: var(--brand);
   }
   .ob-meter span {
     position: relative;
@@ -179,6 +213,22 @@
     transition:
       border-color var(--motion-duration-micro) ease-out,
       background-color var(--motion-duration-micro) ease-out;
+  }
+  /* 자동으로 넘어가는 동안 지금 단계 아래에 남은 시간 줄이 찹니다. */
+  .ob-intro-step {
+    position: relative;
+    overflow: hidden;
+  }
+  .ob-intro-step[data-timed]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--brand);
+    transform-origin: left;
+    animation: ob-meter-fill var(--auto-ms) linear both;
   }
   .ob-intro-step:hover {
     border-color: var(--hover-line);
@@ -468,16 +518,51 @@
     padding: var(--spacing-32);
     overflow: hidden;
   }
+  /* 화면 전체를 먼저 보여 주고, 그 단계의 핵심 컴포넌트로 확대해 들어갑니다. */
   .ob-shot {
+    --zoom-from: 0.68;
+    --zoom-to: 1;
     display: grid;
     gap: var(--spacing-12);
-    animation: ob-shot-in var(--motion-duration-page)
-      var(--motion-ease-standard);
+    transform: scale(var(--zoom-to));
+    animation: ob-shot-zoom calc(var(--motion-duration-page) * 3)
+      var(--motion-ease-standard) both;
   }
-  @keyframes ob-shot-in {
+  @keyframes ob-shot-zoom {
     from {
       opacity: 0;
-      transform: translateY(16px);
+      transform: scale(var(--zoom-from));
+    }
+    20%,
+    40% {
+      opacity: 1;
+      transform: scale(var(--zoom-from));
+    }
+  }
+  .ob-shot-focus {
+    border-radius: var(--radius-8);
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+    animation: ob-shot-focus calc(var(--motion-duration-page) * 3) ease-out both;
+  }
+  .ob-shot-card.ob-shot-focus {
+    border-radius: var(--radius-12);
+  }
+  /* 확대가 끝나면 주변은 물러나고 핵심 컴포넌트만 또렷하게 남습니다. */
+  .ob-shot-extra {
+    opacity: 0.45;
+    animation: ob-shot-extra calc(var(--motion-duration-page) * 3) ease-out both;
+  }
+  @keyframes ob-shot-extra {
+    from,
+    70% {
+      opacity: 1;
+    }
+  }
+  @keyframes ob-shot-focus {
+    from,
+    70% {
+      outline-color: transparent;
     }
   }
   .ob-shot-title {
@@ -901,6 +986,40 @@
       transform: translateY(8px);
     }
   }
+  /* 질문마다 미리보기 전체에서 그 질문이 채우는 자리로 확대해 들어갑니다. */
+  .ob-main[data-focus] {
+    --zoom-to: 1.28;
+    transform: scale(var(--zoom-to));
+    transform-origin: 0 0;
+    animation: ob-focus-name calc(var(--motion-duration-page) * 3)
+      var(--motion-ease-standard) both;
+  }
+  .ob-main[data-focus="phase"] {
+    animation-name: ob-focus-phase;
+  }
+  .ob-main[data-focus="meeting"] {
+    transform-origin: 0 100%;
+    animation-name: ob-focus-meeting;
+  }
+  @keyframes ob-focus-name {
+    from,
+    35% {
+      transform: scale(1);
+    }
+  }
+  @keyframes ob-focus-phase {
+    from,
+    35% {
+      transform: scale(1);
+    }
+  }
+  @keyframes ob-focus-meeting {
+    from,
+    35% {
+      transform: scale(1);
+    }
+  }
+
   /* 방금 답이 반영된 자리를 옅은 브랜드 면으로 한 번 짚어 줍니다. */
   .ob-window .ob-filled {
     border-radius: var(--radius-4);
@@ -989,7 +1108,12 @@
       padding: var(--spacing-6) var(--spacing-12);
     }
     .ob-shot {
+      --zoom-from: 0.8;
+      --zoom-to: 1;
       gap: var(--spacing-6);
+    }
+    .ob-main[data-focus] {
+      --zoom-to: 1.12;
     }
     .ob-shot-title {
       font-size: var(--typography-label1-fontSize);
@@ -1043,8 +1167,17 @@
     .ob-step,
     .ob-gather .ob-shot-title,
     .ob-gather-row,
-    .ob-shot {
+    .ob-shot,
+    .ob-shot-focus,
+    .ob-shot-extra,
+    .ob-main[data-focus],
+    .ob-meter span[data-timed]::after,
+    .ob-intro-step[data-timed]::after {
       animation: none;
+    }
+    .ob-shot,
+    .ob-main[data-focus] {
+      transform: none;
     }
     .ob-gather-row {
       box-shadow: none;

@@ -15,6 +15,8 @@ export interface HomePreviewProps {
   meeting?: OnboardingMeeting | null;
   leadLabel?: string;
   today: string;
+  /** 지금 묻는 질문이 채우는 자리. 전체 화면에서 그 자리로 확대해 들어갑니다. */
+  focus?: "name" | "phase" | "meeting";
 }
 
 /** 오늘이 든 주(일~토)의 날짜 문자열 일곱 개 */
@@ -41,6 +43,7 @@ export function HomePreview({
   meeting,
   leadLabel,
   today,
+  focus,
 }: HomePreviewProps) {
   const title = name.trim();
   const week = weekOf(today);
@@ -61,7 +64,7 @@ export function HomePreview({
           </span>
         ))}
       </div>
-      <div className="ob-main">
+      <div className="ob-main" data-focus={focus}>
         <div className="ob-head">
           <div className="ob-head-copy">
             {title ? (

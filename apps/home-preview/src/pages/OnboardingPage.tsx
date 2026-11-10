@@ -515,6 +515,7 @@ export function OnboardingPage() {
                 : undefined
             }
             today={today}
+            focus={(["name", "phase", "meeting"] as const)[step]}
           />
         )}
         <p className="ob-preview-note">

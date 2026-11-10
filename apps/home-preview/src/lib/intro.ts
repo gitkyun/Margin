@@ -73,3 +73,21 @@ export const INTRO_FLOW: IntroFlowStep[] = [
 ];
 
 export const INTRO_SLIDE_COUNT = 3;
+
+/** 자동 넘김 간격(ms). 소개 장은 5초, 흐름 장의 단계 하나는 3.5초 머뭅니다. */
+export const INTRO_SLIDE_MS = 5000;
+export const INTRO_FLOW_MS = 3500;
+
+export type IntroAutoStep =
+  { kind: "flow"; flowIndex: number } | { kind: "slide"; slide: number } | null;
+
+/**
+ * 자동 넘김의 다음 자리. 흐름 장에서는 단계를 끝까지 돈 뒤 다음 장으로 가고,
+ * 마지막 장에서는 멈춥니다(연구 만들기는 사람이 직접 누릅니다).
+ */
+export function nextIntroAuto(slide: number, flowIndex: number): IntroAutoStep {
+  if (slide >= INTRO_SLIDE_COUNT - 1) return null;
+  if (slide === 1 && flowIndex < INTRO_FLOW.length - 1)
+    return { kind: "flow", flowIndex: flowIndex + 1 };
+  return { kind: "slide", slide: slide + 1 };
+}

@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
-import { INTRO_FLOW, INTRO_SLIDE_COUNT } from "@/lib/intro";
+import {
+  INTRO_FLOW,
+  INTRO_FLOW_MS,
+  INTRO_SLIDE_COUNT,
+  INTRO_SLIDE_MS,
+  nextIntroAuto,
+} from "@/lib/intro";
 import { StepMeter } from "./StepMeter";
 
 interface ServiceIntroProps {
@@ -33,6 +39,38 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
   const last = slide === INTRO_SLIDE_COUNT - 1;
+  // 동작 줄이기 설정이면 자동으로 넘기지 않습니다.
+  const [auto, setAuto] = useState(
+    () =>
+      !(
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ),
+  );
+  const autoMs = slide === 1 ? INTRO_FLOW_MS : INTRO_SLIDE_MS;
+  const timed = auto && !last;
+
+  // 자동 넘김: 초점은 옮기지 않고, 바뀐 장은 아래 알림 줄로 읽어 줍니다.
+  useEffect(() => {
+    if (!timed) return;
+    const timer = window.setTimeout(() => {
+      const next = nextIntroAuto(slide, flowIndex);
+      if (!next) return;
+      if (next.kind === "flow") setFlowIndex(next.flowIndex);
+      else {
+        moved.current = false;
+        setDirection("forward");
+        setSlide(next.slide);
+      }
+    }, autoMs);
+    return () => window.clearTimeout(timer);
+  }, [timed, autoMs, slide, flowIndex]);
+
+  /** 사람이 단계를 직접 고르면 자동 넘김을 멈춥니다. */
+  function pickFlow(index: number) {
+    setAuto(false);
+    setFlowIndex(index);
+  }
 
   // 장을 넘기면 새 제목으로 초점을 옮겨 화면 낭독기가 바뀐 내용을 읽게 합니다.
   useEffect(() => {
@@ -51,7 +89,29 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
 
   return (
     <section className="ob-form ob-intro" aria-labelledby="ob-intro-heading">
-      <StepMeter count={INTRO_SLIDE_COUNT} current={slide} />
+      <div className="ob-meter-row">
+        <StepMeter
+          count={INTRO_SLIDE_COUNT}
+          current={slide}
+          timedMs={timed && slide !== 1 ? autoMs : undefined}
+        />
+        {!last && (
+          <button
+            type="button"
+            className="ob-auto"
+            aria-pressed={auto}
+            onClick={() => setAuto(!auto)}
+          >
+            <Icon name={auto ? "pause" : "play"} size={14} />
+            {auto ? "자동 넘김 멈추기" : "자동 넘김 켜기"}
+          </button>
+        )}
+      </div>
+      <p className="ob-sr-only" aria-live="polite">
+        {auto &&
+          slide > 0 &&
+          `소개 ${slide + 1} / ${INTRO_SLIDE_COUNT}. ${TITLES[slide]}`}
+      </p>
       <div className="ob-step" data-dir={direction} key={slide}>
         <p className="ob-progress">
           소개 {slide + 1} / {INTRO_SLIDE_COUNT}
@@ -74,7 +134,8 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
         {slide === 1 && (
           <>
             <p className="ob-help">
-              기록이 다음 단계로 이어져요. 단계를 눌러 예시를 보세요.
+              기록이 다음 단계로 이어져요. 단계가 차례로 넘어가고, 눌러서 바로
+              볼 수도 있어요.
             </p>
             <ol className="ob-intro-flow">
               {INTRO_FLOW.map((step, index) => (
@@ -83,9 +144,17 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
                     type="button"
                     className="ob-intro-step"
                     aria-pressed={index === flowIndex}
-                    onClick={() => setFlowIndex(index)}
-                    onFocus={() => setFlowIndex(index)}
-                    onPointerEnter={() => setFlowIndex(index)}
+                    data-timed={(timed && index === flowIndex) || undefined}
+                    style={
+                      timed && index === flowIndex
+                        ? ({
+                            "--auto-ms": `${autoMs}ms`,
+                          } as React.CSSProperties)
+                        : undefined
+                    }
+                    onClick={() => pickFlow(index)}
+                    onFocus={() => pickFlow(index)}
+                    onPointerEnter={() => pickFlow(index)}
                   >
                     <span className="ob-intro-icon" aria-hidden="true">
                       <Icon name={step.icon} size={18} />
