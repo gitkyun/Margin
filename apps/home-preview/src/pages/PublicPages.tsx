@@ -166,6 +166,7 @@ export function PublicFrame({
               <Link to="/">서비스 소개</Link>
               <Link to="/features">주요 기능</Link>
               <Link to="/pricing">플랜</Link>
+              <a href="mailto:admin@margin.com">문의</a>
               <Link to={signedIn ? "/r" : "/login"}>
                 {signedIn ? "내 연구" : "로그인"}
               </Link>

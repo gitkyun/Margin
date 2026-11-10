@@ -29,13 +29,17 @@ import { useTaskCompletion } from "@/lib/use-task-completion";
 import { AnimatePresence, motion } from "motion/react";
 import { useTaskRowMotion } from "@/components/task-row-motion";
 import { WeekStrip } from "@/components/home/WeekStrip";
+import { ResearchDirection } from "@/components/home/ResearchDirection";
+import { planExcerpt } from "@/lib/research-direction";
+import { friendlyError } from "@/lib/supabase";
 import { Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 
 export function HomePage() {
   const taskRowMotion = useTaskRowMotion();
   const { researchId = "" } = useParams();
-  const { data, user, save } = useWorkspace();
+  const { data, user, save, saveResearch } = useWorkspace();
+  const [importing, setImporting] = useState(false);
   const completion = useTaskCompletion(save);
   const [scope, setScope] = useState("mine");
   // 방금 닫은 연구를 기억합니다. 다른 연구로 바꾸면 그 연구의 저장된 상태를 다시 봅니다.
@@ -141,6 +145,21 @@ export function HomePage() {
         <div className="rh-intro-copy">
           <h1>{research.name}</h1>
           <p>{research.description || "아직 연구 설명이 없어요."}</p>
+          <ResearchDirection
+            research={research}
+            settingsHref={`${base}/settings`}
+            planExcerpt={planExcerpt(data.documents, researchId)}
+            busy={importing}
+            onImport={(purpose) => {
+              setImporting(true);
+              saveResearch({ ...research, purpose })
+                .then(() =>
+                  toast.success("계획서 첫 문단을 연구 목적으로 가져왔어요."),
+                )
+                .catch((error) => toast.error(friendlyError(error)))
+                .finally(() => setImporting(false));
+            }}
+          />
           <div className="rh-intro-meta">
             <Link
               className="rh-people"

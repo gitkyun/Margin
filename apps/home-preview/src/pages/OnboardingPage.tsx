@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { parseAdvisorEmails } from "@/lib/advisors";
+import { PURPOSE_MAX, parseQuestions } from "@/lib/research-direction";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/common";
 import { Icon } from "@/components/icons";
@@ -29,11 +31,12 @@ import {
 import { LabeledInput } from "./student/shared";
 import "./onboarding.css";
 
-const STEP_COUNT = 3;
+const STEP_COUNT = 4;
 const QUESTIONS = [
   "어떤 연구를 하고 있나요?",
   "지금 어느 단계인가요?",
   "다음 지도 미팅은 언제인가요?",
+  "이 연구로 무엇을 밝히려 하나요?",
 ];
 const MEETING_CHOICES: { kind: MeetingAnswer["kind"]; label: string }[] = [
   { kind: "dated", label: "날짜를 정했어요" },
@@ -57,7 +60,7 @@ function meetingSummary(answer: MeetingAnswer | null, today: string): string {
 }
 
 /**
- * 연구를 처음 만들 때의 화면. 질문 세 개에 답하면 오른쪽 미리보기가 채워지고,
+ * 연구를 처음 만들 때의 화면. 질문 네 개에 답하면 오른쪽 미리보기가 채워지고,
  * 마지막 버튼에서 한 번에 저장한 뒤 미리보기가 실제 연구 홈으로 커집니다.
  * (docs/design/product-design-plan.md 5절)
  */
@@ -71,6 +74,9 @@ export function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [advisors, setAdvisors] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [questions, setQuestions] = useState("");
   // undefined: 아직 답하지 않음, null: 나중에 정하기
   const [phaseIndex, setPhaseIndex] = useState<number | null | undefined>();
   const [meetingKind, setMeetingKind] = useState<
@@ -133,6 +139,9 @@ export function OnboardingPage() {
           ownerId: user.id,
           name: name.trim(),
           description: description.trim(),
+          advisorEmails: parseAdvisorEmails(advisors),
+          purpose: purpose.trim() || undefined,
+          questions: parseQuestions(questions),
           createdAt: stamp,
           updatedAt: stamp,
         });
@@ -199,6 +208,7 @@ export function OnboardingPage() {
     name.trim(),
     phaseIndex == null ? "나중에 정할게요" : phaseTitles[phaseIndex],
     meetingSummary(meetingAnswer, today),
+    purpose.trim() || parseQuestions(questions)[0] || "방향은 나중에 적을게요",
   ];
 
   return (
@@ -250,7 +260,8 @@ export function OnboardingPage() {
             <>
               <h1 tabIndex={-1}>이렇게 시작할게요</h1>
               <p className="ob-help">
-                연구를 만든 뒤에도 이름, 단계, 미팅은 모두 바꿀 수 있어요.
+                연구를 만든 뒤에도 이름, 단계, 미팅, 연구 방향은 모두 바꿀 수
+                있어요.
               </p>
             </>
           ) : (
@@ -290,6 +301,19 @@ export function OnboardingPage() {
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   placeholder="예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구"
+                />
+              </Field>
+              <Field
+                label="지도교수 이메일"
+                hint="여러 명이면 쉼표로 나눠 주세요. 나중에 연구 설정에서 바꿀 수 있어요."
+              >
+                <Input
+                  type="text"
+                  inputMode="email"
+                  autoComplete="off"
+                  value={advisors}
+                  onChange={(event) => setAdvisors(event.target.value)}
+                  placeholder="professor@example.com"
                 />
               </Field>
             </div>
@@ -354,6 +378,32 @@ export function OnboardingPage() {
                 </div>
               )}
             </>
+          )}
+          {step === 3 && (
+            <div className="ob-fields">
+              <p className="ob-help">
+                아직 정하지 못했으면 비워 둬도 돼요. 나중에 연구 홈에서 적거나
+                계획서에서 가져올 수 있어요.
+              </p>
+              <Field label="연구 목적">
+                <Textarea
+                  value={purpose}
+                  maxLength={PURPOSE_MAX}
+                  onChange={(event) => setPurpose(event.target.value)}
+                  placeholder="예: 대학원생이 지도 미팅 뒤 피드백을 어떻게 기록하고 다시 쓰는지 밝힌다"
+                />
+              </Field>
+              <Field
+                label="연구 질문"
+                hint="한 줄에 하나씩, 5개까지 적을 수 있어요."
+              >
+                <Textarea
+                  value={questions}
+                  onChange={(event) => setQuestions(event.target.value)}
+                  placeholder="예: 미팅에서 받은 피드백은 어느 단계에서 사라지는가?"
+                />
+              </Field>
+            </div>
           )}
           <div className="ob-actions">
             {reviewing ? (

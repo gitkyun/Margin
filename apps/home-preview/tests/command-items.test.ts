@@ -55,7 +55,6 @@ describe("⌘K 명령 목록", () => {
     const sections = buildCommands({
       data: { ...empty, reviews: [], researches: [] } as never,
       researchId: R,
-      theme: "system",
       searching: false,
     } as never);
     const create = sections.flatMap((s) => s.entries).map((e) => e.id);

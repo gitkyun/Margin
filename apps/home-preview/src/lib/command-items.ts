@@ -1,5 +1,4 @@
 import type { WorkspaceData } from "./domain";
-import type { ThemePreference } from "./theme";
 import { commandFilter } from "./hangul-search";
 import { goShortcutLabel } from "./go-shortcuts";
 
@@ -15,8 +14,7 @@ export const RESEARCH_NAVIGATION = [
   ["reviews", "send", "검토 요청"],
 ] as const;
 
-export type CommandAction =
-  { kind: "navigate"; to: string } | { kind: "theme"; value: ThemePreference };
+export type CommandAction = { kind: "navigate"; to: string };
 
 export interface CommandEntry {
   /** cmdk value. 겹치지 않아야 해서 종류와 id를 붙입니다. */
@@ -39,6 +37,7 @@ export interface CommandSection {
 }
 
 const RECENT_LIMIT = 5;
+const DECISION_LABEL_MAX = 60;
 
 const RECORD_KINDS = [
   { key: "documents", type: "문서", path: "writing", icon: "file" },
@@ -66,7 +65,7 @@ interface RecordEntry extends CommandEntry {
 /** 이 연구의 보관하지 않은 기록(문서·미팅·피드백·할 일·자료·수정 결과·검토 요청). */
 export function recordEntries(
   data: Pick<WorkspaceData, RecordKey> &
-    Partial<Pick<WorkspaceData, "reviews">>,
+    Partial<Pick<WorkspaceData, "reviews" | "decisions">>,
   researchId: string,
 ): RecordEntry[] {
   // 검토 요청은 연구 밖 주소(/reviews/:id)라 따로 붙입니다.
@@ -80,6 +79,21 @@ export function recordEntries(
       keywords: [r.title, "검토 요청", r.professorEmail],
       updatedAt: r.updatedAt,
       action: { kind: "navigate" as const, to: `/reviews/${r.id}` },
+    }));
+  // 결정은 제목이 없어 글 앞부분을 이름으로 쓰고, 적힌 미팅의 결정·질문 탭으로 갑니다.
+  const decisions: RecordEntry[] = (data.decisions ?? [])
+    .filter((d) => d.researchId === researchId && !d.archivedAt)
+    .map((d) => ({
+      id: `record:decisions:${d.id}`,
+      label: d.text.slice(0, DECISION_LABEL_MAX),
+      icon: "check",
+      hint: "결정",
+      keywords: [d.text, "결정", d.reason ?? ""],
+      updatedAt: d.updatedAt,
+      action: {
+        kind: "navigate" as const,
+        to: `/r/${researchId}/meetings/${d.meetingId}?tab=questions`,
+      },
     }));
   return [
     ...RECORD_KINDS.flatMap((kind) =>
@@ -98,6 +112,7 @@ export function recordEntries(
           },
         })),
     ),
+    ...decisions,
     ...reviews,
   ];
 }
@@ -223,43 +238,6 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
   ];
 }
 
-const THEME_ENTRIES: {
-  value: ThemePreference;
-  label: string;
-  icon: string;
-  keywords: string[];
-}[] = [
-  {
-    value: "light",
-    label: "라이트 화면으로",
-    icon: "sun",
-    keywords: ["밝게", "테마"],
-  },
-  {
-    value: "dark",
-    label: "다크 화면으로",
-    icon: "moon",
-    keywords: ["어둡게", "테마"],
-  },
-  {
-    value: "system",
-    label: "시스템 설정 따르기",
-    icon: "monitor",
-    keywords: ["자동", "테마"],
-  },
-];
-
-function themeEntries(current: ThemePreference): CommandEntry[] {
-  return THEME_ENTRIES.map((t) => ({
-    id: `theme:${t.value}`,
-    label: t.label,
-    icon: t.icon,
-    hint: t.value === current ? "지금" : undefined,
-    keywords: [t.label, ...t.keywords],
-    action: { kind: "theme", value: t.value },
-  }));
-}
-
 function researchEntries(
   data: Pick<WorkspaceData, "researches">,
   researchId: string | undefined,
@@ -277,18 +255,16 @@ function researchEntries(
 }
 
 /**
- * ⌘K 팔레트 묶음. 빈 입력이면 최근 기록·만들기·이동·테마를,
+ * ⌘K 팔레트 묶음. 빈 입력이면 최근 기록·만들기·이동을,
  * 입력이 있으면 기록 전체와 다른 연구도 함께 넣고 cmdk가 걸러 냅니다.
  */
 export function buildCommands({
   data,
   researchId,
-  theme,
   searching,
 }: {
   data: WorkspaceData;
   researchId?: string;
-  theme: ThemePreference;
   searching: boolean;
 }): CommandSection[] {
   const records = researchId ? recordEntries(data, researchId) : [];
@@ -304,7 +280,6 @@ export function buildCommands({
       heading: researchId ? "다른 연구로" : "연구",
       entries: showResearches ? researchEntries(data, researchId) : [],
     },
-    { id: "theme", heading: "화면 테마", entries: themeEntries(theme) },
   ];
   return sections.filter((s) => s.entries.length > 0);
 }

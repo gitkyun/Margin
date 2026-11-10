@@ -17,7 +17,7 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Segments } from "@/components/experience";
+import { Choice, Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,6 +41,7 @@ import { uid, type MaterialVersion } from "@/lib/domain";
 import {
   evidenceIssue,
   errorText,
+  knownProfessorEmails,
   latestResponse,
   latestRound,
   sharingLabels,
@@ -48,11 +49,13 @@ import {
   sourceExcerpt,
   timeText,
 } from "./helpers";
+import { addAdvisor, advisorChoices } from "@/lib/advisors";
 import { localizeServerMessage } from "@/lib/server-messages";
 
 export function ReviewsPage() {
   const { researchId = "" } = useParams();
-  const { data, loading, createReview, user, mode } = useWorkspace();
+  const { data, loading, createReview, saveResearch, user, mode } =
+    useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [filter, setFilter] = useState("all");
@@ -68,8 +71,20 @@ export function ReviewsPage() {
   const [previewFile, setPreviewFile] = useState<MaterialVersion | null>(null);
   const prompted = useRef("");
   const requestKey = useRef(uid());
+  const research = data.researches.find((r) => r.id === researchId);
+  // 연구에 등록한 지도교수가 먼저, 그다음 전에 검토를 요청한 이메일.
+  const professors = useMemo(
+    () =>
+      advisorChoices(
+        research?.advisorEmails,
+        knownProfessorEmails(data.reviews, researchId),
+      ),
+    [research?.advisorEmails, data.reviews, researchId],
+  );
+  // 미리 채운 이메일은 사용자가 쓴 내용이 아니므로 "버릴 내용"으로 세지 않습니다.
+  const emailEdited = email.trim() !== (professors[0] ?? "");
   const requestGuard = useNavigationGuard({
-    dirty: open && (!!title.trim() || !!email.trim() || selected.length > 0),
+    dirty: open && (!!title.trim() || emailEdited || selected.length > 0),
     busy,
     label: "검토 요청",
     onDiscard: () => setOpen(false),
@@ -129,13 +144,13 @@ export function ReviewsPage() {
   };
   const requestClose = () => {
     if (busy) return;
-    if (title.trim() || email.trim() || selected.length) setDiscardOpen(true);
+    if (title.trim() || emailEdited || selected.length) setDiscardOpen(true);
     else close();
   };
   const begin = () => {
     requestKey.current = uid();
     setTitle("");
-    setEmail("");
+    setEmail(professors[0] ?? "");
     setSelected([]);
     setError("");
     setStep("compose");
@@ -187,6 +202,21 @@ export function ReviewsPage() {
       setBusy(false);
     }
   };
+  // 직접 입력해 보낸 교수는 이 연구의 지도교수로 등록해 다음부터 고르기만 하게 합니다.
+  // 등록에 실패해도 검토 요청은 이미 만들어졌으므로 알리기만 합니다.
+  const registerAdvisor = async (professorEmail: string) => {
+    if (!research) return;
+    const current = research.advisorEmails ?? [];
+    const next = addAdvisor(current, professorEmail);
+    if (next === current) return;
+    try {
+      await saveResearch({ ...research, advisorEmails: next });
+    } catch {
+      toast.error(
+        "지도교수 목록에 추가하지 못했어요. 연구 설정에서 등록할 수 있어요.",
+      );
+    }
+  };
   const submit = async () => {
     const issue = validate();
     setError(issue);
@@ -203,6 +233,7 @@ export function ReviewsPage() {
       requestKey.current = uid();
       requestGuard.clear();
       setOpen(false);
+      void registerAdvisor(request.professorEmail);
       toast.success(
         "검토 링크를 만들었어요. 링크를 복사해서 교수님께 직접 전달해 주세요.",
       );
@@ -380,22 +411,38 @@ export function ReviewsPage() {
                 />
               </Field>
               <Field
-                label="교수 계정 이메일"
+                label="검토할 교수"
                 required
-                hint="이 이메일로 등록된 마진 계정만 검토를 열 수 있어요."
+                hint={
+                  professors.length > 0
+                    ? "지도교수는 연구 설정에서 추가하거나 뺄 수 있어요."
+                    : "이 이메일로 등록된 마진 계정만 검토를 열 수 있어요. 보내면 이 연구의 지도교수로 등록돼요."
+                }
               >
-                <Input
-                  aria-label="교수 계정 이메일"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                    >,
-                  ) => setEmail(e.target.value)}
-                  placeholder="professor@example.com"
-                />
+                {professors.length > 0 && (
+                  <Choice
+                    label="검토할 교수"
+                    value={email}
+                    onChange={setEmail}
+                    options={professors.map((p) => ({ value: p, label: p }))}
+                  />
+                )}
+                {professors.length === 0 && (
+                  <Input
+                    aria-label="교수 계정 이메일"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(
+                      e: ChangeEvent<
+                        | HTMLInputElement
+                        | HTMLTextAreaElement
+                        | HTMLSelectElement
+                      >,
+                    ) => setEmail(e.target.value)}
+                    placeholder="professor@example.com"
+                  />
+                )}
               </Field>
               <fieldset className="review-result-selection">
                 <legend>

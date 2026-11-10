@@ -574,6 +574,22 @@
     display: grid;
     gap: 25px;
   }
+  /* 기본 정보 폼 아래에 이어지는 지도교수 구역: 위 구역과 40px 띄웁니다. */
+  .advisor-section {
+    margin-top: var(--spacing-40);
+  }
+  /* 지도교수 추가 줄: 입력 칸과 버튼을 한 줄에 둡니다. */
+  .settings-section form.advisor-add {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    max-width: 480px;
+    margin-top: var(--spacing-16);
+  }
+  .settings-section form.advisor-add > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
   .settings-form-actions {
     display: flex;
     justify-content: end;
