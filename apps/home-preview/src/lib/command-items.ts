@@ -37,6 +37,7 @@ export interface CommandSection {
 }
 
 const RECENT_LIMIT = 5;
+const DECISION_LABEL_MAX = 60;
 
 const RECORD_KINDS = [
   { key: "documents", type: "문서", path: "writing", icon: "file" },
@@ -64,7 +65,7 @@ interface RecordEntry extends CommandEntry {
 /** 이 연구의 보관하지 않은 기록(문서·미팅·피드백·할 일·자료·수정 결과·검토 요청). */
 export function recordEntries(
   data: Pick<WorkspaceData, RecordKey> &
-    Partial<Pick<WorkspaceData, "reviews">>,
+    Partial<Pick<WorkspaceData, "reviews" | "decisions">>,
   researchId: string,
 ): RecordEntry[] {
   // 검토 요청은 연구 밖 주소(/reviews/:id)라 따로 붙입니다.
@@ -78,6 +79,21 @@ export function recordEntries(
       keywords: [r.title, "검토 요청", r.professorEmail],
       updatedAt: r.updatedAt,
       action: { kind: "navigate" as const, to: `/reviews/${r.id}` },
+    }));
+  // 결정은 제목이 없어 글 앞부분을 이름으로 쓰고, 적힌 미팅의 결정·질문 탭으로 갑니다.
+  const decisions: RecordEntry[] = (data.decisions ?? [])
+    .filter((d) => d.researchId === researchId && !d.archivedAt)
+    .map((d) => ({
+      id: `record:decisions:${d.id}`,
+      label: d.text.slice(0, DECISION_LABEL_MAX),
+      icon: "check",
+      hint: "결정",
+      keywords: [d.text, "결정", d.reason ?? ""],
+      updatedAt: d.updatedAt,
+      action: {
+        kind: "navigate" as const,
+        to: `/r/${researchId}/meetings/${d.meetingId}?tab=questions`,
+      },
     }));
   return [
     ...RECORD_KINDS.flatMap((kind) =>
@@ -96,6 +112,7 @@ export function recordEntries(
           },
         })),
     ),
+    ...decisions,
     ...reviews,
   ];
 }

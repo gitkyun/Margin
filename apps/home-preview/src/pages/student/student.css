@@ -598,6 +598,23 @@
     margin: 0;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
+  .student-decision-copy {
+    display: grid;
+    gap: var(--spacing-4);
+    flex: 1;
+    min-width: 0;
+  }
+  .student-decision-copy > small {
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  /* 나중에 바뀐 결정: 지우지 않고 흐리게 둡니다. */
+  .student-decision.is-replaced .student-decision-copy > p {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+  }
   .student-dot {
     width: 5px;
     height: 5px;
