@@ -87,6 +87,50 @@
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
+  /* 연구 방향: 설명 아래에 목적 한두 문장과 질문 목록. 면 없이 왼쪽 선으로만 구분합니다. */
+  .rh-direction {
+    max-width: 66ch;
+    margin-top: var(--spacing-16);
+    padding-left: var(--spacing-14);
+    border-left: 2px solid var(--line-strong);
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1Reading-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .rh-direction-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .rh-direction h2 {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .rh-direction > p {
+    margin: var(--spacing-4) 0 0;
+  }
+  .rh-direction > ol {
+    display: grid;
+    gap: var(--spacing-2);
+    margin: var(--spacing-6) 0 0;
+    padding-left: 1.4em;
+    color: var(--text-secondary);
+  }
+  .rh-direction.is-empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-4) var(--spacing-12);
+    padding-left: 0;
+    border-left: 0;
+    color: var(--text-tertiary);
+  }
   .rh-people {
     display: inline-flex;
     width: fit-content;

@@ -29,6 +29,11 @@ import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
 import { AdvisorSettings } from "./settings/AdvisorSettings";
 import {
+  PURPOSE_MAX,
+  parseQuestions,
+  questionsText,
+} from "@/lib/research-direction";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -400,6 +405,8 @@ export function ResearchSettingsPage() {
     research = data.researches.find((r) => r.id === researchId);
   const [name, setName] = useState(research?.name ?? ""),
     [description, setDescription] = useState(research?.description ?? ""),
+    [purpose, setPurpose] = useState(research?.purpose ?? ""),
+    [questions, setQuestions] = useState(questionsText(research?.questions)),
     [email, setEmail] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -411,10 +418,15 @@ export function ResearchSettingsPage() {
     base.current = research;
     setName(research?.name ?? "");
     setDescription(research?.description ?? "");
+    setPurpose(research?.purpose ?? "");
+    setQuestions(questionsText(research?.questions));
   }, [researchId]);
   const dirty =
       !!research &&
-      (name !== research.name || description !== research.description),
+      (name !== research.name ||
+        description !== research.description ||
+        purpose !== (research.purpose ?? "") ||
+        questions !== questionsText(research.questions)),
     guard = useNavigationGuard({ dirty, busy, label: "연구 기본 정보" });
   if (!research)
     return (
@@ -484,10 +496,14 @@ export function ResearchSettingsPage() {
                         ...base.current!,
                         name: name.trim(),
                         description: description.trim(),
+                        purpose: purpose.trim() || undefined,
+                        questions: parseQuestions(questions),
                       });
                       base.current = saved;
                       setName(saved.name);
                       setDescription(saved.description);
+                      setPurpose(saved.purpose ?? "");
+                      setQuestions(questionsText(saved.questions));
                       guard.clear();
                       toast.success("연구 정보를 저장했어요.");
                     });
@@ -511,6 +527,24 @@ export function ResearchSettingsPage() {
                       onChange={(e) => setDescription(e.target.value)}
                     />
                   </label>
+                  <label className="field">
+                    연구 목적 <small>선택</small>
+                    <Textarea
+                      rows={3}
+                      value={purpose}
+                      maxLength={PURPOSE_MAX}
+                      onChange={(e) => setPurpose(e.target.value)}
+                      placeholder="이 연구로 무엇을 밝히려 하는지 한두 문장으로 적어요."
+                    />
+                  </label>
+                  <label className="field">
+                    연구 질문 <small>선택 · 한 줄에 하나씩, 5개까지</small>
+                    <Textarea
+                      rows={4}
+                      value={questions}
+                      onChange={(e) => setQuestions(e.target.value)}
+                    />
+                  </label>
                   <div className="bottom-actions">
                     <Button
                       variant="outline"
@@ -520,6 +554,8 @@ export function ResearchSettingsPage() {
                         base.current = research;
                         setName(research.name);
                         setDescription(research.description);
+                        setPurpose(research.purpose ?? "");
+                        setQuestions(questionsText(research.questions));
                       }}
                     >
                       변경 취소

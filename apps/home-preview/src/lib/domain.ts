@@ -19,6 +19,10 @@ export interface Research {
   updatedAt: string;
   nextMeetingId?: ID;
   currentPhaseId?: ID;
+  /** 연구 목적 한두 문장. 온보딩·연구 설정에서 적고 홈에 보여 줍니다. */
+  purpose?: string;
+  /** 연구 질문 목록(최대 5개). */
+  questions?: string[];
   /** 이 연구의 지도교수 이메일(소문자). 검토 요청을 만들 때 여기서 고릅니다. */
   advisorEmails?: string[];
   deletedAt?: string;
