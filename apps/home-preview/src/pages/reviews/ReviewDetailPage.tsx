@@ -723,9 +723,13 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                 <Icon name="clock" size={16} />
                 {round.number}차 검토예요. 당시의 설명, 파일, 응답을 그대로 보여
                 줘요.
-                <button type="button" onClick={() => selectRound(rounds[0].id)}>
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => selectRound(rounds[0].id)}
+                >
                   최신 {rounds[0].number}차 검토 열기
-                </button>
+                </Button>
               </div>
             )}
             <Tabs
@@ -1041,8 +1045,9 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                             {replyTo[round.id]?.authorName || "검토 참여자"}에게
                             답글
                           </span>
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
                             aria-label="답글 대상 취소"
                             onClick={() =>
                               setReplyTo((current) => ({
@@ -1052,7 +1057,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                             }
                           >
                             <Icon name="close" size={14} />
-                          </button>
+                          </Button>
                         </div>
                       )}
                       <label

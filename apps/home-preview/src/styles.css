@@ -185,7 +185,6 @@
   .sidebar-brand > .icon-button {
     width: 25px;
     height: 25px;
-    color: var(--text-secondary);
   }
   .workspace-switch {
     display: flex;
@@ -366,21 +365,15 @@
     white-space: nowrap;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
+  /* 아이콘 버튼(Montage)을 감싸는 배치 자리. 모양은 Montage가 맡습니다. */
   .icon-button {
-    background: none;
-    border: 0;
     border-radius: var(--radius-8);
-    color: var(--text-secondary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
     flex-shrink: 0;
-  }
-  .icon-button:hover {
-    background: var(--surface-muted);
-    color: var(--text);
   }
   .notification-trigger {
     position: relative;

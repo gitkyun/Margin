@@ -533,12 +533,7 @@
   }
   .review-earlier-note > button {
     margin-left: auto;
-    color: var(--brand);
-    font-size: var(--typography-caption1-fontSize);
-    border: 0;
-    background: none;
     flex-shrink: 0;
-    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-reading-grid {
     display: grid;
@@ -915,11 +910,6 @@
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .review-reply-target button {
-    border: 0;
-    background: transparent;
-    color: var(--text-secondary);
   }
   .review-settings-dialog,
   .review-recheck-dialog {

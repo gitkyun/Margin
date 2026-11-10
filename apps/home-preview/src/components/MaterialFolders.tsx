@@ -54,8 +54,9 @@ export function MaterialFolders({
               }
             </small>
           </button>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon-xs"
             aria-label={`${f.title} 폴더 편집`}
             onClick={() => {
               setDraft({ ...f });
@@ -63,7 +64,7 @@ export function MaterialFolders({
             }}
           >
             <Icon name="more" size={16} />
-          </button>
+          </Button>
         </div>
         {children.length > 0 && (
           <details open>
@@ -123,8 +124,9 @@ export function MaterialFolders({
             .map((f) => (
               <div className="folder-tree-row" key={f.id}>
                 <span>{f.title}</span>
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   aria-label={`${f.title} 폴더 복원`}
                   disabled={busy}
                   onClick={async () => {
@@ -146,7 +148,7 @@ export function MaterialFolders({
                   }}
                 >
                   복원
-                </button>
+                </Button>
               </div>
             ))}
         </details>

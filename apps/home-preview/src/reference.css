@@ -181,12 +181,6 @@
   .floating-workspace .topbar .icon-button {
     min-width: 32px;
     min-height: 32px;
-    border-radius: var(--radius-8);
-    color: var(--text-secondary);
-  }
-  .floating-workspace .topbar .icon-button:hover {
-    background: var(--surface-muted);
-    color: var(--text);
   }
   .floating-workspace .preview-banner {
     min-height: 34px;

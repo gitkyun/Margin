@@ -1283,20 +1283,13 @@
     background: var(--selected-fill);
     color: var(--semantic-foreground-brand-primary);
   }
-  .folder-tree-row button:hover,
+  .folder-tree-row button:first-child:hover,
   .folder-all:hover {
     background: var(--surface);
   }
   .folder-tree-row small {
     margin-left: auto;
     color: var(--text-secondary);
-  }
-  .folder-tree-row button:last-child {
-    border: 0;
-    background: none;
-    padding: 8px;
-    color: var(--text-secondary);
-    border-radius: var(--radius-8);
   }
   .folder-tree summary {
     font-size: var(--typography-caption2-fontSize);
@@ -1340,13 +1333,6 @@
     font-weight: 600;
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .rms-error button {
-    color: var(--brand);
-    text-decoration: underline;
-    background: none;
-    border: 0;
-    cursor: pointer;
   }
   .app-shell.floating-workspace .sidebar {
     backdrop-filter: none;

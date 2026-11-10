@@ -249,16 +249,19 @@ export function WorkspaceShell({
           <BrandMark />
           <BrandWordmark />
         </Link>
-        <button
-          className="icon-button sidebar-toggle"
-          aria-label={collapsed ? "메뉴 펼치기" : "메뉴 접기"}
-          onClick={() => {
-            setCollapsed(!collapsed);
-            localStorage.setItem("rms-sidebar-collapsed", String(!collapsed));
-          }}
-        >
-          <Icon name={collapsed ? "menu" : "chevron-left"} size={16} />
-        </button>
+        <span className="icon-button sidebar-toggle">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={collapsed ? "메뉴 펼치기" : "메뉴 접기"}
+            onClick={() => {
+              setCollapsed(!collapsed);
+              localStorage.setItem("rms-sidebar-collapsed", String(!collapsed));
+            }}
+          >
+            <Icon name={collapsed ? "menu" : "chevron-left"} size={16} />
+          </Button>
+        </span>
       </div>
       {research && (
         <DropdownMenu value={researchId}>
@@ -438,13 +441,16 @@ export function WorkspaceShell({
       <div className="main-shell">
         <header className="topbar">
           <div className="breadcrumbs">
-            <button
-              className="mobile-menu icon-button"
-              aria-label="메뉴 열기"
-              onClick={() => setMobile(true)}
-            >
-              <Icon name="menu" />
-            </button>
+            <span className="mobile-menu icon-button">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="메뉴 열기"
+                onClick={() => setMobile(true)}
+              >
+                <Icon name="menu" />
+              </Button>
+            </span>
             <Link
               to={research ? `/r/${researchId}` : "/r"}
               title={research?.name}
@@ -463,9 +469,11 @@ export function WorkspaceShell({
               label="사용 안내"
               detail="키보드 단축키는 ? 키로 볼 수 있어요."
             >
-              <Link className="icon-button" aria-label="사용 안내" to="/guide">
-                <Icon name="help" size={19} />
-              </Link>
+              <Button asChild variant="ghost" size="icon-sm">
+                <Link aria-label="사용 안내" to="/guide">
+                  <Icon name="help" size={19} />
+                </Link>
+              </Button>
             </Hint>
             <Hint
               label="알림"
@@ -474,14 +482,16 @@ export function WorkspaceShell({
               }
               position="bottom-end"
             >
-              <button
-                className="icon-button notification-trigger"
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="notification-trigger"
                 aria-label={`새 알림 ${totalUnread}개 보기`}
                 onClick={() => setNotifications(true)}
               >
                 <Icon name="bell" size={20} />
                 {totalUnread > 0 && <i />}
-              </button>
+              </Button>
             </Hint>
           </div>
         </header>
