@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { AnimatedList } from "@/components/AnimatedList";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
 import {
@@ -469,7 +470,7 @@ export function MaterialsPage() {
                       <span>
                         <strong>{version.fileName}</strong>
                         <small>
-                          {new Intl.DateTimeFormat("ko-KR", {
+                          {new Intl.DateTimeFormat(dateLocale(), {
                             month: "long",
                             day: "numeric",
                           }).format(new Date(version.createdAt))}{" "}
@@ -630,7 +631,7 @@ export function MaterialsPage() {
                       </small>
                     </span>
                     <span className="material-row-date">
-                      {new Intl.DateTimeFormat("ko-KR", {
+                      {new Intl.DateTimeFormat(dateLocale(), {
                         month: "long",
                         day: "numeric",
                       }).format(new Date(material.updatedAt))}
@@ -913,7 +914,7 @@ function MaterialPreviewPanel({
     meeting.versionIds.some((id) => versionIds.has(id)),
   );
   const day = (value: string) =>
-    new Intl.DateTimeFormat("ko-KR", {
+    new Intl.DateTimeFormat(dateLocale(), {
       year: "numeric",
       month: "long",
       day: "numeric",

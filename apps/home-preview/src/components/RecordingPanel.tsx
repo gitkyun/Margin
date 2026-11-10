@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -329,7 +330,7 @@ export function RecordingPanel({
         r = {
           ...b,
           meetingId,
-          title: `미팅 녹음 · ${new Date().toLocaleDateString("ko-KR")}`,
+          title: `미팅 녹음 · ${new Date().toLocaleDateString(dateLocale())}`,
           storagePath: `${user.id}/${researchId}/${b.id}.${ext}`,
           fileName: `미팅녹음.${ext}`,
           mimeType: type,

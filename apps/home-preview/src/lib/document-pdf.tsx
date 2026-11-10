@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { timeParts } from "./time-format";
 import {
   Document,
@@ -107,7 +108,7 @@ export async function documentPDF(
         <Text style={styles.title}>{version.title}</Text>
         <Text style={styles.meta}>
           v{version.number} ·{" "}
-          {new Date(version.createdAt).toLocaleString("ko-KR", {
+          {new Date(version.createdAt).toLocaleString(dateLocale(), {
             year: "numeric",
             month: "long",
             day: "numeric",

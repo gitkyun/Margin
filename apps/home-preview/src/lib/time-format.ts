@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 /**
  * 시각 표기 기준 하나. 기본은 24시간제이고, 계정 설정에서 12시간제(오전/오후)나
  * ‘기기 설정 따르기’로 바꿀 수 있습니다. 기기 설정을 읽지 못하면 24시간제로 씁니다.
@@ -84,7 +85,7 @@ export function formatClock(
   const minute = match[2];
   if (hour > 23) return time;
   if (style === "24h") return `${String(hour).padStart(2, "0")}:${minute}`;
-  return `${hour < 12 ? "오전" : "오후"} ${hour % 12 || 12}:${minute}`;
+  return `${hour < 12 ? t("오전") : t("오후")} ${hour % 12 || 12}:${minute}`;
 }
 
 /** 시각 입력 칸(Montage TimePicker)의 형식과 빈 칸 안내 */

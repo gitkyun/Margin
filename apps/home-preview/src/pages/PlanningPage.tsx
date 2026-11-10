@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { timeParts } from "@/lib/time-format";
 import themePlugin from "@fullcalendar/react/themes/forma";
 import { Input } from "@/components/ui/input";
@@ -994,15 +995,22 @@ export function PollPage() {
                 />
                 <div>
                   <strong>
-                    {new Date(o.start).toLocaleDateString("ko-KR", {
+                    {new Date(o.start).toLocaleDateString(dateLocale(), {
                       month: "long",
                       day: "numeric",
                       weekday: "short",
                     })}
                   </strong>
                   <span>
-                    {new Date(o.start).toLocaleTimeString("ko-KR", timeParts())}{" "}
-                    – {new Date(o.end).toLocaleTimeString("ko-KR", timeParts())}
+                    {new Date(o.start).toLocaleTimeString(
+                      dateLocale(),
+                      timeParts(),
+                    )}{" "}
+                    –{" "}
+                    {new Date(o.end).toLocaleTimeString(
+                      dateLocale(),
+                      timeParts(),
+                    )}
                   </span>
                 </div>
               </label>

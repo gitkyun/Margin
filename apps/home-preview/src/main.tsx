@@ -11,12 +11,15 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { App } from "./RmsApp";
+import { currentLang } from "./lib/i18n";
 import { ThemeProvider, useTheme } from "./lib/theme";
 import { NavigationGuardProvider } from "./lib/navigation-guard";
 import "@montage-ui/core/theme.css";
 import "./styles.css";
 import "./design/tokens.css";
 import "./experience.css";
+// 화면 언어를 문서에 알립니다(줄바꿈 규칙, 화면 낭독기 발음).
+document.documentElement.lang = currentLang();
 const client = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
 });

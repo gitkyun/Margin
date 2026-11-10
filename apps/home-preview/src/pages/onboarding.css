@@ -63,7 +63,7 @@
     line-height: var(--typography-title2-lineHeight);
     letter-spacing: var(--typography-title2-letterSpacing);
     font-weight: 700;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .ob-help {
     margin-top: var(--spacing-8);
@@ -71,7 +71,7 @@
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
     letter-spacing: var(--typography-body2-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .ob-fields {
     display: grid;
@@ -187,7 +187,7 @@
     line-height: var(--typography-headline2-lineHeight);
     letter-spacing: var(--typography-headline2-letterSpacing);
     font-weight: 600;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .ob-intro-flow {
     display: grid;
@@ -271,7 +271,7 @@
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2-lineHeight);
     letter-spacing: var(--typography-body2-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .ob-intro-copy strong {
     font-weight: 600;
@@ -616,7 +616,7 @@
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   /* 전체 화면 그림은 작게 그리고, 읽을 크기는 확대가 만들어 줍니다. */
   .ob-shot .ob-shot-title {

@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { timeParts } from "./time-format";
 export type ID = string;
 export type RecordOrigin = "manual" | "ai";
@@ -475,7 +476,7 @@ export function formatDate(
 ) {
   if (!date) return "날짜 미정";
   return new Intl.DateTimeFormat(
-    "ko-KR",
+    dateLocale(),
     options ?? { month: "long", day: "numeric", weekday: "short" },
   ).format(new Date(`${date.slice(0, 10)}T12:00:00`));
 }
@@ -490,7 +491,7 @@ export function formatDateTime(
   if (!value) return "";
   const d = new Date(value);
   if (Number.isNaN(d.valueOf())) return "";
-  return new Intl.DateTimeFormat("ko-KR", {
+  return new Intl.DateTimeFormat(dateLocale(), {
     ...(d.getFullYear() !== new Date().getFullYear() && { year: "numeric" }),
     month: "long",
     day: "numeric",

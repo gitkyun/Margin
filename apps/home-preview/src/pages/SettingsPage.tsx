@@ -1,3 +1,5 @@
+import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { t } from "@/lib/i18n";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -167,6 +169,20 @@ export function AccountPage() {
                 <p className="settings-note">
                   ‘시스템’을 고르면 기기의 라이트·다크 설정을 따라요. 기기에서
                   ‘동작 줄이기’를 켜면 장식 애니메이션도 줄어요.
+                </p>
+              </section>
+              <section className="settings-section">
+                <h2>{t("언어")}</h2>
+                <p>
+                  {t(
+                    "화면에 보이는 말을 바꿔요. 이 브라우저에만 저장되고, 고르면 화면을 새로 불러와요.",
+                  )}
+                </p>
+                <LanguageSwitch />
+                <p className="settings-note">
+                  {t(
+                    "적어 둔 기록과 교수님 응답은 번역하지 않고 쓴 그대로 보여 줘요.",
+                  )}
                 </p>
               </section>
               <section className="settings-section">

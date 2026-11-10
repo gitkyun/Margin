@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { timeParts } from "@/lib/time-format";
 import { friendlyError } from "@/lib/supabase";
 import { StatusBadge } from "@/components/common";
@@ -26,7 +27,7 @@ export function timeText(value?: string) {
   const d = new Date(value);
   return Number.isNaN(d.valueOf())
     ? ""
-    : new Intl.DateTimeFormat("ko-KR", {
+    : new Intl.DateTimeFormat(dateLocale(), {
         month: "short",
         day: "numeric",
         ...timeParts(),

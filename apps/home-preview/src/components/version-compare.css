@@ -67,7 +67,7 @@
     line-height: var(--typography-body2Reading-lineHeight);
     letter-spacing: var(--typography-body2Reading-letterSpacing);
     white-space: pre-wrap;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
   }
   .version-sheet.is-before .version-sheet-text {

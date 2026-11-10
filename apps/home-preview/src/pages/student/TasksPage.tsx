@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { useBackState } from "./shared";
 import {
   SelectField,
@@ -487,7 +488,7 @@ export function TasksPage() {
                           <span className="overdue-label">기한 지남 · </span>
                         )}
                       {task.dueDate
-                        ? new Intl.DateTimeFormat("ko-KR", {
+                        ? new Intl.DateTimeFormat(dateLocale(), {
                             month: "2-digit",
                             day: "2-digit",
                           }).format(new Date(`${task.dueDate}T12:00:00`))

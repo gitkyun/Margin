@@ -57,7 +57,7 @@
     -webkit-font-smoothing: antialiased;
     /* Korean: break between words, not inside them; long tokens (file names,
      URLs) may still break so nothing overflows. See docs/design/ui-quality.md. */
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: break-word;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
@@ -588,7 +588,7 @@
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
   }
   .field-hint {

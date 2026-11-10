@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import { formatClock, timeParts } from "@/lib/time-format";
 import { RollingNumber } from "@/components/RollingNumber";
 import { useEffect, useState } from "react";
@@ -611,11 +612,14 @@ export function HomePage() {
                         <small>
                           {`${event.actorName} · `}
                           <time dateTime={event.createdAt}>
-                            {new Date(event.createdAt).toLocaleString("ko-KR", {
-                              month: "numeric",
-                              day: "numeric",
-                              ...timeParts(),
-                            })}
+                            {new Date(event.createdAt).toLocaleString(
+                              dateLocale(),
+                              {
+                                month: "numeric",
+                                day: "numeric",
+                                ...timeParts(),
+                              },
+                            )}
                           </time>
                         </small>
                       </span>

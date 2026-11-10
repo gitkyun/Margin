@@ -10,10 +10,10 @@
   .lp-site h3,
   .lp-site h4 {
     text-wrap: balance;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .lp-site p {
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .lp-site section[id] {
     scroll-margin-top: 84px;
