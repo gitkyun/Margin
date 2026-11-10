@@ -82,16 +82,22 @@ describe("서비스 소개 화면", () => {
   it("흐름 단계를 누르면 그 단계가 골라지고 오른쪽 장면에 알린다", () => {
     const scene = vi.fn();
     render(<ServiceIntro onDone={() => {}} onScene={scene} />);
-    expect(scene).toHaveBeenLastCalledWith({ slide: 0, flowIndex: 0 });
+    expect(scene).toHaveBeenLastCalledWith(
+      expect.objectContaining({ slide: 0, flowIndex: 0 }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
     const step = screen.getByRole("button", { name: /수정 결과/ });
     expect(step.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(step);
     expect(step.getAttribute("aria-pressed")).toBe("true");
-    expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 3 });
+    expect(scene).toHaveBeenLastCalledWith(
+      expect.objectContaining({ slide: 1, flowIndex: 3 }),
+    );
     // 키보드로 옮겨 가도 같은 단계가 골라져요.
     fireEvent.focus(screen.getByRole("button", { name: /검토 요청/ }));
-    expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 4 });
+    expect(scene).toHaveBeenLastCalledWith(
+      expect.objectContaining({ slide: 1, flowIndex: 4 }),
+    );
   });
 
   it("장면은 고른 단계의 화면 그림과 예시를 보여 준다", () => {
@@ -119,11 +125,15 @@ describe("서비스 소개 화면", () => {
       const scene = vi.fn();
       render(<ServiceIntro onDone={() => {}} onScene={scene} />);
       act(() => vi.advanceTimersByTime(INTRO_SLIDE_MS));
-      expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 0 });
+      expect(scene).toHaveBeenLastCalledWith(
+        expect.objectContaining({ slide: 1, flowIndex: 0 }),
+      );
       // 흐름 장에서는 다섯 단계를 차례로 돈 뒤 다음 장으로 가요.
       for (let index = 1; index < INTRO_FLOW.length; index += 1) {
         act(() => vi.advanceTimersByTime(INTRO_FLOW_MS));
-        expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: index });
+        expect(scene).toHaveBeenLastCalledWith(
+          expect.objectContaining({ slide: 1, flowIndex: index }),
+        );
       }
       act(() => vi.advanceTimersByTime(INTRO_FLOW_MS));
       expect(screen.getByText(`소개 3 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
@@ -172,6 +182,54 @@ describe("서비스 소개 화면", () => {
       expect(screen.getByText(`소개 1 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
     } finally {
       vi.unstubAllGlobals();
+      vi.useRealTimers();
+    }
+  });
+
+  it("이전으로 돌아가면 그 장이 처음부터 다시 시작한다", () => {
+    vi.useFakeTimers();
+    try {
+      const scene = vi.fn();
+      render(<ServiceIntro onDone={() => {}} onScene={scene} />);
+      fireEvent.click(screen.getByRole("button", { name: "다음" }));
+      // 단계를 직접 골라 자동 넘김이 멈춘 상태에서 돌아가요.
+      fireEvent.click(screen.getByRole("button", { name: /수정 결과/ }));
+      const before = scene.mock.lastCall?.[0].run;
+      fireEvent.click(screen.getByRole("button", { name: "이전" }));
+      expect(screen.getByText(`소개 1 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
+      // 장면을 처음부터 다시 돌리라는 값이 바뀌고, 자동 넘김도 다시 켜져 있어요.
+      expect(scene.mock.lastCall?.[0].run).not.toBe(before);
+      expect(
+        screen.getByRole("button", { name: "자동 넘김 멈추기" }),
+      ).toBeTruthy();
+      act(() => vi.advanceTimersByTime(INTRO_SLIDE_MS));
+      // 다시 넘어간 흐름 장은 고르던 단계가 아니라 첫 단계부터 시작해요.
+      expect(scene).toHaveBeenLastCalledWith(
+        expect.objectContaining({ slide: 1, flowIndex: 0 }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("단계를 가리키는 동안만 멈추고, 벗어나면 다시 넘어간다", () => {
+    vi.useFakeTimers();
+    try {
+      const scene = vi.fn();
+      render(<ServiceIntro onDone={() => {}} onScene={scene} />);
+      fireEvent.click(screen.getByRole("button", { name: "다음" }));
+      const step = screen.getByRole("button", { name: /할 일/ });
+      fireEvent.pointerEnter(step);
+      act(() => vi.advanceTimersByTime(60_000));
+      expect(scene).toHaveBeenLastCalledWith(
+        expect.objectContaining({ slide: 1, flowIndex: 2 }),
+      );
+      fireEvent.pointerLeave(step);
+      act(() => vi.advanceTimersByTime(INTRO_FLOW_MS));
+      expect(scene).toHaveBeenLastCalledWith(
+        expect.objectContaining({ slide: 1, flowIndex: 3 }),
+      );
+    } finally {
       vi.useRealTimers();
     }
   });
