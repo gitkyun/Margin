@@ -7,7 +7,7 @@ import {
   reviewDepthHints,
   researchModelLabel,
 } from "@/lib/assistant-presentation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -414,6 +414,9 @@ export function ResearchSettingsPage() {
       "archive" | "trash" | "restore" | null
     >(null);
   const base = useRef(research);
+  // 이름을 비우면 저장 버튼만 꺼지지 않고 이유를 칸 아래에 알려 줍니다(QA F-005).
+  const nameErrorId = useId();
+  const nameBlank = !name.trim();
   useEffect(() => {
     base.current = research;
     setName(research?.name ?? "");
@@ -516,7 +519,18 @@ export function ResearchSettingsPage() {
                       onChange={(e) => setName(e.target.value)}
                       maxLength={120}
                       required
+                      aria-invalid={nameBlank || undefined}
+                      aria-describedby={nameBlank ? nameErrorId : undefined}
                     />
+                    {nameBlank && (
+                      <small
+                        id={nameErrorId}
+                        className="field-error"
+                        role="alert"
+                      >
+                        연구 이름을 입력해 주세요.
+                      </small>
+                    )}
                   </label>
                   <label className="field">
                     설명 <small>선택</small>

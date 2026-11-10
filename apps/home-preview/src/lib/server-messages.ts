@@ -217,9 +217,27 @@ const PATTERNS: Array<[RegExp, (field: string) => string]> = [
   ],
 ];
 
+/**
+ * 요청 자체가 실패하면 supabase-js가 브라우저 오류를 `이름: 내용`으로 돌려줘요
+ * (예: AbortSignal.timeout → "TimeoutError: signal timed out"). 영어 원문이
+ * 화면에 그대로 나오지 않게 바꿉니다(QA F-003).
+ */
+const REQUEST_FAILURES: Array<[RegExp, string]> = [
+  [
+    /^(TimeoutError|AbortError):/u,
+    "서버 응답이 늦어 요청을 마치지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+  ],
+  [
+    /^TypeError: (Failed to fetch|Load failed|NetworkError)/iu,
+    "서버에 연결하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+  ],
+];
+
 /** Returns the 마진-style wording for a known server message, else the input. */
 export function localizeServerMessage(message: string): string {
   const text = message.trim();
+  for (const [pattern, wording] of REQUEST_FAILURES)
+    if (pattern.test(text)) return wording;
   const exact = EXACT[text];
   if (exact) return exact;
   for (const [pattern, build] of PATTERNS) {

@@ -280,6 +280,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
   const planForm = useSaving();
   const [taskPlan, setTaskPlan] = useState<RevisionPlan | null>(null);
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskTitleError, setTaskTitleError] = useState("");
+  const taskTitleInput = useRef<HTMLInputElement>(null);
   const [taskDescription, setTaskDescription] = useState("");
   const taskForm = useSaving();
   const [cancelPlan, setCancelPlan] = useState<RevisionPlan | null>(null);
@@ -343,6 +345,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
     taskBase.current = recordBase(researchId);
     setTaskPlan(plan);
     setTaskTitle(plan.suggestedTasks[0] ?? plan.title);
+    setTaskTitleError("");
     setTaskDescription(plan.method);
     taskForm.setError(null);
   }
@@ -908,10 +911,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
       >
         <form
           className="stack"
+          noValidate
           onSubmit={(event) => {
             event.preventDefault();
-            if (!taskPlan || !taskTitle.trim()) {
-              taskForm.setError("제목을 입력해 주세요.");
+            if (!taskPlan) return;
+            if (!taskTitle.trim()) {
+              // 브라우저 기본 말풍선 대신 칸 아래에 알려 줍니다(QA F-005).
+              setTaskTitleError("제목을 입력해 주세요.");
+              taskTitleInput.current?.focus();
               return;
             }
             void taskForm.perform(async () => {
@@ -937,7 +944,12 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             label="제목"
             required
             value={taskTitle}
-            onChange={setTaskTitle}
+            onChange={(value) => {
+              setTaskTitle(value);
+              setTaskTitleError("");
+            }}
+            error={taskTitleError || undefined}
+            inputRef={taskTitleInput}
           />
           <LabeledText
             label="설명"

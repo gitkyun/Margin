@@ -448,6 +448,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   // 결정 사항에서 바로 할 일을 만듭니다(검수 H-5). 미팅 준비 목록과는 따로 저장돼요.
   const [taskFrom, setTaskFrom] = useState<Decision | null>(null);
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskTitleError, setTaskTitleError] = useState("");
+  const taskTitleInput = useRef<HTMLInputElement>(null);
   const taskForm = useSaving();
   const [linkQuestionId, setLinkQuestionId] = useState<string | null>(null);
   const [targetMeetingId, setTargetMeetingId] = useState("");
@@ -631,13 +633,16 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   function openTaskFrom(decision: Decision) {
     setTaskFrom(decision);
     setTaskTitle(decision.text.split("\n")[0].slice(0, 80));
+    setTaskTitleError("");
     taskForm.setError(null);
   }
   async function storeTaskFrom(event: React.FormEvent) {
     event.preventDefault();
     if (!taskFrom) return;
     if (!taskTitle.trim()) {
-      taskForm.setError("할 일 이름을 적어 주세요.");
+      // 브라우저 기본 말풍선 대신 칸 아래에 알려 줍니다(QA F-005).
+      setTaskTitleError("할 일 이름을 적어 주세요.");
+      taskTitleInput.current?.focus();
       return;
     }
     const task = draftTask(
@@ -1791,12 +1796,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         title="할 일로 만들기"
         description="결정 사항은 그대로 두고, 할 일 목록에 새 할 일을 만들어요. 기한과 우선순위는 할 일 화면에서 정할 수 있어요."
       >
-        <form className="stack" onSubmit={storeTaskFrom}>
+        <form className="stack" noValidate onSubmit={storeTaskFrom}>
           <LabeledInput
             label="할 일 이름"
             required
             value={taskTitle}
-            onChange={setTaskTitle}
+            onChange={(value) => {
+              setTaskTitle(value);
+              setTaskTitleError("");
+            }}
+            error={taskTitleError || undefined}
+            inputRef={taskTitleInput}
           />
           <p className="student-footnote">
             설명에 이 미팅과 결정 사항이 함께 적혀요.

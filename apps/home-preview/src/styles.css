@@ -581,6 +581,16 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption2-letterSpacing);
   }
+  .field-error {
+    margin: 0;
+    font-weight: 500;
+    color: var(--danger);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
   .field-hint {
     font-weight: 400;
     color: var(--text-secondary);

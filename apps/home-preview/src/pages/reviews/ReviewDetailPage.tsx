@@ -240,6 +240,11 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   >({});
   const { busy, run: runBusy } = useBusyKey();
   const [error, setError] = useState("");
+  // 칸 하나에 대한 오류는 그 칸 바로 아래에 보여 줍니다(QA D-016).
+  const [reasonError, setReasonError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const reasonInput = useRef<HTMLTextAreaElement>(null);
+  const emailInput = useRef<HTMLInputElement>(null);
   const [sharingOpen, setSharingOpen] = useState(false);
   const [sharingEmail, setSharingEmail] = useState("");
   const [recheckOpen, setRecheckOpen] = useState(false);
@@ -320,6 +325,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   ]);
   useEffect(() => {
     setError("");
+    setReasonError("");
     setHistoryOpen(false);
   }, [round?.id]);
   const selectItem = (value: ReviewItem) => {
@@ -346,9 +352,11 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     }
     const chosenResult = draft.result;
     if (draft.result === "changes_requested" && !draft.comment.trim()) {
-      setError("추가로 수정할 내용을 적어 주세요.");
+      setReasonError("추가로 수정할 내용을 적어 주세요.");
+      reasonInput.current?.focus();
       return;
     }
+    setReasonError("");
     const saved = await doAction(
       "response",
       () =>
@@ -410,11 +418,13 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
       changeEmail &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sharingEmail.trim())
     ) {
-      setError(
+      setEmailError(
         "이메일 형식이 맞지 않아요. 교수님 계정 이메일을 확인해 주세요.",
       );
+      emailInput.current?.focus();
       return;
     }
+    setEmailError("");
     const saved = await doAction(
       "sharing",
       () =>
@@ -569,6 +579,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                 onClick={() => {
                   setSharingEmail(request.professorEmail);
                   setError("");
+                  setEmailError("");
                   setSharingOpen(true);
                 }}
               >
@@ -898,6 +909,11 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                             : "응답 댓글"
                         }
                         required={draft.result === "changes_requested"}
+                        error={
+                          draft.result === "changes_requested"
+                            ? reasonError || undefined
+                            : undefined
+                        }
                         hint={
                           draft.result === "changes_requested"
                             ? "무엇을 더 고쳐야 하는지 알려 주세요."
@@ -905,6 +921,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                         }
                       >
                         <Textarea
+                          ref={reasonInput}
                           aria-label={
                             draft.result === "changes_requested"
                               ? "추가로 수정할 내용"
@@ -918,12 +935,13 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                               | HTMLTextAreaElement
                               | HTMLSelectElement
                             >,
-                          ) =>
+                          ) => {
+                            setReasonError("");
                             setResponseDrafts((current) => ({
                               ...current,
                               [round.id]: { ...draft, comment: e.target.value },
-                            }))
-                          }
+                            }));
+                          }}
                           placeholder={
                             draft.result === "changes_requested"
                               ? "예: 연구 목적에 맞는 비교 기준을 하나 더 보완해 주세요."
@@ -1142,8 +1160,13 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
               {sharingLabels[request.status]}
             </StatusBadge>
           </div>
-          <Field label="교수 계정 이메일" required>
+          <Field
+            label="교수 계정 이메일"
+            required
+            error={emailError || undefined}
+          >
             <Input
+              ref={emailInput}
               aria-label="교수 계정 이메일"
               type="email"
               value={sharingEmail}
@@ -1151,7 +1174,10 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                 e: ChangeEvent<
                   HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
                 >,
-              ) => setSharingEmail(e.target.value)}
+              ) => {
+                setEmailError("");
+                setSharingEmail(e.target.value);
+              }}
             />
           </Field>
           <p className="review-settings-note">
