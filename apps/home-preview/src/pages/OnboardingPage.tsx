@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { parseAdvisorEmails } from "@/lib/advisors";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/common";
 import { Icon } from "@/components/icons";
@@ -71,6 +72,7 @@ export function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [advisors, setAdvisors] = useState("");
   // undefined: 아직 답하지 않음, null: 나중에 정하기
   const [phaseIndex, setPhaseIndex] = useState<number | null | undefined>();
   const [meetingKind, setMeetingKind] = useState<
@@ -133,6 +135,7 @@ export function OnboardingPage() {
           ownerId: user.id,
           name: name.trim(),
           description: description.trim(),
+          advisorEmails: parseAdvisorEmails(advisors),
           createdAt: stamp,
           updatedAt: stamp,
         });
@@ -290,6 +293,19 @@ export function OnboardingPage() {
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
                   placeholder="예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구"
+                />
+              </Field>
+              <Field
+                label="지도교수 이메일"
+                hint="여러 명이면 쉼표로 나눠 주세요. 나중에 연구 설정에서 바꿀 수 있어요."
+              >
+                <Input
+                  type="text"
+                  inputMode="email"
+                  autoComplete="off"
+                  value={advisors}
+                  onChange={(event) => setAdvisors(event.target.value)}
+                  placeholder="professor@example.com"
                 />
               </Field>
             </div>
