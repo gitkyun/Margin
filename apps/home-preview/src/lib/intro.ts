@@ -74,9 +74,12 @@ export const INTRO_FLOW: IntroFlowStep[] = [
 
 export const INTRO_SLIDE_COUNT = 3;
 
-/** 자동 넘김 간격(ms). 소개 장은 5초, 흐름 장의 단계 하나는 3.5초 머뭅니다. */
+/**
+ * 자동 넘김 간격(ms). 소개 장은 5초, 흐름 장의 단계 하나는 6초 머뭅니다.
+ * 단계마다 전체 화면 1초 → 천천히 확대(1.6초) → 확대된 화면을 읽을 시간이 들어 있습니다.
+ */
 export const INTRO_SLIDE_MS = 5000;
-export const INTRO_FLOW_MS = 3500;
+export const INTRO_FLOW_MS = 6000;
 
 export type IntroAutoStep =
   { kind: "flow"; flowIndex: number } | { kind: "slide"; slide: number } | null;

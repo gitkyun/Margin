@@ -20,6 +20,8 @@ interface ServiceIntroProps {
 export interface IntroScene {
   slide: number;
   flowIndex: number;
+  /** 장을 옮길 때마다 바뀌는 값. 장면을 처음부터 다시 돌릴 때 씁니다. */
+  run: number;
 }
 
 const TITLES = [
@@ -36,6 +38,8 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
   const [slide, setSlide] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [flowIndex, setFlowIndex] = useState(0);
+  // 장을 옮길 때마다 올려서 같은 장으로 돌아와도 장면과 남은 시간이 처음부터 다시 돌게 합니다.
+  const [run, setRun] = useState(0);
   const heading = useRef<HTMLHeadingElement>(null);
   const moved = useRef(false);
   const last = slide === INTRO_SLIDE_COUNT - 1;
@@ -47,8 +51,12 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
         window.matchMedia("(prefers-reduced-motion: reduce)").matches
       ),
   );
+  // 단계를 직접 골랐거나(picked) 가리키고 있는 동안(hovering)은 그 장에서만 잠깐 멈춥니다.
+  const [picked, setPicked] = useState(false);
+  const [hovering, setHovering] = useState(false);
   const autoMs = slide === 1 ? INTRO_FLOW_MS : INTRO_SLIDE_MS;
-  const timed = auto && !last;
+  const running = auto && !picked;
+  const timed = running && !hovering && !last;
 
   // 자동 넘김: 초점은 옮기지 않고, 바뀐 장은 아래 알림 줄로 읽어 줍니다.
   useEffect(() => {
@@ -64,11 +72,11 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
       }
     }, autoMs);
     return () => window.clearTimeout(timer);
-  }, [timed, autoMs, slide, flowIndex]);
+  }, [timed, autoMs, slide, flowIndex, run]);
 
-  /** 사람이 단계를 직접 고르면 자동 넘김을 멈춥니다. */
+  /** 사람이 단계를 직접 고르면 이 장에서는 자동 넘김을 멈춥니다. 장을 옮기면 다시 처음부터 돕니다. */
   function pickFlow(index: number) {
-    setAuto(false);
+    setPicked(true);
     setFlowIndex(index);
   }
 
@@ -78,12 +86,17 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
   }, [slide]);
 
   useEffect(() => {
-    onScene?.({ slide, flowIndex });
-  }, [onScene, slide, flowIndex]);
+    onScene?.({ slide, flowIndex, run });
+  }, [onScene, slide, flowIndex, run]);
 
   function go(next: number) {
     moved.current = true;
     setDirection(next > slide ? "forward" : "back");
+    // 옮겨 간 장은 항상 처음부터 시작합니다(흐름은 첫 단계, 자동 넘김은 다시 셈).
+    setFlowIndex(0);
+    setPicked(false);
+    setHovering(false);
+    setRun((count) => count + 1);
     setSlide(next);
   }
 
@@ -99,11 +112,14 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
           <button
             type="button"
             className="ob-auto"
-            aria-pressed={auto}
-            onClick={() => setAuto(!auto)}
+            aria-pressed={running}
+            onClick={() => {
+              setAuto(!running);
+              setPicked(false);
+            }}
           >
-            <Icon name={auto ? "pause" : "play"} size={14} />
-            {auto ? "자동 넘김 멈추기" : "자동 넘김 켜기"}
+            <Icon name={running ? "pause" : "play"} size={14} />
+            {running ? "자동 넘김 멈추기" : "자동 넘김 켜기"}
           </button>
         )}
       </div>
@@ -154,7 +170,11 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
                     }
                     onClick={() => pickFlow(index)}
                     onFocus={() => pickFlow(index)}
-                    onPointerEnter={() => pickFlow(index)}
+                    onPointerEnter={() => {
+                      setHovering(true);
+                      setFlowIndex(index);
+                    }}
+                    onPointerLeave={() => setHovering(false)}
                   >
                     <span className="ob-intro-icon" aria-hidden="true">
                       <Icon name={step.icon} size={18} />

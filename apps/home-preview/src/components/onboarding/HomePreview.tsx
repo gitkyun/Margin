@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { BrandMark } from "@/components/brand/Brand";
+import { useZoomInto } from "@/lib/use-zoom-into";
 import { Icon } from "@/components/icons";
 import { formatDate, relativeDay } from "@/lib/domain";
 import type { OnboardingMeeting } from "@/lib/onboarding";
@@ -47,124 +49,137 @@ export function HomePreview({
 }: HomePreviewProps) {
   const title = name.trim();
   const week = weekOf(today);
+  const frame = useRef<HTMLDivElement>(null);
+  // 지금 묻는 질문이 채우는 자리로 전체 화면에서 확대해 들어갑니다.
+  useZoomInto(frame, focus && `[data-part="${focus}"]`, focus ?? "whole", {
+    zoomedValue: focus,
+    // 답이 들어와 그 자리의 크기가 바뀌면 물러나지 않고 자리만 다시 맞춥니다.
+    refitKey: [title, phaseTitle, meeting?.date, meeting?.title].join("|"),
+  });
   return (
-    <div className="ob-window" aria-hidden="true" inert>
-      <div className="ob-rail">
-        <BrandMark className="ob-rail-mark" />
-        <span className={`ob-rail-research ${title ? "ob-filled" : ""}`}>
-          {title || <i className="ob-skel" />}
-        </span>
-        {NAV_ICONS.map((icon, index) => (
-          <span
-            className={`ob-rail-item ${index === 0 ? "ob-rail-current" : ""}`}
-            key={icon}
-          >
-            <Icon name={icon} size={14} />
-            <i className="ob-skel" />
+    <div className="ob-window" ref={frame} aria-hidden="true" inert>
+      <div className="ob-window-canvas" data-zoom-canvas>
+        <div className="ob-rail">
+          <BrandMark className="ob-rail-mark" />
+          <span className={`ob-rail-research ${title ? "ob-filled" : ""}`}>
+            {title || <i className="ob-skel" />}
           </span>
-        ))}
-      </div>
-      <div className="ob-main" data-focus={focus}>
-        <div className="ob-head">
-          <div className="ob-head-copy">
-            {title ? (
-              <strong className="ob-title ob-filled">{title}</strong>
-            ) : (
-              <i className="ob-skel ob-skel-title" />
-            )}
-            {description.trim() ? (
-              <span className="ob-description ob-filled">
-                {description.trim()}
-              </span>
-            ) : (
-              <i className="ob-skel ob-skel-line" />
-            )}
-            {phaseTitle ? (
-              <span className="ob-phase ob-filled">
-                <Icon name="flag" size={12} />
-                현재 단계 · {phaseTitle}
-              </span>
-            ) : (
-              phaseTitle === undefined && (
-                <i className="ob-skel ob-skel-short" />
-              )
-            )}
-          </div>
-          {leadLabel ? (
-            <span className="ob-lead ob-filled">{leadLabel}</span>
-          ) : (
-            <i className="ob-skel ob-skel-button" />
-          )}
-        </div>
-        <div className="ob-columns">
-          <div className="ob-card ob-card-meeting">
-            <span className="ob-card-label">
-              <Icon name="calendar" size={12} />
-              다음 미팅
+          {NAV_ICONS.map((icon, index) => (
+            <span
+              className={`ob-rail-item ${index === 0 ? "ob-rail-current" : ""}`}
+              key={icon}
+            >
+              <Icon name={icon} size={14} />
+              <i className="ob-skel" />
             </span>
-            {meeting ? (
-              <div className="ob-meeting ob-filled">
-                <span className="ob-date">
-                  {meeting.date ? (
-                    <>
-                      <small>{Number(meeting.date.slice(5, 7))}월</small>
-                      <strong>{Number(meeting.date.slice(8, 10))}</strong>
-                    </>
-                  ) : (
-                    <>
-                      <small>날짜</small>
-                      <strong>미정</strong>
-                    </>
-                  )}
+          ))}
+        </div>
+        <div className="ob-main">
+          <div className="ob-head">
+            <div className="ob-head-copy">
+              {title ? (
+                <strong className="ob-title ob-filled" data-part="name">
+                  {title}
+                </strong>
+              ) : (
+                <i className="ob-skel ob-skel-title" data-part="name" />
+              )}
+              {description.trim() ? (
+                <span className="ob-description ob-filled">
+                  {description.trim()}
                 </span>
-                <span className="ob-meeting-copy">
-                  <small>
-                    {formatDate(meeting.date)}
-                    {meeting.time && ` · ${meeting.time}`}
-                    {relativeDay(meeting.date) && (
-                      <em>{relativeDay(meeting.date)}</em>
-                    )}
-                  </small>
-                  <strong>{meeting.title}</strong>
-                </span>
-              </div>
-            ) : meeting === null ? (
-              <span className="ob-empty ob-filled">
-                다음 미팅이 아직 없어요
-              </span>
-            ) : (
-              <>
+              ) : (
                 <i className="ob-skel ob-skel-line" />
-                <i className="ob-skel ob-skel-short" />
-              </>
-            )}
-            <i className="ob-skel ob-skel-row" />
-            <i className="ob-skel ob-skel-row" />
-          </div>
-          <div className="ob-side">
-            <div className="ob-card">
-              <span className="ob-card-label">이번 주</span>
-              <div className="ob-week">
-                {week.map((date, index) => (
-                  <span
-                    key={date}
-                    className={date === today ? "ob-week-today" : ""}
-                  >
-                    <small>{WEEKDAYS[index]}</small>
-                    <b>{Number(date.slice(8, 10))}</b>
-                    <i
-                      className={
-                        meeting?.date === date ? "ob-week-dot ob-filled" : ""
-                      }
-                    />
-                  </span>
-                ))}
-              </div>
+              )}
+              {phaseTitle ? (
+                <span className="ob-phase ob-filled" data-part="phase">
+                  <Icon name="flag" size={12} />
+                  현재 단계 · {phaseTitle}
+                </span>
+              ) : (
+                (phaseTitle === undefined || focus === "phase") && (
+                  <i className="ob-skel ob-skel-short" data-part="phase" />
+                )
+              )}
             </div>
-            <div className="ob-card">
-              <span className="ob-card-label">남은 할 일</span>
+            {leadLabel ? (
+              <span className="ob-lead ob-filled">{leadLabel}</span>
+            ) : (
+              <i className="ob-skel ob-skel-button" />
+            )}
+          </div>
+          <div className="ob-columns">
+            <div className="ob-card ob-card-meeting">
+              <div className="ob-meeting-block" data-part="meeting">
+                <span className="ob-card-label">
+                  <Icon name="calendar" size={12} />
+                  다음 미팅
+                </span>
+                {meeting ? (
+                  <div className="ob-meeting ob-filled">
+                    <span className="ob-date">
+                      {meeting.date ? (
+                        <>
+                          <small>{Number(meeting.date.slice(5, 7))}월</small>
+                          <strong>{Number(meeting.date.slice(8, 10))}</strong>
+                        </>
+                      ) : (
+                        <>
+                          <small>날짜</small>
+                          <strong>미정</strong>
+                        </>
+                      )}
+                    </span>
+                    <span className="ob-meeting-copy">
+                      <small>
+                        {formatDate(meeting.date)}
+                        {meeting.time && ` · ${meeting.time}`}
+                        {relativeDay(meeting.date) && (
+                          <em>{relativeDay(meeting.date)}</em>
+                        )}
+                      </small>
+                      <strong>{meeting.title}</strong>
+                    </span>
+                  </div>
+                ) : meeting === null ? (
+                  <span className="ob-empty ob-filled">
+                    다음 미팅이 아직 없어요
+                  </span>
+                ) : (
+                  <>
+                    <i className="ob-skel ob-skel-line" />
+                    <i className="ob-skel ob-skel-short" />
+                  </>
+                )}
+              </div>
               <i className="ob-skel ob-skel-row" />
               <i className="ob-skel ob-skel-row" />
+            </div>
+            <div className="ob-side">
+              <div className="ob-card">
+                <span className="ob-card-label">이번 주</span>
+                <div className="ob-week">
+                  {week.map((date, index) => (
+                    <span
+                      key={date}
+                      className={date === today ? "ob-week-today" : ""}
+                    >
+                      <small>{WEEKDAYS[index]}</small>
+                      <b>{Number(date.slice(8, 10))}</b>
+                      <i
+                        className={
+                          meeting?.date === date ? "ob-week-dot ob-filled" : ""
+                        }
+                      />
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="ob-card">
+                <span className="ob-card-label">남은 할 일</span>
+                <i className="ob-skel ob-skel-row" />
+                <i className="ob-skel ob-skel-row" />
+              </div>
             </div>
           </div>
         </div>

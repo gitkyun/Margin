@@ -106,7 +106,11 @@ export function OnboardingPage() {
     }),
   );
 
-  const [scene, setScene] = useState<IntroScene>({ slide: 0, flowIndex: 0 });
+  const [scene, setScene] = useState<IntroScene>({
+    slide: 0,
+    flowIndex: 0,
+    run: 0,
+  });
   // 마지막 장은 곧 채울 연구 홈 미리보기를 보여 줍니다.
   const staged = intro && scene.slide < 2;
 
@@ -502,7 +506,11 @@ export function OnboardingPage() {
       </div>
       <div className={`ob-preview-side ${reviewing ? "ob-preview-full" : ""}`}>
         {staged ? (
-          <IntroStage slide={scene.slide} flowIndex={scene.flowIndex} />
+          <IntroStage
+            key={scene.run}
+            slide={scene.slide}
+            flowIndex={scene.flowIndex}
+          />
         ) : (
           <HomePreview
             name={name}

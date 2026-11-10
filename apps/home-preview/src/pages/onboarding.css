@@ -446,9 +446,7 @@
   /* ── 소개 장면(오른쪽). 실제 화면을 줄인 창 모양이고, 한 번만 움직입니다. ── */
   .ob-stage {
     --stage-duration: calc(var(--motion-duration-page) * 2);
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    gap: var(--spacing-8);
+    position: relative;
     width: 100%;
     max-width: 760px;
     aspect-ratio: 16 / 10;
@@ -459,6 +457,69 @@
     background: var(--canvas);
     box-shadow: var(--raise-shadow);
     overflow: hidden;
+  }
+  /* 확대는 이 그림 전체에 겁니다(lib/use-zoom-into.ts). 틀이 넘친 부분을 잘라 냅니다. */
+  .ob-stage-canvas,
+  .ob-window-canvas {
+    position: relative;
+    display: grid;
+    gap: var(--spacing-8);
+    height: 100%;
+    transform-origin: 0 0;
+  }
+  .ob-stage-canvas {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .ob-window-canvas {
+    grid-template-columns: 132px minmax(0, 1fr);
+  }
+  /*
+   * 확대된 동안 핵심 컴포넌트가 아닌 부분은 흐리게 물러납니다(사용자 요청, 2026-11-11).
+   * 그림 안의 초점 표현이고, 면 뒤를 비치는 유리 효과(backdrop-filter)는 쓰지 않습니다.
+   */
+  .ob-stage-canvas :is(.ob-stage-rail, .ob-shot *),
+  .ob-window-canvas
+    :is(.ob-rail, .ob-side, .ob-head, .ob-head *, .ob-columns, .ob-card > *) {
+    transition:
+      filter var(--motion-duration-page) ease-out,
+      opacity var(--motion-duration-page) ease-out;
+  }
+  /* 바탕 면도 한 단계 어둡게 내려 핵심 컴포넌트만 밝게 남깁니다. */
+  .ob-stage-canvas .ob-stage-main,
+  .ob-window-canvas .ob-main {
+    transition: background-color var(--motion-duration-page) ease-out;
+  }
+  .ob-stage-canvas[data-zoomed] .ob-stage-main,
+  .ob-window-canvas[data-zoomed] .ob-main {
+    background: var(--surface-muted);
+    transition-duration: calc(var(--motion-duration-page) * 4);
+  }
+  .ob-stage-canvas[data-zoomed] .ob-shot-task.ob-shot-focus,
+  .ob-stage-canvas[data-zoomed] .ob-shot-reply.ob-shot-focus {
+    background: var(--surface);
+  }
+  .ob-stage-canvas[data-zoomed] .ob-stage-rail,
+  .ob-stage-canvas[data-zoomed]
+    .ob-shot
+    > :not(.ob-shot-focus):not(:has(.ob-shot-focus)),
+  .ob-stage-canvas[data-zoomed]
+    :has(> .ob-shot-focus):not(.ob-shot)
+    > :not(.ob-shot-focus),
+  .ob-window-canvas[data-zoomed]
+    :is(.ob-rail, .ob-side, .ob-head > :last-child),
+  .ob-window-canvas:is([data-zoomed="name"], [data-zoomed="phase"]) .ob-columns,
+  .ob-window-canvas[data-zoomed="name"]
+    .ob-head-copy
+    > :not([data-part="name"]),
+  .ob-window-canvas[data-zoomed="phase"]
+    .ob-head-copy
+    > :not([data-part="phase"]),
+  .ob-window-canvas[data-zoomed="meeting"] .ob-card-meeting > :not([data-part]),
+  .ob-window-canvas[data-zoomed="meeting"] .ob-head {
+    filter: blur(3px) brightness(0.78);
+    opacity: 0.8;
+    /* 확대와 같은 속도로 천천히 흐려지고, 전체로 돌아갈 때는 바로 또렷해집니다. */
+    transition-duration: calc(var(--motion-duration-page) * 4);
   }
   .ob-stage-rail,
   .ob-stage-main {
@@ -518,51 +579,15 @@
     padding: var(--spacing-32);
     overflow: hidden;
   }
-  /* 화면 전체를 먼저 보여 주고, 그 단계의 핵심 컴포넌트로 확대해 들어갑니다. */
   .ob-shot {
-    --zoom-from: 0.68;
-    --zoom-to: 1;
     display: grid;
     gap: var(--spacing-12);
-    transform: scale(var(--zoom-to));
-    animation: ob-shot-zoom calc(var(--motion-duration-page) * 3)
-      var(--motion-ease-standard) both;
+    animation: ob-shot-in var(--motion-duration-page)
+      var(--motion-ease-standard);
   }
-  @keyframes ob-shot-zoom {
+  @keyframes ob-shot-in {
     from {
       opacity: 0;
-      transform: scale(var(--zoom-from));
-    }
-    20%,
-    40% {
-      opacity: 1;
-      transform: scale(var(--zoom-from));
-    }
-  }
-  .ob-shot-focus {
-    border-radius: var(--radius-8);
-    outline: 2px solid var(--brand);
-    outline-offset: 3px;
-    animation: ob-shot-focus calc(var(--motion-duration-page) * 3) ease-out both;
-  }
-  .ob-shot-card.ob-shot-focus {
-    border-radius: var(--radius-12);
-  }
-  /* 확대가 끝나면 주변은 물러나고 핵심 컴포넌트만 또렷하게 남습니다. */
-  .ob-shot-extra {
-    opacity: 0.45;
-    animation: ob-shot-extra calc(var(--motion-duration-page) * 3) ease-out both;
-  }
-  @keyframes ob-shot-extra {
-    from,
-    70% {
-      opacity: 1;
-    }
-  }
-  @keyframes ob-shot-focus {
-    from,
-    70% {
-      outline-color: transparent;
     }
   }
   .ob-shot-title {
@@ -588,15 +613,24 @@
   .ob-shot-card {
     display: grid;
     gap: var(--spacing-8);
-    padding: var(--spacing-16);
+    padding: var(--spacing-12);
     border: 1px solid var(--line);
-    border-radius: var(--radius-12);
+    border-radius: var(--radius-10);
     background: var(--surface);
     min-width: 0;
-    font-size: var(--typography-body2-fontSize);
-    line-height: var(--typography-body2-lineHeight);
-    letter-spacing: var(--typography-body2-letterSpacing);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
     word-break: keep-all;
+  }
+  /* 전체 화면 그림은 작게 그리고, 읽을 크기는 확대가 만들어 줍니다. */
+  .ob-shot .ob-shot-title {
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1-lineHeight);
+  }
+  .ob-stage-main:has(> .ob-shot) {
+    justify-content: flex-start;
+    padding: var(--spacing-20);
   }
   .ob-shot-label {
     display: inline-flex;
@@ -636,10 +670,19 @@
     border: 1.5px solid var(--line);
     border-radius: var(--radius-4);
   }
-  .ob-shot-pair {
+  /* 전체 화면처럼 카드 여러 장을 두 칸으로 놓습니다. 핵심 컴포넌트는 그 가운데 하나입니다. */
+  .ob-shot-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     gap: var(--spacing-8);
+  }
+  .ob-shot-wide {
+    grid-column: 1 / -1;
+  }
+  .ob-shot-task .ob-skel,
+  .ob-shot-card > .ob-skel {
+    height: 6px;
   }
   .ob-shot-reply {
     display: flex;
@@ -730,9 +773,7 @@
   .ob-window {
     animation: ob-window-in var(--motion-duration-page)
       var(--motion-ease-standard);
-    display: grid;
-    grid-template-columns: 132px minmax(0, 1fr);
-    gap: var(--spacing-8);
+    position: relative;
     width: 100%;
     max-width: 760px;
     aspect-ratio: 16 / 10;
@@ -866,6 +907,13 @@
     gap: var(--spacing-4);
     font-weight: 600;
   }
+  .ob-meeting-block {
+    display: grid;
+    gap: var(--spacing-8);
+    justify-items: start;
+    justify-self: start;
+    min-width: 60%;
+  }
   .ob-meeting {
     display: flex;
     align-items: center;
@@ -986,40 +1034,6 @@
       transform: translateY(8px);
     }
   }
-  /* 질문마다 미리보기 전체에서 그 질문이 채우는 자리로 확대해 들어갑니다. */
-  .ob-main[data-focus] {
-    --zoom-to: 1.28;
-    transform: scale(var(--zoom-to));
-    transform-origin: 0 0;
-    animation: ob-focus-name calc(var(--motion-duration-page) * 3)
-      var(--motion-ease-standard) both;
-  }
-  .ob-main[data-focus="phase"] {
-    animation-name: ob-focus-phase;
-  }
-  .ob-main[data-focus="meeting"] {
-    transform-origin: 0 100%;
-    animation-name: ob-focus-meeting;
-  }
-  @keyframes ob-focus-name {
-    from,
-    35% {
-      transform: scale(1);
-    }
-  }
-  @keyframes ob-focus-phase {
-    from,
-    35% {
-      transform: scale(1);
-    }
-  }
-  @keyframes ob-focus-meeting {
-    from,
-    35% {
-      transform: scale(1);
-    }
-  }
-
   /* 방금 답이 반영된 자리를 옅은 브랜드 면으로 한 번 짚어 줍니다. */
   .ob-window .ob-filled {
     border-radius: var(--radius-4);
@@ -1064,12 +1078,12 @@
       margin: 0;
       padding-top: var(--spacing-24);
     }
-    /* 좁은 화면: 미리보기는 질문 위 160px 띠로 줄이고 마지막에만 크게 보여 줍니다. */
+    /* 좁은 화면: 미리보기는 질문 위 띠(태블릿 300px, 휴대폰 248px)로 줄이고 마지막에만 크게 보여 줍니다. */
     .ob-preview-side {
       order: -1;
       justify-content: flex-start;
-      height: 160px;
-      padding: var(--spacing-16) var(--spacing-20) 0;
+      height: 300px;
+      padding: var(--spacing-16) var(--spacing-20);
       border-left: 0;
       border-bottom: 1px solid var(--line);
       overflow: hidden;
@@ -1085,55 +1099,34 @@
       display: block;
     }
     .ob-window {
-      grid-template-columns: minmax(0, 1fr);
-      max-width: 560px;
+      max-width: 720px;
+      height: 100%;
       aspect-ratio: auto;
     }
-    /* 좁은 화면의 160px 띠에 맞게 장면을 줄입니다. 사이드바와 덜 중요한 줄은 뺍니다. */
-    .ob-stage {
+    /* 띠보다 긴 미리보기는 전체가 보이게 줄여서 놓습니다(lib/use-zoom-into.ts). */
+    .ob-window-canvas {
       grid-template-columns: minmax(0, 1fr);
-      max-width: 560px;
-      height: 144px;
+      height: auto;
+    }
+    .ob-preview-full .ob-window {
+      height: auto;
+    }
+    /* 위쪽 띠에 맞게 장면을 줄입니다. 태블릿 폭에서는 사이드바까지 전체를 보여 줍니다. */
+    .ob-stage {
+      max-width: 720px;
+      height: 100%;
       aspect-ratio: auto;
       padding: var(--spacing-4);
     }
-    .ob-stage-rail,
-    .ob-shot-extra,
-    .ob-gather .ob-shot-title,
-    .ob-gather-row small {
-      display: none;
+    .ob-stage-canvas {
+      grid-template-columns: 56px minmax(0, 1fr);
     }
     .ob-stage-main {
-      gap: var(--spacing-6);
-      padding: var(--spacing-6) var(--spacing-12);
-    }
-    .ob-shot {
-      --zoom-from: 0.8;
-      --zoom-to: 1;
-      gap: var(--spacing-6);
-    }
-    .ob-main[data-focus] {
-      --zoom-to: 1.12;
-    }
-    .ob-shot-title {
-      font-size: var(--typography-label1-fontSize);
-      line-height: var(--typography-label1-lineHeight);
-    }
-    .ob-shot-card {
-      gap: var(--spacing-4);
-      padding: var(--spacing-8) var(--spacing-12);
-      font-size: var(--typography-label1-fontSize);
-      line-height: var(--typography-label1-lineHeight);
-    }
-    .ob-shot-pair {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .ob-shot-reply {
-      padding-top: var(--spacing-4);
+      gap: var(--spacing-8);
+      padding: var(--spacing-16);
     }
     .ob-gather-row {
-      padding: var(--spacing-4) var(--spacing-12);
-      font-size: var(--typography-label1-fontSize);
+      padding: var(--spacing-8) var(--spacing-12);
     }
     .ob-gather-row .ob-intro-icon {
       width: 24px;
@@ -1147,6 +1140,44 @@
     }
     .ob-rail {
       display: none;
+    }
+  }
+  @media (max-width: 599px) {
+    .ob-preview-side {
+      height: 248px;
+    }
+    /* 휴대폰: 사이드바만 빼고 본문 전체를 보여 줍니다. 읽을 크기는 확대가 만들어 줍니다. */
+    .ob-stage-canvas {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ob-stage-rail,
+    .ob-shot-wide {
+      display: none;
+    }
+    .ob-shot {
+      gap: var(--spacing-8);
+    }
+    .ob-shot-grid {
+      gap: var(--spacing-6);
+    }
+    .ob-shot-card {
+      gap: var(--spacing-4);
+      padding: var(--spacing-8);
+      font-size: var(--typography-caption2-fontSize);
+      line-height: var(--typography-caption2-lineHeight);
+    }
+    .ob-stage-main,
+    .ob-stage-main:has(> .ob-shot) {
+      gap: var(--spacing-6);
+      padding: var(--spacing-12);
+    }
+    .ob-gather .ob-shot-title,
+    .ob-gather-row small {
+      display: none;
+    }
+    .ob-gather-row {
+      padding: var(--spacing-4) var(--spacing-12);
+      font-size: var(--typography-label1-fontSize);
     }
   }
   @media (max-width: 480px) {
@@ -1168,16 +1199,13 @@
     .ob-gather .ob-shot-title,
     .ob-gather-row,
     .ob-shot,
-    .ob-shot-focus,
-    .ob-shot-extra,
-    .ob-main[data-focus],
     .ob-meter span[data-timed]::after,
     .ob-intro-step[data-timed]::after {
       animation: none;
     }
-    .ob-shot,
-    .ob-main[data-focus] {
-      transform: none;
+    .ob-stage-canvas *,
+    .ob-window-canvas * {
+      transition: none;
     }
     .ob-gather-row {
       box-shadow: none;
