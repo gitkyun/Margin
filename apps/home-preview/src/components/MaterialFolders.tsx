@@ -251,7 +251,7 @@ export function MaterialFolders({
                 >
                   취소
                 </Button>
-                <Button disabled={busy || !draft.title.trim()}>
+                <Button type="submit" disabled={busy || !draft.title.trim()}>
                   {busy ? "저장 중" : "저장"}
                 </Button>
               </div>

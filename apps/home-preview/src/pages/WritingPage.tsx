@@ -207,7 +207,7 @@ export function WritingPage() {
               >
                 취소
               </Button>
-              <Button disabled={creating || !newTitle.trim()}>
+              <Button type="submit" disabled={creating || !newTitle.trim()}>
                 {creating ? "만드는 중" : "문서 만들기"}
               </Button>
             </div>
