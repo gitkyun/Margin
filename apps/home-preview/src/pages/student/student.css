@@ -365,33 +365,37 @@
     color: var(--text-secondary);
     flex-shrink: 0;
   }
+  /* 날짜 칸: 56px 정사각형. 테두리 없이 옅은 면 위에 월(작게)과 날짜(크게)만 둡니다. */
   .meeting-date-tile {
-    width: 54px;
-    height: 62px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-12);
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: var(--spacing-2);
     flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-12);
     background: var(--surface-muted);
   }
   .meeting-date-tile small {
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .meeting-date-tile strong {
-    font-size: var(--typography-heading1-fontSize);
-    font-weight: 600;
-    margin-top: 3px;
-    line-height: var(--typography-heading1-lineHeight);
-    letter-spacing: var(--typography-heading1-letterSpacing);
+    font-size: var(--typography-heading2-fontSize);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    letter-spacing: var(--typography-heading2-letterSpacing);
   }
-  .meeting-date-tile.is-undated strong {
-    font-size: var(--typography-body2-fontSize);
-    letter-spacing: var(--typography-body2-letterSpacing);
+  /* 날짜를 아직 안 정한 미팅: 면을 비우고 점선으로만 자리를 표시합니다. */
+  .meeting-date-tile.is-undated {
+    border: 1px dashed var(--line-strong);
+    background: transparent;
+    color: var(--text-tertiary);
   }
   .meeting-row-copy {
     flex: 1;
@@ -532,6 +536,8 @@
     padding-bottom: 20px;
   }
   .meeting-memo {
+    display: block;
+    width: 100%;
     min-height: 390px;
     font-size: var(--typography-body1-fontSize);
     line-height: var(--typography-body1Reading-lineHeight);
@@ -593,6 +599,23 @@
     line-height: var(--typography-body2Reading-lineHeight);
     margin: 0;
     letter-spacing: var(--typography-body2-letterSpacing);
+  }
+  .student-decision-copy {
+    display: grid;
+    gap: var(--spacing-4);
+    flex: 1;
+    min-width: 0;
+  }
+  .student-decision-copy > small {
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  /* 나중에 바뀐 결정: 지우지 않고 흐리게 둡니다. */
+  .student-decision.is-replaced .student-decision-copy > p {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
   }
   .student-dot {
     width: 5px;

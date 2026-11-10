@@ -8,6 +8,11 @@ import {
   reviewDepthHints,
 } from "@/lib/assistant-presentation";
 import { useAICapabilities } from "@/lib/ai-capabilities";
+import {
+  AI_NOT_CONFIGURED_MESSAGE,
+  AINotConfiguredError,
+  useAINotConfigured,
+} from "@/lib/ai-availability";
 import { Choice } from "@/components/experience";
 import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
@@ -48,6 +53,7 @@ export function AIWorkbench({
 }) {
   const { runAI, mode, user } = useWorkspace();
   const caps = useAICapabilities();
+  const aiNotConfigured = useAINotConfigured();
   const [selectedModelId, setSelectedModelId] = useState(
     String(input.model ?? user.preferences?.model ?? ""),
   );
@@ -117,9 +123,12 @@ export function AIWorkbench({
     } catch (e) {
       if (current === sequence.current && !abort.signal.aborted)
         setError(
-          e instanceof Error
-            ? e.message
-            : "AI 제안을 받지 못했어요. 다시 시도하거나 직접 작성해 주세요.",
+          // 연결 전이면 위 안내 줄이 대신 보여요.
+          e instanceof AINotConfiguredError
+            ? null
+            : e instanceof Error
+              ? e.message
+              : "AI 제안을 받지 못했어요. 다시 시도하거나 직접 작성해 주세요.",
         );
     } finally {
       if (current === sequence.current) setRunning(false);
@@ -216,7 +225,7 @@ export function AIWorkbench({
           {input.sourceRevision ? ` · 원문 v${input.sourceRevision}` : ""}
         </small>
       </div>
-      {selectedModel && (
+      {selectedModel && !aiNotConfigured && (
         <details className="margin-review-settings">
           <summary>
             이번 실행 설정
@@ -257,10 +266,16 @@ export function AIWorkbench({
           ? "원문과 AI 제안을 구분해 확인하고, 필요한 것만 저장하세요."
           : "원문과 AI 제안을 구분해 확인하고, 필요한 것만 선택하세요."}
       </p>
-      {mode === "preview" && (
+      {mode === "preview" ? (
         <p className="student-inline-note">
           이 미리보기에서는 AI를 실행할 수 없어요.
         </p>
+      ) : (
+        aiNotConfigured && (
+          <p className="student-inline-note" role="status">
+            {AI_NOT_CONFIGURED_MESSAGE}
+          </p>
+        )
       )}
       {stale && (
         <p className="student-inline-note" role="status">
@@ -283,7 +298,10 @@ export function AIWorkbench({
           <Button
             onClick={generate}
             disabled={
-              mode === "preview" || saving !== null || !input.sourceText.trim()
+              mode === "preview" ||
+              aiNotConfigured ||
+              saving !== null ||
+              !input.sourceText.trim()
             }
           >
             <Icon name="sparkles" size={16} />

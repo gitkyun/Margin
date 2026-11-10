@@ -225,36 +225,6 @@ export function AnimatedList({ children }: { children: ReactNode }) {
     </div>
   );
 }
-export function DockItem({
-  children,
-  label,
-  onClick,
-  active,
-  disabled,
-}: {
-  children: ReactNode;
-  label: string;
-  onClick: () => void;
-  active?: boolean;
-  disabled?: boolean;
-}) {
-  const reduced = useReducedMotion();
-  return (
-    <Hint label={label} position="top-center">
-      <motion.button
-        type="button"
-        aria-label={label}
-        aria-pressed={active}
-        disabled={disabled}
-        whileHover={reduced ? undefined : { y: -3, scale: 1.08 }}
-        whileTap={reduced ? undefined : { scale: 0.97 }}
-        onClick={onClick}
-      >
-        {children}
-      </motion.button>
-    </Hint>
-  );
-}
 export function VisibilityField({
   value,
   onChange,

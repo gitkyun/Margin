@@ -27,6 +27,12 @@ import { Choice } from "@/components/experience";
 import { ThemeSwitch } from "./AuthPages";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
+import { AdvisorSettings } from "./settings/AdvisorSettings";
+import {
+  PURPOSE_MAX,
+  parseQuestions,
+  questionsText,
+} from "@/lib/research-direction";
 import {
   Dialog,
   DialogContent,
@@ -399,6 +405,8 @@ export function ResearchSettingsPage() {
     research = data.researches.find((r) => r.id === researchId);
   const [name, setName] = useState(research?.name ?? ""),
     [description, setDescription] = useState(research?.description ?? ""),
+    [purpose, setPurpose] = useState(research?.purpose ?? ""),
+    [questions, setQuestions] = useState(questionsText(research?.questions)),
     [email, setEmail] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -413,10 +421,15 @@ export function ResearchSettingsPage() {
     base.current = research;
     setName(research?.name ?? "");
     setDescription(research?.description ?? "");
+    setPurpose(research?.purpose ?? "");
+    setQuestions(questionsText(research?.questions));
   }, [researchId]);
   const dirty =
       !!research &&
-      (name !== research.name || description !== research.description),
+      (name !== research.name ||
+        description !== research.description ||
+        purpose !== (research.purpose ?? "") ||
+        questions !== questionsText(research.questions)),
     guard = useNavigationGuard({ dirty, busy, label: "연구 기본 정보" });
   if (!research)
     return (
@@ -475,76 +488,122 @@ export function ResearchSettingsPage() {
             </p>
           )}
           {tab === "basic" ? (
-            <section className="settings-section">
-              <h2>기본 정보</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void perform(async () => {
-                    const saved = await saveResearch({
-                      ...base.current!,
-                      name: name.trim(),
-                      description: description.trim(),
+            <>
+              <section className="settings-section">
+                <h2>기본 정보</h2>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void perform(async () => {
+                      const saved = await saveResearch({
+                        ...base.current!,
+                        name: name.trim(),
+                        description: description.trim(),
+                        purpose: purpose.trim() || undefined,
+                        questions: parseQuestions(questions),
+                      });
+                      base.current = saved;
+                      setName(saved.name);
+                      setDescription(saved.description);
+                      setPurpose(saved.purpose ?? "");
+                      setQuestions(questionsText(saved.questions));
+                      guard.clear();
+                      toast.success("연구 정보를 저장했어요.");
                     });
-                    base.current = saved;
-                    setName(saved.name);
-                    setDescription(saved.description);
-                    guard.clear();
-                    toast.success("연구 정보를 저장했어요.");
-                  });
-                }}
-              >
-                <label className="field">
-                  연구 이름
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={120}
-                    required
-                    aria-invalid={nameBlank || undefined}
-                    aria-describedby={nameBlank ? nameErrorId : undefined}
-                  />
-                  {nameBlank && (
-                    <small
-                      id={nameErrorId}
-                      className="field-error"
-                      role="alert"
+                  }}
+                >
+                  <label className="field">
+                    연구 이름
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      maxLength={120}
+                      required
+                      aria-invalid={nameBlank || undefined}
+                      aria-describedby={nameBlank ? nameErrorId : undefined}
+                    />
+                    {nameBlank && (
+                      <small
+                        id={nameErrorId}
+                        className="field-error"
+                        role="alert"
+                      >
+                        연구 이름을 입력해 주세요.
+                      </small>
+                    )}
+                  </label>
+                  <label className="field">
+                    설명 <small>선택</small>
+                    <Textarea
+                      rows={5}
+                      value={description}
+                      maxLength={3000}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    연구 목적 <small>선택</small>
+                    <Textarea
+                      rows={3}
+                      value={purpose}
+                      maxLength={PURPOSE_MAX}
+                      onChange={(e) => setPurpose(e.target.value)}
+                      placeholder="이 연구로 무엇을 밝히려 하는지 한두 문장으로 적어요."
+                    />
+                  </label>
+                  <label className="field">
+                    연구 질문 <small>선택 · 한 줄에 하나씩, 5개까지</small>
+                    <Textarea
+                      rows={4}
+                      value={questions}
+                      onChange={(e) => setQuestions(e.target.value)}
+                    />
+                  </label>
+                  <div className="bottom-actions">
+                    <Button
+                      variant="outline"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        base.current = research;
+                        setName(research.name);
+                        setDescription(research.description);
+                        setPurpose(research.purpose ?? "");
+                        setQuestions(questionsText(research.questions));
+                      }}
                     >
-                      연구 이름을 입력해 주세요.
-                    </small>
-                  )}
-                </label>
-                <label className="field">
-                  설명 <small>선택</small>
-                  <Textarea
-                    rows={5}
-                    value={description}
-                    maxLength={3000}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </label>
-                <div className="bottom-actions">
-                  <Button
-                    variant="outline"
-                    type="button"
-                    disabled={busy}
-                    onClick={() => {
-                      base.current = research;
-                      setName(research.name);
-                      setDescription(research.description);
-                    }}
-                  >
-                    변경 취소
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={busy || !name.trim() || !dirty}
-                  >
-                    {busy ? "저장 중" : "저장"}
-                  </Button>
-                </div>
-              </form>
-            </section>
+                      변경 취소
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={busy || !name.trim() || !dirty}
+                    >
+                      {busy ? "저장 중" : "저장"}
+                    </Button>
+                  </div>
+                </form>
+              </section>
+              <AdvisorSettings
+                emails={research.advisorEmails ?? []}
+                canEdit={
+                  owner ||
+                  members.some(
+                    (m) => m.userId === user.id && m.status === "active",
+                  )
+                }
+                busy={busy}
+                onSave={(emails) =>
+                  perform(async () => {
+                    // 기본 정보 폼과 같은 기준값을 써서 서로 덮어쓰지 않게 합니다.
+                    base.current = await saveResearch({
+                      ...base.current!,
+                      advisorEmails: emails,
+                    });
+                    toast.success("지도교수 목록을 저장했어요.");
+                  })
+                }
+              />
+            </>
           ) : tab === "members" ? (
             <section className="settings-section">
               <h2>공동연구자</h2>

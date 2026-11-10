@@ -378,11 +378,15 @@ export function PlanningPage() {
               ]}
               locale={koLocale}
               initialView="dayGridMonth"
+              // 달 이름 양옆에 이전·다음 버튼을 두어 한 곳에서 달을 넘깁니다.
               headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,timeGridWeek,listMonth",
+                left: "prev title next",
+                center: "",
+                right: "today dayGridMonth,timeGridWeek,listMonth",
               }}
+              // 날짜 칸은 숫자만 보여 줍니다("10일" → "10").
+              dayCellFormat={{ day: "numeric" }}
+              dayCellTopContent={(info) => info.dayNumberText.replace("일", "")}
               height="auto"
               events={[
                 ...meetings

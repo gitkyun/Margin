@@ -1,17 +1,17 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Command } from "cmdk";
 import { ModalContainer, ModalHeading } from "@montage-ui/core";
 import { Dialog } from "./ui/dialog";
 import { Icon } from "./icons";
 import { useExperience } from "@/lib/experience";
-import { useTheme } from "@/lib/theme";
 import {
   buildCommands,
   rankSections,
   type CommandEntry,
 } from "@/lib/command-items";
 import { commandFilter } from "@/lib/hangul-search";
+import type { BackState } from "@/pages/student/shared";
 import "./command-palette.css";
 
 interface CommandPaletteProps {
@@ -19,6 +19,22 @@ interface CommandPaletteProps {
   onOpenChange: (open: boolean) => void;
   /** 연구 안에서 열면 그 연구의 기록·화면을 보여 줍니다. */
   researchId?: string;
+}
+
+/**
+ * 팔레트로 다른 기록을 열 때 지금 화면을 '돌아올 곳'으로 넘깁니다(QA F-004).
+ * 이름은 지금 화면의 제목(h1), 없으면 탭 제목의 첫 부분을 써요.
+ * 받는 쪽의 readBackState가 앱 안 주소만 받아들입니다.
+ */
+export function backFrom(location: {
+  pathname: string;
+  search: string;
+}): BackState {
+  const heading = document
+    .querySelector("#main-content h1")
+    ?.textContent?.trim();
+  const label = heading || document.title.split(" · ")[0]?.trim() || "";
+  return { from: { path: `${location.pathname}${location.search}`, label } };
 }
 
 /**
@@ -32,16 +48,12 @@ export function CommandPalette({
 }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const { data } = useExperience();
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const searching = query.trim().length > 0;
   const sections = useMemo(
-    () =>
-      rankSections(
-        buildCommands({ data, researchId, theme, searching }),
-        query,
-      ),
-    [data, researchId, theme, searching, query],
+    () => rankSections(buildCommands({ data, researchId, searching }), query),
+    [data, researchId, searching, query],
   );
 
   function changeOpen(next: boolean) {
@@ -51,8 +63,7 @@ export function CommandPalette({
 
   function run(entry: CommandEntry) {
     changeOpen(false);
-    if (entry.action.kind === "theme") setTheme(entry.action.value);
-    else navigate(entry.action.to);
+    navigate(entry.action.to, { state: backFrom(location) });
   }
 
   return (
