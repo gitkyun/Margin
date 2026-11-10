@@ -1,11 +1,19 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { IntroStage } from "../src/components/onboarding/IntroStage";
 import { ServiceIntro } from "../src/components/onboarding/ServiceIntro";
 import {
   INTRO_FLOW,
+  INTRO_FLOW_MS,
   INTRO_SLIDE_COUNT,
+  INTRO_SLIDE_MS,
   isIntroSeen,
   markIntroSeen,
   shouldShowIntro,
@@ -86,18 +94,86 @@ describe("서비스 소개 화면", () => {
     expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 4 });
   });
 
-  it("장면은 고른 단계까지 선을 잇고 그 단계의 예시를 보여 준다", () => {
+  it("장면은 고른 단계의 화면 그림과 예시를 보여 준다", () => {
     const { container } = render(<IntroStage slide={1} flowIndex={2} />);
-    const states = [...container.querySelectorAll(".ob-node")].map((node) =>
-      node.getAttribute("data-state"),
+    const states = [...container.querySelectorAll(".ob-stage-nav span")].map(
+      (node) => node.getAttribute("data-state"),
     );
     expect(states).toEqual(["done", "done", "active", null, null]);
-    expect(container.querySelector(".ob-flowcard")?.textContent).toContain(
+    expect(container.querySelector(".ob-shot")?.textContent).toContain(
       INTRO_FLOW[2].example,
     );
     expect(
       container.querySelector(".ob-stage")?.getAttribute("aria-hidden"),
     ).toBe("true");
+  });
+
+  it("검토 요청 장면은 교수 결과 이름을 제품 용어 그대로 쓴다", () => {
+    const { container } = render(<IntroStage slide={1} flowIndex={4} />);
+    expect(container.textContent).toContain("수정 내용 확인");
+  });
+
+  it("자동으로 넘어가다가 마지막 장에서 멈춘다", () => {
+    vi.useFakeTimers();
+    try {
+      const scene = vi.fn();
+      render(<ServiceIntro onDone={() => {}} onScene={scene} />);
+      act(() => vi.advanceTimersByTime(INTRO_SLIDE_MS));
+      expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 0 });
+      // 흐름 장에서는 다섯 단계를 차례로 돈 뒤 다음 장으로 가요.
+      for (let index = 1; index < INTRO_FLOW.length; index += 1) {
+        act(() => vi.advanceTimersByTime(INTRO_FLOW_MS));
+        expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: index });
+      }
+      act(() => vi.advanceTimersByTime(INTRO_FLOW_MS));
+      expect(screen.getByText(`소개 3 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
+      // 마지막 장은 사람이 직접 눌러야 넘어가요.
+      act(() => vi.advanceTimersByTime(60_000));
+      expect(screen.getByRole("button", { name: "연구 만들기" })).toBeTruthy();
+      expect(screen.queryByRole("button", { name: /자동 넘김/ })).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("자동 넘김을 멈추거나 단계를 직접 고르면 더 넘어가지 않는다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<ServiceIntro onDone={() => {}} />);
+      fireEvent.click(screen.getByRole("button", { name: "자동 넘김 멈추기" }));
+      act(() => vi.advanceTimersByTime(60_000));
+      expect(screen.getByText(`소개 1 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "자동 넘김 켜기" }));
+      act(() => vi.advanceTimersByTime(INTRO_SLIDE_MS));
+      expect(screen.getByText(`소개 2 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
+      const step = screen.getByRole("button", { name: /할 일/ });
+      fireEvent.click(step);
+      act(() => vi.advanceTimersByTime(60_000));
+      expect(step.getAttribute("aria-pressed")).toBe("true");
+      expect(
+        screen.getByRole("button", { name: "자동 넘김 켜기" }),
+      ).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("동작 줄이기 설정이면 자동으로 넘기지 않는다", () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("reduce"),
+      addEventListener() {},
+      removeEventListener() {},
+    }));
+    try {
+      render(<ServiceIntro onDone={() => {}} />);
+      act(() => vi.advanceTimersByTime(60_000));
+      expect(screen.getByText(`소개 1 / ${INTRO_SLIDE_COUNT}`)).toBeTruthy();
+    } finally {
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    }
   });
 
   it("어느 장에서든 건너뛸 수 있다", () => {
