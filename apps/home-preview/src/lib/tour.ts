@@ -17,6 +17,15 @@ export function markTourSeen(): void {
   }
 }
 
+/** 사용 안내의 ‘다시 보기’. 다음에 연구 홈을 열 때 안내가 다시 나옵니다. */
+export function resetTourSeen(): void {
+  try {
+    localStorage.removeItem(SEEN_KEY);
+  } catch {
+    // 저장소를 쓸 수 없으면 원래도 매번 나옵니다.
+  }
+}
+
 /** 아직 보지 않았을 때 한 번 자동으로 뜨고, `?tour=1`로 들어오면 다시 볼 수 있습니다. */
 export function shouldShowTour(input: {
   seen: boolean;

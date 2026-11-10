@@ -393,175 +393,252 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
     text-align: center;
   }
-  /* ── 소개 장면(오른쪽). 한 번만 움직이고 되풀이하지 않습니다. ───────── */
+  /* ── 소개 장면(오른쪽). 실제 화면을 줄인 창 모양이고, 한 번만 움직입니다. ── */
   .ob-stage {
     --stage-duration: calc(var(--motion-duration-page) * 2);
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    place-items: center;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: var(--spacing-8);
     width: 100%;
     max-width: 760px;
     aspect-ratio: 16 / 10;
     margin: 0 auto;
-    padding: var(--spacing-24);
+    padding: var(--spacing-8);
     border: 1px solid var(--line);
     border-radius: var(--radius-16);
-    background: var(--surface);
+    background: var(--canvas);
     box-shadow: var(--raise-shadow);
     overflow: hidden;
   }
-  /* 첫 장: 흩어져 있던 기록 세 줄이 ‘내 연구’ 안으로 모입니다. */
-  .ob-gather-home {
-    display: grid;
-    gap: var(--spacing-8);
-    width: 340px;
-    max-width: 100%;
-    padding: var(--spacing-20);
+  .ob-stage-rail,
+  .ob-stage-main {
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
-    background: var(--canvas);
-    animation: ob-gather-home var(--stage-duration) var(--motion-ease-standard)
-      both;
+    background: var(--surface);
+    min-width: 0;
   }
-  .ob-gather-title {
+  .ob-stage-rail {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--spacing-8);
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 600;
+    gap: var(--spacing-16);
+    padding: var(--spacing-16) 0;
   }
-  .ob-gather-title .ob-rail-mark {
+  .ob-stage-rail .ob-rail-mark {
+    width: 22px;
+    height: 22px;
     margin: 0;
   }
-  .ob-gather-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-8);
-    min-height: 48px;
-    padding: 0 var(--spacing-16);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-10);
-    background: var(--surface);
-    font-size: var(--typography-body2-fontSize);
-    font-weight: 500;
-    animation: ob-gather-row var(--stage-duration) var(--motion-ease-standard)
-      both;
-  }
-  .ob-gather-row > svg {
-    flex: none;
-    color: var(--brand);
-  }
-  .ob-gather-row:nth-of-type(2) {
-    --from-x: -130px;
-    --from-y: -70px;
-    --from-turn: -9deg;
-  }
-  .ob-gather-row:nth-of-type(3) {
-    --from-x: 150px;
-    --from-y: -24px;
-    --from-turn: 7deg;
-  }
-  .ob-gather-row:nth-of-type(4) {
-    --from-x: -90px;
-    --from-y: 76px;
-    --from-turn: 5deg;
-  }
-  @keyframes ob-gather-row {
-    from {
-      opacity: 0.4;
-      transform: translate(var(--from-x), var(--from-y))
-        rotate(var(--from-turn));
-    }
-    35% {
-      opacity: 1;
-      transform: translate(var(--from-x), var(--from-y))
-        rotate(var(--from-turn));
-    }
-  }
-  @keyframes ob-gather-home {
-    from,
-    35% {
-      border-color: transparent;
-      background: transparent;
-    }
-  }
-  /* 둘째 장: 고른 단계까지 선이 이어지고 예시 카드가 바뀝니다. */
-  .ob-flowstage {
-    display: grid;
-    gap: var(--spacing-24);
-    width: 480px;
-    max-width: 100%;
-  }
-  .ob-track {
+  .ob-stage-nav {
     position: relative;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-auto-rows: 44px;
+    width: 44px;
   }
-  .ob-track-line {
-    position: absolute;
-    top: 50%;
-    left: 20px;
-    right: 20px;
-    height: 2px;
-    margin-top: -1px;
-    background: var(--line);
-  }
-  .ob-track-line i {
-    display: block;
-    height: 100%;
-    background: var(--brand);
-    transform-origin: left;
-    transition: transform var(--motion-duration-page)
-      var(--motion-ease-standard);
-  }
-  .ob-node {
+  .ob-stage-nav span {
     position: relative;
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    background: var(--surface);
     color: var(--text-tertiary);
-    transition:
-      transform var(--motion-duration-enter) var(--motion-ease-standard),
-      background-color var(--motion-duration-enter) ease-out,
-      border-color var(--motion-duration-enter) ease-out,
-      color var(--motion-duration-enter) ease-out;
+    transition: color var(--motion-duration-enter) ease-out;
   }
-  .ob-node[data-state="done"] {
-    border-color: var(--brand);
+  .ob-stage-nav span[data-state="done"] {
     color: var(--brand);
   }
-  .ob-node[data-state="active"] {
-    border-color: var(--brand);
-    background: var(--brand);
+  .ob-stage-nav span[data-state="active"] {
     color: var(--semantic-static-white);
-    transform: scale(1.2);
   }
-  .ob-flowcard {
+  /* 고른 단계를 따라 사이드바의 파란 면이 미끄러져 갑니다. */
+  .ob-stage-cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-12);
+    background: var(--brand);
+    transition: transform var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  .ob-stage-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--spacing-12);
+    padding: var(--spacing-32);
+    overflow: hidden;
+  }
+  .ob-shot {
     display: grid;
-    gap: var(--spacing-4);
+    gap: var(--spacing-12);
+    animation: ob-shot-in var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  @keyframes ob-shot-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  .ob-shot-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-size: var(--typography-headline2-fontSize);
+    line-height: var(--typography-headline2-lineHeight);
+    letter-spacing: var(--typography-headline2-letterSpacing);
+    font-weight: 600;
+  }
+  .ob-shot-title > svg {
+    flex: none;
+    color: var(--brand);
+  }
+  .ob-shot-title small {
+    margin-left: auto;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .ob-shot-card {
+    display: grid;
+    gap: var(--spacing-8);
     padding: var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
-    background: var(--canvas);
+    background: var(--surface);
+    min-width: 0;
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2-lineHeight);
     letter-spacing: var(--typography-body2-letterSpacing);
     word-break: keep-all;
-    animation: ob-flowcard var(--motion-duration-page)
-      var(--motion-ease-standard);
   }
-  .ob-flowcard strong {
-    color: var(--brand);
+  .ob-shot-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
   }
-  @keyframes ob-flowcard {
+  .ob-shot-badge {
+    justify-self: start;
+    padding: var(--spacing-2) var(--spacing-8);
+    border-radius: var(--radius-8);
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .ob-shot-mark {
+    justify-self: start;
+    padding: var(--spacing-2) var(--spacing-6);
+    border-radius: var(--radius-4);
+    background: var(--selected-fill);
+  }
+  .ob-shot-task {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .ob-shot-task .ob-skel {
+    flex: 1;
+  }
+  .ob-shot-check {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-4);
+  }
+  .ob-shot-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-8);
+  }
+  .ob-shot-reply {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding-top: var(--spacing-8);
+    border-top: 1px solid var(--line);
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+  }
+  .ob-shot-reply > svg {
+    color: var(--brand);
+  }
+  /* 첫 장: 흩어져 있던 기록 세 줄이 ‘내 연구’ 안으로 모입니다. */
+  .ob-gather .ob-shot-title {
+    animation: ob-gather-title var(--stage-duration) var(--motion-ease-standard)
+      both;
+  }
+  .ob-gather-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    padding: var(--spacing-12) var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    box-shadow: var(--raise-shadow);
+    font-size: var(--typography-body2-fontSize);
+    letter-spacing: var(--typography-body2-letterSpacing);
+    animation: ob-gather-row var(--stage-duration) var(--motion-ease-standard)
+      both;
+  }
+  .ob-gather-row > span:last-child {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+  }
+  .ob-gather-row strong {
+    font-weight: 600;
+  }
+  .ob-gather-row small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .ob-gather-row:nth-of-type(1) {
+    --from-x: -18%;
+    --from-y: -46px;
+    --from-turn: -6deg;
+    --from-scale: 0.82;
+  }
+  .ob-gather-row:nth-of-type(2) {
+    --from-x: 24%;
+    --from-y: 18px;
+    --from-turn: 5deg;
+    --from-scale: 0.78;
+  }
+  .ob-gather-row:nth-of-type(3) {
+    --from-x: -10%;
+    --from-y: 64px;
+    --from-turn: 4deg;
+    --from-scale: 0.84;
+  }
+  @keyframes ob-gather-row {
+    from,
+    30% {
+      box-shadow: var(--raise-shadow);
+      transform: translate(var(--from-x), var(--from-y))
+        rotate(var(--from-turn)) scale(var(--from-scale));
+    }
     from {
       opacity: 0;
-      transform: translateY(12px);
+    }
+    30% {
+      opacity: 1;
+    }
+    to {
+      box-shadow: none;
+    }
+  }
+  @keyframes ob-gather-title {
+    from,
+    45% {
+      opacity: 0;
     }
   }
 
@@ -893,54 +970,56 @@
       max-width: 560px;
       aspect-ratio: auto;
     }
-    /* 좁은 화면의 160px 띠에 맞게 장면을 줄입니다. */
+    /* 좁은 화면의 160px 띠에 맞게 장면을 줄입니다. 사이드바와 덜 중요한 줄은 뺍니다. */
     .ob-stage {
+      grid-template-columns: minmax(0, 1fr);
       max-width: 560px;
       height: 144px;
       aspect-ratio: auto;
-      padding: var(--spacing-8) var(--spacing-16);
+      padding: var(--spacing-4);
     }
-    .ob-gather-home {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      width: 100%;
-      padding: var(--spacing-12);
+    .ob-stage-rail,
+    .ob-shot-extra,
+    .ob-gather .ob-shot-title,
+    .ob-gather-row small {
+      display: none;
     }
-    .ob-gather-title {
-      grid-column: 1 / -1;
+    .ob-stage-main {
+      gap: var(--spacing-6);
+      padding: var(--spacing-6) var(--spacing-12);
     }
-    .ob-gather-row {
-      min-height: 36px;
-      padding: 0 var(--spacing-8);
-      font-size: var(--typography-caption1-fontSize);
-      white-space: nowrap;
-      overflow: hidden;
+    .ob-shot {
+      gap: var(--spacing-6);
     }
-    .ob-gather-row:nth-of-type(2) {
-      --from-x: -24px;
-      --from-y: -36px;
+    .ob-shot-title {
+      font-size: var(--typography-label1-fontSize);
+      line-height: var(--typography-label1-lineHeight);
     }
-    .ob-gather-row:nth-of-type(3) {
-      --from-x: 0px;
-      --from-y: 30px;
-    }
-    .ob-gather-row:nth-of-type(4) {
-      --from-x: 24px;
-      --from-y: -30px;
-    }
-    .ob-flowstage {
-      gap: var(--spacing-8);
-    }
-    .ob-node {
-      width: 32px;
-      height: 32px;
-    }
-    .ob-track-line {
-      left: 16px;
-      right: 16px;
-    }
-    .ob-flowcard {
+    .ob-shot-card {
+      gap: var(--spacing-4);
       padding: var(--spacing-8) var(--spacing-12);
       font-size: var(--typography-label1-fontSize);
+      line-height: var(--typography-label1-lineHeight);
+    }
+    .ob-shot-pair {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ob-shot-reply {
+      padding-top: var(--spacing-4);
+    }
+    .ob-gather-row {
+      padding: var(--spacing-4) var(--spacing-12);
+      font-size: var(--typography-label1-fontSize);
+    }
+    .ob-gather-row .ob-intro-icon {
+      width: 24px;
+      height: 24px;
+    }
+    .ob-gather-row:nth-of-type(1) {
+      --from-y: -12px;
+    }
+    .ob-gather-row:nth-of-type(3) {
+      --from-y: 14px;
     }
     .ob-rail {
       display: none;
@@ -956,27 +1035,23 @@
     .ob-date-fields {
       grid-template-columns: minmax(0, 1fr);
     }
-    /* 세 줄을 한 줄에 놓을 폭이 모자라 아이콘을 빼고 이름만 둡니다. */
-    .ob-gather-row {
-      justify-content: center;
-    }
-    .ob-gather-row > svg {
-      display: none;
-    }
   }
   @media (prefers-reduced-motion: reduce) {
     .ob-filled,
     .ob-window .ob-filled,
     .ob-window,
     .ob-step,
-    .ob-gather-home,
+    .ob-gather .ob-shot-title,
     .ob-gather-row,
-    .ob-flowcard {
+    .ob-shot {
       animation: none;
     }
+    .ob-gather-row {
+      box-shadow: none;
+    }
     .ob-intro-step,
-    .ob-track-line i,
-    .ob-node {
+    .ob-stage-cursor,
+    .ob-stage-nav span {
       transition: none;
     }
     .ob-answers button,

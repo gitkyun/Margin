@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { GuideReplay } from "../src/components/GuideReplay";
 import { HomeTour } from "../src/components/home/HomeTour";
 import {
   isTourSeen,
@@ -46,6 +48,26 @@ describe("화면 안내를 보여 줄지", () => {
     expect(isTourSeen()).toBe(false);
     markTourSeen();
     expect(isTourSeen()).toBe(true);
+  });
+});
+
+describe("사용 안내의 다시 보기", () => {
+  it("서비스 소개는 바로 열고, 화면 안내는 기록을 지운 뒤 내 연구로 보낸다", () => {
+    markTourSeen();
+    render(
+      <MemoryRouter>
+        <GuideReplay />
+      </MemoryRouter>,
+    );
+    expect(
+      screen
+        .getByRole("link", { name: "서비스 소개 다시 보기" })
+        .getAttribute("href"),
+    ).toBe("/r/new?intro=1");
+    const tour = screen.getByRole("link", { name: "화면 안내 다시 보기" });
+    expect(tour.getAttribute("href")).toBe("/r");
+    fireEvent.click(tour);
+    expect(isTourSeen()).toBe(false);
   });
 });
 

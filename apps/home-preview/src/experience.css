@@ -204,6 +204,12 @@
     margin-bottom: 13px;
     letter-spacing: var(--typography-heading2-letterSpacing);
   }
+  .guide-replay-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-16);
+  }
   /* Floating workspace inspired by the supplied compact and expanded rail. */
   .floating-workspace {
     gap: var(--shell-gap);

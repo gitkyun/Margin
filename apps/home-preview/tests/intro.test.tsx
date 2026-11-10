@@ -86,18 +86,23 @@ describe("서비스 소개 화면", () => {
     expect(scene).toHaveBeenLastCalledWith({ slide: 1, flowIndex: 4 });
   });
 
-  it("장면은 고른 단계까지 선을 잇고 그 단계의 예시를 보여 준다", () => {
+  it("장면은 고른 단계의 화면 그림과 예시를 보여 준다", () => {
     const { container } = render(<IntroStage slide={1} flowIndex={2} />);
-    const states = [...container.querySelectorAll(".ob-node")].map((node) =>
-      node.getAttribute("data-state"),
+    const states = [...container.querySelectorAll(".ob-stage-nav span")].map(
+      (node) => node.getAttribute("data-state"),
     );
     expect(states).toEqual(["done", "done", "active", null, null]);
-    expect(container.querySelector(".ob-flowcard")?.textContent).toContain(
+    expect(container.querySelector(".ob-shot")?.textContent).toContain(
       INTRO_FLOW[2].example,
     );
     expect(
       container.querySelector(".ob-stage")?.getAttribute("aria-hidden"),
     ).toBe("true");
+  });
+
+  it("검토 요청 장면은 교수 결과 이름을 제품 용어 그대로 쓴다", () => {
+    const { container } = render(<IntroStage slide={1} flowIndex={4} />);
+    expect(container.textContent).toContain("수정 내용 확인");
   });
 
   it("어느 장에서든 건너뛸 수 있다", () => {

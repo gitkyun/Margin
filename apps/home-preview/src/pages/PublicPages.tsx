@@ -27,6 +27,7 @@ import {
   ComparePreview,
 } from "@/components/marketing/MarketingEffects";
 import { Button } from "@/components/ui/button";
+import { GuideReplay } from "@/components/GuideReplay";
 
 /** 히어로 제목 등장(최대 600ms)이 끝난 뒤에 시작 버튼 강조를 돌립니다. */
 const HERO_SETTLE_MS = 700;
@@ -1034,6 +1035,7 @@ export function InfoPage({
             ? "마진은 수업 시연을 위해 제한적으로 공개한 서비스예요. 아래 내용은 지금 구현된 상태를 설명하며, 정식 이용약관이나 개인정보 처리방침을 대신하지 않아요."
             : "미팅 기록부터 교수 검토 요청까지, 기본 사용 순서를 안내해요."}
         </p>
+        {!privacy && signedIn && <GuideReplay />}
         {(privacy
           ? [
               [
