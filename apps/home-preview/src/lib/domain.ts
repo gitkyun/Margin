@@ -19,6 +19,8 @@ export interface Research {
   updatedAt: string;
   nextMeetingId?: ID;
   currentPhaseId?: ID;
+  /** 이 연구의 지도교수 이메일(소문자). 검토 요청을 만들 때 여기서 고릅니다. */
+  advisorEmails?: string[];
   deletedAt?: string;
   example?: boolean;
   archivedAt?: string;

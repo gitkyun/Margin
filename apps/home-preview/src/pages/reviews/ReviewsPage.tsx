@@ -49,14 +49,13 @@ import {
   sourceExcerpt,
   timeText,
 } from "./helpers";
-
-/** 교수 고르기 칸에서 "직접 입력"을 뜻하는 값. 이메일과 겹치지 않습니다. */
-const OTHER_PROFESSOR = "other";
+import { addAdvisor, advisorChoices } from "@/lib/advisors";
 import { localizeServerMessage } from "@/lib/server-messages";
 
 export function ReviewsPage() {
   const { researchId = "" } = useParams();
-  const { data, loading, createReview, user, mode } = useWorkspace();
+  const { data, loading, createReview, saveResearch, user, mode } =
+    useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [filter, setFilter] = useState("all");
@@ -65,8 +64,6 @@ export function ReviewsPage() {
   const [step, setStep] = useState<"compose" | "preview">("compose");
   const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
-  // 직접 입력 칸을 여는지 여부. 이 연구에서 쓴 교수 이메일이 없으면 항상 직접 입력합니다.
-  const [typingEmail, setTypingEmail] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
@@ -74,9 +71,15 @@ export function ReviewsPage() {
   const [previewFile, setPreviewFile] = useState<MaterialVersion | null>(null);
   const prompted = useRef("");
   const requestKey = useRef(uid());
+  const research = data.researches.find((r) => r.id === researchId);
+  // 연구에 등록한 지도교수가 먼저, 그다음 전에 검토를 요청한 이메일.
   const professors = useMemo(
-    () => knownProfessorEmails(data.reviews, researchId),
-    [data.reviews, researchId],
+    () =>
+      advisorChoices(
+        research?.advisorEmails,
+        knownProfessorEmails(data.reviews, researchId),
+      ),
+    [research?.advisorEmails, data.reviews, researchId],
   );
   // 미리 채운 이메일은 사용자가 쓴 내용이 아니므로 "버릴 내용"으로 세지 않습니다.
   const emailEdited = email.trim() !== (professors[0] ?? "");
@@ -148,7 +151,6 @@ export function ReviewsPage() {
     requestKey.current = uid();
     setTitle("");
     setEmail(professors[0] ?? "");
-    setTypingEmail(false);
     setSelected([]);
     setError("");
     setStep("compose");
@@ -200,6 +202,21 @@ export function ReviewsPage() {
       setBusy(false);
     }
   };
+  // 직접 입력해 보낸 교수는 이 연구의 지도교수로 등록해 다음부터 고르기만 하게 합니다.
+  // 등록에 실패해도 검토 요청은 이미 만들어졌으므로 알리기만 합니다.
+  const registerAdvisor = async (professorEmail: string) => {
+    if (!research) return;
+    const current = research.advisorEmails ?? [];
+    const next = addAdvisor(current, professorEmail);
+    if (next === current) return;
+    try {
+      await saveResearch({ ...research, advisorEmails: next });
+    } catch {
+      toast.error(
+        "지도교수 목록에 추가하지 못했어요. 연구 설정에서 등록할 수 있어요.",
+      );
+    }
+  };
   const submit = async () => {
     const issue = validate();
     setError(issue);
@@ -216,6 +233,7 @@ export function ReviewsPage() {
       requestKey.current = uid();
       requestGuard.clear();
       setOpen(false);
+      void registerAdvisor(request.professorEmail);
       toast.success(
         "검토 링크를 만들었어요. 링크를 복사해서 교수님께 직접 전달해 주세요.",
       );
@@ -395,27 +413,21 @@ export function ReviewsPage() {
               <Field
                 label="검토할 교수"
                 required
-                hint="이 이메일로 등록된 마진 계정만 검토를 열 수 있어요."
+                hint={
+                  professors.length > 0
+                    ? "지도교수는 연구 설정에서 추가하거나 뺄 수 있어요."
+                    : "이 이메일로 등록된 마진 계정만 검토를 열 수 있어요. 보내면 이 연구의 지도교수로 등록돼요."
+                }
               >
                 {professors.length > 0 && (
                   <Choice
                     label="검토할 교수"
-                    value={typingEmail ? OTHER_PROFESSOR : email}
-                    onChange={(value) => {
-                      const other = value === OTHER_PROFESSOR;
-                      setTypingEmail(other);
-                      setEmail(other ? "" : value);
-                    }}
-                    options={[
-                      ...professors.map((p) => ({ value: p, label: p })),
-                      {
-                        value: OTHER_PROFESSOR,
-                        label: "다른 교수 이메일 입력",
-                      },
-                    ]}
+                    value={email}
+                    onChange={setEmail}
+                    options={professors.map((p) => ({ value: p, label: p }))}
                   />
                 )}
-                {(typingEmail || professors.length === 0) && (
+                {professors.length === 0 && (
                   <Input
                     aria-label="교수 계정 이메일"
                     type="email"

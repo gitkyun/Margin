@@ -27,6 +27,7 @@ import { Choice } from "@/components/experience";
 import { ThemeSwitch } from "./AuthPages";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
+import { AdvisorSettings } from "./settings/AdvisorSettings";
 import {
   Dialog,
   DialogContent,
@@ -472,65 +473,87 @@ export function ResearchSettingsPage() {
             </p>
           )}
           {tab === "basic" ? (
-            <section className="settings-section">
-              <h2>기본 정보</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void perform(async () => {
-                    const saved = await saveResearch({
-                      ...base.current!,
-                      name: name.trim(),
-                      description: description.trim(),
+            <>
+              <section className="settings-section">
+                <h2>기본 정보</h2>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void perform(async () => {
+                      const saved = await saveResearch({
+                        ...base.current!,
+                        name: name.trim(),
+                        description: description.trim(),
+                      });
+                      base.current = saved;
+                      setName(saved.name);
+                      setDescription(saved.description);
+                      guard.clear();
+                      toast.success("연구 정보를 저장했어요.");
                     });
-                    base.current = saved;
-                    setName(saved.name);
-                    setDescription(saved.description);
-                    guard.clear();
-                    toast.success("연구 정보를 저장했어요.");
-                  });
-                }}
-              >
-                <label className="field">
-                  연구 이름
-                  <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={120}
-                    required
-                  />
-                </label>
-                <label className="field">
-                  설명 <small>선택</small>
-                  <Textarea
-                    rows={5}
-                    value={description}
-                    maxLength={3000}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </label>
-                <div className="bottom-actions">
-                  <Button
-                    variant="outline"
-                    type="button"
-                    disabled={busy}
-                    onClick={() => {
-                      base.current = research;
-                      setName(research.name);
-                      setDescription(research.description);
-                    }}
-                  >
-                    변경 취소
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={busy || !name.trim() || !dirty}
-                  >
-                    {busy ? "저장 중" : "저장"}
-                  </Button>
-                </div>
-              </form>
-            </section>
+                  }}
+                >
+                  <label className="field">
+                    연구 이름
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      maxLength={120}
+                      required
+                    />
+                  </label>
+                  <label className="field">
+                    설명 <small>선택</small>
+                    <Textarea
+                      rows={5}
+                      value={description}
+                      maxLength={3000}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </label>
+                  <div className="bottom-actions">
+                    <Button
+                      variant="outline"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        base.current = research;
+                        setName(research.name);
+                        setDescription(research.description);
+                      }}
+                    >
+                      변경 취소
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={busy || !name.trim() || !dirty}
+                    >
+                      {busy ? "저장 중" : "저장"}
+                    </Button>
+                  </div>
+                </form>
+              </section>
+              <AdvisorSettings
+                emails={research.advisorEmails ?? []}
+                canEdit={
+                  owner ||
+                  members.some(
+                    (m) => m.userId === user.id && m.status === "active",
+                  )
+                }
+                busy={busy}
+                onSave={(emails) =>
+                  perform(async () => {
+                    // 기본 정보 폼과 같은 기준값을 써서 서로 덮어쓰지 않게 합니다.
+                    base.current = await saveResearch({
+                      ...base.current!,
+                      advisorEmails: emails,
+                    });
+                    toast.success("지도교수 목록을 저장했어요.");
+                  })
+                }
+              />
+            </>
           ) : tab === "members" ? (
             <section className="settings-section">
               <h2>공동연구자</h2>
