@@ -399,39 +399,6 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
-  .lp-assistant-face {
-    position: relative;
-    display: inline-flex;
-    width: 37px;
-    height: 37px;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    background: linear-gradient(145deg, #eef7ff, #b2d3fc);
-    border: 1px solid var(--semantic-line-brand-primary);
-    border-radius: var(--radius-12);
-    color: var(--brand);
-    box-shadow:
-      inset 0 2px 3px #fff9,
-      var(--semantic-elevation-shadow-normal-xsmall);
-  }
-  .lp-assistant-face i {
-    width: 3px;
-    height: 5px;
-    border-radius: var(--radius-4);
-    background: currentColor;
-    margin-top: -5px;
-  }
-  .lp-assistant-face b {
-    position: absolute;
-    top: 23px;
-    left: 14px;
-    width: 8px;
-    height: 3px;
-    border-bottom: 1.4px solid;
-    border-radius: 0 0 var(--radius-8) var(--radius-8);
-  }
   .lp-assistant-name {
     display: flex;
     align-items: center;
@@ -737,12 +704,6 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-16);
     width: 90%;
-  }
-  .lp-cute-chat > .lp-assistant-face {
-    position: absolute;
-    left: 20px;
-    top: -18px;
-    transform: rotate(-8deg);
   }
   .lp-chat-bubble {
     font-size: var(--typography-label2-fontSize);
@@ -1467,7 +1428,7 @@
       var(--semantic-surface-brand-primary-rgb),
       var(--opacity-16)
     );
-    border-radius: 0.05em;
+    border-radius: var(--radius-full);
     transform: scaleX(0.98);
     transition:
       height var(--motion-duration-enter),
@@ -2287,11 +2248,6 @@
     line-height: var(--typography-heading1-lineHeight);
     font-weight: 600;
     letter-spacing: var(--typography-heading1-letterSpacing);
-  }
-  .landing-page .lp-capability p {
-    font-size: var(--typography-label1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-label1-letterSpacing);
   }
 
   /* Demo window framing (Stageshow review, 2026-11-08).

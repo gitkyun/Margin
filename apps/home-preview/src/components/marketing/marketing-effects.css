@@ -99,39 +99,6 @@
   .rms-merge-result > svg {
     color: var(--text-tertiary);
   }
-  .rms-assistant-glyph {
-    display: inline-flex;
-    position: relative;
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    border: 1px solid var(--semantic-line-brand-primary);
-    border-radius: var(--radius-14);
-    background: linear-gradient(140deg, #e8f4ff, #b9d7ff);
-    box-shadow:
-      inset 0 2px 3px #ffffff9c,
-      var(--semantic-elevation-shadow-normal-xsmall);
-    color: var(--brand);
-  }
-  .rms-assistant-glyph > span {
-    width: 4px;
-    height: 6px;
-    border-radius: var(--radius-4);
-    background: currentColor;
-    transform: translateY(-2px);
-  }
-  .rms-assistant-glyph > i {
-    position: absolute;
-    width: 9px;
-    height: 4px;
-    left: 16px;
-    top: 26px;
-    border-bottom: 1.5px solid currentColor;
-    border-radius: 0 0 var(--radius-8) var(--radius-8);
-  }
   .rms-merge-suggestions {
     display: flex;
     justify-content: center;
