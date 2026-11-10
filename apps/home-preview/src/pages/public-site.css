@@ -211,6 +211,10 @@
     justify-content: center;
     gap: 12px;
   }
+  /* 강조 고리의 모서리를 Montage 큰 버튼(14px)에 맞춥니다. */
+  .lp-hero-actions .rms-start-glow {
+    --start-glow-radius: var(--radius-14);
+  }
   .lp-hero-stage {
     height: 680px;
     min-height: 0;
@@ -598,61 +602,37 @@
   }
   .lp-feature-copy {
     padding: 26px 30px 31px;
-    position: relative;
-    z-index: 1;
   }
 
   /*
-   * 기능 카드 펼침: 카드에 올리거나(마우스) 안의 ‘자세히 보기’에 포커스가 가면
-   * 그림 자리에 실제 화면 미리보기 일부가 아래에서 위로 펼쳐집니다.
-   * 동작 줄이기 설정이면 움직임 없이 바로 바뀝니다. 터치 화면은 펼치지 않습니다.
+   * 기능 카드는 카드 전체가 ‘자세히 보기’ 링크입니다(링크의 ::after가 카드를 덮음).
+   * 올렸을 때는 테두리 색만 바뀝니다. 그림을 다른 화면으로 바꾸지 않습니다.
    */
-  .lp-feature-peek {
+  .lp-feature-card {
+    position: relative;
+  }
+  .lp-feature-more::after {
+    content: "";
     position: absolute;
-    inset: var(--spacing-20) var(--spacing-20) 0;
-    overflow: hidden;
-    border-radius: var(--radius-16) var(--radius-16) 0 0;
-    box-shadow: var(--shadow-pop);
-    opacity: 0;
-    clip-path: inset(100% 0 0 0);
-    transform: translateY(var(--spacing-16));
-    transition:
-      clip-path var(--motion-duration-page) cubic-bezier(0.2, 0, 0, 1),
-      transform var(--motion-duration-page) cubic-bezier(0.2, 0, 0, 1),
-      opacity var(--motion-duration-micro) ease-out;
-    pointer-events: none;
+    inset: 0;
+    border-radius: var(--radius-20);
+    transition: box-shadow var(--motion-duration-micro) ease-out;
   }
-  .lp-feature-peek .lp-product-window {
-    width: max(100%, 640px);
-  }
-  .lp-feature-visual > :not(.lp-feature-peek) {
-    transition: opacity var(--motion-duration-enter) ease-out;
-  }
-  .lp-feature-card:focus-within .lp-feature-peek {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    transform: none;
-  }
-  .lp-feature-card:focus-within
-    .lp-feature-visual:has(.lp-feature-peek)
-    > :not(.lp-feature-peek) {
-    opacity: 0.12;
+  .lp-feature-more:focus-visible::after {
+    box-shadow: inset 0 0 0 2px var(--selected-line);
   }
   @media (hover: hover) {
-    .lp-feature-card:hover .lp-feature-peek {
-      opacity: 1;
-      clip-path: inset(0 0 0 0);
-      transform: none;
-    }
-    .lp-feature-card:hover
-      .lp-feature-visual:has(.lp-feature-peek)
-      > :not(.lp-feature-peek) {
-      opacity: 0.12;
+    .lp-feature-card:hover .lp-feature-more::after {
+      box-shadow: inset 0 0 0 1px var(--hover-line);
     }
   }
+  /* 버전 비교 손잡이는 카드 링크 위에서 그대로 움직일 수 있어야 합니다. */
+  #writing-preview > * {
+    position: relative;
+    z-index: 1;
+  }
   @media (prefers-reduced-motion: reduce) {
-    .lp-feature-peek,
-    .lp-feature-visual > :not(.lp-feature-peek) {
+    .lp-feature-more::after {
       transition: none;
     }
   }

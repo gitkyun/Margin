@@ -150,7 +150,7 @@
   }
   .floating-workspace .main-shell {
     border: 1px solid var(--line);
-    border-radius: var(--radius-14);
+    border-radius: var(--radius-16);
     background: var(--surface);
     box-shadow: var(--panel-shadow);
     min-height: calc(100dvh - 16px);
@@ -248,7 +248,7 @@
   .floating-workspace .surface,
   .experience-panel {
     border: 1px solid var(--line);
-    border-radius: var(--radius-14);
+    border-radius: var(--radius-12);
     background: var(--surface);
     box-shadow: none;
   }
@@ -336,6 +336,66 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-16);
     padding: 12px 10px 10px;
+  }
+  /* 사이드바 묶음 이름(지도 흐름, 연구 작업). 접힌 레일에서는 얇은 선으로 바뀝니다. */
+  .app-shell.floating-workspace .nav-group {
+    display: contents;
+  }
+  .app-shell.floating-workspace .nav-group-label {
+    margin: 0;
+    padding: var(--spacing-12) var(--spacing-12) var(--spacing-4);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .app-shell.floating-workspace.sidebar-collapsed .nav-group-label {
+    height: 1px;
+    margin: var(--spacing-8) var(--spacing-8);
+    padding: 0;
+    overflow: hidden;
+    background: var(--line);
+    font-size: 0;
+  }
+  /*
+   * 768~1199px에서 펼친 메뉴: 본문을 밀지 않고 그 위에 뜹니다.
+   * 격자의 첫 칸은 레일 폭(60px)으로 남겨 본문이 움직이지 않게 합니다.
+   */
+  .app-shell.floating-workspace.sidebar-floating {
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+  .app-shell.floating-workspace.sidebar-floating .sidebar {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 31;
+    width: 232px;
+    height: calc(100dvh - 16px);
+    box-shadow: var(--shadow-pop);
+  }
+  .app-shell.floating-workspace.sidebar-floating .main-shell {
+    grid-column: 2;
+  }
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    border: 0;
+    background: transparent;
+    cursor: default;
+  }
+  /*
+   * 접힌 메뉴의 펼치기 버튼은 맨 위 자리에 그대로 둡니다. 예전 고정 셸 규칙
+   * (styles.css의 .sidebar-brand > .icon-button)이 버튼을 띠 밖으로 띄워
+   * 연구 전환·검색 칸과 겹쳤습니다.
+   */
+  .app-shell.floating-workspace.sidebar-collapsed
+    .sidebar-brand
+    > .sidebar-toggle {
+    position: static;
+    margin: 0 auto;
+    border: 0;
+    background: transparent;
   }
   .app-shell.floating-workspace .nav-item {
     border: 0;

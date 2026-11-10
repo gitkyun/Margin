@@ -3,6 +3,7 @@
 ## 시작과 완료
 
 - 먼저 `git status --short --branch`, `docs/README.md`, 관련 기능·테스트를 읽는다. 기존 변경을 덮어쓰지 않는다.
+- 일하는 방식(요청 해석·판단·사실 확인·수정 반복·보고)은 [작업 지침](docs/working-guide.md)을 따른다. 아래 제품 불변 조건·안전 규칙과 어긋나면 이 문서가 우선한다.
 - 현재 GitHub 저장소는 공동작업 원본이다. `main`에서 직접 작업하지 않고 목적별 브랜치와 PR을 사용한다. 강제 push·이력 재작성 금지.
 - 변경마다 `CHANGELOG.md`의 Unreleased에 사용자에게 보이는 변경·버그·제약을 간결히 기록한다. 작업 이유와 검증은 PR에 적는다.
 - 앱 변경은 typecheck, test, test:backend, test:sites, build를 검사한다. 서버 권한 변경은 익명·다른 사용자·교수 접근을 검증한다.

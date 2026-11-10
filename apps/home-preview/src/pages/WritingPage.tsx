@@ -34,6 +34,12 @@ import {
 } from "@/lib/domain";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import {
@@ -144,19 +150,23 @@ export function WritingPage() {
         title="글쓰기"
         description="계획서와 원고를 쓰고, 버전을 남겨 비교할 수 있어요."
         actions={
-          <div className="button-row">
-            <Button
-              disabled={creating}
-              variant="outline"
-              onClick={() => beginCreate("manuscript")}
-            >
-              원고 만들기
-            </Button>
-            <Button disabled={creating} onClick={() => beginCreate()}>
-              <Icon name="plus" size={17} />
-              계획서 만들기
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button disabled={creating}>
+                <Icon name="plus" size={17} />
+                문서 만들기
+                <Icon name="chevron-down" size={15} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => beginCreate()}>
+                계획서
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => beginCreate("manuscript")}>
+                원고
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       />
       <Dialog
@@ -250,12 +260,12 @@ export function WritingPage() {
         <EmptyState
           icon="file"
           title="아직 문서가 없어요"
-          description="쓴 내용은 검토용 PDF로 만들어 자료로 등록할 수 있어요."
-          action={
-            <Button variant="outline" onClick={() => beginCreate()}>
-              계획서 만들기
-            </Button>
-          }
+          points={[
+            "계획서와 원고를 쓰고 버전을 남겨요",
+            "버전끼리 나란히 놓고 달라진 곳을 비교해요",
+            "검토용 PDF로 만들어 자료에 등록해요",
+          ]}
+          action={<Button onClick={() => beginCreate()}>계획서 만들기</Button>}
         />
       )}
     </div>

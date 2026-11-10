@@ -3,7 +3,10 @@ import React from "react";
 import { afterEach, beforeAll, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { ComparePreview } from "../src/components/marketing/MarketingEffects";
+import {
+  ComparePreview,
+  StartGlow,
+} from "../src/components/marketing/MarketingEffects";
 import { PublicNavigation } from "../src/components/marketing/PublicNavigation";
 
 beforeAll(() => {
@@ -11,6 +14,15 @@ beforeAll(() => {
   Element.prototype.setPointerCapture = () => {};
   Element.prototype.hasPointerCapture = () => true;
   Element.prototype.releasePointerCapture = () => {};
+  // jsdom에는 IntersectionObserver가 없습니다. 아무것도 보이지 않는 화면으로 둡니다.
+  window.IntersectionObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  } as unknown as typeof IntersectionObserver;
 });
 afterEach(cleanup);
 
@@ -79,4 +91,20 @@ it("mobile entry links respect the existing signed-in session", () => {
   expect(entry.getAttribute("href")).toBe("/r");
   fireEvent.click(entry);
   expect(close).toHaveBeenCalledOnce();
+});
+
+it("wraps the start button without changing it and runs the glow only once it is seen", () => {
+  const { container } = render(
+    <StartGlow delay={700}>
+      <a href="/signup">시작하기</a>
+    </StartGlow>,
+  );
+  const wrap = container.querySelector(".rms-start-glow") as HTMLElement;
+  expect(wrap.classList.contains("rms-start-glow-brand")).toBe(true);
+  expect(wrap.style.getPropertyValue("--start-glow-delay")).toBe("700ms");
+  // jsdom에서는 화면에 들어온 적이 없으므로 아직 돌지 않습니다.
+  expect(wrap.dataset.run).toBeUndefined();
+  expect(
+    screen.getByRole("link", { name: "시작하기" }).getAttribute("href"),
+  ).toBe("/signup");
 });

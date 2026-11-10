@@ -1,0 +1,569 @@
+/* 온보딩 화면. 색·크기는 앱 토큰만 씁니다(소개 화면의 lp- 규칙을 빌리지 않음). */
+@layer margin {
+  .ob-page {
+    display: grid;
+    grid-template-columns: minmax(360px, 2fr) 3fr;
+    min-height: 100dvh;
+    background: var(--surface);
+    color: var(--text);
+  }
+  .ob-form-side {
+    display: flex;
+    flex-direction: column;
+    max-width: 520px;
+    width: 100%;
+    margin-left: auto;
+    padding: var(--spacing-24) var(--spacing-40) var(--spacing-40);
+  }
+  .ob-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 40px;
+  }
+  .ob-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .ob-leave,
+  .ob-skip {
+    border: 0;
+    background: none;
+    padding: var(--spacing-8) 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
+    cursor: pointer;
+  }
+  .ob-leave:hover,
+  .ob-skip:hover {
+    color: var(--brand);
+  }
+  .ob-skip:disabled {
+    color: var(--text-tertiary);
+    cursor: default;
+  }
+  .ob-form {
+    display: flex;
+    flex-direction: column;
+    margin: auto 0;
+    padding: var(--spacing-32) 0;
+  }
+  .ob-progress {
+    margin-bottom: var(--spacing-8);
+    color: var(--brand);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label1-letterSpacing);
+    font-variant-numeric: tabular-nums;
+  }
+  .ob-form h1 {
+    font-size: var(--typography-title2-fontSize);
+    line-height: var(--typography-title2-lineHeight);
+    letter-spacing: var(--typography-title2-letterSpacing);
+    font-weight: 700;
+    word-break: keep-all;
+  }
+  .ob-help {
+    margin-top: var(--spacing-8);
+    color: var(--text-secondary);
+    font-size: var(--typography-body2-fontSize);
+    line-height: var(--typography-body2Reading-lineHeight);
+    letter-spacing: var(--typography-body2-letterSpacing);
+    word-break: keep-all;
+  }
+  .ob-fields {
+    display: grid;
+    gap: var(--spacing-16);
+    margin-bottom: var(--spacing-4);
+  }
+  .ob-fields .ob-help {
+    margin-bottom: var(--spacing-8);
+  }
+  .ob-error {
+    margin-top: calc(var(--spacing-8) * -1);
+    color: var(--semantic-status-negative);
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+
+  /* 답한 질문은 한 줄로 접힙니다. 누르면 그 질문으로 돌아갑니다. */
+  .ob-answers {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: 0 0 var(--spacing-24);
+    padding: 0;
+    list-style: none;
+  }
+  .ob-answers button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    width: 100%;
+    min-height: 40px;
+    padding: 0 var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--motion-duration-micro) ease-out;
+  }
+  .ob-answers button > svg {
+    flex: none;
+    color: var(--brand);
+  }
+  .ob-answers button > span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ob-answers button > small {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .ob-answers button:hover:not(:disabled) {
+    border-color: var(--hover-line);
+  }
+
+  /* 고르는 칸: 한 줄에 하나, 고른 것은 테두리와 옅은 채움으로 표시합니다. */
+  .ob-choices {
+    display: grid;
+    gap: var(--spacing-8);
+    margin: var(--spacing-20) 0 0;
+    padding: 0;
+    border: 0;
+  }
+  .ob-choice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    min-height: 48px;
+    padding: 0 var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 500;
+    letter-spacing: var(--typography-body2-letterSpacing);
+    cursor: pointer;
+    transition:
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
+  }
+  .ob-choice input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .ob-choice:hover {
+    border-color: var(--hover-line);
+  }
+  .ob-choice:has(input:checked) {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+  }
+  .ob-choice:has(input:focus-visible) {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 2px;
+  }
+  .ob-choice-number {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .ob-choice:has(input:checked) .ob-choice-number {
+    background: var(--brand);
+    color: var(--semantic-static-white);
+  }
+  .ob-choice-later {
+    color: var(--text-secondary);
+  }
+  .ob-date-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-12);
+    margin-top: var(--spacing-16);
+  }
+  .ob-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8) var(--spacing-20);
+    margin-top: var(--spacing-32);
+  }
+  .ob-actions .rms-start-glow {
+    --start-glow-radius: var(--radius-14);
+  }
+  .ob-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  /* ── 오른쪽 미리보기 ─────────────────────────────────── */
+  .ob-preview-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--spacing-16);
+    min-width: 0;
+    padding: var(--spacing-40);
+    background: var(--canvas);
+    border-left: 1px solid var(--line);
+  }
+  .ob-preview-note {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    text-align: center;
+  }
+  .ob-window {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: var(--spacing-8);
+    width: 100%;
+    max-width: 760px;
+    aspect-ratio: 16 / 10;
+    margin: 0 auto;
+    padding: var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    background: var(--canvas);
+    box-shadow: var(--raise-shadow);
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.4;
+    view-transition-name: margin-home;
+  }
+  .ob-rail,
+  .ob-main {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    min-width: 0;
+  }
+  .ob-rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    padding: var(--spacing-12) var(--spacing-8);
+  }
+  .ob-rail-mark {
+    width: 18px;
+    height: 18px;
+    margin: 0 var(--spacing-4) var(--spacing-6);
+  }
+  .ob-rail-research {
+    display: block;
+    min-height: 24px;
+    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4) var(--spacing-6);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ob-rail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding: var(--spacing-4) var(--spacing-6);
+    border-radius: var(--radius-8);
+    color: var(--text-tertiary);
+  }
+  .ob-rail-item .ob-skel {
+    flex: 1;
+    max-width: 56px;
+  }
+  .ob-rail-current {
+    background: var(--selected-fill);
+    color: var(--brand);
+  }
+  .ob-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-12);
+    padding: var(--spacing-16);
+  }
+  .ob-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+  }
+  .ob-head-copy {
+    display: grid;
+    gap: var(--spacing-4);
+    flex: 1;
+    min-width: 0;
+  }
+  .ob-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ob-description {
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ob-phase {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+  }
+  .ob-lead {
+    flex: none;
+    padding: var(--spacing-6) var(--spacing-12);
+    border-radius: var(--radius-8);
+    background: var(--brand);
+    color: var(--semantic-static-white);
+    font-weight: 600;
+  }
+  .ob-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 38%;
+    gap: var(--spacing-8);
+    flex: 1;
+    min-height: 0;
+  }
+  .ob-side {
+    display: grid;
+    gap: var(--spacing-8);
+    align-content: start;
+    min-width: 0;
+  }
+  .ob-card {
+    display: grid;
+    gap: var(--spacing-8);
+    align-content: start;
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    min-width: 0;
+  }
+  .ob-card-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    font-weight: 600;
+  }
+  .ob-meeting {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .ob-date {
+    display: grid;
+    justify-items: center;
+    flex: none;
+    width: 38px;
+    padding: var(--spacing-4) 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+  }
+  .ob-date small {
+    color: var(--brand);
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .ob-date strong {
+    font-size: 13px;
+  }
+  .ob-meeting-copy {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+  }
+  .ob-meeting-copy small {
+    color: var(--text-secondary);
+    font-size: 10px;
+  }
+  .ob-meeting-copy em {
+    margin-left: var(--spacing-4);
+    padding: 1px var(--spacing-4);
+    border-radius: var(--radius-4);
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-style: normal;
+    font-weight: 600;
+  }
+  .ob-meeting-copy strong {
+    font-size: 13px;
+  }
+  .ob-empty {
+    color: var(--text-secondary);
+  }
+  .ob-week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    text-align: center;
+  }
+  .ob-week > span {
+    display: grid;
+    justify-items: center;
+    gap: var(--spacing-2);
+  }
+  .ob-week small {
+    color: var(--text-tertiary);
+    font-size: 9px;
+  }
+  .ob-week b {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .ob-week-today b {
+    background: var(--brand);
+    color: var(--semantic-static-white);
+  }
+  .ob-week i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+  }
+  .ob-week-dot {
+    background: var(--brand);
+  }
+
+  /* 아직 답하지 않은 자리의 뼈대 */
+  .ob-skel {
+    display: block;
+    height: 8px;
+    border-radius: var(--radius-4);
+    background: var(--surface-muted);
+  }
+  .ob-skel-title {
+    width: 46%;
+    height: 16px;
+  }
+  .ob-skel-line {
+    width: 70%;
+  }
+  .ob-skel-short {
+    width: 34%;
+  }
+  .ob-skel-button {
+    flex: none;
+    width: 76px;
+    height: 26px;
+    border-radius: var(--radius-8);
+  }
+  .ob-skel-row {
+    width: 100%;
+    height: 14px;
+  }
+
+  /* 답이 들어올 때의 등장(부품 단계 200ms). 일부러 늦추지 않습니다. */
+  .ob-filled {
+    animation: ob-fill var(--motion-duration-enter) var(--motion-ease-standard);
+  }
+  @keyframes ob-fill {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+
+  /* 미리보기 창이 실제 셸로 커지는 전환(화면 단계 300ms). */
+  .ob-expanding .app-shell {
+    view-transition-name: margin-home;
+  }
+  ::view-transition-group(margin-home) {
+    animation-duration: var(--motion-duration-page);
+    animation-timing-function: var(--motion-ease-standard);
+  }
+
+  @media (max-width: 991px) {
+    .ob-page {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+    }
+    .ob-form-side {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: var(--spacing-16) var(--spacing-20) var(--spacing-32);
+    }
+    .ob-form {
+      margin: 0;
+      padding-top: var(--spacing-24);
+    }
+    /* 좁은 화면: 미리보기는 질문 위 160px 띠로 줄이고 마지막에만 크게 보여 줍니다. */
+    .ob-preview-side {
+      order: -1;
+      justify-content: flex-start;
+      height: 160px;
+      padding: var(--spacing-16) var(--spacing-20) 0;
+      border-left: 0;
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+    .ob-preview-side.ob-preview-full {
+      height: auto;
+      padding-bottom: var(--spacing-16);
+    }
+    .ob-preview-note {
+      display: none;
+    }
+    .ob-preview-full .ob-preview-note {
+      display: block;
+    }
+    .ob-window {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 560px;
+      aspect-ratio: auto;
+    }
+    .ob-rail {
+      display: none;
+    }
+  }
+  @media (max-width: 480px) {
+    .ob-columns {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ob-side {
+      display: none;
+    }
+    .ob-date-fields {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ob-filled {
+      animation: none;
+    }
+    .ob-answers button,
+    .ob-choice {
+      transition: none;
+    }
+  }
+}

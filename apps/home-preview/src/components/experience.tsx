@@ -258,9 +258,12 @@ export function DockItem({
 export function VisibilityField({
   value,
   onChange,
+  compact = false,
 }: {
   value?: "private" | "shared";
   onChange: (v: "private" | "shared") => void;
+  /** 제목 옆 메타 줄에 놓는 작은 꼴(이름표·도움말 없이 선택만) */
+  compact?: boolean;
 }) {
   const { researchId } = useParams();
   const { data } = useWorkspace();
@@ -279,6 +282,24 @@ export function VisibilityField({
         ? "공동연구자와 공유"
         : "공동 기록 · 공동연구자 없음",
     });
+  const help = collaborative
+    ? "교수님께는 검토 요청에 넣은 내용만 보여요."
+    : "공동연구자가 참여하면 기록을 공유할 수 있어요.";
+  if (compact)
+    return collaborative || value === "shared" ? (
+      <Choice
+        compact
+        label="공개 범위"
+        value={value ?? "private"}
+        onChange={(v) => onChange(v as "private" | "shared")}
+        options={options}
+      />
+    ) : (
+      <span className="rms-pill" title={help}>
+        <Icon name="lock" size={13} />
+        나만 보기
+      </span>
+    );
   return (
     <div className="field visibility-field">
       <span>공개 범위</span>

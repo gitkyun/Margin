@@ -31,6 +31,7 @@ export function AIWorkbench({
   input,
   hidden = false,
   stale = false,
+  embedded = false,
   onClose,
   onRefresh,
   onSave,
@@ -39,6 +40,8 @@ export function AIWorkbench({
   input: AIInput;
   hidden?: boolean;
   stale?: boolean;
+  /** 여백 패널 틀 안에 들어가면 틀의 닫기 버튼을 씁니다. */
+  embedded?: boolean;
   onClose(): void;
   onRefresh(): void;
   onSave(candidate: AICandidate, base: BaseRecord): Promise<void>;
@@ -189,18 +192,20 @@ export function AIWorkbench({
           />
           <h3>{title}</h3>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`${title} 닫기`}
-          disabled={saving !== null}
-          onClick={onClose}
-        >
-          <Icon name="close" size={17} />
-        </Button>
+        {!embedded && (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`${title} 닫기`}
+            disabled={saving !== null}
+            onClick={onClose}
+          >
+            <Icon name="close" size={17} />
+          </Button>
+        )}
       </div>
       <div className="ai-scope">
-        <span>사용할 범위</span>
+        <span>근거</span>
         <strong>
           {input.mode === "organize_meeting"
             ? "이 미팅에 저장된 메모"
@@ -430,6 +435,13 @@ export function AIWorkbench({
                   "이 방법 선택"
                 )}
               </Button>
+              {!saved.includes(index) && (
+                <small className="ai-candidate-note">
+                  {input.mode === "organize_meeting"
+                    ? "저장한 항목만 기록에 남아요."
+                    : "선택한 방법만 기록에 남아요."}
+                </small>
+              )}
             </section>
           ))}
         </div>

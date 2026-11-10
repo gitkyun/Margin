@@ -712,30 +712,6 @@
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .agent-overview {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 24px;
-  }
-  .agent-overview-hero {
-    grid-column: 1/-1;
-    padding: 28px;
-    display: flex;
-    align-items: center;
-    gap: 26px;
-  }
-  .agent-overview-hero h2 {
-    font-size: var(--typography-title3-fontSize);
-    margin: 8px 0;
-    letter-spacing: var(--typography-title3-letterSpacing);
-  }
-  .agent-overview-hero p {
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
   .run-row,
   .candidate-overview-row {
     padding: 18px 0;
@@ -801,17 +777,6 @@
   .source-picker > button:hover {
     border-color: var(--hover-line);
     background: var(--hover-fill);
-  }
-  .ai-usage-breakdown {
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-16);
-  }
-  .ai-usage-breakdown > div {
-    padding: 12px 0;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--line);
   }
   /* Recording and settings: explicit consent, real time, no fabricated waveform. */
   .recording-panel {
@@ -1186,24 +1151,7 @@
     border-top: 1px solid var(--line);
     background: var(--surface-muted);
   }
-  .meeting-visibility {
-    width: min(100%, 280px);
-    margin: 0 0 24px;
-  }
-  .meeting-visibility .field {
-    margin: 0;
-  }
-  @media (max-width: 1199px) {
-    .agent-overview {
-      grid-template-columns: 1fr;
-    }
-  }
   @media (max-width: 767px) {
-    .agent-overview-hero {
-      flex-direction: column;
-      text-align: center;
-      padding: 20px;
-    }
     .phase-card-body .button-row {
       margin-top: 14px;
     }

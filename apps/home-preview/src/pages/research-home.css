@@ -44,14 +44,25 @@
     position: relative;
     display: flex;
     align-items: center;
+    gap: var(--spacing-24);
     min-height: 136px;
     margin: 0 0 28px;
     overflow: hidden;
   }
+  /* 머리 오른쪽: 지금 상황의 주 행동 하나(lib/home-action.ts). */
+  .rh-lead-action {
+    flex: none;
+  }
+  .rh-intro-meta {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--spacing-20);
+  }
   .rh-intro-copy {
     position: relative;
     z-index: 1;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     padding: 14px 0 20px;
   }
   .rh-intro h1 {
@@ -150,107 +161,139 @@
   .rh-text-link:hover {
     color: var(--brand);
   }
-  .rh-phases {
-    margin-bottom: 30px;
-    padding: 21px 24px;
+  /* ── 시작하기(새 연구 체크리스트) ─────────────────────── */
+  .rh-start {
+    margin-bottom: var(--spacing-24);
+    padding: var(--spacing-16) var(--spacing-20) var(--spacing-20);
     border: 1px solid var(--line);
-    border-radius: var(--radius-16);
+    border-radius: var(--radius-12);
     background: var(--surface);
   }
-  .rh-phases .rh-section-heading {
-    margin-bottom: 17px;
-  }
-  .rh-phases .rh-section-heading h2 {
-    font-size: var(--typography-body2-fontSize);
-    letter-spacing: var(--typography-body2-letterSpacing);
-  }
-  .rh-current-label {
-    color: var(--brand);
-    font-size: var(--typography-caption1-fontSize);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .rh-phase-track {
-    display: flex;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    gap: 16px;
-    padding: 1px 0 5px;
-  }
-  .rh-phase-track li {
-    position: relative;
-    flex: 1 0 auto;
-  }
-  .rh-phase-track li:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    top: 15px;
-    left: 39px;
-    right: -7px;
-    height: 1px;
-    background: var(--line);
-  }
-  .rh-phase-track a {
-    position: relative;
-    z-index: 1;
+  .rh-start-head {
     display: flex;
     align-items: center;
-    gap: 9px;
-    width: max-content;
-    max-width: 190px;
-    min-height: 34px;
-    padding-right: 12px;
-    background: var(--surface);
-    color: var(--text-tertiary);
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
+    gap: var(--spacing-16);
+    margin-bottom: var(--spacing-12);
   }
-  .rh-phase-track a:hover {
+  .rh-start-head h2 {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-8);
+    font-size: var(--typography-headline2-fontSize);
+    line-height: var(--typography-headline2-lineHeight);
+    letter-spacing: var(--typography-headline2-letterSpacing);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .rh-start-count {
+    color: var(--brand);
+    font-size: var(--typography-label1-fontSize);
+    font-variant-numeric: tabular-nums;
+  }
+  .rh-start-progress {
+    flex: 1;
+    height: 4px;
+    border-radius: var(--radius-4);
+    background: var(--surface-muted);
+    overflow: hidden;
+  }
+  .rh-start-progress > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--brand);
+    transition: width var(--motion-duration-enter) var(--motion-ease-standard);
+  }
+  .rh-start-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--spacing-8);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rh-start-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    height: 100%;
+    min-height: 64px;
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
     color: var(--text);
+    transition:
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
   }
-  .rh-phase-number {
+  .rh-start-item:hover {
+    border-color: var(--hover-line);
+  }
+  .rh-start-item > svg {
+    flex: none;
+    color: var(--text-tertiary);
+  }
+  .rh-start-next {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+  }
+  .rh-start-next > svg {
+    color: var(--brand);
+  }
+  .rh-start-check {
     display: grid;
     place-items: center;
-    width: 29px;
-    height: 29px;
-    border: 1px solid var(--line);
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--line-strong);
     border-radius: 50%;
-    font-size: var(--typography-caption2-fontSize);
-    letter-spacing: var(--typography-caption2-letterSpacing);
   }
-  .rh-phase-current a {
-    color: var(--text);
-    font-weight: 600;
-  }
-  .rh-phase-current .rh-phase-number {
-    border-color: var(--primary);
-    background: var(--primary);
+  .rh-start-done .rh-start-check {
+    border-color: var(--brand);
+    background: var(--brand);
     color: var(--semantic-static-white);
-    box-shadow: 0 0 0 4px var(--brand-soft);
   }
-  .rh-phase-done a {
+  .rh-start-copy {
+    display: grid;
+    gap: var(--spacing-2);
+    flex: 1;
+    min-width: 0;
+  }
+  .rh-start-copy strong {
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label1-letterSpacing);
+    word-break: keep-all;
+  }
+  .rh-start-copy small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: keep-all;
+  }
+  .rh-start-done .rh-start-copy strong {
     color: var(--text-secondary);
   }
-  .rh-phase-done .rh-phase-number {
-    border-color: var(--selected-line);
-    background: var(--brand-soft);
-    color: var(--brand);
+  @media (max-width: 1199px) {
+    .rh-start-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
-  .rh-phase-start {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 42px;
-    color: var(--text-secondary);
+  @media (max-width: 480px) {
+    .rh-start-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
-  .rh-phase-start > svg:last-child {
-    margin-left: auto;
-  }
-  .rh-phase-start:hover {
-    color: var(--brand);
+  @media (prefers-reduced-motion: reduce) {
+    .rh-start-progress > span,
+    .rh-start-item {
+      transition: none;
+    }
   }
   .rh-columns {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+    grid-template-columns: minmax(0, 1fr) 320px;
     gap: 32px;
     align-items: start;
   }
@@ -263,10 +306,10 @@
   }
   .rh-meeting {
     padding: 25px 26px 24px;
+    /* 강조 카드: 브랜드 선 하나. 채움과 그림자는 함께 쓰지 않습니다. */
     border: 1px solid var(--selected-line);
-    border-radius: var(--radius-16);
+    border-radius: var(--radius-12);
     background: var(--surface);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
   }
   .rh-meeting .rh-section-heading h2 > svg {
     color: var(--brand);
@@ -289,7 +332,6 @@
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-12);
     background: var(--surface-raised);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
     text-align: center;
   }
   .rh-date-month {
@@ -843,57 +885,6 @@
     border-color: var(--hover-line);
     background: var(--hover-fill);
   }
-  .rh-assistant {
-    position: relative;
-    overflow: hidden;
-    padding: 24px;
-    border: 1px solid var(--selected-line);
-    border-radius: var(--radius-16);
-    background: var(--brand-soft);
-  }
-  .rh-assistant h2 {
-    font-size: var(--typography-heading1-fontSize);
-    letter-spacing: var(--typography-heading1-letterSpacing);
-    line-height: var(--typography-heading1-lineHeight);
-    font-weight: 600;
-  }
-  .rh-assistant > p {
-    margin-top: 12px;
-    color: var(--text-secondary);
-    font-size: var(--typography-label2-fontSize);
-    line-height: var(--typography-label2-lineHeight);
-    word-break: keep-all;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .rh-assistant-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 21px;
-  }
-  .rh-assistant-actions a {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    min-height: 43px;
-    padding: 9px 12px;
-    border: 1px solid var(--selected-line);
-    border-radius: var(--radius-10);
-    background: var(--surface);
-    color: var(--text-secondary);
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .rh-assistant-actions a > span {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .rh-assistant-actions a:hover {
-    color: var(--brand);
-    border-color: var(--hover-line);
-  }
   .rh-activity .rh-section-heading {
     margin-bottom: 12px;
   }
@@ -973,41 +964,23 @@
   @media (max-width: 1199px) {
     .rh-columns {
       gap: 25px;
-      grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr);
+      grid-template-columns: minmax(0, 1fr) 300px;
     }
     .rh-meeting {
       padding: 22px;
-    }
-    .rh-assistant {
-      padding: 21px;
     }
     .rh-meeting-footer {
       align-items: flex-start;
       flex-wrap: wrap;
     }
   }
-  @media (max-width: 767px) {
-    .rh-home {
-      padding-top: 0;
+  @media (min-width: 1600px) {
+    .rh-columns {
+      grid-template-columns: minmax(0, 1fr) 360px;
     }
-    .rh-intro {
-      min-height: 160px;
-      margin-bottom: 22px;
-    }
-    .rh-intro-copy {
-      width: 100%;
-    }
-    .rh-intro h1 {
-      font-size: var(--typography-title2-fontSize);
-      letter-spacing: var(--typography-title2-letterSpacing);
-    }
-    .rh-phases {
-      margin-bottom: 25px;
-      padding: 18px 20px;
-    }
-    .rh-current-label {
-      display: none;
-    }
+  }
+  /* md(992px) 미만: 두 열이 서로를 누르므로 한 열로 내립니다. */
+  @media (max-width: 991px) {
     .rh-columns {
       grid-template-columns: minmax(0, 1fr);
       gap: 28px;
@@ -1016,32 +989,46 @@
     .rh-side-column {
       display: contents;
     }
-    .rh-week {
+    /* 한 열 순서: 확인할 내용(있을 때) → 다음 미팅 → 남은 할 일 → 이번 주 → 최근 문서 */
+    .rh-has-attention .rh-attention {
       grid-row: 1;
     }
     .rh-meeting {
       grid-row: 2;
     }
-    .rh-attention {
+    .rh-work {
       grid-row: 3;
     }
-    .rh-work {
+    .rh-week {
       grid-row: 4;
     }
     .rh-writing {
       grid-row: 5;
     }
-    .rh-assistant {
+    .rh-attention {
       grid-row: 6;
     }
     .rh-activity {
       grid-row: 7;
     }
-    .rh-assistant-actions {
-      flex-direction: row;
+  }
+  @media (max-width: 767px) {
+    .rh-home {
+      padding-top: 0;
     }
-    .rh-assistant-actions a {
-      flex: 1;
+    .rh-intro {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      min-height: 0;
+      margin-bottom: 22px;
+    }
+    .rh-intro-copy {
+      width: 100%;
+    }
+    .rh-intro h1 {
+      font-size: var(--typography-title2-fontSize);
+      letter-spacing: var(--typography-title2-letterSpacing);
     }
   }
   @media (max-width: 480px) {
@@ -1071,24 +1058,13 @@
       font-size: var(--typography-caption1-fontSize);
       letter-spacing: var(--typography-caption1-letterSpacing);
     }
-    .rh-phases {
-      padding: 17px;
-      border-radius: var(--radius-12);
-    }
-    .rh-phase-track {
-      gap: 13px;
-    }
-    .rh-phase-track a {
-      font-size: var(--typography-caption1-fontSize);
-      letter-spacing: var(--typography-caption1-letterSpacing);
-    }
     .rh-section-heading h2 {
       font-size: var(--typography-body1-fontSize);
       letter-spacing: var(--typography-body1-letterSpacing);
     }
     .rh-meeting {
       padding: 20px 18px;
-      border-radius: var(--radius-16);
+      border-radius: var(--radius-12);
     }
     .rh-meeting-title {
       gap: 12px;
@@ -1126,12 +1102,6 @@
       font-size: var(--typography-caption2-fontSize);
       padding: 2px 6px;
       letter-spacing: var(--typography-caption2-letterSpacing);
-    }
-    .rh-assistant {
-      padding: 22px;
-    }
-    .rh-assistant-actions {
-      flex-direction: column;
     }
     .rh-text-link {
       font-size: var(--typography-caption1-fontSize);
@@ -1171,7 +1141,7 @@
     min-height: 108px;
     padding: 20px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-14);
+    border-radius: var(--radius-12);
     background: var(--surface);
   }
   .rh-quick-action > span:nth-child(2) {
@@ -1239,7 +1209,7 @@
       gap: 0;
       overflow: hidden;
       border: 1px solid var(--line);
-      border-radius: var(--radius-16);
+      border-radius: var(--radius-12);
       background: var(--surface);
     }
     .rh-home .rh-quick-action {
@@ -1296,7 +1266,7 @@
     padding: 24px;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: var(--radius-16);
+    border-radius: var(--radius-12);
   }
   .rh-home .rh-quick-text {
     min-width: 0;

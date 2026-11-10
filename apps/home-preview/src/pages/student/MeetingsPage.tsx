@@ -34,6 +34,7 @@ import {
   type Task,
 } from "@/lib/domain";
 import { AIWorkbench } from "./AIWorkbench";
+import { MarginPanel } from "@/components/margin-panel/MarginPanel";
 import { isAISourceStale } from "./ai-source";
 import { QuickPdfUpload } from "./QuickPdfUpload";
 import { hasMemoConflict, restoreMemoDraft } from "./memo-draft";
@@ -810,9 +811,22 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         title={meeting.title}
         description={`${formatDate(meeting.date)}${meeting.time ? ` · ${meeting.time}` : ""}`}
         status={
-          <StatusBadge tone={meeting.status === "recorded" ? "green" : "blue"}>
-            {meetingLabels[meeting.status]}
-          </StatusBadge>
+          <>
+            <StatusBadge
+              tone={meeting.status === "recorded" ? "green" : "blue"}
+            >
+              {meetingLabels[meeting.status]}
+            </StatusBadge>
+            <VisibilityField
+              compact
+              value={meeting.visibility ?? "private"}
+              onChange={(visibility) => {
+                void save("meetings", { ...meeting, visibility }).catch((e) =>
+                  toast.error((e as Error).message),
+                );
+              }}
+            />
+          </>
         }
         actions={
           <div className="button-row">
@@ -836,16 +850,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           </div>
         }
       />
-      <div className="meeting-visibility">
-        <VisibilityField
-          value={meeting.visibility ?? "private"}
-          onChange={(visibility) => {
-            void save("meetings", { ...meeting, visibility }).catch((e) =>
-              toast.error((e as Error).message),
-            );
-          }}
-        />
-      </div>
       <Tabs
         className="tabs-line"
         label="미팅 내용"
@@ -1026,10 +1030,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         </div>
       )}
       {
-        <div
-          hidden={tab !== "record"}
-          className={`record-layout ${aiInput && aiOpen ? "with-ai" : ""}`}
-        >
+        <div hidden={tab !== "record"} className="record-layout">
           <section id="meeting-recording" className="surface memo-surface">
             <RecordingPanel
               researchId={meeting.researchId}
@@ -1180,18 +1181,24 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               )}
             </div>
           </section>
-          {aiInput && (
-            <AIWorkbench
-              key={aiInput.sourceRevision}
-              title="메모 정리"
-              input={aiInput}
-              hidden={!aiOpen}
-              stale={aiStale}
-              onClose={() => setAiOpen(false)}
-              onRefresh={() => void openAI()}
-              onSave={saveCandidate}
-            />
-          )}
+          <MarginPanel
+            label="메모 정리"
+            open={!!aiInput && aiOpen}
+            onOpen={() => void openAI()}
+            onClose={() => setAiOpen(false)}
+          >
+            {aiInput && (
+              <AIWorkbench
+                key={aiInput.sourceRevision}
+                title="메모 정리"
+                input={aiInput}
+                stale={aiStale}
+                onClose={() => setAiOpen(false)}
+                onRefresh={() => void openAI()}
+                onSave={saveCandidate}
+              />
+            )}
+          </MarginPanel>
         </div>
       }
       {tab === "questions" && (

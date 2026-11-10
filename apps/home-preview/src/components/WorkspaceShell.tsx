@@ -1,6 +1,6 @@
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Link,
   NavLink,
@@ -25,6 +25,13 @@ import { useWorkspace } from "@/lib/workspace";
 import { useAIUsage } from "@/lib/ai-usage";
 import { friendlyError } from "@/lib/supabase";
 import { useExperience } from "@/lib/experience";
+import { queryDown, queryUp } from "@/design/responsive";
+import {
+  MarginPanelProvider,
+  useMarginPanelHost,
+} from "./margin-panel/MarginPanel";
+import { startChecklist } from "@/lib/onboarding";
+import { isStartChecklistHidden } from "./home/StartChecklist";
 import { AnimatedList, Segments } from "./experience";
 import {
   unreadReviewNotifications,
@@ -168,6 +175,21 @@ function AccountMenu() {
     </>
   );
 }
+/** sm 이상 lg 미만(768~1199px). 이 구간에서는 메뉴를 좁은 레일로 두고, 펼치면 본문 위에 뜹니다. */
+const COMPACT_QUERY = `${queryUp("sm")} and ${queryDown("lg")}`;
+/** 집중 모드에서 메뉴를 직접 펼쳤는지는 둘러보기 모드의 설정과 따로 기억합니다. */
+const FOCUS_EXPANDED_KEY = "rms-sidebar-focus-expanded";
+/** 작업대처럼 본문을 넓게 써야 하는 화면: 연구 도우미, 글쓰기 문서 편집 */
+const FOCUS_ROUTE = /^\/r\/[^/]+\/(assistant(\/|$)|writing\/[^/]+)/;
+/** 사이드바 묶음(계획 4.3). 연구 홈 → 지도 흐름 → 연구 작업 순서입니다. */
+const NAV_GROUPS: { label: string | null; paths: string[] }[] = [
+  { label: null, paths: [""] },
+  { label: "지도 흐름", paths: ["meetings", "feedback", "tasks", "reviews"] },
+  { label: "연구 작업", paths: ["writing", "materials", "planning"] },
+];
+/** AI 사용량은 한도의 이 비율을 넘었을 때만 사이드바 아래 자리에 냅니다. */
+const USAGE_WARNING_RATIO = 0.8;
+
 export function WorkspaceShell({
   children,
   researchOverride,
@@ -180,6 +202,15 @@ export function WorkspaceShell({
   const research = data.researches.find((r) => r.id === researchId);
   const [collapsed, setCollapsed] = useState(
       () => localStorage.getItem("rms-sidebar-collapsed") === "true",
+    ),
+    [narrow, setNarrow] = useState(
+      () =>
+        typeof window.matchMedia === "function" &&
+        window.matchMedia(COMPACT_QUERY).matches,
+    ),
+    [narrowOpen, setNarrowOpen] = useState(false),
+    [focusExpanded, setFocusExpanded] = useState(
+      () => localStorage.getItem(FOCUS_EXPANDED_KEY) === "true",
     ),
     [mobile, setMobile] = useState(false),
     [search, setSearch] = useState(false),
@@ -203,7 +234,56 @@ export function WorkspaceShell({
     );
   const homeLabel = incomingOnly ? "받은 검토 요청" : "내 연구";
   useGoShortcuts(research ? researchId : undefined);
-  useEffect(() => setMobile(false), [location.pathname]);
+  const panel = useMarginPanelHost();
+  // ] 키로 여백 패널을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
+  const panelRef = useRef(panel);
+  panelRef.current = panel;
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "]" || event.defaultPrevented) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+      )
+        return;
+      const { active, offered } = panelRef.current;
+      if (active) active.onClose();
+      else if (offered?.onOpen) offered.onOpen();
+      else return;
+      event.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  // 768~1199px에서는 메뉴가 본문을 누르지 않게 좁은 레일로 시작합니다. 펼치면 본문 위에 뜨고,
+  // 펼친 것은 저장하지 않으며 화면을 옮기면 다시 접습니다.
+  // 그보다 넓은 화면에서도 집중 모드(작업대 화면, 여백 패널이 열린 동안)에는 레일로 접습니다.
+  const focusMode = FOCUS_ROUTE.test(location.pathname) || !!panel.active;
+  const railed = narrow ? !narrowOpen : focusMode ? !focusExpanded : collapsed;
+  const floating = narrow && narrowOpen;
+  useEffect(() => {
+    if (!floating) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setNarrowOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [floating]);
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(COMPACT_QUERY);
+    const sync = () => setNarrow(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    setMobile(false);
+    setNarrowOpen(false);
+  }, [location.pathname]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -242,6 +322,17 @@ export function WorkspaceShell({
         </Button>
       </div>
     );
+  // 사이드바 아래 자리는 하나만 씁니다: 시작 체크리스트(다 못 했을 때) → AI 사용량(한도에 가까울 때) → 비움.
+  const checklist = research ? startChecklist(data, research.id) : [];
+  const startDone = checklist.filter((item) => item.done).length;
+  const showStart =
+    !!research &&
+    startDone < checklist.length &&
+    !isStartChecklistHidden(research.id);
+  const usageHigh =
+    !!usage.data &&
+    usage.data.limit > 0 &&
+    usage.data.total / usage.data.limit >= USAGE_WARNING_RATIO;
   const menu = (
     <>
       <div className="sidebar-brand">
@@ -253,13 +344,25 @@ export function WorkspaceShell({
           <Button
             variant="ghost"
             size="icon-xs"
-            aria-label={collapsed ? "메뉴 펼치기" : "메뉴 접기"}
+            aria-label={railed ? "메뉴 펼치기" : "메뉴 접기"}
             onClick={() => {
+              if (narrow) {
+                setNarrowOpen(!narrowOpen);
+                return;
+              }
+              if (focusMode) {
+                setFocusExpanded(!focusExpanded);
+                localStorage.setItem(
+                  FOCUS_EXPANDED_KEY,
+                  String(!focusExpanded),
+                );
+                return;
+              }
               setCollapsed(!collapsed);
               localStorage.setItem("rms-sidebar-collapsed", String(!collapsed));
             }}
           >
-            <Icon name={collapsed ? "menu" : "chevron-left"} size={16} />
+            <Icon name={railed ? "menu" : "chevron-left"} size={16} />
           </Button>
         </span>
       </div>
@@ -295,7 +398,7 @@ export function WorkspaceShell({
               <Icon name="grid" size={17} />
               모든 연구 보기
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => navigate("/r?new=1")}>
+            <DropdownMenuItem onSelect={() => navigate("/r/new")}>
               <Icon name="plus" size={17} />새 연구 만들기
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -312,30 +415,46 @@ export function WorkspaceShell({
       </button>
       <nav className="nav-list" aria-label="주요 메뉴">
         {research ? (
-          navigation.map(([path, icon, label]) => {
-            const preview = navPreview(path, label, data, researchId ?? "");
-            return (
-              <Hint
-                key={path}
-                label={label}
-                detail={preview?.detail}
-                shortcut={goShortcutLabel(path)}
-                position="right-center"
-                display="block"
-              >
-                <NavLink
-                  end={!path}
-                  to={`/r/${researchId}${path ? "/" + path : ""}`}
-                  className={({ isActive }) =>
-                    `nav-item ${isActive || (path === "feedback" && location.pathname.includes("/results")) ? "active" : ""}`
-                  }
-                >
-                  <Icon name={icon} size={20} />
-                  <span>{label}</span>
-                </NavLink>
-              </Hint>
-            );
-          })
+          NAV_GROUPS.map((group) => (
+            <div className="nav-group" key={group.label ?? "home"}>
+              {group.label && <p className="nav-group-label">{group.label}</p>}
+              {navigation
+                .filter(([path]) => group.paths.includes(path))
+                .sort(
+                  (a, b) =>
+                    group.paths.indexOf(a[0]) - group.paths.indexOf(b[0]),
+                )
+                .map(([path, icon, label]) => {
+                  const preview = navPreview(
+                    path,
+                    label,
+                    data,
+                    researchId ?? "",
+                  );
+                  return (
+                    <Hint
+                      key={path}
+                      label={label}
+                      detail={preview?.detail}
+                      shortcut={goShortcutLabel(path)}
+                      position="right-center"
+                      display="block"
+                    >
+                      <NavLink
+                        end={!path}
+                        to={`/r/${researchId}${path ? "/" + path : ""}`}
+                        className={({ isActive }) =>
+                          `nav-item ${isActive || (path === "feedback" && location.pathname.includes("/results")) ? "active" : ""}`
+                        }
+                      >
+                        <Icon name={icon} size={20} />
+                        <span>{label}</span>
+                      </NavLink>
+                    </Hint>
+                  );
+                })}
+            </div>
+          ))
         ) : (
           <NavLink to="/r" className="nav-item">
             <Icon name="grid" size={20} />
@@ -381,42 +500,72 @@ export function WorkspaceShell({
           <Icon name="grid" size={20} />
           <span>모든 연구</span>
         </Link>
-        <Link
-          className="sidebar-usage"
-          title="AI 사용량 보기"
-          to="/account?tab=usage"
-        >
-          <div>
-            <Icon name="sparkles" size={15} />
-            <span>AI 사용량</span>
-            <strong>
-              {usage.data
-                ? `${usage.data.total} / ${usage.data.limit}`
-                : "보기"}
-            </strong>
-          </div>
-          {usage.data ? (
+        {showStart ? (
+          <Link
+            className="sidebar-usage sidebar-start"
+            title="시작하기 체크리스트 보기"
+            to={`/r/${researchId}`}
+          >
+            <div>
+              <Icon name="check-circle" size={15} />
+              <span>시작하기</span>
+              <strong>
+                {startDone} / {checklist.length}
+              </strong>
+            </div>
             <progress
-              max={usage.data.limit}
-              value={usage.data.total}
-              aria-label="최근 24시간 AI 사용량"
+              max={checklist.length}
+              value={startDone}
+              aria-label="시작하기 진행"
             />
-          ) : (
-            <small>선택한 기록으로만 실행해요.</small>
-          )}
-        </Link>
+          </Link>
+        ) : usageHigh ? (
+          <Link
+            className="sidebar-usage"
+            title="AI 사용량 보기"
+            to="/account?tab=usage"
+          >
+            <div>
+              <Icon name="sparkles" size={15} />
+              <span>AI 사용량</span>
+              <strong>
+                {usage.data
+                  ? `${usage.data.total} / ${usage.data.limit}`
+                  : "보기"}
+              </strong>
+            </div>
+            {usage.data ? (
+              <progress
+                max={usage.data.limit}
+                value={usage.data.total}
+                aria-label="최근 24시간 AI 사용량"
+              />
+            ) : (
+              <small>선택한 기록으로만 실행해요.</small>
+            )}
+          </Link>
+        ) : null}
         <AccountMenu />
       </div>
     </>
   );
   return (
     <div
-      className={`app-shell floating-workspace ${collapsed ? "sidebar-collapsed" : ""}`}
+      className={`app-shell floating-workspace ${railed ? "sidebar-collapsed" : ""} ${floating ? "sidebar-floating" : ""} ${panel.active ? "margin-panel-open" : ""}`}
     >
       <a className="skip-link" href="#main-content">
         본문으로 이동
       </a>
       <aside className="sidebar">{menu}</aside>
+      {floating && (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="메뉴 접기"
+          tabIndex={-1}
+          onClick={() => setNarrowOpen(false)}
+        />
+      )}
       <Sheet open={mobile} onOpenChange={setMobile}>
         <SheetContent side="left" className="mobile-sidebar rms-mobile-sheet">
           <SheetHeader className="sr-only">
@@ -465,6 +614,27 @@ export function WorkspaceShell({
             )}
           </div>
           <div className="topbar-right">
+            {panel.offered && (
+              <Hint
+                label={panel.offered.label}
+                detail="오른쪽 여백 패널을 열거나 닫아요. 단축키 ]"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="margin-panel-toggle"
+                  aria-pressed={!!panel.active}
+                  aria-label={`${panel.offered.label} ${panel.active ? "닫기" : "열기"}`}
+                  onClick={() =>
+                    panel.active
+                      ? panel.active.onClose()
+                      : panel.offered?.onOpen?.()
+                  }
+                >
+                  <Icon name="panel" size={19} />
+                </Button>
+              </Hint>
+            )}
             <Hint
               label="사용 안내"
               detail="키보드 단축키는 ? 키로 볼 수 있어요."
@@ -516,11 +686,31 @@ export function WorkspaceShell({
             </Link>
           </div>
         )}
-        <main id="main-content" className="workspace-content">
-          <Suspense fallback={<LoadingState />}>
-            {children ?? <Outlet />}
-          </Suspense>
-        </main>
+        <div className="workspace-body">
+          <main id="main-content" className="workspace-content">
+            <MarginPanelProvider value={panel.context}>
+              <Suspense fallback={<LoadingState />}>
+                {children ?? <Outlet />}
+              </Suspense>
+            </MarginPanelProvider>
+          </main>
+          {panel.active && (
+            <button
+              type="button"
+              className="margin-panel-backdrop"
+              aria-label={`${panel.active.label} 닫기`}
+              tabIndex={-1}
+              onClick={panel.active.onClose}
+            />
+          )}
+          <aside
+            className="margin-panel"
+            aria-label={panel.active?.label ?? "여백 패널"}
+            hidden={!panel.active}
+            tabIndex={-1}
+            ref={panel.setSlot}
+          />
+        </div>
         <footer className="workspace-footer">
           <span>마진 · 흩어진 기록을 모아, 다음 연구가 되도록</span>
           <Link to="/privacy">자료·개인정보 안내</Link>

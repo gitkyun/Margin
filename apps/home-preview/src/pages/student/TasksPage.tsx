@@ -1,4 +1,4 @@
-import { WorkTabs, useBackState } from "./shared";
+import { useBackState } from "./shared";
 import {
   SelectField,
   Segments,
@@ -355,7 +355,6 @@ export function TasksPage() {
         <>
           <PageHeader
             title="할 일"
-            tabs={<WorkTabs researchId={researchId} selected="tasks" />}
             description="미팅 준비에 포함하지 않은 할 일까지 모두 볼 수 있어요."
             actions={
               <Button onClick={startCreate}>
