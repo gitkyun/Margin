@@ -181,37 +181,6 @@ test('document conflict rejects lost updates and immutable versions survive rest
  sharedDoc=await save('documents',{...sharedDoc,text:'편집자의 변경'});assert.equal(sharedDoc.updatedBy,ids.stranger)
  await as(ids.student);assert.equal((await call('rms_bootstrap')).documentVersions[0].text,'소유자의 변경')
 })
-test('task document link: same research, readable by the saver, not archived; others cannot write',async()=>{
- const taskId='a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1',privateDocId='a2a2a2a2-a2a2-4a2a-8a2a-a2a2a2a2a2a2',otherDocId='a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3',spareDocId='a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4'
- const task={...base(taskId),title:'계획서 2장 고치기',description:'',status:'todo',priority:'normal',dueDate:null,feedbackIds:[],visibility:'shared'}
- await as(ids.student)
- // 연결된 문서가 없는 할 일은 그대로 저장되고, 같은 연구의 공유 문서는 연결할 수 있다
- let saved=await save('tasks',task);saved=await save('tasks',{...saved,documentId:sharedDoc.id});assert.equal(saved.documentId,sharedDoc.id)
- // 없는 문서·잘못된 값·다른 연구의 문서는 거부
- await failure(()=>save('tasks',{...saved,documentId:'a9a9a9a9-a9a9-4a9a-8a9a-a9a9a9a9a9a9'}),'22023')
- await failure(()=>save('tasks',{...saved,documentId:'not-a-uuid'}),'22023')
- await save('documents',{...base(otherDocId,ids.otherResearch),title:'다른 연구 문서',type:'note',content:{type:'doc',content:[]},text:'',revision:0})
- await failure(()=>save('tasks',{...saved,documentId:otherDocId}),'22023')
- // 공동연구자의 비공개 문서는 볼 수 없으므로 연결할 수 없다
- await as(ids.stranger);await save('documents',{...base(privateDocId),title:'공동연구자 비공개 메모',type:'note',content:{type:'doc',content:[]},text:'',revision:0,visibility:'private'})
- await as(ids.student);await failure(()=>save('tasks',{...saved,documentId:privateDocId}),'42501')
- // 공동연구자는 학생이 건 연결을 유지한 채 다른 칸을 고칠 수 있다
- await as(ids.stranger);saved=await save('tasks',{...saved,status:'doing'});assert.equal(saved.documentId,sharedDoc.id)
- // 보관된 문서는 새로 연결할 수 없지만, 이미 걸린 연결이 있는 할 일은 계속 고칠 수 있다
- await as(ids.student);const spare=await save('documents',{...base(spareDocId),title:'보관할 문서',type:'note',content:{type:'doc',content:[]},text:'',revision:0,visibility:'shared'})
- saved=await save('tasks',{...saved,documentId:spare.id})
- await call('rms_delete_record',['documents',spare.id])
- saved=await save('tasks',{...saved,title:'계획서 2장 고치기(보관 뒤)'});assert.equal(saved.documentId,spare.id)
- saved=await save('tasks',{...saved,documentId:sharedDoc.id})
- await failure(()=>save('tasks',{...saved,documentId:spare.id}),'22023')
- // 연결 해제는 언제나 가능
- saved=await save('tasks',{...saved,documentId:null});assert.equal(saved.documentId??null,null)
- // 연구에 참여하지 않은 교수와 익명 사용자는 할 일을 바꿀 수 없다
- await as(ids.professor);await failure(()=>save('tasks',{...saved,documentId:sharedDoc.id}),'42501')
- await as(null);await assert.rejects(()=>save('tasks',{...saved,documentId:sharedDoc.id}))
- // 브라우저 역할은 검사 함수를 직접 부를 수 없다
- await as(ids.student);await failure(()=>db.query('select public.rms_check_task_document()'),'42501')
-})
 test('schedule participants respond without research access; confirmation creates only one meeting',async()=>{
  await as(ids.student)
  collabPoll=await inputCall('rms_poll_action',{action:'create',researchId:ids.research,title:'시간 조율',emails:['professor@example.test'],options:[{id:'adadadad-adad-4dad-8dad-adadadadadad',start:'2026-12-10T05:00:00Z',end:'2026-12-10T05:30:00Z'}]})

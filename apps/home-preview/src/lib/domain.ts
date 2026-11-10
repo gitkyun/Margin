@@ -70,8 +70,6 @@ export interface Task extends BaseRecord {
   planId?: ID;
   assigneeId?: ID;
   phaseId?: ID;
-  /** 이 할 일로 고칠 글쓰기 문서. 서버가 같은 연구·읽을 수 있는 문서인지 확인해요. */
-  documentId?: ID | null;
 }
 export interface Question extends BaseRecord {
   origin?: RecordOrigin;
