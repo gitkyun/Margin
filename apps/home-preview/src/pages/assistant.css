@@ -280,19 +280,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .context-chip button {
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    border: 0;
-    border-radius: var(--radius-8);
-    background: transparent;
-    color: inherit;
-  }
-  .context-chip button:hover {
-    background: var(--selected-fill);
-  }
   .composer-actions {
     display: flex;
     align-items: center;
@@ -435,7 +422,7 @@
     min-width: 0;
   }
   .candidate-overview-row h3 {
-    margin: 10px 0 6px !important;
+    margin: 10px 0 6px;
   }
   .candidate-overview-row blockquote {
     margin-top: 10px;
@@ -654,8 +641,5 @@
   .source-picker small {
     white-space: normal;
     line-height: 1.6;
-  }
-  .ai-source-controls label {
-    white-space: nowrap;
   }
 }

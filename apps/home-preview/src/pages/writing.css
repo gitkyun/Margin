@@ -393,23 +393,6 @@
     line-height: 1;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
-  .format-bold {
-    font-weight: 700;
-  }
-  .format-italic {
-    font-style: italic;
-    font-family: Georgia, "Times New Roman", serif;
-    font-weight: 600;
-  }
-  .editor-dock .format-heading {
-    font-weight: 700;
-    font-size: var(--typography-label1-fontSize);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .editor-dock .format-bulletList {
-    font-size: var(--typography-headline1-fontSize);
-    letter-spacing: var(--typography-headline1-letterSpacing);
-  }
   .editor-dock-wrap > p {
     margin: 0;
     font-size: var(--typography-caption1-fontSize);

@@ -863,8 +863,9 @@ export function ResearchAssistant() {
                       {c.title}
                       {c.page && ` · ${c.page}쪽`}
                     </span>
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
                       disabled={running}
                       aria-label={`${c.title} 선택 해제`}
                       onClick={() =>
@@ -872,7 +873,7 @@ export function ResearchAssistant() {
                       }
                     >
                       <Icon name="close" size={12} />
-                    </button>
+                    </Button>
                   </span>
                 ))}
               </div>
@@ -995,9 +996,13 @@ export function ResearchAssistant() {
             {caps.isError && (
               <p className="rms-error" role="alert">
                 AI 모델 정보를 불러오지 못했어요.{" "}
-                <button type="button" onClick={() => void caps.refetch()}>
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => void caps.refetch()}
+                >
                   다시 불러오기
-                </button>
+                </Button>
               </p>
             )}
             {error && (

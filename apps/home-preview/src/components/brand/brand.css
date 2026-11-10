@@ -133,7 +133,7 @@
     color: var(--brand);
   }
   .margin-depth-help {
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     line-height: 1.65;
     color: var(--text-secondary);
     padding: 6px 2px 0;
@@ -150,12 +150,12 @@
     display: block;
   }
   .margin-result-note strong {
-    font-size: 14px;
+    font-size: var(--typography-label1-fontSize);
   }
   .margin-result-note small {
     color: var(--text-secondary);
     margin-top: 4px;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     line-height: 1.6;
   }
   .margin-error-content {
@@ -187,7 +187,7 @@
     gap: 12px;
     padding: 10px 0;
     cursor: pointer;
-    font-size: 13px;
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
     list-style: none;
   }
@@ -204,7 +204,7 @@
   }
   .margin-review-fields small {
     display: block;
-    font-size: 12px;
+    font-size: var(--typography-caption1-fontSize);
     line-height: 1.65;
     color: var(--text-secondary);
   }
