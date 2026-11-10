@@ -56,7 +56,11 @@
   }
   .rh-intro h1 {
     max-width: 830px;
-    font-size: clamp(26px, 2.2vw, 32px);
+    font-size: clamp(
+      var(--typography-title3-fontSize),
+      2.2vw,
+      var(--typography-title1-fontSize)
+    );
     font-weight: 600;
     letter-spacing: -0.045em;
     line-height: 1.35;
@@ -847,17 +851,6 @@
     border-radius: var(--radius-16);
     background: var(--brand-soft);
   }
-  .rh-assistant-symbol {
-    display: grid;
-    place-items: center;
-    width: 39px;
-    height: 39px;
-    margin-bottom: 16px;
-    border-radius: var(--radius-12);
-    color: var(--brand);
-    background: var(--surface);
-    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
-  }
   .rh-assistant h2 {
     font-size: var(--typography-heading1-fontSize);
     letter-spacing: var(--typography-heading1-letterSpacing);
@@ -977,9 +970,6 @@
     border: 0;
   }
 
-  [data-theme="dark"] .rh-assistant-symbol {
-    box-shadow: none;
-  }
   @media (max-width: 1199px) {
     .rh-columns {
       gap: 25px;
@@ -1169,12 +1159,6 @@
   .rh-quick-start .rh-section-heading {
     margin-bottom: 12px;
   }
-  .rh-quick-caption {
-    margin-left: auto;
-    color: var(--text-tertiary);
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
   .rh-quick-actions {
     display: grid;
     grid-template-columns: 1.15fr 1fr 1fr;
@@ -1286,9 +1270,6 @@
   @media (max-width: 480px) {
     .rh-intro-copy {
       width: 100%;
-    }
-    .rh-quick-caption {
-      display: none;
     }
   }
   @media (prefers-reduced-motion: reduce) {

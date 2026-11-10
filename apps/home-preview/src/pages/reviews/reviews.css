@@ -368,27 +368,6 @@
     background: var(--line);
     flex-shrink: 0;
   }
-  .review-theme-button {
-    display: grid;
-    place-items: center;
-    width: 34px;
-    height: 36px;
-    border: 0;
-    border-radius: var(--radius-10);
-    color: var(--text-secondary);
-    background: transparent;
-  }
-  .review-theme-button:hover {
-    background: var(--surface-muted);
-  }
-  .review-account-label {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .review-preview-banner,
   .review-stopped-banner {
     display: flex;
@@ -1209,11 +1188,6 @@
     }
     .review-refresh-label {
       display: none;
-    }
-    .review-account-label {
-      max-width: none;
-      flex: 1;
-      text-align: right;
     }
     .review-selected-workspace {
       padding: 20px 16px 30px;

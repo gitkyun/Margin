@@ -182,15 +182,6 @@
     line-height: 1;
     font-weight: 700;
   }
-  .brand-icon {
-    width: 35px;
-    height: 35px;
-    display: grid;
-    place-items: center;
-    background: var(--primary);
-    color: var(--semantic-static-white);
-    border-radius: var(--radius-10);
-  }
   .sidebar-brand > .icon-button {
     width: 25px;
     height: 25px;
@@ -241,12 +232,6 @@
   .workspace-switch > svg {
     color: var(--text-secondary);
   }
-  .nav-caption {
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    padding: 27px 12px 10px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
   .nav-list {
     display: flex;
     flex-direction: column;
@@ -277,28 +262,9 @@
     color: var(--semantic-foreground-brand-primary);
     font-weight: 600;
   }
-  .nav-badge {
-    font-size: var(--typography-caption2-fontSize);
-    font-weight: 600;
-    min-width: 19px;
-    line-height: var(--typography-caption2-lineHeight);
-    border-radius: var(--radius-4);
-    background: var(--surface);
-    text-align: center;
-    margin-left: auto;
-    color: var(--brand);
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
   .sidebar-bottom {
     margin-top: auto;
     padding-top: 28px;
-  }
-  .sidebar-settings {
-    width: 100%;
-    font-size: var(--typography-label2-fontSize);
-    padding-bottom: 15px;
-    margin-bottom: 12px;
-    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .profile-button {
     display: flex;
@@ -344,12 +310,6 @@
     flex-shrink: 0;
     border: 1px solid var(--line);
     letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .avatar-small {
-    height: 30px;
-    width: 30px;
-    font-size: var(--typography-caption1-fontSize);
-    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .main-shell {
     margin-left: 236px;
@@ -541,12 +501,6 @@
   .section-heading h2 > svg {
     color: var(--text-secondary);
   }
-  .heading-count {
-    font-size: var(--typography-label2-fontSize);
-    color: var(--text-secondary);
-    font-weight: 500;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
   .muted {
     color: var(--text-secondary);
   }
@@ -661,35 +615,6 @@
     gap: 16px;
   }
 
-  .list-layout {
-    display: grid;
-    grid-template-columns: 300px minmax(0, 1fr);
-    gap: 20px;
-  }
-  .list-panel,
-  .detail-panel {
-    min-width: 0;
-  }
-  .detail-panel {
-    padding: 26px;
-  }
-  .resource-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border-bottom: 1px solid var(--line);
-    width: 100%;
-    text-align: left;
-    background: none;
-  }
-  .resource-row:hover {
-    background: var(--surface-muted);
-  }
-  .resource-row-main {
-    flex: 1;
-    min-width: 0;
-  }
   .page-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -697,11 +622,6 @@
     justify-content: space-between;
     gap: 12px;
     margin: 20px 0;
-  }
-  .content-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
-    gap: 22px;
   }
   .home-bento {
     display: grid;
@@ -732,170 +652,11 @@
   .home-next .section-heading h2 > svg {
     color: var(--brand);
   }
-  .home-next-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .meeting-date {
-    font-size: var(--typography-label2-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .middle-dot {
-    padding: 0 8px;
-    opacity: 0.6;
-  }
-  .home-next-top h3 {
-    font-size: var(--typography-title3-fontSize);
-    font-weight: 700;
-    letter-spacing: var(--typography-title3-letterSpacing);
-    margin-top: 7px;
-    line-height: var(--typography-title3-lineHeight);
-  }
-  .meeting-date-symbol {
-    width: 58px;
-    height: 58px;
-    display: grid;
-    place-items: center;
-    border-radius: var(--radius-16);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    color: var(--brand);
-    transform: rotate(-6deg);
-    margin-right: 3px;
-  }
-  .goal-block {
-    margin-top: 28px;
-    padding-left: 14px;
-    border-left: 2px solid color-mix(in srgb, var(--brand) 32%, var(--line));
-  }
-  .goal-block > span {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .goal-block > p {
-    font-size: var(--typography-headline2-fontSize);
-    font-weight: 500;
-    line-height: var(--typography-headline2-lineHeight);
-    margin-top: 5px;
-    letter-spacing: var(--typography-headline2-letterSpacing);
-    word-break: keep-all;
-  }
-  .next-counts {
-    display: flex;
-    gap: 17px;
-  }
-  .next-counts > span {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    white-space: nowrap;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .next-counts strong {
-    color: var(--text);
-    font-weight: 600;
-    margin-left: 1px;
-  }
   .home-responses .section-heading {
     margin-bottom: 8px;
   }
-  .home-response {
-    display: block;
-    padding: 19px 0 16px;
-    border-bottom: 1px solid var(--line);
-  }
-  .home-response:last-child {
-    border-bottom: 0;
-    padding-bottom: 0;
-  }
-  .home-response:hover h3 {
-    color: var(--brand);
-  }
-  .home-response > div {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 11px;
-  }
-  .home-response h3 {
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 600;
-    margin-bottom: 7px;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .home-response > p {
-    font-size: var(--typography-label2-fontSize);
-    line-height: var(--typography-label2-lineHeight);
-    color: var(--text-secondary);
-    margin-bottom: 10px;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .home-response .meta {
-    font-size: var(--typography-caption2-fontSize);
-    justify-content: space-between;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .unread-marker {
-    height: 5px;
-    width: 5px;
-    background: var(--brand);
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .small-section-label {
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-top: 18px;
-    margin-bottom: 10px;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .home-work > .section-heading {
     margin-bottom: 0;
-  }
-  .home-task {
-    display: flex;
-    gap: 11px;
-    align-items: center;
-    padding: 18px 0;
-    border-bottom: 1px solid var(--line);
-    min-height: 80px;
-  }
-  .home-task > div {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  .home-task strong {
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 600;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .home-task > div > span {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .home-task.is-done strong {
-    text-decoration: line-through;
-    color: var(--text-secondary);
-  }
-  .home-task.is-done > div > span {
-    opacity: 0.7;
   }
   .task-date {
     font-size: var(--typography-caption1-fontSize);
@@ -903,148 +664,6 @@
     text-align: right;
     width: 48px;
     flex-shrink: 0;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .section-footnote {
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    margin-top: 17px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .home-questions {
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  .home-questions li {
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-    font-size: var(--typography-label2-fontSize);
-    line-height: var(--typography-label2-lineHeight);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .home-questions li > svg {
-    flex-shrink: 0;
-    margin-top: 3px;
-    color: var(--text-secondary);
-  }
-  .home-questions a:hover {
-    color: var(--brand);
-  }
-  .home-materials {
-    margin-top: 25px;
-    padding-top: 3px;
-    border-top: 1px solid var(--line);
-  }
-  .home-materials > a {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 10px 0;
-  }
-  .file-symbol {
-    width: 32px;
-    height: 38px;
-    display: grid;
-    place-items: center;
-    background: var(--surface-muted);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    color: var(--text-secondary);
-    flex-shrink: 0;
-  }
-  .home-materials > a > span:nth-child(2) {
-    min-width: 0;
-    flex: 1;
-  }
-  .home-materials strong {
-    display: block;
-    font-weight: 500;
-    font-size: var(--typography-caption1-fontSize);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .home-materials small {
-    display: block;
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    margin-top: 4px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .home-materials > a > svg {
-    color: var(--text-secondary);
-  }
-  .home-previous {
-    margin-top: 32px;
-  }
-  .previous-record {
-    display: flex;
-    align-items: center;
-    gap: 17px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .date-square {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-12);
-    width: 48px;
-    height: 54px;
-    flex-shrink: 0;
-  }
-  .date-square small {
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .date-square strong {
-    font-size: var(--typography-headline1-fontSize);
-    font-weight: 600;
-    line-height: var(--typography-headline1-lineHeight);
-    letter-spacing: var(--typography-headline1-letterSpacing);
-  }
-  .previous-record > span:nth-child(2) {
-    flex: 1;
-    min-width: 0;
-  }
-  .previous-record > span:nth-child(2) > strong {
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .previous-record p {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    margin-top: 7px;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .previous-record > svg {
-    color: var(--text-secondary);
-  }
-  .account-theme {
-    padding: 9px 10px 12px;
-  }
-  .account-theme > span {
-    display: block;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    margin-bottom: 10px;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .notification-content {
@@ -1264,8 +883,7 @@
   .skip-link:focus {
     top: 12px;
   }
-  .mobile-menu,
-  .mobile-backdrop {
+  .mobile-menu {
     display: none;
   }
   .sidebar-collapsed .sidebar {
@@ -1290,9 +908,7 @@
   .sidebar-collapsed .brand > strong,
   .sidebar-collapsed .workspace-switch > span:nth-child(2),
   .sidebar-collapsed .workspace-switch > svg,
-  .sidebar-collapsed .nav-caption,
   .sidebar-collapsed .nav-item > span,
-  .sidebar-collapsed .nav-badge,
   .sidebar-collapsed .profile-button > span:nth-child(2),
   .sidebar-collapsed .profile-button > svg {
     display: none;
@@ -1360,29 +976,6 @@
     justify-content: space-between;
     letter-spacing: var(--typography-caption2-letterSpacing);
   }
-  .demo-seed {
-    margin-top: 36px;
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    border-top: 1px solid var(--line);
-    padding-top: 23px;
-    color: var(--text-secondary);
-  }
-  .demo-seed > div {
-    flex: 1;
-  }
-  .demo-seed strong {
-    font-size: var(--typography-label2-fontSize);
-    font-weight: 500;
-    color: var(--text);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .demo-seed p {
-    font-size: var(--typography-caption1-fontSize);
-    margin-top: 5px;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .connection-error,
   .not-found {
     max-width: 600px;
@@ -1416,151 +1009,6 @@
     line-height: 1;
     color: var(--text);
   }
-  .login-page {
-    min-height: 100vh;
-    background: var(--canvas);
-    display: flex;
-    flex-direction: column;
-  }
-  .login-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 32px 52px;
-  }
-  .login-main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 80px;
-    align-items: center;
-    max-width: 1040px;
-    width: 100%;
-    padding: 50px 24px 85px;
-    margin: 0 auto;
-  }
-  .login-intro {
-    position: relative;
-  }
-  .login-intro .page-eyebrow {
-    display: block;
-    margin-bottom: 22px;
-  }
-  .login-intro h1 {
-    font-size: var(--typography-display1-fontSize);
-    letter-spacing: var(--typography-display1-letterSpacing);
-    line-height: var(--typography-display1-lineHeight);
-    font-weight: 700;
-  }
-  .login-intro > p {
-    font-size: var(--typography-body1-fontSize);
-    color: var(--text-secondary);
-    line-height: var(--typography-body1Reading-lineHeight);
-    margin-top: 24px;
-    letter-spacing: var(--typography-body1-letterSpacing);
-  }
-  .login-flow {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    margin-top: 45px;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .login-flow svg {
-    opacity: 0.45;
-  }
-  .login-dots {
-    display: grid;
-    grid-template-columns: repeat(7, 3px);
-    gap: 6px;
-    margin-bottom: 28px;
-  }
-  .login-dots > i {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: var(--brand);
-    opacity: 0.35;
-  }
-  .login-dots > i:nth-child(3n) {
-    opacity: 0.8;
-  }
-  .login-dots > i:nth-child(7n) {
-    opacity: 0.1;
-  }
-  .login-card {
-    padding: 35px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    border-radius: var(--radius-20);
-    box-shadow: var(--semantic-elevation-shadow-normal-large);
-  }
-  .login-card > h2 {
-    font-size: var(--typography-title3-fontSize);
-    letter-spacing: var(--typography-title3-letterSpacing);
-    font-weight: 700;
-  }
-  .login-card > p {
-    font-size: var(--typography-label2-fontSize);
-    color: var(--text-secondary);
-    margin: 8px 0 27px;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .login-card form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .login-submit {
-    width: 100%;
-    height: 43px;
-    justify-content: space-between;
-    margin-top: 3px;
-  }
-  .login-help {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding-top: 24px;
-    color: var(--text-secondary);
-    margin-top: 24px;
-    border-top: 1px solid var(--line);
-  }
-  .login-help svg {
-    flex-shrink: 0;
-    margin-top: 3px;
-  }
-  .login-help p {
-    font-size: var(--typography-caption1-fontSize);
-    line-height: var(--typography-caption1-lineHeight);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .preview-entry {
-    margin-top: 22px;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
-  }
-  .preview-entry p {
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .preview-entry > a {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .login-page > footer {
-    padding: 20px 52px 30px;
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-secondary);
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
   @media (min-width: 1600px) {
     .workspace-content {
       padding-top: 42px;
@@ -1585,16 +1033,6 @@
     }
     .home-bento > section {
       padding: 23px;
-    }
-    .next-counts {
-      gap: 10px;
-    }
-    .next-counts > span {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
-    }
-    .home-task {
-      gap: 9px;
     }
     .research-grid {
       grid-template-columns: 1fr 1fr;
@@ -1630,33 +1068,8 @@
     .home-preparation {
       order: 3;
     }
-    .home-response-list {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    .home-response {
-      border-bottom: 0;
-      padding-bottom: 0;
-    }
     .home-bento > section {
       padding: 24px;
-    }
-    .login-main {
-      gap: 45px;
-      grid-template-columns: 1fr 390px;
-      padding-left: 40px;
-      padding-right: 40px;
-    }
-    .login-intro h1 {
-      font-size: var(--typography-display2-fontSize);
-      letter-spacing: var(--typography-display2-letterSpacing);
-    }
-    .content-grid {
-      grid-template-columns: 1fr;
-    }
-    .list-layout {
-      grid-template-columns: 250px minmax(0, 1fr);
     }
   }
   @media (max-width: 767px) {
@@ -1735,86 +1148,19 @@
     .home-next .section-heading {
       margin-bottom: 23px;
     }
-    .home-next-top h3 {
-      font-size: var(--typography-heading1-fontSize);
-      letter-spacing: var(--typography-heading1-letterSpacing);
-    }
-    .meeting-date-symbol {
-      width: 46px;
-      height: 46px;
-      border-radius: var(--radius-12);
-    }
-    .meeting-date-symbol svg {
-      width: 26px;
-      height: 26px;
-    }
-    .goal-block {
-      margin-top: 24px;
-    }
-    .goal-block > p {
-      font-size: var(--typography-body1-fontSize);
-      letter-spacing: var(--typography-body1-letterSpacing);
-    }
-    .next-counts {
-      gap: 17px;
-    }
-    .next-counts > span {
-      font-size: var(--typography-caption1-fontSize);
-      letter-spacing: var(--typography-caption1-letterSpacing);
-    }
-    .home-response-list {
-      display: block;
-    }
-    .home-response {
-      border-bottom: 1px solid var(--line);
-      padding: 18px 0;
-    }
-    .home-response:last-child {
-      padding-top: 18px;
-    }
     .section-heading h2 {
       font-size: var(--typography-headline2-fontSize);
       letter-spacing: var(--typography-headline2-letterSpacing);
-    }
-    .home-task {
-      gap: 9px;
-      min-height: 78px;
-    }
-    .home-task strong {
-      font-size: var(--typography-label2-fontSize);
-      letter-spacing: var(--typography-label2-letterSpacing);
-    }
-    .home-task > div > span {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
     }
     .task-date {
       width: 43px;
       font-size: var(--typography-caption2-fontSize);
       letter-spacing: var(--typography-caption2-letterSpacing);
     }
-    .previous-record > span:nth-child(2) > strong {
-      font-size: var(--typography-label2-fontSize);
-      flex-wrap: wrap;
-      gap: 5px;
-      letter-spacing: var(--typography-label2-letterSpacing);
-    }
-    .previous-record p {
-      font-size: var(--typography-caption1-fontSize);
-      letter-spacing: var(--typography-caption1-letterSpacing);
-    }
     .workspace-footer {
       padding: 20px 18px;
       font-size: var(--typography-caption2-fontSize);
       letter-spacing: var(--typography-caption2-letterSpacing);
-    }
-    .mobile-backdrop {
-      display: block;
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      background: var(--semantic-effect-dimmer-primary);
-      backdrop-filter: blur(3px);
     }
     .mobile-sidebar {
       width: 260px;
@@ -1838,7 +1184,6 @@
     }
     .mobile-sidebar .brand > strong,
     .mobile-sidebar .workspace-switch > span:nth-child(2),
-    .mobile-sidebar .nav-caption,
     .mobile-sidebar .nav-item > span,
     .mobile-sidebar .profile-button > span:nth-child(2) {
       display: initial;
@@ -1865,24 +1210,11 @@
     .research-card {
       padding: 23px;
     }
-    .demo-seed {
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-    .demo-seed > div {
-      min-width: 220px;
-    }
-    .demo-seed > button {
-      margin-left: 30px;
-    }
     .form-grid {
       grid-template-columns: 1fr;
     }
     .rms-dialog {
       padding: 24px;
-    }
-    .list-layout {
-      grid-template-columns: 1fr;
     }
     .pdf-toolbar {
       padding: 9px;
@@ -1902,52 +1234,6 @@
     .pdf-zoom {
       font-size: var(--typography-caption2-fontSize);
       letter-spacing: var(--typography-caption2-letterSpacing);
-    }
-    .login-top {
-      padding: 25px 24px;
-    }
-    .login-main {
-      grid-template-columns: 1fr;
-      gap: 30px;
-      padding: 20px 24px 45px;
-      max-width: 480px;
-    }
-    .login-intro {
-      padding: 5px 5px 0;
-    }
-    .login-intro h1 {
-      font-size: var(--typography-display3-fontSize);
-      line-height: var(--typography-display3-lineHeight);
-      letter-spacing: var(--typography-display3-letterSpacing);
-    }
-    .login-intro h1 br {
-      display: none;
-    }
-    .login-intro .page-eyebrow {
-      font-size: var(--typography-caption2-fontSize);
-      margin-bottom: 12px;
-      letter-spacing: var(--typography-caption2-letterSpacing);
-    }
-    .login-intro > p,
-    .login-flow {
-      display: none;
-    }
-    .login-dots {
-      display: none;
-    }
-    .login-card {
-      padding: 27px;
-    }
-    .login-page > footer {
-      padding: 20px 24px;
-      font-size: var(--typography-caption2-fontSize);
-      flex-direction: column;
-      gap: 7px;
-      letter-spacing: var(--typography-caption2-letterSpacing);
-    }
-    .login-card > h2 {
-      font-size: var(--typography-heading1-fontSize);
-      letter-spacing: var(--typography-heading1-letterSpacing);
     }
     .not-found,
     .connection-error {
@@ -1973,24 +1259,9 @@
   }
   .preview-banner,
   .workspace-switch small,
-  .nav-caption,
-  .profile-button small,
-  .section-footnote,
-  .home-response .meta {
+  .profile-button small {
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .home-response > p {
-    font-size: var(--typography-label1-fontSize);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .home-task > div > span {
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .home-questions {
-    font-size: var(--typography-label1-fontSize);
-    letter-spacing: var(--typography-label1-letterSpacing);
   }
 
   .workspace-refresh-notice {
