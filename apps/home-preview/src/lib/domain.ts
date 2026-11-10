@@ -87,6 +87,10 @@ export interface Decision extends BaseRecord {
   origin?: RecordOrigin;
   meetingId: ID;
   text: string;
+  /** 이렇게 정한 이유. 선택입니다. */
+  reason?: string;
+  /** 이 결정이 바꾸는 이전 결정. 방향이 바뀌었을 때 고릅니다. */
+  replacesId?: ID;
 }
 export interface Material extends BaseRecord {
   title: string;

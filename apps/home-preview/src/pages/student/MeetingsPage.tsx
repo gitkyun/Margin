@@ -35,6 +35,8 @@ import {
 } from "@/lib/domain";
 import { AIWorkbench } from "./AIWorkbench";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
+import { REASON_MAX, decisionLog, replaceableDecisions } from "@/lib/decisions";
+import { DecisionLog } from "./DecisionLog";
 import { isAISourceStale } from "./ai-source";
 import { QuickPdfUpload } from "./QuickPdfUpload";
 import { hasMemoConflict, restoreMemoDraft } from "./memo-draft";
@@ -86,6 +88,7 @@ export function MeetingsPage() {
   const { data, save } = useWorkspace();
   const navigate = useNavigate();
   const createBase = useRef<BaseRecord | null>(null);
+  const [logOpen, setLogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [pageParams, setPageParams] = useSearchParams();
   const filter = pageParams.get("status") ?? "all",
@@ -183,10 +186,16 @@ export function MeetingsPage() {
         title="미팅"
         description="다음 미팅을 준비하고 지난 기록을 확인하세요."
         actions={
-          <Button onClick={openCreate}>
-            <Icon name="plus" size={17} />
-            미팅 만들기
-          </Button>
+          <>
+            <Button variant="outline" onClick={() => setLogOpen(true)}>
+              <Icon name="history" size={16} />
+              결정 기록
+            </Button>
+            <Button onClick={openCreate}>
+              <Icon name="plus" size={17} />
+              미팅 만들기
+            </Button>
+          </>
         }
       />
       <div className="page-toolbar">
@@ -328,6 +337,21 @@ export function MeetingsPage() {
           />
         </form>
       </FormDialog>
+      <MarginPanel
+        label="결정 기록"
+        open={logOpen}
+        onOpen={() => setLogOpen(true)}
+        onClose={() => setLogOpen(false)}
+      >
+        <PanelFrame title="결정 기록" onClose={() => setLogOpen(false)}>
+          <div className="panel-frame-body">
+            <DecisionLog
+              entries={decisionLog(data.decisions, data.meetings, researchId)}
+              researchId={researchId}
+            />
+          </div>
+        </PanelFrame>
+      </MarginPanel>
     </div>
   );
 }
@@ -416,6 +440,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   >(null);
   const [entryTitle, setEntryTitle] = useState("");
   const [entryBody, setEntryBody] = useState("");
+  const [entryReason, setEntryReason] = useState("");
+  const [entryReplaces, setEntryReplaces] = useState("");
+  // 고치는 중인 결정. 없으면 새로 추가하는 것입니다.
+  const [editingDecision, setEditingDecision] = useState<Decision | null>(null);
   const entryForm = useSaving();
   // 결정 사항에서 바로 할 일을 만듭니다(검수 H-5). 미팅 준비 목록과는 따로 저장돼요.
   const [taskFrom, setTaskFrom] = useState<Decision | null>(null);
@@ -437,8 +465,14 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const preparedQuestions = data.questions.filter((item) =>
     meeting.questionIds.includes(item.id),
   );
-  const decisions = data.decisions.filter(
-    (item) => item.meetingId === meeting.id,
+  // 연구 전체 결정의 연결(무엇을 바꿨고 무엇으로 바뀌었는지)에서 이 미팅 것만 고릅니다.
+  const allDecisions = decisionLog(data.decisions, data.meetings, researchId);
+  const decisions = allDecisions.filter(
+    (entry) => entry.decision.meetingId === meeting.id,
+  );
+  const replaceable = replaceableDecisions(
+    allDecisions,
+    editingDecision ?? undefined,
   );
   const feedback = data.feedback.filter(
     (item) => item.meetingId === meeting.id,
@@ -741,11 +775,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     }
     toast.success("선택한 AI 제안을 저장했어요");
   }
-  function openEntry(kind: "feedback" | "decision" | "question") {
-    entryBase.current = recordBase(researchId);
+  function openEntry(
+    kind: "feedback" | "decision" | "question",
+    existing?: Decision,
+  ) {
+    entryBase.current = existing ?? recordBase(researchId);
+    setEditingDecision(existing ?? null);
     setEntry(kind);
     setEntryTitle("");
-    setEntryBody("");
+    setEntryBody(existing?.text ?? "");
+    setEntryReason(existing?.reason ?? "");
+    setEntryReplaces(existing?.replacesId ?? "");
     entryForm.setError(null);
   }
   async function storeEntry(event: React.FormEvent) {
@@ -770,9 +810,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       else if (entry === "decision")
         await save("decisions", {
           ...base,
-          origin: "manual",
+          origin: editingDecision?.origin ?? "manual",
           meetingId: meeting.id,
           text: entryBody.trim(),
+          reason: entryReason.trim() || undefined,
+          replacesId: entryReplaces || undefined,
         });
       else {
         const q: Question = {
@@ -1301,18 +1343,33 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               </Button>
             </div>
             {decisions.length ? (
-              decisions.map((decision) => (
-                <div className="student-decision" key={decision.id}>
+              decisions.map(({ decision, replaces, replacedBy }) => (
+                <div
+                  className={`student-decision ${replacedBy ? "is-replaced" : ""}`}
+                  key={decision.id}
+                >
                   <span className="student-dot" />
-                  <p>
-                    {decision.text}
-                    {decision.origin && (
-                      <span className="meta">
-                        {" "}
-                        · {originLabels[decision.origin]}
-                      </span>
-                    )}
-                  </p>
+                  <div className="student-decision-copy">
+                    <p>
+                      {decision.text}
+                      {decision.origin && (
+                        <span className="meta">
+                          {" "}
+                          · {originLabels[decision.origin]}
+                        </span>
+                      )}
+                    </p>
+                    {decision.reason && <small>이유: {decision.reason}</small>}
+                    {replaces && <small>이전 결정: {replaces.text}</small>}
+                    {replacedBy && <small>이후 바뀜: {replacedBy.text}</small>}
+                  </div>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => openEntry("decision", decision)}
+                  >
+                    고치기
+                  </Button>
                   <Button
                     variant="link"
                     size="sm"
@@ -1658,7 +1715,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           entry === "feedback"
             ? "피드백 직접 추가"
             : entry === "decision"
-              ? "결정 사항 추가"
+              ? editingDecision
+                ? "결정 사항 고치기"
+                : "결정 사항 추가"
               : "질문 추가"
         }
       >
@@ -1682,7 +1741,40 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               rows={5}
             />
           </label>
-          <p className="student-footnote">직접 작성한 항목으로 저장돼요.</p>
+          {entry === "decision" && (
+            <>
+              <label className="field">
+                <span className="field-name">이유</span>
+                <Textarea
+                  value={entryReason}
+                  maxLength={REASON_MAX}
+                  onChange={(e) => setEntryReason(e.target.value)}
+                  rows={2}
+                  placeholder="왜 이렇게 정했는지 한두 문장으로 적어요."
+                />
+              </label>
+              {replaceable.length > 0 && (
+                <label className="field">
+                  <span className="field-name">바꾸는 이전 결정</span>
+                  <SelectField
+                    className="native-select"
+                    value={entryReplaces}
+                    onChange={(e) => setEntryReplaces(e.target.value)}
+                  >
+                    <option value="">없음</option>
+                    {replaceable.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.text.slice(0, 60)}
+                      </option>
+                    ))}
+                  </SelectField>
+                </label>
+              )}
+            </>
+          )}
+          {!editingDecision && (
+            <p className="student-footnote">직접 작성한 항목으로 저장돼요.</p>
+          )}
           <ErrorNotice error={entryForm.error} />
           <SaveActions
             saving={entryForm.saving}
