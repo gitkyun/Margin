@@ -88,6 +88,121 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
 
+  /* 단계 진행 막대. 넘어가면 다음 칸이 왼쪽부터 채워집니다(부품 단계 200ms). */
+  .ob-meter {
+    display: flex;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-16);
+  }
+  .ob-meter span {
+    position: relative;
+    flex: 1;
+    max-width: 48px;
+    height: 4px;
+    border-radius: var(--radius-4);
+    background: var(--surface-muted);
+    overflow: hidden;
+  }
+  .ob-meter span::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .ob-meter span[data-on]::after {
+    transform: scaleX(1);
+  }
+
+  /* 단계가 바뀔 때 내용이 가는 방향에서 들어옵니다. 앞으로는 오른쪽, 뒤로는 왼쪽에서. */
+  .ob-step {
+    display: flex;
+    flex-direction: column;
+    animation: ob-step-forward var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .ob-step[data-dir="back"] {
+    animation-name: ob-step-back;
+  }
+  @keyframes ob-step-forward {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+  }
+  @keyframes ob-step-back {
+    from {
+      opacity: 0;
+      transform: translateX(-12px);
+    }
+  }
+
+  /* 처음 온 사람에게 보여 주는 소개 세 장. 질문과 같은 자리·글자 크기를 씁니다. */
+  .ob-intro h1:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 4px;
+    border-radius: var(--radius-4);
+  }
+  .ob-intro-slogan {
+    margin-top: var(--spacing-12);
+    color: var(--brand);
+    font-size: var(--typography-headline2-fontSize);
+    line-height: var(--typography-headline2-lineHeight);
+    letter-spacing: var(--typography-headline2-letterSpacing);
+    font-weight: 600;
+    word-break: keep-all;
+  }
+  .ob-intro-flow {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: var(--spacing-20) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ob-intro-flow li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-12);
+    padding: var(--spacing-8) 0;
+  }
+  .ob-intro-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-8);
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .ob-intro-icon {
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
+  }
+  .ob-intro-flow li:hover .ob-intro-icon {
+    background: var(--brand);
+    color: var(--semantic-static-white);
+  }
+  .ob-intro-copy {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+    font-size: var(--typography-body2-fontSize);
+    line-height: var(--typography-body2-lineHeight);
+    letter-spacing: var(--typography-body2-letterSpacing);
+    word-break: keep-all;
+  }
+  .ob-intro-copy strong {
+    font-weight: 600;
+  }
+  .ob-intro-copy > span {
+    color: var(--text-secondary);
+  }
+
   /* 답한 질문은 한 줄로 접힙니다. 누르면 그 질문으로 돌아갑니다. */
   .ob-answers {
     display: grid;
@@ -190,6 +305,21 @@
   .ob-choice:has(input:checked) .ob-choice-number {
     background: var(--brand);
     color: var(--semantic-static-white);
+  }
+  /* 고르면 오른쪽에 확인 표시가 커지며 나타납니다. */
+  .ob-choice-check {
+    flex: none;
+    margin-left: auto;
+    color: var(--brand);
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-micro) var(--motion-ease-standard);
+  }
+  .ob-choice:has(input:checked) .ob-choice-check {
+    opacity: 1;
+    transform: scale(1);
   }
   .ob-choice-later {
     color: var(--text-secondary);
@@ -558,11 +688,15 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ob-filled {
+    .ob-filled,
+    .ob-step {
       animation: none;
     }
     .ob-answers button,
-    .ob-choice {
+    .ob-choice,
+    .ob-choice-check,
+    .ob-intro-icon,
+    .ob-meter span::after {
       transition: none;
     }
   }

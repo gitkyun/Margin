@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import { Field } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { StartGlow } from "@/components/StartGlow";
 import { HomePreview } from "@/components/onboarding/HomePreview";
+import { ServiceIntro } from "@/components/onboarding/ServiceIntro";
+import { StepMeter } from "@/components/onboarding/StepMeter";
+import { isIntroSeen, markIntroSeen, shouldShowIntro } from "@/lib/intro";
 import { useWorkspace } from "@/lib/workspace";
 import { friendlyError } from "@/lib/supabase";
 import {
@@ -72,6 +75,7 @@ export function OnboardingPage() {
   const progress = useRef<SaveProgress>({ phases: 0, meeting: false });
   const nameInput = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [advisors, setAdvisors] = useState("");
@@ -88,6 +92,25 @@ export function OnboardingPage() {
   const [pending, setPending] = useState(false);
 
   const hasResearches = data.researches.some((item) => !item.deletedAt);
+  const [params, setParams] = useSearchParams();
+  // 처음 한 번만 정합니다. 소개를 보는 동안 연구 목록이 바뀌어도 화면이 갑자기 바뀌지 않게 해요.
+  const [intro, setIntro] = useState(() =>
+    shouldShowIntro({
+      hasResearches,
+      seen: isIntroSeen(),
+      forced: params.get("intro") === "1",
+    }),
+  );
+
+  function endIntro() {
+    markIntroSeen();
+    setIntro(false);
+    if (params.has("intro")) {
+      const rest = new URLSearchParams(params);
+      rest.delete("intro");
+      setParams(rest, { replace: true });
+    }
+  }
   const meetingAnswer: MeetingAnswer | null =
     meetingKind === undefined
       ? null
@@ -108,10 +131,15 @@ export function OnboardingPage() {
       ? onboardingMeeting(meetingAnswer, today)
       : undefined;
 
+  function moveTo(target: number) {
+    setDirection(target >= step ? "forward" : "back");
+    setStep(target);
+  }
+
   function requireName(): boolean {
     if (name.trim()) return true;
     setNameError(true);
-    setStep(0);
+    moveTo(0);
     nameInput.current?.focus();
     return false;
   }
@@ -121,7 +149,7 @@ export function OnboardingPage() {
     if (step === 0 && !requireName()) return;
     if (step === 1 && phaseIndex === undefined) setPhaseIndex(null);
     if (step === 2 && meetingKind === undefined) setMeetingKind("skip");
-    setStep(step + 1);
+    moveTo(step + 1);
   }
 
   async function finish(answers: {
@@ -225,216 +253,244 @@ export function OnboardingPage() {
             </Link>
           )}
         </header>
-        <form
-          className="ob-form"
-          onSubmit={
-            reviewing
-              ? (event) => {
-                  event.preventDefault();
-                  void finish({
-                    phaseIndex: phaseIndex ?? null,
-                    meeting: meetingAnswer,
-                  });
-                }
-              : next
-          }
-        >
-          {step > 0 && (
-            <ol className="ob-answers" aria-label="답한 내용">
-              {summaries.slice(0, step).map((summary, index) => (
-                <li key={QUESTIONS[index]}>
-                  <button
-                    type="button"
-                    onClick={() => setStep(index)}
-                    disabled={pending}
+        {intro ? (
+          <ServiceIntro onDone={endIntro} />
+        ) : (
+          <form
+            className="ob-form"
+            onSubmit={
+              reviewing
+                ? (event) => {
+                    event.preventDefault();
+                    void finish({
+                      phaseIndex: phaseIndex ?? null,
+                      meeting: meetingAnswer,
+                    });
+                  }
+                : next
+            }
+          >
+            {step > 0 && (
+              <ol className="ob-answers" aria-label="답한 내용">
+                {summaries.slice(0, step).map((summary, index) => (
+                  <li
+                    key={QUESTIONS[index]}
+                    className={
+                      index === step - 1 && direction === "forward"
+                        ? "ob-filled"
+                        : undefined
+                    }
                   >
-                    <Icon name="check" size={14} />
-                    <span>{summary}</span>
-                    <small>고치기</small>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          )}
-          {reviewing ? (
-            <>
-              <h1 tabIndex={-1}>이렇게 시작할게요</h1>
-              <p className="ob-help">
-                연구를 만든 뒤에도 이름, 단계, 미팅, 연구 방향은 모두 바꿀 수
-                있어요.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="ob-progress">
-                {step + 1} / {STEP_COUNT}
-              </p>
-              <h1>{QUESTIONS[step]}</h1>
-            </>
-          )}
-          {step === 0 && (
-            <div className="ob-fields">
-              <p className="ob-help">
-                지도받는 연구마다 하나씩 만들어요. 이름은 나중에 바꿀 수 있어요.
-              </p>
-              <Field label="연구 이름" required>
-                <Input
-                  ref={nameInput}
-                  value={name}
-                  onChange={(event) => {
-                    setName(event.target.value);
-                    setNameError(false);
-                  }}
-                  maxLength={120}
-                  autoFocus
-                  aria-invalid={nameError || undefined}
-                  placeholder="예: 대학원생의 연구 도구 사용 경험"
-                />
-              </Field>
-              {nameError && (
-                <p className="ob-error" role="alert">
-                  연구 이름을 입력해 주세요.
-                </p>
-              )}
-              <Field label="한 줄 설명" hint="나중에 적어도 돼요.">
-                <Textarea
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  placeholder="예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구"
-                />
-              </Field>
-              <Field
-                label="지도교수 이메일"
-                hint="여러 명이면 쉼표로 나눠 주세요. 나중에 연구 설정에서 바꿀 수 있어요."
-              >
-                <Input
-                  type="text"
-                  inputMode="email"
-                  autoComplete="off"
-                  value={advisors}
-                  onChange={(event) => setAdvisors(event.target.value)}
-                  placeholder="professor@example.com"
-                />
-              </Field>
-            </div>
-          )}
-          {step === 1 && (
-            <fieldset className="ob-choices">
-              <legend className="ob-sr-only">{QUESTIONS[1]}</legend>
-              {phaseTitles.map((title, index) => (
-                <label key={title} className="ob-choice">
-                  <input
-                    type="radio"
-                    name="ob-phase"
-                    checked={phaseIndex === index}
-                    onChange={() => setPhaseIndex(index)}
-                  />
-                  <span className="ob-choice-number">{index + 1}</span>
-                  <span>{title}</span>
-                </label>
-              ))}
-              <label className="ob-choice ob-choice-later">
-                <input
-                  type="radio"
-                  name="ob-phase"
-                  checked={phaseIndex === null}
-                  onChange={() => setPhaseIndex(null)}
-                />
-                <span>나중에 정할게요</span>
-              </label>
-            </fieldset>
-          )}
-          {step === 2 && (
-            <>
-              <fieldset className="ob-choices">
-                <legend className="ob-sr-only">{QUESTIONS[2]}</legend>
-                {MEETING_CHOICES.map((choice) => (
-                  <label key={choice.kind} className="ob-choice">
-                    <input
-                      type="radio"
-                      name="ob-meeting"
-                      checked={meetingKind === choice.kind}
-                      onChange={() => setMeetingKind(choice.kind)}
-                    />
-                    <span>{choice.label}</span>
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => moveTo(index)}
+                      disabled={pending}
+                    >
+                      <Icon name="check" size={14} />
+                      <span>{summary}</span>
+                      <small>고치기</small>
+                    </button>
+                  </li>
                 ))}
-              </fieldset>
-              {meetingKind === "dated" && (
-                <div className="ob-date-fields">
-                  <LabeledInput
-                    label="날짜"
-                    type="date"
-                    value={date}
-                    onChange={setDate}
-                  />
-                  <LabeledInput
-                    label="시각"
-                    type="time"
-                    value={time}
-                    onChange={setTime}
-                    disabled={!date}
-                  />
+              </ol>
+            )}
+            <StepMeter count={STEP_COUNT} current={step} />
+            <div className="ob-step" data-dir={direction} key={step}>
+              {reviewing ? (
+                <>
+                  <h1 tabIndex={-1}>이렇게 시작할게요</h1>
+                  <p className="ob-help">
+                    연구를 만든 뒤에도 이름, 단계, 미팅, 연구 방향은 모두 바꿀
+                    수 있어요.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="ob-progress">
+                    {step + 1} / {STEP_COUNT}
+                  </p>
+                  <h1>{QUESTIONS[step]}</h1>
+                </>
+              )}
+              {step === 0 && (
+                <div className="ob-fields">
+                  <p className="ob-help">
+                    지도받는 연구마다 하나씩 만들어요. 이름은 나중에 바꿀 수
+                    있어요.
+                  </p>
+                  <Field label="연구 이름" required>
+                    <Input
+                      ref={nameInput}
+                      value={name}
+                      onChange={(event) => {
+                        setName(event.target.value);
+                        setNameError(false);
+                      }}
+                      maxLength={120}
+                      autoFocus
+                      aria-invalid={nameError || undefined}
+                      placeholder="예: 대학원생의 연구 도구 사용 경험"
+                    />
+                  </Field>
+                  {nameError && (
+                    <p className="ob-error" role="alert">
+                      연구 이름을 입력해 주세요.
+                    </p>
+                  )}
+                  <Field label="한 줄 설명" hint="나중에 적어도 돼요.">
+                    <Textarea
+                      value={description}
+                      onChange={(event) => setDescription(event.target.value)}
+                      placeholder="예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구"
+                    />
+                  </Field>
+                  <Field
+                    label="지도교수 이메일"
+                    hint="여러 명이면 쉼표로 나눠 주세요. 나중에 연구 설정에서 바꿀 수 있어요."
+                  >
+                    <Input
+                      type="text"
+                      inputMode="email"
+                      autoComplete="off"
+                      value={advisors}
+                      onChange={(event) => setAdvisors(event.target.value)}
+                      placeholder="professor@example.com"
+                    />
+                  </Field>
                 </div>
               )}
-            </>
-          )}
-          {step === 3 && (
-            <div className="ob-fields">
-              <p className="ob-help">
-                아직 정하지 못했으면 비워 둬도 돼요. 나중에 연구 홈에서 적거나
-                계획서에서 가져올 수 있어요.
-              </p>
-              <Field label="연구 목적">
-                <Textarea
-                  value={purpose}
-                  maxLength={PURPOSE_MAX}
-                  onChange={(event) => setPurpose(event.target.value)}
-                  placeholder="예: 대학원생이 지도 미팅 뒤 피드백을 어떻게 기록하고 다시 쓰는지 밝힌다"
-                />
-              </Field>
-              <Field
-                label="연구 질문"
-                hint="한 줄에 하나씩, 5개까지 적을 수 있어요."
-              >
-                <Textarea
-                  value={questions}
-                  onChange={(event) => setQuestions(event.target.value)}
-                  placeholder="예: 미팅에서 받은 피드백은 어느 단계에서 사라지는가?"
-                />
-              </Field>
+              {step === 1 && (
+                <fieldset className="ob-choices">
+                  <legend className="ob-sr-only">{QUESTIONS[1]}</legend>
+                  {phaseTitles.map((title, index) => (
+                    <label key={title} className="ob-choice">
+                      <input
+                        type="radio"
+                        name="ob-phase"
+                        checked={phaseIndex === index}
+                        onChange={() => setPhaseIndex(index)}
+                      />
+                      <span className="ob-choice-number">{index + 1}</span>
+                      <span>{title}</span>
+                      <Icon
+                        name="check"
+                        size={16}
+                        className="ob-choice-check"
+                      />
+                    </label>
+                  ))}
+                  <label className="ob-choice ob-choice-later">
+                    <input
+                      type="radio"
+                      name="ob-phase"
+                      checked={phaseIndex === null}
+                      onChange={() => setPhaseIndex(null)}
+                    />
+                    <span>나중에 정할게요</span>
+                    <Icon name="check" size={16} className="ob-choice-check" />
+                  </label>
+                </fieldset>
+              )}
+              {step === 2 && (
+                <>
+                  <fieldset className="ob-choices">
+                    <legend className="ob-sr-only">{QUESTIONS[2]}</legend>
+                    {MEETING_CHOICES.map((choice) => (
+                      <label key={choice.kind} className="ob-choice">
+                        <input
+                          type="radio"
+                          name="ob-meeting"
+                          checked={meetingKind === choice.kind}
+                          onChange={() => setMeetingKind(choice.kind)}
+                        />
+                        <span>{choice.label}</span>
+                        <Icon
+                          name="check"
+                          size={16}
+                          className="ob-choice-check"
+                        />
+                      </label>
+                    ))}
+                  </fieldset>
+                  {meetingKind === "dated" && (
+                    <div className="ob-date-fields">
+                      <LabeledInput
+                        label="날짜"
+                        type="date"
+                        value={date}
+                        onChange={setDate}
+                      />
+                      <LabeledInput
+                        label="시각"
+                        type="time"
+                        value={time}
+                        onChange={setTime}
+                        disabled={!date}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+              {step === 3 && (
+                <div className="ob-fields">
+                  <p className="ob-help">
+                    아직 정하지 못했으면 비워 둬도 돼요. 나중에 연구 홈에서
+                    적거나 계획서에서 가져올 수 있어요.
+                  </p>
+                  <Field label="연구 목적">
+                    <Textarea
+                      value={purpose}
+                      maxLength={PURPOSE_MAX}
+                      onChange={(event) => setPurpose(event.target.value)}
+                      placeholder="예: 대학원생이 지도 미팅 뒤 피드백을 어떻게 기록하고 다시 쓰는지 밝힌다"
+                    />
+                  </Field>
+                  <Field
+                    label="연구 질문"
+                    hint="한 줄에 하나씩, 5개까지 적을 수 있어요."
+                  >
+                    <Textarea
+                      value={questions}
+                      onChange={(event) => setQuestions(event.target.value)}
+                      placeholder="예: 미팅에서 받은 피드백은 어느 단계에서 사라지는가?"
+                    />
+                  </Field>
+                </div>
+              )}
             </div>
-          )}
-          <div className="ob-actions">
-            {reviewing ? (
-              <StartGlow>
-                <Button type="submit" size="lg" disabled={pending}>
-                  {pending ? "만드는 중" : "내 연구 홈으로"}
+            <div className="ob-actions">
+              {reviewing ? (
+                <StartGlow>
+                  <Button type="submit" size="lg" disabled={pending}>
+                    {pending ? "만드는 중" : "내 연구 홈으로"}
+                    <Icon name="arrow-right" size={18} />
+                  </Button>
+                </StartGlow>
+              ) : (
+                <Button type="submit" size="lg">
+                  계속
                   <Icon name="arrow-right" size={18} />
                 </Button>
-              </StartGlow>
-            ) : (
-              <Button type="submit" size="lg">
-                계속
-                <Icon name="arrow-right" size={18} />
-              </Button>
-            )}
-            {!reviewing && (
-              <button
-                type="button"
-                className="ob-skip"
-                disabled={pending}
-                onClick={() => void finish({ phaseIndex: null, meeting: null })}
-              >
-                건너뛰고 빈 연구로 시작
-              </button>
-            )}
-          </div>
-          <p className="ob-sr-only" aria-live="polite">
-            {step > 0 &&
-              `미리보기에 반영했어요. ${summaries.slice(0, step).join(", ")}`}
-          </p>
-        </form>
+              )}
+              {!reviewing && (
+                <button
+                  type="button"
+                  className="ob-skip"
+                  disabled={pending}
+                  onClick={() =>
+                    void finish({ phaseIndex: null, meeting: null })
+                  }
+                >
+                  건너뛰고 빈 연구로 시작
+                </button>
+              )}
+            </div>
+            <p className="ob-sr-only" aria-live="polite">
+              {step > 0 &&
+                `미리보기에 반영했어요. ${summaries.slice(0, step).join(", ")}`}
+            </p>
+          </form>
+        )}
       </div>
       <div className={`ob-preview-side ${reviewing ? "ob-preview-full" : ""}`}>
         <HomePreview
