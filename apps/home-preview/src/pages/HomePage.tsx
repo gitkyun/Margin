@@ -1,3 +1,4 @@
+import { formatClock, timeParts } from "@/lib/time-format";
 import { RollingNumber } from "@/components/RollingNumber";
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -270,7 +271,7 @@ export function HomePage() {
                   <div className="rh-meeting-title-copy">
                     <p>
                       {formatDate(next.date)}
-                      {next.time && ` · ${next.time}`}
+                      {next.time && ` · ${formatClock(next.time)}`}
                       {relativeDay(next.date) && (
                         <span className="rh-dday">
                           {relativeDay(next.date)}
@@ -613,8 +614,7 @@ export function HomePage() {
                             {new Date(event.createdAt).toLocaleString("ko-KR", {
                               month: "numeric",
                               day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
+                              ...timeParts(),
                             })}
                           </time>
                         </small>

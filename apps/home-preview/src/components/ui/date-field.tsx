@@ -1,4 +1,5 @@
 import { DatePicker, TimePicker } from "@montage-ui/core";
+import { timeFieldFormat } from "@/lib/time-format";
 
 /**
  * 날짜·시각 입력. 달력과 시각 목록은 Montage DatePicker·TimePicker가 맡습니다.
@@ -81,8 +82,7 @@ export function TimeField({
       {...props}
       size={size}
       width="100%"
-      format="a hh:mm"
-      placeholder="오전 00:00"
+      {...timeFieldFormat()}
       value={fromTimeKey(value)}
       onChange={(date) => onChange(toTimeKey(date))}
     />

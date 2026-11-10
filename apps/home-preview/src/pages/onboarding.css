@@ -508,12 +508,6 @@
   .ob-window-canvas[data-zoomed]
     :is(.ob-rail, .ob-side, .ob-head > :last-child),
   .ob-window-canvas:is([data-zoomed="name"], [data-zoomed="phase"]) .ob-columns,
-  .ob-window-canvas[data-zoomed="name"]
-    .ob-head-copy
-    > :not([data-part="name"]),
-  .ob-window-canvas[data-zoomed="phase"]
-    .ob-head-copy
-    > :not([data-part="phase"]),
   .ob-window-canvas[data-zoomed="meeting"] .ob-card-meeting > :not([data-part]),
   .ob-window-canvas[data-zoomed="meeting"] .ob-head {
     filter: blur(3px) brightness(0.78);

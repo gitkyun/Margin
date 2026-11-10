@@ -1,3 +1,4 @@
+import { timeParts } from "@/lib/time-format";
 import { friendlyError } from "@/lib/supabase";
 import { StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
@@ -28,8 +29,7 @@ export function timeText(value?: string) {
     : new Intl.DateTimeFormat("ko-KR", {
         month: "short",
         day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
+        ...timeParts(),
       }).format(d);
 }
 export function errorText(e: unknown) {
