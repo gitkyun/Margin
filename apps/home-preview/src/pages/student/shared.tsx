@@ -2,9 +2,11 @@ import { Segments } from "@/components/experience";
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   type ReactNode,
+  type Ref,
 } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
@@ -231,6 +233,8 @@ export function LabeledInput({
   placeholder,
   type = "text",
   disabled = false,
+  error,
+  inputRef,
 }: {
   label: string;
   required?: boolean;
@@ -240,7 +244,12 @@ export function LabeledInput({
   placeholder?: string;
   type?: string;
   disabled?: boolean;
+  /** 칸 바로 아래에 보여 줄 오류. 입력에 aria-invalid·aria-describedby를 붙여요. */
+  error?: string;
+  /** 저장을 막았을 때 화면이 포커스를 옮길 입력 */
+  inputRef?: Ref<HTMLInputElement>;
 }) {
+  const errorId = useId();
   return (
     <label className="field">
       <span className="field-name">
@@ -263,13 +272,21 @@ export function LabeledInput({
         />
       ) : (
         <Input
+          ref={inputRef}
           type={type}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
           required={required}
           disabled={disabled}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
         />
+      )}
+      {error && (
+        <small id={errorId} className="field-error" role="alert">
+          {error}
+        </small>
       )}
       {hint && <small className="field-hint">{hint}</small>}
     </label>

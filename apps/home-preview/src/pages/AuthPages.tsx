@@ -5,7 +5,7 @@ import {
 import { PublicFrame } from "./PublicPages";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
 export { ThemeSwitch } from "@/components/ThemeSwitch";
-import { useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import {
   DropdownMenu,
@@ -39,7 +39,12 @@ export function LoginPage({
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [pending, setPending] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    // 이메일·비밀번호가 맞지 않을 때만 두 칸을 오류로 표시합니다(QA D-016).
+    // 연결 오류는 칸의 문제가 아니라서 표시하지 않아요.
+    [credentialsInvalid, setCredentialsInvalid] = useState(false);
+  const errorId = useId();
+  const emailInput = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get("next") ?? "/r";
@@ -52,24 +57,32 @@ export function LoginPage({
     if (!configured) return;
     setPending(true);
     setError("");
+    setCredentialsInvalid(false);
+    let wrongCredentials = false;
     try {
       const { error } = await assertConnected().auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-      if (error)
+      if (error) {
+        wrongCredentials = !error.message?.includes("fetch");
         throw new Error(
-          error.message?.includes("fetch")
-            ? "서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요."
-            : "이메일과 비밀번호를 확인해 주세요.",
+          wrongCredentials
+            ? "이메일과 비밀번호를 확인해 주세요."
+            : "서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.",
         );
+      }
       setPassword("");
       navigate(target, { replace: true });
     } catch (e) {
       setError(friendlyError(e));
+      setCredentialsInvalid(wrongCredentials);
     } finally {
       setPending(false);
     }
+    // 칸이 다시 켜진 뒤 첫 칸으로 포커스를 옮겨요.
+    if (wrongCredentials)
+      requestAnimationFrame(() => emailInput.current?.focus());
   }
   return (
     <PublicFrame compact signedIn={authenticated}>
@@ -120,10 +133,16 @@ export function LoginPage({
               <label className="field">
                 이메일
                 <Input
+                  ref={emailInput}
                   type="email"
                   autoComplete="username"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={credentialsInvalid || undefined}
+                  aria-describedby={credentialsInvalid ? errorId : undefined}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setCredentialsInvalid(false);
+                  }}
                   placeholder="name@university.ac.kr"
                   required
                   disabled={!configured || pending}
@@ -135,13 +154,18 @@ export function LoginPage({
                   type="password"
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  aria-invalid={credentialsInvalid || undefined}
+                  aria-describedby={credentialsInvalid ? errorId : undefined}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setCredentialsInvalid(false);
+                  }}
                   required
                   disabled={!configured || pending}
                 />
               </label>
               {error && (
-                <p className="form-error" role="alert">
+                <p id={errorId} className="form-error" role="alert">
                   {error}
                 </p>
               )}
