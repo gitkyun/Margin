@@ -46,6 +46,7 @@ import {
   SearchInput,
   SaveActions,
   useSaving,
+  useBackState,
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
 import { Checkbox } from "@montage-ui/core";
@@ -329,6 +330,7 @@ export function MeetingsPage() {
 }
 
 function MeetingDetail({ meeting }: { meeting: Meeting }) {
+  const back = useBackState();
   const navigate = useNavigate();
   const { data, save, savePreparation, saveResearch, refresh, mode } =
     useWorkspace();
@@ -919,6 +921,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     className="student-simple-row"
                     key={task.id}
                     to={`/r/${researchId}/tasks/${task.id}`}
+                    state={back(meeting.title)}
                   >
                     <span
                       className={`student-check-indicator ${task.status === "done" ? "checked" : ""}`}
@@ -975,6 +978,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     className="student-simple-row"
                     key={version.id}
                     to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
+                    state={back(meeting.title)}
                   >
                     <span className="student-file-symbol">
                       <Icon name="file" size={18} />
@@ -1156,6 +1160,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     className="student-simple-row"
                     key={item.id}
                     to={`/r/${researchId}/feedback/${item.id}`}
+                    state={back(meeting.title)}
                   >
                     <span className="grow">
                       <strong>{item.title}</strong>

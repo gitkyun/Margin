@@ -35,6 +35,7 @@ import {
   SaveActions,
   SearchInput,
   useSaving,
+  useBackState,
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
 
@@ -63,6 +64,7 @@ function byteSize(bytes: number) {
 }
 export function MaterialsPage() {
   const { researchId = "", materialId } = useParams();
+  const back = useBackState();
   const { data, save, upload, remove } = useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -494,6 +496,7 @@ export function MaterialsPage() {
                         key={result.id}
                         className="student-simple-row"
                         to={`/r/${researchId}/results/${result.id}`}
+                        state={back(current.title)}
                       >
                         <span className="grow">
                           <strong>{result.title}</strong>
@@ -513,6 +516,7 @@ export function MaterialsPage() {
                         key={meeting.id}
                         className="student-simple-row"
                         to={`/r/${researchId}/meetings/${meeting.id}?tab=prepare`}
+                        state={back(current.title)}
                       >
                         <span className="grow">
                           <strong>{meeting.title}</strong>

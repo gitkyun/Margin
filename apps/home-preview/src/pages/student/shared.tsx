@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -365,6 +365,25 @@ export function SearchInput({
     />
   );
 }
+/** 다른 상세 화면으로 갈 때 함께 넘기는 '돌아올 곳'(location.state). */
+export type BackState = { from?: { path: string; label: string } };
+/** 앱 안의 연구 화면 주소만 돌아올 곳으로 받습니다. */
+export function readBackState(state: unknown): BackState["from"] | null {
+  const from = (state as BackState | null)?.from;
+  if (!from || typeof from.path !== "string" || typeof from.label !== "string")
+    return null;
+  return from.path.startsWith("/r/") && from.label.trim() ? from : null;
+}
+/**
+ * 지금 화면을 '돌아올 곳'으로 넘기는 state를 만듭니다.
+ * 받은 상세 화면의 BackLink가 목록 대신 이 화면과 이름을 보여 줘요.
+ */
+export function useBackState() {
+  const location = useLocation();
+  return (label: string): BackState => ({
+    from: { path: `${location.pathname}${location.search}`, label },
+  });
+}
 export function BackLink({
   to,
   children,
@@ -372,10 +391,11 @@ export function BackLink({
   to: string;
   children: ReactNode;
 }) {
+  const from = readBackState(useLocation().state);
   return (
-    <Link className="student-back" to={to}>
+    <Link className="student-back" to={from ? from.path : to}>
       <Icon name="arrow-left" size={16} />
-      {children}
+      {from ? from.label : children}
     </Link>
   );
 }
@@ -438,13 +458,15 @@ export function SaveActions({
 }
 export function LinkChip({
   to,
+  state,
   children,
 }: {
   to: string;
+  state?: BackState;
   children: ReactNode;
 }) {
   return (
-    <Link className="student-link-chip" to={to}>
+    <Link className="student-link-chip" to={to} state={state}>
       {children}
       <Icon name="arrow-up-right" size={13} />
     </Link>

@@ -1,4 +1,4 @@
-import { WorkTabs } from "./shared";
+import { WorkTabs, useBackState } from "./shared";
 import {
   SelectField,
   Segments,
@@ -41,6 +41,7 @@ const priorityLabels = { high: "높음", normal: "보통", low: "낮음" };
 export function TasksPage() {
   const taskRowMotion = useTaskRowMotion();
   const { researchId = "", taskId } = useParams();
+  const back = useBackState();
   const { data, user, save, remove } = useWorkspace();
   const completion = useTaskCompletion(save);
   const navigate = useNavigate();
@@ -240,6 +241,7 @@ export function TasksPage() {
                         key={f.id}
                         className="student-simple-row"
                         to={`/r/${researchId}/feedback/${f.id}`}
+                        state={back(current.title)}
                       >
                         <span className="grow">
                           <strong>{f.title}</strong>
@@ -273,6 +275,7 @@ export function TasksPage() {
                         key={m.id}
                         className="student-simple-row"
                         to={`/r/${researchId}/meetings/${m.id}?tab=prepare`}
+                        state={back(current.title)}
                       >
                         <span className="grow">
                           <strong>{m.title}</strong>
@@ -305,6 +308,7 @@ export function TasksPage() {
                       className="student-simple-row"
                       key={result.id}
                       to={`/r/${researchId}/results/${result.id}`}
+                      state={back(current.title)}
                     >
                       <span className="grow">
                         <strong>{result.title}</strong>
