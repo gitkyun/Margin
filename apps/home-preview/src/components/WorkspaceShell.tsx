@@ -713,7 +713,10 @@ export function WorkspaceShell({
         </div>
         <footer className="workspace-footer">
           <span>마진 · 흩어진 기록을 모아, 다음 연구가 되도록</span>
-          <Link to="/privacy">자료·개인정보 안내</Link>
+          <span className="workspace-footer-links">
+            <a href="mailto:admin@margin.com">문의 admin@margin.com</a>
+            <Link to="/privacy">자료·개인정보 안내</Link>
+          </span>
         </footer>
       </div>
       <Sheet open={notifications} onOpenChange={setNotifications}>
