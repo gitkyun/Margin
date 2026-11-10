@@ -28,6 +28,8 @@ Gemini 키와 `ALLOWED_ORIGINS`는 Supabase 서버 Secrets에서 관리합니다
 
 `config.toml`의 Auth 값은 로컬 개발 기준입니다. 호스팅 Auth 최소 길이 8자·공개 가입 차단은 콘솔에서 별도로 확인합니다. `functions`의 JWT 옵션은 배포에 반영합니다. 두 함수 모두 내부에서 실제 사용자와 접근 권한을 검사합니다.
 
+`config.toml`은 CI가 고정한 Supabase CLI(현재 2.54.11)로 읽을 수 있어야 합니다. 읽지 못하면 `supabase link`에서 서버 배포가 멈추고, 그 뒤의 웹앱 배포도 진행되지 않습니다(2026-11-10 `[auth.email] enabled` 키로 실패). 이 파일을 바꾸면 같은 버전 CLI로 `supabase status --workdir apps/home-preview`를 실행해 `failed to parse config`가 나오지 않는지 확인합니다(Docker 연결 오류는 무관).
+
 ## 복구와 확인
 
 프런트엔드는 Cloudflare에서 이전 성공 배포로 되돌릴 수 있습니다. DB는 자동 롤백하지 않으므로 이전 앱과 호환되는 추가 마이그레이션을 우선합니다. 서버 변경 전 관리자가 백업 방법과 영향 데이터를 확인합니다.
