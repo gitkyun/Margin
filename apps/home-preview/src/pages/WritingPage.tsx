@@ -501,6 +501,10 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             <span>{editor?.getText().length ?? 0}자</span>
             <span>저장 {base.revision}회</span>
           </div>
+          <LinkedTasks
+            documentId={initial.id}
+            researchId={initial.researchId}
+          />
         </div>
         <div className="button-row">
           <Button
@@ -987,6 +991,35 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+/** 이 문서를 ‘고칠 문서’로 고른 할 일. 연결은 할 일 화면에서 정하고, 있을 때만 제목 아래에 보여요. */
+function LinkedTasks({
+  documentId,
+  researchId,
+}: {
+  documentId: string;
+  researchId: string;
+}) {
+  const { data } = useWorkspace();
+  const tasks = data.tasks.filter(
+    (t) => t.documentId === documentId && !t.archivedAt,
+  );
+  if (!tasks.length) return null;
+  return (
+    <div className="writing-linked-tasks">
+      <span>연결된 할 일</span>
+      {tasks.map((t) => (
+        <Link key={t.id} to={`/r/${researchId}/tasks/${t.id}`}>
+          <Icon
+            name={t.status === "done" ? "check-circle" : "tasks"}
+            size={14}
+          />
+          {t.title}
+        </Link>
+      ))}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { WorkTabs } from "./shared";
 import {
+  Choice,
   SelectField,
   Segments,
   VisibilityField,
@@ -262,6 +263,7 @@ export function TasksPage() {
                   )}
                 </div>
               )}
+              <TaskDocumentLink task={current} />
               <div className="student-subsection">
                 <h3>준비에 포함한 미팅</h3>
                 {data.meetings.filter((m) => m.taskIds.includes(current.id))
@@ -843,6 +845,82 @@ export function TasksPage() {
           </div>
         </div>
       </FormDialog>
+    </div>
+  );
+}
+
+/** 할 일 ↔ 글쓰기 문서 연결. 문서는 보관만 되므로, 보관된 문서는 이름 옆에 표시하고 새로 고를 수는 없어요. */
+function TaskDocumentLink({ task }: { task: Task }) {
+  const { data, save } = useWorkspace();
+  const [busy, setBusy] = useState(false);
+  const linked = task.documentId
+    ? data.documents.find((d) => d.id === task.documentId)
+    : undefined;
+  const choices = data.documents.filter(
+    (d) => d.researchId === task.researchId && !d.archivedAt,
+  );
+  async function link(documentId: string | null) {
+    setBusy(true);
+    try {
+      await save("tasks", { ...task, documentId });
+      toast.success(
+        documentId ? "문서를 할 일에 연결했어요" : "문서 연결을 해제했어요",
+      );
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="student-subsection">
+      <h3>고칠 문서</h3>
+      {task.documentId ? (
+        <>
+          {linked ? (
+            <Link
+              className="student-simple-row"
+              to={`/r/${task.researchId}/writing/${linked.id}`}
+            >
+              <span className="grow">
+                <strong>{linked.title || "제목 없음"}</strong>
+                {linked.archivedAt && <small>보관된 문서</small>}
+              </span>
+              <Icon name="chevron-right" size={15} />
+            </Link>
+          ) : (
+            <p className="student-empty-inline">
+              볼 수 없는 문서와 연결돼 있어요.
+            </p>
+          )}
+          <Button
+            variant="link"
+            size="sm"
+            disabled={busy || !!task.archivedAt}
+            onClick={() => void link(null)}
+          >
+            연결 해제
+          </Button>
+        </>
+      ) : choices.length ? (
+        <Choice
+          label="고칠 문서"
+          value=""
+          disabled={busy || !!task.archivedAt}
+          onChange={(value) => value && void link(value)}
+          options={[
+            { value: "", label: "연결할 문서 고르기" },
+            ...choices.map((d) => ({
+              value: d.id,
+              label: d.title || "제목 없음",
+            })),
+          ]}
+        />
+      ) : (
+        <p className="student-empty-inline">
+          아직 글쓰기 문서가 없어요. 글쓰기에서 문서를 만들면 연결할 수 있어요.
+        </p>
+      )}
     </div>
   );
 }
