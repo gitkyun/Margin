@@ -1,4 +1,4 @@
-import { WorkTabs } from "./shared";
+import { WorkTabs, useBackState } from "./shared";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -18,6 +18,7 @@ import { newResultDraft } from "./result-draft";
 
 export function ResultsPage() {
   const { researchId = "", resultId } = useParams();
+  const back = useBackState();
   const { data, save } = useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -139,6 +140,7 @@ export function ResultsPage() {
                     <Link
                       className="student-simple-row"
                       to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
+                      state={back(current.title)}
                     >
                       <span className="student-file-symbol">
                         <Icon name="file" size={20} />
@@ -179,6 +181,7 @@ export function ResultsPage() {
                         className="student-simple-row"
                         key={feedback.id}
                         to={`/r/${researchId}/feedback/${feedback.id}`}
+                        state={back(current.title)}
                       >
                         <span className="grow">
                           <strong>{feedback.title}</strong>
@@ -229,6 +232,7 @@ export function ResultsPage() {
                         className="student-simple-row"
                         key={task.id}
                         to={`/r/${researchId}/tasks/${task.id}`}
+                        state={back(current.title)}
                       >
                         <span className="grow">
                           <strong>{task.title}</strong>

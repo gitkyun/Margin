@@ -1,5 +1,5 @@
 import { AnimatedList } from "@/components/AnimatedList";
-import { WorkTabs } from "./shared";
+import { WorkTabs, useBackState } from "./shared";
 import { SelectField } from "@/components/experience";
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -240,6 +240,7 @@ export function FeedbackPage() {
 }
 
 function FeedbackDetail({ feedback }: { feedback: Feedback }) {
+  const back = useBackState();
   const { data, save } = useWorkspace();
   const navigate = useNavigate();
   const researchId = feedback.researchId;
@@ -385,6 +386,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             {meeting && (
               <LinkChip
                 to={`/r/${researchId}/meetings/${meeting.id}?tab=record`}
+                state={back(feedback.title)}
               >
                 미팅 기록 열기
               </LinkChip>
@@ -550,6 +552,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     className="student-simple-row"
                     key={task.id}
                     to={`/r/${researchId}/tasks/${task.id}`}
+                    state={back(feedback.title)}
                   >
                     <span className="grow">
                       <strong>{task.title}</strong>
@@ -600,6 +603,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     className="student-simple-row"
                     key={result.id}
                     to={`/r/${researchId}/results/${result.id}`}
+                    state={back(feedback.title)}
                   >
                     <span className="grow">
                       <strong>{result.title}</strong>
