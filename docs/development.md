@@ -14,4 +14,6 @@ npm run dev
 
 검사는 [공동작업 안내](../CONTRIBUTING.md)를 따릅니다. `test:backend`는 PGlite 기반 DB 테스트로 운영 DB를 변경하지 않습니다. `test:live` 및 `supabase/scripts/check-*.mjs`는 운영에 가상 데이터를 만들 수 있으므로 자동 CI에서 실행하지 않습니다.
 
+`npm run test:e2e`는 Playwright로 실제 브라우저 흐름을 봅니다(처음 한 번 `npx playwright install chromium`). 서버 설정 없이 빌드한 미리보기 모드와, 가짜 서버 주소로 빌드하고 응답을 테스트가 정하는 연결 모드 두 가지로 실행하므로 운영 DB와 실제 계정을 쓰지 않습니다. 서버 쪽 권한 규칙은 `test:backend`가 검증합니다.
+
 `public/pdfjs`는 설치 패키지에서 빌드 전에 생성하며 커밋하지 않습니다. `dist`, 업로드·녹음·실제 연구 자료·캐시·로컬 비밀값도 제외합니다. Sites용 worker와 테스트는 호환용으로 유지하며 실제 운영 배포는 Cloudflare Pages입니다.

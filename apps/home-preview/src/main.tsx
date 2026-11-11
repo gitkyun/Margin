@@ -11,6 +11,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { App } from "./RmsApp";
+import { AppCrash } from "./components/AppCrash";
 import { currentLang } from "./lib/i18n";
 import { ThemeProvider, useTheme } from "./lib/theme";
 import { NavigationGuardProvider } from "./lib/navigation-guard";
@@ -37,6 +38,7 @@ function ThemedToaster() {
 const router = createBrowserRouter([
   {
     path: "*",
+    errorElement: <AppCrash />,
     element: (
       <NavigationGuardProvider>
         <ScrollRestoration />

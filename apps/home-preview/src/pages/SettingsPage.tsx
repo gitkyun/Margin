@@ -31,6 +31,7 @@ import { HourStyleSwitch } from "@/components/HourStyleSwitch";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
 import { AdvisorSettings } from "./settings/AdvisorSettings";
+import { ProjectInvites } from "./settings/ProjectInvites";
 import {
   PURPOSE_MAX,
   parseQuestions,
@@ -716,55 +717,70 @@ export function ResearchSettingsPage() {
                   </div>
                 ))}
               </div>
-              {owner && (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    void perform(async () => {
-                      await w.action("rms_member_action", {
-                        researchId,
-                        action: "invite",
-                        email: email.trim(),
+              {w.mode === "connected" ? (
+                <ProjectInvites
+                  researchId={researchId}
+                  canInviteEditor={owner}
+                  canInviteAdvisor={
+                    owner ||
+                    members.some(
+                      (m) => m.userId === user.id && m.status === "active",
+                    )
+                  }
+                />
+              ) : (
+                owner && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void perform(async () => {
+                        await w.action("rms_member_action", {
+                          researchId,
+                          action: "invite",
+                          email: email.trim(),
+                        });
+                        setEmail("");
+                        toast.success(
+                          t(
+                            "초대했어요. 상대방이 수락하면 공동연구에 참여해요.",
+                          ),
+                        );
                       });
-                      setEmail("");
-                      toast.success(
-                        t("초대했어요. 상대방이 수락하면 공동연구에 참여해요."),
-                      );
-                    });
-                  }}
-                >
-                  <label className="field">
-                    {t("공동연구자 이메일")}
-                    <Input
-                      type="email"
+                    }}
+                  >
+                    <label className="field">
+                      {t("공동연구자 이메일")}
+                      <Input
+                        type="email"
 
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      aria-describedby={error ? "invite-error" : undefined}
-                      placeholder={t("예: name@example.com")}
-                    />
-                  </label>
-                  <p className="settings-note">
-                    {error && (
-                      <span
-                        id="invite-error"
-                        role="alert"
-                        className="form-error"
-                      >
-                        {error}
-                      </span>
-                    )}
-                    {t(
-                      "발급받은 마진 계정이 있는 사람만 초대할 수 있어요. 편집자도 검토 요청을 만들어 수정 결과를 교수님께 공유할 수 있어요.",
-                    )}
-                  </p>
-                  <div className="bottom-actions">
-                    <Button type="submit" disabled={busy || !email.trim()}>
-                      {t("초대하기")}
-                    </Button>
-                  </div>
-                </form>
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        aria-describedby={error ? "invite-error" : undefined}
+                        placeholder={t("예: name@example.com")}
+                      />
+                    </label>
+                    <p className="settings-note">
+                      {error && (
+                        <span
+                          id="invite-error"
+                          role="alert"
+                          className="form-error"
+                        >
+                          {error}
+                        </span>
+                      )}
+                      {t(
+                        "발급받은 마진 계정이 있는 사람만 초대할 수 있어요. 편집자도 검토 요청을 만들어 수정 결과를 교수님께 공유할 수 있어요.",
+                      )}
+                    </p>
+                    <div className="bottom-actions">
+                      <Button type="submit" disabled={busy || !email.trim()}>
+                        {t("초대하기")}
+                      </Button>
+                    </div>
+                  </form>
+                )
               )}
             </section>
           ) : tab === "phases" ? (

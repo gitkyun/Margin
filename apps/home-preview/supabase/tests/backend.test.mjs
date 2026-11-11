@@ -403,3 +403,170 @@ test('invite links are the only way into the allow list',async()=>{
  assert.equal(await call('rms_redeem_invite',[next.code]),true)
  assert.ok(await call('rms_bootstrap'))
 })
+// ── 연구 초대 메일(rms_project_invites) ──────────────────────────────────────
+const pi={owner:'a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1',editor:'a2a2a2a2-a2a2-4a2a-8a2a-a2a2a2a2a2a2',invitee:'a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3',wrong:'a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4',prof:'a5a5a5a5-a5a5-4a5a-8a5a-a5a5a5a5a5a5',research:'a6a6a6a6-a6a6-4a6a-8a6a-a6a6a6a6a6a6',other:'a7a7a7a7-a7a7-4a7a-8a7a-a7a7a7a7a7a7'}
+const hashOf=async token=>(await db.query("select encode(sha256(convert_to($1,'UTF8')),'hex') as h",[token])).rows[0].h
+const token=n=>`tok-${n}-`.padEnd(43,'x')
+const admin=async sql=>{await db.exec('reset role');return db.query(sql)}
+const invite=async(n,email,role='editor',research=pi.research)=>inputCall('rms_project_invite_create',{researchId:research,email,role,tokenHash:await hashOf(token(n))})
+test('project invite: setup accounts and research',async()=>{
+ await db.exec('reset role')
+ // owner·editor는 허용된 계정, invitee·wrong·prof는 가입만 하고 아직 허용 목록에 없는 계정
+ for(const [key,email,allowed] of [['owner','pi-owner@example.test',true],['editor','pi-editor@example.test',true],['invitee','Pi-Invitee@example.test',false],['wrong','pi-wrong@example.test',false],['prof','pi-prof@example.test',false]]){
+  await db.query('insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values($1,$2,now(),$3)',[pi[key],email,JSON.stringify({name:key})])
+  if(allowed) await db.query('insert into public.rms_demo_accounts(user_id) values($1)',[pi[key]])
+ }
+ await as(pi.owner)
+ await call('rms_save_research',[JSON.stringify({...base(pi.research,pi.research),ownerId:pi.owner,name:'초대 연구',description:''})])
+ await call('rms_save_research',[JSON.stringify({...base(pi.other,pi.other),ownerId:pi.owner,name:'다른 연구',description:''})])
+ await save('feedback',{...base('a8a8a8a8-a8a8-4a8a-8a8a-a8a8a8a8a8a8',pi.research),title:'공동 기록',body:'함께 보는 기록',status:'unprocessed'})
+})
+test('project invite: only permitted members can invite, table is closed to the browser',async()=>{
+ await as(pi.owner)
+ await failure(()=>db.query('select * from public.rms_project_invites'),'42501')
+ await failure(()=>invite(1,'not-an-email'),'22023')
+ await failure(()=>invite(1,'pi-owner@example.test'),'22023')
+ await failure(()=>invite(1,'x@example.test','owner'),'22023')
+ await failure(()=>inputCall('rms_project_invite_create',{researchId:pi.research,email:'x@example.test',role:'editor',tokenHash:'short'}),'22023')
+ // 연구에 속하지 않은 계정과 허용되지 않은 계정은 초대할 수 없다
+ await as(pi.editor);await failure(()=>invite(1,'x@example.test'),'42501');await failure(()=>invite(1,'x@example.test','advisor'),'42501')
+ await failure(()=>call('rms_project_invite_list',[pi.research]),'42501')
+ await as(pi.invitee);await failure(()=>invite(1,'x@example.test'),'42501')
+ await db.exec('reset role;set role anon')
+ await failure(()=>invite(1,'x@example.test'),'42501')
+ await failure(()=>call('rms_project_invite_accept',[token(1)]),'42501')
+ await failure(()=>call('rms_project_invite_email_result',[pi.research,'a','sent','b','']),'42501')
+ await as(pi.owner);await failure(()=>call('rms_project_invite_email_result',[pi.research,'a','sent','b','']),'42501')
+})
+test('project invite: create stores only the hash, blocks duplicates, previews by token',async()=>{
+ await as(pi.owner)
+ const created=await invite(1,' PI-Invitee@Example.test ')
+ assert.equal(created.email,'pi-invitee@example.test');assert.equal(created.status,'pending');assert.equal(created.emailStatus,'queued');assert.equal(created.role,'editor');assert.equal(created.researchName,'초대 연구')
+ assert.ok(!JSON.stringify(created).includes(token(1)));assert.ok(!('tokenHash' in created))
+ const row=(await admin(`select token_hash from public.rms_project_invites where id='${created.id}'`)).rows[0]
+ assert.equal(row.token_hash,await hashOf(token(1)));assert.notEqual(row.token_hash,token(1))
+ await as(pi.owner)
+ await failure(()=>invite(2,'pi-invitee@example.test'),'22023')
+ // 같은 이메일이라도 다른 연구에는 따로 초대할 수 있다
+ assert.equal((await invite(3,'pi-invitee@example.test','editor',pi.other)).status,'pending')
+ await db.exec('reset role;set role anon')
+ const seen=await call('rms_project_invite_preview',[token(1)])
+ assert.deepEqual([seen.email,seen.role,seen.status,seen.researchName,seen.invitedByName],['pi-invitee@example.test','editor','pending','초대 연구','owner'])
+ assert.equal(await call('rms_project_invite_preview',[token(99)]),null)
+ assert.equal(await call('rms_project_invite_preview',['short']),null)
+ // 서버 함수(service_role)가 발송 결과를 적는다. 초대 상태는 그대로다.
+ await db.exec('reset role;set role service_role')
+ await call('rms_project_invite_email_result',[created.id,await hashOf(token(1)),'sent','re_123',null])
+ await call('rms_project_invite_email_result',[created.id,await hashOf(token(77)),'failed',null,'stale'])
+ await as(pi.owner)
+ const list=await call('rms_project_invite_list',[pi.research])
+ assert.equal(list.length,1);assert.deepEqual([list[0].status,list[0].emailStatus,list[0].canManage],['pending','sent',true])
+})
+test('project invite: accept needs the token and the invited email, then creates membership once',async()=>{
+ // 수락 전: 초대받은 계정은 허용 목록에 없어 아무 기록도 못 본다
+ await as(pi.invitee);await failure(()=>call('rms_bootstrap'),'42501')
+ // 다른 이메일로 로그인한 사람은 토큰이 있어도 수락할 수 없다
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(1)]),'42501')
+ await as(pi.editor);await failure(()=>call('rms_project_invite_accept',[token(1)]),'42501')
+ await as(pi.invitee)
+ await failure(()=>call('rms_project_invite_accept',[token(99)]),'22023')
+ // 이메일 확인 전에는 수락할 수 없다
+ await admin(`update auth.users set email_confirmed_at=null where id='${pi.invitee}'`);await as(pi.invitee)
+ await failure(()=>call('rms_project_invite_accept',[token(1)]),'42501')
+ await admin(`update auth.users set email_confirmed_at=now() where id='${pi.invitee}'`);await as(pi.invitee)
+ const done=await call('rms_project_invite_accept',[token(1)])
+ assert.deepEqual(done,{researchId:pi.research,role:'editor',already:false})
+ // 같은 링크를 다시 열어도 결과가 같고 멤버십은 하나다
+ assert.deepEqual(await call('rms_project_invite_accept',[token(1)]),{researchId:pi.research,role:'editor',already:true})
+ const data=await call('rms_bootstrap')
+ assert.deepEqual(data.researches.map(r=>r.id),[pi.research]);assert.equal(data.feedback.length,1)
+ const members=(await admin(`select role,status from public.rms_members where research_id='${pi.research}' and user_id='${pi.invitee}'`)).rows
+ assert.deepEqual(members,[{role:'editor',status:'active'}])
+ // 초대받지 않은 다른 연구는 여전히 못 본다. 편집자가 된 뒤에도 공동연구자 초대는 소유자만 한다.
+ await as(pi.invitee)
+ await failure(()=>call('rms_project_invite_list',[pi.other]),'42501')
+ await failure(()=>invite(4,'someone@example.test'),'42501')
+ // 다른 사람은 이미 쓴 링크를 쓸 수 없다
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(1)]),'42501')
+ await as(pi.owner)
+ const list=await call('rms_project_invite_list',[pi.research]);assert.equal(list[0].status,'accepted')
+ await failure(()=>call('rms_project_invite_revoke',[list[0].id]),'22023')
+ await failure(()=>invite(5,'pi-invitee@example.test'),'22023')
+})
+test('project invite: revoked and expired links cannot be accepted; resend rotates the token',async()=>{
+ await as(pi.owner)
+ const a=await invite(10,'pi-wrong@example.test')
+ // 편집자(초대한 사람도 소유자도 아님)는 남의 초대를 취소·재발송할 수 없다
+ await as(pi.invitee);await failure(()=>call('rms_project_invite_revoke',[a.id]),'42501')
+ await failure(async()=>inputCall('rms_project_invite_resend',{id:a.id,tokenHash:await hashOf(token(11))}),'42501')
+ await as(pi.owner)
+ // 방금 보낸 초대는 바로 다시 보낼 수 없다
+ await failure(async()=>inputCall('rms_project_invite_resend',{id:a.id,tokenHash:await hashOf(token(11))}),'53400')
+ await admin(`update public.rms_project_invites set last_sent_at=now()-interval '2 minutes',expires_at=now()-interval '1 hour' where id='${a.id}'`)
+ // 만료: 미리보기는 expired, 수락은 거부
+ await db.exec('reset role;set role anon');assert.equal((await call('rms_project_invite_preview',[token(10)])).status,'expired')
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(10)]),'22023')
+ await as(pi.owner);assert.equal((await call('rms_project_invite_list',[pi.research])).find(x=>x.id===a.id).status,'expired')
+ // 다시 보내면 새 토큰만 통하고 옛 토큰은 죽는다
+ const again=await inputCall('rms_project_invite_resend',{id:a.id,tokenHash:await hashOf(token(11))})
+ assert.deepEqual([again.status,again.sendCount,again.emailStatus],['pending',2,'queued'])
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(10)]),'22023')
+ // 취소한 초대는 수락할 수 없고, 취소는 여러 번 해도 같다
+ await as(pi.owner);assert.equal((await call('rms_project_invite_revoke',[a.id])).status,'revoked');assert.equal((await call('rms_project_invite_revoke',[a.id])).status,'revoked')
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(11)]),'22023')
+ await failure(()=>call('rms_bootstrap'),'42501')
+ await as(pi.owner);await failure(async()=>inputCall('rms_project_invite_resend',{id:a.id,tokenHash:await hashOf(token(12))}),'22023')
+ // 취소 뒤에는 같은 이메일로 새로 초대할 수 있다. 재발송은 5번까지다.
+ const b=await invite(13,'pi-wrong@example.test')
+ await admin(`update public.rms_project_invites set send_count=5,last_sent_at=now()-interval '2 minutes' where id='${b.id}'`)
+ await as(pi.owner);await failure(async()=>inputCall('rms_project_invite_resend',{id:b.id,tokenHash:await hashOf(token(14))}),'53400')
+})
+test('project invite: closes when the research is trashed or the inviter loses access',async()=>{
+ await as(pi.owner)
+ // 연구가 휴지통에 가면 열려 있던 초대는 수락할 수 없다
+ const research=(await call('rms_bootstrap')).researches.find(r=>r.id===pi.research)
+ const trashed=await call('rms_save_research',[JSON.stringify({...research,deletedAt:'2026-11-11T00:00:00Z'})])
+ await db.exec('reset role;set role anon');assert.equal((await call('rms_project_invite_preview',[token(13)])).status,'closed')
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(13)]),'22023')
+ await as(pi.owner);await call('rms_save_research',[JSON.stringify({...trashed,deletedAt:null})])
+ // 초대한 계정이 중지되면 그 계정의 초대도 닫힌다
+ await admin(`update public.rms_demo_accounts set active=false where user_id='${pi.owner}'`)
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(13)]),'22023')
+ await admin(`update public.rms_demo_accounts set active=true where user_id='${pi.owner}'`)
+ // 중지된 계정은 초대로 되살아나지 않는다
+ await admin(`insert into public.rms_demo_accounts(user_id,active) values('${pi.wrong}',false)`)
+ await as(pi.wrong);await failure(()=>call('rms_project_invite_accept',[token(13)]),'42501')
+ await admin(`delete from public.rms_demo_accounts where user_id='${pi.wrong}'`)
+ await as(pi.wrong);assert.equal((await call('rms_project_invite_accept',[token(13)])).already,false)
+})
+test('project invite: advisor role grants an account but no research membership',async()=>{
+ // 활성 편집자도 지도교수는 초대할 수 있다(지도교수 목록 편집 권한과 같음)
+ await as(pi.invitee)
+ const adv=await invite(20,'pi-prof@example.test','advisor')
+ assert.equal(adv.role,'advisor')
+ await as(pi.prof)
+ assert.deepEqual(await call('rms_project_invite_accept',[token(20)]),{researchId:pi.research,role:'advisor',already:false})
+ const data=await call('rms_bootstrap')
+ assert.equal(data.researches.length,0);assert.equal(data.feedback.length,0)
+ assert.equal((await admin(`select count(*)::int as n from public.rms_members where user_id='${pi.prof}'`)).rows[0].n,0)
+ await as(pi.prof);await failure(()=>call('rms_project_invite_list',[pi.research]),'42501')
+ // 이미 마진을 쓰는 이메일은 지도교수로 다시 초대하지 않는다
+ await as(pi.owner);await failure(()=>invite(21,'pi-prof@example.test','advisor'),'22023')
+ // 초대한 편집자의 접근이 해제되면 그 사람이 보낸 초대도 닫힌다
+ await as(pi.invitee);await invite(22,'later-prof@example.test','advisor')
+ await as(pi.owner);await inputCall('rms_member_action',{researchId:pi.research,action:'remove',userId:pi.invitee})
+ await db.exec('reset role;set role anon');assert.equal((await call('rms_project_invite_preview',[token(22)])).status,'closed')
+})
+test('project invite: daily sending limit per inviter',async()=>{
+ await admin(`update public.rms_project_invites set last_sent_at=now()-interval '2 days' where invited_by='${pi.owner}'`)
+ await as(pi.owner)
+ for(let i=0;i<20;i++) await invite(100+i,`bulk${i}@example.test`,'editor',pi.other)
+ await failure(()=>invite(130,'bulk-over@example.test','editor',pi.other),'53400')
+})
+test('project invite: permanent research deletion removes its invites',async()=>{
+ await as(pi.owner)
+ const research=(await call('rms_bootstrap')).researches.find(r=>r.id===pi.other)
+ await call('rms_save_research',[JSON.stringify({...research,deletedAt:'2026-11-11T00:00:00Z'})])
+ await inputCall('rms_purge_research',{researchId:pi.other,confirmationName:'다른 연구'})
+ assert.equal((await admin(`select count(*)::int as n from public.rms_project_invites where research_id='${pi.other}'`)).rows[0].n,0)
+})

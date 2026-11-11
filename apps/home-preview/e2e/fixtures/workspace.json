@@ -1,0 +1,314 @@
+{
+  "documents": [],
+  "documentVersions": [],
+  "folders": [],
+  "phases": [],
+  "milestones": [],
+  "recordings": [],
+  "conversations": [],
+  "attachments": [],
+  "aiCandidates": [],
+  "members": [],
+  "events": [],
+  "polls": [],
+  "aiRuns": [],
+  "researches": [
+    {
+      "id": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "ownerId": "00000000-0000-4000-8000-000000000001",
+      "name": "연구 도구 사용 경험",
+      "description": "대학원생의 연구 기록과 협업 경험을 살펴보는 가상 연구예요.",
+      "nextMeetingId": "3849a9c4-2c0b-4a88-9b2e-c5d1733a15c9",
+      "createdAt": "2026-11-11T05:52:26.702Z",
+      "updatedAt": "2026-11-11T05:52:26.702Z"
+    }
+  ],
+  "meetings": [
+    {
+      "id": "3849a9c4-2c0b-4a88-9b2e-c5d1733a15c9",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "제6차 논문 지도",
+      "date": "2026-11-14",
+      "time": "14:00",
+      "status": "preparing",
+      "goal": "비교 기준이 드러나는 선행연구 표 보여주기",
+      "memo": "",
+      "memoRevision": 1,
+      "taskIds": [
+        "4e67579a-a5af-437a-a641-9b99f2bc7287",
+        "9310c765-4930-48d5-a29d-b419c265e49f",
+        "12023679-312d-44aa-a7e0-cb4f26fb89ac"
+      ],
+      "versionIds": ["32458324-30d0-4aa2-964e-7aac2cef2482"],
+      "questionIds": [
+        "33988f3e-56fe-439d-a30e-4115ff4b3d0c",
+        "c4315419-e1d9-435b-8232-4fc0eac568f9"
+      ]
+    },
+    {
+      "id": "86cb5777-e9c3-4441-9210-f48eafcdc220",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "제5차 논문 지도",
+      "date": "2026-11-07",
+      "time": "14:00",
+      "status": "recorded",
+      "goal": "선행연구와 연구 질문 검토",
+      "memo": "연구 목적에 맞는 비교 기준이 표에 드러나야 합니다. 선행연구마다 연구 목적, 자료 수집, 분석 관점을 비교해 보세요. 연구 질문은 누구의 어떤 경험을 보는지 구체화하세요. 다음 미팅에는 비교표와 보완한 인터뷰 질문지를 가져오기로 했습니다.",
+      "memoRevision": 1,
+      "taskIds": [],
+      "versionIds": ["32458324-30d0-4aa2-964e-7aac2cef2482"],
+      "questionIds": []
+    }
+  ],
+  "feedback": [
+    {
+      "id": "58e9f060-3de0-47a1-ab91-d7cc9f219c78",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.703Z",
+      "updatedAt": "2026-11-11T05:52:26.703Z",
+      "title": "선행연구 비교 기준 보완",
+      "body": "선행연구를 나열하기보다 연구 목적에 맞는 비교 기준이 드러나도록 표를 보완하세요.",
+      "meetingId": "86cb5777-e9c3-4441-9210-f48eafcdc220",
+      "sourceQuote": "연구 목적에 맞는 비교 기준이 표에 드러나야 합니다.",
+      "sourceMemoRevision": 1,
+      "status": "in_progress",
+      "notes": ""
+    },
+    {
+      "id": "95067ea4-1b88-4e2c-877b-98ddc7a5ef3d",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.703Z",
+      "updatedAt": "2026-11-11T05:52:26.703Z",
+      "title": "연구 질문의 대상 구체화",
+      "body": "연구 질문에서 누구의 어떤 경험을 살펴보는지 명확히 적어 주세요.",
+      "meetingId": "86cb5777-e9c3-4441-9210-f48eafcdc220",
+      "sourceQuote": "연구 질문은 누구의 어떤 경험을 보는지 구체화하세요.",
+      "sourceMemoRevision": 1,
+      "status": "recorded",
+      "notes": ""
+    }
+  ],
+  "plans": [],
+  "tasks": [
+    {
+      "id": "4e67579a-a5af-437a-a641-9b99f2bc7287",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.703Z",
+      "updatedAt": "2026-11-11T05:52:26.703Z",
+      "title": "선행연구 비교 기준 정리",
+      "description": "연구 목적·자료 수집·분석 관점을 기준으로 비교표 보완",
+      "status": "doing",
+      "dueDate": "2026-11-13",
+      "priority": "high",
+      "feedbackIds": ["58e9f060-3de0-47a1-ab91-d7cc9f219c78"]
+    },
+    {
+      "id": "9310c765-4930-48d5-a29d-b419c265e49f",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "인터뷰 질문지 보완",
+      "description": "질문의 의도와 예상 답변 범위를 함께 정리",
+      "status": "todo",
+      "dueDate": "2026-11-14",
+      "priority": "normal",
+      "feedbackIds": []
+    },
+    {
+      "id": "12023679-312d-44aa-a7e0-cb4f26fb89ac",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "핵심 참고문헌 발췌 정리",
+      "description": "다음 미팅에서 설명할 근거 문장을 모으기",
+      "status": "done",
+      "dueDate": "2026-11-11",
+      "priority": "normal",
+      "feedbackIds": []
+    }
+  ],
+  "questions": [
+    {
+      "id": "33988f3e-56fe-439d-a30e-4115ff4b3d0c",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "meetingId": "3849a9c4-2c0b-4a88-9b2e-c5d1733a15c9",
+      "text": "비교 기준을 세 가지로 나눠도 괜찮을까요?",
+      "status": "open"
+    },
+    {
+      "id": "c4315419-e1d9-435b-8232-4fc0eac568f9",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "meetingId": "3849a9c4-2c0b-4a88-9b2e-c5d1733a15c9",
+      "text": "인터뷰 대상의 범위를 어디까지 포함할까요?",
+      "status": "open"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "c90021af-8a57-4206-9806-2a40c61db2e3",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "meetingId": "86cb5777-e9c3-4441-9210-f48eafcdc220",
+      "text": "다음 미팅에서는 비교표와 수정한 연구 질문을 함께 살펴본다."
+    }
+  ],
+  "materials": [
+    {
+      "id": "81d702de-a744-4755-b45e-ac1646204bca",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "선행연구 비교표",
+      "type": "draft"
+    },
+    {
+      "id": "69f31d98-1091-4e67-a866-5f87a7278c21",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "연구계획서",
+      "type": "draft"
+    }
+  ],
+  "versions": [
+    {
+      "id": "32458324-30d0-4aa2-964e-7aac2cef2482",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "materialId": "81d702de-a744-4755-b45e-ac1646204bca",
+      "number": 2,
+      "fileName": "선행연구_비교표_v2.pdf",
+      "storagePath": "/demo/research-sample.pdf",
+      "size": 0,
+      "mimeType": "application/pdf"
+    },
+    {
+      "id": "2990ae09-0f50-48d5-a0dc-492c2f2500e3",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "materialId": "69f31d98-1091-4e67-a866-5f87a7278c21",
+      "number": 2,
+      "fileName": "연구계획서_v2.pdf",
+      "storagePath": "/demo/research-sample.pdf",
+      "size": 0,
+      "mimeType": "application/pdf"
+    }
+  ],
+  "results": [
+    {
+      "id": "c9cd632b-935d-49ea-9d36-18291ba9eb3e",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "선행연구 비교표 보완",
+      "description": "선행연구를 연구 목적·자료 수집·분석 관점으로 나누어 비교했습니다. 기존 표에 비교 기준 열과 기준 선정 이유를 추가했습니다.",
+      "feedbackIds": ["58e9f060-3de0-47a1-ab91-d7cc9f219c78"],
+      "taskIds": ["4e67579a-a5af-437a-a641-9b99f2bc7287"],
+      "kind": "document",
+      "versionId": "32458324-30d0-4aa2-964e-7aac2cef2482",
+      "location": "1페이지 · 비교 기준 표"
+    },
+    {
+      "id": "8009f995-6031-40f0-ace3-22137777d359",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "연구 질문 구체화",
+      "description": "대학원생이 미팅 이후 연구 기록을 다시 정리하는 경험으로 연구 대상을 구체화했습니다.",
+      "feedbackIds": ["95067ea4-1b88-4e2c-877b-98ddc7a5ef3d"],
+      "taskIds": [],
+      "kind": "document",
+      "versionId": "2990ae09-0f50-48d5-a0dc-492c2f2500e3",
+      "location": "2페이지 · 연구 질문"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "1511cca1-70b5-49fb-b538-d60d8e6742c9",
+      "researchId": "b60f30f6-6186-49fb-96da-f7b76497a7a9",
+      "createdAt": "2026-11-11T05:52:26.712Z",
+      "updatedAt": "2026-11-11T05:52:26.712Z",
+      "title": "선행연구·연구 질문 수정 결과",
+      "professorEmail": "professor@example.invalid",
+      "professorId": "00000000-0000-4000-8000-000000000002",
+      "status": "shared"
+    }
+  ],
+  "reviewItems": [
+    {
+      "id": "d9df4cf3-1c59-4180-a496-97660e8624d2",
+      "requestId": "1511cca1-70b5-49fb-b538-d60d8e6742c9",
+      "resultId": "c9cd632b-935d-49ea-9d36-18291ba9eb3e",
+      "title": "선행연구 비교표 보완"
+    },
+    {
+      "id": "f02c949c-4f5e-4779-8802-71e18472d1fc",
+      "requestId": "1511cca1-70b5-49fb-b538-d60d8e6742c9",
+      "resultId": "8009f995-6031-40f0-ace3-22137777d359",
+      "title": "연구 질문 구체화"
+    }
+  ],
+  "rounds": [
+    {
+      "id": "46e689e3-487e-4170-9b2a-d47d8fea017b",
+      "requestId": "1511cca1-70b5-49fb-b538-d60d8e6742c9",
+      "itemId": "d9df4cf3-1c59-4180-a496-97660e8624d2",
+      "number": 1,
+      "title": "선행연구 비교표 보완",
+      "description": "선행연구를 연구 목적·자료 수집·분석 관점으로 나누어 비교했습니다. 기존 표에 비교 기준 열과 기준 선정 이유를 추가했습니다.",
+      "feedbackExcerpt": "선행연구를 나열하기보다 연구 목적에 맞는 비교 기준이 드러나도록 표를 보완하세요.",
+      "versionId": "32458324-30d0-4aa2-964e-7aac2cef2482",
+      "fileName": "선행연구_비교표_v2.pdf",
+      "storagePath": "/demo/research-sample.pdf",
+      "location": "1페이지 · 비교 기준 표",
+      "createdAt": "2026-11-11T05:52:26.702Z"
+    },
+    {
+      "id": "03e36421-b648-434f-ab69-288fbbf25ffe",
+      "requestId": "1511cca1-70b5-49fb-b538-d60d8e6742c9",
+      "itemId": "f02c949c-4f5e-4779-8802-71e18472d1fc",
+      "number": 1,
+      "title": "연구 질문 구체화",
+      "description": "대학원생이 미팅 이후 연구 기록을 다시 정리하는 경험으로 연구 대상을 구체화했습니다.",
+      "feedbackExcerpt": "연구 질문에서 누구의 어떤 경험을 살펴보는지 명확히 적어 주세요.",
+      "versionId": "2990ae09-0f50-48d5-a0dc-492c2f2500e3",
+      "fileName": "연구계획서_v2.pdf",
+      "storagePath": "/demo/research-sample.pdf",
+      "location": "2페이지 · 연구 질문",
+      "createdAt": "2026-11-11T05:52:26.702Z"
+    }
+  ],
+  "responses": [
+    {
+      "id": "48fc296c-f8d4-47f7-8157-4c444dad84cb",
+      "roundId": "46e689e3-487e-4170-9b2a-d47d8fea017b",
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "result": "changes_requested",
+      "comment": "연구 목적에 맞는 비교 기준을 하나 더 보완해 주세요.",
+      "createdAt": "2026-11-11T05:52:26.702Z",
+      "updatedAt": "2026-11-11T05:52:26.702Z"
+    },
+    {
+      "id": "29aa60d6-ae29-4561-95c5-05ebae515d18",
+      "roundId": "03e36421-b648-434f-ab69-288fbbf25ffe",
+      "userId": "00000000-0000-4000-8000-000000000002",
+      "result": "confirmed",
+      "comment": "수정한 연구 질문을 확인했습니다.",
+      "createdAt": "2026-11-11T05:52:26.702Z",
+      "updatedAt": "2026-11-11T05:52:26.702Z"
+    }
+  ],
+  "comments": [],
+  "reads": []
+}

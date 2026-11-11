@@ -17,7 +17,8 @@
     "test:live": "node --env-file=supabase/.env.provision.local supabase/scripts/check-live.mjs",
     "predev": "node scripts/prepare-pdf-assets.mjs",
     "prebuild": "node scripts/prepare-pdf-assets.mjs",
-    "prebuild:sites": "node scripts/prepare-pdf-assets.mjs"
+    "prebuild:sites": "node scripts/prepare-pdf-assets.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -59,10 +60,11 @@
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.4",
-    "vite": "6.4.2"
+    "vite": "6.4.6"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.14",
+    "@playwright/test": "1.65.0",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",

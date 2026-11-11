@@ -35,6 +35,17 @@ npx supabase functions deploy ai-assist
 
 `SUPABASE_URL`·`SUPABASE_ANON_KEY`·`SUPABASE_SERVICE_ROLE_KEY`는 Edge 환경이 제공한다. service-role key를 프런트엔드에 넣지 않는다. 프런트엔드에는 Supabase URL과 publishable/anon key만 제공한다. `ALLOWED_ORIGINS`는 로컬 주소와 실제 Cloudflare 배포 주소를 정확히 지정한다. 임의의 전체 와일드카드는 사용하지 않는다.
 
+## 연구 초대 메일
+
+`functions/project-invite`가 초대를 만들고 Resend로 메일을 보낸다. 서버 비밀 설정: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`(선택), `APP_URL`(선택). 값은 [배포 문서](../../../docs/deployment.md)를 따른다.
+
+- `project-invite` 함수 입력: `{action:"send",researchId,email,role}` 또는 `{action:"resend",inviteId}`. `role`은 `editor`(공동연구자) 또는 `advisor`(지도교수). 응답: `{invite,emailStatus,emailFailure,link}`.
+- `rms_project_invite_list(p_research)` → 초대 목록. `status`는 `pending`·`accepted`·`expired`·`revoked`, `emailStatus`는 `queued`·`sent`·`failed`.
+- `rms_project_invite_revoke(p_id)` → 취소한 초대. 초대한 사람과 연구 소유자만 부를 수 있다.
+- `rms_project_invite_preview(p_token)` → 수락 화면에 보일 내용. 로그인 전에도 부른다. 토큰을 모르면 `null`.
+- `rms_project_invite_accept(p_token)` → `{researchId,role,already}`. 초대받은 이메일로 로그인한 계정만 통과한다. 여러 번 불러도 결과가 같다.
+- `rms_project_invite_create`·`rms_project_invite_resend`는 토큰 해시를 받으므로 서버 함수만 부른다. `rms_project_invite_email_result`는 service role 전용이다.
+
 ## RPC 계약
 
 - `rms_bootstrap()` → `WorkspaceData`. 학생은 자신의 연구 기록, 교수는 공유 중인 지정 요청의 스냅샷·파일 메타데이터·대화만 받는다.

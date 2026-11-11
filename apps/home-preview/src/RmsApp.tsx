@@ -1,5 +1,6 @@
 import { t } from "@/lib/i18n";
 import { InviteGate, InviteSignupPage } from "./pages/InvitePages";
+import { JoinPage } from "./pages/JoinPage";
 import { INVITE_PARAM, inviteCodeFrom } from "./lib/invites";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { Suspense, lazy, useEffect, useState } from "react";
@@ -330,37 +331,39 @@ export function App() {
             : t("가입 과정 미리보기")
           : path === "/login"
             ? t("로그인")
-            : path.includes("assistant")
-              ? t("연구 도우미")
-              : path.includes("settings")
-                ? t("연구 설정")
-                : path === "/account"
-                  ? t("계정 설정")
-                  : path === "/r/new"
-                    ? t("연구 만들기")
-                    : path === "/r"
-                      ? t("내 연구")
-                      : /^\/r\/[^/]+/.test(path)
-                        ? path.includes("/meetings")
-                          ? t("미팅")
-                          : path.includes("/writing")
-                            ? t("글쓰기")
-                            : path.includes("/tasks")
-                              ? t("할 일")
-                              : path.includes("/feedback")
-                                ? t("피드백")
-                                : path.includes("/materials")
-                                  ? t("자료")
-                                  : path.includes("/results")
-                                    ? t("수정 결과")
-                                    : path.includes("/planning")
-                                      ? t("계획·일정")
-                                      : t("연구 홈")
-                        : path.startsWith("/reviews")
-                          ? t("교수 검토")
-                          : path.startsWith("/schedule")
-                            ? t("미팅 시간 조율")
-                            : t("페이지를 찾을 수 없어요"));
+            : path === "/join"
+              ? t("연구 초대")
+              : path.includes("assistant")
+                ? t("연구 도우미")
+                : path.includes("settings")
+                  ? t("연구 설정")
+                  : path === "/account"
+                    ? t("계정 설정")
+                    : path === "/r/new"
+                      ? t("연구 만들기")
+                      : path === "/r"
+                        ? t("내 연구")
+                        : /^\/r\/[^/]+/.test(path)
+                          ? path.includes("/meetings")
+                            ? t("미팅")
+                            : path.includes("/writing")
+                              ? t("글쓰기")
+                              : path.includes("/tasks")
+                                ? t("할 일")
+                                : path.includes("/feedback")
+                                  ? t("피드백")
+                                  : path.includes("/materials")
+                                    ? t("자료")
+                                    : path.includes("/results")
+                                      ? t("수정 결과")
+                                      : path.includes("/planning")
+                                        ? t("계획·일정")
+                                        : t("연구 홈")
+                          : path.startsWith("/reviews")
+                            ? t("교수 검토")
+                            : path.startsWith("/schedule")
+                              ? t("미팅 시간 조율")
+                              : t("페이지를 찾을 수 없어요"));
     document.title = t("{name} · 마진", { name });
   }, [location.pathname, workspaceVisible]);
   if (location.pathname === "/") return <LandingPage signedIn={!!session} />;
@@ -380,6 +383,11 @@ export function App() {
         onSignOut={() => void supabase?.auth.signOut()}
       />
     );
+  }
+  // 연구 초대 메일의 수락 주소. 로그인 전후와 아직 허용되지 않은 계정 모두 여기서 이어집니다.
+  if (location.pathname === "/join") {
+    if (!configured) return <Navigate to="/signup" replace />;
+    return <JoinPage session={session} ready={ready} />;
   }
   if (location.pathname === "/features")
     return <FeatureTourPage signedIn={!!session} />;
