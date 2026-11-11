@@ -246,14 +246,18 @@ export async function getFile(
     version.storagePath,
     session.session.access_token,
   );
-  if (stored) return stored;
+  if (stored instanceof Blob) return stored;
   // Not copied to R2 yet: read the original from Supabase Storage.
   const { data, error } = await client.storage
     .from("research-files")
     .download(version.storagePath);
   if (error)
     throw new Error(
-      t("파일을 열 수 없어요. 공유 상태와 로그인한 계정을 확인해 주세요."),
+      stored === "unreachable"
+        ? t(
+            "파일 서버에 연결하지 못했어요. 페이지를 새로고침하고, 광고 차단 같은 확장 프로그램이 막고 있지 않은지 확인해 주세요.",
+          )
+        : t("파일을 열 수 없어요. 공유 상태와 로그인한 계정을 확인해 주세요."),
     );
   return data;
 }

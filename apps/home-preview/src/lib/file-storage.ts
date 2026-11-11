@@ -198,12 +198,16 @@ export async function uploadToR2(input: {
   }
 }
 
-/** Returns null when the file is not in R2 yet (still only in Supabase Storage). */
+export type R2Download = Blob | "missing" | "unreachable";
+/**
+ * "missing": not in R2 yet (still only in Supabase Storage).
+ * "unreachable": the Worker could not be reached; the caller may still try Supabase.
+ */
 export async function downloadFromR2(
   bucket: FileBucket,
   path: string,
   token: string,
-): Promise<Blob | null> {
+): Promise<R2Download> {
   let response: Response;
   try {
     response = await fetch(
@@ -211,12 +215,11 @@ export async function downloadFromR2(
       { headers: { Authorization: `Bearer ${token}` } },
     );
   } catch {
-    // Worker unreachable: the caller falls back to the original in Supabase.
-    return null;
+    return "unreachable";
   }
   if (response.status === 404) {
     const body = await response.json().catch(() => null);
-    if (body?.error?.code === "NOT_IN_R2") return null;
+    if (body?.error?.code === "NOT_IN_R2") return "missing";
   }
   if (!response.ok)
     throw new Error(
