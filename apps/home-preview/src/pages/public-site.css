@@ -577,7 +577,8 @@
   }
   .lp-bento {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
+    /* 좌우 카드를 같은 폭으로 둡니다. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px;
   }
   .lp-feature-card {
@@ -585,9 +586,18 @@
     border-radius: var(--radius-20);
     background: var(--surface-muted);
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
     min-width: 0;
+  }
+  /*
+   * 한 줄에 놓인 좌우 카드는 그림 자리와 설명 자리의 높이를 서로 맞춥니다.
+   * 카드와 그 안쪽 상자가 바깥 격자의 두 줄(그림·설명)을 그대로 이어받습니다.
+   */
+  .lp-feature-card,
+  .lp-feature-card > .rms-spotlight-content {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 2;
+    row-gap: 0;
   }
   .lp-feature-visual {
     min-height: 360px;
@@ -596,9 +606,8 @@
     justify-content: center;
     padding: 28px 25px 8px;
     position: relative;
-  }
-  .lp-merge-visual {
-    background: linear-gradient(180deg, transparent, var(--brand-soft));
+    /* 네 카드 모두 같은 구성: 그림 자리는 옅은 브랜드 면, 설명 자리는 카드의 중립 면. */
+    background: var(--brand-soft);
   }
   .lp-feature-copy {
     padding: 26px 30px 31px;
@@ -673,9 +682,6 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
-  .lp-feature-ai {
-    background: var(--brand-soft);
-  }
   .lp-cute-chat {
     position: relative;
     padding: 22px 18px 15px;
@@ -745,10 +751,6 @@
   }
   .lp-feature-writing .lp-feature-visual {
     padding: 24px;
-    background: var(--brand-soft);
-  }
-  .lp-feature-review {
-    background: var(--brand-soft);
   }
   .lp-review-stack {
     width: 90%;
