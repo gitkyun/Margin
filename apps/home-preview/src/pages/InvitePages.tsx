@@ -213,8 +213,7 @@ export function InviteSignupPage() {
           }
         />
         <p className="auth-switch">
-          {t("이미 가입했나요?")}
-          <Link to="/login">{t("로그인")}</Link>
+          {t("이미 가입했나요?")} <Link to="/login">{t("로그인")}</Link>
         </p>
       </AuthLayout>
     );
@@ -275,8 +274,7 @@ export function InviteSignupPage() {
         </Button>
       </form>
       <p className="auth-switch">
-        {t("이미 가입했나요?")}
-        <Link to="/login">{t("로그인")}</Link>
+        {t("이미 가입했나요?")} <Link to="/login">{t("로그인")}</Link>
       </p>
     </AuthLayout>
   );
