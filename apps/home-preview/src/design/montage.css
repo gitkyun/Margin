@@ -191,9 +191,6 @@
   overflow-wrap: anywhere;
   text-align: start;
 }
-.margin-tab-count.margin-tab-count {
-  margin-left: var(--spacing-6);
-}
 /* 검토 화면의 문서·응답 전환 탭은 휴대폰에서만 보입니다. */
 .review-mobile-tabs[role="tablist"] {
   display: none;

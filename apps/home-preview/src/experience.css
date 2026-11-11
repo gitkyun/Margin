@@ -1121,4 +1121,43 @@
   .brand > strong {
     font-weight: 600;
   }
+
+  /* 화면 안 탭(components/ui/tabs.tsx, coss ui). 아래 선은 목록 전체에, 선택 밑줄은 그 위에 겹칩니다. */
+  .margin-tabs-list {
+    width: 100%;
+    justify-content: flex-start;
+    gap: var(--spacing-4);
+    padding-block: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  /* 선택자를 세 겹으로 쓴 이유: 화면 CSS에 `.student-page .grow` 같은 같은 이름의
+     클래스가 있어 Tailwind의 grow와 겹칩니다. 탭이 줄 전체로 늘어나지 않게 여기서 이깁니다. */
+  .margin-tabs .margin-tabs-list .margin-tabs-tab {
+    flex: 0 0 auto;
+    height: 40px;
+    padding-inline: var(--spacing-12);
+    font-size: var(--typography-label1-font-size, 15px);
+    font-weight: 600;
+  }
+  .margin-tabs-list [data-slot="tab-indicator"] {
+    background: var(--text);
+  }
+  .margin-tabs .margin-tabs-list .margin-tabs-tab[data-size="lg"] {
+    height: 48px;
+    font-size: var(--typography-headline2-font-size, 17px);
+  }
+  .margin-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin-left: var(--spacing-6);
+    padding-inline: var(--spacing-6);
+    border-radius: 999px;
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+  }
 }

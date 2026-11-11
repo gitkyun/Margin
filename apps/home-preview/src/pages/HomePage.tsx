@@ -1,4 +1,5 @@
 import { dateLocale, t } from "@/lib/i18n";
+import { EXPANDING_CLASS } from "@/lib/expand-home";
 import { formatClock, timeParts } from "@/lib/time-format";
 import { RollingNumber } from "@/components/RollingNumber";
 import { useEffect, useState } from "react";
@@ -39,6 +40,10 @@ import { friendlyError } from "@/lib/supabase";
 import { Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 
+const TOUR_DELAY_MS = 500;
+/** 온보딩 전환(바뀌기·멈춤·커지기 2.5초)이 끝난 뒤 */
+const TOUR_DELAY_AFTER_EXPAND_MS = 3200;
+
 export function HomePage() {
   const taskRowMotion = useTaskRowMotion();
   const { researchId = "" } = useParams();
@@ -56,7 +61,13 @@ export function HomePage() {
   // 첫 클릭을 안내가 가로막지 않게 합니다(검수 P2). 봤다는 기록은 남기지 않아 다음에 다시 나와요.
   useEffect(() => {
     if (!shouldShowTour({ seen: isTourSeen(), forced: forcedTour })) return;
-    const timer = window.setTimeout(() => setTour(true), 500);
+    // 온보딩에서 홈으로 커지는 전환이 도는 중이면 끝난 뒤에 엽니다.
+    const expanding =
+      document.documentElement.classList.contains(EXPANDING_CLASS);
+    const timer = window.setTimeout(
+      () => setTour(true),
+      expanding ? TOUR_DELAY_AFTER_EXPAND_MS : TOUR_DELAY_MS,
+    );
     if (forcedTour) return () => window.clearTimeout(timer);
     const cancel = () => window.clearTimeout(timer);
     window.addEventListener("pointerdown", cancel, { once: true });

@@ -74,6 +74,14 @@ import { LoginPage, ResearchSelectPage, ThemeSwitch } from "@/pages/AuthPages";
 const WritingPage = lazy(() =>
   import("@/pages/WritingPage").then((m) => ({ default: m.WritingPage })),
 );
+const LabComponentsPage = lazy(() =>
+  import("@/lab/LabComponentsPage").then((m) => ({
+    default: m.LabComponentsPage,
+  })),
+);
+const LabExpandPage = lazy(() =>
+  import("@/lab/LabExpandPage").then((m) => ({ default: m.LabExpandPage })),
+);
 const OnboardingPage = lazy(() =>
   import("@/pages/OnboardingPage").then((m) => ({ default: m.OnboardingPage })),
 );
@@ -188,6 +196,23 @@ function WorkspaceRoutes() {
           element={
             <Suspense fallback={<LoadingState />}>
               <OnboardingPage />
+            </Suspense>
+          }
+        />
+        {/* 시안 화면. 제품 메뉴에는 연결하지 않습니다. */}
+        <Route
+          path="/lab/components"
+          element={
+            <Suspense fallback={<LoadingState />}>
+              <LabComponentsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/lab/expand"
+          element={
+            <Suspense fallback={<LoadingState />}>
+              <LabExpandPage />
             </Suspense>
           }
         />
@@ -368,7 +393,7 @@ export function App() {
       />
     );
   if (
-    !/^\/(login|account|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
+    !/^\/(login|account|lab\/(?:components|expand)|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
       location.pathname,
     )
   )
