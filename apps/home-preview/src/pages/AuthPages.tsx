@@ -242,7 +242,7 @@ export function ResearchSelectPage() {
     data.researches.length === 0 && !incomingOnly && invites.length === 0;
   if (wantsNew || noResearchYet) return <Navigate to="/r/new" replace />;
   return (
-    <>
+    <div className="research-list-page">
       <PageHeader
         title={incomingOnly ? t("받은 검토 요청") : t("내 연구")}
         description={
@@ -608,6 +608,6 @@ export function ResearchSelectPage() {
         </DialogContent>
       </Dialog>
       {trashView && <PendingResearchDeletions />}
-    </>
+    </div>
   );
 }

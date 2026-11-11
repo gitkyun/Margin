@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@montage-ui/core";
 import { DateField, DateTimeField } from "@/components/ui/date-field";
+import { queryDown } from "@/design/responsive";
 
 /**
  * 캘린더 일정 색. FullCalendar v7은 color 하나로 막대·옅은 바탕을 만들고,
@@ -381,7 +382,13 @@ export function PlanningPage() {
                 interactionPlugin,
               ]}
               locale={currentLang() === "ja" ? jaLocale : koLocale}
-              initialView="dayGridMonth"
+              // 휴대폰 너비에서는 달력 칸에 일정 이름이 3~4글자로 잘려 읽을 수 없어
+              // 목록 보기로 시작합니다(검수 P1-7). 달력 보기는 위 버튼으로 바꿀 수 있어요.
+              initialView={
+                window.matchMedia(queryDown("sm")).matches
+                  ? "listMonth"
+                  : "dayGridMonth"
+              }
               // 달 이름 양옆에 이전·다음 버튼을 두어 한 곳에서 달을 넘깁니다.
               headerToolbar={{
                 left: "prev title next",
@@ -393,6 +400,10 @@ export function PlanningPage() {
               dayCellTopContent={(info) =>
                 info.dayNumberText.replace(/[일日]/, "")
               }
+              // 목록 보기: 날짜는 "11월 10일"처럼 짧게(요일은 아래 줄에 따로 나와요),
+              // 일정 이름은 잘리지 않고 줄바꿈합니다(검수 P1-7).
+              listDayFormat={{ month: "short", day: "numeric" }}
+              listItemEventTitleClass="rms-list-title"
               height="auto"
               events={[
                 ...meetings

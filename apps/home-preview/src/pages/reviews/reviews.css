@@ -341,6 +341,19 @@
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-headline2-letterSpacing);
   }
+  /* 학생이 셸 안에서 열 때는 다른 상세 화면의 제목과 같은 크기로 둡니다(검수 P1-4). */
+  .review-workspace.is-embedded .review-header-left h1 {
+    font-size: var(--typography-title2-fontSize);
+    line-height: var(--typography-title2-lineHeight);
+    letter-spacing: var(--typography-title2-letterSpacing);
+    font-weight: 700;
+  }
+  /* 머리 버튼은 줄어들거나 아이콘·글자가 두 줄로 쌓이지 않게 합니다(1024px '새로고침'). */
+  .review-header-actions > button,
+  .review-header-actions > a {
+    flex: none;
+    white-space: nowrap;
+  }
   .review-header-left p {
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);

@@ -48,9 +48,9 @@ export const TOUR_STEPS: TourStep[] = [
   {
     key: "lead",
     selector: ".rh-lead-action",
-    title: t("지금 할 일은 이 버튼 하나예요"),
+    title: t("가장 먼저 할 일은 이 버튼이에요"),
     text: t(
-      "미팅 날짜와 기록 상태에 따라 ‘미팅 준비하기’, ‘기록 시작’처럼 바뀌어요.",
+      "미팅 날짜, 기록, 교수님 응답에 따라 지금 가장 먼저 할 일로 바뀌어요.",
     ),
   },
   {
