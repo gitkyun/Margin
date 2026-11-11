@@ -86,11 +86,19 @@ export async function privateBlob(
     record.storagePath,
     session.session.access_token,
   );
-  if (stored) return stored;
+  if (stored instanceof Blob) return stored;
   const { data, error } = await client.storage
     .from("research-private")
     .download(record.storagePath);
-  if (error) throw error;
+  if (error) {
+    if (stored === "unreachable")
+      throw new Error(
+        t(
+          "파일 서버에 연결하지 못했어요. 페이지를 새로고침하고, 광고 차단 같은 확장 프로그램이 막고 있지 않은지 확인해 주세요.",
+        ),
+      );
+    throw error;
+  }
   return data;
 }
 export const modeLabels: Record<string, string> = {
