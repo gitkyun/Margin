@@ -204,6 +204,12 @@
     margin-bottom: 13px;
     letter-spacing: var(--typography-heading2-letterSpacing);
   }
+  .guide-replay-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-16);
+  }
   /* Floating workspace inspired by the supplied compact and expanded rail. */
   .floating-workspace {
     gap: var(--shell-gap);
@@ -556,6 +562,10 @@
   .settings-body {
     max-width: 650px;
     min-width: 0;
+  }
+  /* 한 탭에 묶음이 둘 이상이면 사이를 띄웁니다(화면 설정 ↔ 시각 표기). */
+  .settings-section + .settings-section {
+    margin-top: var(--spacing-40);
   }
   .settings-section h2 {
     font-size: var(--typography-headline1-fontSize);

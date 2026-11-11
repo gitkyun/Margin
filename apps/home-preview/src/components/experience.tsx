@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {
   Children,
   isValidElement,
@@ -58,7 +59,7 @@ export function Choice({
       value={value}
       onChange={onChange}
       disabled={disabled}
-      placeholder="선택"
+      placeholder={t("선택")}
       aria-label={currentText ? `${label}, ${currentText}` : label}
       data-draft-value={value}
     >
@@ -89,7 +90,7 @@ function flattenOptions(
 }
 export function SelectField(props: SelectHTMLAttributes<HTMLSelectElement>) {
   const host = useRef<HTMLSpanElement>(null);
-  const [fieldLabel, setFieldLabel] = useState("선택");
+  const [fieldLabel, setFieldLabel] = useState(t("선택"));
   const [inToolbar, setInToolbar] = useState(false);
   useEffect(() => {
     const parent = host.current?.closest(".field, label");
@@ -139,7 +140,7 @@ export function Segments({
   value,
   onChange,
   options,
-  label = "보기 선택",
+  label = t("보기 선택"),
   size = "medium",
   fill = false,
 }: {
@@ -244,22 +245,22 @@ export function VisibilityField({
       m.status === "active" &&
       m.userId !== research?.ownerId,
   );
-  const options = [{ value: "private", label: "나만 보기" }];
+  const options = [{ value: "private", label: t("나만 보기") }];
   if (collaborative || value === "shared")
     options.push({
       value: "shared",
       label: collaborative
-        ? "공동연구자와 공유"
-        : "공동 기록 · 공동연구자 없음",
+        ? t("공동연구자와 공유")
+        : t("공동 기록 · 공동연구자 없음"),
     });
   const help = collaborative
-    ? "교수님께는 검토 요청에 넣은 내용만 보여요."
-    : "공동연구자가 참여하면 기록을 공유할 수 있어요.";
+    ? t("교수님께는 검토 요청에 넣은 내용만 보여요.")
+    : t("공동연구자가 참여하면 기록을 공유할 수 있어요.");
   if (compact)
     return collaborative || value === "shared" ? (
       <Choice
         compact
-        label="공개 범위"
+        label={t("공개 범위")}
         value={value ?? "private"}
         onChange={(v) => onChange(v as "private" | "shared")}
         options={options}
@@ -267,15 +268,15 @@ export function VisibilityField({
     ) : (
       <span className="rms-pill" title={help}>
         <Icon name="lock" size={13} />
-        나만 보기
+        {t("나만 보기")}
       </span>
     );
   return (
     <div className="field visibility-field">
-      <span>공개 범위</span>
+      <span>{t("공개 범위")}</span>
       {collaborative || value === "shared" ? (
         <Choice
-          label="공개 범위"
+          label={t("공개 범위")}
           value={value ?? "private"}
           onChange={(v) => onChange(v as "private" | "shared")}
           options={options}
@@ -283,13 +284,13 @@ export function VisibilityField({
       ) : (
         <div className="visibility-private">
           <Icon name="lock" size={16} />
-          나만 보기
+          {t("나만 보기")}
         </div>
       )}
       <small>
         {collaborative
-          ? "교수님께는 검토 요청에 넣은 내용만 보여요."
-          : "공동연구자가 참여하면 기록을 공유할 수 있어요."}
+          ? t("교수님께는 검토 요청에 넣은 내용만 보여요.")
+          : t("공동연구자가 참여하면 기록을 공유할 수 있어요.")}
       </small>
     </div>
   );

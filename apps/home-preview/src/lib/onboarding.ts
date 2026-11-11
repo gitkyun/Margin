@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import type { WorkspaceData } from "./domain";
 
 /** 온보딩 세 번째 질문(다음 지도 미팅)의 답 */
@@ -13,7 +14,7 @@ export interface OnboardingMeeting {
   time: string | null;
 }
 
-const MEETING_TITLE = "지도 미팅";
+const MEETING_TITLE = t("지도 미팅");
 
 /** 답을 미팅 한 건으로 바꿉니다. 건너뛰면 만들지 않습니다. */
 export function onboardingMeeting(
@@ -38,8 +39,8 @@ export function onboardingLeadLabel(
   today: string,
 ): string {
   const meeting = onboardingMeeting(answer, today);
-  if (!meeting) return "미팅 만들기";
-  return meeting.date === today ? "기록 시작" : "미팅 준비하기";
+  if (!meeting) return t("미팅 만들기");
+  return meeting.date === today ? t("기록 시작") : t("미팅 준비하기");
 }
 
 export type ChecklistKey = "record" | "feedback" | "task" | "material";
@@ -79,8 +80,8 @@ export function startChecklist(
   return [
     {
       key: "record",
-      label: "미팅 기록 남기기",
-      hint: "녹음하거나 메모를 붙여 넣어요.",
+      label: t("미팅 기록 남기기"),
+      hint: t("녹음하거나 메모를 붙여 넣어요."),
       href: firstMeeting
         ? `${base}/meetings/${firstMeeting.id}?tab=record#meeting-recording`
         : `${base}/meetings?new=1&intent=record`,
@@ -88,22 +89,22 @@ export function startChecklist(
     },
     {
       key: "feedback",
-      label: "피드백 한 건 정리하기",
-      hint: "받은 피드백을 원문과 함께 남겨요.",
+      label: t("피드백 한 건 정리하기"),
+      hint: t("받은 피드백을 원문과 함께 남겨요."),
       href: `${base}/feedback`,
       done: mine(data.feedback).length > 0,
     },
     {
       key: "task",
-      label: "할 일 만들기",
-      hint: "다음 미팅까지 할 일을 적어요.",
+      label: t("할 일 만들기"),
+      hint: t("다음 미팅까지 할 일을 적어요."),
       href: `${base}/tasks?new=1`,
       done: mine(data.tasks).length > 0,
     },
     {
       key: "material",
-      label: "원고나 자료 올리기",
-      hint: "글을 쓰거나 파일을 올려요.",
+      label: t("원고나 자료 올리기"),
+      hint: t("글을 쓰거나 파일을 올려요."),
       href: `${base}/materials`,
       done: mine(data.documents).length > 0 || mine(data.materials).length > 0,
     },

@@ -1,7 +1,8 @@
 import { addDays, format, parseISO, startOfWeek } from "date-fns";
 import type { WorkspaceData } from "./domain";
 
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
+/** 요일 값(자료). 화면에는 WeekStrip이 지금 언어의 요일 이름으로 바꿔 보여 줍니다. */
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const; // i18n-ignore
 const DAYS_IN_WEEK = 7;
 const DATE_KEY = "yyyy-MM-dd";
 

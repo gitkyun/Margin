@@ -5,7 +5,7 @@ import {
 import { PublicFrame } from "./PublicPages";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
 export { ThemeSwitch } from "@/components/ThemeSwitch";
-import { useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import {
   DropdownMenu,
@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
+import { t } from "@/lib/i18n";
 import { useExperience } from "@/lib/experience";
 import { Segments } from "@/components/experience";
 import { unreadReviewNotifications } from "@/lib/notifications";
@@ -39,7 +40,12 @@ export function LoginPage({
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [pending, setPending] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    // 이메일·비밀번호가 맞지 않을 때만 두 칸을 오류로 표시합니다(QA D-016).
+    // 연결 오류는 칸의 문제가 아니라서 표시하지 않아요.
+    [credentialsInvalid, setCredentialsInvalid] = useState(false);
+  const errorId = useId();
+  const emailInput = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const next = params.get("next") ?? "/r";
@@ -52,56 +58,68 @@ export function LoginPage({
     if (!configured) return;
     setPending(true);
     setError("");
+    setCredentialsInvalid(false);
+    let wrongCredentials = false;
     try {
       const { error } = await assertConnected().auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-      if (error)
+      if (error) {
+        wrongCredentials = !error.message?.includes("fetch");
         throw new Error(
-          error.message?.includes("fetch")
-            ? "서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요."
-            : "이메일과 비밀번호를 확인해 주세요.",
+          wrongCredentials
+            ? t("이메일과 비밀번호를 확인해 주세요.")
+            : t(
+                "서버에 연결하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.",
+              ),
         );
+      }
       setPassword("");
       navigate(target, { replace: true });
     } catch (e) {
       setError(friendlyError(e));
+      setCredentialsInvalid(wrongCredentials);
     } finally {
       setPending(false);
     }
+    // 칸이 다시 켜진 뒤 첫 칸으로 포커스를 옮겨요.
+    if (wrongCredentials)
+      requestAnimationFrame(() => emailInput.current?.focus());
   }
   return (
     <PublicFrame compact signedIn={authenticated}>
       <section className="signup-layout login-layout">
         <div className="auth-story">
           <h1>
-            지난 기록이
+            {t("지난 기록이")}
             <br />
-            그대로 있어요
+            {t("그대로 있어요")}
           </h1>
           <p>
-            미팅 기록, 피드백, 검토 요청을
+            {t("미팅 기록, 피드백, 검토 요청을")}
             <br />
-            로그인하면 바로 볼 수 있어요.
+            {t("로그인하면 바로 볼 수 있어요.")}
           </p>
         </div>
         <section className="auth-panel">
-          <h2>로그인</h2>
+          <h2>{t("로그인")}</h2>
           <p>
             {target.startsWith("/reviews/")
-              ? "학생이 검토 요청에 지정한 교수 계정 이메일로 로그인해 주세요."
-              : "가입한 이메일로 로그인하세요."}
+              ? t(
+                  "학생이 검토 요청에 지정한 교수 계정 이메일로 로그인해 주세요.",
+                )
+              : t("가입한 이메일로 로그인하세요.")}
           </p>
           {authenticated ? (
             <>
               <div className="signed-in-notice">
                 <Icon name="check-circle" size={23} />
-                <p>이미 로그인되어 있어요.</p>
+                <p>{t("이미 로그인되어 있어요.")}</p>
               </div>
               <Button fullWidth size="lg" asChild>
                 <Link to={target}>
-                  {target === "/r" ? "내 연구 열기" : "계속하기"}
+                  {target === "/r" ? t("내 연구 열기") : t("계속하기")}
                   <Icon name="arrow-right" size={18} />
                 </Link>
               </Button>
@@ -112,36 +130,47 @@ export function LoginPage({
                 <div className="signed-in-notice" role="note">
                   <Icon name="info" size={23} />
                   <p>
-                    이 미리보기에서는 로그인할 수 없어요.{" "}
-                    <Link to="/r">가상 기록 보기</Link>
+                    {t("이 미리보기에서는 로그인할 수 없어요.")}{" "}
+                    <Link to="/r">{t("가상 기록 보기")}</Link>
                   </p>
                 </div>
               )}
               <label className="field">
-                이메일
+                {t("이메일")}
                 <Input
+                  ref={emailInput}
                   type="email"
                   autoComplete="username"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  aria-invalid={credentialsInvalid || undefined}
+                  aria-describedby={credentialsInvalid ? errorId : undefined}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setCredentialsInvalid(false);
+                  }}
                   placeholder="name@university.ac.kr"
                   required
                   disabled={!configured || pending}
                 />
               </label>
               <label className="field">
-                비밀번호
+                {t("비밀번호")}
                 <Input
                   type="password"
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  aria-invalid={credentialsInvalid || undefined}
+                  aria-describedby={credentialsInvalid ? errorId : undefined}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setCredentialsInvalid(false);
+                  }}
                   required
                   disabled={!configured || pending}
                 />
               </label>
               {error && (
-                <p className="form-error" role="alert">
+                <p id={errorId} className="form-error" role="alert">
                   {error}
                 </p>
               )}
@@ -151,15 +180,15 @@ export function LoginPage({
                 type="submit"
                 disabled={pending || !configured}
               >
-                {pending ? "로그인 중" : "로그인"}
+                {pending ? t("로그인 중") : t("로그인")}
                 <Icon name="arrow-right" size={18} />
               </Button>
             </form>
           )}
           <p className="auth-switch">
-            계정이 없나요?{" "}
+            {t("계정이 없나요?")}{" "}
             <Link to="/signup">
-              {configured ? "초대 링크로 가입하기" : "가입 과정 미리보기"}
+              {configured ? t("초대 링크로 가입하기") : t("가입 과정 미리보기")}
             </Link>
           </p>
         </section>
@@ -206,17 +235,17 @@ export function ResearchSelectPage() {
   return (
     <>
       <PageHeader
-        title={incomingOnly ? "받은 검토 요청" : "내 연구"}
+        title={incomingOnly ? t("받은 검토 요청") : t("내 연구")}
         description={
           incomingOnly
-            ? "학생이 요청한 검토를 열어 항목마다 응답을 남겨 주세요."
-            : "연구마다 기록과 자료가 따로 관리돼요."
+            ? t("학생이 요청한 검토를 열어 항목마다 응답을 남겨 주세요.")
+            : t("연구마다 기록과 자료가 따로 관리돼요.")
         }
         actions={
           !incomingOnly && (
             <Button onClick={() => navigate("/r/new")}>
               <Icon name="plus" size={17} />
-              연구 만들기
+              {t("연구 만들기")}
             </Button>
           )
         }
@@ -224,9 +253,9 @@ export function ResearchSelectPage() {
       {sharedRequests.length > 0 && (
         <section
           className="shared-review-section"
-          aria-label="받은 검토 요청 목록"
+          aria-label={t("받은 검토 요청 목록")}
         >
-          {!incomingOnly && <h2>받은 검토 요청</h2>}
+          {!incomingOnly && <h2>{t("받은 검토 요청")}</h2>}
           <div className="shared-review-list">
             {sharedRequests.map((request) => {
               const events = newEvents.filter(
@@ -245,13 +274,13 @@ export function ResearchSelectPage() {
                   <div>
                     <strong>{request.title}</strong>
                     <span>
-                      검토 항목 {itemCount}개 ·{" "}
+                      {t("검토 항목 {count}개", { count: itemCount })} ·{" "}
                       {formatDateTime(request.createdAt, { time: false })}
                     </span>
                   </div>
                   {events.length > 0 && (
                     <StatusBadge tone="blue">
-                      새 소식 {events.length}개
+                      {t("새 소식 {count}개", { count: events.length })}
                     </StatusBadge>
                   )}
                   <Icon name="chevron-right" size={17} />
@@ -262,16 +291,16 @@ export function ResearchSelectPage() {
         </section>
       )}
       {invites.length > 0 && (
-        <section aria-label="공동연구 초대">
-          <h2>받은 초대</h2>
+        <section aria-label={t("공동연구 초대")}>
+          <h2>{t("받은 초대")}</h2>
           {invites.map((m) => (
             <div className="invitation-row" key={m.researchId}>
               <div>
-                <h3>공동연구 초대</h3>
+                <h3>{t("공동연구 초대")}</h3>
                 <p>
                   {data.events.find(
                     (e) => e.researchId === m.researchId && e.kind === "invite",
-                  )?.message ?? "연구에 초대받았어요."}
+                  )?.message ?? t("연구에 초대받았어요.")}
                 </p>
               </div>
               <Button
@@ -291,7 +320,7 @@ export function ResearchSelectPage() {
                   }
                 }}
               >
-                초대 수락
+                {t("초대 수락")}
               </Button>
             </div>
           ))}
@@ -307,7 +336,7 @@ export function ResearchSelectPage() {
           <Link key={p.id} to={`/schedule/${p.id}`} className="invitation-row">
             <div>
               <h3>{p.title}</h3>
-              <p>미팅 시간 조율 · 가능한 시간을 알려 주세요.</p>
+              <p>{t("미팅 시간 조율 · 가능한 시간을 알려 주세요.")}</p>
             </div>
             <Icon name="arrow-right" size={18} />
           </Link>
@@ -319,19 +348,19 @@ export function ResearchSelectPage() {
             onChange={(v) =>
               setCreationParams(v === "active" ? {} : { view: v })
             }
-            label="연구 목록"
+            label={t("연구 목록")}
             options={[
-              { value: "active", label: "진행 중인 연구" },
+              { value: "active", label: t("진행 중인 연구") },
               {
                 value: "archived",
-                label: "보관함",
+                label: t("보관함"),
                 count: data.researches.filter(
                   (r) => r.archivedAt && !r.deletedAt,
                 ).length,
               },
               {
                 value: "trash",
-                label: "휴지통",
+                label: t("휴지통"),
                 count: data.researches.filter((r) => r.deletedAt).length,
               },
             ]}
@@ -355,26 +384,22 @@ export function ResearchSelectPage() {
                   <Icon name="book" size={24} />
                 </span>
                 <h2>{research.name}</h2>
-                <p>{research.description || "설명이 없어요."}</p>
+                <p>{research.description || t("설명이 없어요.")}</p>
                 <span className="meta">
                   {trashView ? (
-                    "복원하면 기록을 다시 볼 수 있어요."
+                    t("복원하면 기록을 다시 볼 수 있어요.")
                   ) : (
                     <>
-                      미팅{" "}
-                      {
-                        data.meetings.filter(
+                      {t("미팅 {meetings}개 · 남은 할 일 {tasks}개", {
+                        meetings: data.meetings.filter(
                           (m) => m.researchId === research.id,
-                        ).length
-                      }
-                      개 · 남은 할 일{" "}
-                      {
-                        data.tasks.filter(
-                          (t) =>
-                            t.researchId === research.id && t.status !== "done",
-                        ).length
-                      }
-                      개
+                        ).length,
+                        tasks: data.tasks.filter(
+                          (task) =>
+                            task.researchId === research.id &&
+                            task.status !== "done",
+                        ).length,
+                      })}
                       <Icon name="arrow-up-right" size={16} />
                     </>
                   )}
@@ -394,7 +419,9 @@ export function ResearchSelectPage() {
                           archivedAt: undefined,
                         });
                         toast.success(
-                          "연구를 복원했어요. 검토 요청 공유는 직접 다시 시작해 주세요.",
+                          t(
+                            "연구를 복원했어요. 검토 요청 공유는 직접 다시 시작해 주세요.",
+                          ),
                         );
                       } catch (e) {
                         toast.error(friendlyError(e));
@@ -403,11 +430,13 @@ export function ResearchSelectPage() {
                       }
                     }}
                   >
-                    복원
+                    {t("복원")}
                   </Button>
                 ) : (
                   <Button asChild variant="outline">
-                    <Link to={`/r/${research.id}/settings`}>연구 설정</Link>
+                    <Link to={`/r/${research.id}/settings`}>
+                      {t("연구 설정")}
+                    </Link>
                   </Button>
                 )}
                 {archivedView && research.ownerId === user.id && (
@@ -421,7 +450,7 @@ export function ResearchSelectPage() {
                           ...research,
                           archivedAt: undefined,
                         });
-                        toast.success("진행 중인 연구로 복원했어요.");
+                        toast.success(t("진행 중인 연구로 복원했어요."));
                       } catch (e) {
                         toast.error(friendlyError(e));
                       } finally {
@@ -429,7 +458,7 @@ export function ResearchSelectPage() {
                       }
                     }}
                   >
-                    복원
+                    {t("복원")}
                   </Button>
                 )}
                 {trashView && research.ownerId === user.id && (
@@ -445,7 +474,7 @@ export function ResearchSelectPage() {
                         variant="ghost"
                         size="icon"
                         disabled={pending}
-                        aria-label={`${research.name} 더보기`}
+                        aria-label={t("{name} 더보기", { name: research.name })}
                       >
                         <Icon name="more" size={18} />
                       </Button>
@@ -458,7 +487,7 @@ export function ResearchSelectPage() {
                         }}
                       >
                         <Icon name="trash" size={16} />
-                        휴지통으로 옮기기
+                        {t("휴지통으로 옮기기")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -472,22 +501,24 @@ export function ResearchSelectPage() {
           icon="book"
           title={
             trashView
-              ? "휴지통이 비어 있어요"
+              ? t("휴지통이 비어 있어요")
               : archivedView
-                ? "보관한 연구가 없어요"
-                : "진행 중인 연구가 없어요"
+                ? t("보관한 연구가 없어요")
+                : t("진행 중인 연구가 없어요")
           }
           description={
             trashView
-              ? "휴지통으로 옮긴 연구는 여기에서 복원할 수 있어요. 자동으로 완전히 삭제되지 않아요."
+              ? t(
+                  "휴지통으로 옮긴 연구는 여기에서 복원할 수 있어요. 자동으로 완전히 삭제되지 않아요.",
+                )
               : archivedView
-                ? "연구 설정에서 보관한 연구가 여기에 표시돼요."
-                : "연구를 만들거나 보관함의 연구를 복원하세요."
+                ? t("연구 설정에서 보관한 연구가 여기에 표시돼요.")
+                : t("연구를 만들거나 보관함의 연구를 복원하세요.")
           }
           action={
             <Button onClick={() => navigate("/r/new")}>
               <Icon name="plus" size={16} />
-              연구 만들기
+              {t("연구 만들기")}
             </Button>
           }
         />
@@ -500,12 +531,11 @@ export function ResearchSelectPage() {
       >
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>연구를 휴지통으로 옮길까요?</DialogTitle>
+            <DialogTitle>{t("연구를 휴지통으로 옮길까요?")}</DialogTitle>
             <DialogDescription>
-              옮기면 공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토
-              요청이 중지돼 교수님도 볼 수 없어요. 휴지통에서 복원할 수 있지만,
-              검토 요청 공유는 자동으로 다시 시작되지 않아요. 확인을 위해 연구
-              이름을 입력해 주세요.
+              {t(
+                "옮기면 공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 휴지통에서 복원할 수 있지만, 검토 요청 공유는 자동으로 다시 시작되지 않아요. 확인을 위해 연구 이름을 입력해 주세요.",
+              )}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -521,7 +551,7 @@ export function ResearchSelectPage() {
                 });
                 setTrashTarget(null);
                 toast.success(
-                  "휴지통으로 옮겼어요. 휴지통에서 복원할 수 있어요.",
+                  t("휴지통으로 옮겼어요. 휴지통에서 복원할 수 있어요."),
                 );
               } catch (e) {
                 toast.error(friendlyError(e));
@@ -545,13 +575,13 @@ export function ResearchSelectPage() {
                 disabled={pending}
                 onClick={() => setTrashTarget(null)}
               >
-                취소
+                {t("취소")}
               </Button>
               <Button
                 type="submit"
                 disabled={pending || trashName !== trashTarget?.name}
               >
-                휴지통으로 옮기기
+                {t("휴지통으로 옮기기")}
               </Button>
             </div>
           </form>

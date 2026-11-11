@@ -83,7 +83,7 @@
     color: var(--text-secondary);
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
@@ -97,7 +97,7 @@
     font-size: var(--typography-label1-fontSize);
     line-height: var(--typography-label1Reading-lineHeight);
     letter-spacing: var(--typography-label1-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
   }
   .rh-direction-head {
@@ -308,13 +308,13 @@
     font-size: var(--typography-label1-fontSize);
     font-weight: 600;
     letter-spacing: var(--typography-label1-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .rh-start-copy small {
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .rh-start-done .rh-start-copy strong {
     color: var(--text-secondary);
@@ -471,7 +471,7 @@
     border-bottom: 1px solid var(--line);
     color: var(--text-secondary);
     font-size: var(--typography-body2-fontSize);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
     line-height: var(--typography-body2Reading-lineHeight);
     letter-spacing: var(--typography-body2-letterSpacing);
@@ -559,7 +559,7 @@
     color: var(--text-tertiary);
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
@@ -889,7 +889,7 @@
     color: var(--text-tertiary);
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-deadline {

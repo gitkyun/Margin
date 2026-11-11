@@ -63,7 +63,7 @@
     line-height: var(--typography-title2-lineHeight);
     letter-spacing: var(--typography-title2-letterSpacing);
     font-weight: 700;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .ob-help {
     margin-top: var(--spacing-8);
@@ -71,7 +71,7 @@
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
     letter-spacing: var(--typography-body2-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .ob-fields {
     display: grid;
@@ -86,6 +86,198 @@
     color: var(--semantic-status-negative);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
+  }
+
+  /* 단계 진행 막대. 넘어가면 다음 칸이 왼쪽부터 채워집니다(부품 단계 200ms). */
+  .ob-meter {
+    display: flex;
+    flex: 1;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-16);
+  }
+  .ob-meter-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-12);
+  }
+  /* 자동 넘김까지 남은 시간: 지금 칸이 일정한 속도로 찹니다. */
+  .ob-meter span[data-timed]::after {
+    transition: none;
+    animation: ob-meter-fill linear both;
+    animation-duration: inherit;
+  }
+  @keyframes ob-meter-fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  .ob-auto {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    flex: none;
+    margin-top: calc(var(--spacing-12) * -1);
+    padding: var(--spacing-8) 0;
+    border: 0;
+    background: none;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    cursor: pointer;
+  }
+  .ob-auto:hover {
+    color: var(--brand);
+  }
+  .ob-meter span {
+    position: relative;
+    flex: 1;
+    max-width: 48px;
+    height: 4px;
+    border-radius: var(--radius-4);
+    background: var(--surface-muted);
+    overflow: hidden;
+  }
+  .ob-meter span::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .ob-meter span[data-on]::after {
+    transform: scaleX(1);
+  }
+
+  /* 단계가 바뀔 때 내용이 가는 방향에서 들어옵니다. 앞으로는 오른쪽, 뒤로는 왼쪽에서. */
+  .ob-step {
+    display: flex;
+    flex-direction: column;
+    animation: ob-step-forward var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  .ob-step[data-dir="back"] {
+    animation-name: ob-step-back;
+  }
+  @keyframes ob-step-forward {
+    from {
+      opacity: 0;
+      transform: translateX(32px);
+    }
+  }
+  @keyframes ob-step-back {
+    from {
+      opacity: 0;
+      transform: translateX(-32px);
+    }
+  }
+
+  /* 처음 온 사람에게 보여 주는 소개 세 장. 질문과 같은 자리·글자 크기를 씁니다. */
+  .ob-intro h1:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 4px;
+    border-radius: var(--radius-4);
+  }
+  .ob-intro-slogan {
+    margin-top: var(--spacing-12);
+    color: var(--brand);
+    font-size: var(--typography-headline2-fontSize);
+    line-height: var(--typography-headline2-lineHeight);
+    letter-spacing: var(--typography-headline2-letterSpacing);
+    font-weight: 600;
+    word-break: var(--text-word-break, keep-all);
+  }
+  .ob-intro-flow {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: var(--spacing-20) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* 흐름 단계는 누르거나 가리키면 고르고, 오른쪽 장면이 그 단계로 움직입니다. */
+  .ob-intro-step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-12);
+    width: 100%;
+    padding: var(--spacing-8) var(--spacing-12);
+    border: 1px solid transparent;
+    border-radius: var(--radius-12);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
+  }
+  /* 자동으로 넘어가는 동안 지금 단계 아래에 남은 시간 줄이 찹니다. */
+  .ob-intro-step {
+    position: relative;
+    overflow: hidden;
+  }
+  .ob-intro-step[data-timed]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--brand);
+    transform-origin: left;
+    animation: ob-meter-fill var(--auto-ms) linear both;
+  }
+  .ob-intro-step:hover {
+    border-color: var(--hover-line);
+  }
+  .ob-intro-step[aria-pressed="true"] {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+  }
+  .ob-intro-step:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 2px;
+  }
+  .ob-intro-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-8);
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .ob-intro-icon {
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-enter) var(--motion-ease-standard);
+  }
+  .ob-intro-step[aria-pressed="true"] .ob-intro-icon {
+    transform: scale(1.08);
+  }
+  .ob-intro-step[aria-pressed="true"] .ob-intro-icon {
+    background: var(--brand);
+    color: var(--semantic-static-white);
+  }
+  .ob-intro-copy {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+    font-size: var(--typography-body2-fontSize);
+    line-height: var(--typography-body2-lineHeight);
+    letter-spacing: var(--typography-body2-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+  }
+  .ob-intro-copy strong {
+    font-weight: 600;
+  }
+  .ob-intro-copy > span {
+    color: var(--text-secondary);
   }
 
   /* 답한 질문은 한 줄로 접힙니다. 누르면 그 질문으로 돌아갑니다. */
@@ -191,6 +383,21 @@
     background: var(--brand);
     color: var(--semantic-static-white);
   }
+  /* 고르면 오른쪽에 확인 표시가 커지며 나타납니다. */
+  .ob-choice-check {
+    flex: none;
+    margin-left: auto;
+    color: var(--brand);
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-micro) var(--motion-ease-standard);
+  }
+  .ob-choice:has(input:checked) .ob-choice-check {
+    opacity: 1;
+    transform: scale(1);
+  }
   .ob-choice-later {
     color: var(--text-secondary);
   }
@@ -236,10 +443,332 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
     text-align: center;
   }
-  .ob-window {
+  /* ── 소개 장면(오른쪽). 실제 화면을 줄인 창 모양이고, 한 번만 움직입니다. ── */
+  .ob-stage {
+    --stage-duration: calc(var(--motion-duration-page) * 2);
+    position: relative;
+    width: 100%;
+    max-width: 760px;
+    aspect-ratio: 16 / 10;
+    margin: 0 auto;
+    padding: var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    background: var(--canvas);
+    box-shadow: var(--raise-shadow);
+    overflow: hidden;
+  }
+  /* 확대는 이 그림 전체에 겁니다(lib/use-zoom-into.ts). 틀이 넘친 부분을 잘라 냅니다. */
+  .ob-stage-canvas,
+  .ob-window-canvas {
+    position: relative;
     display: grid;
-    grid-template-columns: 132px minmax(0, 1fr);
     gap: var(--spacing-8);
+    height: 100%;
+    transform-origin: 0 0;
+  }
+  .ob-stage-canvas {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .ob-window-canvas {
+    grid-template-columns: 132px minmax(0, 1fr);
+  }
+  /*
+   * 확대된 동안 핵심 컴포넌트가 아닌 부분은 흐리게 물러납니다(사용자 요청, 2026-11-11).
+   * 그림 안의 초점 표현이고, 면 뒤를 비치는 유리 효과(backdrop-filter)는 쓰지 않습니다.
+   */
+  .ob-stage-canvas :is(.ob-stage-rail, .ob-shot *),
+  .ob-window-canvas
+    :is(.ob-rail, .ob-side, .ob-head, .ob-head *, .ob-columns, .ob-card > *) {
+    transition:
+      filter var(--motion-duration-page) ease-out,
+      opacity var(--motion-duration-page) ease-out;
+  }
+  /* 바탕 면도 한 단계 어둡게 내려 핵심 컴포넌트만 밝게 남깁니다. */
+  .ob-stage-canvas .ob-stage-main,
+  .ob-window-canvas .ob-main {
+    transition: background-color var(--motion-duration-page) ease-out;
+  }
+  /* 미리보기의 이름·단계 묶음은 바탕 면 위에 바로 놓여 있어, 그 질문에서는 바탕을 어둡게 하지 않습니다. */
+  .ob-stage-canvas[data-zoomed] .ob-stage-main,
+  .ob-window-canvas[data-zoomed="meeting"] .ob-main {
+    background: var(--surface-muted);
+    transition-duration: calc(var(--motion-duration-page) * 4);
+  }
+  .ob-stage-canvas[data-zoomed] .ob-shot-task.ob-shot-focus,
+  .ob-stage-canvas[data-zoomed] .ob-shot-reply.ob-shot-focus {
+    background: var(--surface);
+  }
+  .ob-stage-canvas[data-zoomed] .ob-stage-rail,
+  .ob-stage-canvas[data-zoomed]
+    .ob-shot
+    > :not(.ob-shot-focus):not(:has(.ob-shot-focus)),
+  .ob-stage-canvas[data-zoomed]
+    :has(> .ob-shot-focus):not(.ob-shot)
+    > :not(.ob-shot-focus),
+  .ob-window-canvas[data-zoomed]
+    :is(.ob-rail, .ob-side, .ob-head > :last-child),
+  .ob-window-canvas:is([data-zoomed="name"], [data-zoomed="phase"]) .ob-columns,
+  .ob-window-canvas[data-zoomed="meeting"] .ob-card-meeting > :not([data-part]),
+  .ob-window-canvas[data-zoomed="meeting"] .ob-head {
+    filter: blur(3px) brightness(0.78);
+    opacity: 0.8;
+    /* 확대와 같은 속도로 천천히 흐려지고, 전체로 돌아갈 때는 바로 또렷해집니다. */
+    transition-duration: calc(var(--motion-duration-page) * 4);
+  }
+  .ob-stage-rail,
+  .ob-stage-main {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    min-width: 0;
+  }
+  .ob-stage-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-16);
+    padding: var(--spacing-16) 0;
+  }
+  .ob-stage-rail .ob-rail-mark {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+  }
+  .ob-stage-nav {
+    position: relative;
+    display: grid;
+    grid-auto-rows: 44px;
+    width: 44px;
+  }
+  .ob-stage-nav span {
+    position: relative;
+    display: grid;
+    place-items: center;
+    color: var(--text-tertiary);
+    transition: color var(--motion-duration-enter) ease-out;
+  }
+  .ob-stage-nav span[data-state="done"] {
+    color: var(--brand);
+  }
+  .ob-stage-nav span[data-state="active"] {
+    color: var(--semantic-static-white);
+  }
+  /* 고른 단계를 따라 사이드바의 파란 면이 미끄러져 갑니다. */
+  .ob-stage-cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-12);
+    background: var(--brand);
+    transition: transform var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  .ob-stage-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--spacing-12);
+    padding: var(--spacing-32);
+    overflow: hidden;
+  }
+  .ob-shot {
+    display: grid;
+    gap: var(--spacing-12);
+    animation: ob-shot-in var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  @keyframes ob-shot-in {
+    from {
+      opacity: 0;
+    }
+  }
+  .ob-shot-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-size: var(--typography-headline2-fontSize);
+    line-height: var(--typography-headline2-lineHeight);
+    letter-spacing: var(--typography-headline2-letterSpacing);
+    font-weight: 600;
+  }
+  .ob-shot-title > svg {
+    flex: none;
+    color: var(--brand);
+  }
+  .ob-shot-title small {
+    margin-left: auto;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .ob-shot-card {
+    display: grid;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface);
+    min-width: 0;
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+  }
+  /* 전체 화면 그림은 작게 그리고, 읽을 크기는 확대가 만들어 줍니다. */
+  .ob-shot .ob-shot-title {
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1-lineHeight);
+  }
+  .ob-stage-main:has(> .ob-shot) {
+    justify-content: flex-start;
+    padding: var(--spacing-20);
+  }
+  .ob-shot-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .ob-shot-badge {
+    justify-self: start;
+    padding: var(--spacing-2) var(--spacing-8);
+    border-radius: var(--radius-8);
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .ob-shot-mark {
+    justify-self: start;
+    padding: var(--spacing-2) var(--spacing-6);
+    border-radius: var(--radius-4);
+    background: var(--selected-fill);
+  }
+  .ob-shot-task {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .ob-shot-task .ob-skel {
+    flex: 1;
+  }
+  .ob-shot-check {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-4);
+  }
+  /* 전체 화면처럼 카드 여러 장을 두 칸으로 놓습니다. 핵심 컴포넌트는 그 가운데 하나입니다. */
+  .ob-shot-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--spacing-8);
+  }
+  .ob-shot-wide {
+    grid-column: 1 / -1;
+  }
+  .ob-shot-task .ob-skel,
+  .ob-shot-card > .ob-skel {
+    height: 6px;
+  }
+  .ob-shot-reply {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding-top: var(--spacing-8);
+    border-top: 1px solid var(--line);
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+  }
+  .ob-shot-reply > svg {
+    color: var(--brand);
+  }
+  /* 첫 장: 흩어져 있던 기록 세 줄이 ‘내 연구’ 안으로 모입니다. */
+  .ob-gather .ob-shot-title {
+    animation: ob-gather-title var(--stage-duration) var(--motion-ease-standard)
+      both;
+  }
+  .ob-gather-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    padding: var(--spacing-12) var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    box-shadow: var(--raise-shadow);
+    font-size: var(--typography-body2-fontSize);
+    letter-spacing: var(--typography-body2-letterSpacing);
+    animation: ob-gather-row var(--stage-duration) var(--motion-ease-standard)
+      both;
+  }
+  .ob-gather-row > span:last-child {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+  }
+  .ob-gather-row strong {
+    font-weight: 600;
+  }
+  .ob-gather-row small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .ob-gather-row:nth-of-type(1) {
+    --from-x: -18%;
+    --from-y: -46px;
+    --from-turn: -6deg;
+    --from-scale: 0.82;
+  }
+  .ob-gather-row:nth-of-type(2) {
+    --from-x: 24%;
+    --from-y: 18px;
+    --from-turn: 5deg;
+    --from-scale: 0.78;
+  }
+  .ob-gather-row:nth-of-type(3) {
+    --from-x: -10%;
+    --from-y: 64px;
+    --from-turn: 4deg;
+    --from-scale: 0.84;
+  }
+  @keyframes ob-gather-row {
+    from,
+    30% {
+      box-shadow: var(--raise-shadow);
+      transform: translate(var(--from-x), var(--from-y))
+        rotate(var(--from-turn)) scale(var(--from-scale));
+    }
+    from {
+      opacity: 0;
+    }
+    30% {
+      opacity: 1;
+    }
+    to {
+      box-shadow: none;
+    }
+  }
+  @keyframes ob-gather-title {
+    from,
+    45% {
+      opacity: 0;
+    }
+  }
+
+  .ob-window {
+    animation: ob-window-in var(--motion-duration-page)
+      var(--motion-ease-standard);
+    position: relative;
     width: 100%;
     max-width: 760px;
     aspect-ratio: 16 / 10;
@@ -373,6 +902,13 @@
     gap: var(--spacing-4);
     font-weight: 600;
   }
+  .ob-meeting-block {
+    display: grid;
+    gap: var(--spacing-8);
+    justify-items: start;
+    justify-self: start;
+    min-width: 60%;
+  }
   .ob-meeting {
     display: flex;
     align-items: center;
@@ -490,7 +1026,27 @@
   @keyframes ob-fill {
     from {
       opacity: 0;
-      transform: translateY(4px);
+      transform: translateY(8px);
+    }
+  }
+  /* 방금 답이 반영된 자리를 옅은 브랜드 면으로 한 번 짚어 줍니다. */
+  .ob-window .ob-filled {
+    border-radius: var(--radius-4);
+    animation:
+      ob-fill var(--motion-duration-enter) var(--motion-ease-standard),
+      ob-mark calc(var(--motion-duration-page) * 3) ease-out;
+  }
+  @keyframes ob-mark {
+    from,
+    40% {
+      background-color: var(--selected-fill);
+      box-shadow: 0 0 0 4px var(--selected-fill);
+    }
+  }
+  @keyframes ob-window-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
     }
   }
 
@@ -517,12 +1073,12 @@
       margin: 0;
       padding-top: var(--spacing-24);
     }
-    /* 좁은 화면: 미리보기는 질문 위 160px 띠로 줄이고 마지막에만 크게 보여 줍니다. */
+    /* 좁은 화면: 미리보기는 질문 위 띠(태블릿 300px, 휴대폰 248px)로 줄이고 마지막에만 크게 보여 줍니다. */
     .ob-preview-side {
       order: -1;
       justify-content: flex-start;
-      height: 160px;
-      padding: var(--spacing-16) var(--spacing-20) 0;
+      height: 300px;
+      padding: var(--spacing-16) var(--spacing-20);
       border-left: 0;
       border-bottom: 1px solid var(--line);
       overflow: hidden;
@@ -538,12 +1094,85 @@
       display: block;
     }
     .ob-window {
-      grid-template-columns: minmax(0, 1fr);
-      max-width: 560px;
+      max-width: 720px;
+      height: 100%;
       aspect-ratio: auto;
+    }
+    /* 띠보다 긴 미리보기는 전체가 보이게 줄여서 놓습니다(lib/use-zoom-into.ts). */
+    .ob-window-canvas {
+      grid-template-columns: minmax(0, 1fr);
+      height: auto;
+    }
+    .ob-preview-full .ob-window {
+      height: auto;
+    }
+    /* 위쪽 띠에 맞게 장면을 줄입니다. 태블릿 폭에서는 사이드바까지 전체를 보여 줍니다. */
+    .ob-stage {
+      max-width: 720px;
+      height: 100%;
+      aspect-ratio: auto;
+      padding: var(--spacing-4);
+    }
+    .ob-stage-canvas {
+      grid-template-columns: 56px minmax(0, 1fr);
+    }
+    .ob-stage-main {
+      gap: var(--spacing-8);
+      padding: var(--spacing-16);
+    }
+    .ob-gather-row {
+      padding: var(--spacing-8) var(--spacing-12);
+    }
+    .ob-gather-row .ob-intro-icon {
+      width: 24px;
+      height: 24px;
+    }
+    .ob-gather-row:nth-of-type(1) {
+      --from-y: -12px;
+    }
+    .ob-gather-row:nth-of-type(3) {
+      --from-y: 14px;
     }
     .ob-rail {
       display: none;
+    }
+  }
+  @media (max-width: 599px) {
+    .ob-preview-side {
+      height: 248px;
+    }
+    /* 휴대폰: 사이드바만 빼고 본문 전체를 보여 줍니다. 읽을 크기는 확대가 만들어 줍니다. */
+    .ob-stage-canvas {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ob-stage-rail,
+    .ob-shot-wide {
+      display: none;
+    }
+    .ob-shot {
+      gap: var(--spacing-8);
+    }
+    .ob-shot-grid {
+      gap: var(--spacing-6);
+    }
+    .ob-shot-card {
+      gap: var(--spacing-4);
+      padding: var(--spacing-8);
+      font-size: var(--typography-caption2-fontSize);
+      line-height: var(--typography-caption2-lineHeight);
+    }
+    .ob-stage-main,
+    .ob-stage-main:has(> .ob-shot) {
+      gap: var(--spacing-6);
+      padding: var(--spacing-12);
+    }
+    .ob-gather .ob-shot-title,
+    .ob-gather-row small {
+      display: none;
+    }
+    .ob-gather-row {
+      padding: var(--spacing-4) var(--spacing-12);
+      font-size: var(--typography-label1-fontSize);
     }
   }
   @media (max-width: 480px) {
@@ -558,11 +1187,34 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ob-filled {
+    .ob-filled,
+    .ob-window .ob-filled,
+    .ob-window,
+    .ob-step,
+    .ob-gather .ob-shot-title,
+    .ob-gather-row,
+    .ob-shot,
+    .ob-meter span[data-timed]::after,
+    .ob-intro-step[data-timed]::after {
       animation: none;
     }
+    .ob-stage-canvas *,
+    .ob-window-canvas * {
+      transition: none;
+    }
+    .ob-gather-row {
+      box-shadow: none;
+    }
+    .ob-intro-step,
+    .ob-stage-cursor,
+    .ob-stage-nav span {
+      transition: none;
+    }
     .ob-answers button,
-    .ob-choice {
+    .ob-choice,
+    .ob-choice-check,
+    .ob-intro-icon,
+    .ob-meter span::after {
       transition: none;
     }
   }

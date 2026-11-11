@@ -1,5 +1,6 @@
 import { WorkTabs, useBackState } from "./shared";
 import { useEffect, useState } from "react";
+import { t } from "@/lib/i18n";
 import {
   Link,
   useNavigate,
@@ -93,10 +94,12 @@ export function ResultsPage() {
   if (resultId && !current)
     return (
       <>
-        <BackLink to={`/r/${researchId}/results`}>수정 결과 목록</BackLink>
+        <BackLink to={`/r/${researchId}/results`}>
+          {t("수정 결과 목록")}
+        </BackLink>
         <EmptyState
-          title="수정 결과를 열 수 없어요"
-          description="수정 결과 목록에서 다시 선택해 주세요."
+          title={t("수정 결과를 열 수 없어요")}
+          description={t("수정 결과 목록에서 다시 선택해 주세요.")}
         />
       </>
     );
@@ -107,11 +110,11 @@ export function ResultsPage() {
           <PageHeader
             back={
               <BackLink to={`/r/${researchId}/results`}>
-                수정 결과 목록
+                {t("수정 결과 목록")}
               </BackLink>
             }
             title={current.title}
-            description="실제로 고친 내용과 근거를 기록해요."
+            description={t("실제로 고친 내용과 근거를 기록해요.")}
             actions={
               <div className="button-row">
                 <Button
@@ -119,17 +122,17 @@ export function ResultsPage() {
                   onClick={() => setDraft({ ...current })}
                 >
                   <Icon name="edit" size={16} />
-                  수정 결과 편집
+                  {t("수정 결과 편집")}
                 </Button>
                 {ready ? (
                   <Button asChild>
                     <Link to={`/r/${researchId}/reviews?result=${current.id}`}>
-                      검토 요청 만들기
+                      {t("검토 요청 만들기")}
                       <Icon name="arrow-right" size={16} />
                     </Link>
                   </Button>
                 ) : (
-                  <Button disabled>검토 요청 만들기</Button>
+                  <Button disabled>{t("검토 요청 만들기")}</Button>
                 )}
               </div>
             }
@@ -137,11 +140,14 @@ export function ResultsPage() {
           <div className="stack result-detail">
             <section className="surface result-response-summary">
               <div>
-                <h2>교수 응답</h2>
+                <h2>{t("교수 응답")}</h2>
                 <p className="meta">
                   {linkedItems.length
-                    ? `검토 요청 ${linkedRequests.length}건에 넣었어요. 응답과 댓글은 패널에서 볼 수 있어요.`
-                    : "아직 검토 요청에 넣지 않았어요."}
+                    ? t(
+                        "검토 요청 {count}건에 넣었어요. 응답과 댓글은 패널에서 볼 수 있어요.",
+                        { count: linkedRequests.length },
+                      )
+                    : t("아직 검토 요청에 넣지 않았어요.")}
                 </p>
               </div>
               <div className="button-row">
@@ -162,20 +168,20 @@ export function ResultsPage() {
                     setPanelOpen(true);
                   }}
                 >
-                  {linkedItems.length ? "응답 보기" : "연결된 기록 보기"}
+                  {linkedItems.length ? t("응답 보기") : t("연결된 기록 보기")}
                 </Button>
               </div>
             </section>
             <section className="surface result-body">
               <div className="section-heading">
-                <h2>실제로 수정한 내용</h2>
+                <h2>{t("실제로 수정한 내용")}</h2>
                 <StatusBadge tone="neutral">
-                  검토 요청에 넣으면 공개
+                  {t("검토 요청에 넣으면 공개")}
                 </StatusBadge>
               </div>
               <p className="student-body-text">{current.description}</p>
               <div className="result-evidence">
-                <h3>확인할 근거</h3>
+                <h3>{t("확인할 근거")}</h3>
                 {version ? (
                   <Link
                     className="student-simple-row"
@@ -188,8 +194,8 @@ export function ResultsPage() {
                     <span className="grow">
                       <strong>{version.fileName}</strong>
                       <small>
-                        파일 버전 v{version.number} ·{" "}
-                        {current.location || "볼 위치 없음"}
+                        {t("파일 버전 v{number}", { number: version.number })} ·{" "}
+                        {current.location || t("볼 위치 없음")}
                       </small>
                     </span>
                     <Icon name="arrow-up-right" size={16} />
@@ -197,21 +203,22 @@ export function ResultsPage() {
                 ) : (
                   <p className="student-empty-inline">
                     {current.kind === "document"
-                      ? "아직 파일을 연결하지 않았어요."
-                      : "문서 외 수정이라 위에 적은 내용을 근거로 사용해요."}
+                      ? t("아직 파일을 연결하지 않았어요.")
+                      : t("문서 외 수정이라 위에 적은 내용을 근거로 사용해요.")}
                   </p>
                 )}
                 {current.kind === "document" && !ready && (
                   <p className="student-inline-note">
-                    수정 결과는 저장되어 있어요. 검토 요청을 만들려면 파일과 볼
-                    위치를 추가해 주세요.
+                    {t(
+                      "수정 결과는 저장되어 있어요. 검토 요청을 만들려면 파일과 볼 위치를 추가해 주세요.",
+                    )}
                   </p>
                 )}
               </div>
             </section>
             {current.feedbackIds.length > 0 && (
               <section className="surface">
-                <h2>연결한 피드백</h2>
+                <h2>{t("연결한 피드백")}</h2>
                 {data.feedback
                   .filter((feedback) =>
                     current.feedbackIds.includes(feedback.id),
@@ -246,32 +253,34 @@ export function ResultsPage() {
       ) : (
         <>
           <PageHeader
-            title="수정 결과"
+            title={t("수정 결과")}
             tabs={<WorkTabs researchId={researchId} selected="results" />}
-            description="실제로 고친 내용과 근거를 기록하고, 필요한 것만 검토 요청에 넣을 수 있어요."
+            description={t(
+              "실제로 고친 내용과 근거를 기록하고, 필요한 것만 검토 요청에 넣을 수 있어요.",
+            )}
             actions={
               <Button onClick={startCreate}>
                 <Icon name="plus" size={17} />
-                수정 결과 작성
+                {t("수정 결과 작성")}
               </Button>
             }
           />
 
           <div className="page-toolbar">
             <Segments
-              label="검토 요청 포함 여부"
+              label={t("검토 요청 포함 여부")}
               value={filter}
               onChange={(value) => setFilter(value as typeof filter)}
               options={[
-                { value: "all", label: "전체" },
-                { value: "private", label: "검토 요청 전" },
-                { value: "shared", label: "검토 요청에 포함" },
+                { value: "all", label: t("전체") },
+                { value: "private", label: t("검토 요청 전") },
+                { value: "shared", label: t("검토 요청에 포함") },
               ]}
             />
             <SearchInput
               value={search}
               onChange={setSearch}
-              placeholder="수정 결과에서 찾기"
+              placeholder={t("수정 결과에서 찾기")}
             />
           </div>
           <section className="surface results-list">
@@ -299,13 +308,15 @@ export function ResultsPage() {
                         {file
                           ? `${file.fileName} · v${file.number}`
                           : result.kind === "document"
-                            ? "파일 없음"
-                            : "문서 외 수정"}
+                            ? t("파일 없음")
+                            : t("문서 외 수정")}
                         {result.location ? ` · ${result.location}` : ""}
                       </small>
                     </span>
                     <StatusBadge tone={count ? "blue" : "neutral"}>
-                      {count ? `검토 요청 ${count}건` : "요청 전"}
+                      {count
+                        ? t("검토 요청 {count}건", { count })
+                        : t("요청 전")}
                     </StatusBadge>
                     <Icon name="chevron-right" size={17} />
                   </Link>
@@ -315,13 +326,15 @@ export function ResultsPage() {
               <EmptyState
                 title={
                   search || filter !== "all"
-                    ? "조건에 맞는 수정 결과가 없어요"
-                    : "아직 수정 결과가 없어요"
+                    ? t("조건에 맞는 수정 결과가 없어요")
+                    : t("아직 수정 결과가 없어요")
                 }
-                description="고친 내용을 먼저 기록하고, 파일과 검토 요청은 나중에 준비할 수 있어요."
+                description={t(
+                  "고친 내용을 먼저 기록하고, 파일과 검토 요청은 나중에 준비할 수 있어요.",
+                )}
                 action={
                   <Button variant="outline" onClick={startCreate}>
-                    수정 결과 작성
+                    {t("수정 결과 작성")}
                   </Button>
                 }
               />
@@ -371,21 +384,21 @@ function ResultPanel({
   );
   return (
     <MarginPanel
-      label="교수 응답과 연결된 기록"
+      label={t("교수 응답과 연결된 기록")}
       open={open}
       onOpen={onOpen}
       onClose={onClose}
     >
       <PanelFrame
-        title="이 수정 결과"
+        title={t("이 수정 결과")}
         onClose={onClose}
         tab={tab}
         onTab={(value) => onTab(value as "responses" | "links")}
         tabs={[
-          { value: "responses", label: "응답", count: items.length },
+          { value: "responses", label: t("응답"), count: items.length },
           {
             value: "links",
-            label: "연결",
+            label: t("연결"),
             count: tasks.length + feedback.length,
           },
         ]}
@@ -408,12 +421,14 @@ function ResultPanel({
                     <ResponseStatus response={response} />
                   </div>
                   <small>
-                    {round ? `${round.number}차` : "차수 없음"}
+                    {round
+                      ? t("{number}차", { number: round.number })
+                      : t("차수 없음")}
                     {response ? ` · ${timeText(response.createdAt)}` : ""}
                   </small>
                   {response?.comment && (
                     <blockquote className="source-excerpt">
-                      <small>교수 응답</small>
+                      <small>{t("교수 응답")}</small>
                       {response.comment}
                     </blockquote>
                   )}
@@ -423,7 +438,7 @@ function ResultPanel({
                         <li key={comment.id}>
                           <small>
                             {comment.authorName}
-                            {comment.resolved ? " · 해결됨" : ""}
+                            {comment.resolved ? ` · ${t("해결됨")}` : ""}
                           </small>
                           {comment.body}
                         </li>
@@ -435,7 +450,7 @@ function ResultPanel({
                       className="student-text-link"
                       to={`/reviews/${request.id}`}
                     >
-                      검토 요청 열기
+                      {t("검토 요청 열기")}
                       <Icon name="arrow-right" size={14} />
                     </Link>
                   )}
@@ -444,20 +459,23 @@ function ResultPanel({
             })}
             {!items.length && (
               <p className="student-empty-inline">
-                아직 검토 요청에 넣지 않았어요. 넣으면 교수 응답이 여기에
-                보여요.
+                {t(
+                  "아직 검토 요청에 넣지 않았어요. 넣으면 교수 응답이 여기에 보여요.",
+                )}
               </p>
             )}
             <p className="panel-frame-note">
-              여기서 고쳐도 이미 검토 요청에 넣은 설명과 파일은 바뀌지 않아요.
-              댓글 해결과 교수 결과는 따로 기록돼요.
+              {t(
+                "여기서 고쳐도 이미 검토 요청에 넣은 설명과 파일은 바뀌지 않아요. 댓글 해결과 교수 결과는 따로 기록돼요.",
+              )}
             </p>
           </div>
         )}
         {tab === "links" && (
           <div className="panel-frame-body">
             <h3>
-              피드백<span className="count-chip">{feedback.length}</span>
+              {t("피드백")}
+              <span className="count-chip">{feedback.length}</span>
             </h3>
             {feedback.map((item) => (
               <Link
@@ -473,10 +491,13 @@ function ResultPanel({
               </Link>
             ))}
             {!feedback.length && (
-              <p className="student-empty-inline">연결한 피드백이 없어요.</p>
+              <p className="student-empty-inline">
+                {t("연결한 피드백이 없어요.")}
+              </p>
             )}
             <h3>
-              할 일<span className="count-chip">{tasks.length}</span>
+              {t("할 일")}
+              <span className="count-chip">{tasks.length}</span>
             </h3>
             {tasks.map((task) => (
               <Link
@@ -492,7 +513,9 @@ function ResultPanel({
               </Link>
             ))}
             {!tasks.length && (
-              <p className="student-empty-inline">연결한 할 일이 없어요.</p>
+              <p className="student-empty-inline">
+                {t("연결한 할 일이 없어요.")}
+              </p>
             )}
           </div>
         )}

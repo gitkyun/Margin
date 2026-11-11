@@ -5,7 +5,7 @@
 - [구조와 권한](architecture.md): 저장·공유·서버 경계
 - [배포](deployment.md): GitHub Actions, 환경변수, 복구
 - [디자인](design/README.md): Montage 기반 토큰·테마·공통 UI·브랜드 (시작점)
-- [UX 라이팅](design/ux-writing.md) · [UI 품질 기준](design/ui-quality.md): 화면 문구와 검수 기준
+- [UX 라이팅](design/ux-writing.md) · [일본어 문구 기준](design/ux-writing-ja.md) · [UI 품질 기준](design/ui-quality.md): 화면 문구와 검수 기준
 - [검수 기록](qa/2026-11-09-design-review.md): Montage 통일(#18) 뒤 검수·비판·완성 계획
 - [디자인 종합 계획](design/product-design-plan.md): 온보딩·홈·셸(여백 패널)·연구 도우미·소개 화면 계획(2026-11-10 승인, 1단계 구현)
 - [PRD](product/prd.md) · [기능 명세](product/functional-specification.md) · [흐름](product/user-flow.md) · [정보 구조](product/information-architecture.md)

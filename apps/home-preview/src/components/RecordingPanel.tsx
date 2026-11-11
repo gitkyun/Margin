@@ -1,3 +1,4 @@
+import { dateLocale, t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -102,7 +103,7 @@ export function RecordingPanel({
     recognition.current = null;
     if (media.current && media.current.state !== "inactive")
       media.current.stop();
-    stream.current?.getTracks().forEach((t) => t.stop());
+    stream.current?.getTracks().forEach((track) => track.stop());
     cancelAnimationFrame(animation.current);
     void ctx.current?.close().catch(() => {});
     setBlob(null);
@@ -116,7 +117,7 @@ export function RecordingPanel({
   useNavigationGuard({
     dirty: state !== "idle",
     busy,
-    label: "녹음과 전사문",
+    label: t("녹음과 전사문"),
     onDiscard: discard,
   });
   useEffect(() => {
@@ -127,7 +128,7 @@ export function RecordingPanel({
       recognition.current?.dispose();
       if (media.current && media.current.state !== "inactive")
         media.current.stop();
-      stream.current?.getTracks().forEach((t) => t.stop());
+      stream.current?.getTracks().forEach((track) => track.stop());
       cancelAnimationFrame(animation.current);
       void ctx.current?.close().catch(() => {});
       playbackUrls.current.forEach((url) => URL.revokeObjectURL(url));
@@ -160,11 +161,13 @@ export function RecordingPanel({
     try {
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder)
         throw new Error(
-          "이 브라우저에서는 녹음할 수 없어요. 최신 Chrome이나 Safari에서 열어 주세요.",
+          t(
+            "이 브라우저에서는 녹음할 수 없어요. 최신 Chrome이나 Safari에서 열어 주세요.",
+          ),
         );
       const s = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (!live.current || gen !== generation.current) {
-        s.getTracks().forEach((t) => t.stop());
+        s.getTracks().forEach((track) => track.stop());
         return;
       }
       stream.current = s;
@@ -172,7 +175,7 @@ export function RecordingPanel({
         "audio/webm;codecs=opus",
         "audio/mp4",
         "audio/ogg;codecs=opus",
-      ].find((t) => MediaRecorder.isTypeSupported(t));
+      ].find((candidate) => MediaRecorder.isTypeSupported(candidate));
       // 32kbps keeps a full 2-hour recording (about 29MB) under the 50MB upload
       // limit; browser defaults (64-128kbps) can pass it before 2 hours.
       const m = new MediaRecorder(s, {
@@ -206,7 +209,7 @@ export function RecordingPanel({
         if (e.data.size) chunks.current.push(e.data);
       };
       m.onstop = async () => {
-        s.getTracks().forEach((t) => t.stop());
+        s.getTracks().forEach((track) => track.stop());
         cancelAnimationFrame(animation.current);
         void ctx.current?.close().catch(() => {});
         if (!live.current || gen !== generation.current) return;
@@ -222,7 +225,9 @@ export function RecordingPanel({
       };
       m.onerror = () => {
         setError(
-          "녹음이 중간에 멈췄어요. 멈추기 전까지의 음성과 전사문을 확인하고 저장해 주세요.",
+          t(
+            "녹음이 중간에 멈췄어요. 멈추기 전까지의 음성과 전사문을 확인하고 저장해 주세요.",
+          ),
         );
         stop();
       };
@@ -273,13 +278,15 @@ export function RecordingPanel({
       }
     } catch (e) {
       recognition.current?.dispose();
-      stream.current?.getTracks().forEach((t) => t.stop());
+      stream.current?.getTracks().forEach((track) => track.stop());
       if (media.current && media.current.state !== "inactive")
         media.current.stop();
       generation.current++;
       setError(
         (e as Error).name === "NotAllowedError"
-          ? "마이크 권한이 꺼져 있어요. 브라우저의 사이트 설정에서 마이크를 허용한 뒤 다시 시도해 주세요."
+          ? t(
+              "마이크 권한이 꺼져 있어요. 브라우저의 사이트 설정에서 마이크를 허용한 뒤 다시 시도해 주세요.",
+            )
           : (e as Error).message,
       );
       setState("idle");
@@ -329,9 +336,11 @@ export function RecordingPanel({
         r = {
           ...b,
           meetingId,
-          title: `미팅 녹음 · ${new Date().toLocaleDateString("ko-KR")}`,
+          title: t("미팅 녹음 · {date}", {
+            date: new Date().toLocaleDateString(dateLocale()),
+          }),
           storagePath: `${user.id}/${researchId}/${b.id}.${ext}`,
-          fileName: `미팅녹음.${ext}`,
+          fileName: t("미팅녹음.{ext}", { ext }),
           mimeType: type,
           size: blob.size,
           duration: seconds,
@@ -353,7 +362,7 @@ export function RecordingPanel({
       record.current = saved;
       linked.current = true;
       if (recognitionConsent.current || transcript.trim()) {
-        const t = await saveLiveTranscript(
+        const savedTranscript = await saveLiveTranscript(
           {
             recording_id: r.id,
             raw_segments: captured.current.segments,
@@ -366,7 +375,10 @@ export function RecordingPanel({
           user.id,
           mode,
         );
-        cache.setQueryData(["live-transcript", mode, user.id, r.id], t);
+        cache.setQueryData(
+          ["live-transcript", mode, user.id, r.id],
+          savedTranscript,
+        );
       }
       recognition.current?.dispose();
       recognition.current = null;
@@ -377,12 +389,12 @@ export function RecordingPanel({
       setTranscript("");
       toast.success(
         recognitionConsent.current || transcript.trim()
-          ? "녹음과 전사문을 저장했어요"
-          : "녹음을 저장했어요",
+          ? t("녹음과 전사문을 저장했어요")
+          : t("녹음을 저장했어요"),
       );
     } catch (e) {
       setError(
-        `${friendlyError(e)}${uploaded.current ? " 음성 파일은 이미 올라갔고, 이 화면의 내용도 그대로 있어요. ‘저장 다시 시도’를 누르면 파일은 다시 올리지 않고 나머지만 저장해요." : " 녹음과 전사문은 이 화면에 그대로 있어요."}`,
+        `${friendlyError(e)} ${uploaded.current ? t("음성 파일은 이미 올라갔고, 이 화면의 내용도 그대로 있어요. ‘저장 다시 시도’를 누르면 파일은 다시 올리지 않고 나머지만 저장해요.") : t("녹음과 전사문은 이 화면에 그대로 있어요.")}`,
       );
       setState("review");
     }
@@ -408,16 +420,16 @@ export function RecordingPanel({
     <section className="recording-panel">
       <div className="section-heading">
         <h3>
-          <Icon name="mic" size={18} /> 미팅 녹음·전사
+          <Icon name="mic" size={18} /> {t("미팅 녹음·전사")}
         </h3>
         <StatusBadge tone={state === "recording" ? "red" : "neutral"}>
           {state === "recording"
-            ? "녹음 중"
+            ? t("녹음 중")
             : state === "paused"
-              ? "일시정지"
+              ? t("일시정지")
               : state === "finishing"
-                ? "마무리 중"
-                : "음성 기록"}
+                ? t("마무리 중")
+                : t("음성 기록")}
         </StatusBadge>
       </div>
       {error && (
@@ -428,8 +440,9 @@ export function RecordingPanel({
       {state === "idle" ? (
         <div className="recording-start">
           <p>
-            녹음하면서 말한 내용을 한국어로 받아 적을 수 있어요. 저장하기 전에
-            녹음을 들어 보고 전사문을 고칠 수 있어요.
+            {t(
+              "녹음하면서 말한 내용을 한국어로 받아 적을 수 있어요. 저장하기 전에 녹음을 들어 보고 전사문을 고칠 수 있어요.",
+            )}
           </p>
           <Button
             variant="outline"
@@ -438,7 +451,7 @@ export function RecordingPanel({
               setConsent(true);
             }}
           >
-            <Icon name="mic" size={17} /> 녹음 시작
+            <Icon name="mic" size={17} /> {t("녹음 시작")}
           </Button>
         </div>
       ) : (
@@ -448,7 +461,7 @@ export function RecordingPanel({
               width={620}
               height={72}
               ref={canvas}
-              aria-label="마이크 입력 파형"
+              aria-label={t("마이크 입력 파형")}
             />
             <strong>{durationText(seconds)}</strong>
           </div>
@@ -460,37 +473,37 @@ export function RecordingPanel({
                     name={state === "paused" ? "play" : "pause"}
                     size={16}
                   />
-                  {state === "paused" ? "계속 녹음" : "일시정지"}
+                  {state === "paused" ? t("계속 녹음") : t("일시정지")}
                 </Button>
                 <Button disabled={busy} onClick={stop}>
                   {state === "starting"
-                    ? "마이크 연결 중"
+                    ? t("마이크 연결 중")
                     : state === "finishing"
-                      ? "마지막 문장 확인 중"
-                      : "녹음 마치기"}
+                      ? t("마지막 문장 확인 중")
+                      : t("녹음 마치기")}
                 </Button>
               </div>
               <div className="live-transcript">
                 <div className="section-heading">
-                  <h4>실시간 한국어 전사</h4>
+                  <h4>{t("실시간 한국어 전사")}</h4>
                   <span role="status">
                     {!recognitionConsent.current
-                      ? "음성만 녹음"
+                      ? t("음성만 녹음")
                       : speech.state === "error"
-                        ? "인식 중단"
+                        ? t("인식 중단")
                         : state === "paused"
-                          ? "일시정지"
+                          ? t("일시정지")
                           : state === "finishing"
-                            ? "마무리 중"
+                            ? t("마무리 중")
                             : speech.state === "listening"
-                              ? "듣는 중"
-                              : "연결 중"}
+                              ? t("듣는 중")
+                              : t("연결 중")}
                   </span>
                 </div>
                 <div
                   className="live-transcript-text"
                   role="log"
-                  aria-label="실시간 한국어 전사문"
+                  aria-label={t("실시간 한국어 전사문")}
                   aria-live="off"
                 >
                   {speech.segments.length ? (
@@ -502,15 +515,17 @@ export function RecordingPanel({
                         }
                       >
                         {part.text}
-                        {!part.final && <small> 인식 중</small>}
+                        {!part.final && <small> {t("인식 중")}</small>}
                         <br />
                       </span>
                     ))
                   ) : (
                     <p className="student-footnote">
                       {recognitionConsent.current
-                        ? "말을 시작하면 여기에 글자가 나타나요."
-                        : "실시간 전사 없이 음성만 녹음하고 있어요. 녹음을 마친 뒤 전사문을 직접 쓸 수 있어요."}
+                        ? t("말을 시작하면 여기에 글자가 나타나요.")
+                        : t(
+                            "실시간 전사 없이 음성만 녹음하고 있어요. 녹음을 마친 뒤 전사문을 직접 쓸 수 있어요.",
+                          )}
                     </p>
                   )}
                 </div>
@@ -523,7 +538,7 @@ export function RecordingPanel({
                         size="sm"
                         onClick={() => recognition.current?.start()}
                       >
-                        음성 인식 다시 연결
+                        {t("음성 인식 다시 연결")}
                       </Button>
                     )}
                   </p>
@@ -532,37 +547,48 @@ export function RecordingPanel({
             </>
           ) : (
             <div className="recording-review">
-              <audio controls src={audioUrl} aria-label="방금 녹음한 내용" />
+              <audio
+                controls
+                src={audioUrl}
+                aria-label={t("방금 녹음한 내용")}
+              />
               <label className="transcript-field">
-                한국어 전사문
+                {t("한국어 전사문")}
                 <textarea
                   rows={8}
                   maxLength={100000}
                   value={transcript}
                   disabled={state === "uploading"}
                   onChange={(e) => setTranscript(e.target.value)}
-                  placeholder="인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요."
+                  placeholder={t(
+                    "인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요.",
+                  )}
                 />
               </label>
               <p className="student-footnote">
-                잘못 인식한 말은 고쳐 주세요. 처음 인식한 내용도 따로 저장돼요.
+                {t(
+                  "잘못 인식한 말은 고쳐 주세요. 처음 인식한 내용도 따로 저장돼요.",
+                )}
               </p>
               {speech.segments.some((p) => !p.final) && (
                 <p className="transcript-notice">
-                  인식이 확정되지 않은 문장이 있어요. 녹음을 들으며 확인해
-                  주세요.
+                  {t(
+                    "인식이 확정되지 않은 문장이 있어요. 녹음을 들으며 확인해 주세요.",
+                  )}
                 </p>
               )}
               {!!speech.warnings.length && (
                 <p className="transcript-notice">
-                  인식이 끊긴 구간이 있을 수 있어요. 녹음을 들으며 빠진 말을
-                  확인해 주세요.
+                  {t(
+                    "인식이 끊긴 구간이 있을 수 있어요. 녹음을 들으며 빠진 말을 확인해 주세요.",
+                  )}
                 </p>
               )}
               <VisibilityField value={visibility} onChange={setVisibility} />
               <p className="student-footnote">
-                공개 범위는 음성 파일에만 적용돼요. 음성을 공유해도 전사문은
-                나만 볼 수 있어요.
+                {t(
+                  "공개 범위는 음성 파일에만 적용돼요. 음성을 공유해도 전사문은 나만 볼 수 있어요.",
+                )}
               </p>
               {progress !== null && state === "uploading" && (
                 <progress max={100} value={progress} />
@@ -573,24 +599,26 @@ export function RecordingPanel({
                   disabled={state === "uploading"}
                   onClick={discard}
                 >
-                  {linked.current ? "전사문 버리고 닫기" : "녹음·전사 버리기"}
+                  {linked.current
+                    ? t("전사문 버리고 닫기")
+                    : t("녹음·전사 버리기")}
                 </Button>
                 <Button
                   variant="outline"
                   disabled={!transcript.trim()}
-                  onClick={() => downloadTranscript(transcript, "미팅 녹음")}
+                  onClick={() => downloadTranscript(transcript, t("미팅 녹음"))}
                 >
-                  전사문 TXT 내려받기
+                  {t("전사문 TXT 내려받기")}
                 </Button>
                 <Button
                   disabled={state === "uploading" || !blob?.size}
                   onClick={() => void store()}
                 >
                   {state === "uploading"
-                    ? "저장 중"
+                    ? t("저장 중")
                     : uploaded.current
-                      ? "저장 다시 시도"
-                      : "녹음·전사 저장"}
+                      ? t("저장 다시 시도")
+                      : t("녹음·전사 저장")}
                 </Button>
               </div>
             </div>
@@ -608,8 +636,8 @@ export function RecordingPanel({
                 <small>
                   {durationText(r.duration)} ·{" "}
                   {r.visibility === "shared"
-                    ? "음성 공유 중"
-                    : "음성 나만 보기"}
+                    ? t("음성 공유 중")
+                    : t("음성 나만 보기")}
                 </small>
                 <audio
                   id={`audio-${r.id}`}
@@ -618,7 +646,7 @@ export function RecordingPanel({
                 />
               </div>
               <Button variant="outline" size="sm" onClick={() => void play(r)}>
-                재생
+                {t("재생")}
               </Button>
               {r.createdBy === user.id && (
                 <Button
@@ -636,7 +664,9 @@ export function RecordingPanel({
                     }
                   }}
                 >
-                  {r.visibility === "shared" ? "음성 공유 중지" : "음성 공유"}
+                  {r.visibility === "shared"
+                    ? t("음성 공유 중지")
+                    : t("음성 공유")}
                 </Button>
               )}
             </div>
@@ -655,13 +685,11 @@ export function RecordingPanel({
       <Dialog open={consent} onOpenChange={setConsent}>
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>녹음을 시작할까요?</DialogTitle>
+            <DialogTitle>{t("녹음을 시작할까요?")}</DialogTitle>
             <DialogDescription>
-              녹음하기 전에 참여자에게 알리고 동의를 받아 주세요. 실시간 전사를
-              켜면 음성이 브라우저 제공자의 음성 인식 서버로 전송될 수 있고
-              인터넷 연결이 필요해요. 녹음은 한 번에 최대 2시간이고, 2시간이
-              되면 자동으로 멈춰요. 음성 파일이 50MB를 넘으면 저장할 수 없으니
-              긴 미팅은 나눠서 녹음해 주세요.
+              {t(
+                "녹음하기 전에 참여자에게 알리고 동의를 받아 주세요. 실시간 전사를 켜면 음성이 브라우저 제공자의 음성 인식 서버로 전송될 수 있고 인터넷 연결이 필요해요. 녹음은 한 번에 최대 2시간이고, 2시간이 되면 자동으로 멈춰요. 음성 파일이 50MB를 넘으면 저장할 수 없으니 긴 미팅은 나눠서 녹음해 주세요.",
+              )}
             </DialogDescription>
           </DialogHeader>
           <label className="student-choice-row">
@@ -670,12 +698,13 @@ export function RecordingPanel({
               disabled={!speechSupported}
               onCheckedChange={(next) => setLiveText(next)}
             />
-            실시간 한국어 전사 켜기
+            {t("실시간 한국어 전사 켜기")}
           </label>
           {!speechSupported && (
             <p className="transcript-notice">
-              이 브라우저는 실시간 전사를 지원하지 않아요. 음성만 녹음하거나
-              지원하는 브라우저에서 열어 주세요.
+              {t(
+                "이 브라우저는 실시간 전사를 지원하지 않아요. 음성만 녹음하거나 지원하는 브라우저에서 열어 주세요.",
+              )}
             </p>
           )}
           <label className="student-choice-row">
@@ -683,20 +712,21 @@ export function RecordingPanel({
               checked={agree}
               onCheckedChange={(next) => setAgree(next)}
             />
-            참여자에게 녹음{liveText && speechSupported ? "과 음성 인식" : ""}을
-            알리고 동의를 받았어요.
+            {liveText && speechSupported
+              ? t("참여자에게 녹음과 음성 인식을 알리고 동의를 받았어요.")
+              : t("참여자에게 녹음을 알리고 동의를 받았어요.")}
           </label>
           <div className="bottom-actions">
             <Button variant="outline" onClick={() => setConsent(false)}>
-              취소
+              {t("취소")}
             </Button>
             <Button
               disabled={!agree || state !== "idle"}
               onClick={() => void start()}
             >
               {liveText && speechSupported
-                ? "녹음·전사 시작"
-                : "음성 녹음 시작"}
+                ? t("녹음·전사 시작")
+                : t("음성 녹음 시작")}
             </Button>
           </div>
         </DialogContent>

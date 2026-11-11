@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n";
+import { formatClock } from "@/lib/time-format";
 import {
   useEffect,
   useMemo,
@@ -23,13 +25,22 @@ import "./week-strip.css";
 const MAX_DOTS = 3;
 const WEEK = 7;
 const WEEKDAY_NAMES: Record<WeekDay["weekday"], string> = {
-  일: "일요일",
-  월: "월요일",
-  화: "화요일",
-  수: "수요일",
-  목: "목요일",
-  금: "금요일",
-  토: "토요일",
+  일: t("일요일"),
+  월: t("월요일"),
+  화: t("화요일"),
+  수: t("수요일"),
+  목: t("목요일"),
+  금: t("금요일"),
+  토: t("토요일"),
+};
+const WEEKDAY_SHORT: Record<WeekDay["weekday"], string> = {
+  일: t("일"),
+  월: t("월"),
+  화: t("화"),
+  수: t("수"),
+  목: t("목"),
+  금: t("금"),
+  토: t("토"),
 };
 
 function rangeLabel(days: WeekDay[]): string {
@@ -37,26 +48,27 @@ function rangeLabel(days: WeekDay[]): string {
   const last = days[days.length - 1];
   const end =
     first.month === last.month
-      ? `${last.day}일`
-      : `${last.month}월 ${last.day}일`;
-  return `${first.month}월 ${first.day}일 – ${end}`;
+      ? t("{day}일", { day: last.day })
+      : t("{month}월 {day}일", { month: last.month, day: last.day });
+  return t("{month}월 {day}일 – {end}", {
+    month: first.month,
+    day: first.day,
+    end,
+  });
 }
 
 function timeLabel(time: string): string {
-  return new Intl.DateTimeFormat("ko-KR", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(`2000-01-01T${time}:00`));
+  return formatClock(time);
 }
 
 function countLabel(items: WeekItem[]): string {
   const meetings = items.filter((i) => i.kind === "meeting").length;
   const tasks = items.length - meetings;
   const parts = [
-    meetings ? `미팅 ${meetings}개` : "",
-    tasks ? `마감 ${tasks}개` : "",
+    meetings ? t("미팅 {count}개", { count: meetings }) : "",
+    tasks ? t("마감 {count}개", { count: tasks }) : "",
   ].filter(Boolean);
-  return parts.length ? parts.join(", ") : "일정 없음";
+  return parts.length ? parts.join(", ") : t("일정 없음");
 }
 
 /** 키보드로 날짜를 옮길 때 몇 칸 갈지. 해당 키가 아니면 null */
@@ -121,25 +133,25 @@ export function WeekStrip({ data, researchId }: WeekStripProps) {
         <h2 id="rh-week-heading">{rangeLabel(days)}</h2>
         {!showsToday && (
           <Button variant="link" size="sm" onClick={() => setSelected(today)}>
-            오늘
+            {t("오늘")}
           </Button>
         )}
         <div className="rh-week-nav">
           <IconButton
-            label="지난주"
+            label={t("지난주")}
             onClick={() => setSelected((key) => shiftDay(key, -WEEK))}
           >
             <Icon name="chevron-left" size={18} />
           </IconButton>
           <IconButton
-            label="다음 주"
+            label={t("다음 주")}
             onClick={() => setSelected((key) => shiftDay(key, WEEK))}
           >
             <Icon name="chevron-right" size={18} />
           </IconButton>
         </div>
       </div>
-      <div className="rh-week-days" role="group" aria-label="날짜 고르기">
+      <div className="rh-week-days" role="group" aria-label={t("날짜 고르기")}>
         {days.map((d, index) => (
           <button
             key={d.key}
@@ -152,11 +164,11 @@ export function WeekStrip({ data, researchId }: WeekStripProps) {
             tabIndex={d.key === selected ? 0 : -1}
             aria-pressed={d.key === selected}
             aria-current={d.isToday ? "date" : undefined}
-            aria-label={`${d.month}월 ${d.day}일 ${WEEKDAY_NAMES[d.weekday]}${d.isToday ? ", 오늘" : ""}, ${countLabel(d.items)}`}
+            aria-label={`${t("{month}월 {day}일 {weekday}", { month: d.month, day: d.day, weekday: WEEKDAY_NAMES[d.weekday] })}${d.isToday ? `, ${t("오늘")}` : ""}, ${countLabel(d.items)}`}
             onClick={() => setSelected(d.key)}
             onKeyDown={(event) => onKeyDown(event, index)}
           >
-            <span className="rh-week-weekday">{d.weekday}</span>
+            <span className="rh-week-weekday">{WEEKDAY_SHORT[d.weekday]}</span>
             <span className="rh-week-number">{d.day}</span>
             <span className="rh-week-dots" aria-hidden="true">
               {d.items.slice(0, MAX_DOTS).map((item) => (
@@ -168,8 +180,12 @@ export function WeekStrip({ data, researchId }: WeekStripProps) {
       </div>
       <div className="rh-week-agenda" aria-live="polite">
         <p className="rh-week-agenda-date">
-          {day.month}월 {day.day}일 {WEEKDAY_NAMES[day.weekday]}
-          {day.isToday && <span>오늘</span>}
+          {t("{month}월 {day}일 {weekday}", {
+            month: day.month,
+            day: day.day,
+            weekday: WEEKDAY_NAMES[day.weekday],
+          })}
+          {day.isToday && <span>{t("오늘")}</span>}
         </p>
         {day.items.length ? (
           <ul>
@@ -182,15 +198,15 @@ export function WeekStrip({ data, researchId }: WeekStripProps) {
                     {item.kind === "meeting"
                       ? item.time
                         ? timeLabel(item.time)
-                        : "미팅"
-                      : "마감"}
+                        : t("미팅")
+                      : t("마감")}
                   </small>
                 </Link>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="rh-week-empty">이날은 미팅도 마감도 없어요.</p>
+          <p className="rh-week-empty">{t("이날은 미팅도 마감도 없어요.")}</p>
         )}
       </div>
     </section>

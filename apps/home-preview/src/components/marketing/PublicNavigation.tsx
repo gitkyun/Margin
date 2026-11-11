@@ -1,13 +1,14 @@
 import { NavigationMenu } from "radix-ui";
 import { Link, useLocation } from "react-router-dom";
 import { Icon } from "@/components/icons";
+import { t } from "@/lib/i18n";
 import "./public-navigation.css";
 
 const features = [
-  ["meeting", "microphone", "미팅과 기록", "녹음·전사와 피드백 정리"],
-  ["ai", "sparkles", "AI와 수정 방법", "선택한 기록으로 제안받기"],
-  ["writing", "edit", "작성과 버전 비교", "버전별로 바뀐 문장 비교하기"],
-  ["review", "check-circle", "교수 검토", "항목마다 교수님 응답 받기"],
+  ["meeting", "microphone", t("미팅과 기록"), t("녹음·전사와 피드백 정리")],
+  ["ai", "sparkles", t("AI와 수정 방법"), t("선택한 기록으로 제안받기")],
+  ["writing", "edit", t("작성과 버전 비교"), t("버전별로 바뀐 문장 비교하기")],
+  ["review", "check-circle", t("교수 검토"), t("항목마다 교수님 응답 받기")],
 ];
 
 export function PublicNavigation({
@@ -23,7 +24,7 @@ export function PublicNavigation({
   return (
     <NavigationMenu.Root
       className={`lp-public-nav ${open ? "is-open" : ""}`}
-      aria-label="서비스 탐색"
+      aria-label={t("서비스 탐색")}
       delayDuration={100}
     >
       <NavigationMenu.List className="lp-public-nav-list">
@@ -32,7 +33,7 @@ export function PublicNavigation({
             className="lp-nav-trigger"
             data-current={pathname === "/features"}
           >
-            주요 기능 <Icon name="chevron-down" size={14} />
+            {t("주요 기능")} <Icon name="chevron-down" size={14} />
           </NavigationMenu.Trigger>
           <NavigationMenu.Content className="lp-nav-panel lp-nav-feature-panel">
             <div className="lp-nav-feature-links">
@@ -56,7 +57,7 @@ export function PublicNavigation({
             </div>
             <NavigationMenu.Link asChild onSelect={onNavigate}>
               <Link className="lp-nav-panel-bottom" to="/features">
-                기능 둘러보기 <Icon name="arrow-right" size={16} />
+                {t("기능 둘러보기")} <Icon name="arrow-right" size={16} />
               </Link>
             </NavigationMenu.Link>
           </NavigationMenu.Content>
@@ -68,7 +69,7 @@ export function PublicNavigation({
             onSelect={onNavigate}
           >
             <Link className="lp-nav-direct" to="/guide">
-              사용 안내
+              {t("사용 안내")}
             </Link>
           </NavigationMenu.Link>
         </NavigationMenu.Item>
@@ -79,25 +80,25 @@ export function PublicNavigation({
             onSelect={onNavigate}
           >
             <Link className="lp-nav-direct" to="/pricing">
-              플랜
+              {t("플랜")}
             </Link>
           </NavigationMenu.Link>
         </NavigationMenu.Item>
         <NavigationMenu.Item className="lp-public-nav-item">
           <NavigationMenu.Trigger className="lp-nav-trigger">
-            도움말 <Icon name="chevron-down" size={14} />
+            {t("도움말")} <Icon name="chevron-down" size={14} />
           </NavigationMenu.Trigger>
           <NavigationMenu.Content className="lp-nav-panel lp-nav-help-panel">
             <NavigationMenu.Link asChild onSelect={onNavigate}>
               <Link to="/guide#questions">
                 <Icon name="help" size={19} />
-                <span>자주 묻는 질문</span>
+                <span>{t("자주 묻는 질문")}</span>
               </Link>
             </NavigationMenu.Link>
             <NavigationMenu.Link asChild onSelect={onNavigate}>
               <Link to="/privacy">
                 <Icon name="lock" size={19} />
-                <span>자료와 개인정보</span>
+                <span>{t("자료와 개인정보")}</span>
               </Link>
             </NavigationMenu.Link>
           </NavigationMenu.Content>
@@ -106,7 +107,7 @@ export function PublicNavigation({
       <div className="lp-mobile-auth">
         {!signedIn && (
           <Link to="/login" onClick={onNavigate}>
-            로그인
+            {t("로그인")}
           </Link>
         )}
         <Link
@@ -114,7 +115,7 @@ export function PublicNavigation({
           to={signedIn ? "/r" : "/signup"}
           onClick={onNavigate}
         >
-          {signedIn ? "내 연구 열기" : "시작하기"}
+          {signedIn ? t("내 연구 열기") : t("시작하기")}
           <Icon name="arrow-right" size={16} />
         </Link>
       </div>

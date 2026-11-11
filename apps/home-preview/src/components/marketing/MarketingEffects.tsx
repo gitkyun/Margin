@@ -9,6 +9,7 @@ import {
 } from "motion/react";
 import { VersionCompareSlider } from "@/components/VersionCompareSlider";
 import { Icon } from "@/components/icons";
+import { t } from "@/lib/i18n";
 import "./marketing-effects.css";
 
 export { StartGlow } from "@/components/StartGlow";
@@ -27,13 +28,15 @@ export function MergeFlow({ className = "" }: { className?: string }) {
     <div
       ref={ref}
       className={`rms-merge-flow ${className}`}
-      aria-label="미팅 메모, 피드백, 연구 자료 중 선택한 기록을 연구 도우미가 읽고 제안하는 예시"
+      aria-label={t(
+        "미팅 메모, 피드백, 연구 자료 중 선택한 기록을 연구 도우미가 읽고 제안하는 예시",
+      )}
     >
       <div className="rms-merge-sources">
         {[
-          ["edit", "미팅 메모"],
-          ["feedback", "피드백"],
-          ["file", "연구 자료"],
+          ["edit", t("미팅 메모")],
+          ["feedback", t("피드백")],
+          ["file", t("연구 자료")],
         ].map(([icon, label]) => (
           <span key={label}>
             <Icon name={icon} size={17} />
@@ -80,22 +83,23 @@ export function MergeFlow({ className = "" }: { className?: string }) {
       <div className="rms-merge-result">
         <AssistantGlyph />
         <div>
-          <strong>연구 도우미</strong>
-          <span>선택한 기록만 읽어요</span>
+          <strong>{t("연구 도우미")}</strong>
+          <span>{t("선택한 기록만 읽어요")}</span>
         </div>
         <Icon name="arrow-right" size={18} />
       </div>
       <div className="rms-merge-suggestions">
         <span>
           <Icon name="check" size={13} />
-          피드백 정리
+          {t("피드백 정리")}
         </span>
         <span>
           <Icon name="layers" size={13} />
-          수정 방법
+          {t("수정 방법")}
         </span>
         <span>
-          <Icon name="tasks" size={13} />할 일 제안
+          <Icon name="tasks" size={13} />
+          {t("할 일 제안")}
         </span>
       </div>
     </div>
@@ -138,8 +142,12 @@ export function SpotlightCard({
 
 /** 소개 페이지 글쓰기 카드의 버전 비교. 글쓰기 화면과 같은 VersionCompareSlider를 씁니다. */
 export function ComparePreview({
-  before = "선행연구를 조금 더 보완하면 좋겠습니다. 비교 기준을 명확히 하고, 다음 미팅에 설명해 주세요.",
-  after = "비교 기준을 연구 목적 · 자료 수집 방식 · 분석 관점으로 나눕니다.\n선행연구 5편을 같은 기준으로 비교합니다.\n선택한 기준과 이유를 다음 미팅에서 설명합니다.",
+  before = t(
+    "선행연구를 조금 더 보완하면 좋겠습니다. 비교 기준을 명확히 하고, 다음 미팅에 설명해 주세요.",
+  ),
+  after = t(
+    "비교 기준을 연구 목적 · 자료 수집 방식 · 분석 관점으로 나눕니다.\n선행연구 5편을 같은 기준으로 비교합니다.\n선택한 기준과 이유를 다음 미팅에서 설명합니다.",
+  ),
   className = "",
 }: {
   before?: string;
@@ -153,8 +161,8 @@ export function ComparePreview({
         defaultPosition={48}
         before={
           <div className="rms-compare-sheet rms-compare-before">
-            <span>이전 버전</span>
-            <h4>핵심만 적었던 문장</h4>
+            <span>{t("이전 버전")}</span>
+            <h4>{t("핵심만 적었던 문장")}</h4>
             <p>{before}</p>
             <span className="rms-compare-pencil">
               <Icon name="edit" size={20} />
@@ -163,8 +171,8 @@ export function ComparePreview({
         }
         after={
           <div className="rms-compare-sheet rms-compare-after">
-            <span>수정 버전</span>
-            <h4>비교 기준을 구체적으로</h4>
+            <span>{t("수정 버전")}</span>
+            <h4>{t("비교 기준을 구체적으로")}</h4>
             <ol>
               {after.split("\n").map((line, i) => (
                 <li key={`${i}-${line}`}>{line}</li>
@@ -174,7 +182,7 @@ export function ComparePreview({
         }
       />
       <p className="rms-compare-hint">
-        가운데 화살표를 좌우로 움직여 비교하세요.
+        {t("가운데 화살표를 좌우로 움직여 비교하세요.")}
       </p>
     </div>
   );

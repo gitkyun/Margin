@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import type { ReactNode } from "react";
 import type { Editor } from "@tiptap/react";
 import {
@@ -20,10 +21,10 @@ const ICON = 18;
 
 /** 문단 형식: 본문과 제목 세 단계. 값은 제목 단계 숫자이고 본문은 0입니다. */
 const BLOCK_OPTIONS = [
-  { value: "0", label: "본문" },
-  { value: "1", label: "제목 1" },
-  { value: "2", label: "제목 2" },
-  { value: "3", label: "제목 3" },
+  { value: "0", label: t("본문") },
+  { value: "1", label: t("제목 1") },
+  { value: "2", label: t("제목 2") },
+  { value: "3", label: t("제목 3") },
 ];
 type HeadingLevel = 1 | 2 | 3;
 
@@ -89,19 +90,19 @@ export function EditorToolbar({
   const marks = [
     {
       type: "bold",
-      label: "굵게",
+      label: t("굵게"),
       glyph: Bold,
       run: () => chain()?.toggleBold().run(),
     },
     {
       type: "italic",
-      label: "기울임",
+      label: t("기울임"),
       glyph: Italic,
       run: () => chain()?.toggleItalic().run(),
     },
     {
       type: "strike",
-      label: "취소선",
+      label: t("취소선"),
       glyph: Strikethrough,
       run: () => chain()?.toggleStrike().run(),
     },
@@ -109,27 +110,27 @@ export function EditorToolbar({
   const blocks = [
     {
       type: "bulletList",
-      label: "글머리 목록",
+      label: t("글머리 목록"),
       glyph: List,
       run: () => chain()?.toggleBulletList().run(),
     },
     {
       type: "orderedList",
-      label: "번호 목록",
+      label: t("번호 목록"),
       glyph: ListOrdered,
       run: () => chain()?.toggleOrderedList().run(),
     },
     {
       type: "blockquote",
-      label: "인용문",
+      label: t("인용문"),
       glyph: Quote,
       run: () => chain()?.toggleBlockquote().run(),
     },
   ];
   return (
-    <div className="editor-toolbar" role="toolbar" aria-label="문서 서식">
+    <div className="editor-toolbar" role="toolbar" aria-label={t("문서 서식")}>
       <Tool
-        label="목차·공개 범위"
+        label={t("목차·공개 범위")}
         active={outlineOpen}
         onClick={onToggleOutline}
       >
@@ -137,14 +138,14 @@ export function EditorToolbar({
       </Tool>
       <i aria-hidden="true" />
       <Tool
-        label="실행 취소"
+        label={t("실행 취소")}
         disabled={!editor?.can().undo()}
         onClick={() => chain()?.undo().run()}
       >
         <Undo2 size={ICON} />
       </Tool>
       <Tool
-        label="다시 실행"
+        label={t("다시 실행")}
         disabled={!editor?.can().redo()}
         onClick={() => chain()?.redo().run()}
       >
@@ -153,7 +154,7 @@ export function EditorToolbar({
       <i aria-hidden="true" />
       <Choice
         compact
-        label="문단 형식"
+        label={t("문단 형식")}
         value={currentBlock(editor)}
         options={BLOCK_OPTIONS}
         onChange={(value) => {
@@ -189,7 +190,7 @@ export function EditorToolbar({
       ))}
       <i aria-hidden="true" />
       <Tool
-        label="표 추가"
+        label={t("표 추가")}
         onClick={() =>
           chain()?.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
         }
@@ -197,12 +198,12 @@ export function EditorToolbar({
         <Icon name="grid" size={ICON} />
       </Tool>
       {editor?.isActive("table") && (
-        <Tool label="행 추가" onClick={() => chain()?.addRowAfter().run()}>
+        <Tool label={t("행 추가")} onClick={() => chain()?.addRowAfter().run()}>
           <Icon name="plus" size={ICON} />
         </Tool>
       )}
       <Tool
-        label="서식 지우기"
+        label={t("서식 지우기")}
         onClick={() => chain()?.unsetAllMarks().clearNodes().run()}
       >
         <RemoveFormatting size={ICON} />
@@ -219,8 +220,8 @@ export function EditorToolbar({
             >
               <Icon name="sparkles" size={16} />
               {editor?.state.selection.empty === false
-                ? "선택 부분 AI 검토"
-                : "AI 검토"}
+                ? t("선택 부분 AI 검토")
+                : t("AI 검토")}
             </Button>
           </span>
         </Hint>

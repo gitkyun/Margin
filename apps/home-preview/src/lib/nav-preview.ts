@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 import { formatDate, relativeDay, type WorkspaceData } from "./domain";
 import { selectNextMeeting } from "./home-meeting";
 
@@ -29,9 +30,12 @@ function meetingDetail(
     timeZone: "Asia/Seoul",
   });
   const next = selectNextMeeting(meetings, null, todayKey);
-  if (!next) return "예정된 미팅이 없어요.";
-  if (!next.date) return "다음 미팅 · 날짜 미정";
-  return `다음 미팅 ${formatDate(next.date)} · ${relativeDay(next.date, today)}`;
+  if (!next) return t("예정된 미팅이 없어요.");
+  if (!next.date) return t("다음 미팅 · 날짜 미정");
+  return t("다음 미팅 {date} · {relative}", {
+    date: formatDate(next.date),
+    relative: relativeDay(next.date, today),
+  });
 }
 
 /**
@@ -49,8 +53,8 @@ export function navPreview(
   const summary = (detail: string): NavPreview => ({ title: label, detail });
   switch (path) {
     case "": {
-      const open = mine(data.tasks).filter((t) => t.status !== "done");
-      return summary(`남은 할 일 ${open.length}개`);
+      const open = mine(data.tasks).filter((task) => task.status !== "done");
+      return summary(t("남은 할 일 {count}개", { count: open.length }));
     }
     case "planning": {
       const planned = mine(data.milestones).filter(
@@ -58,29 +62,35 @@ export function navPreview(
       );
       return summary(
         planned.length
-          ? `진행 중인 목표 ${planned.length}개`
-          : "단계와 주요 목표를 정해 보세요.",
+          ? t("진행 중인 목표 {count}개", { count: planned.length })
+          : t("단계와 주요 목표를 정해 보세요."),
       );
     }
     case "meetings":
       return summary(meetingDetail(mine(data.meetings), today));
     case "writing":
-      return summary(`문서 ${mine(data.documents).length}개`);
+      return summary(
+        t("문서 {count}개", { count: mine(data.documents).length }),
+      );
     case "feedback": {
       const waiting = mine(data.feedback).filter(
         (f) => f.status === "unprocessed",
       );
       return summary(
         waiting.length
-          ? `아직 정리하지 않은 피드백 ${waiting.length}개`
-          : "정리할 피드백이 없어요.",
+          ? t("아직 정리하지 않은 피드백 {count}개", { count: waiting.length })
+          : t("정리할 피드백이 없어요."),
       );
     }
     case "materials":
-      return summary(`자료 ${mine(data.materials).length}개`);
+      return summary(
+        t("자료 {count}개", { count: mine(data.materials).length }),
+      );
     case "reviews": {
       const shared = mine(data.reviews).filter((r) => r.status === "shared");
-      return summary(`공유 중인 검토 요청 ${shared.length}개`);
+      return summary(
+        t("공유 중인 검토 요청 {count}개", { count: shared.length }),
+      );
     }
     default:
       return null;

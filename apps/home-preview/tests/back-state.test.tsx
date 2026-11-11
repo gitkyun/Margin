@@ -9,6 +9,7 @@ import {
   readBackState,
   useBackState,
 } from "../src/pages/student/shared";
+import { backFrom } from "../src/components/CommandPalette";
 
 afterEach(cleanup);
 
@@ -26,6 +27,33 @@ describe("돌아올 곳(location.state)", () => {
     expect(readBackState({ from: { path: "//evil", label: "밖" } })).toBeNull();
     expect(readBackState({ from: { path: "/r/a", label: "  " } })).toBeNull();
     expect(readBackState({ from: { path: 3, label: "x" } })).toBeNull();
+  });
+
+  it("검토 요청 화면(/reviews/)도 돌아올 곳으로 받는다(F-004)", () => {
+    expect(
+      readBackState({
+        from: { path: "/reviews/q1?item=i1", label: "초록 검토" },
+      }),
+    ).toEqual({ path: "/reviews/q1?item=i1", label: "초록 검토" });
+    expect(
+      readBackState({ from: { path: "/reviewsx", label: "밖" } }),
+    ).toBeNull();
+    expect(readBackState({ from: { path: "/login", label: "밖" } })).toBeNull();
+  });
+
+  it("⌘K로 열면 지금 화면 제목과 주소를 돌아올 곳으로 넘긴다(F-004)", () => {
+    document.title = "미팅 · 연구 · 마진";
+    document.body.innerHTML =
+      '<main id="main-content"><h1> 제5차 논문 지도 </h1></main>';
+    expect(
+      backFrom({ pathname: "/r/a/meetings/m1", search: "?tab=prep" }),
+    ).toEqual({
+      from: { path: "/r/a/meetings/m1?tab=prep", label: "제5차 논문 지도" },
+    });
+    document.body.innerHTML = "";
+    expect(
+      backFrom({ pathname: "/r/a/meetings", search: "" }).from?.label,
+    ).toBe("미팅");
   });
 
   it("다른 상세에서 왔으면 BackLink가 출발한 기록으로 돌아간다", () => {

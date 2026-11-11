@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import type { DecisionEntry } from "@/lib/decisions";
 import { formatDate } from "@/lib/domain";
@@ -15,7 +16,9 @@ export function DecisionLog({ entries, researchId }: DecisionLogProps) {
   if (!entries.length)
     return (
       <p className="student-empty-inline">
-        아직 기록한 결정이 없어요. 미팅 기록의 ‘결정·질문’에서 남길 수 있어요.
+        {t(
+          "아직 기록한 결정이 없어요. 미팅 기록의 ‘결정·질문’에서 남길 수 있어요.",
+        )}
       </p>
     );
   return (
@@ -24,13 +27,19 @@ export function DecisionLog({ entries, researchId }: DecisionLogProps) {
         <li key={decision.id} className={replacedBy ? "is-replaced" : ""}>
           <p className="decision-log-text">{decision.text}</p>
           {decision.reason && (
-            <p className="decision-log-reason">이유: {decision.reason}</p>
+            <p className="decision-log-reason">
+              {t("이유: {reason}", { reason: decision.reason })}
+            </p>
           )}
           {replaces && (
-            <p className="decision-log-link">이전 결정: {replaces.text}</p>
+            <p className="decision-log-link">
+              {t("이전 결정: {text}", { text: replaces.text })}
+            </p>
           )}
           {replacedBy && (
-            <p className="decision-log-link">이후 바뀜: {replacedBy.text}</p>
+            <p className="decision-log-link">
+              {t("이후 바뀜: {text}", { text: replacedBy.text })}
+            </p>
           )}
           <small>
             {meeting ? (

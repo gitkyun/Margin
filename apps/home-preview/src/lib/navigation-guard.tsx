@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {
   createContext,
   useCallback,
@@ -107,7 +108,9 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
       blocker.proceed();
     } catch {
       setDiscardError(
-        "작성한 내용을 버리지 못했어요. 내용은 그대로 있으니 다시 시도해 주세요.",
+        t(
+          "작성한 내용을 버리지 못했어요. 내용은 그대로 있으니 다시 시도해 주세요.",
+        ),
       );
     }
   }
@@ -125,13 +128,13 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
           <DialogHeader>
             <DialogTitle>
               {summary.busy
-                ? "아직 저장하는 중이에요"
-                : "저장하지 않고 이동할까요?"}
+                ? t("아직 저장하는 중이에요")
+                : t("저장하지 않고 이동할까요?")}
             </DialogTitle>
             <DialogDescription>
               {summary.busy
-                ? "저장이 끝난 뒤에 이동할 수 있어요."
-                : "저장하지 않은 내용은 사라져요."}
+                ? t("저장이 끝난 뒤에 이동할 수 있어요.")
+                : t("저장하지 않은 내용은 사라져요.")}
             </DialogDescription>
           </DialogHeader>
           {summary.labels.length > 0 && <p>{summary.labels.join(" · ")}</p>}
@@ -148,7 +151,7 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
                 if (blocker.state === "blocked") blocker.reset();
               }}
             >
-              계속 편집
+              {t("계속 편집")}
             </Button>
             {!summary.busy && (
               <Button
@@ -156,7 +159,7 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
                 variant="destructive"
                 onClick={discardAndLeave}
               >
-                버리고 이동
+                {t("버리고 이동")}
               </Button>
             )}
           </div>
@@ -168,7 +171,7 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
 
 export function useNavigationGuard(options: NavigationGuardState) {
   const context = useContext(GuardContext);
-  if (!context) throw new Error("NavigationGuardProvider 안에서 사용하세요.");
+  if (!context) throw new Error("NavigationGuardProvider 안에서 사용하세요."); // i18n-ignore
   const id = useId();
   const entry = useRef<NavigationGuardState>(options);
   entry.current = options;

@@ -1,6 +1,8 @@
+import { dateLocale, t } from "@/lib/i18n";
+import { formatClock, timeParts } from "@/lib/time-format";
 import { RollingNumber } from "@/components/RollingNumber";
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
 import {
@@ -29,6 +31,8 @@ import { useTaskCompletion } from "@/lib/use-task-completion";
 import { AnimatePresence, motion } from "motion/react";
 import { useTaskRowMotion } from "@/components/task-row-motion";
 import { WeekStrip } from "@/components/home/WeekStrip";
+import { HomeTour } from "@/components/home/HomeTour";
+import { isTourSeen, markTourSeen, shouldShowTour } from "@/lib/tour";
 import { ResearchDirection } from "@/components/home/ResearchDirection";
 import { planExcerpt } from "@/lib/research-direction";
 import { friendlyError } from "@/lib/supabase";
@@ -44,10 +48,29 @@ export function HomePage() {
   const [scope, setScope] = useState("mine");
   // 방금 닫은 연구를 기억합니다. 다른 연구로 바꾸면 그 연구의 저장된 상태를 다시 봅니다.
   const [hiddenFor, setHiddenFor] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const forcedTour = params.get("tour") === "1";
+  const [tour, setTour] = useState(false);
+  // 홈이 자리 잡은 뒤(온보딩에서 커지는 전환 포함)에 안내를 엽니다.
+  useEffect(() => {
+    if (!shouldShowTour({ seen: isTourSeen(), forced: forcedTour })) return;
+    const timer = window.setTimeout(() => setTour(true), 500);
+    return () => window.clearTimeout(timer);
+  }, [forcedTour]);
+
+  function endTour() {
+    markTourSeen();
+    setTour(false);
+    if (params.has("tour")) {
+      const rest = new URLSearchParams(params);
+      rest.delete("tour");
+      setParams(rest, { replace: true });
+    }
+  }
   const checklistHidden =
     hiddenFor === researchId || isStartChecklistHidden(researchId);
   const research = data.researches.find((item) => item.id === researchId);
-  if (!research) return <EmptyState title="연구를 찾을 수 없어요" />;
+  if (!research) return <EmptyState title={t("연구를 찾을 수 없어요")} />;
   const base = `/r/${researchId}`;
   const meetings = data.meetings.filter(
     (m) =>
@@ -141,10 +164,13 @@ export function HomePage() {
   const showQuickStart = !next && openCount === 0 && !showChecklist;
   return (
     <div className="rh-home">
+      {tour && (
+        <HomeTour onDone={endTour} onUnavailable={() => setTour(false)} />
+      )}
       <header className="rh-intro">
         <div className="rh-intro-copy">
           <h1>{research.name}</h1>
-          <p>{research.description || "아직 연구 설명이 없어요."}</p>
+          <p>{research.description || t("아직 연구 설명이 없어요.")}</p>
           <ResearchDirection
             research={research}
             settingsHref={`${base}/settings`}
@@ -154,7 +180,9 @@ export function HomePage() {
               setImporting(true);
               saveResearch({ ...research, purpose })
                 .then(() =>
-                  toast.success("계획서 첫 문단을 연구 목적으로 가져왔어요."),
+                  toast.success(
+                    t("계획서 첫 문단을 연구 목적으로 가져왔어요."),
+                  ),
                 )
                 .catch((error) => toast.error(friendlyError(error)))
                 .finally(() => setImporting(false));
@@ -168,8 +196,8 @@ export function HomePage() {
               <Icon name="flag" size={16} />
               <span>
                 {current
-                  ? `현재 단계 · ${current.title}`
-                  : "단계와 주요 목표 정하기"}
+                  ? t("현재 단계 · {title}", { title: current.title })
+                  : t("단계와 주요 목표 정하기")}
               </span>
               <Icon name="chevron-right" size={14} />
             </Link>
@@ -181,12 +209,14 @@ export function HomePage() {
                       <span key={member.userId}>{member.name.slice(0, 1)}</span>
                     ))}
                   </span>
-                  <span>연구자 {members.length}명</span>
+                  <span>
+                    {t("연구자 {count}명", { count: members.length })}
+                  </span>
                 </>
               ) : (
                 <>
                   <Icon name="users" size={16} />
-                  <span>공동연구자 초대</span>
+                  <span>{t("공동연구자 초대")}</span>
                 </>
               )}
               <Icon name="chevron-right" size={14} />
@@ -215,10 +245,10 @@ export function HomePage() {
             <div className="rh-section-heading">
               <h2 id="rh-meeting-heading">
                 <Icon name="calendar" size={18} />
-                다음 미팅
+                {t("다음 미팅")}
               </h2>
               <Link className="rh-text-link" to={`${base}/meetings`}>
-                미팅 목록 <Icon name="chevron-right" size={14} />
+                {t("미팅 목록")} <Icon name="chevron-right" size={14} />
               </Link>
             </div>
             {next ? (
@@ -228,7 +258,9 @@ export function HomePage() {
                     {next.date ? (
                       <>
                         <span className="rh-date-month">
-                          {Number(next.date.slice(5, 7))}월
+                          {t("{month}월", {
+                            month: Number(next.date.slice(5, 7)),
+                          })}
                         </span>
                         <strong>{Number(next.date.slice(8, 10))}</strong>
                         <small>
@@ -237,16 +269,16 @@ export function HomePage() {
                       </>
                     ) : (
                       <>
-                        <span className="rh-date-month">날짜</span>
+                        <span className="rh-date-month">{t("날짜")}</span>
                         <Icon name="calendar" size={20} />
-                        <small>미정</small>
+                        <small>{t("미정")}</small>
                       </>
                     )}
                   </div>
                   <div className="rh-meeting-title-copy">
                     <p>
                       {formatDate(next.date)}
-                      {next.time && ` · ${next.time}`}
+                      {next.time && ` · ${formatClock(next.time)}`}
                       {relativeDay(next.date) && (
                         <span className="rh-dday">
                           {relativeDay(next.date)}
@@ -264,15 +296,15 @@ export function HomePage() {
                   </div>
                 </div>
                 <p className="rh-meeting-goal">
-                  {next.goal || "보여줄 결과를 아직 정하지 않았어요."}
+                  {next.goal || t("보여줄 결과를 아직 정하지 않았어요.")}
                 </p>
                 <div className="rh-preparation-heading">
-                  <h4>미팅까지 준비할 일</h4>
+                  <h4>{t("미팅까지 준비할 일")}</h4>
                   <span>
                     <RollingNumber value={prepared} />
                     <span className="rh-muted">
                       {" "}
-                      / {preparation.length}개 완료
+                      / {t("{count}개 완료", { count: preparation.length })}
                     </span>
                   </span>
                 </div>
@@ -280,7 +312,7 @@ export function HomePage() {
                   <div
                     className="rh-progress"
                     role="progressbar"
-                    aria-label="미팅까지 준비할 일"
+                    aria-label={t("미팅까지 준비할 일")}
                     aria-valuemin={0}
                     aria-valuemax={preparation.length}
                     aria-valuenow={prepared}
@@ -311,7 +343,7 @@ export function HomePage() {
                   ))}
                   {!preparation.length && (
                     <p className="rh-inline-empty">
-                      아직 준비할 일을 고르지 않았어요.
+                      {t("아직 준비할 일을 고르지 않았어요.")}
                     </p>
                   )}
                 </div>
@@ -319,11 +351,11 @@ export function HomePage() {
                   <div className="rh-preparation-links">
                     <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
                       <Icon name="paperclip" size={15} />
-                      자료 {materials.length}개
+                      {t("자료 {count}개", { count: materials.length })}
                     </Link>
                     <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
                       <Icon name="message" size={15} />
-                      질문 {questions.length}개
+                      {t("질문 {count}개", { count: questions.length })}
                     </Link>
                   </div>
                   <Button
@@ -333,7 +365,7 @@ export function HomePage() {
                     asChild
                   >
                     <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
-                      미팅 준비하기 <Icon name="arrow-right" size={16} />
+                      {t("미팅 준비하기")} <Icon name="arrow-right" size={16} />
                     </Link>
                   </Button>
                 </div>
@@ -343,8 +375,12 @@ export function HomePage() {
                 <span className="rh-empty-calendar">
                   <Icon name="calendar" size={27} />
                 </span>
-                <h3>다음 미팅이 아직 없어요</h3>
-                <p>날짜를 잡기 전에도 보여줄 결과와 질문부터 남길 수 있어요.</p>
+                <h3>{t("다음 미팅이 아직 없어요")}</h3>
+                <p>
+                  {t(
+                    "날짜를 잡기 전에도 보여줄 결과와 질문부터 남길 수 있어요.",
+                  )}
+                </p>
                 <Button
                   className="rh-primary"
                   variant="outline"
@@ -352,7 +388,7 @@ export function HomePage() {
                   asChild
                 >
                   <Link to={`${base}/meetings?new=1`}>
-                    미팅 만들기 <Icon name="plus" size={16} />
+                    {t("미팅 만들기")} <Icon name="plus" size={16} />
                   </Link>
                 </Button>
               </div>
@@ -361,25 +397,28 @@ export function HomePage() {
           <section className="rh-work" aria-labelledby="rh-work-heading">
             <div className="rh-section-heading">
               <div>
-                <h2 id="rh-work-heading">남은 할 일</h2>
+                <h2 id="rh-work-heading">{t("남은 할 일")}</h2>
                 <p className="rh-section-description">
-                  <RollingNumber value={openCount} />개 남음<span>·</span>
-                  <RollingNumber value={completedCount} />개 완료
+                  <RollingNumber value={openCount} />
+                  {t("개 남음")}
+                  <span>·</span>
+                  <RollingNumber value={completedCount} />
+                  {t("개 완료")}
                 </p>
               </div>
               <Link className="rh-text-link" to={`${base}/tasks`}>
-                전체 보기 <Icon name="arrow-up-right" size={15} />
+                {t("전체 보기")} <Icon name="arrow-up-right" size={15} />
               </Link>
             </div>
             {isCollaborative && (
               <Segments
-                label="할 일 범위"
+                label={t("할 일 범위")}
                 size="small"
                 value={scope}
                 onChange={(next) => setScope(next as typeof scope)}
                 options={[
-                  { value: "mine", label: "내 할 일" },
-                  { value: "all", label: "연구 전체" },
+                  { value: "mine", label: t("내 할 일") },
+                  { value: "all", label: t("연구 전체") },
                 ]}
               />
             )}
@@ -392,7 +431,7 @@ export function HomePage() {
                     key={task.id}
                   >
                     <Checkbox
-                      aria-label={`${task.title} 완료`}
+                      aria-label={t("{title} 완료", { title: task.title })}
                       checked={task.status === "done"}
                       disabled={completion.busy.has(task.id)}
                       onCheckedChange={() => void completion.toggle(task)}
@@ -407,13 +446,13 @@ export function HomePage() {
                           <>
                             {members.find(
                               (member) => member.userId === task.assigneeId,
-                            )?.name ?? "담당 미지정"}
+                            )?.name ?? t("담당 미지정")}
                             <i>·</i>
                           </>
                         )}
                         {task.dueDate
-                          ? `${task.status !== "done" && task.dueDate < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }) ? "기한 지남 · " : ""}${formatDate(task.dueDate)}`
-                          : "기한 없음"}
+                          ? `${task.status !== "done" && task.dueDate < new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }) ? `${t("기한 지남")} · ` : ""}${formatDate(task.dueDate)}`
+                          : t("기한 없음")}
                       </span>
                     </Link>
                     <span
@@ -422,7 +461,7 @@ export function HomePage() {
                       {task.status === "done"
                         ? taskLabels.done
                         : task.priority === "high"
-                          ? "우선"
+                          ? t("우선")
                           : taskLabels[task.status]}
                     </span>
                   </motion.div>
@@ -433,25 +472,29 @@ export function HomePage() {
                   <Icon name="tasks" size={22} />
                   <p>
                     {isCollaborative && scope === "mine"
-                      ? "내 할 일이 없어요."
-                      : "아직 할 일이 없어요."}
+                      ? t("내 할 일이 없어요.")
+                      : t("아직 할 일이 없어요.")}
                   </p>
                 </div>
               )}
             </div>
             <Link className="rh-add-link" to={`${base}/tasks?new=1`}>
-              <Icon name="plus" size={17} />할 일 추가
+              <Icon name="plus" size={17} />
+              {t("할 일 추가")}
             </Link>
           </section>
         </div>
-        <aside className="rh-side-column" aria-label="확인할 내용과 이번 주">
+        <aside
+          className="rh-side-column"
+          aria-label={t("확인할 내용과 이번 주")}
+        >
           <section
             className="rh-attention"
             aria-labelledby="rh-attention-heading"
           >
             <div className="rh-section-heading">
               <h2 id="rh-attention-heading">
-                확인할 내용
+                {t("확인할 내용")}
                 {attentionCount > 0 && (
                   <span className="rh-count">
                     <RollingNumber value={attentionCount} />
@@ -485,8 +528,10 @@ export function HomePage() {
                   <Icon name="sparkles" size={18} />
                 </span>
                 <span>
-                  <strong>확인할 AI 제안 {pending.length}개</strong>
-                  <p>기록으로 남길 제안을 선택하세요.</p>
+                  <strong>
+                    {t("확인할 AI 제안 {count}개", { count: pending.length })}
+                  </strong>
+                  <p>{t("기록으로 남길 제안을 선택하세요.")}</p>
                 </span>
                 <Icon name="chevron-right" size={14} />
               </Link>
@@ -497,9 +542,11 @@ export function HomePage() {
                   <Icon name="check" size={18} />
                 </span>
                 <div>
-                  <strong>확인할 새 소식이 없어요</strong>
+                  <strong>{t("확인할 새 소식이 없어요")}</strong>
                   <p>
-                    교수 응답, 검토 댓글, 확인할 AI 제안이 생기면 여기에 보여요.
+                    {t(
+                      "교수 응답, 검토 댓글, 확인할 AI 제안이 생기면 여기에 보여요.",
+                    )}
                   </p>
                 </div>
               </div>
@@ -509,7 +556,7 @@ export function HomePage() {
                 <Icon name="flag" size={16} />
                 <span>
                   <small>
-                    다음 주요 목표 · {formatDate(milestone.dueDate)}
+                    {t("다음 주요 목표")} · {formatDate(milestone.dueDate)}
                   </small>
                   <strong>{milestone.title}</strong>
                 </span>
@@ -520,9 +567,9 @@ export function HomePage() {
           <WeekStrip data={data} researchId={research.id} />
           <section className="rh-writing" aria-labelledby="rh-writing-heading">
             <div className="rh-section-heading">
-              <h2 id="rh-writing-heading">최근 문서</h2>
+              <h2 id="rh-writing-heading">{t("최근 문서")}</h2>
               <Link className="rh-text-link" to={`${base}/writing`}>
-                글쓰기 <Icon name="arrow-up-right" size={15} />
+                {t("글쓰기")} <Icon name="arrow-up-right" size={15} />
               </Link>
             </div>
             {docs.slice(0, 3).map((document) => {
@@ -546,7 +593,9 @@ export function HomePage() {
                     <small>
                       {formatDateTime(document.updatedAt, { time: false })}
                       {isCollaborative && author && ` · ${author}`}
-                      {versionCount > 0 ? ` · 버전 ${versionCount}개` : ""}
+                      {versionCount > 0
+                        ? ` · ${t("버전 {count}개", { count: versionCount })}`
+                        : ""}
                     </small>
                   </span>
                   <Icon name="arrow-up-right" size={16} />
@@ -559,8 +608,8 @@ export function HomePage() {
                   <Icon name="edit" size={22} />
                 </span>
                 <span>
-                  <strong>아직 문서가 없어요</strong>
-                  <small>새 연구 계획서 만들기</small>
+                  <strong>{t("아직 문서가 없어요")}</strong>
+                  <small>{t("새 연구 계획서 만들기")}</small>
                 </span>
                 <Icon name="plus" size={18} />
               </Link>
@@ -572,7 +621,7 @@ export function HomePage() {
               aria-labelledby="rh-activity-heading"
             >
               <div className="rh-section-heading">
-                <h2 id="rh-activity-heading">최근 활동</h2>
+                <h2 id="rh-activity-heading">{t("최근 활동")}</h2>
                 <Icon name="history" size={18} />
               </div>
               <ol className="rh-activity-list">
@@ -586,12 +635,14 @@ export function HomePage() {
                         <small>
                           {`${event.actorName} · `}
                           <time dateTime={event.createdAt}>
-                            {new Date(event.createdAt).toLocaleString("ko-KR", {
-                              month: "numeric",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {new Date(event.createdAt).toLocaleString(
+                              dateLocale(),
+                              {
+                                month: "numeric",
+                                day: "numeric",
+                                ...timeParts(),
+                              },
+                            )}
                           </time>
                         </small>
                       </span>
@@ -601,7 +652,7 @@ export function HomePage() {
               </ol>
               {!events.length && (
                 <p className="rh-inline-empty">
-                  공동연구자의 활동이 여기에 보여요.
+                  {t("공동연구자의 활동이 여기에 보여요.")}
                 </p>
               )}
             </section>
@@ -611,7 +662,7 @@ export function HomePage() {
       {showQuickStart && (
         <section className="rh-quick-start" aria-labelledby="rh-start-heading">
           <div className="rh-section-heading">
-            <h2 id="rh-start-heading">바로 시작</h2>
+            <h2 id="rh-start-heading">{t("바로 시작")}</h2>
           </div>
           <div className="rh-quick-actions">
             <Link
@@ -622,8 +673,8 @@ export function HomePage() {
                 <Icon name="mic" size={22} />
               </span>
               <span className="rh-quick-text">
-                <strong>피드백 기록하기</strong>
-                <small>새 미팅을 만들어 녹음·메모</small>
+                <strong>{t("피드백 기록하기")}</strong>
+                <small>{t("새 미팅을 만들어 녹음·메모")}</small>
               </span>
               <Icon name="arrow-up-right" size={18} />
             </Link>
@@ -632,8 +683,8 @@ export function HomePage() {
                 <Icon name="calendar" size={22} />
               </span>
               <span className="rh-quick-text">
-                <strong>미팅 준비하기</strong>
-                <small>할 일·자료·질문 모으기</small>
+                <strong>{t("미팅 준비하기")}</strong>
+                <small>{t("할 일·자료·질문 모으기")}</small>
               </span>
               <Icon name="arrow-up-right" size={18} />
             </Link>
@@ -642,8 +693,8 @@ export function HomePage() {
                 <Icon name="edit" size={22} />
               </span>
               <span className="rh-quick-text">
-                <strong>연구 글 쓰기</strong>
-                <small>새 연구 계획서 만들기</small>
+                <strong>{t("연구 글 쓰기")}</strong>
+                <small>{t("새 연구 계획서 만들기")}</small>
               </span>
               <Icon name="arrow-up-right" size={18} />
             </Link>

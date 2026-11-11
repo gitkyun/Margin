@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 import type { DocumentVersion, Meeting, Task } from "./domain";
 
 const DAY_MS = 86_400_000;
@@ -51,25 +52,25 @@ function meetingKpi(input: HomeKpiInput): HomeKpi {
   const { base, next, tasks, today } = input;
   if (!next)
     return {
-      label: "다음 미팅",
-      value: "미정",
-      context: "일정 없음",
+      label: t("다음 미팅"),
+      value: t("미정"),
+      context: t("일정 없음"),
       tone: "gray",
       to: `${base}/meetings`,
       bar: [],
     };
   const days = daysUntil(next.date, today);
   const ready = next.taskIds.filter(
-    (id) => tasks.find((t) => t.id === id)?.status === "done",
+    (id) => tasks.find((task) => task.id === id)?.status === "done",
   ).length;
   const value =
     days === null
-      ? "미정"
+      ? t("미정")
       : days === 0
-        ? "오늘"
+        ? t("오늘")
         : days > 0
           ? `D-${days}`
-          : `${-days}일 지남`;
+          : t("{days}일 지남", { days: -days });
   const tone: KpiTone =
     days === null
       ? "gray"
@@ -79,9 +80,9 @@ function meetingKpi(input: HomeKpiInput): HomeKpi {
           ? "amber"
           : "blue";
   return {
-    label: "다음 미팅",
+    label: t("다음 미팅"),
     value,
-    context: `준비 ${ready}/${next.taskIds.length}`,
+    context: t("준비 {ready}/{total}", { ready, total: next.taskIds.length }),
     tone,
     to: `${base}/meetings/${next.id}?tab=prepare`,
     bar: segmentBar(ready, next.taskIds.length),
@@ -91,32 +92,32 @@ function meetingKpi(input: HomeKpiInput): HomeKpi {
 /** 연구 홈 상단 지표 묶음. 실제 기록 수만 쓰고 추정값을 만들지 않는다. */
 export function homeKpis(input: HomeKpiInput): HomeKpi[] {
   const { base, tasks, docs, versions, attention, attentionHref } = input;
-  const done = tasks.filter((t) => t.status === "done").length;
+  const done = tasks.filter((task) => task.status === "done").length;
   const open = tasks.length - done;
   const docIds = new Set(docs.map((d) => d.id));
   const versionCount = versions.filter((v) => docIds.has(v.documentId)).length;
   return [
     meetingKpi(input),
     {
-      label: "남은 할 일",
+      label: t("남은 할 일"),
       value: String(open),
-      context: `전체 ${tasks.length}개`,
+      context: t("전체 {count}개", { count: tasks.length }),
       tone: open ? "blue" : "green",
       to: `${base}/tasks`,
       bar: segmentBar(done, tasks.length),
     },
     {
-      label: "확인할 내용",
+      label: t("확인할 내용"),
       value: String(attention),
-      context: attention ? "검토 알림·AI 제안" : "새 소식 없음",
+      context: attention ? t("검토 알림·AI 제안") : t("새 소식 없음"),
       tone: attention ? "red" : "gray",
       to: attention ? attentionHref : `${base}/reviews`,
       bar: [],
     },
     {
-      label: "문서",
+      label: t("문서"),
       value: String(docs.length),
-      context: `버전 ${versionCount}개`,
+      context: t("버전 {count}개", { count: versionCount }),
       tone: "gray",
       to: `${base}/writing`,
       bar: [],

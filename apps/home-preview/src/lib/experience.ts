@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useWorkspace } from "./workspace";
 import { rpc, idbGet, idbSet } from "./repository";
 import { assertConnected } from "./supabase";
@@ -11,7 +12,7 @@ export function useExperience() {
       input: Record<string, unknown> = {},
     ): Promise<T> {
       if (w.mode === "preview")
-        throw new Error("미리보기에서는 이 기능을 쓸 수 없어요.");
+        throw new Error(t("미리보기에서는 이 기능을 쓸 수 없어요."));
       const result = await rpc<T>(name, { p_input: input });
       await w.refresh();
       return result;
@@ -39,7 +40,7 @@ export async function uploadPrivate(
 ) {
   if (!file.size || file.size > 50 * 1024 * 1024)
     throw new Error(
-      "파일을 올리지 못했어요. 내용이 있는 50MB 이하 파일만 올릴 수 있어요.",
+      t("파일을 올리지 못했어요. 내용이 있는 50MB 이하 파일만 올릴 수 있어요."),
     );
   if (mode === "preview") {
     await idbSet("files", path, file);
@@ -48,7 +49,7 @@ export async function uploadPrivate(
   const client = assertConnected(),
     { data } = await client.auth.getSession();
   if (!data.session)
-    throw new Error("로그인이 만료됐어요. 다시 로그인해 주세요.");
+    throw new Error(t("로그인이 만료됐어요. 다시 로그인해 주세요."));
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const abort = () => xhr.abort();
@@ -75,25 +76,27 @@ export async function uploadPrivate(
       xhr.status >= 200 && xhr.status < 300
         ? resolve()
         : reject(
-            new Error("파일을 올리지 못했어요. 잠시 후 다시 시도해 주세요."),
+            new Error(t("파일을 올리지 못했어요. 잠시 후 다시 시도해 주세요.")),
           );
     };
     xhr.onerror = () => {
       clean();
       reject(
         new Error(
-          "파일을 올리다가 연결이 끊겼어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+          t(
+            "파일을 올리다가 연결이 끊겼어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+          ),
         ),
       );
     };
     xhr.onabort = () => {
       clean();
-      reject(new DOMException("취소했어요.", "AbortError"));
+      reject(new DOMException(t("취소했어요."), "AbortError"));
     };
     signal?.addEventListener("abort", abort, { once: true });
     if (signal?.aborted) {
       clean();
-      reject(new DOMException("취소했어요.", "AbortError"));
+      reject(new DOMException(t("취소했어요."), "AbortError"));
       return;
     }
     xhr.send(file);
@@ -107,7 +110,9 @@ export async function privateBlob(
     const b = await idbGet<Blob>("files", record.storagePath);
     if (!b)
       throw new Error(
-        "이 브라우저에서 파일을 찾을 수 없어요. 미리보기에서 저장한 파일은 저장한 브라우저에서만 열 수 있어요.",
+        t(
+          "이 브라우저에서 파일을 찾을 수 없어요. 미리보기에서 저장한 파일은 저장한 브라우저에서만 열 수 있어요.",
+        ),
       );
     return b;
   }
@@ -118,10 +123,10 @@ export async function privateBlob(
   return data;
 }
 export const modeLabels: Record<string, string> = {
-  organize_meeting: "미팅 정리",
-  suggest_revisions: "수정 방법 제안",
-  review_writing: "원고 검토",
-  plan_research: "할 일 정리",
-  read_material: "자료 읽기",
-  ask_research: "연구 대화",
+  organize_meeting: t("미팅 정리"),
+  suggest_revisions: t("수정 방법 제안"),
+  review_writing: t("원고 검토"),
+  plan_research: t("할 일 정리"),
+  read_material: t("자료 읽기"),
+  ask_research: t("연구 대화"),
 };

@@ -1,4 +1,6 @@
+import { t } from "@/lib/i18n";
 import { DatePicker, TimePicker } from "@montage-ui/core";
+import { timeFieldFormat } from "@/lib/time-format";
 
 /**
  * 날짜·시각 입력. 달력과 시각 목록은 Montage DatePicker·TimePicker가 맡습니다.
@@ -81,8 +83,7 @@ export function TimeField({
       {...props}
       size={size}
       width="100%"
-      format="a hh:mm"
-      placeholder="오전 00:00"
+      {...timeFieldFormat()}
       value={fromTimeKey(value)}
       onChange={(date) => onChange(toTimeKey(date))}
     />
@@ -109,7 +110,7 @@ export function DateTimeField({
   return (
     <span className="margin-date-time">
       <DateField
-        aria-label={`${label} 날짜`}
+        aria-label={t("{label} 날짜", { label })}
         value={date}
         required={required}
         disabled={disabled}
@@ -117,7 +118,7 @@ export function DateTimeField({
         onChange={(next) => onChange(join(next, time))}
       />
       <TimeField
-        aria-label={`${label} 시각`}
+        aria-label={t("{label} 시각", { label })}
         value={time}
         required={required}
         disabled={disabled || !date}

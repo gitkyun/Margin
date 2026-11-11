@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useExperience } from "./experience";
 import { assertConnected } from "./supabase";
@@ -24,7 +25,7 @@ export function useAICapabilities() {
       if (!r.ok)
         throw new Error(
           localizeServerMessage(
-            b.error?.message ?? "AI 모델 정보를 불러오지 못했어요.",
+            b.error?.message ?? t("AI 모델 정보를 불러오지 못했어요."),
           ),
         );
       return b as {

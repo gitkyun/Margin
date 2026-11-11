@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { Icon } from "@/components/icons";
+import { t } from "@/lib/i18n";
 import { queryUp } from "@/design/responsive";
 
 export type WorkflowStep = {
@@ -86,8 +87,8 @@ export function WorkflowStack({
     <section className="lp-workflow lp-workflow-stack" id="workflow">
       <div className="lp-workflow-select">
         <div className="lp-stack-rail">
-          <h2>이렇게 사용해요</h2>
-          <div role="group" aria-label="기능별 사용 방법">
+          <h2>{t("이렇게 사용해요")}</h2>
+          <div role="group" aria-label={t("기능별 사용 방법")}>
             {steps.map((step, i) => (
               <button
                 key={step.label}
@@ -121,9 +122,9 @@ export function WorkflowStack({
             />
           </div>
           <p>
-            직접 쓰든 AI 제안을 선택하든
+            {t("직접 쓰든 AI 제안을 선택하든")}
             <br />
-            기록은 같은 연구에 남아요.
+            {t("기록은 같은 연구에 남아요.")}
           </p>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { t } from "@/lib/i18n";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,21 +22,21 @@ function AuthLayout({ children }: { children: ReactNode }) {
       <section className="signup-layout">
         <div className="auth-story">
           <h1>
-            지난 미팅에서
+            {t("지난 미팅에서")}
             <br />
-            다음 미팅까지
+            {t("다음 미팅까지")}
           </h1>
           <p>
-            피드백, 할 일, 원고 버전, 교수님 응답을
+            {t("피드백, 할 일, 원고 버전, 교수님 응답을")}
             <br />
-            연구별로 모아 둬요.
+            {t("연구별로 모아 둬요.")}
           </p>
           <div className="auth-proof">
             <Icon name="lock" size={19} />
             <span>
-              공동연구자가 참여하기 전에는 기록을 나만 볼 수 있어요.
+              {t("공동연구자가 참여하기 전에는 기록을 나만 볼 수 있어요.")}
               <br />
-              교수님께는 검토 요청에 넣은 항목만 보여요.
+              {t("교수님께는 검토 요청에 넣은 항목만 보여요.")}
             </span>
           </div>
         </div>
@@ -61,7 +62,7 @@ function InviteLinkForm({
         event.preventDefault();
         const code = inviteCodeFrom(text);
         if (!code) {
-          setProblem("초대 링크를 다시 확인해 주세요.");
+          setProblem(t("초대 링크를 다시 확인해 주세요."));
           return;
         }
         setProblem("");
@@ -69,7 +70,7 @@ function InviteLinkForm({
       }}
     >
       <label className="field">
-        받은 초대 링크
+        {t("받은 초대 링크")}
         <Input
           required
           autoComplete="off"
@@ -78,7 +79,7 @@ function InviteLinkForm({
             setText(event.target.value);
             setProblem("");
           }}
-          placeholder={inviteLink("https://…", "초대 코드")}
+          placeholder={inviteLink("https://…", t("초대 코드"))}
         />
       </label>
       {problem && (
@@ -165,15 +166,15 @@ export function InviteSignupPage() {
       <AuthLayout>
         <div className="signup-finish" role="status">
           <Icon name="check-circle" size={38} />
-          <h2>확인 메일을 보냈어요</h2>
+          <h2>{t("확인 메일을 보냈어요")}</h2>
           <p>{email.trim()}</p>
           <p>
-            메일에 있는 링크를 누른 뒤 로그인하면
+            {t("메일에 있는 링크를 누른 뒤 로그인하면")}
             <br />
-            바로 시작할 수 있어요.
+            {t("바로 시작할 수 있어요.")}
           </p>
           <Link className="rms-action primary full" to="/login">
-            로그인
+            {t("로그인")}
             <Icon name="arrow-right" size={18} />
           </Link>
         </div>
@@ -183,53 +184,60 @@ export function InviteSignupPage() {
   if (invite === "checking")
     return (
       <AuthLayout>
-        <h2>초대 링크를 확인하고 있어요</h2>
-        <p role="status">잠시만 기다려 주세요.</p>
+        <h2>{t("초대 링크를 확인하고 있어요")}</h2>
+        <p role="status">{t("잠시만 기다려 주세요.")}</p>
       </AuthLayout>
     );
 
   if (invite !== "open")
     return (
       <AuthLayout>
-        <h2>초대 링크가 필요해요</h2>
+        <h2>{t("초대 링크가 필요해요")}</h2>
         <p>
           {invite === "unreachable"
-            ? "초대 링크를 확인하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요."
+            ? t(
+                "초대 링크를 확인하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+              )
             : code
-              ? "이 초대 링크는 만료됐거나 올바르지 않아요. 초대한 사람에게 새 링크를 받아 주세요."
-              : "마진은 지금 초대받은 사람만 가입할 수 있어요. 마진을 쓰고 있는 사람에게 초대 링크를 받아 주세요."}
+              ? t(
+                  "이 초대 링크는 만료됐거나 올바르지 않아요. 초대한 사람에게 새 링크를 받아 주세요.",
+                )
+              : t(
+                  "마진은 지금 초대받은 사람만 가입할 수 있어요. 마진을 쓰고 있는 사람에게 초대 링크를 받아 주세요.",
+                )}
         </p>
         <InviteLinkForm
-          submitLabel="초대 링크 확인"
+          submitLabel={t("초대 링크 확인")}
           onCode={(next) =>
             navigate(`/signup?${INVITE_PARAM}=${next}`, { replace: true })
           }
         />
         <p className="auth-switch">
-          이미 가입했나요? <Link to="/login">로그인</Link>
+          {t("이미 가입했나요?")}
+          <Link to="/login">{t("로그인")}</Link>
         </p>
       </AuthLayout>
     );
 
   return (
     <AuthLayout>
-      <h2>마진 시작하기</h2>
-      <p>초대받은 링크로 들어왔어요. 계정을 만들면 바로 쓸 수 있어요.</p>
+      <h2>{t("마진 시작하기")}</h2>
+      <p>{t("초대받은 링크로 들어왔어요. 계정을 만들면 바로 쓸 수 있어요.")}</p>
       <form onSubmit={submit}>
         <label className="field">
-          이름
+          {t("이름")}
           <Input
             required
             maxLength={NAME_MAX}
             autoComplete="name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="예: 홍길동"
+            placeholder={t("예: 홍길동")}
             disabled={pending}
           />
         </label>
         <label className="field">
-          이메일
+          {t("이메일")}
           <Input
             type="email"
             required
@@ -240,11 +248,11 @@ export function InviteSignupPage() {
             disabled={pending}
           />
           <small>
-            검토 요청을 받는 교수님은 학생이 적은 이메일로 가입해 주세요.
+            {t("검토 요청을 받는 교수님은 학생이 적은 이메일로 가입해 주세요.")}
           </small>
         </label>
         <label className="field">
-          비밀번호
+          {t("비밀번호")}
           <Input
             type="password"
             minLength={MIN_PASSWORD_LENGTH}
@@ -262,12 +270,13 @@ export function InviteSignupPage() {
           </p>
         )}
         <Button fullWidth size="lg" type="submit" disabled={pending}>
-          {pending ? "가입하는 중" : "가입하기"}
+          {pending ? t("가입하는 중") : t("가입하기")}
           <Icon name="arrow-right" size={18} />
         </Button>
       </form>
       <p className="auth-switch">
-        이미 가입했나요? <Link to="/login">로그인</Link>
+        {t("이미 가입했나요?")}
+        <Link to="/login">{t("로그인")}</Link>
       </p>
     </AuthLayout>
   );
@@ -316,28 +325,28 @@ export function InviteGate({
   if (!problem)
     return (
       <AuthLayout>
-        <h2>초대를 확인하고 있어요</h2>
-        <p role="status">잠시만 기다려 주세요.</p>
+        <h2>{t("초대를 확인하고 있어요")}</h2>
+        <p role="status">{t("잠시만 기다려 주세요.")}</p>
       </AuthLayout>
     );
 
   return (
     <AuthLayout>
-      <h2>초대를 확인하지 못했어요</h2>
+      <h2>{t("초대를 확인하지 못했어요")}</h2>
       <p className="rms-error" role="alert">
         {problem}
       </p>
-      <p>새 초대 링크를 받았다면 아래에 붙여 넣어 주세요.</p>
+      <p>{t("새 초대 링크를 받았다면 아래에 붙여 넣어 주세요.")}</p>
       <InviteLinkForm
-        submitLabel="다시 확인"
+        submitLabel={t("다시 확인")}
         onCode={(next) =>
           setAttempt((prev) => ({ code: next, count: prev.count + 1 }))
         }
       />
       <p className="auth-switch">
-        다른 계정으로 들어가려면{" "}
+        {t("다른 계정으로 들어가려면")}{" "}
         <Button variant="link" size="sm" onClick={onSignOut}>
-          로그아웃
+          {t("로그아웃")}
         </Button>
       </p>
     </AuthLayout>

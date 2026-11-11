@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import type { KeyboardEvent, ReactNode } from "react";
 import {
   HandleRoot,
@@ -50,7 +51,7 @@ interface VersionCompareSliderProps {
 export function VersionCompareSlider({
   before,
   after,
-  label = "이전 버전과 수정 버전 비교",
+  label = t("이전 버전과 수정 버전 비교"),
   className = "",
   defaultPosition = 50,
 }: VersionCompareSliderProps) {
@@ -99,7 +100,7 @@ export function VersionSheet({
   return (
     <div className={`version-sheet is-${tone}`}>
       <span className="version-sheet-label">{label}</span>
-      <div className="version-sheet-text">{text || "내용이 없어요."}</div>
+      <div className="version-sheet-text">{text || t("내용이 없어요.")}</div>
     </div>
   );
 }

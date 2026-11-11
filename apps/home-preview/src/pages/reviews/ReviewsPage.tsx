@@ -16,6 +16,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { toast } from "sonner";
+import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Choice, Segments } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
@@ -88,7 +89,7 @@ export function ReviewsPage() {
   const requestGuard = useNavigationGuard({
     dirty: open && (!!title.trim() || emailEdited || selected.length > 0),
     busy,
-    label: "검토 요청",
+    label: t("검토 요청"),
     onDiscard: () => setOpen(false),
   });
   const results = useMemo(
@@ -121,7 +122,9 @@ export function ReviewsPage() {
       requestKey.current = uid();
       setSelected([id]);
       setTitle(
-        `${results.find((r) => r.id === id)?.title ?? "수정 결과"} 검토`,
+        t("{title} 검토", {
+          title: results.find((r) => r.id === id)?.title ?? t("수정 결과"),
+        }),
       );
       setOpen(true);
       setStep("compose");
@@ -169,12 +172,17 @@ export function ReviewsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, loading]);
   const validate = () => {
-    if (!title.trim()) return "검토 요청 제목을 적어 주세요.";
+    if (!title.trim()) return t("검토 요청 제목을 적어 주세요.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      return "이메일 형식이 맞지 않아요. 교수님 계정 이메일을 확인해 주세요.";
+      return t(
+        "이메일 형식이 맞지 않아요. 교수님 계정 이메일을 확인해 주세요.",
+      );
     if (email.trim().toLowerCase() === user.email.toLowerCase())
-      return "내 계정 이메일은 지정할 수 없어요. 교수님 계정 이메일을 적어 주세요.";
-    if (!picks.length) return "검토받을 수정 결과를 하나 이상 선택해 주세요.";
+      return t(
+        "내 계정 이메일은 지정할 수 없어요. 교수님 계정 이메일을 적어 주세요.",
+      );
+    if (!picks.length)
+      return t("검토받을 수정 결과를 하나 이상 선택해 주세요.");
     for (const result of picks) {
       const issue = evidenceIssue(result, data);
       if (issue) return `${result.title}: ${issue}`;
@@ -215,7 +223,7 @@ export function ReviewsPage() {
       await saveResearch({ ...research, advisorEmails: next });
     } catch {
       toast.error(
-        "지도교수 목록에 추가하지 못했어요. 연구 설정에서 등록할 수 있어요.",
+        t("지도교수 목록에 추가하지 못했어요. 연구 설정에서 등록할 수 있어요."),
       );
     }
   };
@@ -237,7 +245,9 @@ export function ReviewsPage() {
       setOpen(false);
       void registerAdvisor(request.professorEmail);
       toast.success(
-        "검토 링크를 만들었어요. 링크를 복사해서 교수님께 직접 전달해 주세요.",
+        t(
+          "검토 링크를 만들었어요. 링크를 복사해서 교수님께 직접 전달해 주세요.",
+        ),
       );
       navigate(`/reviews/${request.id}`);
     } catch (failure) {
@@ -250,32 +260,32 @@ export function ReviewsPage() {
   return (
     <div className="reviews-page">
       <PageHeader
-        title="검토 요청"
-        description="교수님의 항목별 응답과 공유 상태를 확인하세요."
+        title={t("검토 요청")}
+        description={t("교수님의 항목별 응답과 공유 상태를 확인하세요.")}
         actions={
           <Button onClick={begin}>
             <Icon name="plus" size={17} />
-            검토 요청 만들기
+            {t("검토 요청 만들기")}
           </Button>
         }
       />
       <div className="page-toolbar review-list-toolbar">
         <Segments
-          label="공유 상태"
+          label={t("공유 상태")}
           value={filter}
           onChange={(value) => setFilter(value as typeof filter)}
           options={[
-            { value: "all", label: "전체" },
-            { value: "shared", label: "공유 중" },
-            { value: "stopped", label: "공유 중지" },
+            { value: "all", label: t("전체") },
+            { value: "shared", label: t("공유 중") },
+            { value: "stopped", label: t("공유 중지") },
           ]}
         />
         <div className="review-search">
           <Input
             fieldSize="medium"
             width="100%"
-            aria-label="검토 요청 찾기"
-            placeholder="제목이나 교수 이메일로 찾기"
+            aria-label={t("검토 요청 찾기")}
+            placeholder={t("제목이나 교수 이메일로 찾기")}
             value={search}
             onChange={(
               e: ChangeEvent<
@@ -289,30 +299,35 @@ export function ReviewsPage() {
         <EmptyState
           title={
             search || filter !== "all"
-              ? "조건에 맞는 검토 요청이 없어요"
-              : "아직 검토 요청이 없어요"
+              ? t("조건에 맞는 검토 요청이 없어요")
+              : t("아직 검토 요청이 없어요")
           }
           description={
             search || filter !== "all"
-              ? "검색어나 공유 상태를 바꿔 보세요."
-              : "수정 결과를 선택해 검토 링크를 만들고, 교수님께 직접 전달할 수 있어요."
+              ? t("검색어나 공유 상태를 바꿔 보세요.")
+              : t(
+                  "수정 결과를 선택해 검토 링크를 만들고, 교수님께 직접 전달할 수 있어요.",
+                )
           }
           action={
             !results.length ? (
               <Button asChild variant="outline">
                 <Link to={`/r/${researchId}/results?new=1`}>
-                  수정 결과 작성
+                  {t("수정 결과 작성")}
                 </Link>
               </Button>
             ) : (
               <Button variant="outline" onClick={begin}>
-                검토 요청 만들기
+                {t("검토 요청 만들기")}
               </Button>
             )
           }
         />
       ) : (
-        <section className="surface review-list" aria-label="검토 요청 목록">
+        <section
+          className="surface review-list"
+          aria-label={t("검토 요청 목록")}
+        >
           {requests.map((request) => {
             const responses = data.reviewItems
               .filter((i) => i.requestId === request.id)
@@ -344,7 +359,7 @@ export function ReviewsPage() {
                     {hasUnread && (
                       <span
                         className="review-new-dot"
-                        aria-label="새 응답·댓글 있음"
+                        aria-label={t("새 응답·댓글 있음")}
                       />
                     )}
                     <StatusBadge tone={sharingTone[request.status]}>
@@ -355,18 +370,22 @@ export function ReviewsPage() {
                     {request.professorEmail} · {timeText(request.createdAt)}
                   </span>
                   <div className="review-counts">
-                    <span>항목 {responses.length}개</span>
+                    <span>
+                      {t("항목 {count}개", { count: responses.length })}
+                    </span>
                     {confirmed > 0 && (
                       <span className="review-count-confirmed">
-                        수정 내용 확인 {confirmed}개
+                        {t("수정 내용 확인 {count}개", { count: confirmed })}
                       </span>
                     )}
                     {changes > 0 && (
                       <span className="review-count-changes">
-                        추가 수정 필요 {changes}개
+                        {t("추가 수정 필요 {count}개", { count: changes })}
                       </span>
                     )}
-                    {pending > 0 && <span>응답 전 {pending}개</span>}
+                    {pending > 0 && (
+                      <span>{t("응답 전 {count}개", { count: pending })}</span>
+                    )}
                   </div>
                 </div>
                 <Icon name="chevron-right" size={18} />
@@ -389,19 +408,25 @@ export function ReviewsPage() {
         >
           <DialogHeader>
             <DialogTitle>
-              {step === "compose" ? "검토 요청 만들기" : "공유할 내용 확인"}
+              {step === "compose"
+                ? t("검토 요청 만들기")
+                : t("공유할 내용 확인")}
             </DialogTitle>
             <DialogDescription>
               {step === "compose"
-                ? "링크를 만들기 전에 교수님께 공개될 내용을 확인할 수 있어요."
-                : "링크를 만들면 아래 내용과 첨부 파일 전체가 지정한 교수 계정에 공개돼요."}
+                ? t(
+                    "링크를 만들기 전에 교수님께 공개될 내용을 확인할 수 있어요.",
+                  )
+                : t(
+                    "링크를 만들면 아래 내용과 첨부 파일 전체가 지정한 교수 계정에 공개돼요.",
+                  )}
             </DialogDescription>
           </DialogHeader>
           {step === "compose" ? (
             <form onSubmit={showPreview} className="review-compose-form">
-              <Field label="검토 요청 제목" required>
+              <Field label={t("검토 요청 제목")} required>
                 <Input
-                  aria-label="검토 요청 제목"
+                  aria-label={t("검토 요청 제목")}
                   value={title}
                   maxLength={180}
                   onChange={(
@@ -409,21 +434,23 @@ export function ReviewsPage() {
                       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
                     >,
                   ) => setTitle(e.target.value)}
-                  placeholder="예: 선행연구 표와 연구 질문 수정 결과"
+                  placeholder={t("예: 선행연구 표와 연구 질문 수정 결과")}
                 />
               </Field>
               <Field
-                label="검토할 교수"
+                label={t("검토할 교수")}
                 required
                 hint={
                   professors.length > 0
-                    ? "지도교수는 연구 설정에서 추가하거나 뺄 수 있어요."
-                    : "이 이메일로 등록된 마진 계정만 검토를 열 수 있어요. 보내면 이 연구의 지도교수로 등록돼요."
+                    ? t("지도교수는 연구 설정에서 추가하거나 뺄 수 있어요.")
+                    : t(
+                        "이 이메일로 등록된 마진 계정만 검토를 열 수 있어요. 보내면 이 연구의 지도교수로 등록돼요.",
+                      )
                 }
               >
                 {professors.length > 0 && (
                   <Choice
-                    label="검토할 교수"
+                    label={t("검토할 교수")}
                     value={email}
                     onChange={setEmail}
                     options={professors.map((p) => ({ value: p, label: p }))}
@@ -431,7 +458,7 @@ export function ReviewsPage() {
                 )}
                 {professors.length === 0 && (
                   <Input
-                    aria-label="교수 계정 이메일"
+                    aria-label={t("교수 계정 이메일")}
                     type="email"
                     autoComplete="email"
                     value={email}
@@ -448,14 +475,14 @@ export function ReviewsPage() {
               </Field>
               <fieldset className="review-result-selection">
                 <legend>
-                  검토받을 수정 결과{" "}
-                  <span className="review-required">필수</span>
+                  {t("검토받을 수정 결과")}{" "}
+                  <span className="review-required">{t("필수")}</span>
                 </legend>
                 {!results.length ? (
                   <p className="muted">
-                    아직 수정 결과가 없어요.{" "}
+                    {t("아직 수정 결과가 없어요.")}{" "}
                     <Link to={`/r/${researchId}/results?new=1`}>
-                      수정 결과 작성
+                      {t("수정 결과 작성")}
                     </Link>
                   </p>
                 ) : (
@@ -478,7 +505,7 @@ export function ReviewsPage() {
                           <small>{issue || result.description}</small>
                           {issue && (
                             <span className="review-evidence-warning">
-                              보완 필요
+                              {t("보완 필요")}
                             </span>
                           )}
                         </span>
@@ -490,8 +517,9 @@ export function ReviewsPage() {
               <div className="review-inline-note">
                 <Icon name="lock" size={17} />
                 <p>
-                  개인 메모, 할 일 목록, AI 대화, 선택하지 않은 AI 제안은
-                  포함되지 않아요.
+                  {t(
+                    "개인 메모, 할 일 목록, AI 대화, 선택하지 않은 AI 제안은 포함되지 않아요.",
+                  )}
                 </p>
               </div>
               {error && (
@@ -503,8 +531,9 @@ export function ReviewsPage() {
                 <div className="invite-hint">
                   <InviteLinkButton />
                   <span>
-                    복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토
-                    요청을 보낼 수 있어요.
+                    {t(
+                      "복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토 요청을 보낼 수 있어요.",
+                    )}
                   </span>
                 </div>
               )}
@@ -515,10 +544,10 @@ export function ReviewsPage() {
                   disabled={busy}
                   onClick={requestClose}
                 >
-                  취소
+                  {t("취소")}
                 </Button>
                 <Button type="submit" disabled={busy || !results.length}>
-                  {busy ? "교수 계정 확인 중" : "공유할 내용 확인"}
+                  {busy ? t("교수 계정 확인 중") : t("공유할 내용 확인")}
                   <Icon name="arrow-right" size={16} />
                 </Button>
               </div>
@@ -526,9 +555,13 @@ export function ReviewsPage() {
           ) : (
             <div className="review-public-preview">
               <div className="review-preview-heading">
-                <StatusBadge tone="blue">교수에게 공개될 내용</StatusBadge>
+                <StatusBadge tone="blue">
+                  {t("교수에게 공개될 내용")}
+                </StatusBadge>
                 <h3>{title}</h3>
-                <p className="muted">열 수 있는 계정 · {email}</p>
+                <p className="muted">
+                  {t("열 수 있는 계정 · {email}", { email })}
+                </p>
               </div>
               {picks.map((result, index) => {
                 const version = data.versions.find(
@@ -538,17 +571,17 @@ export function ReviewsPage() {
                 return (
                   <article className="review-preview-item" key={result.id}>
                     <span className="meta">
-                      검토 항목 {index + 1} · 1차 검토
+                      {t("검토 항목 {index} · 1차 검토", { index: index + 1 })}
                     </span>
                     <h4>{result.title}</h4>
                     {excerpt && (
                       <div className="review-source-block">
-                        <span>연결된 피드백</span>
+                        <span>{t("연결된 피드백")}</span>
                         <p>{excerpt}</p>
                       </div>
                     )}
                     <div className="review-preserved-copy">
-                      <span className="meta">수정한 내용</span>
+                      <span className="meta">{t("수정한 내용")}</span>
                       <p>{result.description}</p>
                     </div>
                     {version ? (
@@ -571,7 +604,7 @@ export function ReviewsPage() {
                         <Icon name="chevron-down" size={16} />
                       </button>
                     ) : (
-                      <p className="meta">파일 없음 · 설명으로 검토</p>
+                      <p className="meta">{t("파일 없음 · 설명으로 검토")}</p>
                     )}
                   </article>
                 );
@@ -584,8 +617,10 @@ export function ReviewsPage() {
               <p className="review-inline-note">
                 <Icon name="info" size={17} />
                 {picks.some((result) => !!result.versionId)
-                  ? "볼 위치는 먼저 볼 곳을 알려 줄 뿐이에요. 교수님은 첨부한 PDF 전체를 보고 내려받을 수 있어요."
-                  : "첨부 파일 없이 위의 설명이 공개돼요."}
+                  ? t(
+                      "볼 위치는 먼저 볼 곳을 알려 줄 뿐이에요. 교수님은 첨부한 PDF 전체를 보고 내려받을 수 있어요.",
+                    )
+                  : t("첨부 파일 없이 위의 설명이 공개돼요.")}
               </p>
               {error && (
                 <p className="review-form-error" role="alert">
@@ -596,8 +631,9 @@ export function ReviewsPage() {
                 <div className="invite-hint">
                   <InviteLinkButton />
                   <span>
-                    복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토
-                    요청을 보낼 수 있어요.
+                    {t(
+                      "복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토 요청을 보낼 수 있어요.",
+                    )}
                   </span>
                 </div>
               )}
@@ -611,10 +647,10 @@ export function ReviewsPage() {
                     setError("");
                   }}
                 >
-                  돌아가서 수정
+                  {t("돌아가서 수정")}
                 </Button>
                 <Button disabled={busy} onClick={submit}>
-                  {busy ? "링크 만드는 중" : "검토 링크 만들기"}
+                  {busy ? t("링크 만드는 중") : t("검토 링크 만들기")}
                   <Icon name="link" size={16} />
                 </Button>
               </div>
@@ -625,18 +661,19 @@ export function ReviewsPage() {
       <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
         <DialogContent className="student-dialog">
           <DialogHeader>
-            <DialogTitle>검토 요청 작성을 닫을까요?</DialogTitle>
+            <DialogTitle>{t("검토 요청 작성을 닫을까요?")}</DialogTitle>
             <DialogDescription>
-              입력한 제목과 교수 계정 이메일, 수정 결과 선택이 사라져요. 수정
-              결과는 그대로 남아요.
+              {t(
+                "입력한 제목과 교수 계정 이메일, 수정 결과 선택이 사라져요. 수정 결과는 그대로 남아요.",
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="form-actions">
             <Button variant="outline" onClick={() => setDiscardOpen(false)}>
-              계속 작성
+              {t("계속 작성")}
             </Button>
             <Button variant="destructive" onClick={close}>
-              버리고 닫기
+              {t("버리고 닫기")}
             </Button>
           </div>
         </DialogContent>

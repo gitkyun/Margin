@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {
   createContext,
   useCallback,
@@ -207,7 +208,7 @@ export function PanelFrame({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={`${title} 패널 닫기`}
+          aria-label={t("{title} 패널 닫기", { title })}
           onClick={onClose}
         >
           <Icon name="close" size={17} />
@@ -216,7 +217,7 @@ export function PanelFrame({
       {tabs && tabs.length > 1 && tab && onTab && (
         <Tabs
           className="tabs-line"
-          label={`${title} 패널`}
+          label={t("{title} 패널", { title })}
           value={tab}
           onChange={onTab}
           options={tabs}

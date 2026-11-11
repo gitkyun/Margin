@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Task } from "./domain";
 import { toggleDone } from "./task-status";
+import { t } from "@/lib/i18n";
 
 /** 완료 표시 뒤 줄 그은 채 제자리에 두는 시간(그다음 목록에서 접힘) */
 export const COMPLETE_HOLD_MS = 400;
@@ -79,7 +80,7 @@ export function useTaskCompletion(save: SaveTask) {
           toast.error(
             error instanceof Error
               ? error.message
-              : "되돌리지 못했어요. 다시 시도해 주세요.",
+              : t("되돌리지 못했어요. 다시 시도해 주세요."),
           );
         }
       };
@@ -87,10 +88,10 @@ export function useTaskCompletion(save: SaveTask) {
         if (pendingUndo.current === undo) pendingUndo.current = null;
       };
       pendingUndo.current = undo;
-      toastId = toast("할 일을 완료했어요", {
+      toastId = toast(t("할 일을 완료했어요"), {
         description: saved.title,
         duration: UNDO_MS,
-        action: { label: "되돌리기", onClick: () => void undo() },
+        action: { label: t("되돌리기"), onClick: () => void undo() },
         onAutoClose: clear,
         onDismiss: clear,
       });
@@ -112,7 +113,7 @@ export function useTaskCompletion(save: SaveTask) {
         toast.error(
           error instanceof Error
             ? error.message
-            : "할 일 상태를 저장하지 못했어요. 다시 시도해 주세요.",
+            : t("할 일 상태를 저장하지 못했어요. 다시 시도해 주세요."),
         );
       } finally {
         setBusy((set) => withId(set, task.id, false));

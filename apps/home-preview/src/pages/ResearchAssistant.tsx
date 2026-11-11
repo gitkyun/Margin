@@ -4,6 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useAICapabilities } from "@/lib/ai-capabilities";
 import {
+  AI_NOT_CONFIGURED_MESSAGE,
+  AINotConfiguredError,
+  useAINotConfigured,
+} from "@/lib/ai-availability";
+import {
   Link,
   useNavigate,
   useParams,
@@ -57,6 +62,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/icons";
+import { t } from "@/lib/i18n";
 
 /** md(992px) 미만에서는 패널이 본문을 덮으므로 처음에는 닫아 둡니다. */
 function panelStartsOpen(): boolean {
@@ -96,6 +102,7 @@ export function ResearchAssistant() {
     [candidateTitle, setCandidateTitle] = useState(""),
     [candidateBody, setCandidateBody] = useState(""),
     [saveBusy, setSaveBusy] = useState(false);
+  const aiNotConfigured = useAINotConfigured();
   const caps = useAICapabilities(),
     allowedModel =
       caps.data?.models.find((m) => m.id === model) ?? caps.data?.models[0],
@@ -124,7 +131,7 @@ export function ResearchAssistant() {
   useNavigationGuard({
     dirty: !!draft.trim(),
     busy: uploading,
-    label: "AI 질문",
+    label: t("AI 질문"),
   });
   useEffect(
     () => () => {
@@ -163,7 +170,9 @@ export function ResearchAssistant() {
       } catch {
         setContexts([]);
         setError(
-          "선택한 문단을 불러오지 못했어요. 문서가 바뀌었을 수 있으니 글쓰기에서 문단을 다시 선택해 주세요.",
+          t(
+            "선택한 문단을 불러오지 못했어요. 문서가 바뀌었을 수 있으니 글쓰기에서 문단을 다시 선택해 주세요.",
+          ),
         );
         return;
       }
@@ -173,7 +182,7 @@ export function ResearchAssistant() {
         {
           kind: "documents",
           id: doc.id,
-          title: doc.title + (selectedText ? " · 선택 문단" : ""),
+          title: doc.title + (selectedText ? ` · ${t("선택 문단")}` : ""),
           revision: doc.revision,
           ...(selectedText ? { text: selectedText } : {}),
         },
@@ -231,7 +240,9 @@ export function ResearchAssistant() {
       return;
     }
     if (contexts.length >= MAX_SOURCES) {
-      toast.info(`한 번에 ${MAX_SOURCES}개까지 선택할 수 있어요.`);
+      toast.info(
+        t("한 번에 {max}개까지 선택할 수 있어요.", { max: MAX_SOURCES }),
+      );
       return;
     }
     setContexts((v) =>
@@ -268,7 +279,7 @@ export function ResearchAssistant() {
       if (file) {
         const ext = file.name.split(".").at(-1)?.toLowerCase();
         if (!["pdf", "txt", "md"].includes(ext ?? ""))
-          throw new Error("PDF, TXT, MD 파일만 첨부할 수 있어요.");
+          throw new Error(t("PDF, TXT, MD 파일만 첨부할 수 있어요."));
         let text = "",
           type =
             ext === "pdf"
@@ -280,13 +291,13 @@ export function ResearchAssistant() {
         if (ext === "pdf") {
           if ((await file.slice(0, 5).text()) !== "%PDF-")
             throw new Error(
-              "PDF 파일을 읽지 못했어요. 올바른 PDF 파일인지 확인해 주세요.",
+              t("PDF 파일을 읽지 못했어요. 올바른 PDF 파일인지 확인해 주세요."),
             );
           text = (await readPDFPage(file, page)).text;
         } else text = await file.text();
         if (text.length > 80000)
           throw new Error(
-            "글자 수가 너무 많아요. 8만 자 이하로 나눠서 첨부해 주세요.",
+            t("글자 수가 너무 많아요. 8만 자 이하로 나눠서 첨부해 주세요."),
           );
         const base = recordBase(researchId);
         p = {
@@ -322,7 +333,7 @@ export function ResearchAssistant() {
         title: saved.title,
       });
       pendingFile.current = null;
-      toast.success("자료를 첨부했어요. 나만 볼 수 있어요.");
+      toast.success(t("자료를 첨부했어요. 나만 볼 수 있어요."));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -338,7 +349,9 @@ export function ResearchAssistant() {
       (contexts.length !== 1 || contexts[0]?.kind !== "meetings")
     ) {
       setError(
-        "미팅 정리는 미팅 메모 하나로만 할 수 있어요. 다른 자료는 새 대화에서 사용해 주세요.",
+        t(
+          "미팅 정리는 미팅 메모 하나로만 할 수 있어요. 다른 자료는 새 대화에서 사용해 주세요.",
+        ),
       );
       openPanel("sources");
       return;
@@ -394,7 +407,7 @@ export function ResearchAssistant() {
         result.candidates
           .map(
             (x) =>
-              `${x.title}\n${x.body ?? x.method ?? ""}\n${x.assumptions ? "확인할 가정: " + x.assumptions : ""}`,
+              `${x.title}\n${x.body ?? x.method ?? ""}\n${x.assumptions ? t("확인할 가정: {assumptions}", { assumptions: x.assumptions }) : ""}`,
           )
           .join("\n\n");
       const saved = await save("conversations", {
@@ -407,8 +420,9 @@ export function ResearchAssistant() {
       setConversation(saved);
       setDraft("");
     } catch (e) {
+      // 연결 전이면 아래 '쓸 수 없음' 안내가 대신 보여요(다시 보내기를 권하지 않음).
       if (seq === sequence.current && !controller.signal.aborted)
-        setError((e as Error).message);
+        setError(e instanceof AINotConfiguredError ? "" : (e as Error).message);
     } finally {
       if (seq === sequence.current) {
         setRunning(false);
@@ -428,11 +442,13 @@ export function ResearchAssistant() {
         await w.cancelRun(id);
       } catch {
         setError(
-          "이 화면에서는 멈췄지만 중단 요청을 저장하지 못했어요. 결과가 나와도 이 대화에는 넣지 않아요.",
+          t(
+            "이 화면에서는 멈췄지만 중단 요청을 저장하지 못했어요. 결과가 나와도 이 대화에는 넣지 않아요.",
+          ),
         );
       }
     }
-    toast.info("실행을 중단했어요. 질문은 그대로 있어요.");
+    toast.info(t("실행을 중단했어요. 질문은 그대로 있어요."));
   }
   function adopt(c: SavedAICandidate) {
     setAdopting(c);
@@ -534,9 +550,9 @@ export function ResearchAssistant() {
                 ? `/r/${researchId}/meetings/${meeting.id}?tab=questions`
                 : undefined;
       toast.success(
-        "선택한 내용을 나만 볼 수 있는 기록으로 저장했어요.",
+        t("선택한 내용을 나만 볼 수 있는 기록으로 저장했어요."),
         href
-          ? { action: { label: "열기", onClick: () => navigate(href) } }
+          ? { action: { label: t("열기"), onClick: () => navigate(href) } }
           : undefined,
       );
     } catch (e) {
@@ -558,18 +574,21 @@ export function ResearchAssistant() {
     setDraft("");
     setError("");
   }
-  // 미리보기에서는 AI를 실행할 수 없어요. 예시 답변이나 진행률을 만들어 보여 주지 않습니다.
-  const unavailable = mode === "preview";
+  // 미리보기이거나 서버에 AI가 아직 연결되지 않았으면 실행할 수 없어요.
+  // 예시 답변·진행률·모델 설정을 만들어 보여 주지 않습니다.
+  const unavailable = mode === "preview" || aiNotConfigured;
   const models = caps.data?.models ?? [];
   return (
     <div className="assistant-experience">
       <PageHeader
-        title="연구 도우미"
-        description="고른 기록만 읽고 질문에 답하거나 수정 방법을 제안해요."
+        title={t("연구 도우미")}
+        description={t(
+          "고른 기록만 읽고 질문에 답하거나 수정 방법을 제안해요.",
+        )}
         status={
           <span className="rms-pill">
             <Icon name="lock" size={13} />
-            나만 볼 수 있는 공간
+            {t("나만 볼 수 있는 공간")}
           </span>
         }
         actions={
@@ -581,7 +600,7 @@ export function ResearchAssistant() {
                   disabled={running || !conversations.length}
                 >
                   <Icon name="chat" size={16} />
-                  대화 기록
+                  {t("대화 기록")}
                   <Icon name="chevron-down" size={15} />
                 </Button>
               </DropdownMenuTrigger>
@@ -605,7 +624,8 @@ export function ResearchAssistant() {
               </DropdownMenuContent>
             </DropdownMenu>
             <Button variant="outline" disabled={running} onClick={startNew}>
-              <Icon name="plus" size={16} />새 대화
+              <Icon name="plus" size={16} />
+              {t("새 대화")}
             </Button>
           </>
         }
@@ -615,24 +635,26 @@ export function ResearchAssistant() {
           {!messages.length ? (
             <div className="assistant-welcome">
               <AssistantMascot state="ready" size={64} eager />
-              <h2>무엇을 도와드릴까요?</h2>
-              <p>미팅 메모, 문서, 파일을 첨부하면 그 기록만 읽고 답해요.</p>
+              <h2>{t("무엇을 도와드릴까요?")}</h2>
+              <p>
+                {t("미팅 메모, 문서, 파일을 첨부하면 그 기록만 읽고 답해요.")}
+              </p>
               {!unavailable && (
                 <div className="assistant-prompts">
                   {[
-                    "다음 미팅까지 할 일을 정리해 줘",
-                    "이 피드백의 수정 방법을 비교해 줘",
-                    "이 문단에서 더 구체화할 부분을 찾아 줘",
-                  ].map((t) => (
+                    t("다음 미팅까지 할 일을 정리해 줘"),
+                    t("이 피드백의 수정 방법을 비교해 줘"),
+                    t("이 문단에서 더 구체화할 부분을 찾아 줘"),
+                  ].map((prompt) => (
                     <button
-                      key={t}
+                      key={prompt}
                       type="button"
                       onClick={() => {
-                        setDraft(t);
+                        setDraft(prompt);
                         composerRef.current?.focus();
                       }}
                     >
-                      {t}
+                      {prompt}
                     </button>
                   ))}
                 </div>
@@ -645,7 +667,7 @@ export function ResearchAssistant() {
                   {m.role === "assistant" && (
                     <AssistantMascot state="chatting" size={28} />
                   )}
-                  {m.role === "user" ? "나" : "연구 도우미"}
+                  {m.role === "user" ? t("나") : t("연구 도우미")}
                 </span>
                 <div>{m.text}</div>
               </article>
@@ -655,8 +677,9 @@ export function ResearchAssistant() {
             <div className="ai-unanswered" role="status">
               <Icon name="info" size={17} />
               <span>
-                이 질문에는 아직 답변이 없어요. 고른 기록과 질문을 확인한 뒤
-                다시 보낼 수 있어요.
+                {t(
+                  "이 질문에는 아직 답변이 없어요. 고른 기록과 질문을 확인한 뒤 다시 보낼 수 있어요.",
+                )}
               </span>
               <Button
                 variant="outline"
@@ -665,7 +688,7 @@ export function ResearchAssistant() {
                   setDraft(messages.at(-1)?.text ?? "");
                 }}
               >
-                질문 불러오기
+                {t("질문 불러오기")}
               </Button>
             </div>
           )}
@@ -679,9 +702,9 @@ export function ResearchAssistant() {
               />
               <div>
                 <strong>
-                  {workMessages[task] ?? "고른 기록을 살펴보고 있어요."}
+                  {workMessages[task] ?? t("고른 기록을 살펴보고 있어요.")}
                 </strong>
-                <small>답변이 나와도 연구 기록은 바뀌지 않아요.</small>
+                <small>{t("답변이 나와도 연구 기록은 바뀌지 않아요.")}</small>
               </div>
             </div>
           )}
@@ -690,7 +713,11 @@ export function ResearchAssistant() {
         {unavailable && (
           <p className="assistant-unavailable" role="status">
             <Icon name="info" size={16} />
-            지금은 연구 도우미를 쓸 수 없어요. 직접 작성은 그대로 할 수 있어요.
+            {aiNotConfigured
+              ? AI_NOT_CONFIGURED_MESSAGE
+              : t(
+                  "지금은 연구 도우미를 쓸 수 없어요. 직접 작성은 그대로 할 수 있어요.",
+                )}
           </p>
         )}
         <form
@@ -708,13 +735,15 @@ export function ResearchAssistant() {
         >
           <textarea
             ref={composerRef}
-            aria-label="연구 도우미에게 질문"
+            aria-label={t("연구 도우미에게 질문")}
             placeholder={
               unavailable
-                ? "미리보기에서는 질문을 보낼 수 없어요."
+                ? aiNotConfigured
+                  ? t("연구 도우미가 연결되면 질문을 보낼 수 있어요.")
+                  : t("미리보기에서는 질문을 보낼 수 없어요.")
                 : contexts.length
-                  ? "첨부한 기록에 대해 물어보세요"
-                  : "기록이나 파일을 첨부하고 질문해 주세요"
+                  ? t("첨부한 기록에 대해 물어보세요")
+                  : t("기록이나 파일을 첨부하고 질문해 주세요")
             }
             value={draft}
             disabled={unavailable}
@@ -730,14 +759,16 @@ export function ResearchAssistant() {
             }}
           />
           <div className="composer-actions">
-            <Hint label="기록·파일 첨부" position="top-center">
+            <Hint label={t("기록·파일 첨부")} position="top-center">
               <button
                 type="button"
                 className="composer-attach"
                 aria-label={
                   contexts.length
-                    ? `첨부한 기록 ${contexts.length}개, 바꾸기`
-                    : "기록·파일 첨부"
+                    ? t("첨부한 기록 {count}개, 바꾸기", {
+                        count: contexts.length,
+                      })
+                    : t("기록·파일 첨부")
                 }
                 onClick={() => openPanel("sources")}
               >
@@ -749,7 +780,7 @@ export function ResearchAssistant() {
               compact
               value={task}
               onChange={(v) => setTask(v as AIInput["mode"])}
-              label="요청 종류"
+              label={t("요청 종류")}
               disabled={running || unavailable}
               options={Object.entries(modeLabels).map(([value, label]) => ({
                 value,
@@ -757,23 +788,23 @@ export function ResearchAssistant() {
               }))}
             />
             {/* 고를 모델이 둘 이상일 때만 보입니다. 연결 전에는 모델 이름을 보여 주지 않아요. */}
-            {models.length > 1 && (
+            {!unavailable && models.length > 1 && (
               <Choice
                 compact
                 value={allowedModel?.id ?? ""}
                 onChange={setModel}
                 disabled={running}
-                label="AI 모델"
+                label={t("AI 모델")}
                 options={models.map((m) => ({
                   value: m.id,
                   label: researchModelLabel(m),
                 }))}
               />
             )}
-            {!!allowedModel?.thinking.length && (
+            {!unavailable && !!allowedModel?.thinking.length && (
               <Choice
                 compact
-                label="답변 깊이"
+                label={t("답변 깊이")}
                 value={thinking}
                 onChange={setThinking}
                 disabled={running}
@@ -790,7 +821,7 @@ export function ResearchAssistant() {
               <Button
                 type="button"
                 size="icon"
-                aria-label="실행 중단"
+                aria-label={t("실행 중단")}
                 onClick={() => void cancel()}
               >
                 <Icon name="stop" size={17} />
@@ -799,7 +830,7 @@ export function ResearchAssistant() {
               <Button
                 type="submit"
                 size="icon"
-                aria-label="질문 보내기"
+                aria-label={t("질문 보내기")}
                 disabled={
                   unavailable || !draft.trim() || !contexts.length || uploading
                 }
@@ -810,20 +841,20 @@ export function ResearchAssistant() {
           </div>
           {uploading && (
             <p role="status">
-              자료 준비 중
+              {t("자료 준비 중")}
               {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
             </p>
           )}
         </form>
         {caps.isError && (
           <p className="rms-error" role="alert">
-            AI 모델 정보를 불러오지 못했어요.{" "}
+            {t("AI 모델 정보를 불러오지 못했어요.")}{" "}
             <Button
               variant="link"
               size="sm"
               onClick={() => void caps.refetch()}
             >
-              다시 불러오기
+              {t("다시 불러오기")}
             </Button>
           </p>
         )}
@@ -840,13 +871,15 @@ export function ResearchAssistant() {
                 pendingFile.current ? void attach() : void send()
               }
             >
-              {pendingFile.current ? "등록 다시 시도" : "질문 다시 보내기"}
+              {pendingFile.current
+                ? t("등록 다시 시도")
+                : t("질문 다시 보내기")}
             </Button>
           </div>
         )}
       </section>
       <MarginPanel
-        label="근거와 제안"
+        label={t("근거와 제안")}
         open={panelOpen}
         onOpen={() => setPanelOpen(true)}
         onClose={() => setPanelOpen(false)}
@@ -890,17 +923,19 @@ export function ResearchAssistant() {
       >
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>AI 제안 선택</DialogTitle>
+            <DialogTitle>{t("AI 제안 선택")}</DialogTitle>
             <DialogDescription>
               {adopting?.mode === "organize_meeting"
-                ? "정리한 항목을 나만 볼 수 있는 기록으로 저장해요."
+                ? t("정리한 항목을 나만 볼 수 있는 기록으로 저장해요.")
                 : adopting?.mode === "suggest_revisions"
-                  ? "수정 방법으로 저장해요. 나만 볼 수 있어요."
-                  : "나만 볼 수 있는 할 일로 저장해요. 문서는 바뀌지 않고, 교수 응답도 그대로예요."}
+                  ? t("수정 방법으로 저장해요. 나만 볼 수 있어요.")
+                  : t(
+                      "나만 볼 수 있는 할 일로 저장해요. 문서는 바뀌지 않고, 교수 응답도 그대로예요.",
+                    )}
             </DialogDescription>
           </DialogHeader>
           <label className="field">
-            제목
+            {t("제목")}
             <Input
               value={candidateTitle}
               onChange={(e) => setCandidateTitle(e.target.value)}
@@ -908,7 +943,7 @@ export function ResearchAssistant() {
             />
           </label>
           <label className="field">
-            기록할 내용
+            {t("기록할 내용")}
             <Textarea
               rows={7}
               value={candidateBody}
@@ -921,7 +956,7 @@ export function ResearchAssistant() {
               disabled={saveBusy}
               onClick={() => setAdopting(null)}
             >
-              취소
+              {t("취소")}
             </Button>
             <Button
               disabled={
@@ -929,7 +964,7 @@ export function ResearchAssistant() {
               }
               onClick={() => void saveCandidate()}
             >
-              선택하고 저장
+              {t("선택하고 저장")}
             </Button>
           </div>
         </DialogContent>

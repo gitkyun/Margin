@@ -40,13 +40,14 @@ import {
   useSaving,
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
+import { t } from "@/lib/i18n";
 
 const feedbackFilters = [
-  ["all", "전체"],
-  ["unprocessed", "시작 전"],
-  ["in_progress", "진행 중"],
-  ["recorded", "수정 결과 있음"],
-  ["held", "보류"],
+  ["all", t("전체")],
+  ["unprocessed", t("시작 전")],
+  ["in_progress", t("진행 중")],
+  ["recorded", t("수정 결과 있음")],
+  ["held", t("보류")],
 ] as const;
 
 export function FeedbackPage() {
@@ -68,10 +69,10 @@ export function FeedbackPage() {
       <FeedbackDetail key={feedback.id} feedback={feedback} />
     ) : (
       <>
-        <BackLink to={`/r/${researchId}/feedback`}>피드백 목록</BackLink>
+        <BackLink to={`/r/${researchId}/feedback`}>{t("피드백 목록")}</BackLink>
         <EmptyState
-          title="피드백을 열 수 없어요"
-          description="피드백 목록에서 다시 선택해 주세요."
+          title={t("피드백을 열 수 없어요")}
+          description={t("피드백 목록에서 다시 선택해 주세요.")}
         />
       </>
     );
@@ -102,20 +103,22 @@ export function FeedbackPage() {
   return (
     <div className="student-page">
       <PageHeader
-        title="피드백"
+        title={t("피드백")}
         tabs={<WorkTabs researchId={researchId} selected="feedback" />}
-        description="받은 피드백마다 수정 방법을 정하고 고친 내용을 기록하세요."
+        description={t(
+          "받은 피드백마다 수정 방법을 정하고 고친 내용을 기록하세요.",
+        )}
         actions={
           <Button onClick={openCreate}>
             <Icon name="plus" size={17} />
-            피드백 추가
+            {t("피드백 추가")}
           </Button>
         }
       />
 
       <div className="page-toolbar">
         <FilterSegments
-          label="피드백 상태"
+          label={t("피드백 상태")}
           options={feedbackFilters}
           value={filter}
           onChange={setFilter}
@@ -124,7 +127,7 @@ export function FeedbackPage() {
         <SearchInput
           value={search}
           onChange={setSearch}
-          placeholder="피드백에서 찾기"
+          placeholder={t("피드백에서 찾기")}
         />
       </div>
       <AnimatedList className="surface feedback-list">
@@ -145,14 +148,14 @@ export function FeedbackPage() {
                   {item.origin && <>{originLabels[item.origin]} · </>}
                   {item.meetingId
                     ? (data.meetings.find((m) => m.id === item.meetingId)
-                        ?.title ?? "미팅에서 저장")
-                    : "미팅 없이 추가"}{" "}
-                  · 할 일{" "}
-                  {
-                    data.tasks.filter((t) => t.feedbackIds.includes(item.id))
-                      .length
-                  }
-                  개
+                        ?.title ?? t("미팅에서 저장"))
+                    : t("미팅 없이 추가")}{" "}
+                  ·{" "}
+                  {t("할 일 {count}개", {
+                    count: data.tasks.filter((task) =>
+                      task.feedbackIds.includes(item.id),
+                    ).length,
+                  })}
                 </small>
               </span>
               <StatusBadge
@@ -175,13 +178,13 @@ export function FeedbackPage() {
           <EmptyState
             title={
               search || filter !== "all"
-                ? "조건에 맞는 피드백이 없어요"
-                : "아직 피드백이 없어요"
+                ? t("조건에 맞는 피드백이 없어요")
+                : t("아직 피드백이 없어요")
             }
-            description="미팅 기록에서 저장하거나 직접 추가할 수 있어요."
+            description={t("미팅 기록에서 저장하거나 직접 추가할 수 있어요.")}
             action={
               <Button variant="outline" onClick={openCreate}>
-                피드백 추가
+                {t("피드백 추가")}
               </Button>
             }
           />
@@ -191,15 +194,15 @@ export function FeedbackPage() {
         busy={form.saving}
         open={creating}
         onOpenChange={setCreating}
-        title="피드백 직접 추가"
-        description="직접 작성한 피드백으로 저장돼요."
+        title={t("피드백 직접 추가")}
+        description={t("직접 작성한 피드백으로 저장돼요.")}
       >
         <form
           className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!title.trim() || !body.trim()) {
-              form.setError("제목과 피드백 내용을 입력해 주세요.");
+              form.setError(t("제목과 피드백 내용을 입력해 주세요."));
               return;
             }
             void form.perform(async () => {
@@ -214,18 +217,18 @@ export function FeedbackPage() {
               });
               setCreating(false);
               navigate(`/r/${researchId}/feedback/${item.id}`);
-              toast.success("피드백을 저장했어요");
+              toast.success(t("피드백을 저장했어요"));
             });
           }}
         >
           <LabeledInput
-            label="제목"
+            label={t("제목")}
             required
             value={title}
             onChange={setTitle}
           />
           <LabeledText
-            label="피드백 내용"
+            label={t("피드백 내용")}
             required
             value={body}
             onChange={setBody}
@@ -280,6 +283,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
   const planForm = useSaving();
   const [taskPlan, setTaskPlan] = useState<RevisionPlan | null>(null);
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskTitleError, setTaskTitleError] = useState("");
+  const taskTitleInput = useRef<HTMLInputElement>(null);
   const [taskDescription, setTaskDescription] = useState("");
   const taskForm = useSaving();
   const [cancelPlan, setCancelPlan] = useState<RevisionPlan | null>(null);
@@ -321,7 +326,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           : undefined,
     });
     toast.success(
-      "이 방법을 선택했어요. 수정 방법에서 할 일로 만들 수 있어요.",
+      t("이 방법을 선택했어요. 수정 방법에서 할 일로 만들 수 있어요."),
     );
   }
   function createPlan() {
@@ -343,16 +348,23 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
     taskBase.current = recordBase(researchId);
     setTaskPlan(plan);
     setTaskTitle(plan.suggestedTasks[0] ?? plan.title);
+    setTaskTitleError("");
     setTaskDescription(plan.method);
     taskForm.setError(null);
   }
   return (
     <div className="student-page">
       <PageHeader
-        back={<BackLink to={`/r/${researchId}/feedback`}>피드백 목록</BackLink>}
+        back={
+          <BackLink to={`/r/${researchId}/feedback`}>
+            {t("피드백 목록")}
+          </BackLink>
+        }
         title={feedback.title}
         description={
-          meeting ? `${meeting.title}에서 정리한 피드백` : "저장한 피드백"
+          meeting
+            ? t("{title}에서 정리한 피드백", { title: meeting.title })
+            : t("저장한 피드백")
         }
         actions={
           <Button
@@ -364,18 +376,20 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             }}
           >
             <Icon name="edit" size={16} />
-            피드백 편집
+            {t("피드백 편집")}
           </Button>
         }
       />
-      <ol className="feedback-progress" aria-label="이 피드백의 진행">
+      <ol className="feedback-progress" aria-label={t("이 피드백의 진행")}>
         {progress.map((step) => (
           <li key={step.key} data-filled={step.filled}>
             {step.key === "tasks" ? (
               <button
                 type="button"
                 onClick={openLinks}
-                aria-label={`할 일 ${step.value}, 연결된 기록 열기`}
+                aria-label={t("할 일 {value}, 연결된 기록 열기", {
+                  value: step.value,
+                })}
               >
                 <span>{step.label}</span>
                 <strong>{step.value}</strong>
@@ -393,7 +407,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         <div className="stack">
           <section className="surface feedback-origin">
             <div className="section-heading">
-              <h2>받은 피드백</h2>
+              <h2>{t("받은 피드백")}</h2>
               <StatusBadge
                 tone={
                   feedback.status === "recorded"
@@ -413,7 +427,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             {feedback.sourceQuote && (
               <blockquote className="source-excerpt">
                 <small>
-                  저장할 때 메모에서 옮긴 원문
+                  {t("저장할 때 메모에서 옮긴 원문")}
                   {feedback.sourceMemoRevision
                     ? ` · v${feedback.sourceMemoRevision}`
                     : ""}
@@ -426,13 +440,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 to={`/r/${researchId}/meetings/${meeting.id}?tab=record`}
                 state={back(feedback.title)}
               >
-                미팅 기록 열기
+                {t("미팅 기록 열기")}
               </LinkChip>
             )}
             {feedback.notes && (
               <div className="student-private-note">
                 <span>
-                  <Icon name="lock" size={14} />내 메모 · 비공개
+                  <Icon name="lock" size={14} />
+                  {t("내 메모 · 비공개")}
                 </span>
                 <p>{feedback.notes}</p>
               </div>
@@ -441,22 +456,23 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           <section className="surface revision-plans">
             <div className="section-heading">
               <div>
-                <h2>수정 방법</h2>
+                <h2>{t("수정 방법")}</h2>
                 <p className="meta">
-                  어떻게 고칠지 정한 뒤 할 일로 만들 수 있어요.
+                  {t("어떻게 고칠지 정한 뒤 할 일로 만들 수 있어요.")}
                 </p>
                 <p className="student-footnote">
-                  방법을 선택해도 할 일이 완료되지는 않아요. 진행 상태는 할
-                  일에서 바꿔 주세요.
+                  {t(
+                    "방법을 선택해도 할 일이 완료되지는 않아요. 진행 상태는 할 일에서 바꿔 주세요.",
+                  )}
                 </p>
               </div>
               <div className="button-row">
                 <Button variant="ghost" size="sm" onClick={createPlan}>
-                  직접 작성
+                  {t("직접 작성")}
                 </Button>
                 <Button variant="outline" size="sm" onClick={openAI}>
                   <Icon name="sparkles" size={15} />
-                  {aiInput && !aiOpen ? "AI 제안 다시 열기" : "AI 제안"}
+                  {aiInput && !aiOpen ? t("AI 제안 다시 열기") : t("AI 제안")}
                 </Button>
               </div>
             </div>
@@ -467,13 +483,13 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   <article key={plan.id} className="saved-plan">
                     <div className="saved-plan-heading">
                       <span className="plan-index">
-                        방법 {index + 1}
+                        {t("방법 {number}", { number: index + 1 })}
                         {plan.origin && <> · {originLabels[plan.origin]}</>}
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        aria-label={`${plan.title} 편집`}
+                        aria-label={t("{title} 편집", { title: plan.title })}
                         onClick={() => {
                           setPlanDraft({ ...plan });
                           planForm.setError(null);
@@ -486,27 +502,28 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     <p>{plan.method}</p>
                     {plan.expectedResult && (
                       <dl>
-                        <dt>예상 결과</dt>
+                        <dt>{t("예상 결과")}</dt>
                         <dd>{plan.expectedResult}</dd>
                       </dl>
                     )}
                     {plan.requiredMaterials && (
                       <dl>
-                        <dt>필요한 자료·준비할 것</dt>
+                        <dt>{t("필요한 자료·준비할 것")}</dt>
                         <dd>{plan.requiredMaterials}</dd>
                       </dl>
                     )}
                     {plan.assumptions && (
                       <div className="ai-assumption">
-                        <small>확인이 필요한 가정</small>
+                        <small>{t("확인이 필요한 가정")}</small>
                         <p>{plan.assumptions}</p>
                       </div>
                     )}
                     <div className="saved-plan-footer">
                       <span className="meta">
-                        할 일{" "}
-                        {tasks.filter((task) => task.planId === plan.id).length}
-                        개
+                        {t("할 일 {count}개", {
+                          count: tasks.filter((task) => task.planId === plan.id)
+                            .length,
+                        })}
                       </span>
                       <div className="button-row">
                         <Button
@@ -517,14 +534,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                             cancelForm.setError(null);
                           }}
                         >
-                          선택 취소
+                          {t("선택 취소")}
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => startTask(plan)}
                         >
-                          할 일로 만들기
+                          {t("할 일로 만들기")}
                           <Icon name="arrow-right" size={14} />
                         </Button>
                       </div>
@@ -533,11 +550,11 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 ))
             ) : (
               <EmptyState
-                title="아직 정한 수정 방법이 없어요"
-                description="직접 적거나 AI 제안을 받아 비교할 수 있어요."
+                title={t("아직 정한 수정 방법이 없어요")}
+                description={t("직접 적거나 AI 제안을 받아 비교할 수 있어요.")}
                 action={
                   <Button variant="outline" onClick={createPlan}>
-                    수정 방법 작성
+                    {t("수정 방법 작성")}
                   </Button>
                 }
               />
@@ -545,8 +562,9 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             {plans.some((plan) => plan.status === "cancelled") && (
               <details className="student-details">
                 <summary>
-                  선택 취소한 방법{" "}
-                  {plans.filter((p) => p.status === "cancelled").length}개
+                  {t("선택 취소한 방법 {count}개", {
+                    count: plans.filter((p) => p.status === "cancelled").length,
+                  })}
                 </summary>
                 {plans
                   .filter((p) => p.status === "cancelled")
@@ -561,11 +579,13 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                         size="sm"
                         onClick={() =>
                           void save("plans", { ...plan, status: "saved" })
-                            .then(() => toast.success("방법을 다시 선택했어요"))
+                            .then(() =>
+                              toast.success(t("방법을 다시 선택했어요")),
+                            )
                             .catch((e) => toast.error(e.message))
                         }
                       >
-                        다시 선택
+                        {t("다시 선택")}
                       </Button>
                     </div>
                   ))}
@@ -574,7 +594,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           </section>
           <section className="surface">
             <div className="section-heading">
-              <h2>수정 결과</h2>
+              <h2>{t("수정 결과")}</h2>
               <Button
                 variant="link"
                 size="sm"
@@ -583,7 +603,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   setResultDraft(newResultDraft(researchId, { feedback }))
                 }
               >
-                작성
+                {t("작성")}
                 <Icon name="plus" size={14} />
               </Button>
             </div>
@@ -606,8 +626,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     <small>
                       {result.location ||
                         (result.kind === "document"
-                          ? "볼 위치 없음"
-                          : "문서 외 수정")}
+                          ? t("볼 위치 없음")
+                          : t("문서 외 수정"))}
                     </small>
                   </span>
                   <Icon name="chevron-right" size={15} />
@@ -615,36 +635,38 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               ))
             ) : (
               <p className="student-empty-inline">
-                아직 수정 결과가 없어요. 실제로 고친 내용을 기록해 주세요.
+                {t(
+                  "아직 수정 결과가 없어요. 실제로 고친 내용을 기록해 주세요.",
+                )}
               </p>
             )}
           </section>
         </div>
         <MarginPanel
-          label="연결된 기록과 연구 도우미"
+          label={t("연결된 기록과 연구 도우미")}
           open={panelOpen}
           onOpen={() => setPanelOpen(true)}
           onClose={() => setPanelOpen(false)}
         >
           <PanelFrame
-            title="이 피드백"
+            title={t("이 피드백")}
             onClose={() => setPanelOpen(false)}
             tab={panelTab}
             onTab={(value) => (value === "assistant" ? openAI() : openLinks())}
             tabs={[
               {
                 value: "links",
-                label: "연결",
+                label: t("연결"),
                 count: tasks.length + results.length + (meeting ? 1 : 0),
               },
-              { value: "assistant", label: "도우미" },
+              { value: "assistant", label: t("도우미") },
             ]}
           >
             {panelTab === "links" && (
               <div className="panel-frame-body">
                 {meeting && (
                   <>
-                    <h3>미팅</h3>
+                    <h3>{t("미팅")}</h3>
                     <Link
                       className="student-simple-row"
                       to={`/r/${researchId}/meetings/${meeting.id}?tab=record`}
@@ -652,19 +674,20 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     >
                       <span className="grow">
                         <strong>{meeting.title}</strong>
-                        <small>이 피드백을 정리한 미팅</small>
+                        <small>{t("이 피드백을 정리한 미팅")}</small>
                       </span>
                       <Icon name="chevron-right" size={15} />
                     </Link>
                   </>
                 )}
                 <h3>
-                  할 일<span className="count-chip">{tasks.length}</span>
+                  {t("할 일")}
+                  <span className="count-chip">{tasks.length}</span>
                   <Link
                     className="student-text-link"
                     to={`/r/${researchId}/tasks?feedback=${feedback.id}&new=1`}
                   >
-                    추가
+                    {t("추가")}
                     <Icon name="plus" size={14} />
                   </Link>
                 </h3>
@@ -694,12 +717,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   ))
                 ) : (
                   <p className="student-empty-inline">
-                    수정 방법에서 할 일을 만들거나 기존 할 일을 연결할 수
-                    있어요.
+                    {t(
+                      "수정 방법에서 할 일을 만들거나 기존 할 일을 연결할 수 있어요.",
+                    )}
                   </p>
                 )}
                 <h3>
-                  수정 결과<span className="count-chip">{results.length}</span>
+                  {t("수정 결과")}
+                  <span className="count-chip">{results.length}</span>
                 </h3>
                 {results.length ? (
                   results.map((result) => (
@@ -717,12 +742,13 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   ))
                 ) : (
                   <p className="student-empty-inline">
-                    아직 수정 결과가 없어요.
+                    {t("아직 수정 결과가 없어요.")}
                   </p>
                 )}
                 <p className="panel-frame-note">
-                  할 일을 끝내도 수정 결과나 교수 확인이 바뀌지는 않아요. 칸마다
-                  따로 기록해요.
+                  {t(
+                    "할 일을 끝내도 수정 결과나 교수 확인이 바뀌지는 않아요. 칸마다 따로 기록해요.",
+                  )}
                 </p>
               </div>
             )}
@@ -730,7 +756,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               <AIWorkbench
                 key={aiRun}
                 embedded
-                title="수정 방법 제안"
+                title={t("수정 방법 제안")}
                 input={aiInput}
                 stale={aiStale}
                 onClose={() => setPanelOpen(false)}
@@ -745,15 +771,15 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         busy={editForm.saving}
         open={editing}
         onOpenChange={setEditing}
-        title="피드백 편집"
-        description="피드백 상태는 할 일 완료나 교수 응답과 따로 저장돼요."
+        title={t("피드백 편집")}
+        description={t("피드백 상태는 할 일 완료나 교수 응답과 따로 저장돼요.")}
       >
         <form
           className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!draft.title.trim() || !draft.body.trim()) {
-              editForm.setError("제목과 피드백 내용을 입력해 주세요.");
+              editForm.setError(t("제목과 피드백 내용을 입력해 주세요."));
               return;
             }
             void editForm.perform(async () => {
@@ -763,24 +789,24 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 body: draft.body.trim(),
               });
               setEditing(false);
-              toast.success("피드백을 저장했어요");
+              toast.success(t("피드백을 저장했어요"));
             });
           }}
         >
           <LabeledInput
-            label="제목"
+            label={t("제목")}
             required
             value={draft.title}
             onChange={(title) => setDraft((v) => ({ ...v, title }))}
           />
           <LabeledText
-            label="피드백 내용"
+            label={t("피드백 내용")}
             required
             value={draft.body}
             onChange={(body) => setDraft((v) => ({ ...v, body }))}
           />
           <label className="field">
-            <span className="field-name">피드백 상태</span>
+            <span className="field-name">{t("피드백 상태")}</span>
             <SelectField
               className="native-select"
               value={draft.status}
@@ -799,8 +825,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             </SelectField>
           </label>
           <LabeledText
-            label="내 메모"
-            hint="나만 볼 수 있어요."
+            label={t("내 메모")}
+            hint={t("나만 볼 수 있어요.")}
             value={draft.notes}
             onChange={(notes) => setDraft((v) => ({ ...v, notes }))}
           />
@@ -819,8 +845,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         }}
         title={
           planDraft && plans.some((p) => p.id === planDraft.id)
-            ? "수정 방법 편집"
-            : "수정 방법 작성"
+            ? t("수정 방법 편집")
+            : t("수정 방법 작성")
         }
       >
         <form
@@ -832,7 +858,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               !planDraft.title.trim() ||
               !planDraft.method.trim()
             ) {
-              planForm.setError("제목과 ‘어떻게 고칠지’를 입력해 주세요.");
+              planForm.setError(t("제목과 ‘어떻게 고칠지’를 입력해 주세요."));
               return;
             }
             void planForm.perform(async () => {
@@ -842,14 +868,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 method: planDraft.method.trim(),
               });
               setPlanDraft(null);
-              toast.success("수정 방법을 저장했어요");
+              toast.success(t("수정 방법을 저장했어요"));
             });
           }}
         >
           {planDraft && (
             <>
               <LabeledInput
-                label="제목"
+                label={t("제목")}
                 required
                 value={planDraft.title}
                 onChange={(title) =>
@@ -857,7 +883,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 }
               />
               <LabeledText
-                label="어떻게 고칠지"
+                label={t("어떻게 고칠지")}
                 required
                 value={planDraft.method}
                 onChange={(method) =>
@@ -865,7 +891,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 }
               />
               <LabeledText
-                label="예상 결과"
+                label={t("예상 결과")}
                 value={planDraft.expectedResult}
                 onChange={(expectedResult) =>
                   setPlanDraft((v) => (v ? { ...v, expectedResult } : v))
@@ -873,7 +899,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 rows={2}
               />
               <LabeledText
-                label="필요한 자료·준비할 것"
+                label={t("필요한 자료·준비할 것")}
                 value={planDraft.requiredMaterials}
                 onChange={(requiredMaterials) =>
                   setPlanDraft((v) => (v ? { ...v, requiredMaterials } : v))
@@ -881,7 +907,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 rows={2}
               />
               <LabeledText
-                label="확인이 필요한 가정"
+                label={t("확인이 필요한 가정")}
                 value={planDraft.assumptions}
                 onChange={(assumptions) =>
                   setPlanDraft((v) => (v ? { ...v, assumptions } : v))
@@ -903,15 +929,19 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         onOpenChange={(open) => {
           if (!open) setTaskPlan(null);
         }}
-        title="할 일로 만들기"
-        description="이 피드백과 선택한 방법에 연결된 새 할 일을 만들어요."
+        title={t("할 일로 만들기")}
+        description={t("이 피드백과 선택한 방법에 연결된 새 할 일을 만들어요.")}
       >
         <form
           className="stack"
+          noValidate
           onSubmit={(event) => {
             event.preventDefault();
-            if (!taskPlan || !taskTitle.trim()) {
-              taskForm.setError("제목을 입력해 주세요.");
+            if (!taskPlan) return;
+            if (!taskTitle.trim()) {
+              // 브라우저 기본 말풍선 대신 칸 아래에 알려 줍니다(QA F-005).
+              setTaskTitleError(t("제목을 입력해 주세요."));
+              taskTitleInput.current?.focus();
               return;
             }
             void taskForm.perform(async () => {
@@ -929,18 +959,23 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               });
               setTaskPlan(null);
               navigate(`/r/${researchId}/tasks/${task.id}`);
-              toast.success("할 일을 만들었어요");
+              toast.success(t("할 일을 만들었어요"));
             });
           }}
         >
           <LabeledInput
-            label="제목"
+            label={t("제목")}
             required
             value={taskTitle}
-            onChange={setTaskTitle}
+            onChange={(value) => {
+              setTaskTitle(value);
+              setTaskTitleError("");
+            }}
+            error={taskTitleError || undefined}
+            inputRef={taskTitleInput}
           />
           <LabeledText
-            label="설명"
+            label={t("설명")}
             value={taskDescription}
             onChange={setTaskDescription}
           />
@@ -948,7 +983,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           <SaveActions
             saving={taskForm.saving}
             onCancel={() => setTaskPlan(null)}
-            label="할 일 만들기"
+            label={t("할 일 만들기")}
           />
         </form>
       </FormDialog>
@@ -958,18 +993,21 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         onOpenChange={(open) => {
           if (!open) setCancelPlan(null);
         }}
-        title="이 방법의 선택을 취소할까요?"
-        description="‘선택 취소한 방법’으로 옮겨요. 나중에 다시 선택할 수 있어요."
+        title={t("이 방법의 선택을 취소할까요?")}
+        description={t(
+          "‘선택 취소한 방법’으로 옮겨요. 나중에 다시 선택할 수 있어요.",
+        )}
       >
         <div className="stack">
           <p className="student-inline-note">
-            이미 만든 할 일은 그대로 남아요. 이 방법과의 연결은 할 일을 편집할
-            때 해제할 수 있어요.
+            {t(
+              "이미 만든 할 일은 그대로 남아요. 이 방법과의 연결은 할 일을 편집할 때 해제할 수 있어요.",
+            )}
           </p>
           <ErrorNotice error={cancelForm.error} />
           <div className="form-actions">
             <Button variant="outline" onClick={() => setCancelPlan(null)}>
-              닫기
+              {t("닫기")}
             </Button>
             <Button
               disabled={cancelForm.saving}
@@ -979,12 +1017,12 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     await save("plans", { ...cancelPlan, status: "cancelled" });
                     setCancelPlan(null);
                     toast.success(
-                      "선택을 취소했어요. 만든 할 일은 그대로 있어요.",
+                      t("선택을 취소했어요. 만든 할 일은 그대로 있어요."),
                     );
                   });
               }}
             >
-              선택 취소
+              {t("선택 취소")}
             </Button>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import type { Research } from "@/lib/domain";
 import { hasDirection } from "@/lib/research-direction";
@@ -27,9 +28,9 @@ export function ResearchDirection({
   if (!hasDirection(research))
     return (
       <div className="rh-direction is-empty">
-        <span>연구 목적과 질문을 아직 적지 않았어요.</span>
+        <span>{t("연구 목적과 질문을 아직 적지 않았어요.")}</span>
         <Button asChild variant="link" size="sm">
-          <Link to={settingsHref}>적어 두기</Link>
+          <Link to={settingsHref}>{t("적어 두기")}</Link>
         </Button>
         {planExcerpt && (
           <Button
@@ -38,17 +39,17 @@ export function ResearchDirection({
             disabled={busy}
             onClick={() => onImport(planExcerpt)}
           >
-            계획서에서 가져오기
+            {t("계획서에서 가져오기")}
           </Button>
         )}
       </div>
     );
   return (
-    <section className="rh-direction" aria-label="연구 방향">
+    <section className="rh-direction" aria-label={t("연구 방향")}>
       <div className="rh-direction-head">
-        <h2>연구 방향</h2>
+        <h2>{t("연구 방향")}</h2>
         <Button asChild variant="link" size="sm">
-          <Link to={settingsHref}>고치기</Link>
+          <Link to={settingsHref}>{t("고치기")}</Link>
         </Button>
       </div>
       {research.purpose?.trim() && <p>{research.purpose}</p>}

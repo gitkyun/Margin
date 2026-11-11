@@ -1,0 +1,196 @@
+import { t } from "@/lib/i18n";
+import { useRef } from "react";
+import { BrandMark } from "@/components/brand/Brand";
+import { Icon } from "@/components/icons";
+import { INTRO_FLOW } from "@/lib/intro";
+import { useZoomInto } from "@/lib/use-zoom-into";
+
+interface IntroStageProps {
+  slide: number;
+  flowIndex: number;
+}
+
+const SCATTERED = [
+  { icon: "calendar", label: t("미팅 메모"), note: t("지도 미팅에서 적은 말") },
+  { icon: "feedback", label: t("받은 피드백"), note: t("고치라고 들은 내용") },
+  { icon: "file", label: t("고친 원고"), note: t("버전마다 남긴 파일") },
+];
+
+/** 전체 화면처럼 보이게 채우는 빈 카드 */
+function Filler({ wide = false }: { wide?: boolean }) {
+  return (
+    <div className={`ob-shot-card ob-shot-extra ${wide ? "ob-shot-wide" : ""}`}>
+      <i className="ob-skel ob-skel-short" />
+      <i className="ob-skel ob-skel-line" />
+      <i className="ob-skel ob-skel-line" />
+    </div>
+  );
+}
+
+/** 단계마다 그 화면 전체를 줄인 그림. 글은 예시이고 실제 기록이 아닙니다. */
+function FlowScreen({ index }: { index: number }) {
+  const example = INTRO_FLOW[index].example;
+  if (index === 0)
+    return (
+      <div className="ob-shot-grid">
+        <div className="ob-shot-card">
+          <span className="ob-shot-label">
+            <Icon name="edit" size={12} />
+            {t("메모")}
+          </span>
+          <i className="ob-skel ob-skel-line ob-shot-extra" />
+          <p className="ob-shot-mark ob-shot-focus">{example}</p>
+          <i className="ob-skel ob-skel-short ob-shot-extra" />
+          <i className="ob-skel ob-skel-line ob-shot-extra" />
+        </div>
+        <Filler />
+        <Filler wide />
+      </div>
+    );
+  if (index === 1)
+    return (
+      <div className="ob-shot-grid">
+        <div className="ob-shot-card ob-shot-focus">
+          <span className="ob-shot-badge">{t("시작 전")}</span>
+          <p>{example}</p>
+        </div>
+        <Filler />
+        <Filler />
+        <Filler />
+      </div>
+    );
+  if (index === 2)
+    return (
+      <div className="ob-shot-grid">
+        <div className="ob-shot-card">
+          <p className="ob-shot-task ob-shot-focus">
+            <i className="ob-shot-check" />
+            {example}
+          </p>
+          <p className="ob-shot-task ob-shot-extra">
+            <i className="ob-shot-check" />
+            <i className="ob-skel ob-skel-line" />
+          </p>
+          <p className="ob-shot-task ob-shot-extra">
+            <i className="ob-shot-check" />
+            <i className="ob-skel ob-skel-short" />
+          </p>
+        </div>
+        <Filler />
+        <Filler wide />
+      </div>
+    );
+  if (index === 3)
+    return (
+      <div className="ob-shot-grid">
+        <div className="ob-shot-card ob-shot-extra">
+          <span className="ob-shot-label">{t("바꾸기 전")}</span>
+          <i className="ob-skel ob-skel-line" />
+          <i className="ob-skel ob-skel-line" />
+          <i className="ob-skel ob-skel-short" />
+        </div>
+        <div className="ob-shot-card ob-shot-focus">
+          <span className="ob-shot-label">{t("바꾼 뒤")}</span>
+          <p className="ob-shot-mark">{example}</p>
+        </div>
+        <Filler wide />
+      </div>
+    );
+  return (
+    <div className="ob-shot-grid">
+      <div className="ob-shot-card">
+        <span className="ob-shot-label">
+          <Icon name="send" size={12} />
+          {t("교수님께 보낸 요청")}
+        </span>
+        <p>{example}</p>
+        <p className="ob-shot-reply ob-shot-focus">
+          <Icon name="check-circle" size={14} />
+          {t("교수님 응답")}
+          <span className="ob-shot-badge">{t("수정 내용 확인")}</span>
+        </p>
+      </div>
+      <Filler />
+      <Filler wide />
+    </div>
+  );
+}
+
+/**
+ * 소개 오른쪽의 움직이는 장면. 실제 화면을 줄인 창 모양입니다.
+ * 첫 장은 흩어진 기록이 연구 하나로 모이고, 둘째 장은 왼쪽에서 고른 단계의 화면으로 바뀝니다.
+ * 설명은 왼쪽 글에 모두 있어 보조 기술에서는 숨깁니다.
+ */
+export function IntroStage({ slide, flowIndex }: IntroStageProps) {
+  const step = INTRO_FLOW[flowIndex];
+  const flow = slide === 1;
+  const frame = useRef<HTMLDivElement>(null);
+  // 흐름 장에서는 전체 화면에서 그 단계의 핵심 컴포넌트로 확대해 들어갑니다.
+  useZoomInto(
+    frame,
+    flow ? ".ob-shot-focus" : undefined,
+    `${slide}-${flowIndex}`,
+  );
+  return (
+    <div className="ob-stage" ref={frame} aria-hidden="true" inert>
+      <div className="ob-stage-canvas" data-zoom-canvas>
+        <div className="ob-stage-rail">
+          <BrandMark className="ob-rail-mark" />
+          <div className="ob-stage-nav">
+            {flow && (
+              <i
+                className="ob-stage-cursor"
+                style={{ transform: `translateY(${flowIndex * 100}%)` }}
+              />
+            )}
+            {INTRO_FLOW.map((item, index) => (
+              <span
+                key={item.label}
+                data-state={
+                  !flow
+                    ? undefined
+                    : index === flowIndex
+                      ? "active"
+                      : index < flowIndex
+                        ? "done"
+                        : undefined
+                }
+              >
+                <Icon name={item.icon} size={18} />
+              </span>
+            ))}
+          </div>
+        </div>
+        {flow ? (
+          <div className="ob-stage-main" key="flow">
+            <div className="ob-shot" key={step.label}>
+              <p className="ob-shot-title">
+                <Icon name={step.icon} size={18} />
+                {step.label}
+                <small>
+                  {flowIndex + 1} / {INTRO_FLOW.length}
+                </small>
+              </p>
+              <FlowScreen index={flowIndex} />
+            </div>
+          </div>
+        ) : (
+          <div className="ob-stage-main ob-gather" key="gather">
+            <p className="ob-shot-title">{t("내 연구")}</p>
+            {SCATTERED.map((item) => (
+              <div className="ob-gather-row" key={item.label}>
+                <span className="ob-intro-icon">
+                  <Icon name={item.icon} size={18} />
+                </span>
+                <span>
+                  <strong>{item.label}</strong>
+                  <small>{item.note}</small>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

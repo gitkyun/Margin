@@ -1,3 +1,4 @@
+import { currentLang, t } from "@/lib/i18n";
 import { josa } from "es-hangul";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Button } from "./ui/button";
@@ -13,9 +14,9 @@ import { GO_SHORTCUTS } from "@/lib/go-shortcuts";
 import "./shortcut-help.css";
 
 const EXTRA_DESTINATIONS: Record<string, string> = {
-  tasks: "할 일",
-  assistant: "연구 도우미",
-  settings: "연구 설정",
+  tasks: t("할 일"),
+  assistant: t("연구 도우미"),
+  settings: t("연구 설정"),
 };
 
 /** 단축키 목록은 GO_SHORTCUTS 한 곳에서 읽어, 실제 동작과 어긋나지 않게 합니다. */
@@ -25,16 +26,21 @@ function shortcutRows(): [keys: string[], label: string][] {
     EXTRA_DESTINATIONS[path] ??
     path;
   return [
-    [["⌘", "K"], "찾기와 바로 하기"],
+    [["⌘", "K"], t("찾기와 바로 하기")],
     ...GO_SHORTCUTS.map(
       ([path, key]) =>
         [
           ["G", key.toUpperCase()],
-          `${josa(labelOf(path), "으로/로")} 이동`,
+          t("{destination} 이동", {
+            destination:
+              currentLang() === "ko"
+                ? josa(labelOf(path), "으로/로") // i18n-ignore
+                : labelOf(path),
+          }),
         ] as [string[], string],
     ),
-    [["⌘", "Z"], "방금 완료한 할 일 되돌리기"],
-    [["?"], "이 목록 보기"],
+    [["⌘", "Z"], t("방금 완료한 할 일 되돌리기")],
+    [["?"], t("이 목록 보기")],
   ];
 }
 
@@ -58,10 +64,11 @@ export function ShortcutHelp({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>키보드 단축키</DialogTitle>
+          <DialogTitle>{t("키보드 단축키")}</DialogTitle>
           <DialogDescription>
-            G 단축키는 연구 안에서 G를 누른 뒤 1초 안에 글자를 누르면 돼요. 한글
-            자판 상태여도 같은 자리를 누르면 돼요.
+            {t(
+              "G 단축키는 연구 안에서 G를 누른 뒤 1초 안에 글자를 누르면 돼요. 한글 자판 상태여도 같은 자리를 누르면 돼요.",
+            )}
           </DialogDescription>
         </DialogHeader>
         <dl className="shortcut-help">
@@ -76,7 +83,7 @@ export function ShortcutHelp({
             </div>
           ))}
         </dl>
-        <Button onClick={() => onOpenChange(false)}>닫기</Button>
+        <Button onClick={() => onOpenChange(false)}>{t("닫기")}</Button>
       </DialogContent>
     </Dialog>
   );

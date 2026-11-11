@@ -1,3 +1,5 @@
+import { dateLocale, t } from "@/lib/i18n";
+import { timeParts } from "@/lib/time-format";
 import { friendlyError } from "@/lib/supabase";
 import { StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
@@ -11,9 +13,9 @@ import {
   type WorkspaceData,
 } from "@/lib/domain";
 export const sharingLabels = {
-  draft: "준비 중",
-  shared: "공유 중",
-  stopped: "공유 중지",
+  draft: t("준비 중"),
+  shared: t("공유 중"),
+  stopped: t("공유 중지"),
 } as const;
 export const sharingTone = {
   draft: "neutral",
@@ -25,17 +27,16 @@ export function timeText(value?: string) {
   const d = new Date(value);
   return Number.isNaN(d.valueOf())
     ? ""
-    : new Intl.DateTimeFormat("ko-KR", {
+    : new Intl.DateTimeFormat(dateLocale(), {
         month: "short",
         day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
+        ...timeParts(),
       }).format(d);
 }
 export function errorText(e: unknown) {
   return e instanceof Error
     ? friendlyError(e)
-    : "요청을 처리하지 못했어요. 다시 시도해 주세요.";
+    : t("요청을 처리하지 못했어요. 다시 시도해 주세요.");
 }
 export function latestRound(data: WorkspaceData, itemId: string) {
   return data.rounds
@@ -56,7 +57,7 @@ export function latestResponse(data: WorkspaceData, roundId?: string) {
 }
 export function evidenceIssue(result: RevisionResult, data: WorkspaceData) {
   if (!result.title.trim() || !result.description.trim())
-    return "제목과 수정한 내용을 적어 주세요.";
+    return t("제목과 수정한 내용을 적어 주세요.");
   if (
     result.kind === "document" &&
     (!result.versionId ||
@@ -65,7 +66,9 @@ export function evidenceIssue(result: RevisionResult, data: WorkspaceData) {
       ) ||
       !result.location.trim())
   )
-    return "문서 수정에는 파일과 볼 위치가 필요해요. 수정 결과에서 추가해 주세요.";
+    return t(
+      "문서 수정에는 파일과 볼 위치가 필요해요. 수정 결과에서 추가해 주세요.",
+    );
   return "";
 }
 export function sourceExcerpt(result: RevisionResult, data: WorkspaceData) {
@@ -125,7 +128,7 @@ export function ResponseStatus({ response }: { response?: ReviewResponse }) {
             : "neutral"
       }
     >
-      {response ? responseLabels[response.result] : "응답 전"}
+      {response ? responseLabels[response.result] : t("응답 전")}
     </StatusBadge>
   );
 }

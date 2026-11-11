@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {
   Children,
   cloneElement,
@@ -161,15 +162,23 @@ export function StatusBadge({
     </ContentBadge>
   );
 }
+/**
+ * 이름·필수 표시·설명·오류를 한 칸에 묶습니다.
+ * `error`가 있으면 칸 바로 아래에 보여 주고, 안쪽 입력에 `aria-invalid`와
+ * `aria-describedby`를 붙여 Montage 오류(negative) 모양으로 그려요.
+ * 포커스 이동은 저장을 막은 화면이 입력의 ref로 맡습니다.
+ */
 export function Field({
   label,
   required,
   hint,
+  error,
   children,
 }: {
   label: string;
   required?: boolean;
   hint?: string;
+  error?: string;
   children: ReactNode;
 }) {
   const generated = useId(),
@@ -179,25 +188,37 @@ export function Field({
       ? (childrenArray[0] as ReactElement<{
           id?: string;
           "aria-describedby"?: string;
+          "aria-invalid"?: boolean;
         }>)
       : null;
   const id = child?.props.id ?? generated,
-    hintId = `${id}-hint`;
+    hintId = `${id}-hint`,
+    errorId = `${id}-error`;
   return (
     <div className="field">
       <label htmlFor={child ? id : undefined} className="field-label">
         {label}
-        {required && <span className="required-indicator">필수</span>}
+        {required && <span className="required-indicator">{t("필수")}</span>}
       </label>
       {child
         ? cloneElement(child, {
             id,
             "aria-describedby":
-              [child.props["aria-describedby"], hint ? hintId : undefined]
+              [
+                child.props["aria-describedby"],
+                error ? errorId : undefined,
+                hint ? hintId : undefined,
+              ]
                 .filter(Boolean)
                 .join(" ") || undefined,
+            ...(error ? { "aria-invalid": true } : {}),
           })
         : children}
+      {error && (
+        <p id={errorId} className="field-error" role="alert">
+          {error}
+        </p>
+      )}
       {hint && (
         <p id={hintId} className="field-hint">
           {hint}
@@ -224,12 +245,12 @@ export function IconButton({
 }
 export function LoadingState() {
   return (
-    <div className="loading-state" role="status" aria-label="불러오는 중">
+    <div className="loading-state" role="status" aria-label={t("불러오는 중")}>
       <Skeleton variant="text" width="40%" height={32} />
       <Skeleton variant="rectangle" width="100%" height={160} radius={16} />
       <Skeleton variant="text" width="100%" />
       <Skeleton variant="text" width="100%" />
-      <span className="sr-only">불러오는 중</span>
+      <span className="sr-only">{t("불러오는 중")}</span>
     </div>
   );
 }
@@ -264,7 +285,7 @@ function SkeletonLabel() {
 export function HomeSkeleton() {
   return (
     <div className="app-shell home-skeleton" role="status" aria-busy="true">
-      <span className="sr-only">연구 홈을 불러오는 중</span>
+      <span className="sr-only">{t("연구 홈을 불러오는 중")}</span>
       <aside className="sidebar" aria-hidden="true">
         <Skeleton variant="rectangle" width={150} height={34} radius={8} />
         <div className="skeleton-nav">
@@ -355,7 +376,7 @@ export function ErrorNotice({
       <span>{message}</span>
       {retry && (
         <Button variant="link" onClick={retry}>
-          다시 불러오기
+          {t("다시 불러오기")}
         </Button>
       )}
     </div>

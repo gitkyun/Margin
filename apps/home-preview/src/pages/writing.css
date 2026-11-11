@@ -297,7 +297,7 @@
     line-height: var(--typography-body1Reading-lineHeight);
     color: var(--text);
     min-height: 420px;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-body1-letterSpacing);
   }
@@ -427,7 +427,7 @@
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
     white-space: pre-wrap;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
