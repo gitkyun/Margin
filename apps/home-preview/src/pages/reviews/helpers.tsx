@@ -55,6 +55,31 @@ export function latestResponse(data: WorkspaceData, roundId?: string) {
     .filter((r) => r.roundId === roundId)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
 }
+export interface IncomingSummary {
+  /** 검토를 보낸 학생 이름. 회차에 이름이 없으면 빈 문자열 */
+  studentName: string;
+  /** 검토 항목 수 */
+  total: number;
+  /** 최신 회차에 교수 응답이 아직 없는 항목 수 */
+  pending: number;
+}
+
+/** 교수가 받은 검토 요청 한 건의 요약: 누가 보냈고, 몇 항목에 아직 응답하지 않았는지. */
+export function incomingSummary(
+  data: WorkspaceData,
+  requestId: string,
+): IncomingSummary {
+  const items = data.reviewItems.filter((item) => item.requestId === requestId);
+  const latest = items.map((item) => latestRound(data, item.id));
+  return {
+    studentName:
+      latest.find((round) => round?.createdByName)?.createdByName ?? "",
+    total: items.length,
+    pending: latest.filter((round) => round && !latestResponse(data, round.id))
+      .length,
+  };
+}
+
 export function evidenceIssue(result: RevisionResult, data: WorkspaceData) {
   if (!result.title.trim() || !result.description.trim())
     return t("제목과 수정한 내용을 적어 주세요.");
