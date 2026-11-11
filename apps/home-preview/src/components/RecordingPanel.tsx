@@ -177,7 +177,7 @@ export function RecordingPanel({
         "audio/ogg;codecs=opus",
       ].find((candidate) => MediaRecorder.isTypeSupported(candidate));
       // 32kbps keeps a full 2-hour recording (about 29MB) well under the 500MB upload
-      // limit; browser defaults (64-128kbps) can pass it before 2 hours.
+      // limit.
       const m = new MediaRecorder(s, {
         ...(mime ? { mimeType: mime } : {}),
         audioBitsPerSecond: 32000,
