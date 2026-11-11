@@ -2388,10 +2388,14 @@
     }
   }
 
-  .lp-login {
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
+  /* 휴대폰 폭에서는 위쪽 줄의 로그인 링크를 숨기고 메뉴 안의 링크를 씁니다(위 767px 규칙). */
+  @media (min-width: 768px) {
+    .lp-login {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      white-space: nowrap;
+    }
   }
   /* Standalone text links on public pages: 24px targets (WCAG 2.5.8). */
   .public-article > .text-link,

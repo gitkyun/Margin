@@ -9,9 +9,10 @@ export type Lang = "ko" | "ja";
 
 const STORAGE_KEY = "margin-lang";
 
-export const LANGUAGES: { value: Lang; label: string }[] = [
-  { value: "ko", label: "한국어" }, // i18n-ignore
-  { value: "ja", label: "日本語" },
+/** 언어 이름은 그 언어로 적고, 앞에 국기 이모지를 붙여 보여 줍니다. */
+export const LANGUAGES: { value: Lang; label: string; flag: string }[] = [
+  { value: "ko", label: "한국어", flag: "🇰🇷" }, // i18n-ignore
+  { value: "ja", label: "日本語", flag: "🇯🇵" },
 ];
 
 function readLang(): Lang {

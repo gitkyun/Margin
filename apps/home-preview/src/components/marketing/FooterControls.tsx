@@ -1,4 +1,4 @@
-import { LANGUAGES, currentLang, setLang, t } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import { Icon } from "@/components/icons";
 import { useTheme } from "@/lib/theme";
 import "./footer-controls.css";
@@ -51,19 +51,6 @@ export function FooterControls() {
             onClick={() => setTheme(option.value)}
           >
             <Icon name={option.icon} size={15} />
-            <span>{option.label}</span>
-          </button>
-        ))}
-      </div>
-      <div className="lp-footer-theme" role="group" aria-label={t("화면 언어")}>
-        {LANGUAGES.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            lang={option.value}
-            aria-pressed={currentLang() === option.value}
-            onClick={() => setLang(option.value)}
-          >
             <span>{option.label}</span>
           </button>
         ))}

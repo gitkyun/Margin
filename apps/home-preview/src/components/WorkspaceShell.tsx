@@ -1,3 +1,4 @@
+import { LanguageMenu } from "./LanguageMenu";
 import { t } from "@/lib/i18n";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
@@ -662,6 +663,7 @@ export function WorkspaceShell({
                 </Button>
               </Hint>
             )}
+            <LanguageMenu />
             <Hint
               label={t("사용 안내")}
               detail={t("키보드 단축키는 ? 키로 볼 수 있어요.")}
