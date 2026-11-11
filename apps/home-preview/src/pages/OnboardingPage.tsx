@@ -1,7 +1,6 @@
 import { t } from "@/lib/i18n";
 import { formatClock } from "@/lib/time-format";
 import { useRef, useState, type FormEvent } from "react";
-import { flushSync } from "react-dom";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand";
@@ -32,6 +31,7 @@ import {
   type Research,
 } from "@/lib/domain";
 import { seoulToday } from "@/lib/home-meeting";
+import { expandIntoHome } from "@/lib/expand-home";
 import {
   onboardingLeadLabel,
   onboardingMeeting,
@@ -228,22 +228,9 @@ export function OnboardingPage() {
     }
   }
 
-  /** 미리보기 창이 실제 홈으로 커지는 전환. 지원하지 않거나 동작 줄이기면 바로 이동합니다. */
+  /** 미리보기 창이 가운데의 작은 실제 홈으로 바뀐 뒤 화면 전체로 커집니다(lib/expand-home). */
   function openHome(id: string) {
-    const go = () => navigate(`/r/${id}`, { replace: true });
-    const reduced = window.matchMedia?.(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (reduced || typeof document.startViewTransition !== "function") {
-      go();
-      return;
-    }
-    const root = document.documentElement;
-    root.classList.add("ob-expanding");
-    const transition = document.startViewTransition(() => flushSync(go));
-    void transition.finished.finally(() =>
-      root.classList.remove("ob-expanding"),
-    );
+    void expandIntoHome(() => navigate(`/r/${id}`, { replace: true }));
   }
 
   const summaries = [

@@ -1054,9 +1054,54 @@
   .ob-expanding .app-shell {
     view-transition-name: margin-home;
   }
-  ::view-transition-group(margin-home) {
-    animation-duration: var(--motion-duration-page);
-    animation-timing-function: var(--motion-ease-standard);
+  html.ob-expanding::view-transition-group(margin-home) {
+    animation-duration: var(--ob-vt-duration, var(--motion-duration-page));
+    animation-timing-function: var(--ob-vt-ease, var(--motion-ease-standard));
+  }
+  /* 창 그림을 화면 비율로 늘리지 않고 왼쪽 위를 기준으로 채웁니다.
+     모형과 실제 화면은 가운데로 옮겨 가는 동안 짧게 바뀝니다. */
+  html.ob-expanding::view-transition-old(margin-home),
+  html.ob-expanding::view-transition-new(margin-home) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+    animation-duration: var(--ob-vt-fade, 180ms);
+  }
+  html.ob-expanding::view-transition-old(root),
+  html.ob-expanding::view-transition-new(root) {
+    animation-duration: var(--ob-vt-fade, 180ms);
+  }
+
+  /* 작은 실제 홈: 홈을 줄여 화면 가운데에 두고(ob-framed), 그대로 키웁니다(ob-growing).
+     둘레의 옅은 파란 띠는 커지면서 화면 밖으로 밀려납니다. lib/expand-home.ts가 붙입니다. */
+  html.ob-framed,
+  html.ob-growing {
+    overflow: hidden;
+    background: var(--canvas);
+  }
+  html.ob-framed .app-shell,
+  html.ob-growing .app-shell {
+    height: 100vh;
+    overflow: hidden;
+    transform-origin: center;
+    will-change: transform;
+    transition:
+      transform var(--ob-vt-grow, 1200ms) var(--ob-vt-ease, ease),
+      border-radius var(--ob-vt-grow, 1200ms) var(--ob-vt-ease, ease),
+      box-shadow var(--ob-vt-grow, 1200ms) var(--ob-vt-ease, ease);
+  }
+  html.ob-framed .app-shell {
+    transform: scale(var(--ob-vt-scale, 0.7));
+    border-radius: var(--radius-24, 24px);
+    box-shadow:
+      0 0 0 22px var(--brand-soft),
+      var(--shadow-pop);
+  }
+  html.ob-growing .app-shell {
+    transform: none;
+    border-radius: 0;
+    box-shadow: 0 0 0 0 var(--brand-soft);
   }
 
   @media (max-width: 991px) {
