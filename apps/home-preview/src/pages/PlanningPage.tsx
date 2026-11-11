@@ -1,4 +1,4 @@
-import { dateLocale } from "@/lib/i18n";
+import { currentLang, dateLocale, t } from "@/lib/i18n";
 import { timeParts } from "@/lib/time-format";
 import themePlugin from "@fullcalendar/react/themes/forma";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import timeGridPlugin from "@fullcalendar/react/timegrid";
 import listPlugin from "@fullcalendar/react/list";
 import interactionPlugin from "@fullcalendar/react/interaction";
 import koLocale from "@fullcalendar/react/locales/ko";
+import jaLocale from "@fullcalendar/react/locales/ja";
 import { toast } from "sonner";
 import { useExperience } from "@/lib/experience";
 import {
@@ -122,15 +123,15 @@ export function PlanningPage() {
   return (
     <div className="experience-page">
       <PageHeader
-        title="계획·일정"
-        description="연구 단계와 중요한 일정을 확인하세요."
+        title={t("계획·일정")}
+        description={t("연구 단계와 중요한 일정을 확인하세요.")}
         actions={
           // 탭마다 그 탭에서 만드는 것 하나만 주 행동으로 둡니다.
           tab === "calendar" ? (
             <Button asChild>
               <Link to={`/r/${researchId}/meetings?new=1`}>
                 <Icon name="plus" size={17} />
-                미팅 만들기
+                {t("미팅 만들기")}
               </Link>
             </Button>
           ) : (
@@ -140,22 +141,22 @@ export function PlanningPage() {
               }
             >
               <Icon name="plus" size={17} />
-              {tab === "schedule" ? "시간 조율 시작" : "단계 추가"}
+              {tab === "schedule" ? t("시간 조율 시작") : t("단계 추가")}
             </Button>
           )
         }
         tabs={
           <Tabs
             className="tabs-line"
-            label="계획 화면"
+            label={t("계획 화면")}
             value={tab}
             onChange={(v) => setParams({ tab: v })}
             options={[
-              { value: "roadmap", label: "연구 로드맵" },
-              { value: "calendar", label: "캘린더" },
+              { value: "roadmap", label: t("연구 로드맵") },
+              { value: "calendar", label: t("캘린더") },
               {
                 value: "schedule",
-                label: "시간 조율",
+                label: t("시간 조율"),
                 count: polls.filter((p) => p.status === "open").length,
               },
             ]}
@@ -164,12 +165,12 @@ export function PlanningPage() {
         toolbar={
           tab === "roadmap" ? (
             <Segments
-              label="로드맵 보기"
+              label={t("로드맵 보기")}
               value={view}
               onChange={setView}
               options={[
-                { value: "timeline", label: "시간순" },
-                { value: "diagram", label: "관계도" },
+                { value: "timeline", label: t("시간순") },
+                { value: "diagram", label: t("관계도") },
               ]}
             />
           ) : undefined
@@ -183,18 +184,20 @@ export function PlanningPage() {
               <Icon name="flag" size={14} />
               {phases.find((p) => p.id === research.currentPhaseId)?.title ??
                 phases.find((p) => p.status === "active")?.title ??
-                "현재 단계 미정"}
+                t("현재 단계 미정")}
             </span>
-            <p>단계와 목표의 날짜를 바꿔도 할 일 기한은 바뀌지 않아요.</p>
+            <p>
+              {t("단계와 목표의 날짜를 바꿔도 할 일 기한은 바뀌지 않아요.")}
+            </p>
           </div>
           {!phases.length ? (
             <EmptyState
               icon="flag"
-              title="아직 연구 단계가 없어요"
+              title={t("아직 연구 단계가 없어요")}
               points={[
-                "기본 단계 여섯 개로 시작해요",
-                "이름과 순서, 기간을 내 연구에 맞게 바꿔요",
-                "지금 단계가 연구 홈에 보여요",
+                t("기본 단계 여섯 개로 시작해요"),
+                t("이름과 순서, 기간을 내 연구에 맞게 바꿔요"),
+                t("지금 단계가 연구 홈에 보여요"),
               ]}
               action={
                 <Button
@@ -214,7 +217,7 @@ export function PlanningPage() {
                     })
                   }
                 >
-                  기본 단계로 시작
+                  {t("기본 단계로 시작")}
                 </Button>
               }
             />
@@ -245,22 +248,21 @@ export function PlanningPage() {
                         }
                       >
                         {research.currentPhaseId === p.id
-                          ? "현재 단계"
+                          ? t("현재 단계")
                           : p.status === "done"
-                            ? "완료"
+                            ? t("완료")
                             : p.status === "active"
-                              ? "진행 중"
-                              : "예정"}
+                              ? t("진행 중")
+                              : t("예정")}
                       </StatusBadge>
                     </div>
                     <p>
-                      {formatDate(p.dueDate)} · 할 일{" "}
-                      {
-                        data.tasks.filter(
-                          (t) => t.phaseId === p.id && !t.archivedAt,
-                        ).length
-                      }
-                      개
+                      {t("{date} · 할 일 {count}개", {
+                        date: formatDate(p.dueDate),
+                        count: data.tasks.filter(
+                          (task) => task.phaseId === p.id && !task.archivedAt,
+                        ).length,
+                      })}
                     </p>
                     <div className="phase-milestones">
                       {milestones
@@ -282,7 +284,7 @@ export function PlanningPage() {
                         variant="ghost"
                         onClick={() => setPhase(p)}
                       >
-                        단계 편집
+                        {t("단계 편집")}
                       </Button>
                       <Button
                         size="sm"
@@ -294,16 +296,16 @@ export function PlanningPage() {
                               ...research,
                               currentPhaseId: p.id,
                             });
-                            toast.success("현재 단계를 바꿨어요");
+                            toast.success(t("현재 단계를 바꿨어요"));
                           })
                         }
                       >
-                        현재 단계로 설정
+                        {t("현재 단계로 설정")}
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        aria-label={`${p.title} 위로 이동`}
+                        aria-label={t("{title} 위로 이동", { title: p.title })}
                         disabled={i === 0 || busy}
                         onClick={() =>
                           void run(async () => {
@@ -328,7 +330,7 @@ export function PlanningPage() {
           )}
           <section className="experience-panel roadmap-goals">
             <div className="section-heading">
-              <h2>주요 목표</h2>
+              <h2>{t("주요 목표")}</h2>
               <Button
                 size="sm"
                 variant="outline"
@@ -345,7 +347,7 @@ export function PlanningPage() {
                 }
               >
                 <Icon name="plus" size={15} />
-                목표 추가
+                {t("목표 추가")}
               </Button>
             </div>
             {milestones.map((m) => (
@@ -358,12 +360,12 @@ export function PlanningPage() {
                 <strong>{m.title}</strong>
                 <span>{formatDate(m.dueDate)}</span>
                 <StatusBadge tone={m.status === "done" ? "green" : "neutral"}>
-                  {m.status === "done" ? "완료" : "예정"}
+                  {m.status === "done" ? t("완료") : t("예정")}
                 </StatusBadge>
               </button>
             ))}
             {!milestones.length && (
-              <p>아직 주요 목표가 없어요. 예: 계획서 제출, 학회 발표</p>
+              <p>{t("아직 주요 목표가 없어요. 예: 계획서 제출, 학회 발표")}</p>
             )}
           </section>
         </>
@@ -378,7 +380,7 @@ export function PlanningPage() {
                 listPlugin,
                 interactionPlugin,
               ]}
-              locale={koLocale}
+              locale={currentLang() === "ja" ? jaLocale : koLocale}
               initialView="dayGridMonth"
               // 달 이름 양옆에 이전·다음 버튼을 두어 한 곳에서 달을 넘깁니다.
               headerToolbar={{
@@ -388,7 +390,9 @@ export function PlanningPage() {
               }}
               // 날짜 칸은 숫자만 보여 줍니다("10일" → "10").
               dayCellFormat={{ day: "numeric" }}
-              dayCellTopContent={(info) => info.dayNumberText.replace("일", "")}
+              dayCellTopContent={(info) =>
+                info.dayNumberText.replace(/[일日]/, "")
+              }
               height="auto"
               events={[
                 ...meetings
@@ -403,22 +407,24 @@ export function PlanningPage() {
                   })),
                 ...data.tasks
                   .filter(
-                    (t) =>
-                      t.researchId === researchId && !t.archivedAt && t.dueDate,
+                    (task) =>
+                      task.researchId === researchId &&
+                      !task.archivedAt &&
+                      task.dueDate,
                   )
-                  .map((t) => ({
-                    id: `task-${t.id}`,
-                    title: `할 일 · ${t.title}`,
-                    start: t.dueDate!,
+                  .map((task) => ({
+                    id: `task-${task.id}`,
+                    title: t("할 일 · {title}", { title: task.title }),
+                    start: task.dueDate!,
                     allDay: true,
                     ...eventTone("cautionary"),
-                    url: `/r/${researchId}/tasks/${t.id}`,
+                    url: `/r/${researchId}/tasks/${task.id}`,
                   })),
                 ...phases
                   .filter((p) => !p.archivedAt && p.dueDate)
                   .map((p) => ({
                     id: `phase-${p.id}`,
-                    title: `단계 목표 · ${p.title}`,
+                    title: t("단계 목표 · {title}", { title: p.title }),
                     start: p.dueDate!,
                     allDay: true,
                     ...eventTone("violet"),
@@ -451,7 +457,7 @@ export function PlanningPage() {
             />
           </div>
           <section className="experience-panel">
-            <h2>날짜 미정 미팅</h2>
+            <h2>{t("날짜 미정 미팅")}</h2>
             {meetings
               .filter((m) => !m.date)
               .map((m) => (
@@ -465,16 +471,16 @@ export function PlanningPage() {
                 </Link>
               ))}
             {!meetings.some((m) => !m.date) && (
-              <p>날짜 미정인 미팅이 없어요.</p>
+              <p>{t("날짜 미정인 미팅이 없어요.")}</p>
             )}
           </section>
         </>
       ) : (
         <section className="experience-panel">
           <div className="section-heading">
-            <h2>미팅 시간 조율</h2>
+            <h2>{t("미팅 시간 조율")}</h2>
             <Button variant="outline" onClick={() => setPollOpen(true)}>
-              시간 조율 시작
+              {t("시간 조율 시작")}
             </Button>
           </div>
           <div className="experience-list">
@@ -488,8 +494,10 @@ export function PlanningPage() {
                 <div>
                   <strong>{p.title}</strong>
                   <small>
-                    후보 시간 {p.options.length}개 · 참여자{" "}
-                    {p.participants.length}명
+                    {t("후보 시간 {options}개 · 참여자 {participants}명", {
+                      options: p.options.length,
+                      participants: p.participants.length,
+                    })}
                   </small>
                 </div>
                 <StatusBadge
@@ -502,16 +510,16 @@ export function PlanningPage() {
                   }
                 >
                   {p.status === "confirmed"
-                    ? "확정"
+                    ? t("확정")
                     : p.status === "open"
-                      ? "조율 중"
-                      : "취소"}
+                      ? t("조율 중")
+                      : t("취소")}
                 </StatusBadge>
               </Link>
             ))}
           </div>
           {!polls.length && (
-            <p className="quiet-placeholder">아직 시간 조율이 없어요.</p>
+            <p className="quiet-placeholder">{t("아직 시간 조율이 없어요.")}</p>
           )}
         </section>
       )}
@@ -523,10 +531,11 @@ export function PlanningPage() {
       >
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>연구 단계</DialogTitle>
+            <DialogTitle>{t("연구 단계")}</DialogTitle>
             <DialogDescription>
-              순서는 ‘시간순’ 보기에서 바꿀 수 있어요. 현재 단계를 바꿔도 다른
-              단계의 상태는 바뀌지 않아요.
+              {t(
+                "순서는 ‘시간순’ 보기에서 바꿀 수 있어요. 현재 단계를 바꿔도 다른 단계의 상태는 바뀌지 않아요.",
+              )}
             </DialogDescription>
           </DialogHeader>
           {phase && (
@@ -541,7 +550,7 @@ export function PlanningPage() {
               }}
             >
               <label className="field">
-                단계 이름
+                {t("단계 이름")}
                 <Input
                   required
 
@@ -553,7 +562,7 @@ export function PlanningPage() {
                 />
               </label>
               <label className="field">
-                목표일
+                {t("목표일")}
                 <DateField
                   value={phase.dueDate ?? ""}
                   onChange={(dueDate) =>
@@ -562,17 +571,17 @@ export function PlanningPage() {
                 />
               </label>
               <label className="field">
-                <span>진행 상태</span>
+                <span>{t("진행 상태")}</span>
                 <Choice
-                  label="진행 상태"
+                  label={t("진행 상태")}
                   value={phase.status}
                   onChange={(v) =>
                     setPhase({ ...phase, status: v as ResearchPhase["status"] })
                   }
                   options={[
-                    { value: "planned", label: "예정" },
-                    { value: "active", label: "진행 중" },
-                    { value: "done", label: "완료" },
+                    { value: "planned", label: t("예정") },
+                    { value: "active", label: t("진행 중") },
+                    { value: "done", label: t("완료") },
                   ]}
                 />
               </label>
@@ -592,7 +601,7 @@ export function PlanningPage() {
                       })
                     }
                   >
-                    단계 보관
+                    {t("단계 보관")}
                   </Button>
                 )}
                 <Button
@@ -600,10 +609,10 @@ export function PlanningPage() {
                   variant="outline"
                   onClick={() => setPhase(null)}
                 >
-                  취소
+                  {t("취소")}
                 </Button>
                 <Button type="submit" disabled={busy}>
-                  단계 저장
+                  {t("단계 저장")}
                 </Button>
               </div>
             </form>
@@ -618,9 +627,9 @@ export function PlanningPage() {
       >
         <DialogContent className="rms-dialog">
           <DialogHeader>
-            <DialogTitle>주요 목표</DialogTitle>
+            <DialogTitle>{t("주요 목표")}</DialogTitle>
             <DialogDescription>
-              관련 할 일과 문서를 이 목표에 연결할 수 있어요.
+              {t("관련 할 일과 문서를 이 목표에 연결할 수 있어요.")}
             </DialogDescription>
           </DialogHeader>
           {milestone && (
@@ -635,7 +644,7 @@ export function PlanningPage() {
               }}
             >
               <label className="field">
-                목표 이름
+                {t("목표 이름")}
                 <Input
                   required
                   maxLength={200}
@@ -646,7 +655,7 @@ export function PlanningPage() {
                 />
               </label>
               <label className="field">
-                기한
+                {t("기한")}
                 <DateField
                   value={milestone.dueDate ?? ""}
                   onChange={(dueDate) =>
@@ -655,23 +664,23 @@ export function PlanningPage() {
                 />
               </label>
               <label className="field">
-                <span>단계</span>
+                <span>{t("단계")}</span>
                 <Choice
-                  label="단계"
+                  label={t("단계")}
                   value={milestone.phaseId ?? ""}
                   onChange={(v) =>
                     setMilestone({ ...milestone, phaseId: v || undefined })
                   }
                   options={[
-                    { value: "", label: "단계 미지정" },
+                    { value: "", label: t("단계 미지정") },
                     ...phases.map((p) => ({ value: p.id, label: p.title })),
                   ]}
                 />
               </label>
               <label className="field">
-                <span>목표 상태</span>
+                <span>{t("목표 상태")}</span>
                 <Choice
-                  label="목표 상태"
+                  label={t("목표 상태")}
                   value={milestone.status}
                   onChange={(v) =>
                     setMilestone({
@@ -680,37 +689,40 @@ export function PlanningPage() {
                     })
                   }
                   options={[
-                    { value: "planned", label: "예정" },
-                    { value: "done", label: "완료" },
+                    { value: "planned", label: t("예정") },
+                    { value: "done", label: t("완료") },
                   ]}
                 />
               </label>
               {(["tasks", "documents"] as const).map((kind) => (
                 <fieldset className="connection-picker" key={kind}>
                   <legend>
-                    {kind === "tasks" ? "관련 할 일" : "관련 문서"}
+                    {kind === "tasks" ? t("관련 할 일") : t("관련 문서")}
                   </legend>
                   {data[kind]
-                    .filter((t) => t.researchId === researchId && !t.archivedAt)
-                    .map((t) => {
+                    .filter(
+                      (item) =>
+                        item.researchId === researchId && !item.archivedAt,
+                    )
+                    .map((item) => {
                       const field =
                         kind === "tasks" ? "taskIds" : "documentIds";
                       return (
-                        <label key={t.id}>
+                        <label key={item.id}>
                           <Checkbox
-                            checked={milestone[field].includes(t.id)}
+                            checked={milestone[field].includes(item.id)}
                             onCheckedChange={(next) =>
                               setMilestone({
                                 ...milestone,
                                 [field]: next
-                                  ? [...milestone[field], t.id]
+                                  ? [...milestone[field], item.id]
                                   : milestone[field].filter(
-                                      (id) => id !== t.id,
+                                      (id) => id !== item.id,
                                     ),
                               })
                             }
                           />
-                          {t.title}
+                          {item.title}
                         </label>
                       );
                     })}
@@ -722,10 +734,10 @@ export function PlanningPage() {
                   variant="outline"
                   onClick={() => setMilestone(null)}
                 >
-                  취소
+                  {t("취소")}
                 </Button>
                 <Button type="submit" disabled={busy}>
-                  목표 저장
+                  {t("목표 저장")}
                 </Button>
               </div>
             </form>
@@ -765,11 +777,11 @@ function PollCreate({
     >
       <DialogContent className="rms-dialog">
         <DialogHeader>
-          <DialogTitle>미팅 시간 조율</DialogTitle>
+          <DialogTitle>{t("미팅 시간 조율")}</DialogTitle>
           <DialogDescription>
-            입력한 계정에 마진 알림을 보내요. 이메일은 보내지 않아요.
-            공동연구자가 아닌 사람에게는 연구 이름, 미팅 제목, 후보 시간,
-            참여자별 응답만 보여요.
+            {t(
+              "입력한 계정에 마진 알림을 보내요. 이메일은 보내지 않아요. 공동연구자가 아닌 사람에게는 연구 이름, 미팅 제목, 후보 시간, 참여자별 응답만 보여요.",
+            )}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -800,7 +812,7 @@ function PollCreate({
           }}
         >
           <label className="field">
-            미팅 제목
+            {t("미팅 제목")}
             <Input
               required
               value={title}
@@ -809,24 +821,26 @@ function PollCreate({
             />
           </label>
           <label className="field">
-            참여자 이메일
+            {t("참여자 이메일")}
             <Input
               required
               value={emails}
               onChange={(e) => setEmails(e.target.value)}
-              placeholder="쉼표로 구분해 입력"
+              placeholder={t("쉼표로 구분해 입력")}
             />
             <small>
-              마진 계정이 있는 사람만 초대할 수 있어요. 이메일은 최대 20개예요.
+              {t(
+                "마진 계정이 있는 사람만 초대할 수 있어요. 이메일은 최대 20개예요.",
+              )}
             </small>
           </label>
           {options.map((o, i) => (
             <div className="schedule-option-input" key={o.id}>
-              <strong>후보 {i + 1}</strong>
+              <strong>{t("후보 {n}", { n: i + 1 })}</strong>
               <div className="schedule-option-field">
-                <span>시작</span>
+                <span>{t("시작")}</span>
                 <DateTimeField
-                  label={`후보 ${i + 1} 시작`}
+                  label={t("후보 {n} 시작", { n: i + 1 })}
                   required
                   value={o.start}
                   onChange={(startValue) =>
@@ -839,9 +853,9 @@ function PollCreate({
                 />
               </div>
               <div className="schedule-option-field">
-                <span>종료</span>
+                <span>{t("종료")}</span>
                 <DateTimeField
-                  label={`후보 ${i + 1} 종료`}
+                  label={t("후보 {n} 종료", { n: i + 1 })}
                   required
                   value={o.end}
                   onChange={(endValue) =>
@@ -862,7 +876,7 @@ function PollCreate({
                     setOptions(options.filter((v) => v.id !== o.id))
                   }
                 >
-                  후보 제거
+                  {t("후보 제거")}
                 </Button>
               )}
             </div>
@@ -876,7 +890,7 @@ function PollCreate({
             }
           >
             <Icon name="plus" size={16} />
-            후보 추가
+            {t("후보 추가")}
           </Button>
           {error && <p className="rms-error">{error}</p>}
           <div className="bottom-actions">
@@ -886,10 +900,10 @@ function PollCreate({
               disabled={busy}
               onClick={onClose}
             >
-              취소
+              {t("취소")}
             </Button>
             <Button type="submit" disabled={busy}>
-              {busy ? "보내는 중" : "응답 요청 보내기"}
+              {busy ? t("보내는 중") : t("응답 요청 보내기")}
             </Button>
           </div>
         </form>
@@ -908,11 +922,11 @@ export function PollPage() {
   if (!p)
     return (
       <EmptyState
-        title="시간 조율을 열 수 없어요"
-        description="초대받은 계정으로 로그인했는지 확인해 주세요."
+        title={t("시간 조율을 열 수 없어요")}
+        description={t("초대받은 계정으로 로그인했는지 확인해 주세요.")}
         action={
           <Button asChild>
-            <Link to="/r">내 연구로 이동</Link>
+            <Link to="/r">{t("내 연구로 이동")}</Link>
           </Button>
         }
       />
@@ -930,10 +944,10 @@ export function PollPage() {
       setSelected(null);
       toast.success(
         input.action === "confirm"
-          ? "미팅 시간을 확정했어요"
+          ? t("미팅 시간을 확정했어요")
           : input.action === "cancel"
-            ? "시간 조율을 취소했어요"
-            : "가능한 시간을 저장했어요",
+            ? t("시간 조율을 취소했어요")
+            : t("가능한 시간을 저장했어요"),
       );
     } catch (e) {
       setError((e as Error).message);
@@ -952,24 +966,24 @@ export function PollPage() {
         }
       >
         <Icon name="arrow-left" size={16} />
-        돌아가기
+        {t("돌아가기")}
       </Link>
       <PageHeader
         title={p.title}
         description={`${p.researchName} · ${
           p.status === "confirmed"
-            ? "미팅 시간이 확정됐어요."
+            ? t("미팅 시간이 확정됐어요.")
             : p.status === "cancelled"
-              ? "시간 조율이 취소됐어요."
-              : "가능한 시간을 모두 선택해 주세요."
+              ? t("시간 조율이 취소됐어요.")
+              : t("가능한 시간을 모두 선택해 주세요.")
         }`}
         actions={
           <StatusBadge tone={p.status === "confirmed" ? "green" : "blue"}>
             {p.status === "confirmed"
-              ? "확정"
+              ? t("확정")
               : p.status === "cancelled"
-                ? "취소"
-                : "조율 중"}
+                ? t("취소")
+                : t("조율 중")}
           </StatusBadge>
         }
       />
@@ -1015,7 +1029,7 @@ export function PollPage() {
                 </div>
               </label>
               {p.status === "confirmed" && p.selectedOptionId === o.id && (
-                <StatusBadge tone="green">확정된 시간</StatusBadge>
+                <StatusBadge tone="green">{t("확정된 시간")}</StatusBadge>
               )}
               <div className="poll-responses">
                 {p.participants.map((m) => (
@@ -1025,7 +1039,7 @@ export function PollPage() {
                       size={13}
                     />
                     {m.name}
-                    {m.available.includes(o.id) ? " · 가능" : ""}
+                    {m.available.includes(o.id) ? ` · ${t("가능")}` : ""}
                   </span>
                 ))}
               </div>
@@ -1037,7 +1051,7 @@ export function PollPage() {
                     void run({ action: "confirm", optionId: o.id })
                   }
                 >
-                  이 시간으로 확정
+                  {t("이 시간으로 확정")}
                 </Button>
               )}
             </div>
@@ -1050,7 +1064,7 @@ export function PollPage() {
               disabled={busy}
               onClick={() => void run({ action: "cancel" })}
             >
-              시간 조율 취소
+              {t("시간 조율 취소")}
             </Button>
           )}
           {mine && p.status === "open" && (
@@ -1058,14 +1072,14 @@ export function PollPage() {
               disabled={busy}
               onClick={() => void run({ action: "respond", available })}
             >
-              가능한 시간 저장
+              {t("가능한 시간 저장")}
             </Button>
           )}
           {p.meetingId &&
             data.researches.some((r) => r.id === p.researchId) && (
               <Button asChild>
                 <Link to={`/r/${p.researchId}/meetings/${p.meetingId}`}>
-                  확정한 미팅 열기
+                  {t("확정한 미팅 열기")}
                 </Link>
               </Button>
             )}

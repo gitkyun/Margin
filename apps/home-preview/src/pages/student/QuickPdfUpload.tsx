@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -50,7 +51,7 @@ export function QuickPdfUpload({
       setError(null);
     } catch (e) {
       setFile(null);
-      setError(e instanceof Error ? e.message : "PDF 파일을 선택해 주세요.");
+      setError(e instanceof Error ? e.message : t("PDF 파일을 선택해 주세요."));
     }
   }
   async function submit() {
@@ -78,7 +79,10 @@ export function QuickPdfUpload({
       );
       onUploaded(version);
       toast.success(
-        `${version.fileName} v${version.number} 파일을 올리고 선택해 두었어요`,
+        t("{fileName} v{number} 파일을 올리고 선택해 두었어요", {
+          fileName: version.fileName,
+          number: version.number,
+        }),
       );
       close();
     } catch (e) {
@@ -91,16 +95,18 @@ export function QuickPdfUpload({
           );
         } catch {}
         setError(
-          "파일은 올렸지만 자료에 등록하지 못했어요. 자료 화면에서 ‘등록 다시 시도’를 누르면 파일을 다시 올리지 않고 등록할 수 있어요.",
+          t(
+            "파일은 올렸지만 자료에 등록하지 못했어요. 자료 화면에서 ‘등록 다시 시도’를 누르면 파일을 다시 올리지 않고 등록할 수 있어요.",
+          ),
         );
       } else if (e instanceof OrphanMaterialError) setError(e.message);
       else if (abort.signal.aborted)
-        setError("업로드를 중단했어요. 같은 파일로 다시 시도할 수 있어요.");
+        setError(t("업로드를 중단했어요. 같은 파일로 다시 시도할 수 있어요."));
       else
         setError(
           e instanceof Error
             ? e.message
-            : "파일을 올리지 못했어요. 작성 중인 내용은 그대로 있어요.",
+            : t("파일을 올리지 못했어요. 작성 중인 내용은 그대로 있어요."),
         );
     } finally {
       setBusy(false);
@@ -114,13 +120,14 @@ export function QuickPdfUpload({
         size="sm"
         onClick={() => setOpen(true)}
       >
-        <Icon name="upload" size={15} />새 PDF 올리기
+        <Icon name="upload" size={15} />
+        {t("새 PDF 올리기")}
       </Button>
     );
   return (
     <div className="quick-upload">
       <label className="field">
-        <span className="field-name">PDF 파일 · 20MB 이하</span>
+        <span className="field-name">{t("PDF 파일 · 20MB 이하")}</span>
         <input
           type="file"
           accept="application/pdf,.pdf"
@@ -129,17 +136,17 @@ export function QuickPdfUpload({
         />
       </label>
       <label className="field">
-        <span className="field-name">올릴 자료</span>
+        <span className="field-name">{t("올릴 자료")}</span>
         <SelectField
           className="native-select"
           value={targetId}
           disabled={busy}
           onChange={(event) => setTargetId(event.target.value)}
         >
-          <option value="">새 자료로 등록</option>
+          <option value="">{t("새 자료로 등록")}</option>
           {fileMaterials.map((item) => (
             <option key={item.id} value={item.id}>
-              {item.title}에 새 버전 추가
+              {t("{title}에 새 버전 추가", { title: item.title })}
             </option>
           ))}
         </SelectField>
@@ -148,14 +155,14 @@ export function QuickPdfUpload({
         <div className="upload-progress">
           <div>
             <span>
-              {progress === 100 ? "자료에 등록 중" : "파일 업로드 중"}
+              {progress === 100 ? t("자료에 등록 중") : t("파일 업로드 중")}
             </span>
             <strong>{Math.round(progress)}%</strong>
           </div>
           <progress
             max={100}
             value={progress}
-            aria-label="파일 업로드 진행률"
+            aria-label={t("파일 업로드 진행률")}
           />
         </div>
       )}
@@ -168,15 +175,15 @@ export function QuickPdfUpload({
             size="sm"
             onClick={() => controller.current?.abort()}
           >
-            업로드 중단
+            {t("업로드 중단")}
           </Button>
         ) : (
           <>
             <Button type="button" size="sm" disabled={!file} onClick={submit}>
-              올리기
+              {t("올리기")}
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={close}>
-              닫기
+              {t("닫기")}
             </Button>
           </>
         )}

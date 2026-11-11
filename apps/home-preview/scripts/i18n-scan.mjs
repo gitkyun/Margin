@@ -73,6 +73,12 @@ const isTranslateCall = (node) =>
   node.callee.type === "Identifier" &&
   node.callee.name === "t";
 
+/** `tc("뜻", "원문")`: 같은 낱말의 뜻을 나눠 번역할 때 */
+const isContextCall = (node) =>
+  node.type === "CallExpression" &&
+  node.callee.type === "Identifier" &&
+  node.callee.name === "tc";
+
 const literalText = (node) =>
   node.type === "StringLiteral"
     ? node.value
@@ -103,6 +109,17 @@ export function scanFile(relative) {
     });
   };
   const visit = (node) => {
+    if (isContextCall(node)) {
+      const [context, first, ...rest] = node.arguments;
+      const contextName = context ? literalText(context) : null;
+      const key = first ? literalText(first) : null;
+      if (contextName !== null && key !== null) {
+        keys.push({ file: relative, key });
+        keys.push({ file: relative, key: `${key}@@${contextName}` });
+      } else if (first) visit(first);
+      for (const argument of rest) visit(argument);
+      return;
+    }
     if (isTranslateCall(node)) {
       const [first, ...rest] = node.arguments;
       const key = first ? literalText(first) : null;

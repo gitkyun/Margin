@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import type { CSSProperties } from "react";
 
 /**
@@ -28,7 +29,7 @@ export function BrandWordmark({ className = "" }: { className?: string }) {
     <span
       className={`margin-wordmark ${className}`}
       role="img"
-      aria-label="마진(Margin)"
+      aria-label={t("마진(Margin)")}
     >
       <img
         className="margin-theme-light"

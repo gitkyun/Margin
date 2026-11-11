@@ -27,6 +27,7 @@ import {
   type AIInput,
   type BaseRecord,
 } from "@/lib/domain";
+import { t } from "@/lib/i18n";
 import { ErrorNotice } from "./shared";
 
 // Closing only hides the panel: generation keeps running and candidates stay
@@ -90,7 +91,9 @@ export function AIWorkbench({
     if (
       candidates.length &&
       !window.confirm(
-        "지금 보이는 AI 제안을 새 제안으로 바꿀까요? 저장하지 않은 편집 내용은 사라져요.",
+        t(
+          "지금 보이는 AI 제안을 새 제안으로 바꿀까요? 저장하지 않은 편집 내용은 사라져요.",
+        ),
       )
     )
       return;
@@ -128,7 +131,9 @@ export function AIWorkbench({
             ? null
             : e instanceof Error
               ? e.message
-              : "AI 제안을 받지 못했어요. 다시 시도하거나 직접 작성해 주세요.",
+              : t(
+                  "AI 제안을 받지 못했어요. 다시 시도하거나 직접 작성해 주세요.",
+                ),
         );
     } finally {
       if (current === sequence.current) setRunning(false);
@@ -139,7 +144,7 @@ export function AIWorkbench({
     controller.current?.abort();
     setRunning(false);
     setStopped(true);
-    setError("제안받기를 중단했어요. 기록은 바뀌지 않았어요.");
+    setError(t("제안받기를 중단했어요. 기록은 바뀌지 않았어요."));
   }
   function edit(index: number, change: Partial<AICandidate>) {
     setCandidates((items) =>
@@ -150,7 +155,9 @@ export function AIWorkbench({
     if (savingRef.current || saved.includes(index)) return;
     if (stale) {
       setError(
-        "AI를 실행한 뒤 원문이 바뀌었어요. 바뀐 원문으로 다시 제안받아 주세요.",
+        t(
+          "AI를 실행한 뒤 원문이 바뀌었어요. 바뀐 원문으로 다시 제안받아 주세요.",
+        ),
       );
       return;
     }
@@ -158,7 +165,7 @@ export function AIWorkbench({
       !candidate.title.trim() ||
       !(candidate.method ?? candidate.body ?? "").trim()
     ) {
-      setError("제목과 내용을 입력해 주세요.");
+      setError(t("제목과 내용을 입력해 주세요."));
       return;
     }
     savingRef.current = true;
@@ -171,7 +178,9 @@ export function AIWorkbench({
       setError(
         e instanceof Error
           ? e.message
-          : "저장하지 못했어요. 입력한 내용은 그대로 있으니 다시 시도해 주세요.",
+          : t(
+              "저장하지 못했어요. 입력한 내용은 그대로 있으니 다시 시도해 주세요.",
+            ),
       );
     } finally {
       savingRef.current = false;
@@ -205,7 +214,7 @@ export function AIWorkbench({
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`${title} 닫기`}
+            aria-label={t("{title} 닫기", { title })}
             disabled={saving !== null}
             onClick={onClose}
           >
@@ -214,28 +223,30 @@ export function AIWorkbench({
         )}
       </div>
       <div className="ai-scope">
-        <span>근거</span>
+        <span>{t("근거")}</span>
         <strong>
           {input.mode === "organize_meeting"
-            ? "이 미팅에 저장된 메모"
-            : "이 피드백의 내용"}
+            ? t("이 미팅에 저장된 메모")
+            : t("이 피드백의 내용")}
         </strong>
         <small>
-          {input.sourceText.length.toLocaleString()}자
-          {input.sourceRevision ? ` · 원문 v${input.sourceRevision}` : ""}
+          {t("{count}자", { count: input.sourceText.length.toLocaleString() })}
+          {input.sourceRevision
+            ? ` · ${t("원문 v{revision}", { revision: input.sourceRevision })}`
+            : ""}
         </small>
       </div>
       {selectedModel && !aiNotConfigured && (
         <details className="margin-review-settings">
           <summary>
-            이번 실행 설정
+            {t("이번 실행 설정")}
             <Icon name="chevron-down" size={15} />
           </summary>
           <div className="margin-review-fields">
             <label className="field">
-              AI 모델
+              {t("AI 모델")}
               <Choice
-                label="AI 모델"
+                label={t("AI 모델")}
                 value={selectedModel.id}
                 disabled={running || saving !== null}
                 onChange={setSelectedModelId}
@@ -247,9 +258,9 @@ export function AIWorkbench({
             </label>
             {!!selectedModel.thinking.length && (
               <label className="field">
-                답변 깊이
+                {t("답변 깊이")}
                 <Choice
-                  label="답변 깊이"
+                  label={t("답변 깊이")}
                   value={depth}
                   disabled={running || saving !== null}
                   onChange={setPreferredDepth}
@@ -263,12 +274,12 @@ export function AIWorkbench({
       )}
       <p className="ai-disclosure">
         {input.mode === "organize_meeting"
-          ? "원문과 AI 제안을 구분해 확인하고, 필요한 것만 저장하세요."
-          : "원문과 AI 제안을 구분해 확인하고, 필요한 것만 선택하세요."}
+          ? t("원문과 AI 제안을 구분해 확인하고, 필요한 것만 저장하세요.")
+          : t("원문과 AI 제안을 구분해 확인하고, 필요한 것만 선택하세요.")}
       </p>
       {mode === "preview" ? (
         <p className="student-inline-note">
-          이 미리보기에서는 AI를 실행할 수 없어요.
+          {t("이 미리보기에서는 AI를 실행할 수 없어요.")}
         </p>
       ) : (
         aiNotConfigured && (
@@ -279,20 +290,24 @@ export function AIWorkbench({
       )}
       {stale && (
         <p className="student-inline-note" role="status">
-          AI를 실행한 뒤 원문이 바뀌었어요. 아래 AI 제안은 바뀌기 전 원문을
-          기준으로 해서{" "}
-          {input.mode === "organize_meeting" ? "저장할" : "선택할"} 수 없어요.
+          {input.mode === "organize_meeting"
+            ? t(
+                "AI를 실행한 뒤 원문이 바뀌었어요. 아래 AI 제안은 바뀌기 전 원문을 기준으로 해서 저장할 수 없어요.",
+              )
+            : t(
+                "AI를 실행한 뒤 원문이 바뀌었어요. 아래 AI 제안은 바뀌기 전 원문을 기준으로 해서 선택할 수 없어요.",
+              )}
         </p>
       )}
       <div className="button-row">
         {running ? (
           <Button variant="outline" onClick={cancel}>
-            중단
+            {t("중단")}
           </Button>
         ) : stale ? (
           <Button onClick={onRefresh} disabled={saving !== null}>
             <Icon name="refresh" size={16} />
-            바뀐 원문 불러오기
+            {t("바뀐 원문 불러오기")}
           </Button>
         ) : (
           <Button
@@ -305,7 +320,7 @@ export function AIWorkbench({
             }
           >
             <Icon name="sparkles" size={16} />
-            {candidates.length ? "다시 제안받기" : "제안받기"}
+            {candidates.length ? t("다시 제안받기") : t("제안받기")}
           </Button>
         )}
       </div>
@@ -313,7 +328,7 @@ export function AIWorkbench({
         <div className="ai-running" role="status">
           <span>
             {workMessages[input.mode]}
-            <small>제안을 저장하기 전에는 기록이 바뀌지 않아요.</small>
+            <small>{t("제안을 저장하기 전에는 기록이 바뀌지 않아요.")}</small>
           </span>
         </div>
       )}
@@ -325,12 +340,14 @@ export function AIWorkbench({
               <strong>
                 {saved.length === candidates.length
                   ? input.mode === "organize_meeting"
-                    ? "AI 제안을 모두 저장했어요."
-                    : "AI 제안을 모두 선택했어요."
-                  : `AI 제안 ${candidates.length}개를 확인해 주세요.`}
+                    ? t("AI 제안을 모두 저장했어요.")
+                    : t("AI 제안을 모두 선택했어요.")
+                  : t("AI 제안 {count}개를 확인해 주세요.", {
+                      count: candidates.length,
+                    })}
               </strong>
               <small>
-                원문과 비교하고, 필요한 내용은 고쳐서 저장할 수 있어요.
+                {t("원문과 비교하고, 필요한 내용은 고쳐서 저장할 수 있어요.")}
               </small>
             </div>
           </div>
@@ -340,17 +357,20 @@ export function AIWorkbench({
               key={index}
             >
               <div className="ai-candidate-number">
-                {input.mode === "organize_meeting" ? "정리 항목" : "수정 방법"}{" "}
-                {index + 1}
+                {input.mode === "organize_meeting"
+                  ? t("정리 항목 {number}", { number: index + 1 })
+                  : t("수정 방법 {number}", { number: index + 1 })}
                 {saved.includes(index) && (
                   <span>
-                    {input.mode === "organize_meeting" ? "저장됨" : "선택됨"}
+                    {input.mode === "organize_meeting"
+                      ? t("저장됨")
+                      : t("선택됨")}
                   </span>
                 )}
               </div>
               {input.mode === "organize_meeting" && (
                 <label className="field">
-                  <span className="field-name">종류</span>
+                  <span className="field-name">{t("종류")}</span>
                   <SelectField
                     className="native-select"
                     value={candidate.category ?? "feedback"}
@@ -361,16 +381,18 @@ export function AIWorkbench({
                     }
                     disabled={saving !== null || saved.includes(index)}
                   >
-                    <option value="feedback">피드백</option>
-                    <option value="decision">결정 사항</option>
-                    <option value="question">질문</option>
+                    <option value="feedback">{t("피드백")}</option>
+                    <option value="decision">{t("결정 사항")}</option>
+                    <option value="question">{t("질문")}</option>
                   </SelectField>
                 </label>
               )}
               <label className="field">
-                <span className="field-name">제목</span>
+                <span className="field-name">{t("제목")}</span>
                 <Input
-                  aria-label={`제목 (AI 제안 ${index + 1})`}
+                  aria-label={t("제목 (AI 제안 {number})", {
+                    number: index + 1,
+                  })}
                   value={candidate.title}
                   onChange={(e) => edit(index, { title: e.target.value })}
                   disabled={saving !== null || saved.includes(index)}
@@ -378,18 +400,26 @@ export function AIWorkbench({
               </label>
               {candidate.sourceQuote && (
                 <blockquote className="source-excerpt">
-                  <small>원문 인용</small>
+                  <small>{t("원문 인용")}</small>
                   {candidate.sourceQuote}
                 </blockquote>
               )}
               <label className="field">
                 <span className="field-name">
                   {input.mode === "organize_meeting"
-                    ? "정리한 내용"
-                    : "어떻게 고칠지"}
+                    ? t("정리한 내용")
+                    : t("어떻게 고칠지")}
                 </span>
                 <Textarea
-                  aria-label={`${input.mode === "organize_meeting" ? "정리한 내용" : "어떻게 고칠지"} (AI 제안 ${index + 1})`}
+                  aria-label={
+                    input.mode === "organize_meeting"
+                      ? t("정리한 내용 (AI 제안 {number})", {
+                          number: index + 1,
+                        })
+                      : t("어떻게 고칠지 (AI 제안 {number})", {
+                          number: index + 1,
+                        })
+                  }
                   value={candidate.method ?? candidate.body ?? ""}
                   onChange={(e) =>
                     edit(
@@ -406,7 +436,7 @@ export function AIWorkbench({
               {input.mode === "suggest_revisions" && (
                 <>
                   <label className="field">
-                    <span className="field-name">예상 결과</span>
+                    <span className="field-name">{t("예상 결과")}</span>
                     <Textarea
                       value={candidate.expectedResult ?? ""}
                       onChange={(e) =>
@@ -417,7 +447,7 @@ export function AIWorkbench({
                     />
                   </label>
                   <label className="field">
-                    <span className="field-name">필요한 자료·할 일</span>
+                    <span className="field-name">{t("필요한 자료·할 일")}</span>
                     <Textarea
                       value={candidate.requiredMaterials ?? ""}
                       onChange={(e) =>
@@ -431,7 +461,7 @@ export function AIWorkbench({
               )}
               {candidate.assumptions && (
                 <div className="ai-assumption">
-                  <small>확인이 필요한 가정</small>
+                  <small>{t("확인이 필요한 가정")}</small>
                   <p>{candidate.assumptions}</p>
                 </div>
               )}
@@ -443,28 +473,34 @@ export function AIWorkbench({
                 {saved.includes(index) ? (
                   <>
                     <Icon name="check" size={15} />
-                    {input.mode === "organize_meeting" ? "저장됨" : "선택됨"}
+                    {input.mode === "organize_meeting"
+                      ? t("저장됨")
+                      : t("선택됨")}
                   </>
                 ) : saving === index ? (
-                  "저장 중"
+                  t("저장 중")
                 ) : input.mode === "organize_meeting" ? (
-                  "이 항목 저장"
+                  t("이 항목 저장")
                 ) : (
-                  "이 방법 선택"
+                  t("이 방법 선택")
                 )}
               </Button>
               {!saved.includes(index) && (
                 <small className="ai-candidate-note">
                   {input.mode === "organize_meeting"
-                    ? "저장한 항목만 기록에 남아요."
-                    : "선택한 방법만 기록에 남아요."}
+                    ? t("저장한 항목만 기록에 남아요.")
+                    : t("선택한 방법만 기록에 남아요.")}
                 </small>
               )}
             </section>
           ))}
         </div>
       )}
-      {model && <p className="meta ai-model">응답한 AI 모델 · {model}</p>}
+      {model && (
+        <p className="meta ai-model">
+          {t("응답한 AI 모델 · {model}", { model })}
+        </p>
+      )}
     </aside>
   );
 }

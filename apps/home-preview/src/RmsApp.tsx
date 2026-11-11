@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { Suspense, lazy, useEffect, useState } from "react";
 import {
@@ -143,16 +144,16 @@ function WorkspaceRoutes() {
     return (
       <div className="connection-error">
         <Icon name="lock" size={30} />
-        <h1>기록을 불러오지 못했어요</h1>
+        <h1>{t("기록을 불러오지 못했어요")}</h1>
         <ErrorNotice message={error} retry={() => void refresh()} />
-        <p>인터넷 연결과 로그인한 계정을 확인해 주세요.</p>
+        <p>{t("인터넷 연결과 로그인한 계정을 확인해 주세요.")}</p>
         <Button
           variant="outline"
           onClick={async () => {
             await supabase?.auth.signOut();
           }}
         >
-          다른 계정으로 로그인
+          {t("다른 계정으로 로그인")}
         </Button>
       </div>
     );
@@ -162,14 +163,15 @@ function WorkspaceRoutes() {
         <aside className="workspace-refresh-notice" role="alert">
           <Icon name="warning" size={19} />
           <div>
-            <strong>최신 기록을 불러오지 못했어요</strong>
+            <strong>{t("최신 기록을 불러오지 못했어요")}</strong>
             <p>
-              지금 화면과 작성 중인 내용은 그대로 있어요. 연결을 확인한 뒤 다시
-              불러오세요.
+              {t(
+                "지금 화면과 작성 중인 내용은 그대로 있어요. 연결을 확인한 뒤 다시 불러오세요.",
+              )}
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => void refresh()}>
-            다시 불러오기
+            {t("다시 불러오기")}
           </Button>
         </aside>
       )}
@@ -244,10 +246,10 @@ function WorkspaceRoutes() {
           element={
             <div className="not-found">
               <span>404</span>
-              <h1>페이지를 찾을 수 없어요</h1>
-              <p>주소가 맞는지 확인해 주세요.</p>
+              <h1>{t("페이지를 찾을 수 없어요")}</h1>
+              <p>{t("주소가 맞는지 확인해 주세요.")}</p>
               <Button asChild>
-                <Link to="/r">내 연구로 이동</Link>
+                <Link to="/r">{t("내 연구로 이동")}</Link>
               </Button>
             </div>
           }
@@ -284,51 +286,51 @@ export function App() {
     // WorkspaceShell sets the title for its own routes; writing here would overwrite it.
     if (workspaceVisible && isWorkspaceShellPath(path)) return;
     const publicTitles: Record<string, string> = {
-      "/features": "기능 둘러보기",
-      "/pricing": "플랜",
-      "/guide": "사용 안내",
-      "/privacy": "자료와 개인정보",
+      "/features": t("기능 둘러보기"),
+      "/pricing": t("플랜"),
+      "/guide": t("사용 안내"),
+      "/privacy": t("자료와 개인정보"),
     };
     const name =
       publicTitles[path] ??
       (path === "/"
-        ? "흩어진 기록을 모아, 다음 연구가 되도록"
+        ? t("흩어진 기록을 모아, 다음 연구가 되도록")
         : path === "/signup"
-          ? "가입 과정 미리보기"
+          ? t("가입 과정 미리보기")
           : path === "/login"
-            ? "로그인"
+            ? t("로그인")
             : path.includes("assistant")
-              ? "연구 도우미"
+              ? t("연구 도우미")
               : path.includes("settings")
-                ? "연구 설정"
+                ? t("연구 설정")
                 : path === "/account"
-                  ? "계정 설정"
+                  ? t("계정 설정")
                   : path === "/r/new"
-                    ? "연구 만들기"
+                    ? t("연구 만들기")
                     : path === "/r"
-                      ? "내 연구"
+                      ? t("내 연구")
                       : /^\/r\/[^/]+/.test(path)
                         ? path.includes("/meetings")
-                          ? "미팅"
+                          ? t("미팅")
                           : path.includes("/writing")
-                            ? "글쓰기"
+                            ? t("글쓰기")
                             : path.includes("/tasks")
-                              ? "할 일"
+                              ? t("할 일")
                               : path.includes("/feedback")
-                                ? "피드백"
+                                ? t("피드백")
                                 : path.includes("/materials")
-                                  ? "자료"
+                                  ? t("자료")
                                   : path.includes("/results")
-                                    ? "수정 결과"
+                                    ? t("수정 결과")
                                     : path.includes("/planning")
-                                      ? "계획·일정"
-                                      : "연구 홈"
+                                      ? t("계획·일정")
+                                      : t("연구 홈")
                         : path.startsWith("/reviews")
-                          ? "교수 검토"
+                          ? t("교수 검토")
                           : path.startsWith("/schedule")
-                            ? "미팅 시간 조율"
-                            : "페이지를 찾을 수 없어요");
-    document.title = `${name} · 마진`;
+                            ? t("미팅 시간 조율")
+                            : t("페이지를 찾을 수 없어요"));
+    document.title = t("{name} · 마진", { name });
   }, [location.pathname, workspaceVisible]);
   if (location.pathname === "/") return <LandingPage signedIn={!!session} />;
   if (location.pathname === "/signup") return <SignupPage />;
@@ -352,10 +354,10 @@ export function App() {
       <PublicFrame signedIn={!!session} compact>
         <section className="not-found">
           <Icon name="search" size={32} />
-          <h1>페이지를 찾을 수 없어요</h1>
-          <p>주소가 맞는지 확인해 주세요.</p>
+          <h1>{t("페이지를 찾을 수 없어요")}</h1>
+          <p>{t("주소가 맞는지 확인해 주세요.")}</p>
           <Button asChild>
-            <Link to="/">첫 화면으로</Link>
+            <Link to="/">{t("첫 화면으로")}</Link>
           </Button>
         </section>
       </PublicFrame>
@@ -379,7 +381,7 @@ export function App() {
         name:
           session.user.user_metadata?.name ??
           session.user.email?.split("@")[0] ??
-          "사용자",
+          t("사용자"),
       }
     : previewUser;
   return (

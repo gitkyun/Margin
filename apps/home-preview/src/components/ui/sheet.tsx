@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import type { ComponentProps, ReactNode } from "react";
 import {
   ModalContainer,
@@ -39,7 +40,10 @@ export function SheetContent({
     >
       <ModalNavigation
         trailingContent={
-          <ModalNavigationButton variant="close-button" aria-label="닫기" />
+          <ModalNavigationButton
+            variant="close-button"
+            aria-label={t("닫기")}
+          />
         }
       />
       <div className="margin-sheet-body">{children}</div>

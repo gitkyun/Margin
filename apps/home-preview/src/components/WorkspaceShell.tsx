@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -62,13 +63,20 @@ import {
 } from "./ui/dropdown-menu";
 const navigation = RESEARCH_NAVIGATION;
 const activityTitles: Record<string, string> = {
-  "새 기록이 추가되었습니다": "새 기록을 추가했어요",
-  "연구 기록이 변경되었습니다": "기록을 수정했어요",
-  "공동연구에 참여했습니다": "공동연구에 참여했어요",
-  "수정 결과를 검토에 공개했습니다": "검토 요청에 수정 결과를 넣었어요",
-  "새 차수의 재확인을 요청했습니다": "다시 확인을 요청했어요",
-  "미팅 시간이 확정되었습니다": "미팅 시간을 정했어요",
-  "시간 조율이 취소되었습니다": "시간 조율을 취소했어요",
+  // i18n-ignore: 서버에 저장된 알림 제목(자료)
+  "새 기록이 추가되었습니다": t("새 기록을 추가했어요"),
+  // i18n-ignore: 서버에 저장된 알림 제목(자료)
+  "연구 기록이 변경되었습니다": t("기록을 수정했어요"),
+  // i18n-ignore: 서버에 저장된 알림 제목(자료)
+  "공동연구에 참여했습니다": t("공동연구에 참여했어요"),
+  // i18n-ignore: 서버에 저장된 알림 제목(자료)
+  "수정 결과를 검토에 공개했습니다": t("검토 요청에 수정 결과를 넣었어요"),
+  // i18n-ignore: 서버에 저장된 알림 제목(자료)
+  "새 차수의 재확인을 요청했습니다": t("다시 확인을 요청했어요"),
+  // i18n-ignore: 서버에 저장된 알림 제목(자료)
+  "미팅 시간이 확정되었습니다": t("미팅 시간을 정했어요"),
+  // i18n-ignore: 서버에 저장된 알림 제목(자료)
+  "시간 조율이 취소되었습니다": t("시간 조율을 취소했어요"),
 };
 function AccountMenu() {
   const { user, mode, signOut } = useWorkspace(),
@@ -81,7 +89,10 @@ function AccountMenu() {
         <DropdownMenuTrigger>
           <button
             className="profile-button"
-            aria-label={`${user.name} ${user.email} 계정 메뉴`}
+            aria-label={t("{name} {email} 계정 메뉴", {
+              name: user.name,
+              email: user.email,
+            })}
           >
             <span className="avatar">{user.name.slice(0, 1)}</span>
             <span>
@@ -99,26 +110,26 @@ function AccountMenu() {
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/account")}>
             <Icon name="user" size={17} />
-            프로필 설정
+            {t("프로필 설정")}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => navigate("/account?tab=usage")}>
             <Icon name="sparkles" size={17} />
-            AI 사용량
+            {t("AI 사용량")}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => navigate("/account?tab=appearance")}
           >
             <Icon name="monitor" size={17} />
-            화면 설정
+            {t("화면 설정")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/guide")}>
             <Icon name="help" size={17} />
-            사용 안내
+            {t("사용 안내")}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setLogoutOpen(true)}>
             <Icon name="logout" size={17} />
-            {mode === "preview" ? "로그인 화면으로" : "로그아웃"}
+            {mode === "preview" ? t("로그인 화면으로") : t("로그아웃")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -132,13 +143,15 @@ function AccountMenu() {
           <DialogHeader>
             <DialogTitle>
               {mode === "preview"
-                ? "로그인 화면으로 이동할까요?"
-                : "로그아웃할까요?"}
+                ? t("로그인 화면으로 이동할까요?")
+                : t("로그아웃할까요?")}
             </DialogTitle>
             <DialogDescription>
               {mode === "preview"
-                ? "미리보기 기록은 이 브라우저에 그대로 남아요."
-                : "저장한 기록은 그대로 남아요. 저장하지 않은 입력은 사라지니 먼저 저장해 주세요."}
+                ? t("미리보기 기록은 이 브라우저에 그대로 남아요.")
+                : t(
+                    "저장한 기록은 그대로 남아요. 저장하지 않은 입력은 사라지니 먼저 저장해 주세요.",
+                  )}
             </DialogDescription>
           </DialogHeader>
           <div className="form-actions">
@@ -147,7 +160,7 @@ function AccountMenu() {
               disabled={loggingOut}
               onClick={() => setLogoutOpen(false)}
             >
-              취소
+              {t("취소")}
             </Button>
             <Button
               disabled={loggingOut}
@@ -164,10 +177,10 @@ function AccountMenu() {
               }}
             >
               {mode === "preview"
-                ? "이동"
+                ? t("이동")
                 : loggingOut
-                  ? "로그아웃 중"
-                  : "로그아웃"}
+                  ? t("로그아웃 중")
+                  : t("로그아웃")}
             </Button>
           </div>
         </DialogContent>
@@ -184,8 +197,11 @@ const FOCUS_ROUTE = /^\/r\/[^/]+\/(assistant(\/|$)|writing\/[^/]+)/;
 /** 사이드바 묶음(계획 4.3). 연구 홈 → 지도 흐름 → 연구 작업 순서입니다. */
 const NAV_GROUPS: { label: string | null; paths: string[] }[] = [
   { label: null, paths: [""] },
-  { label: "지도 흐름", paths: ["meetings", "feedback", "tasks", "reviews"] },
-  { label: "연구 작업", paths: ["writing", "materials", "planning"] },
+  {
+    label: t("지도 흐름"),
+    paths: ["meetings", "feedback", "tasks", "reviews"],
+  },
+  { label: t("연구 작업"), paths: ["writing", "materials", "planning"] },
 ];
 /** AI 사용량은 한도의 이 비율을 넘었을 때만 사이드바 아래 자리에 냅니다. */
 const USAGE_WARNING_RATIO = 0.8;
@@ -232,7 +248,7 @@ export function WorkspaceShell({
       (request) =>
         request.professorId === user.id && request.status === "shared",
     );
-  const homeLabel = incomingOnly ? "받은 검토 요청" : "내 연구";
+  const homeLabel = incomingOnly ? t("받은 검토 요청") : t("내 연구");
   useGoShortcuts(research ? researchId : undefined);
   const panel = useMarginPanelHost();
   // ] 키로 여백 패널을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
@@ -296,29 +312,31 @@ export function WorkspaceShell({
   }, []);
   const current =
     location.pathname === "/account"
-      ? "계정 설정"
+      ? t("계정 설정")
       : location.pathname.endsWith("/settings")
-        ? "연구 설정"
+        ? t("연구 설정")
         : location.pathname.endsWith("/assistant")
-          ? "연구 도우미"
+          ? t("연구 도우미")
           : location.pathname.includes("/tasks")
-            ? "할 일"
+            ? t("할 일")
             : location.pathname.includes("/results")
-              ? "수정 결과"
+              ? t("수정 결과")
               : (navigation.find(
                   ([path]) => path && location.pathname.includes("/" + path),
-                )?.[2] ?? (research ? "연구 홈" : homeLabel));
+                )?.[2] ?? (research ? t("연구 홈") : homeLabel));
   useEffect(() => {
-    document.title = `${current}${research ? ` · ${research.name}` : ""} · 마진`;
+    document.title = t("{name} · 마진", {
+      name: `${current}${research ? ` · ${research.name}` : ""}`,
+    });
   }, [current, research?.name]);
   if (researchId && (!research || research.deletedAt))
     return (
       <div className="not-found">
         <Icon name="lock" size={32} />
-        <h1>이 연구를 열 수 없어요</h1>
-        <p>휴지통에 있거나 접근 권한이 없는 연구예요.</p>
+        <h1>{t("이 연구를 열 수 없어요")}</h1>
+        <p>{t("휴지통에 있거나 접근 권한이 없는 연구예요.")}</p>
         <Button asChild>
-          <Link to="/r">내 연구로 돌아가기</Link>
+          <Link to="/r">{t("내 연구로 돌아가기")}</Link>
         </Button>
       </div>
     );
@@ -336,7 +354,7 @@ export function WorkspaceShell({
   const menu = (
     <>
       <div className="sidebar-brand">
-        <Link to="/r" className="brand" aria-label="마진(Margin) 내 연구">
+        <Link to="/r" className="brand" aria-label={t("마진(Margin) 내 연구")}>
           <BrandMark />
           <BrandWordmark />
         </Link>
@@ -344,7 +362,7 @@ export function WorkspaceShell({
           <Button
             variant="ghost"
             size="icon-xs"
-            aria-label={railed ? "메뉴 펼치기" : "메뉴 접기"}
+            aria-label={railed ? t("메뉴 펼치기") : t("메뉴 접기")}
             onClick={() => {
               if (narrow) {
                 setNarrowOpen(!narrowOpen);
@@ -378,7 +396,7 @@ export function WorkspaceShell({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="workspace-menu" align="start">
-            <DropdownMenuLabel>연구 전환</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("연구 전환")}</DropdownMenuLabel>
             {data.researches
               .filter(
                 (r) => !r.deletedAt && (!r.archivedAt || r.id === researchId),
@@ -396,10 +414,11 @@ export function WorkspaceShell({
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => navigate("/r")}>
               <Icon name="grid" size={17} />
-              모든 연구 보기
+              {t("모든 연구 보기")}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => navigate("/r/new")}>
-              <Icon name="plus" size={17} />새 연구 만들기
+              <Icon name="plus" size={17} />
+              {t("새 연구 만들기")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -407,19 +426,19 @@ export function WorkspaceShell({
       <button
         className="sidebar-search"
         onClick={() => setSearch(true)}
-        title={research ? "이 연구에서 제목 찾기" : "연구 이름 찾기"}
+        title={research ? t("이 연구에서 제목 찾기") : t("연구 이름 찾기")}
       >
         <Icon name="search" size={18} />
-        <span>{research ? "이 연구에서 찾기" : "연구 찾기"}</span>
+        <span>{research ? t("이 연구에서 찾기") : t("연구 찾기")}</span>
         <kbd>⌘ K</kbd>
       </button>
-      <nav className="nav-list" aria-label="주요 메뉴">
+      <nav className="nav-list" aria-label={t("주요 메뉴")}>
         {research ? (
           NAV_GROUPS.map((group) => (
             <div
               className="nav-group"
               key={group.label ?? "home"}
-              data-tour={group.label === "지도 흐름" ? "flow" : undefined}
+              data-tour={group.label === t("지도 흐름") ? "flow" : undefined}
             >
               {group.label && <p className="nav-group-label">{group.label}</p>}
               {navigation
@@ -467,8 +486,8 @@ export function WorkspaceShell({
         )}
         {research && (
           <Hint
-            label="연구 도우미"
-            detail="선택한 기록으로만 AI 도움을 받아요."
+            label={t("연구 도우미")}
+            detail={t("선택한 기록으로만 AI 도움을 받아요.")}
             position="right-center"
             display="block"
           >
@@ -479,7 +498,7 @@ export function WorkspaceShell({
               }
             >
               <Icon name="sparkles" size={20} />
-              <span>연구 도우미</span>
+              <span>{t("연구 도우미")}</span>
             </NavLink>
           </Hint>
         )}
@@ -488,31 +507,31 @@ export function WorkspaceShell({
         {research && (
           <Link
             className="nav-item"
-            title="연구 설정"
+            title={t("연구 설정")}
             to={`/r/${researchId}/settings`}
           >
             <Icon name="settings" size={20} />
-            <span>연구 설정</span>
+            <span>{t("연구 설정")}</span>
           </Link>
         )}
         <Link
           className="nav-item"
-          title="내 연구 전체 보기"
+          title={t("내 연구 전체 보기")}
           to="/r"
           hidden={!research}
         >
           <Icon name="grid" size={20} />
-          <span>모든 연구</span>
+          <span>{t("모든 연구")}</span>
         </Link>
         {showStart ? (
           <Link
             className="sidebar-usage sidebar-start"
-            title="시작하기 체크리스트 보기"
+            title={t("시작하기 체크리스트 보기")}
             to={`/r/${researchId}`}
           >
             <div>
               <Icon name="check-circle" size={15} />
-              <span>시작하기</span>
+              <span>{t("시작하기")}</span>
               <strong>
                 {startDone} / {checklist.length}
               </strong>
@@ -520,32 +539,32 @@ export function WorkspaceShell({
             <progress
               max={checklist.length}
               value={startDone}
-              aria-label="시작하기 진행"
+              aria-label={t("시작하기 진행")}
             />
           </Link>
         ) : usageHigh ? (
           <Link
             className="sidebar-usage"
-            title="AI 사용량 보기"
+            title={t("AI 사용량 보기")}
             to="/account?tab=usage"
           >
             <div>
               <Icon name="sparkles" size={15} />
-              <span>AI 사용량</span>
+              <span>{t("AI 사용량")}</span>
               <strong>
                 {usage.data
                   ? `${usage.data.total} / ${usage.data.limit}`
-                  : "보기"}
+                  : t("보기")}
               </strong>
             </div>
             {usage.data ? (
               <progress
                 max={usage.data.limit}
                 value={usage.data.total}
-                aria-label="최근 24시간 AI 사용량"
+                aria-label={t("최근 24시간 AI 사용량")}
               />
             ) : (
-              <small>선택한 기록으로만 실행해요.</small>
+              <small>{t("선택한 기록으로만 실행해요.")}</small>
             )}
           </Link>
         ) : null}
@@ -558,14 +577,14 @@ export function WorkspaceShell({
       className={`app-shell floating-workspace ${railed ? "sidebar-collapsed" : ""} ${floating ? "sidebar-floating" : ""} ${panel.active ? "margin-panel-open" : ""}`}
     >
       <a className="skip-link" href="#main-content">
-        본문으로 이동
+        {t("본문으로 이동")}
       </a>
       <aside className="sidebar">{menu}</aside>
       {floating && (
         <button
           type="button"
           className="sidebar-backdrop"
-          aria-label="메뉴 접기"
+          aria-label={t("메뉴 접기")}
           tabIndex={-1}
           onClick={() => setNarrowOpen(false)}
         />
@@ -573,9 +592,9 @@ export function WorkspaceShell({
       <Sheet open={mobile} onOpenChange={setMobile}>
         <SheetContent side="left" className="mobile-sidebar rms-mobile-sheet">
           <SheetHeader className="sr-only">
-            <SheetTitle>연구 메뉴</SheetTitle>
+            <SheetTitle>{t("연구 메뉴")}</SheetTitle>
             <SheetDescription>
-              다른 연구로 바꾸거나 화면을 이동해요.
+              {t("다른 연구로 바꾸거나 화면을 이동해요.")}
             </SheetDescription>
           </SheetHeader>
           {/* Close the sheet on any link tap, including the current page's
@@ -598,7 +617,7 @@ export function WorkspaceShell({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="메뉴 열기"
+                aria-label={t("메뉴 열기")}
                 onClick={() => setMobile(true)}
               >
                 <Icon name="menu" />
@@ -621,14 +640,18 @@ export function WorkspaceShell({
             {panel.offered && (
               <Hint
                 label={panel.offered.label}
-                detail="오른쪽 여백 패널을 열거나 닫아요. 단축키 ]"
+                detail={t("오른쪽 여백 패널을 열거나 닫아요. 단축키 ]")}
               >
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   className="margin-panel-toggle"
                   aria-pressed={!!panel.active}
-                  aria-label={`${panel.offered.label} ${panel.active ? "닫기" : "열기"}`}
+                  aria-label={
+                    panel.active
+                      ? t("{label} 닫기", { label: panel.offered.label })
+                      : t("{label} 열기", { label: panel.offered.label })
+                  }
                   onClick={() =>
                     panel.active
                       ? panel.active.onClose()
@@ -640,19 +663,21 @@ export function WorkspaceShell({
               </Hint>
             )}
             <Hint
-              label="사용 안내"
-              detail="키보드 단축키는 ? 키로 볼 수 있어요."
+              label={t("사용 안내")}
+              detail={t("키보드 단축키는 ? 키로 볼 수 있어요.")}
             >
               <Button asChild variant="ghost" size="icon-sm">
-                <Link aria-label="사용 안내" to="/guide">
+                <Link aria-label={t("사용 안내")} to="/guide">
                   <Icon name="help" size={19} />
                 </Link>
               </Button>
             </Hint>
             <Hint
-              label="알림"
+              label={t("알림")}
               detail={
-                totalUnread ? `새 알림 ${totalUnread}개` : "새 알림이 없어요."
+                totalUnread
+                  ? t("새 알림 {count}개", { count: totalUnread })
+                  : t("새 알림이 없어요.")
               }
               position="bottom-end"
             >
@@ -660,7 +685,7 @@ export function WorkspaceShell({
                 variant="ghost"
                 size="icon-sm"
                 className="notification-trigger"
-                aria-label={`새 알림 ${totalUnread}개 보기`}
+                aria-label={t("새 알림 {count}개 보기", { count: totalUnread })}
                 onClick={() => setNotifications(true)}
               >
                 <Icon name="bell" size={20} />
@@ -672,9 +697,9 @@ export function WorkspaceShell({
         {mode === "preview" && (
           <div className="preview-banner">
             <Icon name="info" size={15} />
-            <span>미리보기 · 가상 기록은 이 브라우저에만 저장돼요.</span>
+            <span>{t("미리보기 · 가상 기록은 이 브라우저에만 저장돼요.")}</span>
             <Link to="/login">
-              로그인 화면으로
+              {t("로그인 화면으로")}
               <Icon name="arrow-up-right" size={14} />
             </Link>
           </div>
@@ -683,10 +708,10 @@ export function WorkspaceShell({
           <div className="archived-banner" role="status">
             <Icon name="folder" size={17} />
             <span>
-              보관한 연구예요. 기록과 공유 중인 검토 요청은 그대로예요.
+              {t("보관한 연구예요. 기록과 공유 중인 검토 요청은 그대로예요.")}
             </span>
             <Link to={`/r/${researchId}/settings?tab=lifecycle`}>
-              연구 복원하기
+              {t("연구 복원하기")}
             </Link>
           </div>
         )}
@@ -702,35 +727,37 @@ export function WorkspaceShell({
             <button
               type="button"
               className="margin-panel-backdrop"
-              aria-label={`${panel.active.label} 닫기`}
+              aria-label={t("{label} 닫기", { label: panel.active.label })}
               tabIndex={-1}
               onClick={panel.active.onClose}
             />
           )}
           <aside
             className="margin-panel"
-            aria-label={panel.active?.label ?? "여백 패널"}
+            aria-label={panel.active?.label ?? t("여백 패널")}
             hidden={!panel.active}
             tabIndex={-1}
             ref={panel.setSlot}
           />
         </div>
         <footer className="workspace-footer">
-          <span>마진 · 흩어진 기록을 모아, 다음 연구가 되도록</span>
+          <span>{t("마진 · 흩어진 기록을 모아, 다음 연구가 되도록")}</span>
           <span className="workspace-footer-links">
-            <a href="mailto:admin@margin.com">문의 admin@margin.com</a>
-            <Link to="/privacy">자료·개인정보 안내</Link>
+            <a href="mailto:admin@margin.com">{t("문의 admin@margin.com")}</a>
+            <Link to="/privacy">{t("자료·개인정보 안내")}</Link>
           </span>
         </footer>
       </div>
       <Sheet open={notifications} onOpenChange={setNotifications}>
         <SheetContent className="notifications-sheet">
           <SheetHeader>
-            <SheetTitle>알림</SheetTitle>
+            <SheetTitle>{t("알림")}</SheetTitle>
             <SheetDescription>
               {data.researches.length === 0
-                ? "검토 요청과 댓글, 미팅 시간 조율 소식을 확인하세요."
-                : "교수 응답과 댓글, 담당 할 일, 미팅 일정, 공동연구 소식을 확인하세요."}
+                ? t("검토 요청과 댓글, 미팅 시간 조율 소식을 확인하세요.")
+                : t(
+                    "교수 응답과 댓글, 담당 할 일, 미팅 일정, 공동연구 소식을 확인하세요.",
+                  )}
             </SheetDescription>
           </SheetHeader>
           <div className="notification-content">
@@ -738,10 +765,14 @@ export function WorkspaceShell({
               <Segments
                 value={notificationFilter}
                 onChange={setNotificationFilter}
-                label="알림 필터"
+                label={t("알림 필터")}
                 options={[
-                  { value: "unread", label: "읽지 않음", count: totalUnread },
-                  { value: "all", label: "전체" },
+                  {
+                    value: "unread",
+                    label: t("읽지 않음"),
+                    count: totalUnread,
+                  },
+                  { value: "all", label: t("전체") },
                 ]}
               />
               <Button
@@ -750,7 +781,7 @@ export function WorkspaceShell({
                   void markEvent().catch((e) => toast.error(friendlyError(e)))
                 }
               >
-                검토 알림 빼고 모두 읽음
+                {t("검토 알림 빼고 모두 읽음")}
               </Button>
             </div>
             <AnimatedList>
@@ -787,7 +818,7 @@ export function WorkspaceShell({
                       <p>{e.message}</p>
                       <small>
                         {formatDateTime(e.createdAt)}
-                        {e.readAt ? " · 읽음" : ""}
+                        {e.readAt ? ` · ${t("읽음")}` : ""}
                       </small>
                     </div>
                   </Link>
@@ -818,7 +849,7 @@ export function WorkspaceShell({
                     <p>{event.message}</p>
                     {event.excerpt && <blockquote>{event.excerpt}</blockquote>}
                     <small>
-                      {event.roundNumber}차 검토 ·{" "}
+                      {t("{round}차 검토", { round: event.roundNumber })} ·{" "}
                       {formatDateTime(event.createdAt)}
                     </small>
                   </div>
@@ -829,7 +860,7 @@ export function WorkspaceShell({
                 : newEvents.length) ? (
               <div className="calm-empty">
                 <Icon name="bell" size={30} />
-                <h3>확인할 새 소식이 없어요.</h3>
+                <h3>{t("확인할 새 소식이 없어요.")}</h3>
               </div>
             ) : null}
           </div>

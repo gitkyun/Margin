@@ -4,9 +4,9 @@ import { useTheme } from "@/lib/theme";
 import "./footer-controls.css";
 
 const themes = [
-  { value: "light", label: "라이트", icon: "sun" },
-  { value: "dark", label: "다크", icon: "moon" },
-  { value: "system", label: "시스템", icon: "monitor" },
+  { value: "light", label: t("라이트"), icon: "sun" },
+  { value: "dark", label: t("다크"), icon: "moon" },
+  { value: "system", label: t("시스템"), icon: "monitor" },
 ] as const;
 
 export function FooterControls() {
@@ -37,12 +37,16 @@ export function FooterControls() {
 
   return (
     <div className="lp-footer-controls">
-      <div className="lp-footer-theme" role="group" aria-label="화면 테마 선택">
+      <div
+        className="lp-footer-theme"
+        role="group"
+        aria-label={t("화면 테마 선택")}
+      >
         {themes.map((option) => (
           <button
             key={option.value}
             type="button"
-            aria-label={`${option.label} 테마`}
+            aria-label={t("{label} 테마", { label: option.label })}
             aria-pressed={theme === option.value}
             onClick={() => setTheme(option.value)}
           >
@@ -68,9 +72,9 @@ export function FooterControls() {
         className="lp-back-to-top"
         type="button"
         onClick={(event) => scrollToTop(event.currentTarget)}
-        aria-label="맨 위로 이동"
+        aria-label={t("맨 위로 이동")}
       >
-        맨 위로
+        {t("맨 위로")}
         <Icon name="arrow-up" size={16} />
       </button>
     </div>

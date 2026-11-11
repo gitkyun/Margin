@@ -1,17 +1,31 @@
 import type { WorkspaceData } from "./domain";
 import { commandFilter } from "./hangul-search";
 import { goShortcutLabel } from "./go-shortcuts";
+import { t } from "./i18n";
+
+/** 검색 보조어. 한국어로 치는 말과 일본어로 치는 말을 함께 둡니다(화면에 보이지 않음). */
+const KEYWORDS = {
+  newResearch: ["연구 추가", "研究を追加"], // i18n-ignore
+  newMeeting: ["미팅 추가", "회의", "ミーティングを追加", "会議"], // i18n-ignore
+  newTask: ["할 일 만들기", "투두", "タスクを作成", "ToDo"], // i18n-ignore
+  newResult: ["수정 결과 만들기", "고친 내용", "修正結果を作成"], // i18n-ignore
+  newReview: ["교수 검토", "리뷰 요청", "先生のレビュー"], // i18n-ignore
+  newWriting: ["문서 만들기", "새 글", "文書を作成", "新しい原稿"], // i18n-ignore
+  researchList: ["연구 목록", "研究一覧"], // i18n-ignore
+  account: ["프로필", "プロフィール"], // i18n-ignore
+  guide: ["도움말", "ヘルプ"], // i18n-ignore
+};
 
 /** 연구 안 사이드바 메뉴: [경로, 아이콘, 이름]. 사이드바와 ⌘K 팔레트가 같이 씁니다. */
 export const RESEARCH_NAVIGATION = [
-  ["", "home", "연구 홈"],
-  ["planning", "flag", "계획·일정"],
-  ["meetings", "calendar", "미팅"],
-  ["writing", "file", "글쓰기"],
-  ["feedback", "feedback", "피드백·수정"],
-  ["tasks", "tasks", "할 일"],
-  ["materials", "folder", "자료"],
-  ["reviews", "send", "검토 요청"],
+  ["", "home", t("연구 홈")],
+  ["planning", "flag", t("계획·일정")],
+  ["meetings", "calendar", t("미팅")],
+  ["writing", "file", t("글쓰기")],
+  ["feedback", "feedback", t("피드백·수정")],
+  ["tasks", "tasks", t("할 일")],
+  ["materials", "folder", t("자료")],
+  ["reviews", "send", t("검토 요청")],
 ] as const;
 
 export type CommandAction = { kind: "navigate"; to: string };
@@ -40,12 +54,12 @@ const RECENT_LIMIT = 5;
 const DECISION_LABEL_MAX = 60;
 
 const RECORD_KINDS = [
-  { key: "documents", type: "문서", path: "writing", icon: "file" },
-  { key: "meetings", type: "미팅", path: "meetings", icon: "calendar" },
-  { key: "feedback", type: "피드백", path: "feedback", icon: "feedback" },
-  { key: "tasks", type: "할 일", path: "tasks", icon: "tasks" },
-  { key: "materials", type: "자료", path: "materials", icon: "folder" },
-  { key: "results", type: "수정 결과", path: "results", icon: "check" },
+  { key: "documents", type: t("문서"), path: "writing", icon: "file" },
+  { key: "meetings", type: t("미팅"), path: "meetings", icon: "calendar" },
+  { key: "feedback", type: t("피드백"), path: "feedback", icon: "feedback" },
+  { key: "tasks", type: t("할 일"), path: "tasks", icon: "tasks" },
+  { key: "materials", type: t("자료"), path: "materials", icon: "folder" },
+  { key: "results", type: t("수정 결과"), path: "results", icon: "check" },
 ] as const;
 
 type RecordKey = (typeof RECORD_KINDS)[number]["key"];
@@ -73,10 +87,10 @@ export function recordEntries(
     .filter((r) => r.researchId === researchId)
     .map((r) => ({
       id: `record:reviews:${r.id}`,
-      label: r.title || "제목 없음",
+      label: r.title || t("제목 없음"),
       icon: "send",
-      hint: "검토 요청",
-      keywords: [r.title, "검토 요청", r.professorEmail],
+      hint: t("검토 요청"),
+      keywords: [r.title, t("검토 요청"), r.professorEmail],
       updatedAt: r.updatedAt,
       action: { kind: "navigate" as const, to: `/reviews/${r.id}` },
     }));
@@ -87,8 +101,8 @@ export function recordEntries(
       id: `record:decisions:${d.id}`,
       label: d.text.slice(0, DECISION_LABEL_MAX),
       icon: "check",
-      hint: "결정",
-      keywords: [d.text, "결정", d.reason ?? ""],
+      hint: t("결정"),
+      keywords: [d.text, t("결정"), d.reason ?? ""],
       updatedAt: d.updatedAt,
       action: {
         kind: "navigate" as const,
@@ -101,7 +115,7 @@ export function recordEntries(
         .filter((r) => r.researchId === researchId && !r.archivedAt)
         .map((r) => ({
           id: `record:${kind.key}:${r.id}`,
-          label: r.title || "제목 없음",
+          label: r.title || t("제목 없음"),
           icon: kind.icon,
           hint: kind.type,
           keywords: [r.title, kind.type],
@@ -151,45 +165,48 @@ function navigateEntry(
 function createEntries(researchId: string | undefined): CommandEntry[] {
   const newResearch = navigateEntry(
     "create:research",
-    "새 연구 만들기",
+    t("새 연구 만들기"),
     "plus",
     "/r?new=1",
-    ["연구 추가"],
+    KEYWORDS.newResearch,
   );
   if (!researchId) return [newResearch];
   const base = `/r/${researchId}`;
   return [
     navigateEntry(
       "create:meeting",
-      "미팅 만들기",
+      t("미팅 만들기"),
       "calendar",
       `${base}/meetings?new=1`,
-      ["미팅 추가", "회의"],
+      KEYWORDS.newMeeting,
     ),
-    navigateEntry("create:task", "할 일 추가", "tasks", `${base}/tasks?new=1`, [
-      "할 일 만들기",
-      "투두",
-    ]),
+    navigateEntry(
+      "create:task",
+      t("할 일 추가"),
+      "tasks",
+      `${base}/tasks?new=1`,
+      KEYWORDS.newTask,
+    ),
     navigateEntry(
       "create:result",
-      "수정 결과 작성",
+      t("수정 결과 작성"),
       "check",
       `${base}/results?new=1`,
-      ["수정 결과 만들기", "고친 내용"],
+      KEYWORDS.newResult,
     ),
     navigateEntry(
       "create:review",
-      "검토 요청 만들기",
+      t("검토 요청 만들기"),
       "send",
       `${base}/reviews?new=1`,
-      ["교수 검토", "리뷰 요청"],
+      KEYWORDS.newReview,
     ),
     navigateEntry(
       "create:writing",
-      "글 새로 쓰기",
+      t("글 새로 쓰기"),
       "file",
       `${base}/writing?new=1`,
-      ["문서 만들기", "새 글"],
+      KEYWORDS.newWriting,
     ),
     newResearch,
   ];
@@ -197,9 +214,21 @@ function createEntries(researchId: string | undefined): CommandEntry[] {
 
 function goEntries(researchId: string | undefined): CommandEntry[] {
   const common = [
-    navigateEntry("go:research-list", "내 연구", "book", "/r", ["연구 목록"]),
-    navigateEntry("go:account", "계정 설정", "user", "/account", ["프로필"]),
-    navigateEntry("go:guide", "사용 안내", "help", "/guide", ["도움말"]),
+    navigateEntry(
+      "go:research-list",
+      t("내 연구"),
+      "book",
+      "/r",
+      KEYWORDS.researchList,
+    ),
+    navigateEntry(
+      "go:account",
+      t("계정 설정"),
+      "user",
+      "/account",
+      KEYWORDS.account,
+    ),
+    navigateEntry("go:guide", t("사용 안내"), "help", "/guide", KEYWORDS.guide),
   ];
   if (!researchId) return common;
   const base = `/r/${researchId}`;
@@ -219,11 +248,11 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
         path,
       ),
     ),
-    navigateEntry("go:results", "수정 결과", "check", `${base}/results`),
+    navigateEntry("go:results", t("수정 결과"), "check", `${base}/results`),
     withShortcut(
       navigateEntry(
         "go:assistant",
-        "연구 도우미",
+        t("연구 도우미"),
         "sparkles",
         `${base}/assistant`,
         ["AI"],
@@ -231,7 +260,12 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
       "assistant",
     ),
     withShortcut(
-      navigateEntry("go:settings", "연구 설정", "settings", `${base}/settings`),
+      navigateEntry(
+        "go:settings",
+        t("연구 설정"),
+        "settings",
+        `${base}/settings`,
+      ),
       "settings",
     ),
     ...common,
@@ -248,8 +282,8 @@ function researchEntries(
       id: `research:${r.id}`,
       label: r.name,
       icon: "book",
-      hint: "연구",
-      keywords: [r.name, "연구"],
+      hint: t("연구"),
+      keywords: [r.name, t("연구")],
       action: { kind: "navigate", to: `/r/${r.id}` },
     }));
 }
@@ -271,13 +305,17 @@ export function buildCommands({
   const showResearches = searching || !researchId;
   const sections: CommandSection[] = [
     searching
-      ? { id: "records", heading: "기록", entries: records }
-      : { id: "recent", heading: "최근 기록", entries: recentEntries(records) },
-    { id: "create", heading: "만들기", entries: createEntries(researchId) },
-    { id: "go", heading: "이동", entries: goEntries(researchId) },
+      ? { id: "records", heading: t("기록"), entries: records }
+      : {
+          id: "recent",
+          heading: t("최근 기록"),
+          entries: recentEntries(records),
+        },
+    { id: "create", heading: t("만들기"), entries: createEntries(researchId) },
+    { id: "go", heading: t("이동"), entries: goEntries(researchId) },
     {
       id: "researches",
-      heading: researchId ? "다른 연구로" : "연구",
+      heading: researchId ? t("다른 연구로") : t("연구"),
       entries: showResearches ? researchEntries(data, researchId) : [],
     },
   ];

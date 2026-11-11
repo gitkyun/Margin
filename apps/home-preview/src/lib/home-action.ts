@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 import type { Feedback, Meeting } from "./domain";
 
 export type HomeActionKind =
@@ -45,7 +46,7 @@ export function selectHomeAction({
   if (updateHref) {
     return {
       kind: "check_responses",
-      label: "응답 확인하기",
+      label: t("응답 확인하기"),
       href: updateHref,
       icon: "feedback",
     };
@@ -53,7 +54,7 @@ export function selectHomeAction({
   if (next && (next.status === "recording" || next.date === today)) {
     return {
       kind: "record_meeting",
-      label: "기록 시작",
+      label: t("기록 시작"),
       href: `${base}/meetings/${next.id}?tab=record#meeting-recording`,
       icon: "mic",
     };
@@ -61,7 +62,7 @@ export function selectHomeAction({
   if (next) {
     return {
       kind: "prepare_meeting",
-      label: "미팅 준비하기",
+      label: t("미팅 준비하기"),
       href: `${base}/meetings/${next.id}?tab=prepare`,
       icon: "calendar",
     };
@@ -80,14 +81,14 @@ export function selectHomeAction({
   if (unsorted) {
     return {
       kind: "sort_feedback",
-      label: "피드백 정리하기",
+      label: t("피드백 정리하기"),
       href: `${base}/meetings/${unsorted.id}?tab=record`,
       icon: "feedback",
     };
   }
   return {
     kind: "create_meeting",
-    label: "미팅 만들기",
+    label: t("미팅 만들기"),
     href: `${base}/meetings?new=1`,
     icon: "plus",
   };

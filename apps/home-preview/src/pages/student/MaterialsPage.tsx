@@ -1,4 +1,4 @@
-import { dateLocale } from "@/lib/i18n";
+import { dateLocale, t } from "@/lib/i18n";
 import { AnimatedList } from "@/components/AnimatedList";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
 import {
@@ -43,11 +43,11 @@ import {
 import { filterCounts } from "@/lib/filter-counts";
 
 const materialFilters = [
-  ["all", "전체"],
-  ["draft", "논문·초안"],
-  ["reference", "참고문헌"],
-  ["analysis", "분석 자료"],
-  ["links", "링크"],
+  ["all", t("전체")],
+  ["draft", t("논문·초안")],
+  ["reference", t("참고문헌")],
+  ["analysis", t("분석 자료")],
+  ["links", t("링크")],
 ] as const;
 import {
   OrphanMaterialError,
@@ -55,10 +55,10 @@ import {
   registerPdf,
 } from "./material-upload";
 const materialTypes = {
-  draft: "논문·초안",
-  reference: "참고문헌",
-  analysis: "분석 자료",
-  other: "기타",
+  draft: t("논문·초안"),
+  reference: t("참고문헌"),
+  analysis: t("분석 자료"),
+  other: t("기타"),
 };
 function byteSize(bytes: number) {
   return bytes >= 1048576
@@ -118,7 +118,9 @@ export function MaterialsPage() {
   function startRegistration(material?: Material) {
     if (pending) {
       setError(
-        "먼저 올려 둔 파일의 등록을 마쳐 주세요. ‘등록 다시 시도’를 누르면 파일을 다시 올리지 않고 등록할 수 있어요.",
+        t(
+          "먼저 올려 둔 파일의 등록을 마쳐 주세요. ‘등록 다시 시도’를 누르면 파일을 다시 올리지 않고 등록할 수 있어요.",
+        ),
       );
       return;
     }
@@ -142,11 +144,11 @@ export function MaterialsPage() {
   function selectFile(chosen: File | undefined) {
     if (!chosen) return;
     if (!chosen.name.toLowerCase().endsWith(".pdf")) {
-      setError("PDF 파일만 올릴 수 있어요.");
+      setError(t("PDF 파일만 올릴 수 있어요."));
       return;
     }
     if (chosen.size > 20 * 1024 * 1024) {
-      setError("20MB 이하의 PDF만 올릴 수 있어요.");
+      setError(t("20MB 이하의 PDF만 올릴 수 있어요."));
       return;
     }
     setError(null);
@@ -179,12 +181,14 @@ export function MaterialsPage() {
       navigate(
         `/r/${researchId}/materials/${version.materialId}?version=${version.id}`,
       );
-      toast.success("올려 둔 파일을 자료에 등록했어요");
+      toast.success(t("올려 둔 파일을 자료에 등록했어요"));
     } catch (e) {
       setError(
         e instanceof Error
           ? e.message
-          : "파일 등록을 마치지 못했어요. 파일을 다시 올릴 필요 없이 등록만 다시 시도해 주세요.",
+          : t(
+              "파일 등록을 마치지 못했어요. 파일을 다시 올릴 필요 없이 등록만 다시 시도해 주세요.",
+            ),
       );
     } finally {
       setSaving(false);
@@ -198,15 +202,15 @@ export function MaterialsPage() {
       return;
     }
     if (!draft.title.trim()) {
-      setError("자료 이름을 적어 주세요.");
+      setError(t("자료 이름을 적어 주세요."));
       return;
     }
     if (registerMode === "link" && !safeUrl(draft.externalUrl ?? "")) {
-      setError("http 또는 https로 시작하는 링크를 적어 주세요.");
+      setError(t("http 또는 https로 시작하는 링크를 적어 주세요."));
       return;
     }
     if (registerMode === "file" && !file) {
-      setError("등록할 PDF를 선택해 주세요.");
+      setError(t("등록할 PDF를 선택해 주세요."));
       return;
     }
     setSaving(true);
@@ -223,7 +227,7 @@ export function MaterialsPage() {
         setDraft(material);
         setRegistering(false);
         navigate(`/r/${researchId}/materials/${material.id}`);
-        toast.success("링크를 등록했어요");
+        toast.success(t("링크를 등록했어요"));
       } else {
         setProgress(0);
         const { material, version } = await registerPdf(
@@ -245,7 +249,9 @@ export function MaterialsPage() {
         navigate(
           `/r/${researchId}/materials/${material.id}?version=${version.id}`,
         );
-        toast.success(target ? "새 버전을 추가했어요" : "PDF를 등록했어요");
+        toast.success(
+          target ? t("새 버전을 추가했어요") : t("PDF를 등록했어요"),
+        );
       }
     } catch (e) {
       if (e instanceof UploadConnectionError) {
@@ -256,14 +262,18 @@ export function MaterialsPage() {
         setProgress(null);
       } else if (controller.signal.aborted) {
         setError(
-          "업로드를 중단했어요. 창을 닫았다가 ‘자료 등록’을 다시 눌러 등록해 주세요.",
+          t(
+            "업로드를 중단했어요. 창을 닫았다가 ‘자료 등록’을 다시 눌러 등록해 주세요.",
+          ),
         );
         setProgress(null);
       } else
         setError(
           e instanceof Error
             ? e.message
-            : "등록하지 못했어요. 선택한 파일과 입력한 내용은 그대로 있어요.",
+            : t(
+                "등록하지 못했어요. 선택한 파일과 입력한 내용은 그대로 있어요.",
+              ),
         );
     } finally {
       setSaving(false);
@@ -290,10 +300,10 @@ export function MaterialsPage() {
   if (materialId && !current)
     return (
       <>
-        <BackLink to={`/r/${researchId}/materials`}>자료 목록</BackLink>
+        <BackLink to={`/r/${researchId}/materials`}>{t("자료 목록")}</BackLink>
         <EmptyState
-          title="자료를 열 수 없어요"
-          description="이 연구의 자료 목록에서 다시 선택해 주세요."
+          title={t("자료를 열 수 없어요")}
+          description={t("이 연구의 자료 목록에서 다시 선택해 주세요.")}
         />
       </>
     );
@@ -303,10 +313,12 @@ export function MaterialsPage() {
         <>
           <PageHeader
             back={
-              <BackLink to={`/r/${researchId}/materials`}>자료 목록</BackLink>
+              <BackLink to={`/r/${researchId}/materials`}>
+                {t("자료 목록")}
+              </BackLink>
             }
             title={current.title}
-            description={`${materialTypes[current.type]} · ${current.externalUrl ? "링크" : "PDF 파일"}`}
+            description={`${materialTypes[current.type]} · ${current.externalUrl ? t("링크") : t("PDF 파일")}`}
             actions={
               <div className="button-row">
                 <Button
@@ -317,19 +329,20 @@ export function MaterialsPage() {
                   }}
                 >
                   <Icon name="edit" size={16} />
-                  정보 편집
+                  {t("정보 편집")}
                 </Button>
                 <Button onClick={() => startRegistration(current)}>
-                  <Icon name="upload" size={16} />새 버전 추가
+                  <Icon name="upload" size={16} />
+                  {t("새 버전 추가")}
                 </Button>
               </div>
             }
           />
           <div className="material-location">
             <label className="field">
-              폴더
+              {t("폴더")}
               <SelectField
-                aria-label="폴더"
+                aria-label={t("폴더")}
                 value={current.folderId ?? ""}
                 onChange={(e) =>
                   void save("materials", {
@@ -338,7 +351,7 @@ export function MaterialsPage() {
                   }).catch((e) => toast.error((e as Error).message))
                 }
               >
-                <option value="">폴더 없음</option>
+                <option value="">{t("폴더 없음")}</option>
                 {data.folders
                   .filter((f) => f.researchId === researchId && !f.archivedAt)
                   .map((f) => (
@@ -360,25 +373,26 @@ export function MaterialsPage() {
                   });
                   toast.success(
                     current.archivedAt
-                      ? "자료를 복원했어요"
-                      : "자료를 보관했어요. 검토에 쓴 파일은 그대로 남아요.",
+                      ? t("자료를 복원했어요")
+                      : t("자료를 보관했어요. 검토에 쓴 파일은 그대로 남아요."),
                   );
                 } catch (e) {
                   toast.error((e as Error).message);
                 }
               }}
             >
-              {current.archivedAt ? "자료 복원" : "자료 보관"}
+              {current.archivedAt ? t("자료 복원") : t("자료 보관")}
             </Button>
           </div>
           {current.externalUrl && (
             <section className="surface external-reference">
               <div>
-                <StatusBadge tone="neutral">링크</StatusBadge>
-                <h2>원본 문서</h2>
+                <StatusBadge tone="neutral">{t("링크")}</StatusBadge>
+                <h2>{t("원본 문서")}</h2>
                 <p>
-                  링크한 문서는 원래 서비스에서 내용이 바뀔 수 있어요.
-                  링크만으로는 지금 내용이 남지 않아요.
+                  {t(
+                    "링크한 문서는 원래 서비스에서 내용이 바뀔 수 있어요. 링크만으로는 지금 내용이 남지 않아요.",
+                  )}
                 </p>
                 <a
                   href={safeUrl(current.externalUrl) ?? undefined}
@@ -394,15 +408,17 @@ export function MaterialsPage() {
                 onClick={() => {
                   void navigator.clipboard
                     .writeText(current.externalUrl!)
-                    .then(() => toast.success("링크를 복사했어요"))
+                    .then(() => toast.success(t("링크를 복사했어요")))
                     .catch(() =>
                       toast.error(
-                        "링크를 복사하지 못했어요. 링크를 직접 선택해 복사해 주세요.",
+                        t(
+                          "링크를 복사하지 못했어요. 링크를 직접 선택해 복사해 주세요.",
+                        ),
                       ),
                     );
                 }}
               >
-                링크 복사
+                {t("링크 복사")}
               </Button>
             </section>
           )}
@@ -416,7 +432,7 @@ export function MaterialsPage() {
                       {selected.fileName}
                     </span>
                     <label className="sr-only" htmlFor="version-select">
-                      파일 버전 선택
+                      {t("파일 버전 선택")}
                     </label>
                     <SelectField
                       id="version-select"
@@ -438,10 +454,12 @@ export function MaterialsPage() {
               ) : (
                 <section className="surface">
                   <EmptyState
-                    title="아직 올린 파일이 없어요"
+                    title={t("아직 올린 파일이 없어요")}
                     description={
                       current.externalUrl
-                        ? "지금 내용을 남기거나 교수님께 수정 결과를 확인받으려면 PDF 파일을 추가해 주세요."
+                        ? t(
+                            "지금 내용을 남기거나 교수님께 수정 결과를 확인받으려면 PDF 파일을 추가해 주세요.",
+                          )
                         : undefined
                     }
                     action={
@@ -449,7 +467,7 @@ export function MaterialsPage() {
                         variant="outline"
                         onClick={() => startRegistration(current)}
                       >
-                        PDF 추가
+                        {t("PDF 추가")}
                       </Button>
                     }
                   />
@@ -458,7 +476,7 @@ export function MaterialsPage() {
             </section>
             <aside className="stack">
               <section className="surface material-history">
-                <h2>파일 버전</h2>
+                <h2>{t("파일 버전")}</h2>
                 {versions.length ? (
                   versions.map((version) => (
                     <button
@@ -484,16 +502,18 @@ export function MaterialsPage() {
                   ))
                 ) : (
                   <p className="student-empty-inline">
-                    PDF를 올리면 여기에서 버전별로 다시 열 수 있어요.
+                    {t("PDF를 올리면 여기에서 버전별로 다시 열 수 있어요.")}
                   </p>
                 )}
                 <p className="student-footnote">
-                  새 파일을 올려도 이전 버전과 검토에 쓴 파일은 그대로 남아요.
+                  {t(
+                    "새 파일을 올려도 이전 버전과 검토에 쓴 파일은 그대로 남아요.",
+                  )}
                 </p>
               </section>
               {selected && (
                 <section className="surface">
-                  <h2>이 버전을 사용한 기록</h2>
+                  <h2>{t("이 버전을 사용한 기록")}</h2>
                   {data.results
                     .filter((result) => result.versionId === selected.id)
                     .map((result) => (
@@ -506,7 +526,9 @@ export function MaterialsPage() {
                         <span className="grow">
                           <strong>{result.title}</strong>
                           <small>
-                            수정 결과 · {result.location || "볼 위치 없음"}
+                            {t("수정 결과 · {location}", {
+                              location: result.location || t("볼 위치 없음"),
+                            })}
                           </small>
                         </span>
                         <Icon name="chevron-right" size={15} />
@@ -525,7 +547,7 @@ export function MaterialsPage() {
                       >
                         <span className="grow">
                           <strong>{meeting.title}</strong>
-                          <small>미팅 준비</small>
+                          <small>{t("미팅 준비")}</small>
                         </span>
                         <Icon name="chevron-right" size={15} />
                       </Link>
@@ -537,7 +559,7 @@ export function MaterialsPage() {
                       meeting.versionIds.includes(selected.id),
                     ) && (
                       <p className="student-empty-inline">
-                        아직 이 버전을 사용한 기록이 없어요.
+                        {t("아직 이 버전을 사용한 기록이 없어요.")}
                       </p>
                     )}
                 </section>
@@ -548,12 +570,14 @@ export function MaterialsPage() {
       ) : (
         <>
           <PageHeader
-            title="자료"
-            description="PDF는 올린 내용이 그대로 남고, 링크한 문서는 내용이 바뀔 수 있어요."
+            title={t("자료")}
+            description={t(
+              "PDF는 올린 내용이 그대로 남고, 링크한 문서는 내용이 바뀔 수 있어요.",
+            )}
             actions={
               <Button onClick={() => startRegistration()}>
                 <Icon name="plus" size={17} />
-                자료 등록
+                {t("자료 등록")}
               </Button>
             }
           />
@@ -568,7 +592,7 @@ export function MaterialsPage() {
           />
           <div className="page-toolbar">
             <FilterSegments
-              label="자료 종류"
+              label={t("자료 종류")}
               options={materialFilters}
               value={filter}
               onChange={setFilter}
@@ -577,7 +601,7 @@ export function MaterialsPage() {
             <SearchInput
               value={search}
               onChange={setSearch}
-              placeholder="자료 이름으로 찾기"
+              placeholder={t("자료 이름으로 찾기")}
             />
           </div>
           <AnimatedList className="surface material-list">
@@ -624,10 +648,13 @@ export function MaterialsPage() {
                       <small>
                         {materialTypes[material.type]} ·{" "}
                         {material.externalUrl
-                          ? "링크"
+                          ? t("링크")
                           : materialVersions.length
-                            ? `버전 ${materialVersions.length}개 · 최신 v${materialVersions[0].number}`
-                            : "파일 없음"}
+                            ? t("버전 {count}개 · 최신 v{number}", {
+                                count: materialVersions.length,
+                                number: materialVersions[0].number,
+                              })
+                            : t("파일 없음")}
                       </small>
                     </span>
                     <span className="material-row-date">
@@ -644,17 +671,19 @@ export function MaterialsPage() {
               <EmptyState
                 title={
                   folder === "archived"
-                    ? "보관한 자료가 없어요"
+                    ? t("보관한 자료가 없어요")
                     : search || filter !== "all"
-                      ? "조건에 맞는 자료가 없어요"
+                      ? t("조건에 맞는 자료가 없어요")
                       : folder
-                        ? "이 폴더에 자료가 없어요"
-                        : "아직 등록한 자료가 없어요"
+                        ? t("이 폴더에 자료가 없어요")
+                        : t("아직 등록한 자료가 없어요")
                 }
                 description={
                   folder === "archived"
                     ? undefined
-                    : "논문 초안과 분석 자료는 PDF로, 참고할 웹 문서는 링크로 등록할 수 있어요."
+                    : t(
+                        "논문 초안과 분석 자료는 PDF로, 참고할 웹 문서는 링크로 등록할 수 있어요.",
+                      )
                 }
                 action={
                   folder === "archived" ? undefined : (
@@ -662,7 +691,7 @@ export function MaterialsPage() {
                       variant="outline"
                       onClick={() => startRegistration()}
                     >
-                      자료 등록
+                      {t("자료 등록")}
                     </Button>
                   )
                 }
@@ -680,15 +709,19 @@ export function MaterialsPage() {
         <div className="pending-upload-note" role="status">
           <Icon name="warning" size={19} />
           <span>
-            <strong>파일은 올렸지만 자료에 등록하지 못했어요.</strong>
-            <small>{pending.fileName} · 파일은 다시 올리지 않아도 돼요.</small>
+            <strong>{t("파일은 올렸지만 자료에 등록하지 못했어요.")}</strong>
+            <small>
+              {t("{fileName} · 파일은 다시 올리지 않아도 돼요.", {
+                fileName: pending.fileName,
+              })}
+            </small>
           </span>
           <Button
             variant="outline"
             disabled={saving}
             onClick={() => void reconnect()}
           >
-            등록 다시 시도
+            {t("등록 다시 시도")}
           </Button>
         </div>
       )}
@@ -699,39 +732,41 @@ export function MaterialsPage() {
         onOpenChange={(open) => {
           if (!saving) setRegistering(open);
         }}
-        title={target ? "새 버전 추가" : "자료 등록"}
+        title={target ? t("새 버전 추가") : t("자료 등록")}
         description={
           target
-            ? "새 버전을 올려도 이전 파일과 교수 응답은 그대로 남아요."
-            : "PDF는 올린 내용이 그대로 남고, 링크한 문서는 내용이 바뀔 수 있어요."
+            ? t("새 버전을 올려도 이전 파일과 교수 응답은 그대로 남아요.")
+            : t(
+                "PDF는 올린 내용이 그대로 남고, 링크한 문서는 내용이 바뀔 수 있어요.",
+              )
         }
       >
         <form className="stack material-registration-form" onSubmit={register}>
           {!target && (
             <Segments
               fill
-              label="자료 종류"
+              label={t("자료 종류")}
               value={registerMode}
               onChange={(value) =>
                 setRegisterMode(value as typeof registerMode)
               }
               options={[
-                { value: "file", label: "PDF 파일" },
-                { value: "link", label: "링크" },
+                { value: "file", label: t("PDF 파일") },
+                { value: "link", label: t("링크") },
               ]}
             />
           )}
           {draft && (
             <>
               <LabeledInput
-                label="자료 이름"
+                label={t("자료 이름")}
                 required
                 value={draft.title}
                 onChange={(title) => setDraft((v) => (v ? { ...v, title } : v))}
                 disabled={saving}
               />
               <label className="field">
-                <span className="field-name">자료 유형</span>
+                <span className="field-name">{t("자료 유형")}</span>
                 <SelectField
                   className="native-select"
                   value={draft.type}
@@ -753,7 +788,7 @@ export function MaterialsPage() {
               </label>
               {registerMode === "link" ? (
                 <LabeledInput
-                  label="링크"
+                  label={t("링크")}
                   required
                   type="url"
                   value={draft.externalUrl ?? ""}
@@ -761,7 +796,9 @@ export function MaterialsPage() {
                     setDraft((v) => (v ? { ...v, externalUrl } : v))
                   }
                   placeholder="https://"
-                  hint="링크한 문서를 누가 볼 수 있는지는 원래 서비스의 공유 설정을 따라요."
+                  hint={t(
+                    "링크한 문서를 누가 볼 수 있는지는 원래 서비스의 공유 설정을 따라요.",
+                  )}
                   disabled={saving}
                 />
               ) : (
@@ -789,19 +826,19 @@ export function MaterialsPage() {
               disabled={saving}
               onClick={() => setRegistering(false)}
             >
-              취소
+              {t("취소")}
             </Button>
             <Button type="submit" disabled={saving} aria-busy={saving}>
               <MaterialSubmitLabel
                 busy={saving}
                 label={
                   pending
-                    ? "등록 다시 시도"
+                    ? t("등록 다시 시도")
                     : registerMode === "link"
-                      ? "링크 등록"
+                      ? t("링크 등록")
                       : target
-                        ? "새 버전 추가"
-                        : "자료 등록"
+                        ? t("새 버전 추가")
+                        : t("자료 등록")
                 }
               />
             </Button>
@@ -814,7 +851,7 @@ export function MaterialsPage() {
         onOpenChange={(open) => {
           if (!open) setEditing(null);
         }}
-        title="자료 정보 편집"
+        title={t("자료 정보 편집")}
       >
         <form
           className="stack"
@@ -824,21 +861,21 @@ export function MaterialsPage() {
             void editForm.perform(async () => {
               if (editing.externalUrl && !safeUrl(editing.externalUrl))
                 throw new Error(
-                  "http 또는 https로 시작하는 링크를 적어 주세요.",
+                  t("http 또는 https로 시작하는 링크를 적어 주세요."),
                 );
               await save("materials", {
                 ...editing,
                 title: editing.title.trim(),
               });
               setEditing(null);
-              toast.success("자료 정보를 저장했어요");
+              toast.success(t("자료 정보를 저장했어요"));
             });
           }}
         >
           {editing && (
             <>
               <LabeledInput
-                label="자료 이름"
+                label={t("자료 이름")}
                 required
                 value={editing.title}
                 onChange={(title) =>
@@ -846,7 +883,7 @@ export function MaterialsPage() {
                 }
               />
               <label className="field">
-                <span className="field-name">자료 유형</span>
+                <span className="field-name">{t("자료 유형")}</span>
                 <SelectField
                   className="native-select"
                   value={editing.type}
@@ -867,7 +904,7 @@ export function MaterialsPage() {
               </label>
               {editing.externalUrl !== undefined && (
                 <LabeledInput
-                  label="링크"
+                  label={t("링크")}
                   type="url"
                   required
                   value={editing.externalUrl}
@@ -920,36 +957,39 @@ function MaterialPreviewPanel({
       day: "numeric",
     }).format(new Date(value));
   return (
-    <MarginPanel label="자료 미리보기" open={!!material} onClose={onClose}>
+    <MarginPanel label={t("자료 미리보기")} open={!!material} onClose={onClose}>
       {material && (
-        <PanelFrame title="자료 미리보기" onClose={onClose}>
+        <PanelFrame title={t("자료 미리보기")} onClose={onClose}>
           <div className="panel-frame-body material-preview-panel">
             <strong className="material-preview-title">{material.title}</strong>
             <dl className="material-preview-facts">
               <div>
-                <dt>종류</dt>
+                <dt>{t("종류")}</dt>
                 <dd>
                   {materialTypes[material.type]}
-                  {material.externalUrl ? " · 링크" : ""}
+                  {material.externalUrl ? ` · ${t("링크")}` : ""}
                 </dd>
               </div>
               {!material.externalUrl && (
                 <div>
-                  <dt>버전</dt>
+                  <dt>{t("버전")}</dt>
                   <dd>
                     {versions.length
-                      ? `${versions.length}개 · 최신 v${versions[0].number}`
-                      : "파일 없음"}
+                      ? t("{count}개 · 최신 v{number}", {
+                          count: versions.length,
+                          number: versions[0].number,
+                        })
+                      : t("파일 없음")}
                   </dd>
                 </div>
               )}
               <div>
-                <dt>올린 날</dt>
+                <dt>{t("올린 날")}</dt>
                 <dd>{day(versions[0]?.createdAt ?? material.createdAt)}</dd>
               </div>
               {versions[0] && (
                 <div>
-                  <dt>파일</dt>
+                  <dt>{t("파일")}</dt>
                   <dd>
                     {versions[0].fileName} · {byteSize(versions[0].size)}
                   </dd>
@@ -958,12 +998,12 @@ function MaterialPreviewPanel({
             </dl>
             <Button asChild>
               <Link to={`/r/${researchId}/materials/${material.id}`}>
-                전체 화면으로 열기
+                {t("전체 화면으로 열기")}
                 <Icon name="arrow-right" size={15} />
               </Link>
             </Button>
             <h3>
-              이 자료를 쓴 기록
+              {t("이 자료를 쓴 기록")}
               <span className="count-chip">
                 {results.length + meetings.length}
               </span>
@@ -976,7 +1016,7 @@ function MaterialPreviewPanel({
               >
                 <span className="grow">
                   <strong>{result.title}</strong>
-                  <small>수정 결과</small>
+                  <small>{t("수정 결과")}</small>
                 </span>
                 <Icon name="chevron-right" size={15} />
               </Link>
@@ -989,14 +1029,14 @@ function MaterialPreviewPanel({
               >
                 <span className="grow">
                   <strong>{meeting.title}</strong>
-                  <small>미팅 준비</small>
+                  <small>{t("미팅 준비")}</small>
                 </span>
                 <Icon name="chevron-right" size={15} />
               </Link>
             ))}
             {!results.length && !meetings.length && (
               <p className="student-empty-inline">
-                아직 이 자료를 쓴 기록이 없어요.
+                {t("아직 이 자료를 쓴 기록이 없어요.")}
               </p>
             )}
           </div>

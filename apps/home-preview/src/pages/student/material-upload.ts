@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import type { Material, MaterialVersion } from "@/lib/domain";
 import { UploadConnectionError } from "@/lib/repository";
 
@@ -15,7 +16,9 @@ export interface PdfUploadDeps {
 export class OrphanMaterialError extends Error {
   constructor() {
     super(
-      "파일을 올리지 못했어요. 함께 만든 빈 자료가 자료 목록에 남았을 수 있어요. 필요 없으면 그 자료를 열어 ‘자료 보관’을 눌러 주세요.",
+      t(
+        "파일을 올리지 못했어요. 함께 만든 빈 자료가 자료 목록에 남았을 수 있어요. 필요 없으면 그 자료를 열어 ‘자료 보관’을 눌러 주세요.",
+      ),
     );
     this.name = "OrphanMaterialError";
   }

@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {
   recordBase,
   type Feedback,
@@ -19,7 +20,7 @@ export function newResultDraft(
   const origin = task ?? feedback;
   return {
     ...recordBase(researchId),
-    title: origin ? `${origin.title} 수정 결과` : "",
+    title: origin ? t("{title} 수정 결과", { title: origin.title }) : "",
     description: "",
     feedbackIds: feedback ? [feedback.id] : (task?.feedbackIds ?? []),
     taskIds: task ? [task.id] : [],

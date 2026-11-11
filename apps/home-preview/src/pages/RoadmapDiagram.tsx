@@ -1,3 +1,4 @@
+import { t, tc } from "@/lib/i18n";
 import { useCallback, useMemo } from "react";
 import {
   ReactFlow,
@@ -46,7 +47,10 @@ export default function RoadmapDiagram({
       id: `${id}-${p.id}`,
       source: id,
       target: p.id,
-      ariaLabel: `${phases.find((x) => x.id === id)?.title ?? "이전 단계"} 다음 ${p.title}`,
+      ariaLabel: t("{from} 다음 {to}", {
+        from: phases.find((x) => x.id === id)?.title ?? t("이전 단계"),
+        to: p.title,
+      }),
       markerEnd: { type: MarkerType.ArrowClosed },
     })),
   );
@@ -67,16 +71,18 @@ export default function RoadmapDiagram({
         colorMode={resolvedTheme}
         fitView
         ariaLabelConfig={{
-          "controls.ariaLabel": "관계도 보기 조절",
-          "controls.zoomIn.ariaLabel": "확대",
-          "controls.zoomOut.ariaLabel": "축소",
-          "controls.fitView.ariaLabel": "전체 보기",
-          "node.a11yDescription.default":
+          "controls.ariaLabel": t("관계도 보기 조절"),
+          "controls.zoomIn.ariaLabel": t("확대"),
+          "controls.zoomOut.ariaLabel": t("축소"),
+          "controls.fitView.ariaLabel": tc("fit", "전체 보기"),
+          "node.a11yDescription.default": t(
             "두 번 누르면 단계를 편집해요. 키보드로는 ‘시간순’ 보기에서 편집할 수 있어요.",
-          "node.a11yDescription.keyboardDisabled":
+          ),
+          "node.a11yDescription.keyboardDisabled": t(
             "두 번 누르면 단계를 편집해요. 키보드로는 ‘시간순’ 보기에서 편집할 수 있어요.",
-          "edge.a11yDescription.default": "두 번 누르면 선을 지워요.",
-          "handle.ariaLabel": "연결점",
+          ),
+          "edge.a11yDescription.default": t("두 번 누르면 선을 지워요."),
+          "handle.ariaLabel": t("연결점"),
         }}
         onNodeDoubleClick={(_, n) => onEdit(phases.find((p) => p.id === n.id)!)}
         onNodeDragStop={(_, n) => void persist(n.id, { position: n.position })}
@@ -100,9 +106,9 @@ export default function RoadmapDiagram({
         <Controls showInteractive={false} />
       </ReactFlow>
       <p>
-        단계를 끌어 옮기고, 점끼리 이어 먼저 할 단계를 표시할 수 있어요. 선은
-        ‘시간순’ 보기의 순서를 바꾸지 않아요. 단계를 두 번 누르면 편집하고, 선을
-        두 번 누르면 지워요.
+        {t(
+          "단계를 끌어 옮기고, 점끼리 이어 먼저 할 단계를 표시할 수 있어요. 선은 ‘시간순’ 보기의 순서를 바꾸지 않아요. 단계를 두 번 누르면 편집하고, 선을 두 번 누르면 지워요.",
+        )}
       </p>
     </div>
   );

@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { Segments } from "@/components/experience";
 import {
   useCallback,
@@ -126,7 +127,7 @@ function FormNavigationGuard({
       onClickCapture={(event) => {
         const target = event.target as HTMLElement;
         const button = target.closest("button");
-        if (button?.textContent?.trim() === "취소" && onCancel) {
+        if (button?.textContent?.trim() === t("취소") && onCancel) {
           event.preventDefault();
           event.stopPropagation();
           onCancel();
@@ -183,7 +184,7 @@ export function FormDialog({
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>
-              {description ?? "내용을 확인하고 저장하세요."}
+              {description ?? t("내용을 확인하고 저장하세요.")}
             </DialogDescription>
           </DialogHeader>
           <FormNavigationGuard
@@ -201,12 +202,14 @@ export function FormDialog({
       <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
         <DialogContent className="student-dialog">
           <DialogHeader>
-            <DialogTitle>저장하지 않고 닫을까요?</DialogTitle>
-            <DialogDescription>입력한 내용은 사라져요.</DialogDescription>
+            <DialogTitle>{t("저장하지 않고 닫을까요?")}</DialogTitle>
+            <DialogDescription>
+              {t("입력한 내용은 사라져요.")}
+            </DialogDescription>
           </DialogHeader>
           <div className="form-actions">
             <Button variant="outline" onClick={() => setDiscardOpen(false)}>
-              계속 작성
+              {t("계속 작성")}
             </Button>
             <Button
               variant="destructive"
@@ -216,7 +219,7 @@ export function FormDialog({
                 onOpenChange(false);
               }}
             >
-              버리고 닫기
+              {t("버리고 닫기")}
             </Button>
           </div>
         </DialogContent>
@@ -357,7 +360,7 @@ export function FilterSegments({
 export function SearchInput({
   value,
   onChange,
-  placeholder = "이름으로 찾기",
+  placeholder = t("이름으로 찾기"),
 }: {
   value: string;
   onChange(value: string): void;
@@ -441,7 +444,7 @@ export function useSaving() {
       setError(
         e instanceof Error
           ? e.message
-          : "저장하지 못했어요. 입력한 내용은 그대로 있어요.",
+          : t("저장하지 못했어요. 입력한 내용은 그대로 있어요."),
       );
     } finally {
       pending.current = false;
@@ -453,7 +456,7 @@ export function useSaving() {
 export function SaveActions({
   saving,
   onCancel,
-  label = "저장",
+  label = t("저장"),
 }: {
   saving: boolean;
   onCancel(): void;
@@ -467,10 +470,10 @@ export function SaveActions({
         onClick={onCancel}
         disabled={saving}
       >
-        취소
+        {t("취소")}
       </Button>
       <Button type="submit" disabled={saving}>
-        {saving ? "저장 중" : label}
+        {saving ? t("저장 중") : label}
       </Button>
     </div>
   );
@@ -504,12 +507,12 @@ export function WorkTabs({
   return (
     <Tabs
       className="work-tabs"
-      label="피드백과 수정 결과"
+      label={t("피드백과 수정 결과")}
       value={selected}
       onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
       options={[
-        { value: "feedback", label: "피드백" },
-        { value: "results", label: "수정 결과" },
+        { value: "feedback", label: t("피드백") },
+        { value: "results", label: t("수정 결과") },
       ]}
     />
   );

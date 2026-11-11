@@ -97,4 +97,8 @@
 :root[lang="ja"] {
   --text-word-break: normal;
   line-break: strict;
+  /* Pretendard에는 가나·한자가 없어 일본어 글꼴로 이어 줍니다(영문·숫자는 Pretendard 그대로). */
+  --font-sans:
+    Pretendard, -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+    "Yu Gothic UI", "Noto Sans JP", sans-serif;
 }

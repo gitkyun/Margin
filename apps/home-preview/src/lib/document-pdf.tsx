@@ -1,4 +1,4 @@
-import { dateLocale } from "@/lib/i18n";
+import { dateLocale, t } from "@/lib/i18n";
 import { timeParts } from "./time-format";
 import {
   Document,
@@ -103,7 +103,7 @@ export async function documentPDF(
   Font.register({ family: "PretendardPDF", src: fontSource });
   const content = version.content as N;
   return pdf(
-    <Document title={version.title} author="마진">
+    <Document title={version.title} author={t("마진")}>
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>{version.title}</Text>
         <Text style={styles.meta}>

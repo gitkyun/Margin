@@ -94,6 +94,6 @@ export function timeFieldFormat(style: HourStyle = hourStyle()): {
   placeholder: string;
 } {
   return style === "12h"
-    ? { format: "a hh:mm", placeholder: "오전 00:00" }
+    ? { format: "a hh:mm", placeholder: t("오전 00:00") }
     : { format: "HH:mm", placeholder: "00:00" };
 }

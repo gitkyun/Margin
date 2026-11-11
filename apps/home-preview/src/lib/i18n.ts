@@ -57,6 +57,21 @@ export function dateLocale(): string {
 }
 
 /**
+ * 같은 한국어 낱말이 자리에 따라 뜻이 다를 때 씁니다. 한국어에서는 원문 그대로이고,
+ * 일본어 사전에서는 `원문@@뜻` 열쇠를 찾습니다(없으면 원문 열쇠, 그것도 없으면 원문).
+ *   tc("optional", "선택")  → 선택 / 任意
+ */
+export function tc(
+  context: string,
+  key: string,
+  vars?: Record<string, string | number | null | undefined>,
+): string {
+  if (lang === "ja" && `${key}@@${context}` in ja)
+    return t(`${key}@@${context}`, vars);
+  return t(key, vars);
+}
+
+/**
  * 문구를 지금 언어로. 열쇠는 한국어 원문 그대로이고, `{이름}` 자리에 값을 넣습니다.
  *   t("저장했어요.")
  *   t("할 일 {count}개", { count })

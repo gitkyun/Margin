@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
@@ -25,9 +26,9 @@ export interface IntroScene {
 }
 
 const TITLES = [
-  "마진에 오신 걸 환영해요",
-  "미팅에서 검토 요청까지 이어져요",
-  "이제 첫 연구를 만들어요",
+  t("마진에 오신 걸 환영해요"),
+  t("미팅에서 검토 요청까지 이어져요"),
+  t("이제 첫 연구를 만들어요"),
 ];
 
 /**
@@ -119,18 +120,25 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
             }}
           >
             <Icon name={running ? "pause" : "play"} size={14} />
-            {running ? "자동 넘김 멈추기" : "자동 넘김 켜기"}
+            {running ? t("자동 넘김 멈추기") : t("자동 넘김 켜기")}
           </button>
         )}
       </div>
       <p className="ob-sr-only" aria-live="polite">
         {auto &&
           slide > 0 &&
-          `소개 ${slide + 1} / ${INTRO_SLIDE_COUNT}. ${TITLES[slide]}`}
+          t("소개 {current} / {total}. {title}", {
+            current: slide + 1,
+            total: INTRO_SLIDE_COUNT,
+            title: TITLES[slide],
+          })}
       </p>
       <div className="ob-step" data-dir={direction} key={slide}>
         <p className="ob-progress">
-          소개 {slide + 1} / {INTRO_SLIDE_COUNT}
+          {t("소개 {current} / {total}", {
+            current: slide + 1,
+            total: INTRO_SLIDE_COUNT,
+          })}
         </p>
         <h1 id="ob-intro-heading" ref={heading} tabIndex={-1}>
           {TITLES[slide]}
@@ -138,20 +146,21 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
         {slide === 0 && (
           <>
             <p className="ob-intro-slogan">
-              흩어진 기록을 모아, 다음 연구가 되도록
+              {t("흩어진 기록을 모아, 다음 연구가 되도록")}
             </p>
             <p className="ob-help">
-              지도 미팅에서 나온 말, 받은 피드백, 고친 원고를 연구 하나에 모아
-              둬요. 다음 미팅 전에 무엇을 고쳤고 무엇이 남았는지 바로 볼 수
-              있어요.
+              {t(
+                "지도 미팅에서 나온 말, 받은 피드백, 고친 원고를 연구 하나에 모아 둬요. 다음 미팅 전에 무엇을 고쳤고 무엇이 남았는지 바로 볼 수 있어요.",
+              )}
             </p>
           </>
         )}
         {slide === 1 && (
           <>
             <p className="ob-help">
-              기록이 다음 단계로 이어져요. 단계가 차례로 넘어가고, 눌러서 바로
-              볼 수도 있어요.
+              {t(
+                "기록이 다음 단계로 이어져요. 단계가 차례로 넘어가고, 눌러서 바로 볼 수도 있어요.",
+              )}
             </p>
             <ol className="ob-intro-flow">
               {INTRO_FLOW.map((step, index) => (
@@ -191,8 +200,9 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
         )}
         {slide === 2 && (
           <p className="ob-help">
-            질문 네 개에 답하면 연구 홈이 채워져요. 연구 이름만 적고 나머지는
-            건너뛰어도 되고, 답한 내용은 나중에 모두 바꿀 수 있어요.
+            {t(
+              "질문 네 개에 답하면 연구 홈이 채워져요. 연구 이름만 적고 나머지는 건너뛰어도 되고, 답한 내용은 나중에 모두 바꿀 수 있어요.",
+            )}
           </p>
         )}
       </div>
@@ -202,7 +212,7 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
           size="lg"
           onClick={last ? onDone : () => go(slide + 1)}
         >
-          {last ? "연구 만들기" : "다음"}
+          {last ? t("연구 만들기") : t("다음")}
           <Icon name="arrow-right" size={18} />
         </Button>
         {slide > 0 && (
@@ -211,12 +221,12 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
             className="ob-skip"
             onClick={() => go(slide - 1)}
           >
-            이전
+            {t("이전")}
           </button>
         )}
         {!last && (
           <button type="button" className="ob-skip" onClick={onDone}>
-            소개 건너뛰기
+            {t("소개 건너뛰기")}
           </button>
         )}
       </div>
