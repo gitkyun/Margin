@@ -27,6 +27,7 @@ import {
   ComparePreview,
 } from "@/components/marketing/MarketingEffects";
 import { Button } from "@/components/ui/button";
+import { configured } from "@/lib/supabase";
 
 /** 히어로 제목 등장(최대 600ms)이 끝난 뒤에 시작 버튼 강조를 돌립니다. */
 const HERO_SETTLE_MS = 700;
@@ -183,7 +184,9 @@ export function PublicFrame({
               <Link to="/guide">사용 안내</Link>
               <Link to="/guide#questions">자주 묻는 질문</Link>
               <Link to="/privacy">자료와 개인정보</Link>
-              <Link to="/signup">가입 과정 미리보기</Link>
+              <Link to="/signup">
+                {configured ? "초대 링크로 가입하기" : "가입 과정 미리보기"}
+              </Link>
             </div>
           </div>
           <div className="lp-footer-bottom">

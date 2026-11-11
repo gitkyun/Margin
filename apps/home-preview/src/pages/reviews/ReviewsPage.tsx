@@ -50,6 +50,8 @@ import {
   timeText,
 } from "./helpers";
 import { addAdvisor, advisorChoices } from "@/lib/advisors";
+import { isUnregisteredReviewer } from "@/lib/invites";
+import { InviteLinkButton } from "@/components/InviteLinkButton";
 import { localizeServerMessage } from "@/lib/server-messages";
 
 export function ReviewsPage() {
@@ -497,6 +499,15 @@ export function ReviewsPage() {
                   {error}
                 </p>
               )}
+              {isUnregisteredReviewer(error) && (
+                <div className="invite-hint">
+                  <InviteLinkButton />
+                  <span>
+                    복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토
+                    요청을 보낼 수 있어요.
+                  </span>
+                </div>
+              )}
               <div className="form-actions">
                 <Button
                   type="button"
@@ -580,6 +591,15 @@ export function ReviewsPage() {
                 <p className="review-form-error" role="alert">
                   {error}
                 </p>
+              )}
+              {isUnregisteredReviewer(error) && (
+                <div className="invite-hint">
+                  <InviteLinkButton />
+                  <span>
+                    복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토
+                    요청을 보낼 수 있어요.
+                  </span>
+                </div>
               )}
               <div className="form-actions">
                 <Button

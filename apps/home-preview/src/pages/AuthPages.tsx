@@ -91,7 +91,7 @@ export function LoginPage({
           <p>
             {target.startsWith("/reviews/")
               ? "학생이 검토 요청에 지정한 교수 계정 이메일로 로그인해 주세요."
-              : "발급받은 계정의 이메일로 로그인하세요."}
+              : "가입한 이메일로 로그인하세요."}
           </p>
           {authenticated ? (
             <>
@@ -157,7 +157,10 @@ export function LoginPage({
             </form>
           )}
           <p className="auth-switch">
-            계정이 없나요? <Link to="/signup">가입 과정 미리보기</Link>
+            계정이 없나요?{" "}
+            <Link to="/signup">
+              {configured ? "초대 링크로 가입하기" : "가입 과정 미리보기"}
+            </Link>
           </p>
         </section>
       </section>

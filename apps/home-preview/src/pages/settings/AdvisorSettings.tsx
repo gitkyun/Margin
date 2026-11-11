@@ -3,6 +3,7 @@ import { Icon } from "@/components/icons";
 import { IconButton } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InviteLinkButton } from "@/components/InviteLinkButton";
 import { MAX_ADVISORS, addAdvisor, isEmail } from "@/lib/advisors";
 
 interface AdvisorSettingsProps {
@@ -111,6 +112,13 @@ export function AdvisorSettings({
         </p>
       )}
       {full && <p>지도교수는 {MAX_ADVISORS}명까지 등록할 수 있어요.</p>}
+      <div className="invite-hint">
+        <InviteLinkButton />
+        <span>
+          아직 마진에 가입하지 않은 교수님께는 초대 링크를 직접 보내 주세요.
+          가입한 이메일로만 검토 요청을 보낼 수 있어요.
+        </span>
+      </div>
     </section>
   );
 }
