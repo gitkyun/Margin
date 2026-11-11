@@ -36,7 +36,7 @@ function AuthLayout({ children }: { children: ReactNode }) {
             <span>
               {t("공동연구자가 참여하기 전에는 기록을 나만 볼 수 있어요.")}
               <br />
-              {t("교수님께는 검토 요청에 넣은 항목만 보여요.")}
+              {t("교수님께는 검토 요청에 넣은 항목과 연구 방향만 보여요.")}
             </span>
           </div>
         </div>

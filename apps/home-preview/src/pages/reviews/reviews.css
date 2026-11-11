@@ -385,6 +385,28 @@
   .review-stopped-banner {
     color: var(--warning);
   }
+  /* 교수 화면: 머리 아래에 학생이 적은 연구 이름과 방향(목적·질문)을 한 줄 띠로 둡니다. */
+  .review-direction-bar {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .review-direction-block {
+    max-width: 80ch;
+    word-break: var(--text-word-break, keep-all);
+  }
+  .review-direction-block > ol {
+    display: grid;
+    gap: 2px;
+    margin: 6px 0 0;
+    padding-left: 1.4em;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1Reading-lineHeight);
+    overflow-wrap: anywhere;
+  }
+  .review-public-preview > .review-direction-block {
+    max-width: none;
+  }
   .review-workspace-body {
     display: flex;
     align-items: stretch;

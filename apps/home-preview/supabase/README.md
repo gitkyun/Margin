@@ -15,7 +15,7 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
 
-DB 비밀번호가 필요하면 사용자 본인이 입력하거나 로컬 비공개 환경에서 설정한다. 명령줄 인자에 실제 비밀번호를 기록하지 않는다. `supabase/config.toml`은 로컬 Auth의 공개 가입을 비활성화한다. 호스팅 프로젝트는 2026-11-10부터 초대 링크 가입을 위해 **Authentication → Sign In / Providers → Allow new users to sign up**을 켜 둔다. 가입만으로는 아무 기록도 읽거나 쓸 수 없고, 초대 코드(`rms_redeem_invite`)를 쓴 계정만 허용 목록 `rms_demo_accounts`에 들어간다. 가입 확인 메일은 호스팅의 메일(SMTP) 설정으로 보낸다.
+DB 비밀번호가 필요하면 사용자 본인이 입력하거나 로컬 비공개 환경에서 설정한다. 명령줄 인자에 실제 비밀번호를 기록하지 않는다. `supabase/config.toml`은 로컬 Auth의 공개 가입을 비활성화한다. 호스팅 프로젝트는 2026-11-10부터 초대 링크 가입을 위해 **Authentication → Sign In / Providers → Allow new users to sign up**을 켜 둔다. 가입만으로는 아무 기록도 읽거나 쓸 수 없고, 초대 코드(`rms_redeem_invite`)를 쓴 계정만 허용 목록 `rms_demo_accounts`에 들어간다. 가입 확인 메일은 2026-11-11부터 끈다(**Confirm email** 끔, Site URL `https://margin-research.pages.dev`). 호스팅 기본 메일은 팀 구성원 주소로만 시간당 2통 보내서 연구실 사람이 확인을 마칠 수 없었다. 확인을 끄면 메일 주인 확인이 없으므로, 공개 출시 전에는 SMTP를 연결하고 다시 켠다. 비밀번호 재설정 메일도 SMTP 연결 뒤에 만든다.
 
 3. 학생·교수 계정을 미리 발급하고 허용 목록에 등록한다. 관리 콘솔에서 생성한 확인 완료 계정의 UUID를 `rms_demo_accounts.user_id`에 추가할 수도 있다. 자동 준비를 원하면 `.env.provision.example`을 Git에서 제외되는 `.env.provision.local`로 복사해 로컬에서만 값을 넣는다.
 

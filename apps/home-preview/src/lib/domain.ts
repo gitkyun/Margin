@@ -122,6 +122,10 @@ export interface ReviewRequest extends BaseRecord {
   professorEmail: string;
   professorId?: ID;
   status: "draft" | "shared" | "stopped";
+  /** 서버가 함께 보내는 연구 이름과 연구 방향. 교수님이 검토할 때 맥락으로 봅니다. */
+  researchName?: string;
+  researchPurpose?: string;
+  researchQuestions?: string[];
 }
 export interface ReviewItem {
   id: ID;
