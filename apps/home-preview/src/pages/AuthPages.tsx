@@ -1,3 +1,4 @@
+import { incomingSummary } from "./reviews/helpers";
 import {
   PermanentResearchDelete,
   PendingResearchDeletions,
@@ -261,9 +262,7 @@ export function ResearchSelectPage() {
               const events = newEvents.filter(
                 (event) => event.requestId === request.id,
               );
-              const itemCount = data.reviewItems.filter(
-                (item) => item.requestId === request.id,
-              ).length;
+              const summary = incomingSummary(data, request.id);
               return (
                 <Link
                   key={request.id}
@@ -274,10 +273,22 @@ export function ResearchSelectPage() {
                   <div>
                     <strong>{request.title}</strong>
                     <span>
-                      {t("검토 항목 {count}개", { count: itemCount })} ·{" "}
-                      {formatDateTime(request.createdAt, { time: false })}
+                      {summary.studentName && `${summary.studentName} · `}
+                      {t("검토 항목 {count}개", {
+                        count: summary.total,
+                      })}{" "}
+                      · {formatDateTime(request.createdAt, { time: false })}
                     </span>
                   </div>
+                  {summary.pending > 0 ? (
+                    <StatusBadge tone="amber">
+                      {t("응답 전 {count}개", { count: summary.pending })}
+                    </StatusBadge>
+                  ) : (
+                    summary.total > 0 && (
+                      <StatusBadge tone="green">{t("모두 응답함")}</StatusBadge>
+                    )
+                  )}
                   {events.length > 0 && (
                     <StatusBadge tone="blue">
                       {t("새 소식 {count}개", { count: events.length })}

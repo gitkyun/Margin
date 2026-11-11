@@ -310,6 +310,7 @@ const dictionary: Record<string, string> = {
   "연결할 할 일": "関連付けるタスク",
   "수정 결과 저장": "修正結果を保存",
   "{title} 수정 결과": "{title}の修正結果",
+  "모두 응답함": "すべて回答済み",
 };
 
 export default dictionary;
