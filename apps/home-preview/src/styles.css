@@ -1432,3 +1432,70 @@
     display: none;
   }
 }
+
+/*
+ * 위쪽 줄의 언어 선택(공개 헤더, 로그인 후 상단 줄).
+ * 공개 푸터의 라이트·다크 선택(.lp-footer-theme)과 같은 모양이고, 위쪽 줄 높이에 맞게 조금 낮습니다.
+ */
+@layer margin {
+  .language-segments {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    padding: 3px;
+    gap: 2px;
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+  }
+  .language-segments button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 10px;
+    gap: var(--spacing-4);
+    border: 0;
+    border-radius: var(--radius-10);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: 1;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background var(--motion-duration-micro) ease,
+      color var(--motion-duration-micro) ease,
+      box-shadow var(--motion-duration-micro) ease;
+  }
+  .language-segments button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
+  }
+  .language-segments button:hover {
+    color: var(--text);
+  }
+  .language-segments button:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-focus);
+    outline-offset: 1px;
+  }
+  /* 휴대폰 폭의 공개 헤더는 자리가 모자라, 언어 선택을 메뉴 안으로 옮깁니다. */
+  .language-segments-in-menu {
+    display: none;
+  }
+  @media (max-width: 479px) {
+    .language-segments-in-header {
+      display: none;
+    }
+    .language-segments-in-menu {
+      display: inline-flex;
+      align-self: flex-start;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .language-segments button {
+      transition: none;
+    }
+  }
+}

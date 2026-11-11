@@ -17,6 +17,7 @@ import { CoverText, RevealLine } from "@/components/marketing/TextEffects";
 import { FooterControls } from "@/components/marketing/FooterControls";
 import { FooterGlyphField } from "@/components/marketing/FooterGlyphField";
 import { PublicNavigation } from "@/components/marketing/PublicNavigation";
+import { LanguageMenu } from "@/components/LanguageMenu";
 import {
   WorkflowStack,
   useStackedWorkflow,
@@ -130,6 +131,7 @@ export function PublicFrame({
             onNavigate={() => setMenu(false)}
           />
           <div className="lp-nav-actions">
+            <LanguageMenu className="language-segments-in-header" />
             {!signedIn && (
               <Link className="lp-login" to="/login">
                 {t("로그인")}

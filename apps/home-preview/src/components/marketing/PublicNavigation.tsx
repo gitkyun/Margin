@@ -1,3 +1,4 @@
+import { LanguageMenu } from "@/components/LanguageMenu";
 import { NavigationMenu } from "radix-ui";
 import { Link, useLocation } from "react-router-dom";
 import { Icon } from "@/components/icons";
@@ -105,6 +106,7 @@ export function PublicNavigation({
         </NavigationMenu.Item>
       </NavigationMenu.List>
       <div className="lp-mobile-auth">
+        <LanguageMenu className="language-segments-in-menu" />
         {!signedIn && (
           <Link to="/login" onClick={onNavigate}>
             {t("로그인")}

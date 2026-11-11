@@ -8,7 +8,10 @@ export function LanguageSwitch() {
       label={t("화면 언어")}
       value={currentLang()}
       onChange={(next) => setLang(next as Lang)}
-      options={LANGUAGES}
+      options={LANGUAGES.map((option) => ({
+        value: option.value,
+        label: `${option.flag} ${option.label}`,
+      }))}
     />
   );
 }
