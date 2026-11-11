@@ -1480,6 +1480,17 @@
     outline: 2px solid var(--semantic-line-brand-focus);
     outline-offset: 1px;
   }
+  /* 태블릿 폭의 공개 헤더는 자리가 모자라 국기만 둡니다(언어 이름은 화면 낭독기에 그대로 읽힙니다). */
+  @media (max-width: 1199px) {
+    .language-segments-in-header button {
+      padding: 0 8px;
+      font-size: 0;
+      gap: 0;
+    }
+    .language-segments-in-header button > span {
+      font-size: var(--typography-body2-fontSize);
+    }
+  }
   /* 휴대폰 폭의 공개 헤더는 자리가 모자라, 언어 선택을 메뉴 안으로 옮깁니다. */
   .language-segments-in-menu {
     display: none;

@@ -39,6 +39,41 @@
     justify-content: space-between;
     gap: 30px;
   }
+  /*
+   * 메뉴를 화면 한가운데에 둡니다. 양옆 칸(로고, 오른쪽 버튼들)을 같은 폭으로 잡아서
+   * 오른쪽이 넓어져도 가운데가 밀리지 않습니다. 메뉴가 패널로 바뀌는 767px 이하는 그대로예요.
+   */
+  @media (min-width: 768px) {
+    .lp-nav-shell {
+      display: grid;
+      /* 양옆 칸은 내용보다 좁아지지 않습니다. 자리가 모자라면 겹치지 않고 가운데에서 조금 밀립니다. */
+      grid-template-columns: minmax(min-content, 1fr) auto minmax(
+          min-content,
+          1fr
+        );
+    }
+    .lp-nav-shell > .lp-brand {
+      justify-self: start;
+    }
+    .lp-nav-shell > .lp-nav-actions {
+      justify-self: end;
+    }
+  }
+  /* 좁은 태블릿 폭: 메뉴 글자가 두 줄로 꺾이지 않게 사이 간격을 줄입니다. */
+  @media (min-width: 768px) and (max-width: 899px) {
+    .lp-header .lp-nav-shell {
+      gap: 12px;
+    }
+    .lp-header .lp-public-nav-list {
+      gap: 14px;
+    }
+    .lp-header .lp-nav-actions {
+      gap: 12px;
+    }
+  }
+  .lp-header .lp-public-nav-list {
+    white-space: nowrap;
+  }
   .lp-brand {
     display: inline-flex;
     align-items: center;
