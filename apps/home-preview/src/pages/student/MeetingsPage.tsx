@@ -830,7 +830,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   async function storeEntry(event: React.FormEvent) {
     event.preventDefault();
     if (!entryBody.trim() || (entry === "feedback" && !entryTitle.trim())) {
-      entryForm.setError(t("필수 항목을 입력해 주세요."));
+      entryForm.setError(
+        entry === "feedback"
+          ? t("제목과 피드백 내용을 입력해 주세요.")
+          : t("내용을 입력해 주세요."),
+      );
       return;
     }
     await entryForm.perform(async () => {
@@ -1818,7 +1822,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               : t("질문 추가")
         }
       >
-        <form className="stack" onSubmit={storeEntry}>
+        <form className="stack" noValidate onSubmit={storeEntry}>
           {entry === "feedback" && (
             <LabeledInput
               label={t("제목")}

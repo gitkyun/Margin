@@ -321,6 +321,31 @@ export function MaterialsPage() {
             description={`${materialTypes[current.type]} · ${current.externalUrl ? t("링크") : t("PDF 파일")}`}
             actions={
               <div className="button-row">
+                {/* 자주 쓰지 않는 보관은 머리의 보조 동작으로 둡니다(검수 P2). */}
+                <Button
+                  variant="ghost"
+                  onClick={async () => {
+                    try {
+                      await save("materials", {
+                        ...current,
+                        archivedAt: current.archivedAt
+                          ? undefined
+                          : new Date().toISOString(),
+                      });
+                      toast.success(
+                        current.archivedAt
+                          ? t("자료를 복원했어요")
+                          : t(
+                              "자료를 보관했어요. 검토에 쓴 파일은 그대로 남아요.",
+                            ),
+                      );
+                    } catch (e) {
+                      toast.error((e as Error).message);
+                    }
+                  }}
+                >
+                  {current.archivedAt ? t("자료 복원") : t("자료 보관")}
+                </Button>
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -361,28 +386,6 @@ export function MaterialsPage() {
                   ))}
               </SelectField>
             </label>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                try {
-                  await save("materials", {
-                    ...current,
-                    archivedAt: current.archivedAt
-                      ? undefined
-                      : new Date().toISOString(),
-                  });
-                  toast.success(
-                    current.archivedAt
-                      ? t("자료를 복원했어요")
-                      : t("자료를 보관했어요. 검토에 쓴 파일은 그대로 남아요."),
-                  );
-                } catch (e) {
-                  toast.error((e as Error).message);
-                }
-              }}
-            >
-              {current.archivedAt ? t("자료 복원") : t("자료 보관")}
-            </Button>
           </div>
           {current.externalUrl && (
             <section className="surface external-reference">
@@ -427,10 +430,6 @@ export function MaterialsPage() {
               {selected ? (
                 <>
                   <div className="material-version-toolbar">
-                    <span className="meta">
-                      <Icon name="file" size={15} />
-                      {selected.fileName}
-                    </span>
                     <label className="sr-only" htmlFor="version-select">
                       {t("파일 버전 선택")}
                     </label>

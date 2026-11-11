@@ -52,10 +52,20 @@ export function HomePage() {
   const forcedTour = params.get("tour") === "1";
   const [tour, setTour] = useState(false);
   // 홈이 자리 잡은 뒤(온보딩에서 커지는 전환 포함)에 안내를 엽니다.
+  // 자동으로 열 때는, 그 전에 사용자가 먼저 누르거나 입력하면 이번에는 열지 않습니다.
+  // 첫 클릭을 안내가 가로막지 않게 합니다(검수 P2). 봤다는 기록은 남기지 않아 다음에 다시 나와요.
   useEffect(() => {
     if (!shouldShowTour({ seen: isTourSeen(), forced: forcedTour })) return;
     const timer = window.setTimeout(() => setTour(true), 500);
-    return () => window.clearTimeout(timer);
+    if (forcedTour) return () => window.clearTimeout(timer);
+    const cancel = () => window.clearTimeout(timer);
+    window.addEventListener("pointerdown", cancel, { once: true });
+    window.addEventListener("keydown", cancel, { once: true });
+    return () => {
+      cancel();
+      window.removeEventListener("pointerdown", cancel);
+      window.removeEventListener("keydown", cancel);
+    };
   }, [forcedTour]);
 
   function endTour() {

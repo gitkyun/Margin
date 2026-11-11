@@ -137,6 +137,10 @@ export function PlanningPage() {
             </Button>
           ) : (
             <Button
+              // 단계가 없을 때는 빈 상태의 '기본 단계로 시작'이 주 행동이라 여기는 보조로 낮춥니다.
+              variant={
+                tab === "roadmap" && !phases.length ? "outline" : undefined
+              }
               onClick={() =>
                 tab === "schedule" ? setPollOpen(true) : newPhase()
               }

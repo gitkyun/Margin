@@ -139,7 +139,11 @@ export function WritingPage() {
         actions={
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <Button disabled={creating}>
+              {/* 문서가 없을 때는 빈 상태의 '계획서 만들기'가 주 행동이라 여기는 보조로 낮춥니다. */}
+              <Button
+                disabled={creating}
+                variant={!docs.length ? "outline" : undefined}
+              >
                 <Icon name="plus" size={17} />
                 {t("문서 만들기")}
                 <Icon name="chevron-down" size={15} />

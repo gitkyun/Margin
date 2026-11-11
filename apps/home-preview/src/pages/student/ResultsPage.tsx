@@ -253,7 +253,7 @@ export function ResultsPage() {
       ) : (
         <>
           <PageHeader
-            title={t("수정 결과")}
+            title={t("피드백·수정")}
             tabs={<WorkTabs researchId={researchId} selected="results" />}
             description={t(
               "실제로 고친 내용과 근거를 기록하고, 필요한 것만 검토 요청에 넣을 수 있어요.",
