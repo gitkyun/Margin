@@ -30,6 +30,7 @@ import {
 import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { t } from "@/lib/i18n";
+import { joinPath, pendingJoin } from "@/lib/project-invites";
 import { useExperience } from "@/lib/experience";
 import { Segments } from "@/components/experience";
 import { unreadReviewNotifications } from "@/lib/notifications";
@@ -49,9 +50,11 @@ export function LoginPage({
   const emailInput = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const next = params.get("next") ?? "/r";
+  // 초대 수락 중에 로그인하러 온 경우(메일 확인 뒤 포함) 그 초대로 돌아갑니다.
+  const resumeJoin = pendingJoin();
+  const next = params.get("next") ?? (resumeJoin ? joinPath(resumeJoin) : "/r");
   const target =
-    /^\/(r|reviews|schedule)(\/|\?|$)/.test(next) && !next.startsWith("//")
+    /^\/(r|reviews|schedule|join)(\/|\?|$)/.test(next) && !next.startsWith("//")
       ? next
       : "/r";
   async function submit(event: FormEvent) {

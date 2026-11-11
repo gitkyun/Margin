@@ -16,7 +16,7 @@ import { PublicFrame } from "./PublicPages";
 
 const NAME_MAX = 40;
 
-function AuthLayout({ children }: { children: ReactNode }) {
+export function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <PublicFrame compact>
       <section className="signup-layout">

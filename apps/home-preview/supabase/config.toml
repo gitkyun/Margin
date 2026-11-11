@@ -28,3 +28,7 @@ verify_jwt = false
 [functions.delete-research]
 # JWT and owner checks are performed inside the function.
 verify_jwt = false
+
+[functions.project-invite]
+# JWT and invite permission checks are performed inside the function and its RPCs.
+verify_jwt = false

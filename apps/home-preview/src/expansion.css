@@ -1038,6 +1038,118 @@
   .member-list {
     margin: 24px 0;
   }
+  /* 연구 초대 메일: 보내기 폼, 발송 결과, 보낸 초대 목록 */
+  .project-invites h3 {
+    margin: 28px 0 12px;
+    font-size: var(--typography-headline2-fontSize);
+  }
+  .project-invite-result {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin: 16px 0 0;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--brand-soft);
+  }
+  .project-invite-result.failed {
+    background: var(--danger-soft);
+    border-color: var(--danger-line);
+  }
+  .project-invite-result > svg {
+    flex: none;
+    margin-top: 2px;
+  }
+  .project-invite-result > div {
+    flex: 1;
+    min-width: 0;
+  }
+  .project-invite-result strong {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  .project-invite-result p {
+    margin: 4px 0 0;
+    font-size: var(--typography-label1-fontSize);
+    color: var(--text-secondary);
+  }
+  .project-invite-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .project-invite-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .project-invite-main {
+    flex: 1 1 240px;
+    min-width: 0;
+  }
+  .project-invite-main strong,
+  .project-invite-main small {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  .project-invite-main small {
+    margin-top: 4px;
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--text-secondary);
+  }
+  .project-invite-main small.project-invite-warn {
+    color: var(--danger);
+  }
+  .project-invite-actions {
+    display: flex;
+    gap: 4px;
+  }
+  @media (max-width: 767px) {
+    .project-invite-result {
+      flex-wrap: wrap;
+    }
+    .project-invite-actions {
+      flex-basis: 100%;
+    }
+  }
+  /* 초대 수락 화면의 초대 내용 요약 */
+  .join-summary {
+    margin: 20px 0;
+    padding: 4px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .join-summary ~ p {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+  }
+  .join-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .join-summary > div {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .join-summary dt {
+    flex: none;
+    width: 88px;
+    color: var(--text-secondary);
+  }
+  .join-summary dd {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
   .member-row {
     display: flex;
     gap: 12px;
