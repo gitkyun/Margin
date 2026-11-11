@@ -20,6 +20,7 @@ import {
   type WorkspaceData,
 } from "./domain";
 import { localizeServerMessage } from "@/lib/server-messages";
+import { downloadFromR2, uploadToR2 } from "./file-storage";
 const DB_NAME = "rms-preview-v1";
 export function previewDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -156,8 +157,8 @@ export function validatePDF(file: File) {
     (file.type && file.type !== "application/pdf")
   )
     throw new Error(t("PDF 파일을 선택해 주세요."));
-  if (file.size > 20 * 1024 * 1024)
-    throw new Error(t("20MB 이하의 PDF를 선택해 주세요."));
+  if (file.size > 500 * 1024 * 1024)
+    throw new Error(t("500MB 이하의 PDF를 선택해 주세요."));
   if (file.size === 0)
     throw new Error(
       t("빈 파일은 올릴 수 없어요. 내용이 있는 PDF를 선택해 주세요."),
@@ -203,55 +204,14 @@ export async function uploadFile(
   const { data, error } = await client.auth.getSession();
   if (error || !data.session)
     throw new Error(t("로그인이 만료됐어요. 다시 로그인해 주세요."));
-  const token = data.session.access_token;
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    let complete = false;
-    const abort = () => xhr.abort();
-    xhr.open(
-      "POST",
-      `${url}/storage/v1/object/research-files/${version.storagePath}`,
-    );
-    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    xhr.setRequestHeader("apikey", key);
-    xhr.setRequestHeader("Content-Type", "application/pdf");
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable)
-        onProgress?.(Math.round((e.loaded / e.total) * 100));
-    };
-    const cleanup = () => {
-      complete = true;
-      signal?.removeEventListener("abort", abort);
-    };
-    xhr.onload = () => {
-      cleanup();
-      xhr.status >= 200 && xhr.status < 300
-        ? resolve()
-        : reject(new Error(t("파일을 올리지 못했어요. 다시 시도해 주세요.")));
-    };
-    xhr.onerror = () => {
-      cleanup();
-      reject(
-        new Error(
-          t(
-            "연결이 끊겨 파일을 끝까지 올리지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
-          ),
-        ),
-      );
-    };
-    xhr.onabort = () => {
-      cleanup();
-      reject(new DOMException(t("업로드를 취소했어요."), "AbortError"));
-    };
-    signal?.addEventListener("abort", abort, { once: true });
-    if (signal?.aborted && !complete) {
-      cleanup();
-      reject(new DOMException(t("업로드를 취소했어요."), "AbortError"));
-      return;
-    }
-    xhr.send(file);
+  await uploadToR2({
+    bucket: "research-files",
+    path: version.storagePath,
+    file,
+    mimeType: "application/pdf",
+    token: data.session.access_token,
+    onProgress,
+    signal,
   });
   return version;
 }
@@ -277,8 +237,19 @@ export async function getFile(
       );
     return file;
   }
-  const { data, error } = await assertConnected()
-    .storage.from("research-files")
+  const client = assertConnected();
+  const { data: session } = await client.auth.getSession();
+  if (!session.session)
+    throw new Error(t("로그인이 만료됐어요. 다시 로그인해 주세요."));
+  const stored = await downloadFromR2(
+    "research-files",
+    version.storagePath,
+    session.session.access_token,
+  );
+  if (stored) return stored;
+  // Not copied to R2 yet: read the original from Supabase Storage.
+  const { data, error } = await client.storage
+    .from("research-files")
     .download(version.storagePath);
   if (error)
     throw new Error(

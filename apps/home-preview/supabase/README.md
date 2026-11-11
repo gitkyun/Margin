@@ -63,9 +63,13 @@ npx supabase functions deploy ai-assist
 
 ## 파일
 
-비공개 버킷은 `research-files`다. 업로드 경로는 `사용자UUID/연구UUID/버전UUID.pdf`, 최대 20MiB, MIME은 `application/pdf`다. 업로드를 완료한 뒤 `versions` 기록을 저장한다. 서버는 Storage의 실제 크기·MIME 메타데이터와 경로를 검사한다. 버전 기록은 갱신할 수 없으며 Storage 객체의 덮어쓰기도 허용하지 않는다.
+파일은 Cloudflare R2 버킷 `margin-files`에 저장하고, 브라우저는 Worker `margin-files`(`file-worker/`)를 거쳐서만 읽고 쓴다. 키는 `research-files/사용자UUID/연구UUID/버전UUID.pdf`, `research-private/사용자UUID/연구UUID/기록UUID.확장자`다. 최대 500MB, 20MB 조각 업로드(R2 multipart).
 
-학생은 소유 파일을 읽고 교수는 현재 공유된 차수에 첨부된 파일만 읽는다. 인증된 다운로드를 사용하며 공개 URL을 만들지 않는다. 공유를 중지하면 이후 읽기는 거부하지만 이미 내려받은 파일을 회수한다고 약속하지 않는다. 기록 연결이 실패한 업로드는 삭제하거나 같은 객체로 연결을 재시도할 수 있다.
+- 권한: Worker는 요청의 Supabase 로그인 토큰으로 `rms_file_can_upload(bucket,path)`(올리기)·`rms_can_read_file(path)`(읽기)를 부른다. 학생은 편집 가능한 연구에만 올리고, 교수는 현재 공유된 차수에 첨부된 파일만 읽는다. 공개 URL은 만들지 않는다. 같은 경로는 다시 올릴 수 없다(덮어쓰기 없음).
+- 기록: 업로드가 끝나면 Worker가 공유 비밀값으로 `rms_file_register`를 불러 `rms_file_objects`에 남긴다. `versions`·`recordings`·`attachments` 저장과 검토 스냅샷은 `rms_file_exists`로 R2 기록 또는 기존 Storage 객체를 확인한다.
+- 기존 파일: Supabase Storage 버킷 `research-files`·`research-private`는 지우지 않는다. `file-copy-to-r2` 함수가 복사만 하고(SHA-256 확인), 앱은 R2에 없으면 Storage에서 읽는다.
+- 완전 삭제: `delete-research`가 Storage 원본을 지운 뒤 Worker `/purge`를 불러 해당 삭제 작업에 기록된 R2 파일만 지운다.
+- 비밀값: `FILE_SERVICE_SECRET`은 Worker 비밀값에만 두고 DB에는 SHA-256(`rms_file_service`)만 둔다.
 
 ## AI
 

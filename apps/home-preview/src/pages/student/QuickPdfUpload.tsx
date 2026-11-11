@@ -127,7 +127,7 @@ export function QuickPdfUpload({
   return (
     <div className="quick-upload">
       <label className="field">
-        <span className="field-name">{t("PDF 파일 · 20MB 이하")}</span>
+        <span className="field-name">{t("PDF 파일 · 500MB 이하")}</span>
         <input
           type="file"
           accept="application/pdf,.pdf"

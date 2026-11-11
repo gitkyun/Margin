@@ -2,6 +2,7 @@ import { t } from "@/lib/i18n";
 import { useWorkspace } from "./workspace";
 import { rpc, idbGet, idbSet } from "./repository";
 import { assertConnected } from "./supabase";
+import { downloadFromR2, uploadToR2 } from "./file-storage";
 import type { Recording, Attachment } from "./domain";
 export function useExperience() {
   const w = useWorkspace();
@@ -38,9 +39,11 @@ export async function uploadPrivate(
   progress?: (n: number) => void,
   signal?: AbortSignal,
 ) {
-  if (!file.size || file.size > 50 * 1024 * 1024)
+  if (!file.size || file.size > 500 * 1024 * 1024)
     throw new Error(
-      t("파일을 올리지 못했어요. 내용이 있는 50MB 이하 파일만 올릴 수 있어요."),
+      t(
+        "파일을 올리지 못했어요. 내용이 있는 500MB 이하 파일만 올릴 수 있어요.",
+      ),
     );
   if (mode === "preview") {
     await idbSet("files", path, file);
@@ -50,56 +53,14 @@ export async function uploadPrivate(
     { data } = await client.auth.getSession();
   if (!data.session)
     throw new Error(t("로그인이 만료됐어요. 다시 로그인해 주세요."));
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const abort = () => xhr.abort();
-    const clean = () => signal?.removeEventListener("abort", abort);
-    xhr.open(
-      "POST",
-      `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/research-private/${path}`,
-    );
-    xhr.setRequestHeader(
-      "Authorization",
-      `Bearer ${data.session!.access_token}`,
-    );
-    xhr.setRequestHeader(
-      "apikey",
-      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    );
-    xhr.setRequestHeader("Content-Type", file.type);
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable)
-        progress?.(Math.round((e.loaded / e.total) * 100));
-    };
-    xhr.onload = () => {
-      clean();
-      xhr.status >= 200 && xhr.status < 300
-        ? resolve()
-        : reject(
-            new Error(t("파일을 올리지 못했어요. 잠시 후 다시 시도해 주세요.")),
-          );
-    };
-    xhr.onerror = () => {
-      clean();
-      reject(
-        new Error(
-          t(
-            "파일을 올리다가 연결이 끊겼어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
-          ),
-        ),
-      );
-    };
-    xhr.onabort = () => {
-      clean();
-      reject(new DOMException(t("취소했어요."), "AbortError"));
-    };
-    signal?.addEventListener("abort", abort, { once: true });
-    if (signal?.aborted) {
-      clean();
-      reject(new DOMException(t("취소했어요."), "AbortError"));
-      return;
-    }
-    xhr.send(file);
+  await uploadToR2({
+    bucket: "research-private",
+    path,
+    file,
+    mimeType: file.type,
+    token: data.session.access_token,
+    onProgress: progress,
+    signal,
   });
 }
 export async function privateBlob(
@@ -116,8 +77,18 @@ export async function privateBlob(
       );
     return b;
   }
-  const { data, error } = await assertConnected()
-    .storage.from("research-private")
+  const client = assertConnected();
+  const { data: session } = await client.auth.getSession();
+  if (!session.session)
+    throw new Error(t("로그인이 만료됐어요. 다시 로그인해 주세요."));
+  const stored = await downloadFromR2(
+    "research-private",
+    record.storagePath,
+    session.session.access_token,
+  );
+  if (stored) return stored;
+  const { data, error } = await client.storage
+    .from("research-private")
     .download(record.storagePath);
   if (error) throw error;
   return data;

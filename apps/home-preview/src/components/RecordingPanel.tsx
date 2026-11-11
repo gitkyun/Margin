@@ -176,8 +176,8 @@ export function RecordingPanel({
         "audio/mp4",
         "audio/ogg;codecs=opus",
       ].find((candidate) => MediaRecorder.isTypeSupported(candidate));
-      // 32kbps keeps a full 2-hour recording (about 29MB) under the 50MB upload
-      // limit; browser defaults (64-128kbps) can pass it before 2 hours.
+      // 32kbps keeps a full 2-hour recording (about 29MB) well under the 500MB upload
+      // limit.
       const m = new MediaRecorder(s, {
         ...(mime ? { mimeType: mime } : {}),
         audioBitsPerSecond: 32000,
@@ -688,7 +688,7 @@ export function RecordingPanel({
             <DialogTitle>{t("녹음을 시작할까요?")}</DialogTitle>
             <DialogDescription>
               {t(
-                "녹음하기 전에 참여자에게 알리고 동의를 받아 주세요. 실시간 전사를 켜면 음성이 브라우저 제공자의 음성 인식 서버로 전송될 수 있고 인터넷 연결이 필요해요. 녹음은 한 번에 최대 2시간이고, 2시간이 되면 자동으로 멈춰요. 음성 파일이 50MB를 넘으면 저장할 수 없으니 긴 미팅은 나눠서 녹음해 주세요.",
+                "녹음하기 전에 참여자에게 알리고 동의를 받아 주세요. 실시간 전사를 켜면 음성이 브라우저 제공자의 음성 인식 서버로 전송될 수 있고 인터넷 연결이 필요해요. 녹음은 한 번에 최대 2시간이고, 2시간이 되면 자동으로 멈춰요. 음성 파일이 500MB를 넘으면 저장할 수 없으니 긴 미팅은 나눠서 녹음해 주세요.",
               )}
             </DialogDescription>
           </DialogHeader>

@@ -20,7 +20,7 @@ minimum_password_length = 8
 enable_confirmations = true
 [storage]
 enabled = true
-file_size_limit = "20MiB"
+file_size_limit = "50MiB"
 [functions.ai-assist]
 # The function validates JWTs through auth.getUser, including asymmetric keys.
 verify_jwt = false
@@ -31,4 +31,8 @@ verify_jwt = false
 
 [functions.project-invite]
 # JWT and invite permission checks are performed inside the function and its RPCs.
+verify_jwt = false
+
+[functions.file-copy-to-r2]
+# One-off, idempotent copy to R2 (copies only; never deletes originals).
 verify_jwt = false

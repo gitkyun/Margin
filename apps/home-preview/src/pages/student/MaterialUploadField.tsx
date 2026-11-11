@@ -100,7 +100,7 @@ export function MaterialUploadField({
         <span id={hintId} className="mu-dropzone-hint">
           {file
             ? t("등록하기 전까지 바꿀 수 있어요")
-            : t("또는 눌러서 파일 선택 · 20MB 이하")}
+            : t("또는 눌러서 파일 선택 · 500MB 이하")}
         </span>
       </motion.button>
       <AnimatePresence initial={false}>

@@ -73,6 +73,25 @@ Deno.serve(async (req: Request) => {
           });
       }
     }
+    // Files stored in Cloudflare R2: the file Worker deletes only the keys
+    // listed in this owner's deletion job.
+    const workerUrl =
+      Deno.env.get("FILE_WORKER_URL") ??
+      "https://margin-files.rlgus801-dad.workers.dev";
+    const purge = await fetch(`${workerUrl}/purge`, {
+      method: "POST",
+      headers: {
+        Authorization: authorization,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ researchId: input.researchId }),
+    }).catch(() => null);
+    if (!purge?.ok)
+      return reply(503, {
+        error:
+          "기록은 삭제했지만 파일 정리가 끝나지 않았습니다. 휴지통에서 다시 시도해 주세요.",
+        retryable: true,
+      });
     const { error: finishError } = await admin
       .from("rms_deletion_jobs")
       .update({ completed_at: new Date().toISOString(), files: [] })
