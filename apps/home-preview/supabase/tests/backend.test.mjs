@@ -19,7 +19,7 @@ before(async()=>{
  create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
  create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,metadata jsonb,unique(bucket_id,name));
  alter table storage.objects enable row level security;
- grant usage on schema auth,storage to anon,authenticated,service_role;grant execute on function auth.uid() to anon,authenticated,service_role;grant select,insert,update,delete on storage.objects to authenticated;`)
+ grant usage on schema auth,storage to anon,authenticated,service_role;grant execute on function auth.uid() to anon,authenticated,service_role;grant select,insert,update,delete on storage.objects to authenticated;grant all on storage.objects to service_role;`)
  for (const file of (await readdir(new URL('../migrations/',import.meta.url))).filter(x=>x.endsWith('.sql')).sort()) await db.exec(await readFile(new URL(`../migrations/${file}`,import.meta.url),'utf8'))
  for(const [key,email] of [['student','student@example.test'],['professor','professor@example.test'],['stranger','other@example.test'],['newProfessor','next@example.test']]){await db.query('insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values($1,$2,now(),$3)',[ids[key],email,JSON.stringify({name:key})]);await db.query('insert into public.rms_demo_accounts(user_id) values($1)',[ids[key]])}
  await as(ids.student)
@@ -596,4 +596,6 @@ test('R2 file registry: upload permission, secret-only register, versions accept
  await as(outsider);assert.equal(await call('rms_can_read_file',[path]),false)
  await as(ids.professor);assert.equal(await call('rms_can_read_file',[path]),false,'not shared with the professor')
  await failure(()=>call('rms_file_purge_list',['wrong-secret-wrong-secret-wrong-secret',ids.research,ids.student]),'42501')
+ assert.equal(await call('rms_file_is_service'),false);await failure(()=>call('rms_file_list_service'),'42501')
+ await db.exec('reset role');await db.exec('set role service_role');assert.equal(await call('rms_file_is_service'),true);assert.equal((await call('rms_file_list_service')).r2.length,1);await db.exec('reset role')
 })

@@ -1,8 +1,9 @@
 // Margin file Worker: stores research files in Cloudflare R2 (binding FILES).
 // Login and permissions stay in Supabase: every browser request carries the
 // user's Supabase access token, and permission RPCs run as that user.
-// Server-only calls (copying originals, permanent deletion) use FILE_SERVICE_SECRET,
-// whose sha256 is in public.rms_file_service.
+// The Worker writes the file registry with FILE_SERVICE_SECRET (a Worker
+// secret; only its sha256 is in public.rms_file_service). /admin/* accepts
+// only the Supabase service role key, confirmed by Supabase itself.
 const MAX_SIZE = 500 * 1024 * 1024;
 const PART_SIZE = 20 * 1024 * 1024;
 const MIME = {
@@ -100,17 +101,31 @@ async function hex(buffer) {
 async function route(request, env, json, fail, cors) {
   const url = new URL(request.url);
   const path = url.pathname;
-  const service = request.headers.get("x-file-service") ?? "";
 
-  // ----- server-only (shared secret) -----
+  // ----- server-only -----
+  // /admin/copy: called by the Supabase function file-copy-to-r2 with the
+  // service role key, which Supabase itself confirms (rms_file_is_service).
   if (path.startsWith("/admin/")) {
-    if (
-      !service ||
-      !(await rpc(env, "rms_file_service_ok", { p_secret: service }).catch(
-        () => false,
-      ))
-    )
-      return fail(403, "FORBIDDEN", "접근할 수 없어요.");
+    const serviceKey = request.headers.get("x-service-key") ?? "";
+    let trusted = false;
+    if (serviceKey) {
+      const r = await fetch(
+        `${env.SUPABASE_URL}/rest/v1/rpc/rms_file_is_service`,
+        {
+          method: "POST",
+          headers: {
+            apikey: serviceKey,
+            ...(serviceKey.startsWith("eyJ")
+              ? { Authorization: `Bearer ${serviceKey}` }
+              : {}),
+            "Content-Type": "application/json",
+          },
+          body: "{}",
+        },
+      ).catch(() => null);
+      trusted = !!r?.ok && (await r.json()) === true;
+    }
+    if (!trusted) return fail(403, "FORBIDDEN", "접근할 수 없어요.");
     if (path === "/admin/copy" && request.method === "PUT") {
       const bucket = url.searchParams.get("bucket");
       const name = url.searchParams.get("path");
@@ -130,7 +145,7 @@ async function route(request, env, json, fail, cors) {
       if (!head || head.size !== body.byteLength)
         return fail(500, "VERIFY", "복사 결과를 확인하지 못했어요.");
       await rpc(env, "rms_file_register", {
-        p_secret: service,
+        p_secret: env.FILE_SERVICE_SECRET,
         p_input: {
           bucket,
           name,
@@ -144,7 +159,9 @@ async function route(request, env, json, fail, cors) {
       return json(200, { bucket, name, size: body.byteLength, sha256 });
     }
     if (path === "/admin/verify" && request.method === "GET") {
-      const list = await rpc(env, "rms_file_list", { p_secret: service });
+      const list = await rpc(env, "rms_file_list", {
+        p_secret: env.FILE_SERVICE_SECRET,
+      });
       const rows = [];
       for (const s of list.supabase) {
         const head = await env.FILES.head(`${s.bucket}/${s.name}`);

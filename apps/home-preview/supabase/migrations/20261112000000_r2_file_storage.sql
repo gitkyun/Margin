@@ -85,6 +85,23 @@ revoke all on function public.rms_file_service_ok(text),public.rms_file_exists(t
 grant execute on function public.rms_file_can_upload(text,text) to authenticated;
 grant execute on function public.rms_file_service_ok(text),public.rms_file_register(text,jsonb),public.rms_file_purge_list(text,uuid,uuid),public.rms_file_unregister(text,text),public.rms_file_list(text) to anon,authenticated;
 
+-- Server-to-server check: true only when the caller uses the service role key.
+create function public.rms_file_is_service() returns boolean
+language sql stable security invoker set search_path=pg_catalog as $$ select current_user='service_role' $$;
+revoke all on function public.rms_file_is_service() from public;
+grant execute on function public.rms_file_is_service() to anon,authenticated,service_role;
+
+-- Service role only: originals in Supabase Storage and copies in R2, for the one-off copy.
+create function public.rms_file_list_service() returns jsonb
+language sql stable security invoker set search_path=pg_catalog,public,storage as $$
+ select jsonb_build_object(
+  'r2',(select coalesce(jsonb_agg(jsonb_build_object('bucket',bucket,'name',name,'size',size,'sha256',sha256)),'[]') from public.rms_file_objects),
+  'supabase',(select coalesce(jsonb_agg(jsonb_build_object('bucket',bucket_id,'name',name,'size',(metadata->>'size')::bigint,'mimetype',metadata->>'mimetype')),'[]')
+    from storage.objects where bucket_id in ('research-files','research-private'))) $$;
+revoke all on function public.rms_file_list_service() from public,anon,authenticated;
+grant execute on function public.rms_file_list_service() to service_role;
+grant select on public.rms_file_objects to service_role;
+
 create or replace function public.rms_save_record(p_kind text,p_value jsonb) returns jsonb language plpgsql security definer set search_path=pg_catalog,public,auth,storage as $$
 declare v_uid uuid:=public.rms_assert_session(); v_id uuid; v_research uuid; v_old public.rms_records; v jsonb; v_link jsonb; v_memo jsonb; v_quote text; v_stamp timestamptz:=clock_timestamp(); v_path text; v_position integer; v_author uuid; v_visibility text; v_note text; v_parent jsonb;
 begin

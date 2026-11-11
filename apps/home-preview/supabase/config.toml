@@ -34,5 +34,5 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.file-copy-to-r2]
-# One-off copy to R2; checks the file service secret inside the function.
+# One-off, idempotent copy to R2 (copies only; never deletes originals).
 verify_jwt = false
