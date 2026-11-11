@@ -404,7 +404,7 @@ test('invite links are the only way into the allow list',async()=>{
  assert.ok(await call('rms_bootstrap'))
 })
 // ── 연구 초대 메일(rms_project_invites) ──────────────────────────────────────
-const pi={owner:'a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1',editor:'a2a2a2a2-a2a2-4a2a-8a2a-a2a2a2a2a2a2',invitee:'a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3',wrong:'a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4',prof:'a5a5a5a5-a5a5-4a5a-8a5a-a5a5a5a5a5a5',research:'a6a6a6a6-a6a6-4a6a-8a6a-a6a6a6a6a6a6',other:'a7a7a7a7-a7a7-4a7a-8a7a-a7a7a7a7a7a7'}
+const pi={owner:'a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1',editor:'c7c7c7c7-c7c7-4c7c-8c7c-c7c7c7c7c7c7',invitee:'a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3',wrong:'a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4',prof:'a5a5a5a5-a5a5-4a5a-8a5a-a5a5a5a5a5a5',research:'a6a6a6a6-a6a6-4a6a-8a6a-a6a6a6a6a6a6',other:'a7a7a7a7-a7a7-4a7a-8a7a-a7a7a7a7a7a7'}
 const hashOf=async token=>(await db.query("select encode(sha256(convert_to($1,'UTF8')),'hex') as h",[token])).rows[0].h
 const token=n=>`tok-${n}-`.padEnd(43,'x')
 const admin=async sql=>{await db.exec('reset role');return db.query(sql)}
@@ -569,4 +569,31 @@ test('project invite: permanent research deletion removes its invites',async()=>
  await call('rms_save_research',[JSON.stringify({...research,deletedAt:'2026-11-11T00:00:00Z'})])
  await inputCall('rms_purge_research',{researchId:pi.other,confirmationName:'다른 연구'})
  assert.equal((await admin(`select count(*)::int as n from public.rms_project_invites where research_id='${pi.other}'`)).rows[0].n,0)
+})
+test('R2 file registry: upload permission, secret-only register, versions accept R2 files, no direct access',async()=>{
+ const secret='r2-test-secret-0123456789abcdef0123456789'
+ await db.exec('reset role');await db.query("insert into public.rms_file_service(secret_sha256) values(encode(sha256(convert_to($1,'UTF8')),'hex'))",[secret])
+ const outsider='e9e9e9e9-e9e9-4e9e-8e9e-e9e9e9e9e9e9'
+ await db.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[outsider,'outsider@example.test']);await db.query('insert into public.rms_demo_accounts(user_id) values($1)',[outsider])
+ const id='e8e8e8e8-e8e8-4e8e-8e8e-e8e8e8e8e8e8',path=`${ids.student}/${ids.research}/${id}.pdf`
+ // anonymous, other account, professor cannot upload into the student's research
+ await as(null);await db.exec('set role anon');await failure(()=>call('rms_file_can_upload',['research-files',path]),'42501');await failure(()=>call('rms_can_read_file',[v2.storagePath]),'42501')
+ await as(outsider);assert.equal(await call('rms_file_can_upload',['research-files',path]),false)
+ await as(ids.professor);assert.equal(await call('rms_file_can_upload',['research-files',path]),false)
+ await as(ids.student);assert.equal(await call('rms_file_can_upload',['research-files',path]),true)
+ assert.equal(await call('rms_file_can_upload',['research-files',`${ids.stranger}/${ids.research}/${id}.pdf`]),false)
+ assert.equal(await call('rms_file_can_upload',['research-files',`${ids.student}/${ids.research}/${id}.exe`]),false)
+ // browser cannot register or read the registry without the secret
+ await failure(()=>call('rms_file_register',['wrong-secret-wrong-secret-wrong-secret',JSON.stringify({bucket:'research-files',name:path,size:400000000,mimetype:'application/pdf'})]),'42501')
+ await failure(()=>db.query('select * from public.rms_file_objects'),'42501')
+ await failure(()=>db.query('insert into public.rms_file_objects(bucket,name,size,mimetype) values($1,$2,1,$3)',['research-files',path,'application/pdf']),'42501')
+ await failure(()=>save('versions',{...base(id),materialId:material.id,number:9,fileName:'large.pdf',storagePath:path,size:400000000,mimeType:'application/pdf'}),'22023')
+ await call('rms_file_register',[secret,JSON.stringify({bucket:'research-files',name:path,size:400000000,mimetype:'application/pdf'})])
+ assert.equal(await call('rms_file_can_upload',['research-files',path]),false,'no overwrite after upload')
+ const version=await save('versions',{...base(id),materialId:material.id,number:9,fileName:'large.pdf',storagePath:path,size:400000000,mimeType:'application/pdf'})
+ assert.ok(version.number>=1)
+ assert.equal(await call('rms_can_read_file',[path]),true)
+ await as(outsider);assert.equal(await call('rms_can_read_file',[path]),false)
+ await as(ids.professor);assert.equal(await call('rms_can_read_file',[path]),false,'not shared with the professor')
+ await failure(()=>call('rms_file_purge_list',['wrong-secret-wrong-secret-wrong-secret',ids.research,ids.student]),'42501')
 })

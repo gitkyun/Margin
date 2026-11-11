@@ -1,0 +1,15 @@
+# Margin file Worker. Deploy: npx wrangler deploy (from this folder).
+# Secrets (never commit): npx wrangler secret put FILE_SERVICE_SECRET
+name = "margin-files"
+main = "index.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "margin-files"
+
+[vars]
+SUPABASE_URL = "https://uudfezdytzwjabxmnwfa.supabase.co"
+# Publishable (browser-safe) key; set in the dashboard or with --var.
+SUPABASE_ANON_KEY = ""

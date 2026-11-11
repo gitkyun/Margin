@@ -147,8 +147,8 @@ export function MaterialsPage() {
       setError(t("PDF 파일만 올릴 수 있어요."));
       return;
     }
-    if (chosen.size > 20 * 1024 * 1024) {
-      setError(t("20MB 이하의 PDF만 올릴 수 있어요."));
+    if (chosen.size > 500 * 1024 * 1024) {
+      setError(t("500MB 이하의 PDF만 올릴 수 있어요."));
       return;
     }
     setError(null);

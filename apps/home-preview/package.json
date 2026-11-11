@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build:sites": "vite build && node scripts/prepare-public-pages.mjs && node scripts/prepare-sites-build.mjs",
-    "test:backend": "node --test supabase/tests/backend.test.mjs",
+    "test:backend": "node --test supabase/tests/backend.test.mjs file-worker/worker.test.mjs",
     "format": "prettier --write src vite.config.mjs",
     "format:check": "prettier --check src vite.config.mjs",
     "test:live": "node --env-file=supabase/.env.provision.local supabase/scripts/check-live.mjs",
