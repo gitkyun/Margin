@@ -138,7 +138,7 @@ export function PublicFrame({
             <Button asChild>
               <Link to={signedIn ? "/r" : "/signup"}>
                 {signedIn ? t("내 연구 열기") : t("시작하기")}
-                <Icon name="arrow-up-right" size={16} />
+                <Icon name="arrow-right" size={16} />
               </Link>
             </Button>
             <button
@@ -166,9 +166,9 @@ export function PublicFrame({
               <br />
               {t("연구별로 정리해요.")}
             </p>
-            <Link className="lp-footer-start" to={signedIn ? "/r" : "/login"}>
-              {t("내 연구 열기")}
-              <Icon name="arrow-up-right" size={18} />
+            <Link className="lp-footer-start" to={signedIn ? "/r" : "/signup"}>
+              {signedIn ? t("내 연구 열기") : t("시작하기")}
+              <Icon name="arrow-right" size={18} />
             </Link>
           </div>
           <div className="lp-footer-columns">
@@ -401,7 +401,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <Button asChild size="lg">
                 <Link to={signedIn ? "/r" : "/signup"}>
                   {signedIn ? t("내 연구 열기") : t("시작하기")}
-                  <Icon name="arrow-up-right" size={19} />
+                  <Icon name="arrow-right" size={19} />
                 </Link>
               </Button>
             </StartGlow>
@@ -600,7 +600,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 >
                   <Icon name={j.icon} size={23} />
                   {j.label}
-                  <Icon name="arrow-up-right" size={19} />
+                  <Icon name="arrow-right" size={19} />
                 </button>
               ))}
             </div>
@@ -676,7 +676,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                   <p>{c.body}</p>
                 </div>
                 <span className="lp-capability-arrow">
-                  <Icon name="arrow-up-right" size={20} />
+                  <Icon name="arrow-right" size={20} />
                 </span>
               </Link>
             </SpotlightCard>
@@ -699,7 +699,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           </h2>
           <Link to="/guide">
             {t("사용 안내 보기")}
-            <Icon name="arrow-up-right" size={17} />
+            <Icon name="arrow-right" size={17} />
           </Link>
         </div>
         <div className="lp-faq-list">
@@ -756,10 +756,10 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
         <StartGlow tone="on-brand">
           <Link
             className="lp-button lp-button-on-brand"
-            to={signedIn ? "/r" : "/login"}
+            to={signedIn ? "/r" : "/signup"}
           >
-            {signedIn ? t("내 연구 열기") : t("마진 시작하기")}
-            <Icon name="arrow-up-right" size={20} />
+            {signedIn ? t("내 연구 열기") : t("시작하기")}
+            <Icon name="arrow-right" size={20} />
           </Link>
         </StartGlow>
       </section>
@@ -882,7 +882,7 @@ export function FeatureTourPage({ signedIn = false }: { signedIn?: boolean }) {
             ))}
             <Link className="lp-tour-guide" to="/guide">
               {t("처음이라면 사용 안내 보기")}{" "}
-              <Icon name="arrow-up-right" size={16} />
+              <Icon name="arrow-right" size={16} />
             </Link>
           </div>
           <div
@@ -1215,7 +1215,7 @@ export function InfoPage({
             </div>
           </section>
         )}
-        <Link className="rms-action primary" to={signedIn ? "/r" : "/login"}>
+        <Link className="rms-action primary" to={signedIn ? "/r" : "/signup"}>
           {signedIn ? t("내 연구 열기") : t("시작하기")}
           <Icon name="arrow-right" size={17} />
         </Link>

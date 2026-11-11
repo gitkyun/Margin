@@ -266,7 +266,8 @@ export function VisibilityField({
         options={options}
       />
     ) : (
-      <span className="rms-pill" title={help}>
+      // 누를 수 없는 표시라 테두리·바탕 없이 보조 글자로 둡니다(버튼처럼 보이지 않게).
+      <span className="visibility-meta" title={help}>
         <Icon name="lock" size={13} />
         {t("나만 보기")}
       </span>

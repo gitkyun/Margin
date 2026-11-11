@@ -50,7 +50,7 @@ export function PublicNavigation({
                       <strong>{label}</strong>
                       <small>{description}</small>
                     </span>
-                    <Icon name="arrow-up-right" size={16} />
+                    <Icon name="arrow-right" size={16} />
                   </Link>
                 </NavigationMenu.Link>
               ))}

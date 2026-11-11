@@ -103,7 +103,7 @@ export function FeedbackPage() {
   return (
     <div className="student-page">
       <PageHeader
-        title={t("피드백")}
+        title={t("피드백·수정")}
         tabs={<WorkTabs researchId={researchId} selected="feedback" />}
         description={t(
           "받은 피드백마다 수정 방법을 정하고 고친 내용을 기록하세요.",
@@ -199,6 +199,7 @@ export function FeedbackPage() {
       >
         <form
           className="stack"
+          noValidate
           onSubmit={(event) => {
             event.preventDefault();
             if (!title.trim() || !body.trim()) {
@@ -407,18 +408,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         <div className="stack">
           <section className="surface feedback-origin">
             <div className="section-heading">
+              {/* 상태는 위 진행 줄 첫 칸('받은 피드백')에 있어 여기서 되풀이하지 않습니다. */}
               <h2>{t("받은 피드백")}</h2>
-              <StatusBadge
-                tone={
-                  feedback.status === "recorded"
-                    ? "green"
-                    : feedback.status === "in_progress"
-                      ? "blue"
-                      : "neutral"
-                }
-              >
-                {feedbackLabels[feedback.status]}
-              </StatusBadge>
             </div>
             {feedback.origin && (
               <p className="meta">{originLabels[feedback.origin]}</p>
@@ -467,10 +458,12 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 </p>
               </div>
               <div className="button-row">
-                <Button variant="ghost" size="sm" onClick={createPlan}>
+                {/* 기본 길은 직접 작성입니다. AI 제안은 같은 줄의 보조 동작으로 둡니다. */}
+                <Button variant="outline" size="sm" onClick={createPlan}>
+                  <Icon name="plus" size={15} />
                   {t("직접 작성")}
                 </Button>
-                <Button variant="outline" size="sm" onClick={openAI}>
+                <Button variant="ghost" size="sm" onClick={openAI}>
                   <Icon name="sparkles" size={15} />
                   {aiInput && !aiOpen ? t("AI 제안 다시 열기") : t("AI 제안")}
                 </Button>

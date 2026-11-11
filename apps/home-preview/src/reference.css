@@ -561,6 +561,11 @@
       gap: var(--spacing-12);
       margin-bottom: var(--spacing-16);
     }
+    /* 휴대폰에서는 주 버튼을 늘 제목·설명 아래 줄에 둡니다. 설명 길이에 따라
+       오른쪽에 붙거나 아래로 내려가던 것을 한 가지로 맞춥니다(검수 P2). */
+    .page-header > div:first-child {
+      flex-basis: 100%;
+    }
   }
   @media (max-width: 767px) {
     .page-header h1,

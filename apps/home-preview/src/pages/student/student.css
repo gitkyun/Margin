@@ -1347,6 +1347,13 @@
   .material-viewer-column {
     min-width: 0;
   }
+  /* 자료 상세의 폴더 선택: 본문 전체 폭이 아니라 내용에 맞는 폭으로 둡니다(검수 P2). */
+  .material-location {
+    margin-bottom: var(--spacing-20);
+  }
+  .material-location > .field {
+    max-width: 320px;
+  }
   .material-version-toolbar {
     display: flex;
     justify-content: space-between;

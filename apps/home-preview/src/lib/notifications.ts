@@ -1,4 +1,5 @@
 import { t } from "@/lib/i18n";
+import { keepParticle } from "@/lib/keep-particle";
 import type {
   AppUser,
   ReviewRequest,
@@ -100,8 +101,8 @@ export function unreadReviewNotifications(
           kind: "response",
           message:
             response.result === "changes_requested"
-              ? t("교수님이 ‘추가 수정 필요’를 남겼어요.")
-              : t("교수님이 ‘수정 내용 확인’을 남겼어요."),
+              ? keepParticle(t("교수님이 ‘추가 수정 필요’를 남겼어요."))
+              : keepParticle(t("교수님이 ‘수정 내용 확인’을 남겼어요.")),
           excerpt: response.comment || undefined,
           tone: response.result === "changes_requested" ? "amber" : "green",
           createdAt: response.updatedAt,
