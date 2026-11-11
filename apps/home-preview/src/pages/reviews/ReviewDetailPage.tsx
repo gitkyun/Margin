@@ -66,6 +66,7 @@ import {
   versionForRound,
 } from "./helpers";
 import { Tabs } from "@/components/ui/tabs";
+import { RequestDirection } from "./RequestDirection";
 
 function CommentThread({
   comment,
@@ -654,6 +655,15 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           {t(
             "공유를 중지한 검토예요. 교수님은 열 수 없고, 지금까지의 검토 기록은 그대로 남아요.",
           )}
+        </div>
+      )}
+      {!isOwner && (
+        <div className="review-direction-bar">
+          <RequestDirection
+            name={request.researchName}
+            purpose={request.researchPurpose}
+            questions={request.researchQuestions}
+          />
         </div>
       )}
       <div className="review-workspace-body">

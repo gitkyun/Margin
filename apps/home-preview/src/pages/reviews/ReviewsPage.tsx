@@ -54,6 +54,7 @@ import { addAdvisor, advisorChoices } from "@/lib/advisors";
 import { isUnregisteredReviewer } from "@/lib/invites";
 import { InviteLinkButton } from "@/components/InviteLinkButton";
 import { localizeServerMessage } from "@/lib/server-messages";
+import { RequestDirection } from "./RequestDirection";
 
 export function ReviewsPage() {
   const { researchId = "" } = useParams();
@@ -418,7 +419,7 @@ export function ReviewsPage() {
                     "링크를 만들기 전에 교수님께 공개될 내용을 확인할 수 있어요.",
                   )
                 : t(
-                    "링크를 만들면 아래 내용과 첨부 파일 전체가 지정한 교수 계정에 공개돼요.",
+                    "링크를 만들면 아래 연구 방향과 내용, 첨부 파일 전체가 지정한 교수 계정에 공개돼요.",
                   )}
             </DialogDescription>
           </DialogHeader>
@@ -563,6 +564,12 @@ export function ReviewsPage() {
                   {t("열 수 있는 계정 · {email}", { email })}
                 </p>
               </div>
+              <RequestDirection
+                name={research?.name}
+                purpose={research?.purpose}
+                questions={research?.questions}
+                showEmpty
+              />
               {picks.map((result, index) => {
                 const version = data.versions.find(
                     (r) => r.id === result.versionId,

@@ -254,7 +254,7 @@ export function VisibilityField({
         : t("공동 기록 · 공동연구자 없음"),
     });
   const help = collaborative
-    ? t("교수님께는 검토 요청에 넣은 내용만 보여요.")
+    ? t("교수님께는 검토 요청에 넣은 내용과 연구 방향만 보여요.")
     : t("공동연구자가 참여하면 기록을 공유할 수 있어요.");
   if (compact)
     return collaborative || value === "shared" ? (
@@ -289,7 +289,7 @@ export function VisibilityField({
       )}
       <small>
         {collaborative
-          ? t("교수님께는 검토 요청에 넣은 내용만 보여요.")
+          ? t("교수님께는 검토 요청에 넣은 내용과 연구 방향만 보여요.")
           : t("공동연구자가 참여하면 기록을 공유할 수 있어요.")}
       </small>
     </div>

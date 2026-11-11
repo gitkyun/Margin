@@ -192,6 +192,14 @@ export function LoginPage({
               {configured ? t("초대 링크로 가입하기") : t("가입 과정 미리보기")}
             </Link>
           </p>
+          {configured && (
+            <p className="auth-switch">
+              {t("비밀번호를 잊었나요?")}{" "}
+              <a href="mailto:admin@margin.com">
+                {t("admin@margin.com으로 알려 주세요")}
+              </a>
+            </p>
+          )}
         </section>
       </section>
     </PublicFrame>
@@ -274,6 +282,7 @@ export function ResearchSelectPage() {
                     <strong>{request.title}</strong>
                     <span>
                       {summary.studentName && `${summary.studentName} · `}
+                      {request.researchName && `${request.researchName} · `}
                       {t("검토 항목 {count}개", {
                         count: summary.total,
                       })}{" "}
