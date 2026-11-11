@@ -78,6 +78,8 @@ function setup({ canUpload = true, canRead = true } = {}) {
           : name === "rms_file_is_service"
             ? init.headers.apikey === "service-key"
             : null;
+    if (value === null)
+      return new Response(null, { status: status === 200 ? 204 : status });
     return new Response(JSON.stringify(value), { status });
   };
   const env = {
