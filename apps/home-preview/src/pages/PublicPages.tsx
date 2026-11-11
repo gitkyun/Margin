@@ -28,6 +28,7 @@ import {
   ComparePreview,
 } from "@/components/marketing/MarketingEffects";
 import { Button } from "@/components/ui/button";
+import { configured } from "@/lib/supabase";
 import { GuideReplay } from "@/components/GuideReplay";
 
 /** 히어로 제목 등장(최대 600ms)이 끝난 뒤에 시작 버튼 강조를 돌립니다. */
@@ -193,7 +194,11 @@ export function PublicFrame({
               <Link to="/guide">{t("사용 안내")}</Link>
               <Link to="/guide#questions">{t("자주 묻는 질문")}</Link>
               <Link to="/privacy">{t("자료와 개인정보")}</Link>
-              <Link to="/signup">{t("가입 과정 미리보기")}</Link>
+              <Link to="/signup">
+                {configured
+                  ? t("초대 링크로 가입하기")
+                  : t("가입 과정 미리보기")}
+              </Link>
             </div>
           </div>
           <div className="lp-footer-bottom">
@@ -724,7 +729,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             [
               t("지금 가입하거나 결제할 수 있나요?"),
               t(
-                "아니요. 지금은 발급받은 계정으로만 로그인할 수 있어요. 가입 과정은 미리 볼 수 있지만 실제 계정은 만들어지지 않아요. 유료 플랜 결제도 아직 열리지 않았어요.",
+                "가입은 초대 링크를 받은 사람만 할 수 있어요. 마진을 쓰고 있는 사람에게 초대 링크를 받아 주세요. 유료 플랜 결제는 아직 열리지 않았어요.",
               ),
             ],
           ].map(([q, a]) => (
@@ -1129,7 +1134,7 @@ export function InfoPage({
               [
                 t("저장과 가입"),
                 t(
-                  "연구 기록과 파일은 Supabase에 저장해요. 가입 화면은 미리보기용이라 입력한 정보로 계정을 만들거나 메일을 보내지 않아요.",
+                  "연구 기록과 파일은 Supabase에 저장해요. 가입은 초대 링크로만 할 수 있고, 가입할 때 이메일 확인 메일을 한 번 보내요.",
                 ),
               ],
             ]
@@ -1191,7 +1196,7 @@ export function InfoPage({
                 [
                   t("지금 가입하거나 결제할 수 있나요?"),
                   t(
-                    "아니요. 지금은 발급받은 계정으로만 로그인할 수 있어요. 가입 화면은 미리보기라 실제 계정이나 인증 메일이 만들어지지 않아요. Free는 ₩0이고, Pro와 Team은 출시 예정이라 결제는 아직 열리지 않았어요.",
+                    "가입은 초대 링크를 받은 사람만 할 수 있어요. Free는 ₩0이고, Pro와 Team은 출시 예정이라 결제는 아직 열리지 않았어요.",
                   ),
                 ],
               ].map(([question, answer]) => (

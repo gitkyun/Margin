@@ -109,7 +109,7 @@ export function LoginPage({
               ? t(
                   "학생이 검토 요청에 지정한 교수 계정 이메일로 로그인해 주세요.",
                 )
-              : t("발급받은 계정의 이메일로 로그인하세요.")}
+              : t("가입한 이메일로 로그인하세요.")}
           </p>
           {authenticated ? (
             <>
@@ -187,7 +187,9 @@ export function LoginPage({
           )}
           <p className="auth-switch">
             {t("계정이 없나요?")}{" "}
-            <Link to="/signup">{t("가입 과정 미리보기")}</Link>
+            <Link to="/signup">
+              {configured ? t("초대 링크로 가입하기") : t("가입 과정 미리보기")}
+            </Link>
           </p>
         </section>
       </section>

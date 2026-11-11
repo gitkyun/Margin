@@ -1,4 +1,6 @@
 import { t } from "@/lib/i18n";
+import { InviteGate, InviteSignupPage } from "./pages/InvitePages";
+import { INVITE_PARAM, inviteCodeFrom } from "./lib/invites";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { Suspense, lazy, useEffect, useState } from "react";
 import {
@@ -261,6 +263,8 @@ function WorkspaceRoutes() {
 export function App() {
   const [session, setSession] = useState<Session | null>(null),
     [ready, setReady] = useState(!configured);
+  // 초대 코드를 방금 쓴 계정. 계정 정보가 새로 오기 전에도 다시 묻지 않게 기억합니다.
+  const [redeemedUser, setRedeemedUser] = useState("");
   const location = useLocation();
   useEffect(() => {
     if (!supabase) return;
@@ -296,7 +300,9 @@ export function App() {
       (path === "/"
         ? t("흩어진 기록을 모아, 다음 연구가 되도록")
         : path === "/signup"
-          ? t("가입 과정 미리보기")
+          ? configured
+            ? t("가입")
+            : t("가입 과정 미리보기")
           : path === "/login"
             ? t("로그인")
             : path.includes("assistant")
@@ -333,7 +339,23 @@ export function App() {
     document.title = t("{name} · 마진", { name });
   }, [location.pathname, workspaceVisible]);
   if (location.pathname === "/") return <LandingPage signedIn={!!session} />;
-  if (location.pathname === "/signup") return <SignupPage />;
+  if (location.pathname === "/signup") {
+    if (!configured) return <SignupPage />;
+    // 이미 로그인한 계정이 초대 링크를 열면(초대 없이 가입했거나 초대가 만료됐던 경우)
+    // 새로 가입하지 않고 그 계정에 초대를 적용합니다.
+    const linked = inviteCodeFrom(
+      new URLSearchParams(location.search).get(INVITE_PARAM),
+    );
+    if (!session || !linked) return <InviteSignupPage />;
+    if (redeemedUser === session.user.id) return <Navigate to="/r" replace />;
+    return (
+      <InviteGate
+        code={linked}
+        onDone={() => setRedeemedUser(session.user.id)}
+        onSignOut={() => void supabase?.auth.signOut()}
+      />
+    );
+  }
   if (location.pathname === "/features")
     return <FeatureTourPage signedIn={!!session} />;
   if (location.pathname === "/pricing")
@@ -373,6 +395,16 @@ export function App() {
       );
     return <LoginPage />;
   }
+  // 초대 링크로 가입한 계정은 첫 로그인에서 초대 코드를 써야 기록을 볼 수 있습니다.
+  const pendingInvite = inviteCodeFrom(session?.user.user_metadata?.invite);
+  if (session && pendingInvite && redeemedUser !== session.user.id)
+    return (
+      <InviteGate
+        code={pendingInvite}
+        onDone={() => setRedeemedUser(session.user.id)}
+        onSignOut={() => void supabase?.auth.signOut()}
+      />
+    );
   const user = session
     ? {
         id: session.user.id,

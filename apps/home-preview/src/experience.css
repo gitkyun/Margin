@@ -600,6 +600,22 @@
     flex: 1;
     min-width: 0;
   }
+  /* 초대 링크 복사 버튼과 그 옆 안내 한 줄. 좁으면 안내가 아래로 내려갑니다. */
+  .invite-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8) var(--spacing-12);
+    margin-top: var(--spacing-16);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .invite-hint > span {
+    flex: 1 1 240px;
+    min-width: 0;
+  }
   .settings-form-actions {
     display: flex;
     justify-content: end;

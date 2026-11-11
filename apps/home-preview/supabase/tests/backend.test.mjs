@@ -330,3 +330,57 @@ test('review preview validates recipient and denies unrelated and anonymous call
  await db.exec('reset role;set role anon')
  await failure(()=>call('rms_validate_reviewer',[ids.research,'professor@example.test']),'42501')
 })
+test('invite links are the only way into the allow list',async()=>{
+ const guest='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',unconfirmed='ffffffff-ffff-4fff-8fff-ffffffffffff'
+ await db.exec('reset role')
+ await db.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now()),($3,$4,null)',[guest,'guest@example.test',unconfirmed,'pending@example.test'])
+ // 초대를 쓰지 않은 가입 계정은 아무것도 못 하고, 초대도 만들지 못한다.
+ await as(guest)
+ await failure(()=>call('rms_bootstrap'),'42501')
+ await failure(()=>call('rms_create_invite'),'42501')
+ await failure(()=>call('rms_redeem_invite',['0'.repeat(32)]),'22023')
+ await failure(()=>db.query('select * from public.rms_invites'),'42501')
+ // 허용된 계정이 만든 초대는 다시 불러도 같은 코드다.
+ await as(ids.student)
+ const invite=await call('rms_create_invite');assert.match(invite.code,/^[0-9a-f]{32}$/)
+ assert.equal((await call('rms_create_invite')).code,invite.code)
+ // 로그인 전(anon)에도 유효한지 물을 수 있다.
+ await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub','',false)");await db.exec('set role anon')
+ assert.equal(await call('rms_check_invite',[invite.code]),true)
+ assert.equal(await call('rms_check_invite',['nope']),false)
+ await failure(()=>call('rms_redeem_invite',[invite.code]),'42501')
+ // 이메일을 확인하지 않은 계정은 초대를 쓸 수 없다.
+ await as(unconfirmed)
+ await failure(()=>call('rms_redeem_invite',[invite.code]),'42501')
+ // 초대를 쓰면 허용 목록에 들어가고, 다시 써도 그대로다.
+ await as(guest)
+ assert.equal(await call('rms_redeem_invite',[invite.code]),true)
+ assert.equal(await call('rms_redeem_invite',['nope']),true)
+ assert.ok(await call('rms_bootstrap'))
+ // 중지된 계정은 초대로 되살아나지 않고, 만료·취소된 초대는 닫힌다.
+ await db.exec('reset role')
+ await db.query('update public.rms_demo_accounts set active=false where user_id=$1',[guest])
+ await as(guest)
+ await failure(()=>call('rms_redeem_invite',[invite.code]),'42501')
+ await db.exec('reset role')
+ await db.query('delete from public.rms_invite_uses where user_id=$1',[guest]);await db.query('delete from public.rms_demo_accounts where user_id=$1',[guest])
+ await db.query("update public.rms_invites set expires_at=now()-interval '1 minute' where code=$1",[invite.code])
+ await as(guest)
+ assert.equal(await call('rms_check_invite',[invite.code]),false)
+ await failure(()=>call('rms_redeem_invite',[invite.code]),'22023')
+ await as(ids.student)
+ const next=await call('rms_create_invite');assert.notEqual(next.code,invite.code)
+ // 초대를 만든 계정이 중지되면 그 초대도 닫힌다.
+ await db.exec('reset role')
+ await db.query('update public.rms_demo_accounts set active=false where user_id=$1',[ids.student])
+ await as(guest)
+ assert.equal(await call('rms_check_invite',[next.code]),false)
+ await failure(()=>call('rms_redeem_invite',[next.code]),'22023')
+ await db.exec('reset role')
+ await db.query('update public.rms_demo_accounts set active=true where user_id=$1',[ids.student])
+ // 쓴 기록만 남고 허용 목록에서 빠진 계정도 다시 초대를 쓸 수 있다.
+ await db.query('insert into public.rms_invite_uses(user_id,code) values($1,$2)',[guest,next.code])
+ await as(guest)
+ assert.equal(await call('rms_redeem_invite',[next.code]),true)
+ assert.ok(await call('rms_bootstrap'))
+})
