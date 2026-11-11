@@ -1,5 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
 import { toast } from "sonner";
+import { t } from "@/lib/i18n";
 import { SelectField } from "@/components/experience";
 import { useWorkspace } from "@/lib/workspace";
 import type { RevisionResult } from "@/lib/domain";
@@ -44,17 +45,17 @@ export function ResultEditorDialog({
       }}
       title={
         draft && data.results.some((result) => result.id === draft.id)
-          ? "수정 결과 편집"
-          : "수정 결과 작성"
+          ? t("수정 결과 편집")
+          : t("수정 결과 작성")
       }
-      description="저장해도 교수님께 공개되지 않아요."
+      description={t("저장해도 교수님께 공개되지 않아요.")}
     >
       <form
         className="stack"
         onSubmit={(event) => {
           event.preventDefault();
           if (!draft || !draft.title.trim() || !draft.description.trim()) {
-            form.setError("제목과 수정한 내용을 적어 주세요.");
+            form.setError(t("제목과 수정한 내용을 적어 주세요."));
             return;
           }
           void form.perform(async () => {
@@ -65,7 +66,7 @@ export function ResultEditorDialog({
               location: draft.location.trim(),
             });
             setDraft(null);
-            toast.success("수정 결과를 저장했어요");
+            toast.success(t("수정 결과를 저장했어요"));
             onSaved?.(result);
           });
         }}
@@ -73,7 +74,7 @@ export function ResultEditorDialog({
         {draft && (
           <>
             <LabeledInput
-              label="제목"
+              label={t("제목")}
               required
               value={draft.title}
               onChange={(title) =>
@@ -82,18 +83,20 @@ export function ResultEditorDialog({
             />
             <LabeledText
               label={
-                draft.kind === "other" ? "실제로 한 일" : "실제로 수정한 내용"
+                draft.kind === "other"
+                  ? t("실제로 한 일")
+                  : t("실제로 수정한 내용")
               }
               required
               value={draft.description}
               onChange={(description) =>
                 setDraft((value) => (value ? { ...value, description } : value))
               }
-              placeholder="예: 2장 선행연구 비교표에 비교 기준 3개 추가"
+              placeholder={t("예: 2장 선행연구 비교표에 비교 기준 3개 추가")}
               rows={5}
             />
             <label className="field">
-              <span className="field-name">수정 종류</span>
+              <span className="field-name">{t("수정 종류")}</span>
               <SelectField
                 className="native-select"
                 value={draft.kind}
@@ -108,14 +111,14 @@ export function ResultEditorDialog({
                   )
                 }
               >
-                <option value="document">문서 수정</option>
-                <option value="other">문서 외 수정</option>
+                <option value="document">{t("문서 수정")}</option>
+                <option value="other">{t("문서 외 수정")}</option>
               </SelectField>
             </label>
             {draft.kind === "document" && (
               <>
                 <label className="field">
-                  <span className="field-name">파일</span>
+                  <span className="field-name">{t("파일")}</span>
                   <SelectField
                     className="native-select"
                     value={draft.versionId ?? ""}
@@ -130,7 +133,7 @@ export function ResultEditorDialog({
                       )
                     }
                   >
-                    <option value="">나중에 선택</option>
+                    <option value="">{t("나중에 선택")}</option>
                     {data.versions
                       .filter((version) => version.researchId === researchId)
                       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -141,7 +144,9 @@ export function ResultEditorDialog({
                       ))}
                   </SelectField>
                   <small className="field-hint">
-                    문서 수정을 검토 요청에 넣으려면 파일과 볼 위치가 필요해요.
+                    {t(
+                      "문서 수정을 검토 요청에 넣으려면 파일과 볼 위치가 필요해요.",
+                    )}
                   </small>
                 </label>
                 <QuickPdfUpload
@@ -153,20 +158,22 @@ export function ResultEditorDialog({
                   }
                 />
                 <LabeledInput
-                  label="볼 위치"
-                  hint="교수님이 먼저 볼 위치예요. 검토 요청에는 파일 전체가 공개돼요."
+                  label={t("볼 위치")}
+                  hint={t(
+                    "교수님이 먼저 볼 위치예요. 검토 요청에는 파일 전체가 공개돼요.",
+                  )}
                   value={draft.location}
                   onChange={(location) =>
                     setDraft((value) =>
                       value ? { ...value, location } : value,
                     )
                   }
-                  placeholder="예: 4페이지 표 2, 2장 마지막 문단"
+                  placeholder={t("예: 4페이지 표 2, 2장 마지막 문단")}
                 />
               </>
             )}
             <div className="student-picker">
-              <h3>연결할 피드백</h3>
+              <h3>{t("연결할 피드백")}</h3>
               {data.feedback
                 .filter((feedback) => feedback.researchId === researchId)
                 .map((feedback) => (
@@ -193,7 +200,7 @@ export function ResultEditorDialog({
                 ))}
             </div>
             <div className="student-picker">
-              <h3>연결할 할 일</h3>
+              <h3>{t("연결할 할 일")}</h3>
               {data.tasks
                 .filter((task) => task.researchId === researchId)
                 .map((task) => (
@@ -225,7 +232,7 @@ export function ResultEditorDialog({
         <SaveActions
           saving={form.saving}
           onCancel={() => setDraft(null)}
-          label="수정 결과 저장"
+          label={t("수정 결과 저장")}
         />
       </form>
     </FormDialog>

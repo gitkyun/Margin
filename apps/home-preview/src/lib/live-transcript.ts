@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { assertConnected } from "./supabase";
 import { idbGet, idbSet, rpc } from "./repository";
 import type { SpeechSegment } from "./live-speech";
@@ -34,7 +35,9 @@ export function downloadTranscript(text: string, title: string) {
     url = URL.createObjectURL(blob),
     a = document.createElement("a");
   a.href = url;
-  a.download = `${title.replace(/[\\/:*?"<>|]/g, "_")}_전사문.txt`;
+  a.download = t("{title}_전사문.txt", {
+    title: title.replace(/[\\/:*?"<>|]/g, "_"),
+  });
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -80,7 +83,9 @@ export async function saveLiveTranscript(
     old.revision !== input.revision
   )
     throw new Error(
-      "다른 창에서 전사문을 수정했어요. 지금 쓴 내용을 복사해 둔 뒤 새로고침해 주세요.",
+      t(
+        "다른 창에서 전사문을 수정했어요. 지금 쓴 내용을 복사해 둔 뒤 새로고침해 주세요.",
+      ),
     );
   const value: LiveTranscript = {
     ...input,

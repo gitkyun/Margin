@@ -8,6 +8,7 @@ import {
   type RevisionResult,
   type Task,
 } from "./domain";
+import { t } from "@/lib/i18n";
 
 export type ProgressKey = "feedback" | "plans" | "tasks" | "results" | "review";
 
@@ -33,7 +34,7 @@ export interface FeedbackProgressInput {
   responses: ReviewResponse[];
 }
 
-const NONE = "아직 없음";
+const NONE = t("아직 없음");
 
 /** 수정 결과 가운데 가장 최근 차수의 교수 응답 상태 */
 function reviewStep(input: FeedbackProgressInput): ProgressStep {
@@ -46,11 +47,11 @@ function reviewStep(input: FeedbackProgressInput): ProgressStep {
   const rounds = input.rounds.filter((round) => itemIds.has(round.itemId));
   const step = (value: string, filled: boolean): ProgressStep => ({
     key: "review",
-    label: "교수 확인",
+    label: t("교수 확인"),
     value,
     filled,
   });
-  if (!itemIds.size) return step("요청 전", false);
+  if (!itemIds.size) return step(t("요청 전"), false);
   // 검토 항목마다 최신 차수의 응답을 봅니다.
   const latestResponses = [...itemIds].map((itemId) => {
     const latest = rounds
@@ -62,12 +63,12 @@ function reviewStep(input: FeedbackProgressInput): ProgressStep {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
   });
   if (latestResponses.some((response) => !response))
-    return step("응답 기다리는 중", false);
+    return step(t("응답 기다리는 중"), false);
   if (
     latestResponses.some((response) => response?.result === "changes_requested")
   )
-    return step("추가 수정 필요", true);
-  return step("수정 내용 확인", true);
+    return step(t("추가 수정 필요"), true);
+  return step(t("수정 내용 확인"), true);
 }
 
 /**
@@ -81,26 +82,30 @@ export function feedbackProgress(input: FeedbackProgressInput): ProgressStep[] {
   return [
     {
       key: "feedback",
-      label: "받은 피드백",
+      label: t("받은 피드백"),
       value: feedbackLabels[input.feedback.status],
       filled: true,
     },
     {
       key: "plans",
-      label: "수정 방법",
-      value: plans.length ? `${plans.length}개` : NONE,
+      label: t("수정 방법"),
+      value: plans.length ? t("{count}개", { count: plans.length }) : NONE,
       filled: plans.length > 0,
     },
     {
       key: "tasks",
-      label: "할 일",
-      value: input.tasks.length ? `완료 ${done} / ${input.tasks.length}` : NONE,
+      label: t("할 일"),
+      value: input.tasks.length
+        ? t("완료 {done} / {total}", { done, total: input.tasks.length })
+        : NONE,
       filled: input.tasks.length > 0,
     },
     {
       key: "results",
-      label: "수정 결과",
-      value: input.results.length ? `${input.results.length}건` : NONE,
+      label: t("수정 결과"),
+      value: input.results.length
+        ? t("{count}건", { count: input.results.length })
+        : NONE,
       filled: input.results.length > 0,
     },
     reviewStep(input),

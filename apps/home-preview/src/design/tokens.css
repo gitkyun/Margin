@@ -89,3 +89,16 @@
     var(--opacity-16)
   );
 }
+
+/*
+ * 일본어 화면: 한국어용 어절 단위 줄바꿈(keep-all)을 쓰면 띄어쓰기가 없는 일본어 문장이 줄을 넘기지 못해 넘칩니다.
+ * 문구의 줄바꿈 규칙만 이 변수로 바꾸고(각 규칙은 var(--text-word-break, keep-all)), 금칙 처리는 엄격하게 둡니다.
+ */
+:root[lang="ja"] {
+  --text-word-break: normal;
+  line-break: strict;
+  /* Pretendard에는 가나·한자가 없어 일본어 글꼴로 이어 줍니다(영문·숫자는 Pretendard 그대로). */
+  --font-sans:
+    Pretendard, -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+    "Yu Gothic UI", "Noto Sans JP", sans-serif;
+}

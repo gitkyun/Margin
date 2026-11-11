@@ -1,3 +1,5 @@
+import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { t, tc } from "@/lib/i18n";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,7 @@ import { useExperience } from "@/lib/experience";
 import { useAICapabilities } from "@/lib/ai-capabilities";
 import { Choice } from "@/components/experience";
 import { ThemeSwitch } from "./AuthPages";
+import { HourStyleSwitch } from "@/components/HourStyleSwitch";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
 import { AdvisorSettings } from "./settings/AdvisorSettings";
@@ -46,22 +49,25 @@ export function UsageDetails() {
   const usage = useAIUsage();
   return (
     <section className="settings-section">
-      <h2>AI 사용량</h2>
-      <p>최근 24시간 동안의 실행 요청 수예요.</p>
+      <h2>{t("AI 사용량")}</h2>
+      <p>{t("최근 24시간 동안의 실행 요청 수예요.")}</p>
       <div className="usage-summary">
         <div>
-          <span>실행 요청</span>
+          <span>{t("실행 요청")}</span>
           <strong>
             {usage.data?.total ?? "—"}
-            <small> / {usage.data?.limit ?? 100}회</small>
+            <small>
+              {" "}
+              / {t("{limit}회", { limit: usage.data?.limit ?? 100 })}
+            </small>
           </strong>
         </div>
         <div>
-          <span>성공</span>
+          <span>{t("성공")}</span>
           <strong>{usage.data?.complete ?? "—"}</strong>
         </div>
         <div>
-          <span>실패</span>
+          <span>{t("실패")}</span>
           <strong>{usage.data?.failed ?? "—"}</strong>
         </div>
       </div>
@@ -70,34 +76,34 @@ export function UsageDetails() {
           className="usage-progress"
           max={usage.data.limit}
           value={usage.data.total}
-          aria-label="최근 24시간 AI 사용량"
+          aria-label={t("최근 24시간 AI 사용량")}
         />
       )}
       <p className="settings-note">
-        실행 요청에는 실행 중이거나 중단한 실행도 포함돼요.
+        {t("실행 요청에는 실행 중이거나 중단한 실행도 포함돼요.")}
       </p>
       {mode === "preview" ? (
         <p className="inline-notice">
-          미리보기에서는 AI를 실행할 수 없어 사용량을 세지 않아요.
+          {t("미리보기에서는 AI를 실행할 수 없어 사용량을 세지 않아요.")}
         </p>
       ) : usage.isError ? (
         <div className="inline-notice" role="alert">
-          사용량을 불러오지 못했어요.{" "}
+          {t("사용량을 불러오지 못했어요.")}{" "}
           <Button variant="link" onClick={() => usage.refetch()}>
-            다시 불러오기
+            {t("다시 불러오기")}
           </Button>
         </div>
       ) : usage.isPending ? (
-        <p role="status">사용량을 불러오는 중</p>
+        <p role="status">{t("사용량을 불러오는 중")}</p>
       ) : null}
       <div className="settings-list">
         <div>
-          <span>사용 범위</span>
-          <strong>선택한 기록과 질문만</strong>
+          <span>{t("사용 범위")}</span>
+          <strong>{t("선택한 기록과 질문만")}</strong>
         </div>
         <div>
-          <span>실행 제한</span>
-          <strong>최근 24시간 100회 · 분당 6회</strong>
+          <span>{t("실행 제한")}</span>
+          <strong>{t("최근 24시간 100회 · 분당 6회")}</strong>
         </div>
       </div>
     </section>
@@ -113,21 +119,21 @@ export function AccountPage() {
   const guard = useNavigationGuard({
     dirty: tab === "profile" && name.trim() !== user.name,
     busy,
-    label: "표시 이름",
+    label: t("표시 이름"),
   });
   return (
     <div className="settings-page">
       <div className="settings-heading">
-        <h1>계정 설정</h1>
+        <h1>{t("계정 설정")}</h1>
       </div>
       <div className="settings-layout">
-        <nav aria-label="계정 설정 항목">
+        <nav aria-label={t("계정 설정 항목")}>
           {[
-            ["profile", "user", "프로필"],
-            ["appearance", "sun", "화면 설정"],
-            ["notifications", "bell", "알림"],
-            ["ai", "sparkles", "AI 기본 설정"],
-            ["usage", "chart", "사용량·플랜"],
+            ["profile", "user", t("프로필")],
+            ["appearance", "sun", t("화면 설정")],
+            ["notifications", "bell", t("알림")],
+            ["ai", "sparkles", t("AI 기본 설정")],
+            ["usage", "chart", t("사용량·플랜")],
           ].map(([id, icon, label]) => (
             <button
               key={id}
@@ -150,23 +156,60 @@ export function AccountPage() {
           ) : tab === "ai" ? (
             <PreferenceSettings kind="ai" />
           ) : tab === "appearance" ? (
-            <section className="settings-section">
-              <h2>화면 설정</h2>
-              <p>선택한 테마는 바로 적용되고, 이 브라우저에만 저장돼요.</p>
-              <div className="appearance-preview" aria-hidden="true">
-                <div />
-                <div>
-                  <span />
-                  <span />
-                  <span />
+            <>
+              <section className="settings-section">
+                <h2>{t("화면 설정")}</h2>
+                <p>
+                  {t("선택한 테마는 바로 적용되고, 이 브라우저에만 저장돼요.")}
+                </p>
+                <div className="appearance-preview" aria-hidden="true">
+                  <div />
+                  <div>
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 </div>
-              </div>
-              <ThemeSwitch />
-              <p className="settings-note">
-                ‘시스템’을 고르면 기기의 라이트·다크 설정을 따라요. 기기에서
-                ‘동작 줄이기’를 켜면 장식 애니메이션도 줄어요.
-              </p>
-            </section>
+                <ThemeSwitch />
+                <p className="settings-note">
+                  {t(
+                    "‘시스템’을 고르면 기기의 라이트·다크 설정을 따라요. 기기에서 ‘동작 줄이기’를 켜면 장식 애니메이션도 줄어요.",
+                  )}
+                </p>
+              </section>
+              <section className="settings-section">
+                <h2>{t("언어")}</h2>
+                <p>
+                  {t(
+                    t(
+                      "화면에 보이는 말을 바꿔요. 이 브라우저에만 저장되고, 고르면 화면을 새로 불러와요.",
+                    ),
+                  )}
+                </p>
+                <LanguageSwitch />
+                <p className="settings-note">
+                  {t(
+                    t(
+                      "적어 둔 기록과 교수님 응답은 번역하지 않고 쓴 그대로 보여 줘요.",
+                    ),
+                  )}
+                </p>
+              </section>
+              <section className="settings-section">
+                <h2>{t("시각 표기")}</h2>
+                <p>
+                  {t(
+                    "미팅 시각과 기록 시각, 시각 입력 칸에 함께 적용되고, 이 브라우저에만 저장돼요.",
+                  )}
+                </p>
+                <HourStyleSwitch />
+                <p className="settings-note">
+                  {t(
+                    "기본은 24시간제예요. ‘기기 설정 따르기’는 브라우저가 알려 주는 값을 써서, 기기 설정과 다르게 보일 수 있어요.",
+                  )}
+                </p>
+              </section>
+            </>
           ) : (
             <section className="settings-section">
               <div className="profile-heading">
@@ -174,7 +217,7 @@ export function AccountPage() {
                   {user.name.slice(0, 1)}
                 </span>
                 <div>
-                  <h2>내 프로필</h2>
+                  <h2>{t("내 프로필")}</h2>
                   <p>{user.email}</p>
                 </div>
               </div>
@@ -185,7 +228,7 @@ export function AccountPage() {
                   setBusy(true);
                   try {
                     if (mode === "preview") {
-                      toast.info("미리보기에서는 이름을 저장할 수 없어요.");
+                      toast.info(t("미리보기에서는 이름을 저장할 수 없어요."));
                       return;
                     }
                     const { error } = await assertConnected().auth.updateUser({
@@ -193,7 +236,7 @@ export function AccountPage() {
                     });
                     if (error) throw error;
                     guard.clear();
-                    toast.success("표시 이름을 저장했어요.");
+                    toast.success(t("표시 이름을 저장했어요."));
                   } catch (e) {
                     toast.error(friendlyError(e));
                   } finally {
@@ -202,7 +245,7 @@ export function AccountPage() {
                 }}
               >
                 <label className="field">
-                  표시 이름
+                  {t("표시 이름")}
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -211,9 +254,9 @@ export function AccountPage() {
                   />
                 </label>
                 <label className="field">
-                  로그인 이메일
+                  {t("로그인 이메일")}
                   <Input value={user.email} readOnly />
-                  <small>로그인 이메일은 여기서 바꿀 수 없어요.</small>
+                  <small>{t("로그인 이메일은 여기서 바꿀 수 없어요.")}</small>
                 </label>
                 <div className="settings-form-actions">
                   <Button
@@ -222,20 +265,24 @@ export function AccountPage() {
                     disabled={busy}
                     onClick={() => setName(user.name)}
                   >
-                    변경 취소
+                    {t("변경 취소")}
                   </Button>
                   <Button
                     type="submit"
                     disabled={busy || name.trim() === user.name}
                   >
-                    {busy ? "저장 중" : "저장"}
+                    {busy ? t("저장 중") : t("저장")}
                   </Button>
                 </div>
               </form>
               <PasswordSettings />
               <div className="settings-security">
                 <Icon name="lock" size={21} />
-                <p>이름을 바꿔도 연구 소유권과 교수 검토 권한은 그대로예요.</p>
+                <p>
+                  {t(
+                    "이름을 바꿔도 연구 소유권과 교수 검토 권한은 그대로예요.",
+                  )}
+                </p>
               </div>
             </section>
           )}
@@ -269,11 +316,15 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
   );
   return (
     <section className="settings-section">
-      <h2>{kind === "ai" ? "AI 기본 설정" : "알림 설정"}</h2>
+      <h2>{kind === "ai" ? t("AI 기본 설정") : t("알림 설정")}</h2>
       <p>
         {kind === "ai"
-          ? "AI를 실행할 때마다 사용할 기록을 확인해요. 기본값을 바꿔도 AI가 자동으로 실행되지 않아요."
-          : "마진 안에서 받을 알림을 선택하세요. 이메일이나 브라우저 알림은 보내지 않아요."}
+          ? t(
+              "AI를 실행할 때마다 사용할 기록을 확인해요. 기본값을 바꿔도 AI가 자동으로 실행되지 않아요.",
+            )
+          : t(
+              "마진 안에서 받을 알림을 선택하세요. 이메일이나 브라우저 알림은 보내지 않아요.",
+            )}
       </p>
       <form
         onSubmit={async (e) => {
@@ -282,9 +333,9 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
           setError("");
           try {
             if (mode === "preview")
-              throw new Error("미리보기에서는 설정을 저장할 수 없어요.");
+              throw new Error(t("미리보기에서는 설정을 저장할 수 없어요."));
             if (kind === "ai" && !selectedModel)
-              throw new Error("모델 목록을 불러온 뒤 다시 저장해 주세요.");
+              throw new Error(t("모델 목록을 불러온 뒤 다시 저장해 주세요."));
             const preferences =
               kind === "ai"
                 ? {
@@ -297,7 +348,7 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
               data: { preferences },
             });
             if (error) throw error;
-            toast.success("설정을 저장했어요.");
+            toast.success(t("설정을 저장했어요."));
           } catch (e) {
             setError(friendlyError(e));
           } finally {
@@ -308,10 +359,10 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
         {kind === "ai" ? (
           <>
             <label className="field">
-              기본 모델
+              {t("기본 모델")}
               <Choice
                 value={selectedModel?.id ?? ""}
-                label="기본 모델"
+                label={t("기본 모델")}
                 disabled={!caps.data}
                 onChange={(v) =>
                   setPrefs({
@@ -332,10 +383,10 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
                       value: "",
                       label:
                         mode === "preview"
-                          ? "미리보기에서는 고를 수 없어요"
+                          ? t("미리보기에서는 고를 수 없어요")
                           : caps.isError
-                            ? "모델을 불러오지 못했어요"
-                            : "모델 불러오는 중",
+                            ? t("모델을 불러오지 못했어요")
+                            : t("모델 불러오는 중"),
                     },
                   ]
                 }
@@ -343,10 +394,10 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
             </label>
             {!!selectedModel?.thinking.length && (
               <label className="field">
-                기본 답변 깊이
+                {t("기본 답변 깊이")}
                 <Choice
                   value={selectedDepth}
-                  label="기본 답변 깊이"
+                  label={t("기본 답변 깊이")}
                   options={reviewDepthOptions(selectedModel.thinking)}
                   onChange={(v) => setPrefs({ ...prefs, thinking: v })}
                 />
@@ -359,17 +410,17 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
                 variant="outline"
                 onClick={() => void caps.refetch()}
               >
-                모델 다시 불러오기
+                {t("모델 다시 불러오기")}
               </Button>
             )}
           </>
         ) : (
           <div className="preferences-list">
             {[
-              ["review", "검토 요청·응답·댓글"],
-              ["assignment", "할 일 변경"],
-              ["schedule", "미팅 일정과 조율"],
-              ["collaboration", "공동연구 변경"],
+              ["review", t("검토 요청·응답·댓글")],
+              ["assignment", t("할 일 변경")],
+              ["schedule", t("미팅 일정과 조율")],
+              ["collaboration", t("공동연구 변경")],
             ].map(([id, label]) => (
               <label key={id}>
                 <span>{label}</span>
@@ -388,7 +439,7 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
         )}
         <div className="bottom-actions">
           <Button type="submit" disabled={busy}>
-            {busy ? "저장 중" : "저장"}
+            {busy ? t("저장 중") : t("저장")}
           </Button>
         </div>
       </form>
@@ -430,11 +481,12 @@ export function ResearchSettingsPage() {
         description !== research.description ||
         purpose !== (research.purpose ?? "") ||
         questions !== questionsText(research.questions)),
-    guard = useNavigationGuard({ dirty, busy, label: "연구 기본 정보" });
+    guard = useNavigationGuard({ dirty, busy, label: t("연구 기본 정보") });
   if (!research)
     return (
       <p>
-        이 연구를 열 수 없어요. <Link to="/r">내 연구로 돌아가기</Link>
+        {t("이 연구를 열 수 없어요.")}{" "}
+        <Link to="/r">{t("내 연구로 돌아가기")}</Link>
       </p>
     );
   const owner = research.ownerId === user.id,
@@ -453,23 +505,23 @@ export function ResearchSettingsPage() {
   return (
     <div className="settings-page">
       <div className="settings-heading">
-        <h1>연구 설정</h1>
+        <h1>{t("연구 설정")}</h1>
         <p>{research.name}</p>
       </div>
       <div className="settings-layout">
-        <nav aria-label="연구 설정 항목">
+        <nav aria-label={t("연구 설정 항목")}>
           {[
-            ["basic", "file", "기본 정보"],
-            ["members", "users", "공동연구자"],
-            ["phases", "chart", "연구 단계"],
-            ["lifecycle", "folder", "보관·삭제"],
+            ["basic", "file", t("기본 정보")],
+            ["members", "users", t("공동연구자")],
+            ["phases", "chart", t("연구 단계")],
+            ["lifecycle", "folder", t("보관·삭제")],
           ].map(([id, icon, label]) => (
             <button
               key={id}
               aria-current={tab === id ? "page" : undefined}
               onClick={() => {
                 if (dirty) {
-                  toast.info("바꾼 내용을 먼저 저장하거나 취소해 주세요.");
+                  toast.info(t("바꾼 내용을 먼저 저장하거나 취소해 주세요."));
                   return;
                 }
                 setError("");
@@ -490,7 +542,7 @@ export function ResearchSettingsPage() {
           {tab === "basic" ? (
             <>
               <section className="settings-section">
-                <h2>기본 정보</h2>
+                <h2>{t("기본 정보")}</h2>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -508,12 +560,12 @@ export function ResearchSettingsPage() {
                       setPurpose(saved.purpose ?? "");
                       setQuestions(questionsText(saved.questions));
                       guard.clear();
-                      toast.success("연구 정보를 저장했어요.");
+                      toast.success(t("연구 정보를 저장했어요."));
                     });
                   }}
                 >
                   <label className="field">
-                    연구 이름
+                    {t("연구 이름")}
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -528,12 +580,12 @@ export function ResearchSettingsPage() {
                         className="field-error"
                         role="alert"
                       >
-                        연구 이름을 입력해 주세요.
+                        {t("연구 이름을 입력해 주세요.")}
                       </small>
                     )}
                   </label>
                   <label className="field">
-                    설명 <small>선택</small>
+                    {t("설명")} <small>{tc("optional", "선택")}</small>
                     <Textarea
                       rows={5}
                       value={description}
@@ -542,17 +594,20 @@ export function ResearchSettingsPage() {
                     />
                   </label>
                   <label className="field">
-                    연구 목적 <small>선택</small>
+                    {t("연구 목적")} <small>{tc("optional", "선택")}</small>
                     <Textarea
                       rows={3}
                       value={purpose}
                       maxLength={PURPOSE_MAX}
                       onChange={(e) => setPurpose(e.target.value)}
-                      placeholder="이 연구로 무엇을 밝히려 하는지 한두 문장으로 적어요."
+                      placeholder={t(
+                        "이 연구로 무엇을 밝히려 하는지 한두 문장으로 적어요.",
+                      )}
                     />
                   </label>
                   <label className="field">
-                    연구 질문 <small>선택 · 한 줄에 하나씩, 5개까지</small>
+                    {t("연구 질문")}{" "}
+                    <small>{t("선택 · 한 줄에 하나씩, 5개까지")}</small>
                     <Textarea
                       rows={4}
                       value={questions}
@@ -572,13 +627,13 @@ export function ResearchSettingsPage() {
                         setQuestions(questionsText(research.questions));
                       }}
                     >
-                      변경 취소
+                      {t("변경 취소")}
                     </Button>
                     <Button
                       type="submit"
                       disabled={busy || !name.trim() || !dirty}
                     >
-                      {busy ? "저장 중" : "저장"}
+                      {busy ? t("저장 중") : t("저장")}
                     </Button>
                   </div>
                 </form>
@@ -599,18 +654,18 @@ export function ResearchSettingsPage() {
                       ...base.current!,
                       advisorEmails: emails,
                     });
-                    toast.success("지도교수 목록을 저장했어요.");
+                    toast.success(t("지도교수 목록을 저장했어요."));
                   })
                 }
               />
             </>
           ) : tab === "members" ? (
             <section className="settings-section">
-              <h2>공동연구자</h2>
+              <h2>{t("공동연구자")}</h2>
               <p>
-                참여자는 공동 기록을 함께 보고 편집할 수 있어요. ‘나만 보기’로
-                둔 기록, 개인 메모, AI 대화, 선택하지 않은 AI 제안은 다른
-                참여자에게 보이지 않아요.
+                {t(
+                  "참여자는 공동 기록을 함께 보고 편집할 수 있어요. ‘나만 보기’로 둔 기록, 개인 메모, AI 대화, 선택하지 않은 AI 제안은 다른 참여자에게 보이지 않아요.",
+                )}
               </p>
               <div className="member-list">
                 {members.map((m) => (
@@ -622,10 +677,10 @@ export function ResearchSettingsPage() {
                     </div>
                     <span className="rms-pill">
                       {m.role === "owner"
-                        ? "소유자"
+                        ? t("소유자")
                         : m.status === "pending"
-                          ? "수락 대기"
-                          : "편집자"}
+                          ? t("수락 대기")
+                          : t("편집자")}
                     </span>
                     {owner && m.userId !== user.id && (
                       <Button
@@ -635,8 +690,13 @@ export function ResearchSettingsPage() {
                           if (
                             confirm(
                               m.status === "pending"
-                                ? `${m.name}님의 초대를 취소할까요?`
-                                : `${m.name}님의 연구 접근을 해제할까요? 작성한 공동 기록은 그대로 남아요.`,
+                                ? t("{name}님의 초대를 취소할까요?", {
+                                    name: m.name,
+                                  })
+                                : t(
+                                    "{name}님의 연구 접근을 해제할까요? 작성한 공동 기록은 그대로 남아요.",
+                                    { name: m.name },
+                                  ),
                             )
                           )
                             void perform(() =>
@@ -648,7 +708,9 @@ export function ResearchSettingsPage() {
                             );
                         }}
                       >
-                        {m.status === "pending" ? "초대 취소" : "접근 해제"}
+                        {m.status === "pending"
+                          ? t("초대 취소")
+                          : t("접근 해제")}
                       </Button>
                     )}
                   </div>
@@ -666,13 +728,13 @@ export function ResearchSettingsPage() {
                       });
                       setEmail("");
                       toast.success(
-                        "초대했어요. 상대방이 수락하면 공동연구에 참여해요.",
+                        t("초대했어요. 상대방이 수락하면 공동연구에 참여해요."),
                       );
                     });
                   }}
                 >
                   <label className="field">
-                    공동연구자 이메일
+                    {t("공동연구자 이메일")}
                     <Input
                       type="email"
 
@@ -680,7 +742,7 @@ export function ResearchSettingsPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       aria-describedby={error ? "invite-error" : undefined}
-                      placeholder="예: name@example.com"
+                      placeholder={t("예: name@example.com")}
                     />
                   </label>
                   <p className="settings-note">
@@ -693,12 +755,13 @@ export function ResearchSettingsPage() {
                         {error}
                       </span>
                     )}
-                    발급받은 마진 계정이 있는 사람만 초대할 수 있어요. 편집자도
-                    검토 요청을 만들어 수정 결과를 교수님께 공유할 수 있어요.
+                    {t(
+                      "발급받은 마진 계정이 있는 사람만 초대할 수 있어요. 편집자도 검토 요청을 만들어 수정 결과를 교수님께 공유할 수 있어요.",
+                    )}
                   </p>
                   <div className="bottom-actions">
                     <Button type="submit" disabled={busy || !email.trim()}>
-                      초대하기
+                      {t("초대하기")}
                     </Button>
                   </div>
                 </form>
@@ -706,10 +769,11 @@ export function ResearchSettingsPage() {
             </section>
           ) : tab === "phases" ? (
             <section className="settings-section">
-              <h2>연구 단계</h2>
+              <h2>{t("연구 단계")}</h2>
               <p>
-                단계 이름, 순서, 현재 단계는 계획·일정에서 바꿀 수 있어요.
-                단계를 바꿔도 할 일 기한은 그대로예요.
+                {t(
+                  "단계 이름, 순서, 현재 단계는 계획·일정에서 바꿀 수 있어요. 단계를 바꿔도 할 일 기한은 그대로예요.",
+                )}
               </p>
               <div className="settings-list">
                 {data.phases
@@ -720,12 +784,12 @@ export function ResearchSettingsPage() {
                       <strong>{p.title}</strong>
                       <span>
                         {research.currentPhaseId === p.id
-                          ? "현재 단계"
+                          ? t("현재 단계")
                           : p.status === "done"
-                            ? "완료"
+                            ? t("완료")
                             : p.status === "active"
-                              ? "진행 중"
-                              : "예정"}
+                              ? t("진행 중")
+                              : t("예정")}
                       </span>
                     </div>
                   ))}
@@ -733,19 +797,20 @@ export function ResearchSettingsPage() {
               <div className="bottom-actions">
                 <Button asChild>
                   <Link to={`/r/${researchId}/planning`}>
-                    단계와 주요 목표 편집
+                    {t("단계와 주요 목표 편집")}
                   </Link>
                 </Button>
               </div>
             </section>
           ) : (
             <section className="settings-section">
-              <h2>보관·삭제</h2>
+              <h2>{t("보관·삭제")}</h2>
               <section className="lifecycle-block">
-                <h3>연구 보관</h3>
+                <h3>{t("연구 보관")}</h3>
                 <p>
-                  진행 중인 연구 목록에서 숨겨요. 기록, 공동연구자의 접근, 공유
-                  중인 검토 요청은 그대로예요.
+                  {t(
+                    "진행 중인 연구 목록에서 숨겨요. 기록, 공동연구자의 접근, 공유 중인 검토 요청은 그대로예요.",
+                  )}
                 </p>
                 <Button
                   variant="outline"
@@ -756,27 +821,26 @@ export function ResearchSettingsPage() {
                     )
                   }
                 >
-                  {research.archivedAt ? "연구 복원" : "연구 보관"}
+                  {research.archivedAt ? t("연구 복원") : t("연구 보관")}
                 </Button>
               </section>
               <section className="lifecycle-block danger-zone">
-                <h3>휴지통으로 옮기기</h3>
+                <h3>{t("휴지통으로 옮기기")}</h3>
                 <p>
-                  휴지통으로 옮기면 공동연구자가 이 연구에 접근할 수 없고, 공유
-                  중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 소유자는
-                  휴지통에서 언제든 복원할 수 있고, 자동으로 완전히 삭제되지
-                  않아요.
+                  {t(
+                    "휴지통으로 옮기면 공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 소유자는 휴지통에서 언제든 복원할 수 있고, 자동으로 완전히 삭제되지 않아요.",
+                  )}
                 </p>
                 <Button
                   variant="destructive"
                   disabled={!owner || busy}
                   onClick={() => setConfirmAction("trash")}
                 >
-                  휴지통으로 옮기기
+                  {t("휴지통으로 옮기기")}
                 </Button>
                 {!owner && (
                   <p className="settings-note">
-                    연구 소유자만 보관하거나 휴지통으로 옮길 수 있어요.
+                    {t("연구 소유자만 보관하거나 휴지통으로 옮길 수 있어요.")}
                   </p>
                 )}
               </section>
@@ -792,17 +856,21 @@ export function ResearchSettingsPage() {
           <DialogHeader>
             <DialogTitle>
               {confirmAction === "trash"
-                ? "연구를 휴지통으로 옮길까요?"
+                ? t("연구를 휴지통으로 옮길까요?")
                 : confirmAction === "archive"
-                  ? "연구를 보관할까요?"
-                  : "연구를 복원할까요?"}
+                  ? t("연구를 보관할까요?")
+                  : t("연구를 복원할까요?")}
             </DialogTitle>
             <DialogDescription>
               {confirmAction === "trash"
-                ? "공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 휴지통에서 복원할 수 있지만, 검토 요청 공유는 자동으로 다시 시작되지 않아요."
+                ? t(
+                    "공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 휴지통에서 복원할 수 있지만, 검토 요청 공유는 자동으로 다시 시작되지 않아요.",
+                  )
                 : confirmAction === "archive"
-                  ? "진행 중인 연구 목록에서 숨겨요. 기록, 공동연구자의 접근, 공유 중인 검토 요청은 그대로이고, 보관함에서 복원할 수 있어요."
-                  : "진행 중인 연구 목록에 다시 보여요."}
+                  ? t(
+                      "진행 중인 연구 목록에서 숨겨요. 기록, 공동연구자의 접근, 공유 중인 검토 요청은 그대로이고, 보관함에서 복원할 수 있어요.",
+                    )
+                  : t("진행 중인 연구 목록에 다시 보여요.")}
             </DialogDescription>
           </DialogHeader>
           <div className="bottom-actions">
@@ -811,7 +879,7 @@ export function ResearchSettingsPage() {
               disabled={busy}
               onClick={() => setConfirmAction(null)}
             >
-              취소
+              {t("취소")}
             </Button>
             <Button
               variant={confirmAction === "trash" ? "destructive" : "default"}
@@ -842,15 +910,15 @@ export function ResearchSettingsPage() {
             >
               {confirmAction === "trash"
                 ? busy
-                  ? "옮기는 중"
-                  : "휴지통으로 옮기기"
+                  ? t("옮기는 중")
+                  : t("휴지통으로 옮기기")
                 : confirmAction === "archive"
                   ? busy
-                    ? "보관하는 중"
-                    : "보관"
+                    ? t("보관하는 중")
+                    : t("보관")
                   : busy
-                    ? "복원하는 중"
-                    : "복원"}
+                    ? t("복원하는 중")
+                    : t("복원")}
             </Button>
           </div>
         </DialogContent>
@@ -869,8 +937,8 @@ function PasswordSettings() {
   const [success, setSuccess] = useState(false);
   return (
     <section className="password-settings">
-      <h3>비밀번호 변경</h3>
-      <p>현재 비밀번호를 확인한 뒤 새 비밀번호로 바꿔요.</p>
+      <h3>{t("비밀번호 변경")}</h3>
+      <p>{t("현재 비밀번호를 확인한 뒤 새 비밀번호로 바꿔요.")}</p>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -878,21 +946,21 @@ function PasswordSettings() {
           setError("");
           setSuccess(false);
           if (next.length < 8) {
-            setError("새 비밀번호는 8자 이상으로 입력해 주세요.");
+            setError(t("새 비밀번호는 8자 이상으로 입력해 주세요."));
             return;
           }
           if (next !== confirmation) {
-            setError("새 비밀번호 확인이 일치하지 않아요.");
+            setError(t("새 비밀번호 확인이 일치하지 않아요."));
             return;
           }
           if (current === next) {
-            setError("현재 비밀번호와 다른 비밀번호를 입력해 주세요.");
+            setError(t("현재 비밀번호와 다른 비밀번호를 입력해 주세요."));
             return;
           }
           setBusy(true);
           try {
             if (mode !== "connected")
-              throw new Error("미리보기에서는 비밀번호를 바꿀 수 없어요.");
+              throw new Error(t("미리보기에서는 비밀번호를 바꿀 수 없어요."));
             await changeAccountPassword(user, current, next, confirmation);
             setCurrent("");
             setNext("");
@@ -906,7 +974,7 @@ function PasswordSettings() {
         }}
       >
         <label className="field">
-          현재 비밀번호
+          {t("현재 비밀번호")}
           <Input
             type="password"
             autoComplete="current-password"
@@ -917,7 +985,7 @@ function PasswordSettings() {
           />
         </label>
         <label className="field">
-          새 비밀번호
+          {t("새 비밀번호")}
           <Input
             type="password"
             autoComplete="new-password"
@@ -930,7 +998,7 @@ function PasswordSettings() {
           <small>{PASSWORD_HELP}</small>
         </label>
         <label className="field">
-          새 비밀번호 확인
+          {t("새 비밀번호 확인")}
           <Input
             type="password"
             autoComplete="new-password"
@@ -945,13 +1013,13 @@ function PasswordSettings() {
             {error}
           </p>
         )}
-        {success && <p role="status">비밀번호를 바꿨어요.</p>}
+        {success && <p role="status">{t("비밀번호를 바꿨어요.")}</p>}
         <div className="settings-form-actions">
           <Button
             type="submit"
             disabled={busy || !current || !next || !confirmation}
           >
-            {busy ? "변경 중" : "비밀번호 변경"}
+            {busy ? t("변경 중") : t("비밀번호 변경")}
           </Button>
         </div>
       </form>

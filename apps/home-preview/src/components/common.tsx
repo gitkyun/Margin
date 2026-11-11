@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {
   Children,
   cloneElement,
@@ -197,7 +198,7 @@ export function Field({
     <div className="field">
       <label htmlFor={child ? id : undefined} className="field-label">
         {label}
-        {required && <span className="required-indicator">필수</span>}
+        {required && <span className="required-indicator">{t("필수")}</span>}
       </label>
       {child
         ? cloneElement(child, {
@@ -244,12 +245,12 @@ export function IconButton({
 }
 export function LoadingState() {
   return (
-    <div className="loading-state" role="status" aria-label="불러오는 중">
+    <div className="loading-state" role="status" aria-label={t("불러오는 중")}>
       <Skeleton variant="text" width="40%" height={32} />
       <Skeleton variant="rectangle" width="100%" height={160} radius={16} />
       <Skeleton variant="text" width="100%" />
       <Skeleton variant="text" width="100%" />
-      <span className="sr-only">불러오는 중</span>
+      <span className="sr-only">{t("불러오는 중")}</span>
     </div>
   );
 }
@@ -284,7 +285,7 @@ function SkeletonLabel() {
 export function HomeSkeleton() {
   return (
     <div className="app-shell home-skeleton" role="status" aria-busy="true">
-      <span className="sr-only">연구 홈을 불러오는 중</span>
+      <span className="sr-only">{t("연구 홈을 불러오는 중")}</span>
       <aside className="sidebar" aria-hidden="true">
         <Skeleton variant="rectangle" width={150} height={34} radius={8} />
         <div className="skeleton-nav">
@@ -375,7 +376,7 @@ export function ErrorNotice({
       <span>{message}</span>
       {retry && (
         <Button variant="link" onClick={retry}>
-          다시 불러오기
+          {t("다시 불러오기")}
         </Button>
       )}
     </div>

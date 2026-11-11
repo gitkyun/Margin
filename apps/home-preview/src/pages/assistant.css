@@ -58,7 +58,7 @@
     color: var(--text-secondary);
     font-size: var(--typography-body2-fontSize);
     line-height: 1.6;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   /* 예시 질문: 한 줄짜리 알약 버튼. 줄이 넘어가지 않게 내용 너비로 둡니다. */
   .assistant-prompts {

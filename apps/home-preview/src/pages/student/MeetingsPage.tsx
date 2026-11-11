@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { formatClock } from "@/lib/time-format";
 import { AnimatedList } from "@/components/AnimatedList";
 import { isImeComposing } from "@/lib/ime";
@@ -57,11 +58,11 @@ import { Checkbox } from "@montage-ui/core";
 import { Tabs } from "@/components/ui/tabs";
 
 const meetingFilters = [
-  ["all", "전체"],
-  ["upcoming", "예정"],
-  ["past", "지난 미팅"],
-  ["undated", "날짜 미정"],
-  ["cancelled", "취소됨"],
+  ["all", t("전체")],
+  ["upcoming", t("예정")],
+  ["past", t("지난 미팅")],
+  ["undated", t("날짜 미정")],
+  ["cancelled", t("취소됨")],
 ] as const;
 
 function meetingMatches(item: Meeting, filter: string): boolean {
@@ -119,10 +120,12 @@ export function MeetingsPage() {
       <MeetingDetail key={meeting.id} meeting={meeting} />
     ) : (
       <>
-        <BackLink to={`/r/${researchId}/meetings`}>미팅 목록</BackLink>
+        <BackLink to={`/r/${researchId}/meetings`}>{t("미팅 목록")}</BackLink>
         <EmptyState
-          title="미팅을 열 수 없어요"
-          description="이 연구에서 미팅을 찾을 수 없어요. 미팅 목록에서 다시 선택해 주세요."
+          title={t("미팅을 열 수 없어요")}
+          description={t(
+            "이 연구에서 미팅을 찾을 수 없어요. 미팅 목록에서 다시 선택해 주세요.",
+          )}
         />
       </>
     );
@@ -155,7 +158,7 @@ export function MeetingsPage() {
   async function create(event: React.FormEvent) {
     event.preventDefault();
     if (!title.trim()) {
-      form.setError("미팅 이름을 입력해 주세요.");
+      form.setError(t("미팅 이름을 입력해 주세요."));
       return;
     }
     await form.perform(async () => {
@@ -178,30 +181,30 @@ export function MeetingsPage() {
       navigate(
         `/r/${researchId}/meetings/${meeting.id}?tab=${pageParams.get("intent") === "record" ? "record#meeting-recording" : "prepare"}`,
       );
-      toast.success("미팅을 만들었어요");
+      toast.success(t("미팅을 만들었어요"));
     });
   }
   return (
     <div className="student-page">
       <PageHeader
-        title="미팅"
-        description="다음 미팅을 준비하고 지난 기록을 확인하세요."
+        title={t("미팅")}
+        description={t("다음 미팅을 준비하고 지난 기록을 확인하세요.")}
         actions={
           <>
             <Button variant="outline" onClick={() => setLogOpen(true)}>
               <Icon name="history" size={16} />
-              결정 기록
+              {t("결정 기록")}
             </Button>
             <Button onClick={openCreate}>
               <Icon name="plus" size={17} />
-              미팅 만들기
+              {t("미팅 만들기")}
             </Button>
           </>
         }
       />
       <div className="page-toolbar">
         <FilterSegments
-          label="미팅 범위"
+          label={t("미팅 범위")}
           options={meetingFilters}
           value={filter}
           onChange={setFilter}
@@ -210,7 +213,7 @@ export function MeetingsPage() {
         <SearchInput
           value={search}
           onChange={setSearch}
-          placeholder="미팅 이름으로 찾기"
+          placeholder={t("미팅 이름으로 찾기")}
         />
       </div>
       <AnimatedList className="surface meeting-list">
@@ -227,7 +230,10 @@ export function MeetingsPage() {
                 {meeting.date ? (
                   <>
                     <small>
-                      {new Date(`${meeting.date}T12:00:00`).getMonth() + 1}월
+                      {t("{month}월", {
+                        month:
+                          new Date(`${meeting.date}T12:00:00`).getMonth() + 1,
+                      })}
                     </small>
                     <strong>
                       {new Date(`${meeting.date}T12:00:00`).getDate()}
@@ -242,12 +248,13 @@ export function MeetingsPage() {
                 <span>
                   {meeting.goal ||
                     meeting.memo ||
-                    "보여줄 결과를 아직 정하지 않았어요."}
+                    t("보여줄 결과를 아직 정하지 않았어요.")}
                 </span>
                 <small>
                   {formatDate(meeting.date)}
-                  {meeting.time ? ` · ${formatClock(meeting.time)}` : ""} · 할
-                  일 {meeting.taskIds.length}개
+                  {meeting.time ? ` · ${formatClock(meeting.time)}` : ""}
+                  {" · "}
+                  {t("할 일 {count}개", { count: meeting.taskIds.length })}
                 </small>
               </span>
               <StatusBadge
@@ -267,12 +274,14 @@ export function MeetingsPage() {
         ) : (
           <EmptyState
             title={
-              hasMeetings ? "조건에 맞는 미팅이 없어요" : "아직 미팅이 없어요"
+              hasMeetings
+                ? t("조건에 맞는 미팅이 없어요")
+                : t("아직 미팅이 없어요")
             }
             description={
               hasMeetings
                 ? undefined
-                : "날짜를 정하지 않아도 미팅을 만들 수 있어요."
+                : t("날짜를 정하지 않아도 미팅을 만들 수 있어요.")
             }
             action={
               hasMeetings ? (
@@ -283,10 +292,10 @@ export function MeetingsPage() {
                     setSearch("");
                   }}
                 >
-                  조건 초기화
+                  {t("조건 초기화")}
                 </Button>
               ) : (
-                <Button onClick={openCreate}>미팅 만들기</Button>
+                <Button onClick={openCreate}>{t("미팅 만들기")}</Button>
               )
             }
           />
@@ -298,32 +307,34 @@ export function MeetingsPage() {
         onOpenChange={setCreating}
         title={
           pageParams.get("intent") === "record"
-            ? "기록할 미팅 만들기"
-            : "미팅 만들기"
+            ? t("기록할 미팅 만들기")
+            : t("미팅 만들기")
         }
         description={
           pageParams.get("intent") === "record"
-            ? "미팅을 만들면 녹음·전사와 메모를 하는 기록 탭으로 이동해요. 날짜는 나중에 정해도 돼요."
-            : "날짜는 나중에 정해도 돼요."
+            ? t(
+                "미팅을 만들면 녹음·전사와 메모를 하는 기록 탭으로 이동해요. 날짜는 나중에 정해도 돼요.",
+              )
+            : t("날짜는 나중에 정해도 돼요.")
         }
       >
         <form onSubmit={create} className="stack">
           <LabeledInput
-            label="미팅 이름"
+            label={t("미팅 이름")}
             required
             value={title}
             onChange={setTitle}
-            placeholder="예: 제6차 논문 지도"
+            placeholder={t("예: 제6차 논문 지도")}
           />
           <div className="form-grid">
             <LabeledInput
-              label="날짜"
+              label={t("날짜")}
               type="date"
               value={date}
               onChange={setDate}
             />
             <LabeledInput
-              label="시각"
+              label={t("시각")}
               type="time"
               value={time}
               onChange={setTime}
@@ -334,17 +345,17 @@ export function MeetingsPage() {
           <SaveActions
             saving={form.saving}
             onCancel={() => setCreating(false)}
-            label="미팅 만들기"
+            label={t("미팅 만들기")}
           />
         </form>
       </FormDialog>
       <MarginPanel
-        label="결정 기록"
+        label={t("결정 기록")}
         open={logOpen}
         onOpen={() => setLogOpen(true)}
         onClose={() => setLogOpen(false)}
       >
-        <PanelFrame title="결정 기록" onClose={() => setLogOpen(false)}>
+        <PanelFrame title={t("결정 기록")} onClose={() => setLogOpen(false)}>
           <div className="panel-frame-body">
             <DecisionLog
               entries={decisionLog(data.decisions, data.meetings, researchId)}
@@ -488,7 +499,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       setMemoConflict(true);
       setMemoState("error");
       setMemoError(
-        "다른 창이나 공동연구자가 메모를 먼저 저장했을 수 있어요. 작성한 내용은 그대로 있어요. 저장본과 비교한 뒤 저장 방법을 골라 주세요.",
+        t(
+          "다른 창이나 공동연구자가 메모를 먼저 저장했을 수 있어요. 작성한 내용은 그대로 있어요. 저장본과 비교한 뒤 저장 방법을 골라 주세요.",
+        ),
       );
       return null;
     }
@@ -518,7 +531,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       return stored;
     } catch (e) {
       setMemoState("error");
-      setMemoError(`${friendlyError(e)} 입력한 메모는 그대로 있어요.`);
+      setMemoError(`${friendlyError(e)} ${t("입력한 메모는 그대로 있어요.")}`);
       return null;
     } finally {
       memoPending.current = false;
@@ -549,7 +562,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       setMemoConflict(true);
       setMemoState("error");
       setMemoError(
-        "저장된 메모가 바뀌었어요. 작성한 내용은 그대로 있어요. 저장본과 비교한 뒤 저장 방법을 골라 주세요.",
+        t(
+          "저장된 메모가 바뀌었어요. 작성한 내용은 그대로 있어요. 저장본과 비교한 뒤 저장 방법을 골라 주세요.",
+        ),
       );
     }
   }, [meeting.memo, meeting.memoRevision]);
@@ -575,7 +590,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   useNavigationGuard({
     dirty: memo !== savedMemo.current,
     busy: memoState === "saving",
-    label: "미팅 메모",
+    label: t("미팅 메모"),
     onDiscard: loadSavedMemo,
   });
   async function changeTab(next: string) {
@@ -642,20 +657,23 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     if (!taskFrom) return;
     if (!taskTitle.trim()) {
       // 브라우저 기본 말풍선 대신 칸 아래에 알려 줍니다(QA F-005).
-      setTaskTitleError("할 일 이름을 적어 주세요.");
+      setTaskTitleError(t("할 일 이름을 적어 주세요."));
       taskTitleInput.current?.focus();
       return;
     }
     const task = draftTask(
       taskTitle.trim(),
-      `${meeting.title} 결정 사항: ${taskFrom.text}`,
+      t("{meeting} 결정 사항: {text}", {
+        meeting: meeting.title,
+        text: taskFrom.text,
+      }),
     );
     await taskForm.perform(async () => {
       await save("tasks", task);
       setTaskFrom(null);
-      toast.success("할 일을 만들었어요", {
+      toast.success(t("할 일을 만들었어요"), {
         action: {
-          label: "열기",
+          label: t("열기"),
           onClick: () => navigate(`/r/${researchId}/tasks/${task.id}`),
         },
       });
@@ -664,7 +682,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   async function storePreparation(event: React.FormEvent) {
     event.preventDefault();
     if (!goal.trim()) {
-      prepForm.setError("이번 미팅에서 보여줄 결과를 적어 주세요.");
+      prepForm.setError(t("이번 미팅에서 보여줄 결과를 적어 주세요."));
       return;
     }
     let questions = draftQuestions;
@@ -695,7 +713,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     }
     await prepForm.perform(async () => {
       // 준비에서 새로 적은 할 일은 고른 것만 먼저 만들고, 그다음 준비를 저장합니다.
-      for (const task of tasks.filter((t) => selectedTaskIds.includes(t.id)))
+      for (const task of tasks.filter((item) =>
+        selectedTaskIds.includes(item.id),
+      ))
         await save("tasks", task);
       setDraftTasks([]);
       await savePreparation(
@@ -709,14 +729,14 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         questions.filter((item) => selectedIds.includes(item.id)),
       );
       setPreparing(false);
-      toast.success("미팅 준비를 저장했어요");
+      toast.success(t("미팅 준비를 저장했어요"));
     });
   }
   async function openAI() {
     const stored = await commitMemo();
     if (!stored) return;
     if (!stored.memo.trim()) {
-      toast.error("AI로 정리할 메모가 없어요. 메모를 먼저 작성해 주세요.");
+      toast.error(t("AI로 정리할 메모가 없어요. 메모를 먼저 작성해 주세요."));
       return;
     }
     const source = { text: stored.memo, revision: stored.memoRevision };
@@ -779,7 +799,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           : {}),
       });
     }
-    toast.success("선택한 AI 제안을 저장했어요");
+    toast.success(t("선택한 AI 제안을 저장했어요"));
   }
   function openEntry(
     kind: "feedback" | "decision" | "question",
@@ -797,7 +817,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   async function storeEntry(event: React.FormEvent) {
     event.preventDefault();
     if (!entryBody.trim() || (entry === "feedback" && !entryTitle.trim())) {
-      entryForm.setError("필수 항목을 입력해 주세요.");
+      entryForm.setError(t("필수 항목을 입력해 주세요."));
       return;
     }
     await entryForm.perform(async () => {
@@ -839,7 +859,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         );
       }
       setEntry(null);
-      toast.success("저장했어요");
+      toast.success(t("저장했어요"));
     });
   }
   async function toggleQuestion(question: Question) {
@@ -852,7 +872,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       toast.error(
         e instanceof Error
           ? e.message
-          : "질문 상태를 바꾸지 못했어요. 다시 시도해 주세요.",
+          : t("질문 상태를 바꾸지 못했어요. 다시 시도해 주세요."),
       );
     }
   }
@@ -863,7 +883,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   return (
     <div className="student-page">
       <PageHeader
-        back={<BackLink to={`/r/${researchId}/meetings`}>미팅 목록</BackLink>}
+        back={
+          <BackLink to={`/r/${researchId}/meetings`}>{t("미팅 목록")}</BackLink>
+        }
         title={meeting.title}
         description={`${formatDate(meeting.date)}${meeting.time ? ` · ${formatClock(meeting.time)}` : ""}`}
         status={
@@ -901,22 +923,22 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               }}
             >
               <Icon name="edit" size={16} />
-              미팅 정보 편집
+              {t("미팅 정보 편집")}
             </Button>
           </div>
         }
       />
       <Tabs
         className="tabs-line"
-        label="미팅 내용"
+        label={t("미팅 내용")}
         value={tab}
         onChange={(value) => void changeTab(value)}
         options={[
-          { value: "prepare", label: "준비" },
-          { value: "record", label: "기록" },
+          { value: "prepare", label: t("준비") },
+          { value: "record", label: t("기록") },
           {
             value: "questions",
-            label: "결정·질문",
+            label: t("결정·질문"),
             count: linkedQuestions.filter((q) => q.status === "open").length,
           },
         ]}
@@ -925,25 +947,30 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         <div className="meeting-preparation">
           <section className="surface preparation-goal">
             <div className="section-heading">
-              <span className="section-kicker">이번 미팅에서 보여줄 결과</span>
+              <span className="section-kicker">
+                {t("이번 미팅에서 보여줄 결과")}
+              </span>
               <Button variant="ghost" onClick={beginPreparation}>
                 <Icon name="edit" size={16} />
-                준비 편집
+                {t("준비 편집")}
               </Button>
             </div>
-            <h2>{meeting.goal || "아직 정하지 않았어요"}</h2>
+            <h2>{meeting.goal || t("아직 정하지 않았어요")}</h2>
             <div className="preparation-summary">
               <span>
-                <Icon name="check" size={15} />할 일 {linkedTasks.length}개
+                <Icon name="check" size={15} />
+                {t("할 일 {count}개", { count: linkedTasks.length })}
               </span>
               <span>
                 <Icon name="file" size={15} />
-                자료 {linkedVersions.length}개
+                {t("자료 {count}개", { count: linkedVersions.length })}
               </span>
               <span>
                 <Icon name="message" size={15} />
-                질문{" "}
-                {preparedQuestions.filter((q) => q.status === "open").length}개
+                {t("질문 {count}개", {
+                  count: preparedQuestions.filter((q) => q.status === "open")
+                    .length,
+                })}
               </span>
             </div>
             {research &&
@@ -958,21 +985,21 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       nextMeetingId: meeting.id,
                     })
                       .then(() =>
-                        toast.success("홈의 다음 미팅으로 지정했어요"),
+                        toast.success(t("홈의 다음 미팅으로 지정했어요")),
                       )
                       .catch((e) => toast.error(e.message));
                   }}
                 >
-                  홈의 다음 미팅으로 지정
+                  {t("홈의 다음 미팅으로 지정")}
                 </Button>
               )}
           </section>
           <div className="preparation-columns">
             <section className="surface">
               <div className="section-heading">
-                <h2>할 일</h2>
+                <h2>{t("할 일")}</h2>
                 <Button variant="ghost" size="sm" onClick={beginPreparation}>
-                  할 일 고르기
+                  {t("할 일 고르기")}
                 </Button>
               </div>
               {linkedTasks.length ? (
@@ -994,8 +1021,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       <strong>{task.title}</strong>
                       <small>
                         {task.dueDate
-                          ? `기한 ${formatDate(task.dueDate)}`
-                          : "기한 미정"}
+                          ? t("기한 {date}", { date: formatDate(task.dueDate) })
+                          : t("기한 미정")}
                       </small>
                     </span>
                     <StatusBadge
@@ -1013,23 +1040,23 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 ))
               ) : (
                 <EmptyState
-                  title="이번 미팅에 고른 할 일이 없어요"
+                  title={t("이번 미팅에 고른 할 일이 없어요")}
                   action={
                     <Button variant="outline" onClick={beginPreparation}>
-                      할 일 고르기
+                      {t("할 일 고르기")}
                     </Button>
                   }
                 />
               )}
               <p className="student-footnote">
-                할 일의 기한과 진행 상태는 미팅 준비와 따로 관리돼요.
+                {t("할 일의 기한과 진행 상태는 미팅 준비와 따로 관리돼요.")}
               </p>
             </section>
             <section className="surface">
               <div className="section-heading">
-                <h2>보여줄 자료</h2>
+                <h2>{t("보여줄 자료")}</h2>
                 <Button variant="ghost" size="sm" onClick={beginPreparation}>
-                  자료 고르기
+                  {t("자료 고르기")}
                 </Button>
               </div>
               {linkedVersions.length ? (
@@ -1045,25 +1072,28 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     </span>
                     <span className="grow">
                       <strong>{version.fileName}</strong>
-                      <small>파일 v{version.number}</small>
+                      <small>
+                        {t("파일 v{number}", { number: version.number })}
+                      </small>
                     </span>
                     <Icon name="arrow-up-right" size={15} />
                   </Link>
                 ))
               ) : (
                 <p className="student-empty-inline">
-                  고른 자료가 없어요. 자료를 고르면 그 버전 그대로 준비에
-                  추가돼요.
+                  {t(
+                    "고른 자료가 없어요. 자료를 고르면 그 버전 그대로 준비에 추가돼요.",
+                  )}
                 </p>
               )}
               <div className="student-subsection">
                 <div className="section-heading">
-                  <h3>물어볼 질문</h3>
+                  <h3>{t("물어볼 질문")}</h3>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => openEntry("question")}
-                    aria-label="질문 추가"
+                    aria-label={t("질문 추가")}
                   >
                     <Icon name="plus" size={16} />
                   </Button>
@@ -1078,7 +1108,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       </div>
                     ))
                 ) : (
-                  <p className="student-empty-inline">물어볼 질문이 없어요.</p>
+                  <p className="student-empty-inline">
+                    {t("물어볼 질문이 없어요.")}
+                  </p>
                 )}
               </div>
             </section>
@@ -1094,33 +1126,36 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               onAppend={(text) => {
                 if ((draftMemo.current + text).length > 50000)
                   throw new Error(
-                    "미팅 메모가 50,000자를 넘게 돼서 전사문을 추가하지 않았어요. 필요한 부분만 복사해 붙여 넣어 주세요.",
+                    t(
+                      "미팅 메모가 50,000자를 넘게 돼서 전사문을 추가하지 않았어요. 필요한 부분만 복사해 붙여 넣어 주세요.",
+                    ),
                   );
                 setMemo(draftMemo.current + text);
               }}
             />
             <div className="section-heading">
-              <h2>미팅 원문 메모</h2>
+              <h2>{t("미팅 원문 메모")}</h2>
               <span role="status" className={`save-state ${memoState}`}>
                 <span />
                 {memoState === "saved"
                   ? mode === "preview"
-                    ? "이 브라우저에 저장됨"
-                    : "저장됨"
+                    ? t("이 브라우저에 저장됨")
+                    : t("저장됨")
                   : memoState === "saving"
-                    ? "저장 중"
+                    ? t("저장 중")
                     : memoState === "error"
-                      ? "저장 실패"
-                      : "작성 중"}
+                      ? t("저장 실패")
+                      : t("작성 중")}
               </span>
             </div>
             <p className="student-footnote">
-              들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한
-              피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.
+              {t(
+                "들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한 피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.",
+              )}
             </p>
             <textarea
               className="meeting-memo"
-              aria-label="미팅 원문 메모"
+              aria-label={t("미팅 원문 메모")}
               value={memo}
               onCompositionStart={() => {
                 composingMemo.current = true;
@@ -1138,28 +1173,32 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               onBlur={() => {
                 void commitMemo();
               }}
-              placeholder="예: 교수님 피드백, 결정한 내용, 다시 확인할 질문"
+              placeholder={t(
+                "예: 교수님 피드백, 결정한 내용, 다시 확인할 질문",
+              )}
             />
             <ErrorNotice error={memoError} />
             {memoConflict ? (
               <div className="stack">
                 <details className="student-details">
                   <summary>
-                    저장본과 비교하기 · 원문 v{meeting.memoRevision}
+                    {t("저장본과 비교하기 · 원문 v{revision}", {
+                      revision: meeting.memoRevision,
+                    })}
                   </summary>
                   <p className="student-body-text">
-                    {meeting.memo || "저장된 메모가 없어요."}
+                    {meeting.memo || t("저장된 메모가 없어요.")}
                   </p>
                 </details>
                 <div className="button-row">
                   <Button variant="outline" onClick={loadSavedMemo}>
-                    저장본으로 바꾸기
+                    {t("저장본으로 바꾸기")}
                   </Button>
                   <Button
                     disabled={memoState === "saving"}
                     onClick={() => void commitMemo(true)}
                   >
-                    내 작성 내용으로 저장
+                    {t("내 작성 내용으로 저장")}
                   </Button>
                 </div>
               </div>
@@ -1167,7 +1206,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               memoState === "error" && (
                 <div className="button-row">
                   <Button variant="outline" onClick={() => void commitMemo()}>
-                    다시 저장
+                    {t("다시 저장")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -1176,19 +1215,24 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                         toast.error(
                           e instanceof Error
                             ? e.message
-                            : "저장본을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+                            : t(
+                                "저장본을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+                              ),
                         ),
                       )
                     }
                   >
-                    최신 저장본 확인
+                    {t("최신 저장본 확인")}
                   </Button>
                 </div>
               )
             )}
             <div className="memo-actions">
               <span className="meta">
-                원문 v{meeting.memoRevision} · {memo.length.toLocaleString()}자
+                {t("원문 v{revision} · {count}자", {
+                  revision: meeting.memoRevision,
+                  count: memo.length.toLocaleString(),
+                })}
               </span>
               <Button
                 variant="outline"
@@ -1196,19 +1240,21 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 onClick={() => void openAI()}
               >
                 <Icon name="sparkles" size={16} />
-                {aiInput && !aiOpen ? "AI 정리 다시 열기" : "AI로 메모 정리"}
+                {aiInput && !aiOpen
+                  ? t("AI 정리 다시 열기")
+                  : t("AI로 메모 정리")}
               </Button>
             </div>
             <div className="student-subsection">
               <div className="section-heading">
-                <h3>저장한 피드백</h3>
+                <h3>{t("저장한 피드백")}</h3>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => openEntry("feedback")}
                 >
                   <Icon name="plus" size={15} />
-                  직접 추가
+                  {t("직접 추가")}
                 </Button>
               </div>
               {feedback.length ? (
@@ -1231,20 +1277,21 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 ))
               ) : (
                 <p className="student-empty-inline">
-                  저장한 피드백이 없어요. 직접 추가하거나 AI 제안에서 골라
-                  저장할 수 있어요.
+                  {t(
+                    "저장한 피드백이 없어요. 직접 추가하거나 AI 제안에서 골라 저장할 수 있어요.",
+                  )}
                 </p>
               )}
             </div>
           </section>
           <MarginPanel
-            label="준비한 내용과 연구 도우미"
+            label={t("준비한 내용과 연구 도우미")}
             open={panelOpen}
             onOpen={() => setPanelOpen(true)}
             onClose={() => setPanelOpen(false)}
           >
             <PanelFrame
-              title="이 미팅"
+              title={t("이 미팅")}
               onClose={() => setPanelOpen(false)}
               tab={panelTab}
               onTab={(value) =>
@@ -1253,20 +1300,20 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               tabs={[
                 {
                   value: "prepared",
-                  label: "준비",
+                  label: t("준비"),
                   count: preparedQuestions.length + linkedVersions.length,
                 },
-                { value: "assistant", label: "도우미" },
+                { value: "assistant", label: t("도우미") },
               ]}
             >
               {panelTab === "prepared" && (
                 <div className="panel-frame-body">
-                  <h3>이번 미팅에서 보여줄 결과</h3>
+                  <h3>{t("이번 미팅에서 보여줄 결과")}</h3>
                   <p className="meeting-panel-goal">
-                    {meeting.goal || "아직 정하지 않았어요."}
+                    {meeting.goal || t("아직 정하지 않았어요.")}
                   </p>
                   <h3>
-                    준비한 질문
+                    {t("준비한 질문")}
                     <span className="count-chip">
                       {preparedQuestions.length}
                     </span>
@@ -1281,17 +1328,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                           question.status === "resolved" ? "green" : "neutral"
                         }
                       >
-                        {question.status === "resolved" ? "해결" : "열림"}
+                        {question.status === "resolved" ? t("해결") : t("열림")}
                       </StatusBadge>
                     </div>
                   ))}
                   {!preparedQuestions.length && (
                     <p className="student-empty-inline">
-                      준비한 질문이 없어요.
+                      {t("준비한 질문이 없어요.")}
                     </p>
                   )}
                   <h3>
-                    보여줄 자료
+                    {t("보여줄 자료")}
                     <span className="count-chip">{linkedVersions.length}</span>
                   </h3>
                   {linkedVersions.map((version) => (
@@ -1310,11 +1357,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   ))}
                   {!linkedVersions.length && (
                     <p className="student-empty-inline">
-                      보여줄 자료를 고르지 않았어요.
+                      {t("보여줄 자료를 고르지 않았어요.")}
                     </p>
                   )}
                   <p className="panel-frame-note">
-                    준비 탭에서 바꾼 내용이 여기에 보여요.
+                    {t("준비 탭에서 바꾼 내용이 여기에 보여요.")}
                   </p>
                 </div>
               )}
@@ -1322,7 +1369,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 <AIWorkbench
                   key={aiInput.sourceRevision}
                   embedded
-                  title="메모 정리"
+                  title={t("메모 정리")}
                   input={aiInput}
                   stale={aiStale}
                   onClose={() => setPanelOpen(false)}
@@ -1338,14 +1385,14 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         <div className="student-two-column">
           <section className="surface">
             <div className="section-heading">
-              <h2>결정 사항</h2>
+              <h2>{t("결정 사항")}</h2>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => openEntry("decision")}
               >
                 <Icon name="plus" size={15} />
-                결정 추가
+                {t("결정 추가")}
               </Button>
             </div>
             {decisions.length ? (
@@ -1365,43 +1412,55 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                         </span>
                       )}
                     </p>
-                    {decision.reason && <small>이유: {decision.reason}</small>}
-                    {replaces && <small>이전 결정: {replaces.text}</small>}
-                    {replacedBy && <small>이후 바뀜: {replacedBy.text}</small>}
+                    {decision.reason && (
+                      <small>
+                        {t("이유: {reason}", { reason: decision.reason })}
+                      </small>
+                    )}
+                    {replaces && (
+                      <small>
+                        {t("이전 결정: {text}", { text: replaces.text })}
+                      </small>
+                    )}
+                    {replacedBy && (
+                      <small>
+                        {t("이후 바뀜: {text}", { text: replacedBy.text })}
+                      </small>
+                    )}
                   </div>
                   <Button
                     variant="link"
                     size="sm"
                     onClick={() => openEntry("decision", decision)}
                   >
-                    고치기
+                    {t("고치기")}
                   </Button>
                   <Button
                     variant="link"
                     size="sm"
                     onClick={() => openTaskFrom(decision)}
                   >
-                    할 일로 만들기
+                    {t("할 일로 만들기")}
                   </Button>
                 </div>
               ))
             ) : (
               <EmptyState
-                title="기록한 결정 사항이 없어요"
-                description="미팅에서 정한 방향과 이유를 남겨 두세요."
+                title={t("기록한 결정 사항이 없어요")}
+                description={t("미팅에서 정한 방향과 이유를 남겨 두세요.")}
               />
             )}
           </section>
           <section className="surface">
             <div className="section-heading">
-              <h2>질문</h2>
+              <h2>{t("질문")}</h2>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => openEntry("question")}
               >
                 <Icon name="plus" size={15} />
-                질문 추가
+                {t("질문 추가")}
               </Button>
             </div>
             {linkedQuestions.length ? (
@@ -1414,8 +1473,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     className="question-status-button"
                     aria-label={
                       question.status === "resolved"
-                        ? "질문 다시 열기"
-                        : "질문 해결로 표시"
+                        ? t("질문 다시 열기")
+                        : t("질문 해결로 표시")
                     }
                     onClick={() => void toggleQuestion(question)}
                   >
@@ -1429,7 +1488,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   <div>
                     <p>{question.text}</p>
                     <span className="meta">
-                      {question.status === "resolved" ? "해결됨" : "미해결"}
+                      {question.status === "resolved"
+                        ? t("해결됨")
+                        : t("미해결")}
                       {question.origin && (
                         <> · {originLabels[question.origin]}</>
                       )}
@@ -1444,7 +1505,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                           questionForm.setError(null);
                         }}
                       >
-                        다른 미팅 준비에 추가
+                        {t("다른 미팅 준비에 추가")}
                         <Icon name="arrow-right" size={13} />
                       </Button>
                     )}
@@ -1453,8 +1514,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               ))
             ) : (
               <EmptyState
-                title="아직 질문이 없어요"
-                description="다음에 확인할 질문을 남겨 두세요."
+                title={t("아직 질문이 없어요")}
+                description={t("다음에 확인할 질문을 남겨 두세요.")}
               />
             )}
           </section>
@@ -1466,25 +1527,27 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         onOpenChange={(open) => {
           if (!prepForm.saving) setPreparing(open);
         }}
-        title="미팅 준비 편집"
-        description="여기서 고르거나 빼도 기존 할 일과 자료는 바뀌지 않아요. 새로 적은 할 일은 저장할 때 만들어져요."
+        title={t("미팅 준비 편집")}
+        description={t(
+          "여기서 고르거나 빼도 기존 할 일과 자료는 바뀌지 않아요. 새로 적은 할 일은 저장할 때 만들어져요.",
+        )}
       >
         <form onSubmit={storePreparation} className="stack">
           <label className="field">
             <span className="field-name">
-              보여줄 결과 <span className="required-mark">*</span>
+              {t("보여줄 결과")} <span className="required-mark">*</span>
             </span>
             <Textarea
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
-              placeholder="예: 비교 기준 3가지를 정리한 선행연구 표"
+              placeholder={t("예: 비교 기준 3가지를 정리한 선행연구 표")}
               required
             />
           </label>
           <div className="student-picker">
-            <h3>할 일</h3>
+            <h3>{t("할 일")}</h3>
             {data.tasks
-              .filter((t) => t.researchId === researchId)
+              .filter((item) => item.researchId === researchId)
               .map((task) => (
                 <label className="student-choice-row" key={task.id}>
                   <Checkbox
@@ -1501,7 +1564,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     {task.title}
                     <small>
                       {taskLabels[task.status]} ·{" "}
-                      {task.dueDate ? formatDate(task.dueDate) : "기한 미정"}
+                      {task.dueDate ? formatDate(task.dueDate) : t("기한 미정")}
                     </small>
                   </span>
                 </label>
@@ -1520,7 +1583,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 />
                 <span>
                   {task.title}
-                  <small>새 할 일 · 저장하면 만들어져요</small>
+                  <small>{t("새 할 일 · 저장하면 만들어져요")}</small>
                 </span>
               </label>
             ))}
@@ -1528,8 +1591,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               <Input
                 value={newTask}
                 onChange={(e) => setNewTask(e.target.value)}
-                placeholder="예: 비교 기준 표에 근거 문헌 추가"
-                aria-label="준비에 추가할 새 할 일"
+                placeholder={t("예: 비교 기준 표에 근거 문헌 추가")}
+                aria-label={t("준비에 추가할 새 할 일")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -1540,7 +1603,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               <Button
                 type="button"
                 variant="outline"
-                aria-label="새 할 일 추가"
+                aria-label={t("새 할 일 추가")}
                 onClick={addDraftTask}
               >
                 <Icon name="plus" size={16} />
@@ -1548,7 +1611,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             </div>
           </div>
           <div className="student-picker">
-            <h3>보여줄 자료</h3>
+            <h3>{t("보여줄 자료")}</h3>
             {data.versions
               .filter((v) => v.researchId === researchId)
               .map((version) => (
@@ -1565,13 +1628,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   />
                   <span>
                     {version.fileName}
-                    <small>파일 v{version.number}</small>
+                    <small>
+                      {t("파일 v{number}", { number: version.number })}
+                    </small>
                   </span>
                 </label>
               ))}
             {!data.versions.some((v) => v.researchId === researchId) && (
               <p className="student-empty-inline">
-                아직 올린 파일이 없어요. 여기서 바로 PDF를 올릴 수 있어요.
+                {t(
+                  "아직 올린 파일이 없어요. 여기서 바로 PDF를 올릴 수 있어요.",
+                )}
               </p>
             )}
             <QuickPdfUpload
@@ -1582,7 +1649,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             />
           </div>
           <div className="student-picker">
-            <h3>물어볼 질문</h3>
+            <h3>{t("물어볼 질문")}</h3>
             {allQuestions
               .filter((q) => q.status === "open" || questionIds.includes(q.id))
               .map((question) => (
@@ -1604,8 +1671,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               <Input
                 value={newQuestion}
                 onChange={(e) => setNewQuestion(e.target.value)}
-                placeholder="예: 설문 문항 수를 줄여도 될까요?"
-                aria-label="준비에 추가할 질문"
+                placeholder={t("예: 설문 문항 수를 줄여도 될까요?")}
+                aria-label={t("준비에 추가할 질문")}
                 onKeyDown={(e) => {
                   // 한글 조합을 끝내는 Enter로 질문이 덜 쓴 채 추가되지 않게 한다.
                   if (e.key === "Enter") {
@@ -1620,7 +1687,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               <Button
                 type="button"
                 variant="outline"
-                aria-label="질문 추가"
+                aria-label={t("질문 추가")}
                 onClick={addDraftQuestion}
                 disabled={!newQuestion.trim()}
               >
@@ -1632,7 +1699,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           <SaveActions
             saving={prepForm.saving}
             onCancel={() => setPreparing(false)}
-            label="준비 저장"
+            label={t("준비 저장")}
           />
         </form>
       </FormDialog>
@@ -1640,7 +1707,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         busy={metaForm.saving}
         open={editingMeta}
         onOpenChange={setEditingMeta}
-        title="미팅 정보 편집"
+        title={t("미팅 정보 편집")}
       >
         <form
           className="stack"
@@ -1648,7 +1715,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             event.preventDefault();
             void metaForm.perform(async () => {
               if (!meta.title.trim())
-                throw new Error("미팅 이름을 입력해 주세요.");
+                throw new Error(t("미팅 이름을 입력해 주세요."));
               await save("meetings", {
                 ...metaBase.current,
                 title: meta.title.trim(),
@@ -1657,25 +1724,25 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 status: meta.status,
               });
               setEditingMeta(false);
-              toast.success("미팅 정보를 저장했어요");
+              toast.success(t("미팅 정보를 저장했어요"));
             });
           }}
         >
           <LabeledInput
-            label="미팅 이름"
+            label={t("미팅 이름")}
             required
             value={meta.title}
             onChange={(title) => setMeta((v) => ({ ...v, title }))}
           />
           <div className="form-grid">
             <LabeledInput
-              label="날짜"
+              label={t("날짜")}
               type="date"
               value={meta.date}
               onChange={(date) => setMeta((v) => ({ ...v, date }))}
             />
             <LabeledInput
-              label="시각"
+              label={t("시각")}
               type="time"
               value={meta.time}
               onChange={(time) => setMeta((v) => ({ ...v, time }))}
@@ -1683,7 +1750,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             />
           </div>
           <label className="field">
-            <span className="field-name">미팅 상태</span>
+            <span className="field-name">{t("미팅 상태")}</span>
             <SelectField
               className="native-select"
               value={meta.status}
@@ -1702,7 +1769,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             </SelectField>
           </label>
           <p className="student-inline-note">
-            날짜나 상태를 바꿔도 고른 할 일의 기한은 바뀌지 않아요.
+            {t("날짜나 상태를 바꿔도 고른 할 일의 기한은 바뀌지 않아요.")}
           </p>
           <ErrorNotice error={metaForm.error} />
           <SaveActions
@@ -1719,18 +1786,18 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         }}
         title={
           entry === "feedback"
-            ? "피드백 직접 추가"
+            ? t("피드백 직접 추가")
             : entry === "decision"
               ? editingDecision
-                ? "결정 사항 고치기"
-                : "결정 사항 추가"
-              : "질문 추가"
+                ? t("결정 사항 고치기")
+                : t("결정 사항 추가")
+              : t("질문 추가")
         }
       >
         <form className="stack" onSubmit={storeEntry}>
           {entry === "feedback" && (
             <LabeledInput
-              label="제목"
+              label={t("제목")}
               required
               value={entryTitle}
               onChange={setEntryTitle}
@@ -1738,7 +1805,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           )}
           <label className="field">
             <span className="field-name">
-              내용 <span className="required-mark">*</span>
+              {t("내용")} <span className="required-mark">*</span>
             </span>
             <Textarea
               value={entryBody}
@@ -1750,24 +1817,24 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           {entry === "decision" && (
             <>
               <label className="field">
-                <span className="field-name">이유</span>
+                <span className="field-name">{t("이유")}</span>
                 <Textarea
                   value={entryReason}
                   maxLength={REASON_MAX}
                   onChange={(e) => setEntryReason(e.target.value)}
                   rows={2}
-                  placeholder="왜 이렇게 정했는지 한두 문장으로 적어요."
+                  placeholder={t("왜 이렇게 정했는지 한두 문장으로 적어요.")}
                 />
               </label>
               {replaceable.length > 0 && (
                 <label className="field">
-                  <span className="field-name">바꾸는 이전 결정</span>
+                  <span className="field-name">{t("바꾸는 이전 결정")}</span>
                   <SelectField
                     className="native-select"
                     value={entryReplaces}
                     onChange={(e) => setEntryReplaces(e.target.value)}
                   >
-                    <option value="">없음</option>
+                    <option value="">{t("없음")}</option>
                     {replaceable.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.text.slice(0, 60)}
@@ -1779,7 +1846,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             </>
           )}
           {!editingDecision && (
-            <p className="student-footnote">직접 작성한 항목으로 저장돼요.</p>
+            <p className="student-footnote">
+              {t("직접 작성한 항목으로 저장돼요.")}
+            </p>
           )}
           <ErrorNotice error={entryForm.error} />
           <SaveActions
@@ -1794,12 +1863,14 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         onOpenChange={(open) => {
           if (!open) setTaskFrom(null);
         }}
-        title="할 일로 만들기"
-        description="결정 사항은 그대로 두고, 할 일 목록에 새 할 일을 만들어요. 기한과 우선순위는 할 일 화면에서 정할 수 있어요."
+        title={t("할 일로 만들기")}
+        description={t(
+          "결정 사항은 그대로 두고, 할 일 목록에 새 할 일을 만들어요. 기한과 우선순위는 할 일 화면에서 정할 수 있어요.",
+        )}
       >
         <form className="stack" noValidate onSubmit={storeTaskFrom}>
           <LabeledInput
-            label="할 일 이름"
+            label={t("할 일 이름")}
             required
             value={taskTitle}
             onChange={(value) => {
@@ -1810,13 +1881,13 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             inputRef={taskTitleInput}
           />
           <p className="student-footnote">
-            설명에 이 미팅과 결정 사항이 함께 적혀요.
+            {t("설명에 이 미팅과 결정 사항이 함께 적혀요.")}
           </p>
           <ErrorNotice error={taskForm.error} />
           <SaveActions
             saving={taskForm.saving}
             onCancel={() => setTaskFrom(null)}
-            label="할 일 만들기"
+            label={t("할 일 만들기")}
           />
         </form>
       </FormDialog>
@@ -1826,8 +1897,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         onOpenChange={(open) => {
           if (!open) setLinkQuestionId(null);
         }}
-        title="다른 미팅 준비에 추가"
-        description="질문을 복사하지 않고 같은 질문을 추가해요. 해결 여부도 함께 바뀌어요."
+        title={t("다른 미팅 준비에 추가")}
+        description={t(
+          "질문을 복사하지 않고 같은 질문을 추가해요. 해결 여부도 함께 바뀌어요.",
+        )}
       >
         <form
           className="stack"
@@ -1838,7 +1911,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 (m) => m.id === targetMeetingId,
               );
               if (!target || !linkQuestionId)
-                throw new Error("미팅을 선택해 주세요.");
+                throw new Error(t("미팅을 선택해 주세요."));
               await save("meetings", {
                 ...target,
                 questionIds: [
@@ -1846,19 +1919,19 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 ],
               });
               setLinkQuestionId(null);
-              toast.success("선택한 미팅 준비에 질문을 추가했어요");
+              toast.success(t("선택한 미팅 준비에 질문을 추가했어요"));
             });
           }}
         >
           <label className="field">
-            <span className="field-name">추가할 미팅</span>
+            <span className="field-name">{t("추가할 미팅")}</span>
             <SelectField
               className="native-select"
               value={targetMeetingId}
               onChange={(e) => setTargetMeetingId(e.target.value)}
               required
             >
-              <option value="">미팅 선택</option>
+              <option value="">{t("미팅 선택")}</option>
               {data.meetings
                 .filter(
                   (m) =>
@@ -1877,7 +1950,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           <SaveActions
             saving={questionForm.saving}
             onCancel={() => setLinkQuestionId(null)}
-            label="추가"
+            label={t("추가")}
           />
         </form>
       </FormDialog>

@@ -1,3 +1,4 @@
+import { dateLocale } from "@/lib/i18n";
 import NumberFlow from "@number-flow/react";
 
 interface RollingNumberProps {
@@ -9,5 +10,5 @@ interface RollingNumberProps {
  * ‘동작 줄이기’를 켠 사용자에게는 바로 바뀝니다.
  */
 export function RollingNumber({ value }: RollingNumberProps) {
-  return <NumberFlow value={value} locales="ko-KR" />;
+  return <NumberFlow value={value} locales={dateLocale()} />;
 }

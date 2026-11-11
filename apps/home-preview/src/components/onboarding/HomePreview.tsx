@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { formatClock } from "@/lib/time-format";
 import { useRef } from "react";
 import { BrandMark } from "@/components/brand/Brand";
@@ -7,7 +8,15 @@ import { formatDate, relativeDay } from "@/lib/domain";
 import type { OnboardingMeeting } from "@/lib/onboarding";
 
 const NAV_ICONS = ["home", "flag", "calendar", "edit", "feedback", "tasks"];
-const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+const WEEKDAYS = [
+  t("일"),
+  t("월"),
+  t("화"),
+  t("수"),
+  t("목"),
+  t("금"),
+  t("토"),
+];
 
 export interface HomePreviewProps {
   name: string;
@@ -103,13 +112,13 @@ export function HomePreview({
               {advisorCount > 0 && (
                 <span className="ob-phase ob-filled">
                   <Icon name="users" size={12} />
-                  지도교수 {advisorCount}명
+                  {t("지도교수 {count}명", { count: advisorCount })}
                 </span>
               )}
               {phaseTitle ? (
                 <span className="ob-phase ob-filled" data-part="phase">
                   <Icon name="flag" size={12} />
-                  현재 단계 · {phaseTitle}
+                  {t("현재 단계 · {phase}", { phase: phaseTitle })}
                 </span>
               ) : (
                 (phaseTitle === undefined || focus === "phase") && (
@@ -128,20 +137,24 @@ export function HomePreview({
               <div className="ob-meeting-block" data-part="meeting">
                 <span className="ob-card-label">
                   <Icon name="calendar" size={12} />
-                  다음 미팅
+                  {t("다음 미팅")}
                 </span>
                 {meeting ? (
                   <div className="ob-meeting ob-filled">
                     <span className="ob-date">
                       {meeting.date ? (
                         <>
-                          <small>{Number(meeting.date.slice(5, 7))}월</small>
+                          <small>
+                            {t("{month}월", {
+                              month: Number(meeting.date.slice(5, 7)),
+                            })}
+                          </small>
                           <strong>{Number(meeting.date.slice(8, 10))}</strong>
                         </>
                       ) : (
                         <>
-                          <small>날짜</small>
-                          <strong>미정</strong>
+                          <small>{t("날짜")}</small>
+                          <strong>{t("미정")}</strong>
                         </>
                       )}
                     </span>
@@ -158,7 +171,7 @@ export function HomePreview({
                   </div>
                 ) : meeting === null ? (
                   <span className="ob-empty ob-filled">
-                    다음 미팅이 아직 없어요
+                    {t("다음 미팅이 아직 없어요")}
                   </span>
                 ) : (
                   <>
@@ -172,7 +185,7 @@ export function HomePreview({
             </div>
             <div className="ob-side">
               <div className="ob-card">
-                <span className="ob-card-label">이번 주</span>
+                <span className="ob-card-label">{t("이번 주")}</span>
                 <div className="ob-week">
                   {week.map((date, index) => (
                     <span
@@ -191,7 +204,7 @@ export function HomePreview({
                 </div>
               </div>
               <div className="ob-card">
-                <span className="ob-card-label">남은 할 일</span>
+                <span className="ob-card-label">{t("남은 할 일")}</span>
                 <i className="ob-skel ob-skel-row" />
                 <i className="ob-skel ob-skel-row" />
               </div>

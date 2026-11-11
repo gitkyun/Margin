@@ -76,14 +76,14 @@
     line-height: var(--typography-headline2-lineHeight);
     letter-spacing: var(--typography-headline2-letterSpacing);
     font-weight: 600;
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .tour-copy > p:last-child {
     color: var(--text-secondary);
     font-size: var(--typography-body2-fontSize);
     line-height: var(--typography-body2Reading-lineHeight);
     letter-spacing: var(--typography-body2-letterSpacing);
-    word-break: keep-all;
+    word-break: var(--text-word-break, keep-all);
   }
   .tour-actions {
     display: flex;

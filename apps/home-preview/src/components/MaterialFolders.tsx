@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -57,7 +58,7 @@ export function MaterialFolders({
           <Button
             variant="ghost"
             size="icon-xs"
-            aria-label={`${f.title} 폴더 편집`}
+            aria-label={t("{title} 폴더 편집", { title: f.title })}
             onClick={() => {
               setDraft({ ...f });
               setError("");
@@ -68,7 +69,9 @@ export function MaterialFolders({
         </div>
         {children.length > 0 && (
           <details open>
-            <summary>하위 폴더 {children.length}개</summary>
+            <summary>
+              {t("하위 폴더 {count}개", { count: children.length })}
+            </summary>
             {children.map((c) => node(c, depth + 1))}
           </details>
         )}
@@ -78,11 +81,11 @@ export function MaterialFolders({
   return (
     <aside className="folder-tree">
       <div className="section-heading">
-        <h2>폴더</h2>
+        <h2>{t("폴더")}</h2>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="폴더 만들기"
+          aria-label={t("폴더 만들기")}
           onClick={() => {
             setDraft({
               ...recordBase(researchId),
@@ -101,7 +104,7 @@ export function MaterialFolders({
         onClick={() => onChange("")}
       >
         <Icon name="folder" size={17} />
-        모든 자료
+        {t("모든 자료")}
       </button>
       {folders
         .filter((f) => !f.parentId || !folders.some((p) => p.id === f.parentId))
@@ -112,13 +115,13 @@ export function MaterialFolders({
         onClick={() => onChange("archived")}
       >
         <Icon name="archive" size={17} />
-        보관한 자료
+        {t("보관한 자료")}
       </button>
       {data.folders.some(
         (f) => f.researchId === researchId && f.archivedAt,
       ) && (
         <details className="archived-folders">
-          <summary>보관한 폴더</summary>
+          <summary>{t("보관한 폴더")}</summary>
           {data.folders
             .filter((f) => f.researchId === researchId && f.archivedAt)
             .map((f) => (
@@ -127,7 +130,7 @@ export function MaterialFolders({
                 <Button
                   variant="ghost"
                   size="sm"
-                  aria-label={`${f.title} 폴더 복원`}
+                  aria-label={t("{title} 폴더 복원", { title: f.title })}
                   disabled={busy}
                   onClick={async () => {
                     setBusy(true);
@@ -139,7 +142,7 @@ export function MaterialFolders({
                           : undefined,
                         archivedAt: undefined,
                       });
-                      toast.success("폴더를 복원했어요");
+                      toast.success(t("폴더를 복원했어요"));
                     } catch (e) {
                       toast.error((e as Error).message);
                     } finally {
@@ -147,7 +150,7 @@ export function MaterialFolders({
                     }
                   }}
                 >
-                  복원
+                  {t("복원")}
                 </Button>
               </div>
             ))}
@@ -161,12 +164,13 @@ export function MaterialFolders({
           <DialogHeader>
             <DialogTitle>
               {folders.some((f) => f.id === draft?.id)
-                ? "폴더 편집"
-                : "폴더 만들기"}
+                ? t("폴더 편집")
+                : t("폴더 만들기")}
             </DialogTitle>
             <DialogDescription>
-              자료를 주제별로 묶을 수 있어요. 폴더를 보관해도 안의 자료와 검토
-              기록은 그대로 남아요.
+              {t(
+                "자료를 주제별로 묶을 수 있어요. 폴더를 보관해도 안의 자료와 검토 기록은 그대로 남아요.",
+              )}
             </DialogDescription>
           </DialogHeader>
           {draft && (
@@ -189,7 +193,7 @@ export function MaterialFolders({
               }}
             >
               <label className="field">
-                폴더 이름
+                {t("폴더 이름")}
                 <Input
                   value={draft.title}
                   maxLength={120}
@@ -200,15 +204,15 @@ export function MaterialFolders({
                 />
               </label>
               <label className="field">
-                상위 폴더
+                {t("상위 폴더")}
                 <Choice
-                  label="상위 폴더"
+                  label={t("상위 폴더")}
                   value={draft.parentId ?? ""}
                   onChange={(v) =>
                     setDraft({ ...draft, parentId: v || undefined })
                   }
                   options={[
-                    { value: "", label: "없음" },
+                    { value: "", label: t("없음") },
                     ...folders
                       .filter((f) => f.id !== draft.id)
                       .map((f) => ({ value: f.id, label: f.title })),
@@ -242,7 +246,7 @@ export function MaterialFolders({
                       }
                     }}
                   >
-                    폴더 보관
+                    {t("폴더 보관")}
                   </Button>
                 )}
                 <Button
@@ -251,10 +255,10 @@ export function MaterialFolders({
                   disabled={busy}
                   onClick={() => setDraft(null)}
                 >
-                  취소
+                  {t("취소")}
                 </Button>
                 <Button type="submit" disabled={busy || !draft.title.trim()}>
-                  {busy ? "저장 중" : "저장"}
+                  {busy ? t("저장 중") : t("저장")}
                 </Button>
               </div>
             </form>

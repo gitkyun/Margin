@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { MaterialVersion } from "@/lib/domain";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
@@ -81,7 +82,9 @@ export function MaterialPreviewBadge({
     <span
       ref={host}
       className="material-preview-badge"
-      aria-label={`${version.fileName} 첫 페이지 미리보기`}
+      aria-label={t("{fileName} 첫 페이지 미리보기", {
+        fileName: version.fileName,
+      })}
     >
       <canvas ref={canvas} style={{ display: ready ? "block" : "none" }} />
       {!ready && (

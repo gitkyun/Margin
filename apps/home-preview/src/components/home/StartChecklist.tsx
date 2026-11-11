@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "@/components/icons";
@@ -48,7 +49,7 @@ export function StartChecklist({
     <section className="rh-start" aria-labelledby="rh-start-list-heading">
       <div className="rh-start-head">
         <h2 id="rh-start-list-heading">
-          시작하기
+          {t("시작하기")}
           <span className="rh-start-count">
             {done} / {items.length}
           </span>
@@ -56,7 +57,7 @@ export function StartChecklist({
         <div
           className="rh-start-progress"
           role="progressbar"
-          aria-label="시작하기 진행"
+          aria-label={t("시작하기 진행")}
           aria-valuemin={0}
           aria-valuemax={items.length}
           aria-valuenow={done}
@@ -66,7 +67,7 @@ export function StartChecklist({
         <Button
           variant="ghost"
           size="icon-xs"
-          aria-label="시작하기 닫기"
+          aria-label={t("시작하기 닫기")}
           onClick={hide}
         >
           <Icon name="close" size={16} />
@@ -84,7 +85,7 @@ export function StartChecklist({
               </span>
               <span className="rh-start-copy">
                 <strong>{item.label}</strong>
-                <small>{item.done ? "끝냈어요" : item.hint}</small>
+                <small>{item.done ? t("끝냈어요") : item.hint}</small>
               </span>
               {!item.done && <Icon name="arrow-right" size={15} />}
             </Link>

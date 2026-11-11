@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -93,13 +94,13 @@ export function MaterialUploadField({
         </span>
         <strong>
           {file
-            ? "다른 파일로 바꾸려면 누르거나 끌어다 놓아 주세요"
-            : "여기에 PDF를 끌어다 놓아 주세요"}
+            ? t("다른 파일로 바꾸려면 누르거나 끌어다 놓아 주세요")
+            : t("여기에 PDF를 끌어다 놓아 주세요")}
         </strong>
         <span id={hintId} className="mu-dropzone-hint">
           {file
-            ? "등록하기 전까지 바꿀 수 있어요"
-            : "또는 눌러서 파일 선택 · 20MB 이하"}
+            ? t("등록하기 전까지 바꿀 수 있어요")
+            : t("또는 눌러서 파일 선택 · 20MB 이하")}
         </span>
       </motion.button>
       <AnimatePresence initial={false}>
@@ -122,12 +123,12 @@ export function MaterialUploadField({
                 <span>{fileSize}</span>
                 <span className="mu-state">
                   {connecting
-                    ? "자료에 등록 중"
+                    ? t("자료에 등록 중")
                     : transferring
-                      ? "업로드 중"
+                      ? t("업로드 중")
                       : pending
-                        ? "업로드됨 · 등록 전"
-                        : "선택됨"}
+                        ? t("업로드됨 · 등록 전")
+                        : t("선택됨")}
                 </span>
               </div>
             </div>
@@ -136,8 +137,8 @@ export function MaterialUploadField({
                 variant="ghost"
                 size="icon-sm"
                 className="mu-remove"
-                aria-label={`${file.name} 선택 해제`}
-                title="파일 선택 해제"
+                aria-label={t("{fileName} 선택 해제", { fileName: file.name })}
+                title={t("파일 선택 해제")}
                 onClick={onClear}
               >
                 <Icon name="close" size={17} />
@@ -151,8 +152,8 @@ export function MaterialUploadField({
           <div className="mu-transfer-caption">
             <span>
               {connecting
-                ? "파일을 올렸어요. 자료에 등록하는 중이에요."
-                : "파일을 올리는 중이에요."}
+                ? t("파일을 올렸어요. 자료에 등록하는 중이에요.")
+                : t("파일을 올리는 중이에요.")}
             </span>
             <strong>
               {connecting ? (
@@ -165,12 +166,12 @@ export function MaterialUploadField({
           <progress
             max={100}
             value={percentage}
-            aria-label="파일 업로드 진행률"
+            aria-label={t("파일 업로드 진행률")}
           />
           {transferring && (
             <Button type="button" variant="ghost" size="sm" onClick={onAbort}>
               <Icon name="close" size={14} />
-              업로드 중단
+              {t("업로드 중단")}
             </Button>
           )}
         </div>
@@ -207,7 +208,7 @@ export function MaterialSubmitLabel({
           )}
         </motion.span>
       </AnimatePresence>
-      {busy ? "저장 중" : label}
+      {busy ? t("저장 중") : label}
     </span>
   );
 }

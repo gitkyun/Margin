@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import type { MaterialVersion } from "@/lib/domain";
@@ -91,7 +92,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
       target.style.width = `${viewport.width}px`;
       target.style.height = `${viewport.height}px`;
       const ctx = target.getContext("2d");
-      if (!ctx) throw new Error("PDF를 표시할 수 없어요.");
+      if (!ctx) throw new Error(t("PDF를 표시할 수 없어요."));
       render = pdfPage.render({
         canvas: target,
         canvasContext: ctx,
@@ -111,7 +112,9 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
     })().catch((e) => {
       if (active && e?.name !== "RenderingCancelledException") {
         setError(
-          "이 페이지를 표시하지 못했어요. 파일은 그대로 저장되어 있으니 내려받아 확인해 주세요.",
+          t(
+            "이 페이지를 표시하지 못했어요. 파일은 그대로 저장되어 있으니 내려받아 확인해 주세요.",
+          ),
         );
         setLoading(false);
       }
@@ -141,7 +144,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="이전 페이지"
+            aria-label={t("이전 페이지")}
             ref={prevButton}
             disabled={!doc || page <= 1}
             onClick={() => {
@@ -158,7 +161,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="다음 페이지"
+            aria-label={t("다음 페이지")}
             ref={nextButton}
             disabled={!doc || page >= doc.numPages}
             onClick={() => {
@@ -171,7 +174,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="축소"
+            aria-label={t("축소")}
             disabled={zoom <= 0.6}
             onClick={() => setZoom((z) => Math.max(0.6, z - 0.2))}
           >
@@ -183,7 +186,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="확대"
+            aria-label={t("확대")}
             disabled={zoom >= 2}
             onClick={() => setZoom((z) => Math.min(2, z + 0.2))}
           >
@@ -192,7 +195,7 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="PDF 내려받기"
+            aria-label={t("PDF 내려받기")}
             disabled={!blob}
             onClick={download}
           >
@@ -207,13 +210,16 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
           <>
             <canvas
               ref={canvas}
-              aria-label={`${version.fileName}, ${page}페이지`}
+              aria-label={t("{fileName}, {page}페이지", {
+                fileName: version.fileName,
+                page,
+              })}
               className={loading ? "pdf-loading" : ""}
             />
             {loading && (
               <div className="pdf-loading-label" role="status">
                 <span className="spinner" />
-                PDF 불러오는 중
+                {t("PDF 불러오는 중")}
               </div>
             )}
           </>
@@ -221,8 +227,8 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
       </div>
       {doc && (
         <details className="pdf-text">
-          <summary>이 페이지 텍스트 보기</summary>
-          <p>{text || "이 페이지에는 읽을 수 있는 텍스트가 없어요."}</p>
+          <summary>{t("이 페이지 텍스트 보기")}</summary>
+          <p>{text || t("이 페이지에는 읽을 수 있는 텍스트가 없어요.")}</p>
         </details>
       )}
     </div>

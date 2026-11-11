@@ -299,14 +299,14 @@
 .margin-toast[data-sonner-toast][data-styled="true"] [data-title] {
   font-weight: var(--typography-body2-weight-bold);
   line-height: inherit;
-  word-break: keep-all;
+  word-break: var(--text-word-break, keep-all);
 }
 .margin-toast[data-sonner-toast][data-styled="true"] [data-description] {
   color: rgba(
     var(--semantic-foreground-neutral-inverse-rgb),
     var(--opacity-88)
   );
-  word-break: keep-all;
+  word-break: var(--text-word-break, keep-all);
 }
 .margin-toast[data-sonner-toast][data-type="success"] [data-icon] {
   color: var(--semantic-foreground-positive-primary);

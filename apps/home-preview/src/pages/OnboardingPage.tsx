@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { formatClock } from "@/lib/time-format";
 import { useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
@@ -41,15 +42,15 @@ import "./onboarding.css";
 
 const STEP_COUNT = 4;
 const QUESTIONS = [
-  "어떤 연구를 하고 있나요?",
-  "지금 어느 단계인가요?",
-  "다음 지도 미팅은 언제인가요?",
-  "이 연구로 무엇을 밝히려 하나요?",
+  t("어떤 연구를 하고 있나요?"),
+  t("지금 어느 단계인가요?"),
+  t("다음 지도 미팅은 언제인가요?"),
+  t("이 연구로 무엇을 밝히려 하나요?"),
 ];
 const MEETING_CHOICES: { kind: MeetingAnswer["kind"]; label: string }[] = [
-  { kind: "dated", label: "날짜를 정했어요" },
-  { kind: "undated", label: "아직 안 잡혔어요" },
-  { kind: "just_finished", label: "방금 미팅을 마쳤어요" },
+  { kind: "dated", label: t("날짜를 정했어요") },
+  { kind: "undated", label: t("아직 안 잡혔어요") },
+  { kind: "just_finished", label: t("방금 미팅을 마쳤어요") },
 ];
 
 /** 저장이 중간에 끊겼다가 다시 시도할 때 같은 기록을 두 번 만들지 않도록 기억합니다. */
@@ -61,9 +62,9 @@ interface SaveProgress {
 
 function meetingSummary(answer: MeetingAnswer | null, today: string): string {
   const meeting = onboardingMeeting(answer, today);
-  if (!meeting) return "미팅은 나중에 만들게요";
-  if (answer?.kind === "just_finished") return "방금 미팅을 마쳤어요";
-  if (!meeting.date) return "아직 안 잡혔어요";
+  if (!meeting) return t("미팅은 나중에 만들게요");
+  if (answer?.kind === "just_finished") return t("방금 미팅을 마쳤어요");
+  if (!meeting.date) return t("아직 안 잡혔어요");
   return `${formatDate(meeting.date)}${meeting.time ? ` · ${formatClock(meeting.time)}` : ""}`;
 }
 
@@ -247,9 +248,11 @@ export function OnboardingPage() {
 
   const summaries = [
     name.trim(),
-    phaseIndex == null ? "나중에 정할게요" : phaseTitles[phaseIndex],
+    phaseIndex == null ? t("나중에 정할게요") : phaseTitles[phaseIndex],
     meetingSummary(meetingAnswer, today),
-    purpose.trim() || parseQuestions(questions)[0] || "방향은 나중에 적을게요",
+    purpose.trim() ||
+      parseQuestions(questions)[0] ||
+      t("방향은 나중에 적을게요"),
   ];
 
   return (
@@ -262,7 +265,7 @@ export function OnboardingPage() {
           </span>
           {hasResearches && (
             <Link className="ob-leave" to="/r">
-              내 연구로 돌아가기
+              {t("내 연구로 돌아가기")}
             </Link>
           )}
         </header>
@@ -284,7 +287,7 @@ export function OnboardingPage() {
             }
           >
             {step > 0 && (
-              <ol className="ob-answers" aria-label="답한 내용">
+              <ol className="ob-answers" aria-label={t("답한 내용")}>
                 {summaries.slice(0, step).map((summary, index) => (
                   <li
                     key={QUESTIONS[index]}
@@ -301,7 +304,7 @@ export function OnboardingPage() {
                     >
                       <Icon name="check" size={14} />
                       <span>{summary}</span>
-                      <small>고치기</small>
+                      <small>{t("고치기")}</small>
                     </button>
                   </li>
                 ))}
@@ -311,10 +314,11 @@ export function OnboardingPage() {
             <div className="ob-step" data-dir={direction} key={step}>
               {reviewing ? (
                 <>
-                  <h1 tabIndex={-1}>이렇게 시작할게요</h1>
+                  <h1 tabIndex={-1}>{t("이렇게 시작할게요")}</h1>
                   <p className="ob-help">
-                    연구를 만든 뒤에도 이름, 단계, 미팅, 연구 방향은 모두 바꿀
-                    수 있어요.
+                    {t(
+                      "연구를 만든 뒤에도 이름, 단계, 미팅, 연구 방향은 모두 바꿀 수 있어요.",
+                    )}
                   </p>
                 </>
               ) : (
@@ -328,10 +332,11 @@ export function OnboardingPage() {
               {step === 0 && (
                 <div className="ob-fields">
                   <p className="ob-help">
-                    지도받는 연구마다 하나씩 만들어요. 이름은 나중에 바꿀 수
-                    있어요.
+                    {t(
+                      "지도받는 연구마다 하나씩 만들어요. 이름은 나중에 바꿀 수 있어요.",
+                    )}
                   </p>
-                  <Field label="연구 이름" required>
+                  <Field label={t("연구 이름")} required>
                     <Input
                       ref={nameInput}
                       value={name}
@@ -342,24 +347,31 @@ export function OnboardingPage() {
                       maxLength={120}
                       autoFocus
                       aria-invalid={nameError || undefined}
-                      placeholder="예: 대학원생의 연구 도구 사용 경험"
+                      placeholder={t("예: 대학원생의 연구 도구 사용 경험")}
                     />
                   </Field>
                   {nameError && (
                     <p className="ob-error" role="alert">
-                      연구 이름을 입력해 주세요.
+                      {t("연구 이름을 입력해 주세요.")}
                     </p>
                   )}
-                  <Field label="한 줄 설명" hint="나중에 적어도 돼요.">
+                  <Field
+                    label={t("한 줄 설명")}
+                    hint={t("나중에 적어도 돼요.")}
+                  >
                     <Textarea
                       value={description}
                       onChange={(event) => setDescription(event.target.value)}
-                      placeholder="예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구"
+                      placeholder={t(
+                        "예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구",
+                      )}
                     />
                   </Field>
                   <Field
-                    label="지도교수 이메일"
-                    hint="여러 명이면 쉼표로 나눠 주세요. 나중에 연구 설정에서 바꿀 수 있어요."
+                    label={t("지도교수 이메일")}
+                    hint={t(
+                      "여러 명이면 쉼표로 나눠 주세요. 나중에 연구 설정에서 바꿀 수 있어요.",
+                    )}
                   >
                     <Input
                       type="text"
@@ -399,7 +411,7 @@ export function OnboardingPage() {
                       checked={phaseIndex === null}
                       onChange={() => setPhaseIndex(null)}
                     />
-                    <span>나중에 정할게요</span>
+                    <span>{t("나중에 정할게요")}</span>
                     <Icon name="check" size={16} className="ob-choice-check" />
                   </label>
                 </fieldset>
@@ -428,13 +440,13 @@ export function OnboardingPage() {
                   {meetingKind === "dated" && (
                     <div className="ob-date-fields">
                       <LabeledInput
-                        label="날짜"
+                        label={t("날짜")}
                         type="date"
                         value={date}
                         onChange={setDate}
                       />
                       <LabeledInput
-                        label="시각"
+                        label={t("시각")}
                         type="time"
                         value={time}
                         onChange={setTime}
@@ -447,25 +459,30 @@ export function OnboardingPage() {
               {step === 3 && (
                 <div className="ob-fields">
                   <p className="ob-help">
-                    아직 정하지 못했으면 비워 둬도 돼요. 나중에 연구 홈에서
-                    적거나 계획서에서 가져올 수 있어요.
+                    {t(
+                      "아직 정하지 못했으면 비워 둬도 돼요. 나중에 연구 홈에서 적거나 계획서에서 가져올 수 있어요.",
+                    )}
                   </p>
-                  <Field label="연구 목적">
+                  <Field label={t("연구 목적")}>
                     <Textarea
                       value={purpose}
                       maxLength={PURPOSE_MAX}
                       onChange={(event) => setPurpose(event.target.value)}
-                      placeholder="예: 대학원생이 지도 미팅 뒤 피드백을 어떻게 기록하고 다시 쓰는지 밝힌다"
+                      placeholder={t(
+                        "예: 대학원생이 지도 미팅 뒤 피드백을 어떻게 기록하고 다시 쓰는지 밝힌다",
+                      )}
                     />
                   </Field>
                   <Field
-                    label="연구 질문"
-                    hint="한 줄에 하나씩, 5개까지 적을 수 있어요."
+                    label={t("연구 질문")}
+                    hint={t("한 줄에 하나씩, 5개까지 적을 수 있어요.")}
                   >
                     <Textarea
                       value={questions}
                       onChange={(event) => setQuestions(event.target.value)}
-                      placeholder="예: 미팅에서 받은 피드백은 어느 단계에서 사라지는가?"
+                      placeholder={t(
+                        "예: 미팅에서 받은 피드백은 어느 단계에서 사라지는가?",
+                      )}
                     />
                   </Field>
                 </div>
@@ -475,13 +492,13 @@ export function OnboardingPage() {
               {reviewing ? (
                 <StartGlow>
                   <Button type="submit" size="lg" disabled={pending}>
-                    {pending ? "만드는 중" : "내 연구 홈으로"}
+                    {pending ? t("만드는 중") : t("내 연구 홈으로")}
                     <Icon name="arrow-right" size={18} />
                   </Button>
                 </StartGlow>
               ) : (
                 <Button type="submit" size="lg">
-                  계속
+                  {t("계속")}
                   <Icon name="arrow-right" size={18} />
                 </Button>
               )}
@@ -494,13 +511,15 @@ export function OnboardingPage() {
                     void finish({ phaseIndex: null, meeting: null })
                   }
                 >
-                  건너뛰고 빈 연구로 시작
+                  {t("건너뛰고 빈 연구로 시작")}
                 </button>
               )}
             </div>
             <p className="ob-sr-only" aria-live="polite">
               {step > 0 &&
-                `미리보기에 반영했어요. ${summaries.slice(0, step).join(", ")}`}
+                t("미리보기에 반영했어요. {summary}", {
+                  summary: summaries.slice(0, step).join(", "),
+                })}
             </p>
           </form>
         )}
@@ -530,8 +549,8 @@ export function OnboardingPage() {
         )}
         <p className="ob-preview-note">
           {staged
-            ? "예시 그림이에요. 실제 기록이 아니에요."
-            : "미리보기예요. 답한 내용이 내 연구 홈에 이렇게 보여요."}
+            ? t("예시 그림이에요. 실제 기록이 아니에요.")
+            : t("미리보기예요. 답한 내용이 내 연구 홈에 이렇게 보여요.")}
         </p>
       </div>
     </div>

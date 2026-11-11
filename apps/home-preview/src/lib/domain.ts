@@ -1,3 +1,4 @@
+import { dateLocale, t } from "@/lib/i18n";
 import { timeParts } from "./time-format";
 export type ID = string;
 export type RecordOrigin = "manual" | "ai";
@@ -298,12 +299,12 @@ export interface AIRun {
   error?: string;
 }
 export const phaseTitles = [
-  "주제 정의",
-  "선행연구",
-  "연구 설계",
-  "자료 수집·분석",
-  "집필",
-  "최종 수정·제출",
+  t("주제 정의"),
+  t("선행연구"),
+  t("연구 설계"),
+  t("자료 수집·분석"),
+  t("집필"),
+  t("최종 수정·제출"),
 ];
 
 export interface EntityMap {
@@ -438,44 +439,44 @@ export const emptyWorkspace = (): WorkspaceData => ({
   reads: [],
 });
 export const taskLabels = {
-  todo: "시작 전",
-  doing: "진행 중",
-  done: "완료",
+  todo: t("시작 전"),
+  doing: t("진행 중"),
+  done: t("완료"),
 } as const;
 export const originLabels = {
-  manual: "직접 작성",
-  ai: "AI 제안에서 선택",
+  manual: t("직접 작성"),
+  ai: t("AI 제안에서 선택"),
 } as const;
 export const feedbackLabels = {
-  unprocessed: "시작 전",
-  in_progress: "진행 중",
-  recorded: "수정 결과 있음",
-  held: "보류",
-  unchanged: "고치지 않음",
+  unprocessed: t("시작 전"),
+  in_progress: t("진행 중"),
+  recorded: t("수정 결과 있음"),
+  held: t("보류"),
+  unchanged: t("고치지 않음"),
 } as const;
 export const meetingLabels = {
-  preparing: "준비 중",
-  recording: "기록 중",
-  recorded: "기록 완료",
-  cancelled: "취소",
+  preparing: t("준비 중"),
+  recording: t("기록 중"),
+  recorded: t("기록 완료"),
+  cancelled: t("취소"),
 } as const;
 export const responseLabels = {
-  confirmed: "수정 내용 확인",
-  changes_requested: "추가 수정 필요",
+  confirmed: t("수정 내용 확인"),
+  changes_requested: t("추가 수정 필요"),
 } as const;
 export const uid = () => crypto.randomUUID();
 export const now = () => new Date().toISOString();
 export function recordBase(researchId: string): BaseRecord {
-  const t = now();
-  return { id: uid(), researchId, createdAt: t, updatedAt: t };
+  const stamp = now();
+  return { id: uid(), researchId, createdAt: stamp, updatedAt: stamp };
 }
 export function formatDate(
   date?: string | null,
   options?: Intl.DateTimeFormatOptions,
 ) {
-  if (!date) return "날짜 미정";
+  if (!date) return t("날짜 미정");
   return new Intl.DateTimeFormat(
-    "ko-KR",
+    dateLocale(),
     options ?? { month: "long", day: "numeric", weekday: "short" },
   ).format(new Date(`${date.slice(0, 10)}T12:00:00`));
 }
@@ -490,7 +491,7 @@ export function formatDateTime(
   if (!value) return "";
   const d = new Date(value);
   if (Number.isNaN(d.valueOf())) return "";
-  return new Intl.DateTimeFormat("ko-KR", {
+  return new Intl.DateTimeFormat(dateLocale(), {
     ...(d.getFullYear() !== new Date().getFullYear() && { year: "numeric" }),
     month: "long",
     day: "numeric",
@@ -506,9 +507,11 @@ export function relativeDay(date?: string | null, today = new Date()) {
   const base = new Date(today);
   base.setHours(12, 0, 0, 0);
   const days = Math.round((target.getTime() - base.getTime()) / DAY_MS);
-  if (days === 0) return "오늘";
-  if (days === 1) return "내일";
-  return days > 0 ? `${days}일 뒤` : `${-days}일 지남`;
+  if (days === 0) return t("오늘");
+  if (days === 1) return t("내일");
+  return days > 0
+    ? t("{days}일 뒤", { days })
+    : t("{days}일 지남", { days: -days });
 }
 export function safeUrl(value: string): string | null {
   try {

@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Command } from "cmdk";
@@ -75,9 +76,9 @@ export function CommandPalette({
         aria-describedby={undefined}
       >
         <ModalHeading as="h2" className="command-palette-title">
-          명령 팔레트
+          {t("명령 팔레트")}
         </ModalHeading>
-        <Command label="명령 팔레트" filter={commandFilter} loop>
+        <Command label={t("명령 팔레트")} filter={commandFilter} loop>
           <div className="command-palette-field">
             <Icon name="search" size={20} />
             <Command.Input
@@ -85,8 +86,8 @@ export function CommandPalette({
               onValueChange={setQuery}
               placeholder={
                 researchId
-                  ? "기록 제목, 화면, 할 일을 찾아요"
-                  : "연구 이름이나 화면을 찾아요"
+                  ? t("기록 제목, 화면, 할 일을 찾아요")
+                  : t("연구 이름이나 화면을 찾아요")
               }
               autoFocus
             />
@@ -94,7 +95,7 @@ export function CommandPalette({
           </div>
           <Command.List className="command-palette-list">
             <Command.Empty className="command-palette-empty">
-              ‘{query.trim()}’와 맞는 항목이 없어요.
+              {t("‘{query}’와 맞는 항목이 없어요.", { query: query.trim() })}
             </Command.Empty>
             {sections.map((section) => (
               <Command.Group key={section.id} heading={section.heading}>
@@ -110,7 +111,9 @@ export function CommandPalette({
                     {entry.shortcut ? (
                       <span
                         className="command-palette-keys"
-                        aria-label={`단축키 ${entry.shortcut}`}
+                        aria-label={t("단축키 {keys}", {
+                          keys: entry.shortcut,
+                        })}
                       >
                         {entry.shortcut.split(" ").map((key) => (
                           <kbd key={key}>{key}</kbd>
@@ -127,12 +130,12 @@ export function CommandPalette({
           <p className="command-palette-help" aria-hidden="true">
             <span>
               <kbd>↑</kbd>
-              <kbd>↓</kbd> 이동
+              <kbd>↓</kbd> {t("이동")}
             </span>
             <span>
-              <kbd>Enter</kbd> 열기
+              <kbd>Enter</kbd> {t("열기")}
             </span>
-            <span>초성으로도 찾아요 (ㅁㅌ → 미팅)</span>
+            <span>{t("초성으로도 찾아요 (ㅁㅌ → 미팅)")}</span>
           </p>
         </Command>
       </ModalContainer>

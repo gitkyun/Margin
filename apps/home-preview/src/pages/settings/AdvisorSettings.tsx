@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useState } from "react";
 import { Icon } from "@/components/icons";
 import { IconButton } from "@/components/common";
@@ -31,12 +32,12 @@ export function AdvisorSettings({
   async function add() {
     const value = draft.trim();
     if (!isEmail(value)) {
-      setProblem("이메일 형식을 확인해 주세요.");
+      setProblem(t("이메일 형식을 확인해 주세요."));
       return;
     }
     const next = addAdvisor(emails, value);
     if (next === emails) {
-      setProblem("이미 등록한 이메일이에요.");
+      setProblem(t("이미 등록한 이메일이에요."));
       return;
     }
     setProblem("");
@@ -46,10 +47,11 @@ export function AdvisorSettings({
 
   return (
     <section className="settings-section advisor-section">
-      <h2>지도교수</h2>
+      <h2>{t("지도교수")}</h2>
       <p>
-        검토 요청을 만들 때 여기 등록한 교수 중에서 골라요. 등록만으로는
-        교수님께 알림이 가지 않고 연구 기록도 보이지 않아요.
+        {t(
+          "검토 요청을 만들 때 여기 등록한 교수 중에서 골라요. 등록만으로는 교수님께 알림이 가지 않고 연구 기록도 보이지 않아요.",
+        )}
       </p>
       {emails.length > 0 ? (
         <div className="member-list">
@@ -63,7 +65,7 @@ export function AdvisorSettings({
               </div>
               {canEdit && (
                 <IconButton
-                  label={`${email} 등록 해제`}
+                  label={t("{email} 등록 해제", { email })}
                   onClick={() => {
                     if (busy) return;
                     void onSave(emails.filter((item) => item !== email));
@@ -76,7 +78,9 @@ export function AdvisorSettings({
           ))}
         </div>
       ) : (
-        <p className="student-empty-inline">아직 등록한 지도교수가 없어요.</p>
+        <p className="student-empty-inline">
+          {t("아직 등록한 지도교수가 없어요.")}
+        </p>
       )}
       {canEdit && !full && (
         <form
@@ -87,7 +91,7 @@ export function AdvisorSettings({
           }}
         >
           <Input
-            aria-label="지도교수 이메일"
+            aria-label={t("지도교수 이메일")}
             type="email"
             value={draft}
             onChange={(event) => {
@@ -101,7 +105,7 @@ export function AdvisorSettings({
             variant="outline"
             disabled={busy || !draft.trim()}
           >
-            추가
+            {t("추가")}
           </Button>
         </form>
       )}
@@ -110,7 +114,11 @@ export function AdvisorSettings({
           {problem}
         </p>
       )}
-      {full && <p>지도교수는 {MAX_ADVISORS}명까지 등록할 수 있어요.</p>}
+      {full && (
+        <p>
+          {t("지도교수는 {max}명까지 등록할 수 있어요.", { max: MAX_ADVISORS })}
+        </p>
+      )}
     </section>
   );
 }

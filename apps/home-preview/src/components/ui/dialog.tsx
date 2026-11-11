@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
 import {
   Modal,
@@ -85,7 +86,10 @@ export function DialogContent({
       <ModalNavigation
         trailingContent={
           showCloseButton ? (
-            <ModalNavigationButton variant="close-button" aria-label="닫기" />
+            <ModalNavigationButton
+              variant="close-button"
+              aria-label={t("닫기")}
+            />
           ) : null
         }
       />

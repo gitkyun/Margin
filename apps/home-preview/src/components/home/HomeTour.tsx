@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import {
   useCallback,
   useEffect,
@@ -179,7 +180,10 @@ export function HomeTour({
       >
         <div className="tour-copy" key={step.key}>
           <p className="tour-count">
-            화면 안내 {index + 1} / {available.length}
+            {t("화면 안내 {current} / {total}", {
+              current: index + 1,
+              total: available.length,
+            })}
           </p>
           <h2 id="tour-title">{step.title}</h2>
           <p id="tour-text">{step.text}</p>
@@ -187,7 +191,7 @@ export function HomeTour({
         <div className="tour-actions">
           {!last && (
             <button type="button" className="tour-skip" onClick={onDone}>
-              안내 끝내기
+              {t("안내 끝내기")}
             </button>
           )}
           {index > 0 && (
@@ -197,7 +201,7 @@ export function HomeTour({
               size="sm"
               onClick={() => setIndex(index - 1)}
             >
-              이전
+              {t("이전")}
             </Button>
           )}
           <Button
@@ -205,7 +209,7 @@ export function HomeTour({
             size="sm"
             onClick={last ? onDone : () => setIndex(index + 1)}
           >
-            {last ? "안내 마치기" : "다음"}
+            {last ? t("안내 마치기") : t("다음")}
             {!last && <Icon name="arrow-right" size={16} />}
           </Button>
         </div>

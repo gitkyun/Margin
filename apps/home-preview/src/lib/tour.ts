@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n";
+
 /** 연구 홈 화면 안내. 봤다는 기록은 이 브라우저에만 둡니다(서버에 저장하지 않음). */
 const SEEN_KEY = "margin-home-tour-seen";
 
@@ -46,38 +48,46 @@ export const TOUR_STEPS: TourStep[] = [
   {
     key: "lead",
     selector: ".rh-lead-action",
-    title: "지금 할 일은 이 버튼 하나예요",
-    text: "미팅 날짜와 기록 상태에 따라 ‘미팅 준비하기’, ‘기록 시작’처럼 바뀌어요.",
+    title: t("지금 할 일은 이 버튼 하나예요"),
+    text: t(
+      "미팅 날짜와 기록 상태에 따라 ‘미팅 준비하기’, ‘기록 시작’처럼 바뀌어요.",
+    ),
   },
   {
     key: "menu",
-    selector: 'button[aria-label="메뉴 열기"]',
-    title: "메뉴는 여기서 열어요",
-    text: "미팅, 피드백, 할 일, 검토 요청으로 가는 메뉴가 들어 있어요.",
+    selector: `button[aria-label="${t("메뉴 열기")}"]`,
+    title: t("메뉴는 여기서 열어요"),
+    text: t("미팅, 피드백, 할 일, 검토 요청으로 가는 메뉴가 들어 있어요."),
   },
   {
     key: "flow",
     selector: '[data-tour="flow"]',
-    title: "지도 흐름을 따라가요",
-    text: "미팅에서 받은 피드백을 할 일로 만들고, 고친 내용을 검토 요청으로 교수님께 보내요.",
+    title: t("지도 흐름을 따라가요"),
+    text: t(
+      "미팅에서 받은 피드백을 할 일로 만들고, 고친 내용을 검토 요청으로 교수님께 보내요.",
+    ),
   },
   {
     key: "search",
     selector: ".sidebar-search",
-    title: "기록은 ⌘K로 찾아요",
-    text: "제목이나 초성으로 미팅, 할 일, 화면을 바로 열 수 있어요. Windows에서는 Ctrl+K예요.",
+    title: t("기록은 ⌘K로 찾아요"),
+    text: t(
+      "제목이나 초성으로 미팅, 할 일, 화면을 바로 열 수 있어요. Windows에서는 Ctrl+K예요.",
+    ),
   },
   {
     key: "start",
     selector: ".rh-start",
-    title: "처음이라면 여기부터 해 보세요",
-    text: "네 가지를 해 보면 마진의 흐름을 한 번 다 써 보게 돼요. 닫아도 기록은 그대로예요.",
+    title: t("처음이라면 여기부터 해 보세요"),
+    text: t(
+      "네 가지를 해 보면 마진의 흐름을 한 번 다 써 보게 돼요. 닫아도 기록은 그대로예요.",
+    ),
   },
   {
     key: "guide",
-    selector: 'a[aria-label="사용 안내"]',
-    title: "더 알고 싶으면 사용 안내를 열어요",
-    text: "키보드 단축키는 ? 키로 볼 수 있어요.",
+    selector: `a[aria-label="${t("사용 안내")}"]`,
+    title: t("더 알고 싶으면 사용 안내를 열어요"),
+    text: t("키보드 단축키는 ? 키로 볼 수 있어요."),
   },
 ];
 

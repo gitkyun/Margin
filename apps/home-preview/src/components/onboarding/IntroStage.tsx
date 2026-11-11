@@ -1,3 +1,4 @@
+import { t } from "@/lib/i18n";
 import { useRef } from "react";
 import { BrandMark } from "@/components/brand/Brand";
 import { Icon } from "@/components/icons";
@@ -10,9 +11,9 @@ interface IntroStageProps {
 }
 
 const SCATTERED = [
-  { icon: "calendar", label: "미팅 메모", note: "지도 미팅에서 적은 말" },
-  { icon: "feedback", label: "받은 피드백", note: "고치라고 들은 내용" },
-  { icon: "file", label: "고친 원고", note: "버전마다 남긴 파일" },
+  { icon: "calendar", label: t("미팅 메모"), note: t("지도 미팅에서 적은 말") },
+  { icon: "feedback", label: t("받은 피드백"), note: t("고치라고 들은 내용") },
+  { icon: "file", label: t("고친 원고"), note: t("버전마다 남긴 파일") },
 ];
 
 /** 전체 화면처럼 보이게 채우는 빈 카드 */
@@ -35,7 +36,7 @@ function FlowScreen({ index }: { index: number }) {
         <div className="ob-shot-card">
           <span className="ob-shot-label">
             <Icon name="edit" size={12} />
-            메모
+            {t("메모")}
           </span>
           <i className="ob-skel ob-skel-line ob-shot-extra" />
           <p className="ob-shot-mark ob-shot-focus">{example}</p>
@@ -50,7 +51,7 @@ function FlowScreen({ index }: { index: number }) {
     return (
       <div className="ob-shot-grid">
         <div className="ob-shot-card ob-shot-focus">
-          <span className="ob-shot-badge">시작 전</span>
+          <span className="ob-shot-badge">{t("시작 전")}</span>
           <p>{example}</p>
         </div>
         <Filler />
@@ -83,13 +84,13 @@ function FlowScreen({ index }: { index: number }) {
     return (
       <div className="ob-shot-grid">
         <div className="ob-shot-card ob-shot-extra">
-          <span className="ob-shot-label">바꾸기 전</span>
+          <span className="ob-shot-label">{t("바꾸기 전")}</span>
           <i className="ob-skel ob-skel-line" />
           <i className="ob-skel ob-skel-line" />
           <i className="ob-skel ob-skel-short" />
         </div>
         <div className="ob-shot-card ob-shot-focus">
-          <span className="ob-shot-label">바꾼 뒤</span>
+          <span className="ob-shot-label">{t("바꾼 뒤")}</span>
           <p className="ob-shot-mark">{example}</p>
         </div>
         <Filler wide />
@@ -100,13 +101,13 @@ function FlowScreen({ index }: { index: number }) {
       <div className="ob-shot-card">
         <span className="ob-shot-label">
           <Icon name="send" size={12} />
-          교수님께 보낸 요청
+          {t("교수님께 보낸 요청")}
         </span>
         <p>{example}</p>
         <p className="ob-shot-reply ob-shot-focus">
           <Icon name="check-circle" size={14} />
-          교수님 응답
-          <span className="ob-shot-badge">수정 내용 확인</span>
+          {t("교수님 응답")}
+          <span className="ob-shot-badge">{t("수정 내용 확인")}</span>
         </p>
       </div>
       <Filler />
@@ -175,7 +176,7 @@ export function IntroStage({ slide, flowIndex }: IntroStageProps) {
           </div>
         ) : (
           <div className="ob-stage-main ob-gather" key="gather">
-            <p className="ob-shot-title">내 연구</p>
+            <p className="ob-shot-title">{t("내 연구")}</p>
             {SCATTERED.map((item) => (
               <div className="ob-gather-row" key={item.label}>
                 <span className="ob-intro-icon">
