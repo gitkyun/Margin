@@ -204,10 +204,16 @@ export async function downloadFromR2(
   path: string,
   token: string,
 ): Promise<Blob | null> {
-  const response = await fetch(
-    `${FILE_WORKER_URL}/file?${new URLSearchParams({ bucket, path })}`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
+  let response: Response;
+  try {
+    response = await fetch(
+      `${FILE_WORKER_URL}/file?${new URLSearchParams({ bucket, path })}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+  } catch {
+    // Worker unreachable: the caller falls back to the original in Supabase.
+    return null;
+  }
   if (response.status === 404) {
     const body = await response.json().catch(() => null);
     if (body?.error?.code === "NOT_IN_R2") return null;
