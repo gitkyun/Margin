@@ -27,7 +27,7 @@
 - 사용자에게 보이는 문구(화면·알림·오류·접근성 이름·메타데이터)는 [UX 라이팅 원칙](docs/design/ux-writing.md)을 따른다: 해요체, 용어표(할 일·수정 방법·AI 제안·선택·버전·검토 요청), 상태 구분(선택≠완료, 링크 생성≠전송, 수정 내용 확인≠승인, 저장≠버전). 문구만 바꾸고 DB 필드·상태값·함수·API 계약은 바꾸지 않는다.
 - 화면을 바꾸면 [UI 품질 기준](docs/design/ui-quality.md)으로 360·390·768·1024·1440px, 라이트·다크, 키보드·동작 줄이기를 확인한다. 한국어 줄바꿈·잘림은 글꼴 축소나 문장 자르기보다 원인(컨테이너·줄바꿈 규칙·배치)부터 고친다.
 - 시각 기준은 Wanted Montage 4.2.0([디자인 기준](docs/design/README.md)). 색·크기는 Montage 토큰·컴포넌트를 그대로 쓰고 hex 색상표·`.dark` 블록·새 전역 덮어쓰기 CSS(`*-refinements.css` 등)를 만들지 않는다. 테마는 Montage ThemeProvider(쿠키 `margin-theme`) 하나.
-- 한국어 카피, Pretendard·브랜드 블루. 소개 Cloud Shader 유지, LiquidGlass 제거. 로그인 후 구름·유리·광학 굴절 금지.
+- 한국어 카피가 원문, Pretendard·브랜드 블루. 일본어는 한국어 원문을 열쇠로 한 사전(`apps/home-preview/src/i18n/ja`)으로 제공하고 [일본어 문구 기준](docs/design/ux-writing-ja.md)을 따른다. 화면 문구는 `t("한국어 원문")`으로 쓰고 사전에 일본어를 함께 넣는다(`node scripts/i18n-scan.mjs`와 `tests/i18n.test.ts`가 빠진 문구를 잡는다). 소개 Cloud Shader 유지, LiquidGlass 제거. 로그인 후 구름·유리·광학 굴절 금지.
 - 공개/사이드바 로고 크기 일치. 로그인 후 테마는 계정 설정 한 곳, 공개 푸터는 별도 허용.
 - 사용자가 시각 검증을 담당한다. 별도 요청 없이 마이크나 실제 연구 자료를 사용하지 않는다.
 - 원본 참고자료·실제 연구 자료·개인 인계 기록·계정 비밀번호·API 키를 커밋하지 않는다. 환경값은 예제만, 배포 비밀값은 GitHub Secrets.
