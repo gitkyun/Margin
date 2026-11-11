@@ -11,6 +11,7 @@ import {
 import "./subscription-plans.css";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
+import { configured } from "@/lib/supabase";
 
 const plans = [
   {
@@ -102,17 +103,21 @@ export function SubscriptionPlans({
               )}
             </div>
             {plan.id === "free" ? (
-              <Link
-                className="subscription-button subscription-button-primary"
-                to={publicView ? (signedIn ? "/r" : "/signup") : "/r"}
-              >
-                {publicView
-                  ? signedIn
-                    ? t("내 연구 열기")
-                    : t("가입 과정 미리보기")
-                  : t("내 연구로 돌아가기")}
-                <Icon name="arrow-right" size={16} />
-              </Link>
+              <Button asChild fullWidth>
+                <Link
+                  className="subscription-button subscription-button-primary"
+                  to={publicView ? (signedIn ? "/r" : "/signup") : "/r"}
+                >
+                  {publicView
+                    ? signedIn
+                      ? t("내 연구 열기")
+                      : configured
+                        ? t("초대 링크로 가입하기")
+                        : t("가입 과정 미리보기")
+                    : t("내 연구로 돌아가기")}
+                  <Icon name="arrow-right" size={16} />
+                </Link>
+              </Button>
             ) : (
               <Button variant="link" onClick={() => setDetail(plan.id)}>
                 {t("플랜 자세히 보기")}

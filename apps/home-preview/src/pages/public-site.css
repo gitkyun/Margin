@@ -1171,7 +1171,8 @@
   .lp-pricing .subscription-card {
     padding: 30px;
   }
-  .lp-pricing .subscription-card.subscription-pro {
+  /* 강조는 지금 쓸 수 있는 Free에 둡니다. Pro·Team은 출시 예정이라 같은 무게로 둡니다(검수 P1-6). */
+  .lp-pricing .subscription-card.subscription-free {
     background: var(--brand-soft);
     border-color: var(--semantic-line-brand-primary);
   }

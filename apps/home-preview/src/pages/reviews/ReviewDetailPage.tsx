@@ -541,7 +541,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     );
   const Root = embedded ? "div" : "main";
   return (
-    <Root className="review-workspace">
+    <Root className={`review-workspace${embedded ? " is-embedded" : ""}`}>
       <header className="review-workspace-header">
         <div className="review-header-left">
           <Link
@@ -641,7 +641,8 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           )}
         </div>
       </header>
-      {mode === "preview" && (
+      {/* 셸 안에서는 셸의 미리보기 띠가 이미 있어 두 겹이 되지 않게 합니다. */}
+      {mode === "preview" && !embedded && (
         <div className="review-preview-banner">
           <Icon name="info" size={15} />
           {t(

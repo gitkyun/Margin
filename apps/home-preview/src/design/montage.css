@@ -164,6 +164,33 @@
   margin-block: 0;
   padding-inline: var(--spacing-20);
 }
+/*
+ * 선택하지 않은 탭 글자: Montage 기본값은 비활성 글자색(대비 약 1.8:1)이라 쓸 수 없는 탭처럼 보였어요.
+ * 보조 글자색으로 올려 누를 수 있는 탭으로 읽히게 합니다(2026-11-11 검수 P1-3).
+ * 실제로 막힌 탭(disabled)은 그대로 흐리게 둡니다.
+ */
+[data-component="tab-list-item"][aria-selected="false"]:not(
+    [aria-disabled="true"]
+  ):not([data-disabled])
+  [data-role="tab-list-item-text"] {
+  color: var(--semantic-foreground-neutral-secondary);
+}
+/*
+ * 아이콘과 글자를 한 span으로 묶어 넘긴 버튼(예: 검토 상세 '새로고침')은 Montage가 그 span을
+ * 블록으로 둬서 아이콘 아래로 글자가 내려가요. 다른 버튼처럼 한 줄에 놓습니다(검수 P1-4).
+ */
+.review-header-actions [data-slot="button"] > span:has(> svg) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+/* 캘린더 목록 보기의 일정 이름: 좁은 화면에서 잘리지 않고 줄바꿈합니다(검수 P1-7). */
+.rms-calendar .rms-list-title {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
 .margin-tab-count.margin-tab-count {
   margin-left: var(--spacing-6);
 }

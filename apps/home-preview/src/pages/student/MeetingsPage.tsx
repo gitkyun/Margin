@@ -56,6 +56,7 @@ import {
 import { filterCounts } from "@/lib/filter-counts";
 import { Checkbox } from "@montage-ui/core";
 import { Tabs } from "@/components/ui/tabs";
+import { entryFromSelection } from "@/lib/memo-selection";
 
 const meetingFilters = [
   ["all", t("전체")],
@@ -419,6 +420,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   draftMemo.current = memo;
   const memoPending = useRef(false);
   const composingMemo = useRef(false);
+  // 메모에서 고른 문장으로 피드백·결정·질문을 채우려고 메모 칸을 기억합니다.
+  const memoField = useRef<HTMLTextAreaElement>(null);
   const savedMemo = useRef<string | null>(
     restoredDraft?.text === meeting.memo
       ? meeting.memo
@@ -454,6 +457,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [entryBody, setEntryBody] = useState("");
   const [entryReason, setEntryReason] = useState("");
   const [entryReplaces, setEntryReplaces] = useState("");
+  // 메모에서 고른 문장으로 채워 열었는지. 대화상자 안내 문구가 달라집니다.
+  const [entryFromMemo, setEntryFromMemo] = useState(false);
   // 고치는 중인 결정. 없으면 새로 추가하는 것입니다.
   const [editingDecision, setEditingDecision] = useState<Decision | null>(null);
   const entryForm = useSaving();
@@ -807,9 +812,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   ) {
     entryBase.current = existing ?? recordBase(researchId);
     setEditingDecision(existing ?? null);
+    const field = memoField.current;
+    const draft =
+      !existing && field
+        ? entryFromSelection(
+            field.value.slice(field.selectionStart, field.selectionEnd),
+          )
+        : null;
+    setEntryFromMemo(!!draft);
     setEntry(kind);
-    setEntryTitle("");
-    setEntryBody(existing?.text ?? "");
+    setEntryTitle(kind === "feedback" ? (draft?.title ?? "") : "");
+    setEntryBody(existing?.text ?? draft?.body ?? "");
     setEntryReason(existing?.reason ?? "");
     setEntryReplaces(existing?.replacesId ?? "");
     entryForm.setError(null);
@@ -1151,9 +1164,13 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             <p className="student-footnote">
               {t(
                 "들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한 피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.",
+              )}{" "}
+              {t(
+                "메모에서 문장을 고른 뒤 ‘직접 추가’를 누르면 그 문장으로 채워져요.",
               )}
             </p>
             <textarea
+              ref={memoField}
               className="meeting-memo"
               aria-label={t("미팅 원문 메모")}
               value={memo}
@@ -1784,6 +1801,13 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         onOpenChange={(open) => {
           if (!open) setEntry(null);
         }}
+        description={
+          entryFromMemo
+            ? t("메모에서 고른 문장을 채워 뒀어요. 확인하고 저장하세요.")
+            : editingDecision
+              ? undefined
+              : t("내용을 적고 저장하세요.")
+        }
         title={
           entry === "feedback"
             ? t("피드백 직접 추가")

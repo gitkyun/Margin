@@ -262,9 +262,13 @@
     justify-content: flex-end;
     gap: 10px;
   }
-  .experience-page {
-    max-width: 1400px;
-    margin: auto;
+  /* 목록 화면 본문 폭은 미팅·피드백 등(.student-page)과 같은 1040px로 맞춥니다.
+     화면을 옮겨도 제목과 주 버튼 자리가 흔들리지 않게 합니다(2026-11-11 검수 P1-2). */
+  .experience-page,
+  .reviews-page,
+  .research-list-page {
+    max-width: 1040px;
+    margin-inline: auto;
   }
   .experience-panel {
     padding: 24px;
