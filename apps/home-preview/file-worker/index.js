@@ -83,7 +83,9 @@ async function rpc(env, name, args, token) {
     error.status = response.status;
     throw error;
   }
-  return response.json();
+  // Functions returning void answer 204 with an empty body.
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
 }
 
 const validKey = (bucket, path) =>
