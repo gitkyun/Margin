@@ -10,6 +10,7 @@ import {
   inviteLink,
   signupProblem,
 } from "@/lib/invites";
+import { KakaoLoginButton } from "@/components/KakaoLoginButton";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "@/lib/password-policy";
 import { assertConnected, friendlyError } from "@/lib/supabase";
 import { PublicFrame } from "./PublicPages";
@@ -102,9 +103,8 @@ export function InviteSignupPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const code = inviteCodeFrom(params.get(INVITE_PARAM));
-  const [invite, setInvite] = useState<InviteState>(
-    code ? "checking" : "closed",
-  );
+  // 초대 없이도 가입할 수 있습니다. 초대 링크로 왔을 때만 그 링크가 유효한지 확인합니다.
+  const [invite, setInvite] = useState<InviteState>(code ? "checking" : "open");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -114,7 +114,7 @@ export function InviteSignupPage() {
 
   useEffect(() => {
     if (!code) {
-      setInvite("closed");
+      setInvite("open");
       return;
     }
     let live = true;
@@ -132,7 +132,7 @@ export function InviteSignupPage() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (pending || !code) return;
+    if (pending) return;
     setPending(true);
     setProblem("");
     try {
@@ -141,7 +141,9 @@ export function InviteSignupPage() {
         password,
         options: {
           // 초대 코드는 계정에 실어 두었다가 첫 로그인 때 씁니다(InviteGate).
-          data: { name: name.trim(), invite: code },
+          data: code
+            ? { name: name.trim(), invite: code }
+            : { name: name.trim() },
           emailRedirectTo: `${window.location.origin}/login`,
         },
       });
@@ -192,19 +194,15 @@ export function InviteSignupPage() {
   if (invite !== "open")
     return (
       <AuthLayout>
-        <h2>{t("초대 링크가 필요해요")}</h2>
+        <h2>{t("초대 링크를 확인해 주세요")}</h2>
         <p>
           {invite === "unreachable"
             ? t(
                 "초대 링크를 확인하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
               )
-            : code
-              ? t(
-                  "이 초대 링크는 만료됐거나 올바르지 않아요. 초대한 사람에게 새 링크를 받아 주세요.",
-                )
-              : t(
-                  "마진은 지금 초대받은 사람만 가입할 수 있어요. 마진을 쓰고 있는 사람에게 초대 링크를 받아 주세요.",
-                )}
+            : t(
+                "이 초대 링크는 만료됐거나 올바르지 않아요. 새 링크를 받거나, 초대 없이 가입할 수 있어요.",
+              )}
         </p>
         <InviteLinkForm
           submitLabel={t("초대 링크 확인")}
@@ -212,6 +210,12 @@ export function InviteSignupPage() {
             navigate(`/signup?${INVITE_PARAM}=${next}`, { replace: true })
           }
         />
+        <p className="auth-switch">
+          {t("초대 링크가 없나요?")}{" "}
+          <Link to="/signup" replace>
+            {t("초대 없이 가입하기")}
+          </Link>
+        </p>
         <p className="auth-switch">
           {t("이미 가입했나요?")} <Link to="/login">{t("로그인")}</Link>
         </p>
@@ -221,7 +225,11 @@ export function InviteSignupPage() {
   return (
     <AuthLayout>
       <h2>{t("마진 시작하기")}</h2>
-      <p>{t("초대받은 링크로 들어왔어요. 계정을 만들면 바로 쓸 수 있어요.")}</p>
+      <p>
+        {code
+          ? t("초대받은 링크로 들어왔어요. 계정을 만들면 바로 쓸 수 있어요.")
+          : t("계정을 만들면 바로 쓸 수 있어요.")}
+      </p>
       <form onSubmit={submit}>
         <label className="field">
           {t("이름")}
@@ -273,6 +281,11 @@ export function InviteSignupPage() {
           <Icon name="arrow-right" size={18} />
         </Button>
       </form>
+      <KakaoLoginButton
+        next="/r"
+        label={t("카카오로 시작하기")}
+        disabled={pending}
+      />
       <p className="auth-switch">
         {t("이미 가입했나요?")} <Link to="/login">{t("로그인")}</Link>
       </p>

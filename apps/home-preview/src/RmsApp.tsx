@@ -1,5 +1,6 @@
 import { t } from "@/lib/i18n";
 import { InviteGate, InviteSignupPage } from "./pages/InvitePages";
+import { admit, finishSocialLogin } from "@/lib/social-login";
 import { JoinPage } from "./pages/JoinPage";
 import { INVITE_PARAM, inviteCodeFrom } from "./lib/invites";
 import { useNavigationGuard } from "@/lib/navigation-guard";
@@ -294,22 +295,45 @@ export function App() {
   const location = useLocation();
   useEffect(() => {
     if (!supabase) return;
+    const client = supabase;
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (mounted) {
-        setSession(data.session);
+    let stop = () => {};
+    // 카카오에서 돌아온 주소라면 로그인을 먼저 마친 뒤에 화면을 정합니다.
+    void finishSocialLogin(client).then(() => {
+      if (!mounted) return;
+      client.auth.getSession().then(({ data }) => {
+        if (mounted) {
+          setSession(data.session);
+          setReady(true);
+        }
+      });
+      const { data } = client.auth.onAuthStateChange((_event, value) => {
+        setSession(value);
         setReady(true);
-      }
-    });
-    const { data } = supabase.auth.onAuthStateChange((_event, value) => {
-      setSession(value);
-      setReady(true);
+      });
+      stop = () => data.subscription.unsubscribe();
     });
     return () => {
       mounted = false;
-      data.subscription.unsubscribe();
+      stop();
     };
   }, []);
+  // 초대 없이 가입한 계정(카카오 포함)을 첫 로그인에서 허용 목록에 넣습니다.
+  const userId = session?.user.id ?? "";
+  const invitePending = Boolean(
+    inviteCodeFrom(session?.user.user_metadata?.invite),
+  );
+  const [admittedUser, setAdmittedUser] = useState("");
+  useEffect(() => {
+    if (!supabase || !userId || invitePending) return;
+    let live = true;
+    void admit(supabase, userId).finally(() => {
+      if (live) setAdmittedUser(userId);
+    });
+    return () => {
+      live = false;
+    };
+  }, [userId, invitePending]);
   const workspaceVisible = !configured || !!session;
   useEffect(() => {
     const path = location.pathname;
@@ -438,6 +462,8 @@ export function App() {
         onSignOut={() => void supabase?.auth.signOut()}
       />
     );
+  if (session && !pendingInvite && admittedUser !== session.user.id)
+    return <InitialLoading />;
   const user = session
     ? {
         id: session.user.id,

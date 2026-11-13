@@ -349,7 +349,31 @@ test('review preview validates recipient and denies unrelated and anonymous call
  await db.exec('reset role;set role anon')
  await failure(()=>call('rms_validate_reviewer',[ids.research,'professor@example.test']),'42501')
 })
-test('invite links are the only way into the allow list',async()=>{
+test('anyone with a confirmed email can join without an invite',async()=>{
+ const walkIn='abababab-abab-4bab-8bab-abababababab',unconfirmed='cdcdcdcd-cdcd-4dcd-8dcd-cdcdcdcdcdcd'
+ await db.exec('reset role')
+ await db.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now()),($3,$4,null)',[walkIn,'walkin@example.test',unconfirmed,'unconfirmed@example.test'])
+ // 가입만 하고 아직 들어오지 않은 계정은 기록을 못 본다.
+ await as(walkIn)
+ await failure(()=>call('rms_bootstrap'),'42501')
+ // 들어오면 허용 목록에 오르고, 다시 불러도 그대로다.
+ assert.equal(await call('rms_join'),true)
+ assert.equal(await call('rms_join'),true)
+ assert.ok(await call('rms_bootstrap'))
+ // 이메일을 확인하지 않은 계정과 로그인하지 않은 방문자는 들어올 수 없다.
+ await as(unconfirmed)
+ await failure(()=>call('rms_join'),'42501')
+ await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub','',false)");await db.exec('set role anon')
+ await failure(()=>call('rms_join'),'42501')
+ // 중지된 계정은 되살아나지 않는다.
+ await db.exec('reset role')
+ await db.query('update public.rms_demo_accounts set active=false where user_id=$1',[walkIn])
+ await as(walkIn)
+ await failure(()=>call('rms_join'),'42501')
+ await failure(()=>call('rms_bootstrap'),'42501')
+ await as(ids.student)
+})
+test('invite links still add an account to the allow list',async()=>{
  const guest='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',unconfirmed='ffffffff-ffff-4fff-8fff-ffffffffffff'
  await db.exec('reset role')
  await db.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now()),($3,$4,null)',[guest,'guest@example.test',unconfirmed,'pending@example.test'])
