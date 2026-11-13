@@ -343,7 +343,15 @@ export function ResearchAssistant() {
     }
   }
   async function send() {
-    if (running || !contexts.length || !draft.trim()) return;
+    // 연구 대화는 기록 없이도 보낼 수 있어요. 나머지 요청은 읽을 기록이 있어야 해요.
+    if (running || !draft.trim()) return;
+    if (!contexts.length && task !== "ask_research") {
+      setError(
+        t("이 요청은 읽을 기록이 필요해요. 기록이나 파일을 첨부해 주세요."),
+      );
+      openPanel("sources");
+      return;
+    }
     if (
       task === "organize_meeting" &&
       (contexts.length !== 1 || contexts[0]?.kind !== "meetings")
@@ -743,7 +751,9 @@ export function ResearchAssistant() {
                   : t("미리보기에서는 질문을 보낼 수 없어요.")
                 : contexts.length
                   ? t("첨부한 기록에 대해 물어보세요")
-                  : t("기록이나 파일을 첨부하고 질문해 주세요")
+                  : t(
+                      "질문을 적어 주세요. 기록을 첨부하면 그 기록을 읽고 답해요.",
+                    )
             }
             value={draft}
             disabled={unavailable}
@@ -831,9 +841,7 @@ export function ResearchAssistant() {
                 type="submit"
                 size="icon"
                 aria-label={t("질문 보내기")}
-                disabled={
-                  unavailable || !draft.trim() || !contexts.length || uploading
-                }
+                disabled={unavailable || !draft.trim() || uploading}
               >
                 <Icon name="arrow-up" size={19} />
               </Button>

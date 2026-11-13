@@ -64,6 +64,13 @@ export function validateInput(value: unknown): AIInput {
    if(Array.isArray(input.history)&&input.history.reduce((n,m)=>n+String(object(m).text).length,0)>30000)throw new AIError("INVALID_INPUT","대화 범위를 줄여 주세요.");
    return {...input,contexts:selected} as unknown as AIInput;
   }
+  // 기록을 첨부하지 않은 연구 대화: 질문만으로 답합니다.
+  if(input.mode==="ask_research"&&!input.meetingId&&!input.feedbackId){
+   if(!uuid.test(String(input.researchId))||typeof input.question!=='string'||!input.question.trim()||input.question.length>2000||!uuid.test(String(input.clientRunId)))throw new AIError("INVALID_INPUT","질문과 실행 정보를 확인해 주세요.");
+   if(input.history!==undefined&&(!Array.isArray(input.history)||input.history.length>10||input.history.some(v=>{const m=object(v);return !['user','assistant'].includes(String(m.role))||typeof m.text!=='string'||m.text.length>10000})))throw new AIError("INVALID_INPUT","대화 범위를 줄여 주세요.");
+   if(Array.isArray(input.history)&&input.history.reduce((n,m)=>n+String(object(m).text).length,0)>30000)throw new AIError("INVALID_INPUT","대화 범위를 줄여 주세요.");
+   return {...input,sourceText:"",contexts:[]} as unknown as AIInput;
+  }
 
   if (
     !["organize_meeting", "suggest_revisions", "ask_research"].includes(
