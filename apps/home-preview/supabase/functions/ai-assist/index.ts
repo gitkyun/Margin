@@ -11,7 +11,7 @@ const url = Deno.env.get("SUPABASE_URL") ?? "";
 const publishableKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const apiKey = Deno.env.get("GEMINI_API_KEY") ?? "";
-const defaultModel = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.5-flash-lite";
+const defaultModel = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.8-flash";
 // 키 종류에 따라 부르는 곳이 다릅니다. AI Studio 키(AIza…)는 Gemini API,
 // Google Cloud 키(AQ.… 등)는 Vertex AI를 부릅니다. GEMINI_PROVIDER로 직접 정할 수도 있습니다.
 const provider =
@@ -193,7 +193,8 @@ Deno.serve(async (request) => {
         "확인된 계정으로 로그인해 주세요.",
         401,
       );
-    const thinkingOptions=/^gemini-3\.5-flash-lite$/.test(defaultModel)?['minimal','medium','high']:[];
+    // 답변 깊이는 세 단계이고, 맨 앞(high)이 기본값입니다.
+    const thinkingOptions=/^gemini-3\./.test(defaultModel)?['high','medium','low']:[];
     if(request.method==='GET') return reply({models:[{id:defaultModel,label:defaultModel,thinking:thinkingOptions}]});
     if (Number(request.headers.get("content-length") ?? 0) > 262144)
       throw new AIError(

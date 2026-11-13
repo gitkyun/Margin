@@ -399,7 +399,7 @@ export interface AIInput {
     | "plan_research"
     | "read_material";
   model?: string;
-  thinking?: "minimal" | "medium" | "high";
+  thinking?: "minimal" | "low" | "medium" | "high";
   contexts?: AIContext[];
   conversationId?: ID;
   clientRunId?: ID;

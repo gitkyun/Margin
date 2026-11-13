@@ -4,11 +4,13 @@ import { t } from "@/lib/i18n";
 
 // Values sent to the server are unchanged. Only allowed capability values enter the UI.
 export const reviewDepthLabels: Record<string, string> = {
+  low: t("간단히"),
   minimal: t("간단히"),
   medium: t("보통"),
   high: t("자세히"),
 };
 export const reviewDepthHints: Record<string, string> = {
+  low: t("빠르게 답해요."),
   minimal: t("빠르게 답해요."),
   medium: t("조금 더 생각한 뒤 답해요."),
   high: t("더 오래 생각한 뒤 답해요. 시간이 더 걸릴 수 있어요."),
