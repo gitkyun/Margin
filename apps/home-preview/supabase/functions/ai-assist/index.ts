@@ -345,6 +345,16 @@ Deno.serve(async (request) => {
       clearTimeout(timeout);
       request.signal.removeEventListener("abort", abort);
     }
+    if (!upstream.ok) {
+      // 왜 실패했는지 서버 기록에 남깁니다. Google의 오류 본문에는 키가 들어 있지 않습니다.
+      const detail = await upstream.text().catch(() => "");
+      console.error(
+        "rms_ai_provider_error",
+        upstream.status,
+        model,
+        detail.slice(0, 400),
+      );
+    }
     if (upstream.status === 429)
       throw new AIError(
         "RATE_LIMITED",
