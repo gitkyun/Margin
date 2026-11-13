@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- 연구 도우미의 연구 대화는 기록을 첨부하지 않아도 질문을 보낼 수 있게 함. 이때 AI는 일반적인 연구 조언으로 답하고, 미팅 정리·수정 방법 제안 같은 다른 요청은 여전히 기록이 필요함.
 - AI 기본 모델을 `gemini-3.8-flash`로 바꾸고, 답변 깊이를 자세히(high)·보통(medium)·간단히(low) 세 단계로 맞춤(2026-11-13 사용자 결정). 기본값은 자세히이고, 예전에 저장한 `minimal` 설정은 자세히로 바뀜.
 - AI 함수가 키 종류에 맞는 곳을 부르게 함. AI Studio 키(`AIza…`)는 Gemini API, Google Cloud 키는 Vertex AI(`aiplatform.googleapis.com`)를 부름. `GEMINI_PROVIDER`(`studio`/`vertex`)로 직접 정할 수 있음.
 - AI 제공자(Gemini)가 요청을 거절하면 상태 코드와 이유를 서버 기록에 남김. 화면 문구는 그대로임.

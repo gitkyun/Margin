@@ -15,6 +15,33 @@ const input = {
   question: "어떤 점을 먼저 볼까?",
   history: [],
 };
+describe("research chat without an attached record", () => {
+  const free = {
+    mode: "ask_research",
+    researchId,
+    question: "연구 질문을 좁히는 방법은?",
+    clientRunId: "0b0c7e1e-5f0a-4c53-9a3e-2f6d1a7b9c10",
+    contexts: [],
+    sourceText: "",
+    history: [],
+  };
+  it("accepts a question alone and sends no source text", () => {
+    const v = validateInput(free);
+    expect(v.question).toBe(free.question);
+    expect(v.sourceText).toBe("");
+    expect(v.contexts).toEqual([]);
+  });
+  it("still needs a question, a run id, and a record for other requests", () => {
+    expect(() => validateInput({ ...free, question: "  " })).toThrow();
+    expect(() => validateInput({ ...free, clientRunId: "x" })).toThrow();
+    expect(() =>
+      validateInput({ ...free, mode: "organize_meeting" }),
+    ).toThrow();
+    expect(() =>
+      validateInput({ ...free, mode: "suggest_revisions" }),
+    ).toThrow();
+  });
+});
 describe("contextual research chat", () => {
   it("uses one saved source and retains the question", () => {
     const v = validateInput(input);
