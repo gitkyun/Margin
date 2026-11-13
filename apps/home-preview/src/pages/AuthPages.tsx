@@ -31,6 +31,8 @@ import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { t } from "@/lib/i18n";
 import { joinPath, pendingJoin } from "@/lib/project-invites";
+import { safeNext, takeSocialProblem } from "@/lib/social-login";
+import { KakaoLoginButton } from "@/components/KakaoLoginButton";
 import { useExperience } from "@/lib/experience";
 import { Segments } from "@/components/experience";
 import { unreadReviewNotifications } from "@/lib/notifications";
@@ -42,7 +44,8 @@ export function LoginPage({
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [pending, setPending] = useState(false),
-    [error, setError] = useState(""),
+    // 카카오에서 돌아오다 실패한 경우 그 이유를 한 번 보여 줍니다.
+    [error, setError] = useState(takeSocialProblem),
     // 이메일·비밀번호가 맞지 않을 때만 두 칸을 오류로 표시합니다(QA D-016).
     // 연결 오류는 칸의 문제가 아니라서 표시하지 않아요.
     [credentialsInvalid, setCredentialsInvalid] = useState(false);
@@ -53,10 +56,7 @@ export function LoginPage({
   // 초대 수락 중에 로그인하러 온 경우(메일 확인 뒤 포함) 그 초대로 돌아갑니다.
   const resumeJoin = pendingJoin();
   const next = params.get("next") ?? (resumeJoin ? joinPath(resumeJoin) : "/r");
-  const target =
-    /^\/(r|reviews|schedule|join)(\/|\?|$)/.test(next) && !next.startsWith("//")
-      ? next
-      : "/r";
+  const target = safeNext(next);
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!configured) return;
@@ -189,10 +189,17 @@ export function LoginPage({
               </Button>
             </form>
           )}
+          {configured && !authenticated && (
+            <KakaoLoginButton
+              next={target}
+              label={t("카카오로 시작하기")}
+              disabled={pending}
+            />
+          )}
           <p className="auth-switch">
             {t("계정이 없나요?")}{" "}
             <Link to="/signup">
-              {configured ? t("초대 링크로 가입하기") : t("가입 과정 미리보기")}
+              {configured ? t("가입하기") : t("가입 과정 미리보기")}
             </Link>
           </p>
           {configured && (

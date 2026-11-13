@@ -197,9 +197,7 @@ export function PublicFrame({
               <Link to="/guide#questions">{t("자주 묻는 질문")}</Link>
               <Link to="/privacy">{t("자료와 개인정보")}</Link>
               <Link to="/signup">
-                {configured
-                  ? t("초대 링크로 가입하기")
-                  : t("가입 과정 미리보기")}
+                {configured ? t("가입하기") : t("가입 과정 미리보기")}
               </Link>
             </div>
           </div>

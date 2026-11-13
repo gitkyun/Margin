@@ -112,7 +112,7 @@ export function SubscriptionPlans({
                     ? signedIn
                       ? t("내 연구 열기")
                       : configured
-                        ? t("초대 링크로 가입하기")
+                        ? t("가입하기")
                         : t("가입 과정 미리보기")
                     : t("내 연구로 돌아가기")}
                   <Icon name="arrow-right" size={16} />

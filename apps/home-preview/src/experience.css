@@ -168,6 +168,57 @@
     border-color: var(--selected-line);
     background: var(--selected-fill);
   }
+  .social-login {
+    margin-top: 18px;
+  }
+  .social-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .social-divider::before,
+  .social-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  /* 카카오 로그인 디자인 가이드가 정한 색이라 토큰을 쓰지 않습니다(라이트·다크 같음). */
+  .kakao-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 12px;
+    background: #fee500;
+    color: rgb(0 0 0 / 85%);
+    font: inherit;
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  .kakao-login:hover:not(:disabled) {
+    filter: brightness(0.96);
+  }
+  .kakao-login:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .kakao-login:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .social-login .form-error {
+    margin-top: 10px;
+  }
   .auth-switch {
     margin-top: 22px;
     font-size: var(--typography-label2-fontSize);
