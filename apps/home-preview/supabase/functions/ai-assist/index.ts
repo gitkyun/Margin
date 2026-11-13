@@ -12,6 +12,15 @@ const publishableKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const apiKey = Deno.env.get("GEMINI_API_KEY") ?? "";
 const defaultModel = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.5-flash-lite";
+// 키 종류에 따라 부르는 곳이 다릅니다. AI Studio 키(AIza…)는 Gemini API,
+// Google Cloud 키(AQ.… 등)는 Vertex AI를 부릅니다. GEMINI_PROVIDER로 직접 정할 수도 있습니다.
+const provider =
+  Deno.env.get("GEMINI_PROVIDER") ??
+  (apiKey.startsWith("AIza") ? "studio" : "vertex");
+const modelUrl = (model: string) =>
+  provider === "vertex"
+    ? `https://aiplatform.googleapis.com/v1/publishers/google/models/${encodeURIComponent(model)}:generateContent`
+    : `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 const origins = allowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 const chatSchema = {
   type: "OBJECT",
@@ -286,9 +295,7 @@ Deno.serve(async (request) => {
         }
       | undefined;
     try {
-      upstream = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-        {
+      upstream = await fetch(modelUrl(model), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

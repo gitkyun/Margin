@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- AI 함수가 키 종류에 맞는 곳을 부르게 함. AI Studio 키(`AIza…`)는 Gemini API, Google Cloud 키는 Vertex AI(`aiplatform.googleapis.com`)를 부름. `GEMINI_PROVIDER`(`studio`/`vertex`)로 직접 정할 수 있음.
 - AI 제공자(Gemini)가 요청을 거절하면 상태 코드와 이유를 서버 기록에 남김. 화면 문구는 그대로임.
 - 초대 없이 누구나 가입할 수 있게 함(2026-11-13 사용자 결정). 이메일을 확인한 계정은 첫 로그인에서 `rms_join`으로 허용 목록에 들어감. 초대 링크는 그대로 쓸 수 있고, 중지된 계정은 되살리지 않음.
 - 로그인·가입 화면에 ‘카카오로 시작하기’를 추가함. 카카오에서 돌아온 주소의 로그인 값을 읽어 세션을 만들고, 실패하면 로그인 화면에서 이유를 알려 줌.
