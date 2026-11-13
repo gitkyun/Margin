@@ -59,7 +59,7 @@ export function AIWorkbench({
     String(input.model ?? user.preferences?.model ?? ""),
   );
   const [preferredDepth, setPreferredDepth] = useState(
-    String(input.thinking ?? user.preferences?.thinking ?? "minimal"),
+    String(input.thinking ?? user.preferences?.thinking ?? "high"),
   );
   const selectedModel =
     caps.data?.models.find((m) => m.id === selectedModelId) ??

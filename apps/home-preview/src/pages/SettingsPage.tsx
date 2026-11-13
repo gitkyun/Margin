@@ -313,7 +313,7 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
     caps.data?.models.find((m) => m.id === prefs.model) ?? caps.data?.models[0];
   const selectedDepth = resolveReviewDepth(
     selectedModel?.thinking ?? [],
-    String(prefs.thinking ?? "minimal"),
+    String(prefs.thinking ?? "high"),
   );
   return (
     <section className="settings-section">
@@ -371,7 +371,7 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
                     model: v,
                     thinking: resolveReviewDepth(
                       caps.data?.models.find((m) => m.id === v)?.thinking ?? [],
-                      String(prefs.thinking ?? "minimal"),
+                      String(prefs.thinking ?? "high"),
                     ),
                   })
                 }

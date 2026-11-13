@@ -12,6 +12,16 @@ describe("research review controls respect model capabilities", () => {
     expect(resolveReviewDepth(allowed, "medium")).toBe("medium");
     expect(reviewDepthOptions(allowed).map((o) => o.value)).toEqual(allowed);
   });
+  it("falls back to the first (deepest) level when a saved preference is no longer offered", () => {
+    const allowed = ["high", "medium", "low"];
+    expect(resolveReviewDepth(allowed, "minimal")).toBe("high");
+    expect(resolveReviewDepth(allowed, "low")).toBe("low");
+    expect(reviewDepthOptions(allowed).map((o) => o.label)).toEqual([
+      "자세히",
+      "보통",
+      "간단히",
+    ]);
+  });
   it("does not invent a thinking option for a model without those controls", () => {
     expect(resolveReviewDepth([], "high")).toBe("");
     expect(reviewDepthOptions([])).toEqual([]);

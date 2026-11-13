@@ -91,7 +91,7 @@ export function ResearchAssistant() {
     ),
     [model, setModel] = useState(String(user.preferences?.model ?? "")),
     [thinking, setThinking] = useState(
-      String(user.preferences?.thinking || "minimal"),
+      String(user.preferences?.thinking || "high"),
     ),
     [running, setRunning] = useState(false),
     [error, setError] = useState(""),
