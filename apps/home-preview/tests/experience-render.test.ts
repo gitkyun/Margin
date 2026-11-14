@@ -138,7 +138,7 @@ describe("experience pages render with an empty research", () => {
   it("calendar and planning initialize without premium plugins", async () => {
     const { PlanningPage } = await import("../src/pages/PlanningPage");
     await page(PlanningPage, "/r/r1/planning");
-    expect(screen.getByRole("heading", { name: "계획·일정" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "일정" })).toBeTruthy();
     fireEvent.click(screen.getByRole("tab", { name: "캘린더" }));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "오늘" })).toBeTruthy(),

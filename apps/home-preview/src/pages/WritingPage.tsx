@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { Choice, VisibilityField, Segments } from "@/components/experience";
 import { EditorToolbar } from "./writing/EditorToolbar";
+import { DocumentTabs } from "./student/shared";
 import {
   VersionCompareSlider,
   VersionSheet,
@@ -135,6 +136,7 @@ export function WritingPage() {
     <div className="experience-page">
       <PageHeader
         title={t("글쓰기")}
+        tabs={<DocumentTabs researchId={researchId} selected="writing" />}
         actions={
           <DropdownMenu>
             <DropdownMenuTrigger>

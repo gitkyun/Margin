@@ -502,18 +502,42 @@ export function WorkTabs({
   selected,
 }: {
   researchId: string;
-  selected: "feedback" | "results";
+  selected: "feedback" | "results" | "reviews";
 }) {
   const navigate = useNavigate();
+  // 사이드바 '피드백' 메뉴 하나에 받은 것 → 고친 것 → 보낸 것을 보기로 둡니다(감사 F1).
   return (
     <Tabs
       className="work-tabs"
-      label={t("피드백과 수정 결과")}
+      label={t("피드백 보기")}
       value={selected}
       onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
       options={[
         { value: "feedback", label: t("피드백") },
         { value: "results", label: t("수정 결과") },
+        { value: "reviews", label: t("검토 요청") },
+      ]}
+    />
+  );
+}
+/** 사이드바 '문서' 메뉴의 두 보기: 쓰는 글과 올린 자료(감사 F1). */
+export function DocumentTabs({
+  researchId,
+  selected,
+}: {
+  researchId: string;
+  selected: "writing" | "materials";
+}) {
+  const navigate = useNavigate();
+  return (
+    <Tabs
+      className="work-tabs"
+      label={t("문서 보기")}
+      value={selected}
+      onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
+      options={[
+        { value: "writing", label: t("글쓰기") },
+        { value: "materials", label: t("자료") },
       ]}
     />
   );

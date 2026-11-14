@@ -18,11 +18,11 @@ const KEYWORDS = {
 
 /** 연구 안 사이드바 메뉴: [경로, 아이콘, 이름]. 사이드바와 ⌘K 팔레트가 같이 씁니다. */
 export const RESEARCH_NAVIGATION = [
-  ["", "home", t("연구 홈")],
-  ["planning", "flag", t("계획·일정")],
+  ["", "home", t("홈")],
+  ["planning", "flag", t("일정")],
   ["meetings", "calendar", t("미팅")],
-  ["writing", "file", t("글쓰기")],
-  ["feedback", "feedback", t("피드백·수정")],
+  ["writing", "file", t("문서")],
+  ["feedback", "feedback", t("피드백")],
   ["tasks", "tasks", t("할 일")],
   ["materials", "folder", t("자료")],
   ["reviews", "send", t("검토 요청")],

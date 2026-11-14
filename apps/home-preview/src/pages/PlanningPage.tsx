@@ -124,7 +124,7 @@ export function PlanningPage() {
   return (
     <div className="experience-page">
       <PageHeader
-        title={t("계획·일정")}
+        title={t("일정")}
         description={t("연구 단계와 중요한 일정을 확인하세요.")}
         actions={
           // 탭마다 그 탭에서 만드는 것 하나만 주 행동으로 둡니다.

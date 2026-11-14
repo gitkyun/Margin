@@ -31,6 +31,7 @@ import {
 } from "@/lib/domain";
 import {
   BackLink,
+  DocumentTabs,
   ErrorNotice,
   FilterSegments,
   FormDialog,
@@ -573,6 +574,7 @@ export function MaterialsPage() {
         <>
           <PageHeader
             title={t("자료")}
+            tabs={<DocumentTabs researchId={researchId} selected="materials" />}
             description={t(
               "PDF는 올린 내용이 그대로 남고, 링크한 문서는 내용이 바뀔 수 있어요.",
             )}

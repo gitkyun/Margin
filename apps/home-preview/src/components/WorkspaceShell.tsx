@@ -206,15 +206,15 @@ const COMPACT_QUERY = `${queryUp("sm")} and ${queryDown("lg")}`;
 const FOCUS_EXPANDED_KEY = "rms-sidebar-focus-expanded";
 /** 작업대처럼 본문을 넓게 써야 하는 화면: 연구 도우미, 글쓰기 문서 편집 */
 const FOCUS_ROUTE = /^\/r\/[^/]+\/(assistant(\/|$)|writing\/[^/]+)/;
-/** 사이드바 묶음(계획 4.3). 연구 홈 → 지도 흐름 → 연구 작업 순서입니다. */
-const NAV_GROUPS: { label: string | null; paths: string[] }[] = [
-  { label: null, paths: [""] },
-  {
-    label: t("지도 기록"),
-    paths: ["meetings", "feedback", "tasks", "reviews"],
-  },
-  { label: t("연구 작업"), paths: ["writing", "materials", "planning"] },
-];
+/**
+ * 사이드바 메뉴 여섯(감사 F1, design-b 2.1). 묶음 이름 없이 지도 순서대로 둡니다.
+ * 수정 결과·검토 요청은 '피드백', 자료는 '문서' 메뉴 안의 보기라 그 메뉴를 켭니다.
+ */
+const NAV_PATHS = ["", "meetings", "feedback", "tasks", "writing", "planning"];
+const NAV_ALSO_ACTIVE: Record<string, string[]> = {
+  feedback: ["/results", "/reviews"],
+  writing: ["/materials"],
+};
 /** AI 사용량은 한도의 이 비율을 넘었을 때만 사이드바 아래 자리에 냅니다. */
 const USAGE_WARNING_RATIO = 0.8;
 
@@ -335,9 +335,12 @@ export function WorkspaceShell({
               ? t("수정 결과")
               : location.pathname.includes("/feedback")
                 ? t("피드백")
-                : (navigation.find(
-                    ([path]) => path && location.pathname.includes("/" + path),
-                  )?.[2] ?? (research ? t("연구 홈") : homeLabel));
+                : location.pathname.includes("/writing")
+                  ? t("글쓰기")
+                  : (navigation.find(
+                      ([path]) =>
+                        path && location.pathname.includes("/" + path),
+                    )?.[2] ?? (research ? t("연구 홈") : homeLabel));
   useEffect(() => {
     document.title = t("{name} · 마진", {
       name: `${current}${research ? ` · ${research.name}` : ""}`,
@@ -448,19 +451,11 @@ export function WorkspaceShell({
       </button>
       <nav className="nav-list" aria-label={t("주요 메뉴")}>
         {research ? (
-          NAV_GROUPS.map((group) => (
-            <div
-              className="nav-group"
-              key={group.label ?? "home"}
-              data-tour={group.label === t("지도 기록") ? "flow" : undefined}
-            >
-              {group.label && <p className="nav-group-label">{group.label}</p>}
+          [NAV_PATHS].map((paths) => (
+            <div className="nav-group" key="research" data-tour="flow">
               {navigation
-                .filter(([path]) => group.paths.includes(path))
-                .sort(
-                  (a, b) =>
-                    group.paths.indexOf(a[0]) - group.paths.indexOf(b[0]),
-                )
+                .filter(([path]) => paths.includes(path))
+                .sort((a, b) => paths.indexOf(a[0]) - paths.indexOf(b[0]))
                 .map(([path, icon, label]) => {
                   const preview = navPreview(
                     path,
@@ -481,7 +476,7 @@ export function WorkspaceShell({
                         end={!path}
                         to={`/r/${researchId}${path ? "/" + path : ""}`}
                         className={({ isActive }) =>
-                          `nav-item ${isActive || (path === "feedback" && location.pathname.includes("/results")) ? "active" : ""}`
+                          `nav-item ${isActive || (NAV_ALSO_ACTIVE[path] ?? []).some((p) => location.pathname.includes(p)) ? "active" : ""}`
                         }
                       >
                         <Icon name={icon} size={20} />
