@@ -314,6 +314,32 @@ export function WorkspaceProvider({
         if (comment) comment.resolved = resolved;
       });
     },
+    async updateComment(id, body) {
+      if (mode === "connected") {
+        await rpc("rms_update_comment", { p_id: id, p_body: body });
+        await refresh();
+        return;
+      }
+      await localChange((data) => {
+        const comment = data.comments.find((c) => c.id === id);
+        if (!comment || comment.userId !== user.id || comment.deletedAt) return;
+        comment.body = body.trim();
+        comment.editedAt = new Date().toISOString();
+      });
+    },
+    async deleteComment(id) {
+      if (mode === "connected") {
+        await rpc("rms_delete_comment", { p_id: id });
+        await refresh();
+        return;
+      }
+      await localChange((data) => {
+        const comment = data.comments.find((c) => c.id === id);
+        if (!comment || comment.userId !== user.id) return;
+        comment.body = "";
+        comment.deletedAt = new Date().toISOString();
+      });
+    },
     async setSharing(requestId, status, professorEmail) {
       if (mode === "connected") {
         await rpc("rms_set_sharing", {

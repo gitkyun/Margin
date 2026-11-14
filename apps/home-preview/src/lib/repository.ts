@@ -1,4 +1,4 @@
-import { t } from "@/lib/i18n";
+import { currentLang, t } from "@/lib/i18n";
 import { assertConnected, supabase } from "./supabase";
 import {
   AI_NOT_CONFIGURED_CODE,
@@ -20,6 +20,12 @@ import {
   type WorkspaceData,
 } from "./domain";
 import { localizeServerMessage } from "@/lib/server-messages";
+import {
+  normalizeRoadmap,
+  ROADMAP_MODE,
+  type RoadmapPlan,
+  type RoadmapProposal,
+} from "../../supabase/functions/ai-assist/roadmap";
 import { downloadFromR2, uploadToR2 } from "./file-storage";
 const DB_NAME = "rms-preview-v1";
 export function previewDB(): Promise<IDBDatabase> {
@@ -265,6 +271,39 @@ export async function executeAI(
   input: AIInput,
   signal?: AbortSignal,
 ): Promise<AIResult> {
+  return (await postAI(input, signal)) as unknown as AIResult;
+}
+export interface RoadmapProposalResult {
+  runId?: string;
+  roadmap: RoadmapProposal;
+  model: string;
+  createdAt: string;
+}
+/**
+ * 투고일 기준 로드맵 제안. 서버가 검사한 계획을 화면에서 한 번 더 검사하고,
+ * 날짜가 오늘~투고일을 벗어난 제안은 보여 주지 않습니다.
+ */
+export async function requestRoadmapProposal(
+  input: { researchId: string; clientRunId: string; plan: RoadmapPlan },
+  signal?: AbortSignal,
+): Promise<RoadmapProposalResult> {
+  const payload = await postAI({ mode: ROADMAP_MODE, ...input }, signal);
+  try {
+    return {
+      runId: typeof payload.runId === "string" ? payload.runId : undefined,
+      model: String(payload.model ?? ""),
+      createdAt: String(payload.createdAt ?? ""),
+      roadmap: normalizeRoadmap(payload.roadmap, input.plan),
+    };
+  } catch (error) {
+    throw new Error(localizeServerMessage((error as Error).message));
+  }
+}
+/** ai-assist 함수에 요청을 보냅니다. 화면 언어를 함께 보내 그 언어로 답하게 합니다. */
+async function postAI(
+  input: object,
+  signal?: AbortSignal,
+): Promise<Record<string, unknown>> {
   const client = assertConnected();
   const { data } = await client.auth.getSession();
   if (!data.session)
@@ -278,7 +317,7 @@ export async function executeAI(
         apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         Authorization: `Bearer ${data.session.access_token}`,
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, locale: currentLang() }),
       signal,
     },
   );
@@ -301,7 +340,7 @@ export async function executeAI(
           t("AI 요청을 처리하지 못했어요. 잠시 뒤 다시 시도해 주세요."),
       ),
     );
-  return payload as AIResult;
+  return payload;
 }
 export function snapshotForResult(
   data: WorkspaceData,

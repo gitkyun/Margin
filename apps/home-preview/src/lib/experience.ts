@@ -108,4 +108,5 @@ export const modeLabels: Record<string, string> = {
   plan_research: t("할 일 정리"),
   read_material: t("자료 읽기"),
   ask_research: t("연구 대화"),
+  propose_roadmap: t("투고일 계획 제안"),
 };

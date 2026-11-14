@@ -1,4 +1,5 @@
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { SelectField } from "@/components/experience";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import {
@@ -75,17 +76,23 @@ import { Tabs } from "@/components/ui/tabs";
 import { RequestDirection } from "./RequestDirection";
 
 /**
- * 댓글 하나의 ⋯ 메뉴(감사 F6). 지금은 ‘링크 복사’만 있어요.
- * 편집·삭제는 서버에 댓글 수정·삭제 기능이 생긴 뒤에 붙입니다.
+ * 댓글 하나의 ⋯ 메뉴(감사 F6). 링크 복사는 누구나, 편집·삭제는 쓴 사람만 할 수 있어요.
+ * 삭제한 댓글에는 링크 복사만 남깁니다.
  */
 function CommentMenu({
   comment,
   authorLabel,
+  canManage,
   onCopyLink,
+  onEdit,
+  onDelete,
 }: {
   comment: ReviewComment;
   authorLabel: string;
+  canManage: boolean;
   onCopyLink: (id: string) => void;
+  onEdit: (comment: ReviewComment) => void;
+  onDelete: (comment: ReviewComment) => void;
 }) {
   return (
     <DropdownMenu>
@@ -105,8 +112,86 @@ function CommentMenu({
           <Icon name="link" size={16} />
           {t("링크 복사")}
         </DropdownMenuItem>
+        {canManage && (
+          <DropdownMenuItem onSelect={() => onEdit(comment)}>
+            <Icon name="edit" size={16} />
+            {t("편집")}
+          </DropdownMenuItem>
+        )}
+        {canManage && (
+          <DropdownMenuItem onSelect={() => onDelete(comment)}>
+            <Icon name="trash" size={16} />
+            {t("삭제")}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/** 댓글 본문. 삭제한 댓글은 자리만 남기고, 편집 중에는 그 자리에서 고칩니다. */
+function CommentBody({
+  comment,
+  editing,
+  busy,
+  onSave,
+  onCancel,
+}: {
+  comment: ReviewComment;
+  editing: boolean;
+  busy: boolean;
+  onSave: (body: string) => void;
+  onCancel: () => void;
+}) {
+  const [draft, setDraft] = useState(comment.body);
+  useEffect(() => {
+    if (editing) setDraft(comment.body);
+  }, [editing, comment.body]);
+  if (comment.deletedAt)
+    return (
+      <p className="review-comment-body is-deleted">
+        {t("삭제한 댓글이에요.")}
+      </p>
+    );
+  if (!editing)
+    return (
+      <p className="review-comment-body">
+        {comment.body}
+        {comment.editedAt && (
+          <small className="review-comment-edited">{t("(수정됨)")}</small>
+        )}
+      </p>
+    );
+  const body = draft.trim();
+  return (
+    <form
+      className="review-comment-edit"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (body && body !== comment.body) onSave(body);
+        else onCancel();
+      }}
+    >
+      <textarea
+        aria-label={t("댓글 편집")}
+        value={draft}
+        maxLength={10000}
+        rows={3}
+        autoFocus
+        onChange={(event) => setDraft(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") onCancel();
+        }}
+      />
+      <div className="review-comment-edit-actions">
+        <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+          {t("취소")}
+        </Button>
+        <Button type="submit" size="sm" disabled={busy || !body}>
+          {t("저장")}
+        </Button>
+      </div>
+    </form>
   );
 }
 
@@ -118,6 +203,8 @@ function CommentThread({
   onReply,
   onResolve,
   onCopyLink,
+  onUpdate,
+  onDelete,
   userId,
 }: {
   comment: ReviewComment;
@@ -127,10 +214,38 @@ function CommentThread({
   onReply: (comment: ReviewComment) => void;
   onResolve: (id: string, value: boolean) => void;
   onCopyLink: (id: string) => void;
+  onUpdate: (id: string, body: string) => Promise<boolean>;
+  onDelete: (comment: ReviewComment) => void;
   userId: string;
 }) {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const authorOf = (value: ReviewComment) =>
     value.authorName || (value.userId === userId ? t("나") : t("검토 참여자"));
+  const canManage = (value: ReviewComment) =>
+    canWrite && value.userId === userId && !value.deletedAt;
+  const menuOf = (value: ReviewComment) => (
+    <CommentMenu
+      comment={value}
+      authorLabel={authorOf(value)}
+      canManage={canManage(value)}
+      onCopyLink={onCopyLink}
+      onEdit={(target) => setEditingId(target.id)}
+      onDelete={onDelete}
+    />
+  );
+  const bodyOf = (value: ReviewComment) => (
+    <CommentBody
+      comment={value}
+      editing={editingId === value.id}
+      busy={busy}
+      onCancel={() => setEditingId(null)}
+      onSave={(body) =>
+        void onUpdate(value.id, body).then((saved) => {
+          if (saved) setEditingId(null);
+        })
+      }
+    />
+  );
   return (
     <article
       id={commentAnchor(comment.id)}
@@ -142,13 +257,9 @@ function CommentThread({
         </span>
         <strong>{authorOf(comment)}</strong>
         <time>{timeText(comment.createdAt)}</time>
-        <CommentMenu
-          comment={comment}
-          authorLabel={authorOf(comment)}
-          onCopyLink={onCopyLink}
-        />
+        {menuOf(comment)}
       </div>
-      <p className="review-comment-body">{comment.body}</p>
+      {bodyOf(comment)}
       <div className="review-comment-actions">
         {comment.resolved && (
           <StatusBadge tone="neutral">{t("해결됨")}</StatusBadge>
@@ -181,13 +292,9 @@ function CommentThread({
           <div className="review-comment-author">
             <strong>{authorOf(reply)}</strong>
             <time>{timeText(reply.createdAt)}</time>
-            <CommentMenu
-              comment={reply}
-              authorLabel={authorOf(reply)}
-              onCopyLink={onCopyLink}
-            />
+            {menuOf(reply)}
           </div>
-          <p className="review-comment-body">{reply.body}</p>
+          {bodyOf(reply)}
         </div>
       ))}
     </article>
@@ -235,6 +342,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const { requestId = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
+  const [confirmDialog, askConfirm] = useConfirm();
   const context = useWorkspace();
   const {
     data,
@@ -246,6 +354,8 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     respond,
     comment: sendComment,
     resolveComment,
+    updateComment,
+    deleteComment,
     recheck,
     setSharing,
     markRead,
@@ -470,6 +580,30 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
         )
       }
       onCopyLink={(id) => void copyCommentLink(id)}
+      onUpdate={(id, body) =>
+        doAction(
+          `edit-${id}`,
+          () => updateComment(id, body),
+          t("댓글을 고쳤어요."),
+        )
+      }
+      onDelete={(target) =>
+        void askConfirm({
+          title: t("이 댓글을 삭제할까요?"),
+          description: t(
+            "삭제하면 되돌릴 수 없어요. 답글이 있으면 자리는 남고 내용만 가려져요.",
+          ),
+          confirmLabel: t("삭제"),
+          destructive: true,
+        }).then((ok) => {
+          if (ok)
+            void doAction(
+              `delete-${target.id}`,
+              () => deleteComment(target.id),
+              t("댓글을 삭제했어요."),
+            );
+        })
+      }
     />
   );
   const selectItem = (value: ReviewItem) => {
@@ -1543,6 +1677,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           )}
         </DialogContent>
       </Dialog>
+      {confirmDialog}
     </Root>
   );
 }

@@ -1365,10 +1365,9 @@
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
+  /* 내 질문은 상자 없이 파란 말풍선 하나만 보입니다. */
   .ai-message.user {
-    padding: 18px 22px;
-    border-radius: var(--radius-16);
-    background: var(--surface-muted);
+    padding: 0;
     border: 0;
     margin: 16px 0;
   }
