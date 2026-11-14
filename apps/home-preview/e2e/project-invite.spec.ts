@@ -315,8 +315,12 @@ test.describe("초대한 사람: 연구 설정의 초대 관리", () => {
       setList([invite]);
       return invite;
     });
-    page.once("dialog", (dialog) => void dialog.accept());
+    // 취소는 앱 확인 창(B6)에서 한 번 더 누릅니다.
     await row.getByRole("button", { name: "초대 취소" }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "초대 취소" })
+      .click();
     await expect(row).toContainText("취소함");
     await expect(row.getByRole("button", { name: "다시 보내기" })).toHaveCount(
       0,
