@@ -183,9 +183,10 @@ export function FormDialog({
         >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
-            <DialogDescription>
-              {description ?? t("내용을 확인하고 저장하세요.")}
-            </DialogDescription>
+            {/* 알려 줄 것이 없으면 설명 줄을 비워 둡니다. 기본 문장을 채우지 않아요. */}
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
           </DialogHeader>
           <FormNavigationGuard
             active={open}

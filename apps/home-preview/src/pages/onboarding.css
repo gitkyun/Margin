@@ -176,7 +176,7 @@
 
   /* 처음 온 사람에게 보여 주는 소개 세 장. 질문과 같은 자리·글자 크기를 씁니다. */
   .ob-intro h1:focus-visible {
-    outline: 2px solid var(--semantic-line-brand-focus);
+    outline: 2px solid var(--brand);
     outline-offset: 4px;
     border-radius: var(--radius-4);
   }
@@ -238,7 +238,7 @@
     background: var(--selected-fill);
   }
   .ob-intro-step:focus-visible {
-    outline: 2px solid var(--semantic-line-brand-focus);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
   .ob-intro-icon {
@@ -364,7 +364,7 @@
     background: var(--selected-fill);
   }
   .ob-choice:has(input:focus-visible) {
-    outline: 2px solid var(--semantic-line-brand-focus);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
   .ob-choice-number {

@@ -904,8 +904,19 @@
     .floating-workspace .breadcrumbs {
       gap: 9px;
     }
+    /* 휴대폰 폭은 연구 이름이 '연..'으로 잘리고 현재 위치가 오른쪽 버튼 밑으로 넘쳤어요.
+       연구 이름은 메뉴 안에 있으니 여기서는 현재 위치만 보이고, 길면 말줄임합니다. */
+    .floating-workspace .breadcrumbs:has(> strong) > a,
+    .floating-workspace .breadcrumbs:has(> strong) > svg {
+      display: none;
+    }
     .floating-workspace .breadcrumbs > a {
       max-width: 170px;
+    }
+    .floating-workspace .breadcrumbs > strong {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .floating-workspace .workspace-footer {
       padding: 25px 20px;

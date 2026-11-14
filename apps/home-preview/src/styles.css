@@ -1477,7 +1477,7 @@
     color: var(--text);
   }
   .language-segments button:focus-visible {
-    outline: 2px solid var(--semantic-line-brand-focus);
+    outline: 2px solid var(--brand);
     outline-offset: 1px;
   }
   /* 태블릿 폭의 공개 헤더는 자리가 모자라 국기만 둡니다(언어 이름은 화면 낭독기에 그대로 읽힙니다). */

@@ -175,7 +175,6 @@ export function HomePage() {
     next,
     meetings,
     feedback: data.feedback.filter((item) => item.researchId === researchId),
-    updateHref: updates[0] ? notificationHref(updates[0]) : undefined,
   });
   // ‘바로 시작’은 할 일도 미팅도 없어 홈이 비어 보일 때만 냅니다.
   // 시작 체크리스트: 다 끝냈거나 닫았으면 내지 않습니다.
@@ -402,16 +401,19 @@ export function HomePage() {
                     "날짜를 잡기 전에도 보여줄 결과와 질문부터 남길 수 있어요.",
                   )}
                 </p>
-                <Button
-                  className="rh-primary"
-                  variant="outline"
-                  fullWidth="mobile"
-                  asChild
-                >
-                  <Link to={`${base}/meetings?new=1`}>
-                    {t("미팅 만들기")} <Icon name="plus" size={16} />
-                  </Link>
-                </Button>
+                {/* 머리의 주 행동이 이미 '미팅 만들기'면 같은 버튼을 또 두지 않습니다(감사 C4·C5). */}
+                {action.kind !== "create_meeting" && (
+                  <Button
+                    className="rh-primary"
+                    variant="outline"
+                    fullWidth="mobile"
+                    asChild
+                  >
+                    <Link to={`${base}/meetings?new=1`}>
+                      {t("미팅 만들기")} <Icon name="plus" size={16} />
+                    </Link>
+                  </Button>
+                )}
               </div>
             )}
           </section>

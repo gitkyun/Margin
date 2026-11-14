@@ -273,7 +273,7 @@ export function SavedTranscript({
               onClick={() => {
                 try {
                   onAppend?.(
-                    `\n\n${t("[음성 인식 전사 · {title}]", { title: recording.title })}\n${current.edited_text}`,
+                    `\n\n${t("‘{title}’ 녹음 전사문", { title: recording.title })}\n${current.edited_text}`,
                   );
                   setAppend(false);
                   toast.success(

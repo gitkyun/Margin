@@ -74,6 +74,9 @@ export function ResultsPage() {
       setParams({}, { replace: true });
     }
   }, [params.get("new"), resultId]);
+  const hasResults = data.results.some(
+    (result) => result.researchId === researchId,
+  );
   const items = data.results
     .filter(
       (result) =>
@@ -253,13 +256,14 @@ export function ResultsPage() {
       ) : (
         <>
           <PageHeader
-            title={t("피드백·수정")}
+            title={t("수정 결과")}
             tabs={<WorkTabs researchId={researchId} selected="results" />}
-            description={t(
-              "실제로 고친 내용과 근거를 기록하고, 필요한 것만 검토 요청에 넣을 수 있어요.",
-            )}
             actions={
-              <Button onClick={startCreate}>
+              // 수정 결과가 없을 때는 빈 상태의 버튼이 주 행동이라 여기는 보조로 낮춥니다.
+              <Button
+                variant={hasResults ? undefined : "outline"}
+                onClick={startCreate}
+              >
                 <Icon name="plus" size={17} />
                 {t("수정 결과 작성")}
               </Button>
@@ -464,11 +468,6 @@ function ResultPanel({
                 )}
               </p>
             )}
-            <p className="panel-frame-note">
-              {t(
-                "여기서 고쳐도 이미 검토 요청에 넣은 설명과 파일은 바뀌지 않아요. 댓글 해결과 교수 결과는 따로 기록돼요.",
-              )}
-            </p>
           </div>
         )}
         {tab === "links" && (

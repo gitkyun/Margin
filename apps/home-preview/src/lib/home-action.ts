@@ -2,11 +2,7 @@ import { t } from "./i18n";
 import type { Feedback, Meeting } from "./domain";
 
 export type HomeActionKind =
-  | "check_responses"
-  | "record_meeting"
-  | "prepare_meeting"
-  | "sort_feedback"
-  | "create_meeting";
+  "record_meeting" | "prepare_meeting" | "sort_feedback" | "create_meeting";
 
 export interface HomeAction {
   kind: HomeActionKind;
@@ -26,13 +22,12 @@ export interface HomeActionInput {
   meetings: Meeting[];
   /** 이 연구의 피드백 */
   feedback: Pick<Feedback, "meetingId" | "archivedAt">[];
-  /** 읽지 않은 교수 응답·검토 댓글이 있으면 그중 첫 번째로 가는 경로 */
-  updateHref?: string;
 }
 
 /**
  * 연구 홈 머리에 올릴 주 행동을 하나만 고릅니다.
- * 순서: 확인할 응답 → 오늘 미팅 기록 → 미팅 준비 → 지난 미팅 피드백 정리 → 미팅 만들기.
+ * 순서: 오늘 미팅 기록 → 미팅 준비 → 지난 미팅 피드백 정리 → 미팅 만들기.
+ * 읽지 않은 교수 응답은 '확인할 내용' 카드가 맡아서 여기서 고르지 않습니다(감사 C5·결정 D4).
  * (docs/design/product-design-plan.md 6절)
  */
 export function selectHomeAction({
@@ -41,16 +36,7 @@ export function selectHomeAction({
   next,
   meetings,
   feedback,
-  updateHref,
 }: HomeActionInput): HomeAction {
-  if (updateHref) {
-    return {
-      kind: "check_responses",
-      label: t("응답 확인하기"),
-      href: updateHref,
-      icon: "feedback",
-    };
-  }
   if (next && (next.status === "recording" || next.date === today)) {
     return {
       kind: "record_meeting",

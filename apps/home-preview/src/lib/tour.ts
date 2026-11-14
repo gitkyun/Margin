@@ -62,7 +62,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     key: "flow",
     selector: '[data-tour="flow"]',
-    title: t("지도 흐름을 따라가요"),
+    title: t("지도 기록은 이 순서로 이어져요"),
     text: t(
       "미팅에서 받은 피드백을 할 일로 만들고, 고친 내용을 검토 요청으로 교수님께 보내요.",
     ),

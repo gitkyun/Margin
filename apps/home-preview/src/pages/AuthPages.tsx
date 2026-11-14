@@ -258,7 +258,7 @@ export function ResearchSelectPage() {
         description={
           incomingOnly
             ? t("학생이 요청한 검토를 열어 항목마다 응답을 남겨 주세요.")
-            : t("연구마다 기록과 자료가 따로 관리돼요.")
+            : undefined
         }
         actions={
           !incomingOnly && (

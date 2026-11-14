@@ -84,6 +84,9 @@ export function FeedbackPage() {
     form.setError(null);
     setCreating(true);
   }
+  const hasFeedback = data.feedback.some(
+    (item) => item.researchId === researchId,
+  );
   const searched = data.feedback.filter(
     (item) =>
       item.researchId === researchId &&
@@ -103,13 +106,14 @@ export function FeedbackPage() {
   return (
     <div className="student-page">
       <PageHeader
-        title={t("피드백·수정")}
+        title={t("피드백")}
         tabs={<WorkTabs researchId={researchId} selected="feedback" />}
-        description={t(
-          "받은 피드백마다 수정 방법을 정하고 고친 내용을 기록하세요.",
-        )}
         actions={
-          <Button onClick={openCreate}>
+          // 피드백이 없을 때는 빈 상태의 '피드백 추가'가 주 행동이라 여기는 보조로 낮춥니다.
+          <Button
+            variant={hasFeedback ? undefined : "outline"}
+            onClick={openCreate}
+          >
             <Icon name="plus" size={17} />
             {t("피드백 추가")}
           </Button>
@@ -451,17 +455,13 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 <p className="meta">
                   {t("어떻게 고칠지 정한 뒤 할 일로 만들 수 있어요.")}
                 </p>
-                <p className="student-footnote">
-                  {t(
-                    "방법을 선택해도 할 일이 완료되지는 않아요. 진행 상태는 할 일에서 바꿔 주세요.",
-                  )}
-                </p>
               </div>
               <div className="button-row">
-                {/* 기본 길은 직접 작성입니다. AI 제안은 같은 줄의 보조 동작으로 둡니다. */}
+                {/* 기본 길은 직접 작성입니다. AI 제안은 같은 줄의 보조 동작으로 둡니다.
+                    빈 상태에도 같은 창을 여는 버튼을 따로 두지 않습니다. */}
                 <Button variant="outline" size="sm" onClick={createPlan}>
                   <Icon name="plus" size={15} />
-                  {t("직접 작성")}
+                  {t("수정 방법 작성")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={openAI}>
                   <Icon name="sparkles" size={15} />
@@ -542,16 +542,8 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   </article>
                 ))
             ) : (
-              <EmptyState
-                title={t("아직 정한 수정 방법이 없어요")}
-                description={t("직접 적거나 AI 제안을 받아 비교할 수 있어요.")}
-                action={
-                  <Button variant="outline" onClick={createPlan}>
-                    {t("수정 방법 작성")}
-                  </Button>
-                }
-              />
-            )}{" "}
+              <EmptyState title={t("아직 정한 수정 방법이 없어요")} />
+            )}
             {plans.some((plan) => plan.status === "cancelled") && (
               <details className="student-details">
                 <summary>
@@ -765,7 +757,6 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         open={editing}
         onOpenChange={setEditing}
         title={t("피드백 편집")}
-        description={t("피드백 상태는 할 일 완료나 교수 응답과 따로 저장돼요.")}
       >
         <form
           className="stack"

@@ -29,7 +29,6 @@ function pick(input: {
   next?: Meeting;
   meetings?: Meeting[];
   feedback?: Pick<Feedback, "meetingId" | "archivedAt">[];
-  updateHref?: string;
 }) {
   return selectHomeAction({
     base,
@@ -37,21 +36,19 @@ function pick(input: {
     next: input.next,
     meetings: input.meetings ?? (input.next ? [input.next] : []),
     feedback: input.feedback ?? [],
-    updateHref: input.updateHref,
   });
 }
 
 describe("selectHomeAction", () => {
-  it("puts an unread professor response ahead of everything else", () => {
-    const action = pick({
-      next: meeting({ date: TODAY }),
-      updateHref: "/r/r1/reviews/v1",
-    });
-    expect(action).toMatchObject({
-      kind: "check_responses",
-      label: "응답 확인하기",
-      href: "/r/r1/reviews/v1",
-    });
+  // 읽지 않은 교수 응답은 홈의 '확인할 내용' 카드가 맡습니다(감사 C5·결정 D4).
+  // 같은 곳으로 가는 큰 버튼을 또 두지 않아요.
+  it("never offers a separate check-responses action", () => {
+    const kinds = [
+      pick({ next: meeting({ date: TODAY }) }),
+      pick({ next: meeting({}) }),
+      pick({}),
+    ].map((action) => action.kind as string);
+    expect(kinds).not.toContain("check_responses");
   });
 
   it("starts recording when the next meeting is today or already recording", () => {

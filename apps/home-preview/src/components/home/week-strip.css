@@ -46,7 +46,7 @@
     cursor: pointer;
   }
   .rh-week-day:focus-visible {
-    outline: 2px solid var(--semantic-line-brand-focus);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
   }
   .rh-week-weekday {

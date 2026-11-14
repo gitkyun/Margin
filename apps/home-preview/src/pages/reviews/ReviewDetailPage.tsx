@@ -287,7 +287,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
       (sharingOpen &&
         sharingEmail.trim().toLowerCase() !== request?.professorEmail),
     busy: !!busy && busy !== "history",
-    label: t("검토 응답·댓글"),
+    label: t("교수 응답·댓글"),
     onDiscard: () => {
       setResponseDrafts({});
       setCommentDrafts({});
@@ -569,7 +569,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
             <p>
               {isOwner
                 ? t("{email}에게 공유", { email: request.professorEmail })
-                : t("학생이 보낸 수정 결과")}{" "}
+                : t("학생이 보낸 수정 내용")}{" "}
               · {timeText(request.createdAt)}
             </p>
           </div>
@@ -910,7 +910,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                         <legend>
                           {ownResponse
                             ? t("내 응답 변경")
-                            : t("이 항목의 검토 결과")}
+                            : t("이 항목에 대한 응답")}
                         </legend>
                         <label
                           className={`review-response-option ${draft.result === "confirmed" ? "selected" : ""}`}
@@ -999,20 +999,29 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                           }
                         />
                       </Field>
-                      <Button type="submit" disabled={!!busy || !draft.result}>
+                      {/* 이미 남긴 응답은 바꾼 것이 있을 때만 저장할 수 있어요. */}
+                      <Button
+                        type="submit"
+                        disabled={
+                          !!busy ||
+                          !draft.result ||
+                          (!!ownResponse &&
+                            draft.result === ownResponse.result &&
+                            draft.comment.trim() ===
+                              (ownResponse.comment ?? "").trim())
+                        }
+                      >
                         {busy === "response"
                           ? t("저장 중")
                           : ownResponse
                             ? t("변경 내용 저장")
-                            : t("검토 결과 저장")}
+                            : t("응답 저장")}
                       </Button>
                     </form>
                   ) : (
                     <p className="review-response-help">
                       {isOwner
-                        ? t(
-                            "교수님 응답은 여기에 보여요. 응답, 댓글, 읽음 표시는 할 일과 피드백 상태를 바꾸지 않아요.",
-                          )
+                        ? t("교수님 응답은 여기에 보여요.")
                         : isProfessor && canWrite
                           ? t(
                               "이 항목은 {latest}차 검토가 있어 {current}차에는 응답할 수 없어요. 최신 검토에서 결과를 남겨 주세요.",

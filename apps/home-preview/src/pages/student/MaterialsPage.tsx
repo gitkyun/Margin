@@ -279,6 +279,9 @@ export function MaterialsPage() {
       setSaving(false);
     }
   }
+  const hasMaterials = data.materials.some(
+    (item) => item.researchId === researchId && !item.archivedAt,
+  );
   const searched = data.materials.filter(
     (item) =>
       item.researchId === researchId &&
@@ -574,7 +577,11 @@ export function MaterialsPage() {
               "PDF는 올린 내용이 그대로 남고, 링크한 문서는 내용이 바뀔 수 있어요.",
             )}
             actions={
-              <Button onClick={() => startRegistration()}>
+              // 자료가 없을 때는 빈 상태의 '자료 등록'이 주 행동이라 여기는 보조로 낮춥니다.
+              <Button
+                variant={hasMaterials ? undefined : "outline"}
+                onClick={() => startRegistration()}
+              >
                 <Icon name="plus" size={17} />
                 {t("자료 등록")}
               </Button>
