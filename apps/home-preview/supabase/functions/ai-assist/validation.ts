@@ -1,4 +1,4 @@
-export type Mode = "organize_meeting" | "suggest_revisions" | "ask_research" | "review_writing" | "plan_research" | "read_material";
+export type Mode = "organize_meeting" | "suggest_revisions" | "ask_research" | "review_writing" | "plan_research" | "read_material" | "propose_roadmap";
 export interface AIInput {
   mode: Mode;
   model?:string;thinking?:string;clientRunId?:string;contexts?:{kind:string;id:string;title:string;text?:string;revision?:number;page?:number}[];
@@ -160,9 +160,15 @@ export function normalizeCandidates(
   originalQuote = "",
 ): Candidate[] {
   const output = object(value);
+  // 원문에서 쓸 내용을 찾지 못한 경우(빈 배열)는 형식 오류와 구분해 알립니다.
+  if (Array.isArray(output.candidates) && output.candidates.length === 0)
+    throw new AIError(
+      "NOTHING_FOUND",
+      "선택한 원문에서 AI가 제안할 내용을 찾지 못했습니다. 원문을 보완하거나 직접 작성해 주세요.",
+      422,
+    );
   if (
     !Array.isArray(output.candidates) ||
-    output.candidates.length < 1 ||
     output.candidates.length > 8
   )
     throw new AIError(

@@ -1351,4 +1351,33 @@
     font-weight: 600;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
+
+  /* 댓글 편집·삭제(감사 F6) */
+  .review-comment-body.is-deleted {
+    color: var(--text-secondary);
+  }
+  .review-comment-edited {
+    margin-inline-start: var(--spacing-6);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .review-comment-edit {
+    display: grid;
+    gap: var(--spacing-8);
+  }
+  .review-comment-edit textarea {
+    width: 100%;
+    padding: var(--spacing-8) var(--spacing-12);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    resize: vertical;
+  }
+  .review-comment-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-8);
+  }
 }

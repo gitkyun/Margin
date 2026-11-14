@@ -61,6 +61,10 @@ export interface WorkspaceContextValue {
     parentId?: string;
   }): Promise<void>;
   resolveComment(id: string, resolved: boolean): Promise<void>;
+  /** 내가 쓴 댓글의 본문을 고칩니다. */
+  updateComment(id: string, body: string): Promise<void>;
+  /** 내가 쓴 댓글을 삭제합니다. 자리는 남고 본문만 가려집니다. */
+  deleteComment(id: string): Promise<void>;
   setSharing(
     requestId: string,
     status: "shared" | "stopped",

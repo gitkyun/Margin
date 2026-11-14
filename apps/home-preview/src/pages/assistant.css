@@ -113,8 +113,8 @@
     padding: 11px 16px;
     border-radius: var(--radius-16) var(--radius-16) var(--radius-4)
       var(--radius-16);
-    background: var(--brand-soft);
-    color: var(--text);
+    background: var(--brand);
+    color: var(--semantic-static-white);
   }
   .ai-message.assistant > div {
     padding: 2px 0;
@@ -135,30 +135,345 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
+  /* 답을 기다리는 동안(AssistantThinking). 뜻은 글자가 전하고 움직임은 꾸밈입니다. */
   .ai-processing {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    display: grid;
+    justify-items: start;
+    gap: var(--spacing-8);
     align-self: flex-start;
-    padding: 12px 18px 12px 12px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-14);
-    background: var(--surface-muted);
-    color: var(--brand);
+    max-width: min(720px, 88%);
   }
-  .ai-processing strong {
+  /* 도우미 얼굴 옆에서 단계 글자가 아래에서 위로 넘어갑니다. */
+  .ai-step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    padding: var(--spacing-4) var(--spacing-16) var(--spacing-4)
+      var(--spacing-4);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+  }
+  .ai-step-window {
+    display: block;
+    height: var(--typography-label1-lineHeight);
+    overflow: hidden;
+  }
+  .ai-step-text {
     display: block;
     font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1-lineHeight);
     font-weight: 600;
     color: var(--text);
     letter-spacing: var(--typography-label1-letterSpacing);
+    white-space: nowrap;
+    animation: ai-step-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .ai-processing small {
-    display: block;
-    margin-top: 3px;
+  @keyframes ai-step-in {
+    from {
+      opacity: 0;
+      transform: translateY(100%) rotateX(-70deg);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* 첫 질문: 대화 면을 다 채우고, 심볼 두 장이 앞뒤로 바뀌며 지금 읽는 것을 한 줄씩 보여 줍니다. */
+  .ai-reading {
+    flex: 1 0 auto;
+    display: grid;
+    /* 낮은 화면에서 줄이 눌려 사라지지 않게 내용 높이를 지킵니다(넘치면 대화 면이 스크롤). */
+    grid-auto-rows: max-content;
+    align-content: center;
+    justify-items: center;
+    gap: var(--spacing-16);
+    width: 100%;
+    min-height: 100%;
+    padding-block: var(--spacing-32);
+    text-align: center;
+  }
+  .ai-reading small {
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  /* 심볼 뒤에서 옅은 원이 숨 쉬듯 커졌다 줄어듭니다. */
+  .ai-reading-logo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(140px, 26vh, 200px);
+    aspect-ratio: 1;
+  }
+  .ai-reading-logo::before,
+  .ai-reading-logo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--brand-soft);
+    animation: ai-reading-halo 2.4s ease-out infinite;
+  }
+  .ai-reading-logo::after {
+    animation-delay: 1.2s;
+  }
+  .ai-reading-logo > svg {
+    position: relative;
+    width: 74%;
+    height: auto;
+  }
+  @keyframes ai-reading-halo {
+    from {
+      opacity: 0.9;
+      transform: scale(0.55);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1);
+    }
+  }
+  .ai-logo-flip {
+    overflow: visible;
+    animation: ai-logo-bob 2.4s ease-in-out infinite;
+  }
+  @keyframes ai-logo-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+  .ai-logo-flip path {
+    fill: var(--brand);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  /* 두 장이 4.8초에 한 번씩 크기·농도를 맞바꾸며 서로 지나갑니다. 자세에 닿을 때 살짝 넘쳤다가 돌아옵니다. */
+  .ai-logo-back {
+    fill-opacity: 0.3;
+    animation:
+      ai-logo-back 4.8s infinite,
+      ai-tint-back 4.8s ease-in-out infinite;
+  }
+  .ai-logo-front {
+    fill-opacity: 0.7;
+    animation:
+      ai-logo-front 4.8s infinite,
+      ai-tint-front 4.8s ease-in-out infinite;
+  }
+  @keyframes ai-tint-back {
+    0%,
+    10%,
+    100% {
+      fill-opacity: 0.3;
+    }
+    50%,
+    60% {
+      fill-opacity: 0.7;
+    }
+  }
+  @keyframes ai-tint-front {
+    0%,
+    10%,
+    100% {
+      fill-opacity: 0.7;
+    }
+    50%,
+    60% {
+      fill-opacity: 0.3;
+    }
+  }
+  /*
+   * 자세 1(0~10%): 왼쪽 위 장이 크고 진함, 오른쪽 아래 장이 작고 옅음(로고 그대로).
+   * 교차(28%, 80%): 두 장이 가운데로 모여 깊이 겹치며 살짝 기웁니다.
+   * 자세 2(50~60%): 크기와 농도가 맞바뀜. 닿기 직전(44%, 94%)에 한 번 넘쳐 튕깁니다.
+   */
+  @keyframes ai-logo-back {
+    0%,
+    10%,
+    100% {
+      transform: translate(0, 0) scale(1) rotate(0deg);
+      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+    }
+    28% {
+      transform: translate(-22px, -14px) scale(1.1) rotate(-5deg);
+      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    44% {
+      transform: translate(10px, 7px) scale(1.3) rotate(2deg);
+      animation-timing-function: ease-in-out;
+    }
+    50%,
+    60% {
+      transform: translate(6px, 4px) scale(1.2) rotate(0deg);
+      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+    }
+    80% {
+      transform: translate(-22px, -14px) scale(1.1) rotate(5deg);
+      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    94% {
+      transform: translate(3px, 2px) scale(0.93) rotate(-2deg);
+      animation-timing-function: ease-in-out;
+    }
+  }
+  @keyframes ai-logo-front {
+    0%,
+    10%,
+    100% {
+      transform: translate(0, 0) scale(1) rotate(0deg);
+      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+    }
+    28% {
+      transform: translate(22px, 14px) scale(0.9) rotate(5deg);
+      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    44% {
+      transform: translate(-10px, -7px) scale(0.72) rotate(-2deg);
+      animation-timing-function: ease-in-out;
+    }
+    50%,
+    60% {
+      transform: translate(-6px, -4px) scale(0.8) rotate(0deg);
+      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+    }
+    80% {
+      transform: translate(22px, 14px) scale(0.9) rotate(-5deg);
+      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    94% {
+      transform: translate(-3px, -2px) scale(1.08) rotate(2deg);
+      animation-timing-function: ease-in-out;
+    }
+  }
+  .ai-reading-now {
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--typography-heading2-fontSize);
+    line-height: var(--typography-heading2-lineHeight);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: var(--typography-heading2-letterSpacing);
+    overflow-wrap: anywhere;
+  }
+  .ai-reading-now > span {
+    display: block;
+    animation: ai-step-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  /* 단계 수만큼 짧은 막대. 읽은 것은 채워지고 지금 것은 차오릅니다. */
+  .ai-reading-progress {
+    display: flex;
+    gap: var(--spacing-4);
+  }
+  .ai-reading-progress i {
+    position: relative;
+    width: 28px;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--line);
+  }
+  .ai-reading-progress i::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--brand);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .ai-reading-progress i.is-done::after {
+    transform: none;
+  }
+  .ai-reading-progress i.is-current::after {
+    animation: ai-reading-fill 1.6s ease-out forwards;
+  }
+  @keyframes ai-reading-fill {
+    to {
+      transform: scaleX(0.85);
+    }
+  }
+  .ai-reading-steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-4) var(--spacing-12);
+    min-height: var(--typography-label2-lineHeight);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ai-reading-steps li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    color: var(--text-secondary);
+    letter-spacing: var(--typography-label2-letterSpacing);
+    animation: ai-step-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .ai-reading-question {
+    max-width: min(520px, 100%);
+    margin: 0;
+    padding: var(--spacing-8) var(--spacing-16);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 답 아래 '거친 단계' */
+  .ai-answer-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-4);
+    margin: 0;
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .ai-answer-steps > span:first-child {
+    margin-inline-end: var(--spacing-4);
+    font-weight: 600;
+  }
+  .ai-answer-step {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ai-step-text,
+    .ai-reading-now > span,
+    .ai-reading-steps li,
+    .ai-reading-logo::before,
+    .ai-reading-logo::after,
+    .ai-logo-flip,
+    .ai-logo-back,
+    .ai-logo-front {
+      animation: none;
+    }
+    .ai-reading-logo::after {
+      opacity: 0;
+    }
+    .ai-reading-progress i.is-current::after {
+      animation: none;
+      transform: scaleX(0.5);
+    }
   }
 
   /* 입력창: 대화 면 안에서 가장 높은 면. 초점이 오면 브랜드 테두리와 고리. */

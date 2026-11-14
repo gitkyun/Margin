@@ -167,6 +167,10 @@ export interface ReviewComment {
   parentId?: ID;
   resolved: boolean;
   createdAt: string;
+  /** 쓴 사람이 본문을 고친 시각. 고친 적이 없으면 없습니다. */
+  editedAt?: string;
+  /** 쓴 사람이 삭제한 시각. 답글이 이어질 수 있어 자리는 남기고 본문만 가립니다. */
+  deletedAt?: string;
 }
 export interface ReviewRead {
   roundId: ID;
@@ -195,6 +199,8 @@ export interface MaterialFolder extends BaseRecord {
 export interface ResearchPhase extends BaseRecord {
   title: string;
   order: number;
+  /** 단계를 시작하는 날(YYYY-MM-DD). 없으면 월별 보기에 막대를 그리지 않습니다. */
+  startDate?: string | null;
   dueDate: string | null;
   status: "planned" | "active" | "done";
   dependsOn: ID[];
@@ -400,6 +406,8 @@ export interface AIInput {
     | "read_material";
   model?: string;
   thinking?: "minimal" | "low" | "medium" | "high";
+  /** 화면 언어. 요청을 보낼 때 채워지고, 서버가 이 언어로 답하게 합니다. */
+  locale?: "ko" | "ja";
   contexts?: AIContext[];
   conversationId?: ID;
   clientRunId?: ID;

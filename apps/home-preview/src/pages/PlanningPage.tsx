@@ -52,6 +52,9 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@montage-ui/core";
 import { DateField, DateTimeField } from "@/components/ui/date-field";
+import { useAINotConfigured } from "@/lib/ai-availability";
+import { RoadmapProposalDialog } from "./planning/RoadmapProposal";
+import { RoadmapTimeline } from "./planning/RoadmapTimeline";
 import { queryDown } from "@/design/responsive";
 
 /**
@@ -89,7 +92,17 @@ export function PlanningPage() {
     [milestone, setMilestone] = useState<Milestone | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [pollOpen, setPollOpen] = useState(false);
+    [pollOpen, setPollOpen] = useState(false),
+    [proposalOpen, setProposalOpen] = useState(false);
+  const aiNotConfigured = useAINotConfigured();
+  // 연구 도우미를 쓸 수 없으면 제안을 꾸며 내지 않고 이유를 보여 줍니다.
+  const proposalHint = useDisabledReason(
+    w.mode === "preview"
+      ? t("이 미리보기에서는 AI를 실행할 수 없어요.")
+      : aiNotConfigured
+        ? t("연구 도우미가 아직 연결되지 않아 계획을 제안받을 수 없어요.")
+        : "",
+  );
   const research = data.researches.find((r) => r.id === researchId)!,
     phases = data.phases
       .filter((p) => p.researchId === researchId && !p.archivedAt)
@@ -103,7 +116,10 @@ export function PlanningPage() {
         !m.archivedAt &&
         m.status !== "cancelled",
     ),
-    polls = data.polls.filter((p) => p.researchId === researchId);
+    polls = data.polls.filter((p) => p.researchId === researchId),
+    datedPhases = phases.filter(
+      (p) => p.startDate && p.dueDate && p.startDate <= p.dueDate,
+    );
   async function run(fn: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -181,6 +197,7 @@ export function PlanningPage() {
               onChange={setView}
               options={[
                 { value: "timeline", label: t("시간순") },
+                { value: "months", label: t("월별") },
                 { value: "diagram", label: t("관계도") },
               ]}
             />
@@ -199,6 +216,18 @@ export function PlanningPage() {
             <p>
               {t("단계와 목표의 날짜를 바꿔도 할 일 기한은 바뀌지 않아요.")}
             </p>
+            <div className="roadmap-propose">
+              <Button
+                variant="outline"
+                disabled={!!proposalHint.describedBy}
+                aria-describedby={proposalHint.describedBy}
+                onClick={() => setProposalOpen(true)}
+              >
+                <Icon name="sparkles" size={16} />
+                {t("투고일로 계획 제안받기")}
+              </Button>
+              {proposalHint.node}
+            </div>
           </div>
           {!phases.length ? (
             <EmptyState
@@ -231,6 +260,28 @@ export function PlanningPage() {
                 </Button>
               }
             />
+          ) : view === "months" ? (
+            datedPhases.length ? (
+              <RoadmapTimeline
+                label={t("월별 연구 로드맵")}
+                bars={datedPhases.map((p) => ({
+                  id: p.id,
+                  title: p.title,
+                  startDate: p.startDate!,
+                  endDate: p.dueDate!,
+                  tone: p.status,
+                }))}
+                markers={milestones
+                  .filter((m) => m.dueDate && m.status !== "done")
+                  .map((m) => ({ id: m.id, label: m.title, date: m.dueDate! }))}
+              />
+            ) : (
+              <InlineEmpty variant="panel">
+                {t(
+                  "시작일과 목표일이 모두 있는 단계가 없어요. 단계를 편집해 날짜를 넣거나 투고일로 계획을 제안받을 수 있어요.",
+                )}
+              </InlineEmpty>
+            )
           ) : view === "diagram" ? (
             <Suspense fallback={<LoadingState />}>
               <Diagram phases={phases} onEdit={setPhase} />
@@ -583,6 +634,12 @@ export function PlanningPage() {
               onSubmit={(e) => {
                 e.preventDefault();
                 void run(async () => {
+                  if (
+                    phase.startDate &&
+                    phase.dueDate &&
+                    phase.startDate > phase.dueDate
+                  )
+                    throw new Error(t("시작일이 목표일보다 늦어요."));
                   await save("phases", phase);
                   setPhase(null);
                 });
@@ -597,6 +654,15 @@ export function PlanningPage() {
                   value={phase.title}
                   onChange={(e) =>
                     setPhase({ ...phase, title: e.target.value })
+                  }
+                />
+              </label>
+              <label className="field">
+                {t("시작일")}
+                <DateField
+                  value={phase.startDate ?? ""}
+                  onChange={(startDate) =>
+                    setPhase({ ...phase, startDate: startDate || null })
                   }
                 />
               </label>
@@ -658,6 +724,12 @@ export function PlanningPage() {
           )}
         </DialogContent>
       </Dialog>
+      <RoadmapProposalDialog
+        open={proposalOpen}
+        onClose={() => setProposalOpen(false)}
+        research={research}
+        phases={phases}
+      />
       <Dialog
         open={!!milestone}
         onOpenChange={(v) => {

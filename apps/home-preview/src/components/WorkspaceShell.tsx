@@ -1,4 +1,4 @@
-import { LANGUAGES, currentLang, setLang, t } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -125,18 +125,6 @@ function AccountMenu() {
             <Icon name="monitor" size={17} />
             {t("화면 설정")}
           </DropdownMenuItem>
-          {/* 언어는 자주 바꾸지 않아 상단 줄 대신 계정 메뉴에 둡니다(결정 D2). */}
-          {LANGUAGES.filter((option) => option.value !== currentLang()).map(
-            (option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onSelect={() => setLang(option.value)}
-              >
-                <span aria-hidden="true">{option.flag}</span>
-                <span lang={option.value}>{option.label}</span>
-              </DropdownMenuItem>
-            ),
-          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/guide")}>
             <Icon name="help" size={17} />
@@ -531,7 +519,7 @@ export function WorkspaceShell({
         {research && (
           <Hint
             label={t("연구 도우미")}
-            detail={t("선택한 기록으로만 AI 도움을 받아요.")}
+            detail={t("고른 기록과 연구 목적을 읽고 도와요.")}
             position="right-center"
             display="block"
           >
@@ -558,15 +546,6 @@ export function WorkspaceShell({
             <span>{t("연구 설정")}</span>
           </Link>
         )}
-        <Link
-          className="nav-item"
-          title={t("내 연구 전체 보기")}
-          to="/r"
-          hidden={!research}
-        >
-          <Icon name="grid" size={20} />
-          <span>{t("모든 연구")}</span>
-        </Link>
         {usageHigh ? (
           <Link
             className="sidebar-usage"
@@ -589,7 +568,7 @@ export function WorkspaceShell({
                 aria-label={t("최근 24시간 AI 사용량")}
               />
             ) : (
-              <small>{t("선택한 기록으로만 실행해요.")}</small>
+              <small>{t("고른 기록과 연구 목적만 읽어요.")}</small>
             )}
           </Link>
         ) : null}

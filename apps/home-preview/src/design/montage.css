@@ -140,6 +140,8 @@
   font-weight: 600;
   text-align: left;
   overflow-wrap: anywhere;
+  /* Montage 메뉴 목록이 가운데 정렬이라 머리글만 가운데로 밀리지 않게 폭을 채웁니다. */
+  align-self: stretch;
 }
 .margin-menu-label :is(small, span) {
   color: var(--semantic-foreground-neutral-secondary);

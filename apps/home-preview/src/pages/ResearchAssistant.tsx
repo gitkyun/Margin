@@ -54,7 +54,6 @@ import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
 import { AssistantMascot } from "@/components/brand/Brand";
 import {
   workingMascot,
-  workMessages,
   reviewDepthOptions,
   resolveReviewDepth,
   researchModelLabel,
@@ -67,6 +66,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/icons";
+import { assistantSteps, type AssistantStep } from "@/lib/assistant-steps";
+import { AnswerSteps, AssistantThinking } from "./assistant/AssistantThinking";
 import { t } from "@/lib/i18n";
 
 /** md(992px) 미만에서는 패널이 본문을 덮으므로 처음에는 닫아 둡니다. */
@@ -99,6 +100,15 @@ export function ResearchAssistant() {
       String(user.preferences?.thinking || "high"),
     ),
     [running, setRunning] = useState(false),
+    // 이번 요청에서 읽는 것(단계)과, 방금 받은 답이 거친 단계. 새로고침하면 사라져요.
+    [waiting, setActiveRun] = useState<{
+      first: boolean;
+      steps: AssistantStep[];
+    } | null>(null),
+    [answered, setAnswered] = useState<{
+      at: string;
+      steps: AssistantStep[];
+    } | null>(null),
     [error, setError] = useState(""),
     [page, setPage] = useState(1),
     [uploading, setUploading] = useState(false),
@@ -140,6 +150,8 @@ export function ResearchAssistant() {
     messages = conversation?.messages ?? [];
   const activeRun = runs.find((r) => r.status === "running");
   const working = running || !!activeRun;
+  // 첫 질문에 답하는 동안에는 대화 면 전체를 '연구를 읽는 화면'으로 씁니다.
+  const readingFirst = running && !!waiting?.first;
   const currentTask = running ? task : (activeRun?.mode ?? task);
   useNavigationGuard({
     dirty: !!draft.trim(),
@@ -387,6 +399,20 @@ export function ResearchAssistant() {
       controller = new AbortController();
     runId.current = id;
     abort.current = controller;
+    const research = data.researches.find((r) => r.id === researchId);
+    const run = {
+      first: !conversation?.messages.some((m) => m.role === "assistant"),
+      steps: [] as AssistantStep[],
+    };
+    run.steps = assistantSteps({
+      first: run.first,
+      researchName: research?.name ?? "",
+      hasDirection: !!(
+        research?.purpose?.trim() || research?.questions?.some((q) => q.trim())
+      ),
+      contexts,
+    });
+    setActiveRun(run);
     setRunning(true);
     setError("");
     try {
@@ -436,14 +462,16 @@ export function ResearchAssistant() {
               `${x.title}\n${x.body ?? x.method ?? ""}\n${x.assumptions ? t("확인할 가정: {assumptions}", { assumptions: x.assumptions }) : ""}`,
           )
           .join("\n\n");
+      const answeredAt = now();
       const saved = await save("conversations", {
         ...c,
         messages: [
           ...c.messages,
-          { role: "assistant", text: answer, createdAt: now() },
+          { role: "assistant", text: answer, createdAt: answeredAt },
         ],
       });
       setConversation(saved);
+      setAnswered({ at: answeredAt, steps: run.steps });
       if (retryQuestion === undefined) setDraft("");
     } catch (e) {
       // 연결 전이면 아래 '쓸 수 없음' 안내가 대신 보여요(다시 보내기를 권하지 않음).
@@ -609,7 +637,7 @@ export function ResearchAssistant() {
       <PageHeader
         title={t("연구 도우미")}
         description={t(
-          "고른 기록만 읽고 질문에 답하거나 수정 방법을 제안해요.",
+          "고른 기록과 연구 이름·목적·질문을 읽고 답하거나 수정 방법을 제안해요.",
         )}
         status={
           <StatusBadge icon={<Icon name="lock" size={13} />}>
@@ -657,7 +685,7 @@ export function ResearchAssistant() {
       />
       <section className="ai-chat-main">
         <div className="chat-scroll">
-          {!messages.length ? (
+          {readingFirst ? null : !messages.length ? (
             <div className="assistant-welcome">
               <AssistantMascot state="ready" size={64} eager />
               <h2>{t("아직 대화가 없어요")}</h2>
@@ -686,13 +714,20 @@ export function ResearchAssistant() {
           ) : (
             messages.map((m, i) => (
               <article className={`ai-message ${m.role}`} key={i}>
-                <span className="message-role">
-                  {m.role === "assistant" && (
+                {m.role === "user" ? (
+                  <span className="sr-only">{t("나")}</span>
+                ) : (
+                  <span className="message-role">
                     <AssistantMascot state="chatting" size={28} />
-                  )}
-                  {m.role === "user" ? t("나") : t("연구 도우미")}
-                </span>
+                    {t("연구 도우미")}
+                  </span>
+                )}
                 <div>{m.text}</div>
+                {m.role === "assistant" &&
+                  answered?.at === m.createdAt &&
+                  i === messages.length - 1 && (
+                    <AnswerSteps steps={answered.steps} />
+                  )}
                 {m.role === "assistant" && (
                   <AnswerActions
                     text={m.text}
@@ -723,21 +758,13 @@ export function ResearchAssistant() {
               </Button>
             </div>
           )}
-          {running && (
-            <div className="ai-processing" role="status">
-              <AssistantMascot
-                state={workingMascot(task)}
-                active
-                size={48}
-                eager
-              />
-              <div>
-                <strong>
-                  {workMessages[task] ?? t("고른 기록을 살펴보고 있어요.")}
-                </strong>
-                <small>{t("답변이 나와도 연구 기록은 바뀌지 않아요.")}</small>
-              </div>
-            </div>
+          {running && waiting && (
+            <AssistantThinking
+              first={waiting.first}
+              steps={waiting.steps}
+              mascot={workingMascot(task)}
+              question={messages.at(-1)?.text}
+            />
           )}
           <div ref={end} />
         </div>
