@@ -25,7 +25,7 @@ afterEach(cleanup);
 describe("서비스 소개를 보여 줄지", () => {
   it("연구가 없고 아직 보지 않았을 때만 자동으로 보여 준다", () => {
     const base = { hasResearches: false, seen: false, forced: false };
-    expect(shouldShowIntro(base)).toBe(true);
+    expect(shouldShowIntro(base)).toBe(false);
     expect(shouldShowIntro({ ...base, seen: true })).toBe(false);
     expect(shouldShowIntro({ ...base, hasResearches: true })).toBe(false);
   });

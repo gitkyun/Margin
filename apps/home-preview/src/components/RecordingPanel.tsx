@@ -1,5 +1,5 @@
 import { dateLocale, t } from "@/lib/i18n";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNavigationGuard } from "@/lib/navigation-guard";
@@ -16,7 +16,7 @@ import { saveLiveTranscript, downloadTranscript } from "@/lib/live-transcript";
 import { Icon } from "./icons";
 import { Button } from "./ui/button";
 import { VisibilityField } from "./experience";
-import { StatusBadge } from "./common";
+import { StatusBadge, useDisabledReason } from "./common";
 import { SavedTranscript } from "./SavedTranscript";
 import {
   Dialog,
@@ -88,6 +88,22 @@ export function RecordingPanel({
   const speechSupported = Boolean(recognitionConstructor()),
     busy =
       state === "starting" || state === "finishing" || state === "uploading";
+  const downloadReason = useDisabledReason(
+      state === "review" &&
+        !transcript.trim() &&
+        t("전사문을 적으면 TXT로 내려받을 수 있어요."),
+    ),
+    storeReason = useDisabledReason(
+      state === "review" &&
+        !blob?.size &&
+        t("녹음된 음성이 없어 저장할 수 없어요."),
+    ),
+    agreeReason = useDisabledReason(
+      state === "idle" &&
+        !agree &&
+        t("참석자 동의에 체크하면 시작할 수 있어요."),
+    ),
+    speechNoticeId = useId();
   function elapsed() {
     return Math.floor(
       (clock.current.elapsed +
@@ -606,12 +622,14 @@ export function RecordingPanel({
                 <Button
                   variant="outline"
                   disabled={!transcript.trim()}
+                  aria-describedby={downloadReason.describedBy}
                   onClick={() => downloadTranscript(transcript, t("미팅 녹음"))}
                 >
                   {t("전사문 TXT 내려받기")}
                 </Button>
                 <Button
                   disabled={state === "uploading" || !blob?.size}
+                  aria-describedby={storeReason.describedBy}
                   onClick={() => void store()}
                 >
                   {state === "uploading"
@@ -621,6 +639,8 @@ export function RecordingPanel({
                       : t("녹음·전사 저장")}
                 </Button>
               </div>
+              {downloadReason.node}
+              {storeReason.node}
             </div>
           )}
         </>
@@ -688,7 +708,7 @@ export function RecordingPanel({
             <DialogTitle>{t("녹음을 시작할까요?")}</DialogTitle>
             <DialogDescription>
               {t(
-                "녹음하기 전에 참여자에게 알리고 동의를 받아 주세요. 실시간 전사를 켜면 음성이 브라우저 제공자의 음성 인식 서버로 전송될 수 있고 인터넷 연결이 필요해요. 녹음은 한 번에 최대 2시간이고, 2시간이 되면 자동으로 멈춰요. 음성 파일이 500MB를 넘으면 저장할 수 없으니 긴 미팅은 나눠서 녹음해 주세요.",
+                "녹음하기 전에 참석자에게 알리고 동의를 받아 주세요. 실시간 전사를 켜면 음성이 브라우저 제공자의 음성 인식 서버로 전송될 수 있고 인터넷 연결이 필요해요. 녹음은 한 번에 최대 2시간이고, 2시간이 되면 자동으로 멈춰요. 음성 파일이 500MB를 넘으면 저장할 수 없으니 긴 미팅은 나눠서 녹음해 주세요.",
               )}
             </DialogDescription>
           </DialogHeader>
@@ -696,12 +716,13 @@ export function RecordingPanel({
             <Checkbox
               checked={liveText && speechSupported}
               disabled={!speechSupported}
+              aria-describedby={speechSupported ? undefined : speechNoticeId}
               onCheckedChange={(next) => setLiveText(next)}
             />
             {t("실시간 한국어 전사 켜기")}
           </label>
           {!speechSupported && (
-            <p className="transcript-notice">
+            <p id={speechNoticeId} className="transcript-notice">
               {t(
                 "이 브라우저는 실시간 전사를 지원하지 않아요. 음성만 녹음하거나 지원하는 브라우저에서 열어 주세요.",
               )}
@@ -713,8 +734,8 @@ export function RecordingPanel({
               onCheckedChange={(next) => setAgree(next)}
             />
             {liveText && speechSupported
-              ? t("참여자에게 녹음과 음성 인식을 알리고 동의를 받았어요.")
-              : t("참여자에게 녹음을 알리고 동의를 받았어요.")}
+              ? t("참석자에게 녹음과 음성 인식을 알리고 동의를 받았어요.")
+              : t("참석자에게 녹음을 알리고 동의를 받았어요.")}
           </label>
           <div className="bottom-actions">
             <Button variant="outline" onClick={() => setConsent(false)}>
@@ -722,6 +743,7 @@ export function RecordingPanel({
             </Button>
             <Button
               disabled={!agree || state !== "idle"}
+              aria-describedby={agreeReason.describedBy}
               onClick={() => void start()}
             >
               {liveText && speechSupported
@@ -729,6 +751,7 @@ export function RecordingPanel({
                 : t("음성 녹음 시작")}
             </Button>
           </div>
+          {agreeReason.node}
         </DialogContent>
       </Dialog>
     </section>

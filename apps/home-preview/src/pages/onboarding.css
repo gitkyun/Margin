@@ -196,8 +196,9 @@
     padding: 0;
     list-style: none;
   }
-  /* 흐름 단계는 누르거나 가리키면 고르고, 오른쪽 장면이 그 단계로 움직입니다. */
+  /* 자동으로 넘어가는 동안 지금 단계 아래에 남은 시간 줄이 찹니다. */
   .ob-intro-step {
+    /* 흐름 단계는 누르거나 가리키면 고르고, 오른쪽 장면이 그 단계로 움직입니다. */
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-12);
@@ -213,9 +214,6 @@
     transition:
       border-color var(--motion-duration-micro) ease-out,
       background-color var(--motion-duration-micro) ease-out;
-  }
-  /* 자동으로 넘어가는 동안 지금 단계 아래에 남은 시간 줄이 찹니다. */
-  .ob-intro-step {
     position: relative;
     overflow: hidden;
   }
@@ -250,8 +248,6 @@
     border-radius: var(--radius-8);
     background: var(--brand-soft);
     color: var(--brand);
-  }
-  .ob-intro-icon {
     transition:
       background-color var(--motion-duration-micro) ease-out,
       color var(--motion-duration-micro) ease-out,
@@ -259,8 +255,6 @@
   }
   .ob-intro-step[aria-pressed="true"] .ob-intro-icon {
     transform: scale(1.08);
-  }
-  .ob-intro-step[aria-pressed="true"] .ob-intro-icon {
     background: var(--brand);
     color: var(--semantic-static-white);
   }
@@ -317,7 +311,7 @@
     white-space: nowrap;
   }
   .ob-answers button > small {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
   }
   .ob-answers button:hover:not(:disabled) {
@@ -438,7 +432,7 @@
     border-left: 1px solid var(--line);
   }
   .ob-preview-note {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
     text-align: center;
@@ -545,7 +539,7 @@
     position: relative;
     display: grid;
     place-items: center;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     transition: color var(--motion-duration-enter) ease-out;
   }
   .ob-stage-nav span[data-state="done"] {
@@ -600,7 +594,7 @@
   }
   .ob-shot-title small {
     margin-left: auto;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
@@ -779,7 +773,7 @@
     background: var(--canvas);
     box-shadow: var(--raise-shadow);
     overflow: hidden;
-    font-size: 11px;
+    font-size: var(--typography-caption1-fontSize);
     line-height: 1.4;
     view-transition-name: margin-home;
   }
@@ -819,7 +813,7 @@
     gap: var(--spacing-6);
     padding: var(--spacing-4) var(--spacing-6);
     border-radius: var(--radius-8);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
   .ob-rail-item .ob-skel {
     flex: 1;
@@ -925,7 +919,7 @@
   }
   .ob-date small {
     color: var(--brand);
-    font-size: 9px;
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
   }
   .ob-date strong {
@@ -938,7 +932,7 @@
   }
   .ob-meeting-copy small {
     color: var(--text-secondary);
-    font-size: 10px;
+    font-size: var(--typography-caption1-fontSize);
   }
   .ob-meeting-copy em {
     margin-left: var(--spacing-4);
@@ -966,8 +960,8 @@
     gap: var(--spacing-2);
   }
   .ob-week small {
-    color: var(--text-tertiary);
-    font-size: 9px;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
   }
   .ob-week b {
     display: grid;
@@ -975,7 +969,7 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    font-size: 10px;
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
   }
   .ob-week-today b {
@@ -1182,7 +1176,7 @@
       display: none;
     }
   }
-  @media (max-width: 599px) {
+  @media (max-width: 767px) {
     /* 휴대폰: 미리보기 띠를 줄여 질문과 '계속' 버튼이 첫 화면에 들어오게 합니다(검수 P2). */
     .ob-preview-side {
       height: 168px;
@@ -1204,8 +1198,8 @@
     .ob-shot-card {
       gap: var(--spacing-4);
       padding: var(--spacing-8);
-      font-size: var(--typography-caption2-fontSize);
-      line-height: var(--typography-caption2-lineHeight);
+      font-size: var(--typography-caption1-fontSize);
+      line-height: var(--typography-caption1-lineHeight);
     }
     .ob-stage-main,
     .ob-stage-main:has(> .ob-shot) {
@@ -1220,8 +1214,6 @@
       padding: var(--spacing-4) var(--spacing-12);
       font-size: var(--typography-label1-fontSize);
     }
-  }
-  @media (max-width: 480px) {
     .ob-columns {
       grid-template-columns: minmax(0, 1fr);
     }

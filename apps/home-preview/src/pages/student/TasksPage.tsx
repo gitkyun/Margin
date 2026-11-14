@@ -14,7 +14,14 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  TextLink,
+  InlineEmpty,
+  useDisabledReason,
+} from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { useTaskCompletion } from "@/lib/use-task-completion";
@@ -73,6 +80,9 @@ export function TasksPage() {
     (item) => item.id === taskId && item.researchId === researchId,
   );
   const targetMeeting = data.meetings.find((item) => item.id === scope);
+  const archivedReason = useDisabledReason(
+    !!current?.archivedAt && t("보관한 할 일은 복원하면 바꿀 수 있어요."),
+  );
   function startCreate() {
     const feedbackId = params.get("feedback");
     setDraft({
@@ -223,6 +233,7 @@ export function TasksPage() {
                     busyIds.includes(current.id) ||
                     completion.busy.has(current.id)
                   }
+                  aria-describedby={archivedReason.describedBy}
                   onClick={() => void quickToggle(current)}
                 >
                   <Icon name="check" size={16} />
@@ -233,12 +244,14 @@ export function TasksPage() {
                 <Button
                   variant="outline"
                   disabled={!!current.archivedAt}
+                  aria-describedby={archivedReason.describedBy}
                   onClick={() => openLink(current)}
                 >
                   {t("미팅 준비에 포함")}
                   <Icon name="arrow-right" size={15} />
                 </Button>
               </div>
+              {archivedReason.node}
               <p className="student-footnote">
                 {t("할 일 완료는 수정 결과 작성이나 교수 검토와 별개예요.")}
               </p>
@@ -299,21 +312,20 @@ export function TasksPage() {
                       </Link>
                     ))
                 ) : (
-                  <p className="student-empty-inline">
+                  <InlineEmpty>
                     {t("아직 미팅 준비에 포함하지 않았어요.")}
-                  </p>
+                  </InlineEmpty>
                 )}
               </div>
               <div className="student-subsection">
                 <div className="section-heading">
                   <h3>{t("수정 결과")}</h3>
-                  <Link
-                    className="student-text-link"
+                  <TextLink
                     to={`/r/${researchId}/results?task=${current.id}&new=1`}
                   >
                     {t("작성")}
                     <Icon name="plus" size={14} />
-                  </Link>
+                  </TextLink>
                 </div>
                 {data.results
                   .filter((r) => r.taskIds.includes(current.id))
@@ -740,9 +752,9 @@ export function TasksPage() {
                     </label>
                   ))}
                 {!data.feedback.some((f) => f.researchId === researchId) && (
-                  <p className="student-empty-inline">
+                  <InlineEmpty>
                     {t("피드백 없이도 저장할 수 있어요.")}
-                  </p>
+                  </InlineEmpty>
                 )}
               </div>
               {(draft.planId || current?.planId) && (
@@ -830,13 +842,10 @@ export function TasksPage() {
           {!data.meetings.some(
             (m) => m.researchId === researchId && m.status !== "cancelled",
           ) && (
-            <Link
-              className="student-text-link"
-              to={`/r/${researchId}/meetings`}
-            >
+            <TextLink to={`/r/${researchId}/meetings`}>
               {t("먼저 미팅 만들기")}
               <Icon name="arrow-right" size={14} />
-            </Link>
+            </TextLink>
           )}
           <ErrorNotice error={linkForm.error} />
           <SaveActions

@@ -121,11 +121,6 @@ export function WorkflowStack({
               style={{ transform: `scaleX(${(active + 1) / steps.length})` }}
             />
           </div>
-          <p>
-            {t("직접 쓰든 AI 제안을 선택하든")}
-            <br />
-            {t("기록은 같은 연구에 남아요.")}
-          </p>
         </div>
       </div>
       <div className="lp-stack-cards" ref={stack}>

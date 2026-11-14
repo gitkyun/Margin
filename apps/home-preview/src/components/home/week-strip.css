@@ -50,7 +50,7 @@
     outline-offset: 2px;
   }
   .rh-week-weekday {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -147,14 +147,14 @@
   }
   .rh-week-item small {
     flex: none;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-week-empty {
     margin: 0;
     padding: var(--spacing-8) 0 var(--spacing-4);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }

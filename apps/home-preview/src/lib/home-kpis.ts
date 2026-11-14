@@ -109,7 +109,7 @@ export function homeKpis(input: HomeKpiInput): HomeKpi[] {
     {
       label: t("확인할 내용"),
       value: String(attention),
-      context: attention ? t("검토 알림·AI 제안") : t("새 소식 없음"),
+      context: attention ? t("검토 알림·AI 제안") : t("새 알림 없음"),
       tone: attention ? "red" : "gray",
       to: attention ? attentionHref : `${base}/reviews`,
       bar: [],

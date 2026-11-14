@@ -19,7 +19,7 @@ import {
 } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
-import { EmptyState } from "@/components/common";
+import { EmptyState, TextLink, StatusBadge } from "@/components/common";
 import { selectNextMeeting, seoulToday } from "@/lib/home-meeting";
 import { selectHomeAction } from "@/lib/home-action";
 import { startChecklist } from "@/lib/onboarding";
@@ -33,7 +33,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useTaskRowMotion } from "@/components/task-row-motion";
 import { WeekStrip } from "@/components/home/WeekStrip";
 import { HomeTour } from "@/components/home/HomeTour";
-import { isTourSeen, markTourSeen, shouldShowTour } from "@/lib/tour";
+import { clearTourRequest, isTourRequested, shouldShowTour } from "@/lib/tour";
 import { ResearchDirection } from "@/components/home/ResearchDirection";
 import { planExcerpt } from "@/lib/research-direction";
 import { friendlyError } from "@/lib/supabase";
@@ -56,31 +56,22 @@ export function HomePage() {
   const [params, setParams] = useSearchParams();
   const forcedTour = params.get("tour") === "1";
   const [tour, setTour] = useState(false);
-  // 홈이 자리 잡은 뒤(온보딩에서 커지는 전환 포함)에 안내를 엽니다.
-  // 자동으로 열 때는, 그 전에 사용자가 먼저 누르거나 입력하면 이번에는 열지 않습니다.
-  // 첫 클릭을 안내가 가로막지 않게 합니다(검수 P2). 봤다는 기록은 남기지 않아 다음에 다시 나와요.
+  // 화면 안내는 저절로 뜨지 않습니다(감사 F3: 처음 안내는 연구 만들기 + 시작 체크리스트 두 겹).
+  // 사용 안내의 ‘다시 보기’로 부탁했거나 ?tour=1로 들어왔을 때만, 홈이 자리 잡은 뒤에 엽니다.
   useEffect(() => {
-    if (!shouldShowTour({ seen: isTourSeen(), forced: forcedTour })) return;
-    // 온보딩에서 홈으로 커지는 전환이 도는 중이면 끝난 뒤에 엽니다.
+    if (!shouldShowTour({ requested: isTourRequested(), forced: forcedTour }))
+      return;
     const expanding =
       document.documentElement.classList.contains(EXPANDING_CLASS);
     const timer = window.setTimeout(
       () => setTour(true),
       expanding ? TOUR_DELAY_AFTER_EXPAND_MS : TOUR_DELAY_MS,
     );
-    if (forcedTour) return () => window.clearTimeout(timer);
-    const cancel = () => window.clearTimeout(timer);
-    window.addEventListener("pointerdown", cancel, { once: true });
-    window.addEventListener("keydown", cancel, { once: true });
-    return () => {
-      cancel();
-      window.removeEventListener("pointerdown", cancel);
-      window.removeEventListener("keydown", cancel);
-    };
+    return () => window.clearTimeout(timer);
   }, [forcedTour]);
 
   function endTour() {
-    markTourSeen();
+    clearTourRequest();
     setTour(false);
     if (params.has("tour")) {
       const rest = new URLSearchParams(params);
@@ -267,9 +258,9 @@ export function HomePage() {
                 <Icon name="calendar" size={18} />
                 {t("다음 미팅")}
               </h2>
-              <Link className="rh-text-link" to={`${base}/meetings`}>
+              <TextLink className="rh-text-link" to={`${base}/meetings`}>
                 {t("미팅 목록")} <Icon name="chevron-right" size={14} />
-              </Link>
+              </TextLink>
             </div>
             {next ? (
               <>
@@ -310,9 +301,9 @@ export function HomePage() {
                         {next.title}
                       </Link>
                     </h3>
-                    <span className="rh-badge rh-badge-blue">
+                    <StatusBadge tone="blue">
                       {meetingLabels[next.status]}
-                    </span>
+                    </StatusBadge>
                   </div>
                 </div>
                 <p className="rh-meeting-goal">
@@ -429,9 +420,9 @@ export function HomePage() {
                   {t("개 완료")}
                 </p>
               </div>
-              <Link className="rh-text-link" to={`${base}/tasks`}>
+              <TextLink className="rh-text-link" to={`${base}/tasks`}>
                 {t("전체 보기")} <Icon name="arrow-up-right" size={15} />
-              </Link>
+              </TextLink>
             </div>
             {isCollaborative && (
               <Segments
@@ -478,15 +469,21 @@ export function HomePage() {
                           : t("기한 없음")}
                       </span>
                     </Link>
-                    <span
-                      className={`rh-badge ${task.status === "done" ? "rh-badge-green" : task.priority === "high" ? "rh-badge-amber" : "rh-badge-neutral"}`}
+                    <StatusBadge
+                      tone={
+                        task.status === "done"
+                          ? "green"
+                          : task.priority === "high"
+                            ? "amber"
+                            : "neutral"
+                      }
                     >
                       {task.status === "done"
                         ? taskLabels.done
                         : task.priority === "high"
                           ? t("우선")
                           : taskLabels[task.status]}
-                    </span>
+                    </StatusBadge>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -565,7 +562,7 @@ export function HomePage() {
                   <Icon name="check" size={18} />
                 </span>
                 <div>
-                  <strong>{t("확인할 새 소식이 없어요")}</strong>
+                  <strong>{t("확인할 새 알림이 없어요")}</strong>
                   <p>
                     {t(
                       "교수 응답, 검토 댓글, 확인할 AI 제안이 생기면 여기에 보여요.",
@@ -591,9 +588,9 @@ export function HomePage() {
           <section className="rh-writing" aria-labelledby="rh-writing-heading">
             <div className="rh-section-heading">
               <h2 id="rh-writing-heading">{t("최근 문서")}</h2>
-              <Link className="rh-text-link" to={`${base}/writing`}>
+              <TextLink className="rh-text-link" to={`${base}/writing`}>
                 {t("글쓰기")} <Icon name="arrow-up-right" size={15} />
-              </Link>
+              </TextLink>
             </div>
             {docs.slice(0, 3).map((document) => {
               const versionCount = data.documentVersions.filter(

@@ -32,7 +32,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  InlineEmpty,
+  useDisabledReason,
+} from "@/components/common";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { Choice, VisibilityField, Segments } from "@/components/experience";
 import { EditorToolbar } from "./writing/EditorToolbar";
+import { DocumentTabs } from "./student/shared";
 import {
   VersionCompareSlider,
   VersionSheet,
@@ -92,6 +99,9 @@ export function WritingPage() {
     null,
   );
   const [newTitle, setNewTitle] = useState("");
+  const titleReason = useDisabledReason(
+    !newTitle.trim() && t("문서 제목을 입력하면 만들 수 있어요."),
+  );
   function beginCreate(type: DocumentRecord["type"] = "plan") {
     creationBase.current = null;
     setNewTitle("");
@@ -135,6 +145,7 @@ export function WritingPage() {
     <div className="experience-page">
       <PageHeader
         title={t("글쓰기")}
+        tabs={<DocumentTabs researchId={researchId} selected="writing" />}
         actions={
           <DropdownMenu>
             <DropdownMenuTrigger>
@@ -207,10 +218,15 @@ export function WritingPage() {
               >
                 {t("취소")}
               </Button>
-              <Button type="submit" disabled={creating || !newTitle.trim()}>
+              <Button
+                type="submit"
+                disabled={creating || !newTitle.trim()}
+                aria-describedby={titleReason.describedBy}
+              >
                 {creating ? t("만드는 중") : t("문서 만들기")}
               </Button>
             </div>
+            {titleReason.node}
           </form>
         </DialogContent>
       </Dialog>
@@ -265,6 +281,8 @@ export function WritingPage() {
     </div>
   );
 }
+/** 입력을 멈추고 이만큼 지나면 자동 저장합니다. */
+const AUTOSAVE_DELAY_MS = 1500;
 function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   const navigate = useNavigate();
   const { data, save, user, upload } = useWorkspace(),
@@ -287,6 +305,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     [title, setTitle] = useState(restored?.title ?? initial.title),
     [visibility, setVisibility] = useState(initial.visibility ?? "private"),
     [dirty, setDirty] = useState(!!restored),
+    // 고칠 때마다 올라가서 자동 저장 타이머를 다시 잽니다.
+    [editTick, setEditTick] = useState(0),
     [busy, setBusy] = useState(""),
     [conflict, setConflict] = useState<DocumentRecord | null>(null),
     [versionsOpen, setVersionsOpen] = useState(false),
@@ -313,6 +333,12 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       .filter((v) => v.documentId === initial.id)
       .sort((a, b) => a.number - b.number),
     current = data.documents.find((d) => d.id === initial.id) ?? initial;
+  // 버전이 하나도 없으면 아래 안내 문장이 이유를 알려 줍니다.
+  const restoreReason = useDisabledReason(
+    !from &&
+      versionList.length > 0 &&
+      t("이전 버전을 고르면 되돌릴 수 있어요."),
+  );
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -330,6 +356,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     onUpdate: ({ editor }) => {
       if (discarded.current) return;
       setDirty(true);
+      setEditTick((value) => value + 1);
       localStorage.setItem(
         key,
         JSON.stringify({
@@ -405,6 +432,25 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+  // 자동 저장(결정 D3): 입력을 멈추고 잠시 뒤 저장합니다. 버전은 따로 남겨요.
+  // 실패하거나 충돌이 나면 다음 입력까지 다시 시도하지 않습니다.
+  const failedTick = useRef(-1);
+  useEffect(() => {
+    if (!dirty || busy || conflict || !title.trim()) return;
+    if (failedTick.current === editTick) return;
+    const tick = editTick;
+    const timer = setTimeout(() => {
+      void action("save", async () => {
+        try {
+          await persist();
+        } catch (e) {
+          failedTick.current = tick;
+          throw e;
+        }
+      });
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [dirty, editTick, busy, conflict, title]);
   async function persist() {
     if (!editor || !title.trim())
       throw new Error(t("문서 제목을 적어 주세요."));
@@ -435,8 +481,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       }
     }
     setBase(value);
-    setDirty(false);
-    localStorage.removeItem(key);
+    // 저장하는 동안 더 쓴 내용이 있으면 '저장하지 않은 변경'으로 남겨 다음 자동 저장이 맡아요.
+    if (JSON.stringify(editor.getJSON()) === JSON.stringify(input.content)) {
+      setDirty(false);
+      localStorage.removeItem(key);
+    }
     return value;
   }
   async function action(name: string, fn: () => Promise<void>) {
@@ -508,6 +557,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             onChange={(e) => {
               setTitle(e.target.value);
               setDirty(true);
+              setEditTick((value) => value + 1);
             }}
           />
           <div className="writing-meta">
@@ -552,13 +602,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           >
             {t("검토용 PDF")}
           </Button>
-          {/* 바뀐 것이 없으면 '저장됨' 상태와 맞게 저장 버튼을 끕니다. */}
-          <Button
-            disabled={!!busy || !dirty || !title.trim()}
-            onClick={saveNow}
-          >
-            {busy === "save" ? t("저장 중") : t("저장")}
-          </Button>
+          {/* 저장 버튼은 두지 않아요. 자동 저장하고, ⌘S로 바로 저장할 수 있어요(결정 D3). */}
         </div>
       </header>
       {error && (
@@ -573,7 +617,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         aiDisabled={dirty || !!busy || !editor?.getText().trim()}
         aiHint={
           dirty
-            ? t("저장한 뒤에 AI 검토를 할 수 있어요.")
+            ? t("저장한 뒤에 AI 문장 점검을 할 수 있어요.")
             : t(
                 "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토해요.",
               )
@@ -676,11 +720,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 </button>
               ))}
               {!versionList.length && (
-                <p className="student-empty-inline">
+                <InlineEmpty>
                   {t(
                     "아직 남긴 버전이 없어요. ‘버전’에서 지금 내용을 버전으로 남길 수 있어요.",
                   )}
-                </p>
+                </InlineEmpty>
               )}
               <p className="panel-frame-note">
                 {t(
@@ -711,9 +755,9 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 </Link>
               ))}
               {!milestones.length && (
-                <p className="student-empty-inline">
+                <InlineEmpty>
                   {t("계획·일정의 목표에 이 문서를 넣으면 여기에 보여요.")}
-                </p>
+                </InlineEmpty>
               )}
             </div>
           )}
@@ -860,16 +904,17 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               )}
             </>
           ) : (
-            <p className="quiet-placeholder">
+            <InlineEmpty variant="panel">
               {t(
                 "저장만 해서는 버전이 생기지 않아요. ‘지금 버전 남기기’로 버전을 남기면 이후에 고친 내용과 비교할 수 있어요.",
               )}
-            </p>
+            </InlineEmpty>
           )}
           <div className="bottom-actions">
             <Button
               variant="outline"
               disabled={!from || !!busy}
+              aria-describedby={restoreReason.describedBy}
               onClick={() =>
                 void action("restore", async () => {
                   const v = versionList.find((v) => v.id === from)!;
@@ -923,6 +968,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               {t("지금 버전 남기기")}
             </Button>
           </div>
+          {restoreReason.node}
         </DialogContent>
       </Dialog>
       <Dialog

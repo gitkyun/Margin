@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
+import { useDisabledReason } from "@/components/common";
 import { useWorkspace } from "@/lib/workspace";
 import { UploadConnectionError, validatePDF } from "@/lib/repository";
 import { recordBase, type MaterialVersion } from "@/lib/domain";
@@ -31,6 +32,9 @@ export function QuickPdfUpload({
   const [progress, setProgress] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileReason = useDisabledReason(
+    !busy && !file && t("PDF 파일을 고르면 올릴 수 있어요."),
+  );
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), []);
   const fileMaterials = data.materials.filter(
@@ -179,7 +183,13 @@ export function QuickPdfUpload({
           </Button>
         ) : (
           <>
-            <Button type="button" size="sm" disabled={!file} onClick={submit}>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!file}
+              aria-describedby={fileReason.describedBy}
+              onClick={submit}
+            >
               {t("올리기")}
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={close}>
@@ -188,6 +198,7 @@ export function QuickPdfUpload({
           </>
         )}
       </div>
+      {fileReason.node}
     </div>
   );
 }

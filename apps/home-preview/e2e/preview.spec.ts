@@ -14,11 +14,12 @@ test("내 연구에서 연구 홈으로 들어가 주요 메뉴를 오간다", a
   await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/);
   const menu = page.getByRole("navigation").first();
   for (const [name, path, title] of [
+    // 사이드바 메뉴 여섯(감사 F1). 검토 요청·자료는 피드백·문서 메뉴 안의 탭이에요.
     ["할 일", "tasks", "할 일"],
-    ["피드백·수정", "feedback", "피드백"],
+    ["피드백", "feedback", "피드백"],
     ["미팅", "meetings", "미팅"],
-    ["검토 요청", "reviews", "검토"],
-    ["자료", "materials", "자료"],
+    ["문서", "writing", "글쓰기"],
+    ["일정", "planning", "일정"],
   ] as const) {
     await menu.getByRole("link", { name, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/${path}$`));

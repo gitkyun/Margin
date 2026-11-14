@@ -159,10 +159,10 @@
   }
   .role-choice small {
     display: block;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     margin-top: 6px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .role-choice .selected {
     border-color: var(--selected-line);
@@ -346,11 +346,11 @@
   .sidebar-search kbd {
     margin-left: auto;
     border: 1px solid var(--line);
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     padding: 0 4px;
     border-radius: var(--radius-4);
     white-space: nowrap;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .floating-workspace .nav-list {
     gap: 4px;
@@ -400,8 +400,8 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .floating-workspace .profile-button small {
-    font-size: var(--typography-caption2-fontSize);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .avatar {
     background: var(--surface-muted);
@@ -419,20 +419,20 @@
     display: flex;
     gap: 6px;
     align-items: center;
-    font-size: var(--typography-caption2-fontSize);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .sidebar-usage strong {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     margin-left: auto;
     font-weight: 500;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .sidebar-usage small {
     display: block;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     margin-top: 8px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .sidebar-usage progress,
   .usage-progress {
@@ -553,25 +553,6 @@
   }
   .sidebar-collapsed .workspace-switch:hover {
     outline: 1px solid var(--brand);
-  }
-  .calm-empty {
-    text-align: center;
-    padding: 70px 20px;
-    color: var(--text-secondary);
-  }
-  .calm-empty > svg {
-    margin-bottom: 20px;
-  }
-  .calm-empty h3 {
-    font-size: var(--typography-headline2-fontSize);
-    color: var(--text);
-    margin-bottom: 9px;
-    letter-spacing: var(--typography-headline2-letterSpacing);
-  }
-  .calm-empty p {
-    font-size: var(--typography-label2-fontSize);
-    line-height: var(--typography-label2-lineHeight);
-    letter-spacing: var(--typography-label2-letterSpacing);
   }
   /* Settings and contextual conversation */
   .settings-page {
@@ -842,7 +823,7 @@
       font-size: var(--typography-caption1-fontSize);
       padding: 6px 10px;
       border-radius: var(--radius-8);
-      z-index: 60;
+      z-index: var(--z-toast);
       white-space: nowrap;
       letter-spacing: var(--typography-caption1-letterSpacing);
     }
@@ -920,8 +901,8 @@
     }
     .floating-workspace .workspace-footer {
       padding: 25px 20px;
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     /* 휴대폰 연구 메뉴: Montage Modal(full) 안에서 사이드바 내용을 세로로 채웁니다. */
     .rms-mobile-sheet .margin-sheet-body {
@@ -997,8 +978,8 @@
       padding: 26px;
     }
     .role-choice small {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .settings-layout {
       display: block;
@@ -1044,8 +1025,8 @@
       letter-spacing: var(--typography-title1-letterSpacing);
     }
     .sidebar-search kbd {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
   }
   /* 동작 줄이기 전역 규칙은 styles.css 한 곳에 둡니다. */

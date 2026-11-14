@@ -6,7 +6,13 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  TextLink,
+  InlineEmpty,
+} from "@/components/common";
 import { Icon } from "@/components/icons";
 import { feedbackProgress } from "@/lib/feedback-progress";
 import { useWorkspace } from "@/lib/workspace";
@@ -331,7 +337,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           : undefined,
     });
     toast.success(
-      t("이 방법을 선택했어요. 수정 방법에서 할 일로 만들 수 있어요."),
+      t("이 방법을 선택했어요. 수정 방법에서 할 일에 추가할 수 있어요."),
     );
   }
   function createPlan() {
@@ -453,7 +459,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               <div>
                 <h2>{t("수정 방법")}</h2>
                 <p className="meta">
-                  {t("어떻게 고칠지 정한 뒤 할 일로 만들 수 있어요.")}
+                  {t("어떻게 고칠지 정한 뒤 할 일에 추가할 수 있어요.")}
                 </p>
               </div>
               <div className="button-row">
@@ -534,7 +540,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                           size="sm"
                           onClick={() => startTask(plan)}
                         >
-                          {t("할 일로 만들기")}
+                          {t("할 일에 추가")}
                           <Icon name="arrow-right" size={14} />
                         </Button>
                       </div>
@@ -619,11 +625,11 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 </Link>
               ))
             ) : (
-              <p className="student-empty-inline">
+              <InlineEmpty>
                 {t(
                   "아직 수정 결과가 없어요. 실제로 고친 내용을 기록해 주세요.",
                 )}
-              </p>
+              </InlineEmpty>
             )}
           </section>
         </div>
@@ -644,7 +650,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 label: t("연결"),
                 count: tasks.length + results.length + (meeting ? 1 : 0),
               },
-              { value: "assistant", label: t("도우미") },
+              { value: "assistant", label: t("연구 도우미") },
             ]}
           >
             {panelTab === "links" && (
@@ -668,13 +674,12 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 <h3>
                   {t("할 일")}
                   <span className="count-chip">{tasks.length}</span>
-                  <Link
-                    className="student-text-link"
+                  <TextLink
                     to={`/r/${researchId}/tasks?feedback=${feedback.id}&new=1`}
                   >
                     {t("추가")}
                     <Icon name="plus" size={14} />
-                  </Link>
+                  </TextLink>
                 </h3>
                 {tasks.length ? (
                   tasks.map((task) => (
@@ -701,11 +706,11 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     </Link>
                   ))
                 ) : (
-                  <p className="student-empty-inline">
+                  <InlineEmpty>
                     {t(
                       "수정 방법에서 할 일을 만들거나 기존 할 일을 연결할 수 있어요.",
                     )}
-                  </p>
+                  </InlineEmpty>
                 )}
                 <h3>
                   {t("수정 결과")}
@@ -726,9 +731,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                     </Link>
                   ))
                 ) : (
-                  <p className="student-empty-inline">
-                    {t("아직 수정 결과가 없어요.")}
-                  </p>
+                  <InlineEmpty>{t("아직 수정 결과가 없어요.")}</InlineEmpty>
                 )}
                 <p className="panel-frame-note">
                   {t(
@@ -913,7 +916,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         onOpenChange={(open) => {
           if (!open) setTaskPlan(null);
         }}
-        title={t("할 일로 만들기")}
+        title={t("할 일에 추가")}
         description={t("이 피드백과 선택한 방법에 연결된 새 할 일을 만들어요.")}
       >
         <form
@@ -943,7 +946,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               });
               setTaskPlan(null);
               navigate(`/r/${researchId}/tasks/${task.id}`);
-              toast.success(t("할 일을 만들었어요"));
+              toast.success(t("할 일을 추가했어요"));
             });
           }}
         >
@@ -967,7 +970,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           <SaveActions
             saving={taskForm.saving}
             onCancel={() => setTaskPlan(null)}
-            label={t("할 일 만들기")}
+            label={t("할 일 추가")}
           />
         </form>
       </FormDialog>

@@ -20,14 +20,14 @@
   }
   .rms-cloud-content {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-raised);
     width: 100%;
     height: 100%;
   }
   .rms-merge-flow {
     position: relative;
     min-height: 252px;
-    padding: 28px 24px 20px;
+    padding: 28px var(--spacing-24) var(--spacing-20);
     max-width: 540px;
     margin: 0 auto;
     width: 100%;
@@ -36,15 +36,15 @@
   .rms-merge-sources {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
+    gap: var(--spacing-12);
     position: relative;
-    z-index: 2;
+    z-index: calc(var(--z-raised) + 1);
   }
   .rms-merge-sources > span {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: var(--spacing-8);
     padding: 11px 13px;
     background: var(--surface);
     border: 1px solid var(--line);
@@ -66,7 +66,7 @@
   }
   .rms-merge-result {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-raised);
     display: flex;
     align-items: center;
     gap: 13px;
@@ -110,16 +110,16 @@
     display: inline-flex;
     gap: 5px;
     align-items: center;
-    font-size: var(--typography-caption2-fontSize);
-    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--text-secondary);
     background: rgba(
       var(--semantic-background-neutral-primary-rgb),
       var(--opacity-74)
     );
     border: 1px solid var(--line);
     border-radius: var(--radius-8);
-    padding: 4px 7px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    padding: var(--spacing-4) 7px;
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rms-spotlight-card {
     position: relative;
@@ -131,7 +131,7 @@
   .rms-spotlight-light {
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: var(--z-behind);
     pointer-events: none;
     opacity: 0;
     transition: opacity var(--motion-duration-enter);
@@ -164,12 +164,12 @@
     background: var(--surface);
   }
   .rms-compare-sheet > span:first-child {
-    font-size: var(--typography-caption2-fontSize);
-    line-height: var(--typography-caption2-lineHeight);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
     display: block;
-    margin-bottom: 12px;
-    color: var(--text-tertiary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    margin-bottom: var(--spacing-12);
+    color: var(--text-secondary);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rms-compare-sheet h4 {
     margin: 0 0 18px;
@@ -215,24 +215,24 @@
   }
   .rms-compare-hint {
     display: flex;
-    gap: 12px;
+    gap: var(--spacing-12);
     align-items: center;
     justify-content: center;
-    margin-top: 16px;
-    font-size: var(--typography-caption2-fontSize);
+    margin-top: var(--spacing-16);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    line-height: var(--typography-caption2-lineHeight);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   @media (max-width: 767px) {
     .rms-merge-flow {
-      padding: 24px 12px 18px;
+      padding: var(--spacing-24) var(--spacing-12) 18px;
     }
     .rms-merge-sources {
-      gap: 6px;
+      gap: var(--spacing-6);
     }
     .rms-merge-sources > span {
-      font-size: 10px;
+      font-size: var(--typography-caption1-fontSize);
       padding: 9px 7px;
       gap: 5px;
     }
@@ -243,26 +243,26 @@
     .rms-merge-result {
       margin-top: 77px;
       padding: 15px 13px;
-      gap: 10px;
+      gap: var(--spacing-10);
     }
     .rms-merge-result strong {
       font-size: var(--typography-label2-fontSize);
       letter-spacing: var(--typography-label2-letterSpacing);
     }
     .rms-merge-result div > span {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .rms-compare-sheet {
-      padding: 24px 20px;
+      padding: var(--spacing-24) var(--spacing-20);
     }
     .rms-compare-sheet h4 {
       font-size: var(--typography-body2-fontSize);
       letter-spacing: var(--typography-body2-letterSpacing);
     }
     .rms-compare-after ol {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .rms-compare-stage {
       height: 285px;

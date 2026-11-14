@@ -1,5 +1,4 @@
-import { LanguageMenu } from "./LanguageMenu";
-import { t } from "@/lib/i18n";
+import { LANGUAGES, currentLang, setLang, t } from "@/lib/i18n";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -18,11 +17,16 @@ import { Hint } from "./ui/hint";
 import { navPreview } from "@/lib/nav-preview";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutHelp } from "./ShortcutHelp";
-import { RESEARCH_NAVIGATION } from "@/lib/command-items";
+import {
+  RESEARCH_NAVIGATION,
+  createEntries,
+  incomingReviews,
+  isIncomingOnly,
+} from "@/lib/command-items";
 import { goShortcutLabel } from "@/lib/go-shortcuts";
 import { useGoShortcuts } from "@/lib/use-go-shortcuts";
 import { Button } from "./ui/button";
-import { LoadingState } from "./common";
+import { EmptyState, LoadingState } from "./common";
 import { useWorkspace } from "@/lib/workspace";
 import { useAIUsage } from "@/lib/ai-usage";
 import { friendlyError } from "@/lib/supabase";
@@ -32,8 +36,6 @@ import {
   MarginPanelProvider,
   useMarginPanelHost,
 } from "./margin-panel/MarginPanel";
-import { startChecklist } from "@/lib/onboarding";
-import { isStartChecklistHidden } from "./home/StartChecklist";
 import { AnimatedList, Segments } from "./experience";
 import {
   unreadReviewNotifications,
@@ -123,6 +125,18 @@ function AccountMenu() {
             <Icon name="monitor" size={17} />
             {t("화면 설정")}
           </DropdownMenuItem>
+          {/* 언어는 자주 바꾸지 않아 상단 줄 대신 계정 메뉴에 둡니다(결정 D2). */}
+          {LANGUAGES.filter((option) => option.value !== currentLang()).map(
+            (option) => (
+              <DropdownMenuItem
+                key={option.value}
+                onSelect={() => setLang(option.value)}
+              >
+                <span aria-hidden="true">{option.flag}</span>
+                <span lang={option.value}>{option.label}</span>
+              </DropdownMenuItem>
+            ),
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/guide")}>
             <Icon name="help" size={17} />
@@ -195,17 +209,19 @@ const COMPACT_QUERY = `${queryUp("sm")} and ${queryDown("lg")}`;
 const FOCUS_EXPANDED_KEY = "rms-sidebar-focus-expanded";
 /** 작업대처럼 본문을 넓게 써야 하는 화면: 연구 도우미, 글쓰기 문서 편집 */
 const FOCUS_ROUTE = /^\/r\/[^/]+\/(assistant(\/|$)|writing\/[^/]+)/;
-/** 사이드바 묶음(계획 4.3). 연구 홈 → 지도 흐름 → 연구 작업 순서입니다. */
-const NAV_GROUPS: { label: string | null; paths: string[] }[] = [
-  { label: null, paths: [""] },
-  {
-    label: t("지도 기록"),
-    paths: ["meetings", "feedback", "tasks", "reviews"],
-  },
-  { label: t("연구 작업"), paths: ["writing", "materials", "planning"] },
-];
+/**
+ * 사이드바 메뉴 여섯(감사 F1, design-b 2.1). 묶음 이름 없이 지도 순서대로 둡니다.
+ * 수정 결과·검토 요청은 '피드백', 자료는 '문서' 메뉴 안의 보기라 그 메뉴를 켭니다.
+ */
+const NAV_PATHS = ["", "meetings", "feedback", "tasks", "writing", "planning"];
+const NAV_ALSO_ACTIVE: Record<string, string[]> = {
+  feedback: ["/results", "/reviews"],
+  writing: ["/materials"],
+};
 /** AI 사용량은 한도의 이 비율을 넘었을 때만 사이드바 아래 자리에 냅니다. */
 const USAGE_WARNING_RATIO = 0.8;
+/** 교수 계정 사이드바에 바로 보이는 받은 검토 요청 수. 나머지는 목록 화면에서 봅니다. */
+const INCOMING_NAV_LIMIT = 6;
 
 export function WorkspaceShell({
   children,
@@ -243,12 +259,9 @@ export function WorkspaceShell({
   );
   const newEvents = events.filter((e) => !e.readAt);
   const totalUnread = updates.length + newEvents.length;
-  const incomingOnly =
-    data.researches.length === 0 &&
-    data.reviews.some(
-      (request) =>
-        request.professorId === user.id && request.status === "shared",
-    );
+  // 교수 계정(내 연구 없이 받은 검토 요청만 있음)은 사이드바·⌘K를 받은 검토 요청 기준으로 둡니다(감사 F5).
+  const incomingOnly = isIncomingOnly(data, user.id);
+  const incoming = incomingOnly ? incomingReviews(data, user.id) : [];
   const homeLabel = incomingOnly ? t("받은 검토 요청") : t("내 연구");
   useGoShortcuts(research ? researchId : undefined);
   const panel = useMarginPanelHost();
@@ -324,9 +337,12 @@ export function WorkspaceShell({
               ? t("수정 결과")
               : location.pathname.includes("/feedback")
                 ? t("피드백")
-                : (navigation.find(
-                    ([path]) => path && location.pathname.includes("/" + path),
-                  )?.[2] ?? (research ? t("연구 홈") : homeLabel));
+                : location.pathname.includes("/writing")
+                  ? t("글쓰기")
+                  : (navigation.find(
+                      ([path]) =>
+                        path && location.pathname.includes("/" + path),
+                    )?.[2] ?? (research ? t("연구 홈") : homeLabel));
   useEffect(() => {
     document.title = t("{name} · 마진", {
       name: `${current}${research ? ` · ${research.name}` : ""}`,
@@ -343,13 +359,8 @@ export function WorkspaceShell({
         </Button>
       </div>
     );
-  // 사이드바 아래 자리는 하나만 씁니다: 시작 체크리스트(다 못 했을 때) → AI 사용량(한도에 가까울 때) → 비움.
-  const checklist = research ? startChecklist(data, research.id) : [];
-  const startDone = checklist.filter((item) => item.done).length;
-  const showStart =
-    !!research &&
-    startDone < checklist.length &&
-    !isStartChecklistHidden(research.id);
+  // 사이드바 아래 자리는 AI 사용량이 한도에 가까울 때만 씁니다.
+  // 시작 체크리스트는 연구 홈 한 곳에만 둡니다(감사 F3: 같은 안내를 두 번 보이지 않게).
   const usageHigh =
     !!usage.data &&
     usage.data.limit > 0 &&
@@ -357,7 +368,15 @@ export function WorkspaceShell({
   const menu = (
     <>
       <div className="sidebar-brand">
-        <Link to="/r" className="brand" aria-label={t("마진(Margin) 내 연구")}>
+        <Link
+          to="/r"
+          className="brand"
+          aria-label={
+            incomingOnly
+              ? t("마진(Margin) 받은 검토 요청")
+              : t("마진(Margin) 내 연구")
+          }
+        >
           <BrandMark />
           <BrandWordmark />
         </Link>
@@ -429,27 +448,31 @@ export function WorkspaceShell({
       <button
         className="sidebar-search"
         onClick={() => setSearch(true)}
-        title={research ? t("이 연구에서 제목 찾기") : t("연구 이름 찾기")}
+        title={
+          research
+            ? t("이 연구에서 제목 찾기")
+            : incomingOnly
+              ? t("받은 검토 요청 찾기")
+              : t("연구 이름 찾기")
+        }
       >
         <Icon name="search" size={18} />
-        <span>{research ? t("이 연구에서 찾기") : t("연구 찾기")}</span>
+        <span>
+          {research
+            ? t("이 연구에서 찾기")
+            : incomingOnly
+              ? t("검토 요청 찾기")
+              : t("연구 찾기")}
+        </span>
         <kbd>⌘ K</kbd>
       </button>
       <nav className="nav-list" aria-label={t("주요 메뉴")}>
         {research ? (
-          NAV_GROUPS.map((group) => (
-            <div
-              className="nav-group"
-              key={group.label ?? "home"}
-              data-tour={group.label === t("지도 기록") ? "flow" : undefined}
-            >
-              {group.label && <p className="nav-group-label">{group.label}</p>}
+          [NAV_PATHS].map((paths) => (
+            <div className="nav-group" key="research" data-tour="flow">
               {navigation
-                .filter(([path]) => group.paths.includes(path))
-                .sort(
-                  (a, b) =>
-                    group.paths.indexOf(a[0]) - group.paths.indexOf(b[0]),
-                )
+                .filter(([path]) => paths.includes(path))
+                .sort((a, b) => paths.indexOf(a[0]) - paths.indexOf(b[0]))
                 .map(([path, icon, label]) => {
                   const preview = navPreview(
                     path,
@@ -470,7 +493,7 @@ export function WorkspaceShell({
                         end={!path}
                         to={`/r/${researchId}${path ? "/" + path : ""}`}
                         className={({ isActive }) =>
-                          `nav-item ${isActive || (path === "feedback" && location.pathname.includes("/results")) ? "active" : ""}`
+                          `nav-item ${isActive || (NAV_ALSO_ACTIVE[path] ?? []).some((p) => location.pathname.includes(p)) ? "active" : ""}`
                         }
                       >
                         <Icon name={icon} size={20} />
@@ -481,6 +504,24 @@ export function WorkspaceShell({
                 })}
             </div>
           ))
+        ) : incomingOnly ? (
+          <div className="nav-group" key="incoming">
+            <NavLink to="/r" end className="nav-item">
+              <Icon name="send" size={20} />
+              <span>{homeLabel}</span>
+            </NavLink>
+            {incoming.slice(0, INCOMING_NAV_LIMIT).map((request) => (
+              <NavLink
+                key={request.id}
+                to={`/reviews/${request.id}`}
+                className="nav-item"
+                title={request.title}
+              >
+                <Icon name="file" size={18} />
+                <span>{request.title || t("제목 없음")}</span>
+              </NavLink>
+            ))}
+          </div>
         ) : (
           <NavLink to="/r" className="nav-item">
             <Icon name="grid" size={20} />
@@ -526,26 +567,7 @@ export function WorkspaceShell({
           <Icon name="grid" size={20} />
           <span>{t("모든 연구")}</span>
         </Link>
-        {showStart ? (
-          <Link
-            className="sidebar-usage sidebar-start"
-            title={t("시작하기 체크리스트 보기")}
-            to={`/r/${researchId}`}
-          >
-            <div>
-              <Icon name="check-circle" size={15} />
-              <span>{t("시작하기")}</span>
-              <strong>
-                {startDone} / {checklist.length}
-              </strong>
-            </div>
-            <progress
-              max={checklist.length}
-              value={startDone}
-              aria-label={t("시작하기 진행")}
-            />
-          </Link>
-        ) : usageHigh ? (
+        {usageHigh ? (
           <Link
             className="sidebar-usage"
             title={t("AI 사용량 보기")}
@@ -665,7 +687,37 @@ export function WorkspaceShell({
                 </Button>
               </Hint>
             )}
-            <LanguageMenu />
+            {researchId && !incomingOnly && (
+              <DropdownMenu>
+                <Hint
+                  label={t("만들기")}
+                  detail={t("미팅·할 일·문서 등을 새로 만들어요.")}
+                >
+                  <DropdownMenuTrigger>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="create-menu-trigger"
+                      aria-label={t("새로 만들기")}
+                    >
+                      <Icon name="plus" size={19} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </Hint>
+                <DropdownMenuContent align="end" className="create-menu">
+                  <DropdownMenuLabel>{t("새로 만들기")}</DropdownMenuLabel>
+                  {createEntries(researchId).map((entry) => (
+                    <DropdownMenuItem
+                      key={entry.id}
+                      onSelect={() => navigate(entry.action.to)}
+                    >
+                      <Icon name={entry.icon} size={16} />
+                      {entry.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Hint
               label={t("사용 안내")}
               detail={t("키보드 단축키는 ? 키로 볼 수 있어요.")}
@@ -759,9 +811,9 @@ export function WorkspaceShell({
             <SheetTitle>{t("알림")}</SheetTitle>
             <SheetDescription>
               {data.researches.length === 0
-                ? t("검토 요청과 댓글, 미팅 시간 조율 소식을 확인하세요.")
+                ? t("검토 요청과 댓글, 미팅 시간 조율 알림을 확인하세요.")
                 : t(
-                    "교수 응답과 댓글, 담당 할 일, 미팅 일정, 공동연구 소식을 확인하세요.",
+                    "교수 응답과 댓글, 담당 할 일, 미팅 일정, 공동연구 알림을 확인하세요.",
                   )}
             </SheetDescription>
           </SheetHeader>
@@ -863,10 +915,7 @@ export function WorkspaceShell({
             ) : !(notificationFilter === "all"
                 ? events.length
                 : newEvents.length) ? (
-              <div className="calm-empty">
-                <Icon name="bell" size={30} />
-                <h3>{t("확인할 새 소식이 없어요.")}</h3>
-              </div>
+              <EmptyState icon="bell" title={t("확인할 새 알림이 없어요.")} />
             ) : null}
           </div>
         </SheetContent>

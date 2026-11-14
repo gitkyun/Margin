@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,11 @@ import {
   type SavedAICandidate,
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/common";
+import {
+  PageHeader,
+  StatusBadge,
+  useDisabledReason,
+} from "@/components/common";
 import { Choice } from "@/components/experience";
 import {
   DropdownMenu,
@@ -46,6 +50,7 @@ import {
   MAX_SOURCES,
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
+import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
 import { AssistantMascot } from "@/components/brand/Brand";
 import {
   workingMascot,
@@ -102,6 +107,14 @@ export function ResearchAssistant() {
     [candidateTitle, setCandidateTitle] = useState(""),
     [candidateBody, setCandidateBody] = useState(""),
     [saveBusy, setSaveBusy] = useState(false);
+  const candidateReason = useDisabledReason(
+      !saveBusy &&
+        (!candidateTitle.trim()
+          ? t("제목을 입력하면 저장할 수 있어요.")
+          : !candidateBody.trim() &&
+            t("기록할 내용을 입력하면 저장할 수 있어요.")),
+    ),
+    unavailableId = useId();
   const aiNotConfigured = useAINotConfigured();
   const caps = useAICapabilities(),
     allowedModel =
@@ -342,9 +355,14 @@ export function ResearchAssistant() {
       if (fileInput.current) fileInput.current.value = "";
     }
   }
-  async function send() {
+  /**
+   * `retryQuestion`을 주면 입력창 대신 그 질문을 다시 보내요(답변 아래 ‘다시 답하기’).
+   * 이때는 지금 고른 근거만 읽고, 입력창에 적던 글은 그대로 둬요.
+   */
+  async function send(retryQuestion?: string) {
+    const question = retryQuestion ?? draft;
     // 연구 대화는 기록 없이도 보낼 수 있어요. 나머지 요청은 읽을 기록이 있어야 해요.
-    if (running || !draft.trim()) return;
+    if (running || !question.trim()) return;
     if (!contexts.length && task !== "ask_research") {
       setError(
         t("이 요청은 읽을 기록이 필요해요. 기록이나 파일을 첨부해 주세요."),
@@ -374,12 +392,12 @@ export function ResearchAssistant() {
     try {
       let c = conversation ?? {
         ...recordBase(researchId),
-        title: draft.slice(0, 100),
+        title: question.slice(0, 100),
         messages: [],
         contexts,
         visibility: "private" as const,
       };
-      const text = draft.trim(),
+      const text = question.trim(),
         last = c.messages.at(-1);
       c = await save("conversations", {
         ...c,
@@ -426,7 +444,7 @@ export function ResearchAssistant() {
         ],
       });
       setConversation(saved);
-      setDraft("");
+      if (retryQuestion === undefined) setDraft("");
     } catch (e) {
       // 연결 전이면 아래 '쓸 수 없음' 안내가 대신 보여요(다시 보내기를 권하지 않음).
       if (seq === sequence.current && !controller.signal.aborted)
@@ -594,10 +612,9 @@ export function ResearchAssistant() {
           "고른 기록만 읽고 질문에 답하거나 수정 방법을 제안해요.",
         )}
         status={
-          <span className="rms-pill">
-            <Icon name="lock" size={13} />
+          <StatusBadge icon={<Icon name="lock" size={13} />}>
             {t("나만 볼 수 있는 공간")}
-          </span>
+          </StatusBadge>
         }
         actions={
           <>
@@ -676,6 +693,14 @@ export function ResearchAssistant() {
                   {m.role === "user" ? t("나") : t("연구 도우미")}
                 </span>
                 <div>{m.text}</div>
+                {m.role === "assistant" && (
+                  <AnswerActions
+                    text={m.text}
+                    question={questionBefore(messages, i)}
+                    disabled={working || unavailable || uploading}
+                    onRetry={(question) => void send(question)}
+                  />
+                )}
               </article>
             ))
           )}
@@ -717,7 +742,7 @@ export function ResearchAssistant() {
           <div ref={end} />
         </div>
         {unavailable && (
-          <p className="assistant-unavailable" role="status">
+          <p id={unavailableId} className="assistant-unavailable" role="status">
             <Icon name="info" size={16} />
             {aiNotConfigured
               ? AI_NOT_CONFIGURED_MESSAGE
@@ -839,6 +864,7 @@ export function ResearchAssistant() {
                 size="icon"
                 aria-label={t("질문 보내기")}
                 disabled={unavailable || !draft.trim() || uploading}
+                aria-describedby={unavailable ? unavailableId : undefined}
               >
                 <Icon name="arrow-up" size={19} />
               </Button>
@@ -967,11 +993,13 @@ export function ResearchAssistant() {
               disabled={
                 saveBusy || !candidateTitle.trim() || !candidateBody.trim()
               }
+              aria-describedby={candidateReason.describedBy}
               onClick={() => void saveCandidate()}
             >
               {t("선택하고 저장")}
             </Button>
           </div>
+          {candidateReason.node}
         </DialogContent>
       </Dialog>
     </div>

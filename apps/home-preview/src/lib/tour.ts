@@ -1,39 +1,43 @@
 import { t } from "@/lib/i18n";
 
-/** 연구 홈 화면 안내. 봤다는 기록은 이 브라우저에만 둡니다(서버에 저장하지 않음). */
-const SEEN_KEY = "margin-home-tour-seen";
+/**
+ * 연구 홈 화면 안내. 처음 쓰는 사람의 안내는 연구 만들기와 시작 체크리스트 두 겹으로 줄여서
+ * 이 안내는 저절로 뜨지 않습니다(감사 F3). 사용 안내의 ‘다시 보기’로 부탁했을 때만 엽니다.
+ * 부탁한 기록은 이 브라우저에만 둡니다(서버에 저장하지 않음).
+ */
+const REQUEST_KEY = "margin-home-tour-requested";
 
-export function isTourSeen(): boolean {
+export function isTourRequested(): boolean {
   try {
-    return localStorage.getItem(SEEN_KEY) === "true";
+    return localStorage.getItem(REQUEST_KEY) === "true";
   } catch {
     return false;
   }
 }
 
-export function markTourSeen(): void {
+/** 사용 안내의 ‘다시 보기’. 다음에 연구 홈을 열 때 안내가 한 번 나옵니다. */
+export function requestTour(): void {
   try {
-    localStorage.setItem(SEEN_KEY, "true");
+    localStorage.setItem(REQUEST_KEY, "true");
   } catch {
-    // 저장소를 쓸 수 없으면 이번 화면에서만 닫습니다.
+    // 저장소를 쓸 수 없으면 `?tour=1` 주소로만 열 수 있습니다.
   }
 }
 
-/** 사용 안내의 ‘다시 보기’. 다음에 연구 홈을 열 때 안내가 다시 나옵니다. */
-export function resetTourSeen(): void {
+export function clearTourRequest(): void {
   try {
-    localStorage.removeItem(SEEN_KEY);
+    localStorage.removeItem(REQUEST_KEY);
   } catch {
-    // 저장소를 쓸 수 없으면 원래도 매번 나옵니다.
+    // 저장소를 쓸 수 없으면 남은 기록도 없습니다.
   }
 }
 
-/** 아직 보지 않았을 때 한 번 자동으로 뜨고, `?tour=1`로 들어오면 다시 볼 수 있습니다. */
+/** 부탁했거나 `?tour=1`로 들어왔을 때만 엽니다. 처음 왔다고 저절로 열지 않습니다. */
 export function shouldShowTour(input: {
-  seen: boolean;
+  requested: boolean;
   forced: boolean;
 }): boolean {
-  return input.forced || !input.seen;
+  return input.forced || input.requested;
 }
 
 export interface TourStep {

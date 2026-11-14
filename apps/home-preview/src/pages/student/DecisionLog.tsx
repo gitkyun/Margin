@@ -2,6 +2,7 @@ import { t } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import type { DecisionEntry } from "@/lib/decisions";
 import { formatDate } from "@/lib/domain";
+import { InlineEmpty } from "@/components/common";
 
 interface DecisionLogProps {
   entries: DecisionEntry[];
@@ -15,11 +16,11 @@ interface DecisionLogProps {
 export function DecisionLog({ entries, researchId }: DecisionLogProps) {
   if (!entries.length)
     return (
-      <p className="student-empty-inline">
+      <InlineEmpty>
         {t(
           "아직 기록한 결정이 없어요. 미팅 기록의 ‘결정·질문’에서 남길 수 있어요.",
         )}
-      </p>
+      </InlineEmpty>
     );
   return (
     <ol className="decision-log">

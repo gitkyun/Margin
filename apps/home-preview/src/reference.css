@@ -13,20 +13,21 @@
   .floating-workspace {
     --rail-width: 232px;
     gap: 0;
-    padding: 8px 8px 8px 0;
+    padding: var(--spacing-8) var(--spacing-8) var(--spacing-8) 0;
     background: var(--canvas);
   }
   .floating-workspace .sidebar {
     top: 8px;
     height: calc(100dvh - 16px);
-    padding: 10px 10px 8px 12px;
+    padding: var(--spacing-10) var(--spacing-10) var(--spacing-8)
+      var(--spacing-12);
     background: transparent;
     border: 0;
     border-radius: 0;
     box-shadow: none;
   }
   .floating-workspace .sidebar-brand {
-    padding: 2px 2px 14px;
+    padding: var(--spacing-2) var(--spacing-2) var(--spacing-14);
   }
   .floating-workspace .brand {
     font-size: var(--typography-headline2-fontSize);
@@ -41,7 +42,7 @@
   .floating-workspace .workspace-switch {
     min-height: 40px;
     padding: 7px 9px;
-    margin-bottom: 10px;
+    margin-bottom: var(--spacing-10);
     border-radius: var(--radius-10);
     border: 0;
     background: var(--surface);
@@ -57,8 +58,8 @@
   }
   .sidebar-search {
     min-height: 34px;
-    padding: 6px 9px;
-    margin-bottom: 14px;
+    padding: var(--spacing-6) 9px;
+    margin-bottom: var(--spacing-14);
     font-size: var(--typography-label2-fontSize);
     border-radius: var(--radius-10);
     border: 1px solid var(--line-strong);
@@ -66,7 +67,7 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .sidebar-search kbd {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     background: var(--surface);
   }
   .floating-workspace .nav-list {
@@ -74,8 +75,8 @@
   }
   .floating-workspace .nav-item {
     min-height: 34px;
-    padding: 7px 10px;
-    gap: 10px;
+    padding: 7px var(--spacing-10);
+    gap: var(--spacing-10);
     border-radius: var(--radius-8);
     font-size: var(--typography-label1-fontSize);
     font-weight: 500;
@@ -100,7 +101,7 @@
     box-shadow: var(--raise-shadow);
   }
   .floating-workspace .assistant-nav {
-    margin-top: 10px !important;
+    margin-top: var(--spacing-10) !important;
     padding-top: 7px !important;
     border-top: 0 !important;
     border-radius: var(--radius-8) !important;
@@ -116,25 +117,25 @@
     background: var(--line-strong);
   }
   .floating-workspace .sidebar-bottom {
-    padding-top: 14px;
+    padding-top: var(--spacing-14);
     gap: 1px;
   }
   .sidebar-usage {
-    margin: 10px 0 0;
-    padding: 10px 11px;
+    margin: var(--spacing-10) 0 0;
+    padding: var(--spacing-10) 11px;
     border: 0;
     border-radius: var(--radius-10);
     background: var(--surface);
     box-shadow: var(--raise-shadow);
   }
   .sidebar-usage strong {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .floating-workspace .profile-button {
-    margin-top: 8px;
-    padding: 7px 8px;
+    margin-top: var(--spacing-8);
+    padding: 7px var(--spacing-8);
     border: 0;
     border-radius: var(--radius-10);
     background: transparent;
@@ -158,18 +159,18 @@
   .floating-workspace .topbar {
     height: 52px;
     min-height: 52px;
-    padding: 0 20px 0 24px;
+    padding: 0 var(--spacing-20) 0 var(--spacing-24);
     /* 반투명이면 스크롤할 때 본문 글자가 비칩니다. */
     background: var(--surface);
-    z-index: 5;
+    z-index: var(--z-sticky);
   }
   .floating-workspace .breadcrumbs {
-    gap: 8px;
+    gap: var(--spacing-8);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .floating-workspace .breadcrumbs > a {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
   .floating-workspace .breadcrumbs > svg {
     color: var(--line-strong);
@@ -185,7 +186,7 @@
   }
   .floating-workspace .preview-banner {
     min-height: 34px;
-    padding: 6px 24px;
+    padding: var(--spacing-6) var(--spacing-24);
     font-size: var(--typography-caption1-fontSize);
     border-bottom: 1px solid var(--line);
     background: var(--surface-muted);
@@ -193,13 +194,13 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .floating-workspace .workspace-content {
-    padding: 28px 32px 40px;
+    padding: 28px var(--spacing-32) var(--spacing-40);
     max-width: 1320px;
   }
   .floating-workspace .workspace-footer {
-    padding: 18px 32px 22px;
+    padding: 18px var(--spacing-32) 22px;
     font-size: var(--typography-caption1-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     border-top: 1px solid var(--line);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -207,7 +208,7 @@
     --rail-width: 60px;
   }
   .floating-workspace.sidebar-collapsed .sidebar {
-    padding: 10px 8px 8px;
+    padding: var(--spacing-10) var(--spacing-8) var(--spacing-8);
   }
   .floating-workspace.sidebar-collapsed .assistant-nav::before {
     left: 6px;
@@ -229,17 +230,17 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .count-chip {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     min-width: 22px;
     height: 20px;
-    padding: 0 6px;
+    padding: 0 var(--spacing-6);
     border-radius: var(--radius-8);
     display: inline-grid;
     place-items: center;
     background: var(--surface-muted);
     border: 1px solid var(--line);
     color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
   /* ── KPI strip (Noticeline / Orvyn) ────────────────────── */
@@ -318,10 +319,10 @@
       min-height: 100dvh;
     }
     .floating-workspace .workspace-content {
-      padding: 20px 16px 32px;
+      padding: var(--spacing-20) var(--spacing-16) var(--spacing-32);
     }
     .floating-workspace .topbar {
-      padding: 0 12px;
+      padding: 0 var(--spacing-12);
     }
   }
 }
@@ -330,13 +331,13 @@
 @layer margin {
   /* Workspace review, 2026-11-06: equal shell gutters and quiet, legible controls. */
   .app-shell.floating-workspace {
-    padding: 8px;
-    gap: 8px;
+    padding: var(--spacing-8);
+    gap: var(--spacing-8);
   }
   .app-shell.floating-workspace .sidebar {
     border: 1px solid var(--line);
     border-radius: var(--radius-16);
-    padding: 12px 10px 10px;
+    padding: var(--spacing-12) var(--spacing-10) var(--spacing-10);
   }
   /* 사이드바 묶음 이름(지도 흐름, 연구 작업). 접힌 레일에서는 얇은 선으로 바뀝니다. */
   .app-shell.floating-workspace .nav-group {
@@ -345,7 +346,7 @@
   .app-shell.floating-workspace .nav-group-label {
     margin: 0;
     padding: var(--spacing-12) var(--spacing-12) var(--spacing-4);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -369,7 +370,7 @@
     position: fixed;
     top: 8px;
     left: 8px;
-    z-index: 31;
+    z-index: calc(var(--z-sidebar) + 1);
     width: 232px;
     height: calc(100dvh - 16px);
     box-shadow: var(--shadow-pop);
@@ -380,7 +381,7 @@
   .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 30;
+    z-index: var(--z-sidebar);
     border: 0;
     /* 펼친 메뉴가 본문을 덮고 있다는 것을 알 수 있게 뒤를 어둡게 합니다. */
     background: var(--semantic-effect-dimmer-primary);
@@ -429,21 +430,21 @@
     display: none;
   }
   .research-view-switch {
-    margin: 24px 0;
+    margin: var(--spacing-24) 0;
     padding: 0;
   }
   .password-settings {
-    margin-top: 32px;
+    margin-top: var(--spacing-32);
     padding-top: 28px;
     border-top: 1px solid var(--line);
   }
   .password-settings h3 {
     font-size: var(--typography-headline1-fontSize);
-    margin: 0 0 8px;
+    margin: 0 0 var(--spacing-8);
     letter-spacing: var(--typography-headline1-letterSpacing);
   }
   .password-settings > p {
-    margin: 0 0 20px;
+    margin: 0 0 var(--spacing-20);
     color: var(--text-secondary);
     font-size: var(--typography-label1-fontSize);
     letter-spacing: var(--typography-label1-letterSpacing);
@@ -500,7 +501,7 @@
       overflow-x: auto;
       scrollbar-width: none;
       margin-inline: -4px;
-      padding-inline: 4px;
+      padding-inline: var(--spacing-4);
       scroll-padding-inline: 4px;
     }
   }
@@ -526,7 +527,7 @@
   .workspace-footer {
     opacity: 1;
     flex-wrap: wrap;
-    row-gap: 6px;
+    row-gap: var(--spacing-6);
   }
   .workspace-footer a {
     white-space: nowrap;

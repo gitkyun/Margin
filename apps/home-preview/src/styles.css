@@ -48,6 +48,29 @@
   :root {
     font-family: var(--font-sans);
     color-scheme: light;
+    /*
+     * z-index 층 표 (아래 → 위). 화면 CSS는 숫자 대신 이 변수만 씁니다.
+     * 사이 값이 필요하면 calc(var(--z-…) ± 1)로 씁니다.
+     *   --z-behind   -1  꾸밈 배경(빛, 격자, 구름)을 내용 뒤로
+     *   --z-raised    1  꾸밈 위에 올리는 내용(부품 안 국소 층)
+     *   --z-sticky    5  창 안에서 붙어 있는 머리·도구 막대
+     *   --z-topbar   20  앱 상단 줄
+     *   --z-sidebar  30  사이드바와 서랍 뒤 어둡게(+1: 떠 있는 사이드바)
+     *   --z-sheet    40  오른쪽 패널 시트(-1: 시트 뒤 어둡게), 공개 헤더
+     *   --z-toast    60  새로고침 알림, 접힌 메뉴 이름 표시
+     *   --z-skip     100 본문 바로가기 링크
+     *   --z-tour     200 첫 사용 안내
+     * 창·메뉴·알림창 같은 Montage 부품의 층은 Montage가 정합니다.
+     */
+    --z-behind: -1;
+    --z-raised: 1;
+    --z-sticky: 5;
+    --z-topbar: 20;
+    --z-sidebar: 30;
+    --z-sheet: 40;
+    --z-toast: 60;
+    --z-skip: 100;
+    --z-tour: 200;
   }
   [data-theme="dark"] {
     color-scheme: dark;
@@ -107,6 +130,13 @@
   a {
     color: inherit;
     text-decoration: none;
+  }
+  /* 제출할 때 막힌 칸(lib/form-validation.ts가 표시). 고치면 바로 사라져요. */
+  input[aria-invalid="true"],
+  textarea[aria-invalid="true"],
+  select[aria-invalid="true"] {
+    outline: 2px solid var(--danger);
+    outline-offset: 1px;
   }
   button:focus-visible,
   a:focus-visible,
@@ -177,7 +207,7 @@
     padding: 28px 16px 18px;
     display: flex;
     flex-direction: column;
-    z-index: 30;
+    z-index: var(--z-sidebar);
     transition: width var(--motion-duration-micro);
   }
   .sidebar-brand {
@@ -226,11 +256,11 @@
     flex: 1;
   }
   .workspace-switch small {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     display: block;
     margin-bottom: 3px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .workspace-switch strong {
     font-size: var(--typography-label2-fontSize);
@@ -301,13 +331,13 @@
   }
   .profile-button small {
     display: block;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     margin-top: 2px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .avatar {
     width: 34px;
@@ -341,7 +371,7 @@
     gap: 20px;
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: var(--z-topbar);
   }
   .breadcrumbs {
     display: flex;
@@ -409,14 +439,14 @@
     flex: 1;
   }
   .workspace-footer {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 26px 36px;
     opacity: 0.75;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .preview-banner {
     display: flex;
@@ -424,10 +454,10 @@
     gap: 8px;
     padding: 8px 36px;
     color: var(--text-secondary);
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-label2-fontSize);
     border-bottom: 1px solid var(--line);
     background: var(--surface);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .preview-banner > a {
     margin-left: auto;
@@ -589,15 +619,26 @@
     gap: 7px;
   }
   .required-indicator {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 500;
     color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .field-error {
     margin: 0;
     font-weight: 500;
     color: var(--danger);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+    overflow-wrap: anywhere;
+  }
+  /* 꺼진 버튼의 이유 한 줄(common.tsx DisabledReason) */
+  .disabled-reason {
+    margin: 4px 0 0;
+    font-weight: 400;
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -760,10 +801,10 @@
   }
   .notification-item small {
     display: block;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     margin-top: 12px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .pdf-viewer {
     background: var(--surface-muted);
@@ -800,11 +841,11 @@
   }
   .pdf-page-number,
   .pdf-zoom {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     padding: 0 4px;
     white-space: nowrap;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .pdf-canvas-host {
     position: relative;
@@ -844,9 +885,9 @@
     border-top: 1px solid var(--line);
     padding: 10px 15px;
     background: var(--surface);
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .pdf-text summary {
     cursor: pointer;
@@ -924,7 +965,7 @@
     left: 260px;
     padding: 12px;
     background: var(--surface);
-    z-index: 100;
+    z-index: var(--z-skip);
     color: var(--brand);
     border: 1px solid var(--brand);
   }
@@ -951,7 +992,7 @@
     top: 74px;
     background: var(--surface);
     border: 1px solid var(--line);
-    z-index: 3;
+    z-index: calc(var(--z-raised) + 2);
   }
   .sidebar-collapsed .brand > strong,
   .sidebar-collapsed .workspace-switch > span:nth-child(2),
@@ -1020,9 +1061,9 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .research-card .meta {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     justify-content: space-between;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .connection-error,
   .not-found {
@@ -1156,8 +1197,8 @@
     .preview-banner {
       padding: 8px 18px;
       gap: 6px;
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .preview-banner > span {
       line-height: 1.6;
@@ -1202,13 +1243,13 @@
     }
     .task-date {
       width: 43px;
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .workspace-footer {
       padding: 20px 18px;
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .mobile-sidebar {
       width: 260px;
@@ -1280,8 +1321,8 @@
       min-height: 320px;
     }
     .pdf-zoom {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .not-found,
     .connection-error {
@@ -1314,7 +1355,7 @@
 
   .workspace-refresh-notice {
     position: fixed;
-    z-index: 60;
+    z-index: var(--z-toast);
     left: 50%;
     bottom: 24px;
     width: min(680px, calc(100vw - 32px));
@@ -1345,7 +1386,7 @@
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  @media (max-width: 480px) {
+  @media (max-width: 767px) {
     .workspace-refresh-notice {
       flex-wrap: wrap;
       bottom: 12px;
@@ -1402,7 +1443,7 @@
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  @media (max-width: 480px) {
+  @media (max-width: 767px) {
     .shared-review-row {
       padding: 16px;
       gap: 10px;
@@ -1495,7 +1536,7 @@
   .language-segments-in-menu {
     display: none;
   }
-  @media (max-width: 479px) {
+  @media (max-width: 767px) {
     .language-segments-in-header {
       display: none;
     }
@@ -1506,6 +1547,35 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .language-segments button {
+      transition: none;
+    }
+  }
+}
+
+/*
+ * 글자형 링크(TextLink, components/common.tsx). 앱 안의 '열기 →', '추가 +', '목록 보기'가 모두 이 모양입니다.
+ * 화면 CSS는 자리(여백·정렬)만 더하고 색·글자는 여기서 정합니다.
+ */
+@layer margin {
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    width: fit-content;
+    min-height: 24px;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 500;
+    letter-spacing: var(--typography-label2-letterSpacing);
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color var(--motion-duration-micro) ease;
+  }
+  .text-link:hover {
+    color: var(--brand);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .text-link {
       transition: none;
     }
   }

@@ -172,3 +172,29 @@ export function knownProfessorEmails(
     .map((r) => r.professorEmail.trim().toLowerCase());
   return [...new Set(recentFirst)];
 }
+
+/** 댓글 하나를 가리키는 화면 안 위치(id)와 주소 조각(#)입니다. */
+export function commentAnchor(id: string): string {
+  return `comment-${id}`;
+}
+
+/** 지금 주소에서 원래 #조각만 바꿔, 댓글 하나로 바로 가는 링크를 만들어요. */
+export function commentLink(href: string, id: string): string {
+  const url = new URL(href);
+  url.hash = commentAnchor(id);
+  return url.href;
+}
+
+/**
+ * 맨 위 댓글을 아직 열린 것과 해결한 것으로 나눠요(감사 F6).
+ * 답글은 부모를 따라가므로 여기서 나누지 않습니다. ‘해결’은 댓글 상태일 뿐
+ * 교수 결과·읽음과 섞지 않아요.
+ */
+export function splitResolvedThreads<T extends { resolved: boolean }>(
+  threads: readonly T[],
+): { open: T[]; resolved: T[] } {
+  return {
+    open: threads.filter((thread) => !thread.resolved),
+    resolved: threads.filter((thread) => thread.resolved),
+  };
+}

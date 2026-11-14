@@ -27,7 +27,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  useDisabledReason,
+} from "@/components/common";
 import { Icon } from "@/components/icons";
 import { t } from "@/lib/i18n";
 import { joinPath, pendingJoin } from "@/lib/project-invites";
@@ -246,6 +251,12 @@ export function ResearchSelectPage() {
   const [trashName, setTrashName] = useState("");
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
+  const trashReason = useDisabledReason(
+    !!trashTarget &&
+      !pending &&
+      trashName !== trashTarget.name &&
+      t("연구 이름을 똑같이 입력하면 옮길 수 있어요."),
+  );
   // 연구 만들기는 온보딩 화면(/r/new)이 맡습니다. 예전 주소(?new=1)도 그리로 보냅니다.
   const wantsNew = creationParams.get("new") === "1";
   const noResearchYet =
@@ -310,7 +321,7 @@ export function ResearchSelectPage() {
                   )}
                   {events.length > 0 && (
                     <StatusBadge tone="blue">
-                      {t("새 소식 {count}개", { count: events.length })}
+                      {t("새 알림 {count}개", { count: events.length })}
                     </StatusBadge>
                   )}
                   <Icon name="chevron-right" size={17} />
@@ -610,10 +621,12 @@ export function ResearchSelectPage() {
               <Button
                 type="submit"
                 disabled={pending || trashName !== trashTarget?.name}
+                aria-describedby={trashReason.describedBy}
               >
                 {t("휴지통으로 옮기기")}
               </Button>
             </div>
+            {trashReason.node}
           </form>
         </DialogContent>
       </Dialog>

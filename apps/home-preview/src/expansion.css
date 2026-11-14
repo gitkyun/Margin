@@ -36,10 +36,6 @@
     background: transparent;
     border-color: var(--line);
   }
-  .sidebar-collapsed .sidebar-brand {
-    position: relative;
-    padding: 0;
-  }
   .sidebar-collapsed .sidebar-brand .brand {
     visibility: hidden;
     width: 0;
@@ -65,6 +61,8 @@
     transform: none;
   }
   .sidebar-collapsed .sidebar-brand {
+    position: relative;
+    padding: 0;
     justify-content: center;
   }
   .sidebar-collapsed .sidebar .nav-item {
@@ -96,7 +94,7 @@
       rgba(var(--semantic-foreground-brand-primary-rgb), var(--opacity-8)),
       transparent 67%
     );
-    z-index: -1;
+    z-index: var(--z-behind);
   }
   .rms-animated-list {
     display: grid;
@@ -171,9 +169,9 @@
     border: 1px solid var(--line);
     border-radius: 50%;
     font-style: normal;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     background: var(--surface);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .phase-strip li.is-current i {
     background: var(--primary);
@@ -228,31 +226,6 @@
   }
   .card-label > .count-chip {
     margin-left: auto;
-  }
-  .calm-empty.compact {
-    padding: 20px 4px;
-    min-height: 170px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .calm-empty.compact h3 {
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 500;
-    margin-top: 10px;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .calm-empty.compact p {
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-
-  .quiet-placeholder {
-    padding: 22px 0;
-    font-size: var(--typography-label1-fontSize);
-    color: var(--text-secondary);
-    line-height: var(--typography-label1Reading-lineHeight);
-    letter-spacing: var(--typography-label1-letterSpacing);
   }
   .settings-form-actions {
     margin-top: 28px;
@@ -331,10 +304,6 @@
     padding-top: 20px;
     border-top: 1px solid var(--line);
   }
-  .rms-modal-stack {
-    display: grid;
-    gap: 18px;
-  }
   .rms-error {
     border: 1px solid var(--danger-line);
     background: var(--danger-soft);
@@ -344,24 +313,12 @@
     font-size: var(--typography-label1-fontSize);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
-  .rms-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 9px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    background: var(--surface-muted);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   @media (max-width: 1199px) {
     .phase-strip li {
       min-width: 130px;
     }
   }
-  @media (max-width: 480px) {
+  @media (max-width: 767px) {
     .phase-title {
       padding: 12px 16px;
       gap: 10px;
@@ -920,9 +877,9 @@
     border-bottom: 1px dashed var(--line);
   }
   .speech-interim small {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     white-space: nowrap;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .transcript-field {
     display: grid;
@@ -1382,11 +1339,11 @@
     color: var(--text-secondary);
   }
   .folder-tree summary {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     padding: 6px 12px;
     cursor: pointer;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .folder-all {
     width: 100%;
@@ -1474,7 +1431,7 @@
   }
   .decision-log small,
   .decision-log small a {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
   .decision-log > li.is-replaced .decision-log-text {
     color: var(--text-tertiary);

@@ -55,6 +55,7 @@ import { isUnregisteredReviewer } from "@/lib/invites";
 import { InviteLinkButton } from "@/components/InviteLinkButton";
 import { localizeServerMessage } from "@/lib/server-messages";
 import { RequestDirection } from "./RequestDirection";
+import { WorkTabs } from "@/pages/student/shared";
 
 export function ReviewsPage() {
   const { researchId = "" } = useParams();
@@ -263,6 +264,7 @@ export function ReviewsPage() {
     <div className="reviews-page">
       <PageHeader
         title={t("검토 요청")}
+        tabs={<WorkTabs researchId={researchId} selected="reviews" />}
         actions={
           // 검토 요청이 없을 때는 빈 상태의 버튼이 주 행동이라 여기는 보조로 낮춥니다.
           <Button variant={hasReviews ? undefined : "outline"} onClick={begin}>

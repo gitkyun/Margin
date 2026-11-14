@@ -3,6 +3,7 @@ import { SelectField } from "@/components/experience";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type FormEvent,
@@ -42,6 +43,8 @@ import {
   Field,
   LoadingState,
   StatusBadge,
+  TextLink,
+  useDisabledReason,
 } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { PdfViewer } from "@/components/PdfViewer";
@@ -55,6 +58,9 @@ import {
 } from "@/lib/domain";
 import {
   ResponseStatus,
+  commentAnchor,
+  commentLink,
+  splitResolvedThreads,
   evidenceIssue,
   errorText,
   isLatestRound,
@@ -68,6 +74,42 @@ import {
 import { Tabs } from "@/components/ui/tabs";
 import { RequestDirection } from "./RequestDirection";
 
+/**
+ * 댓글 하나의 ⋯ 메뉴(감사 F6). 지금은 ‘링크 복사’만 있어요.
+ * 편집·삭제는 서버에 댓글 수정·삭제 기능이 생긴 뒤에 붙입니다.
+ */
+function CommentMenu({
+  comment,
+  authorLabel,
+  onCopyLink,
+}: {
+  comment: ReviewComment;
+  authorLabel: string;
+  onCopyLink: (id: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          className="review-comment-menu"
+          aria-label={t("{name}님 댓글 메뉴", { name: authorLabel })}
+        >
+          <Icon name="more" size={15} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={() => onCopyLink(comment.id)}>
+          <Icon name="link" size={16} />
+          {t("링크 복사")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function CommentThread({
   comment,
   replies,
@@ -75,6 +117,7 @@ function CommentThread({
   busy,
   onReply,
   onResolve,
+  onCopyLink,
   userId,
 }: {
   comment: ReviewComment;
@@ -83,21 +126,27 @@ function CommentThread({
   busy: boolean;
   onReply: (comment: ReviewComment) => void;
   onResolve: (id: string, value: boolean) => void;
+  onCopyLink: (id: string) => void;
   userId: string;
 }) {
+  const authorOf = (value: ReviewComment) =>
+    value.authorName || (value.userId === userId ? t("나") : t("검토 참여자"));
   return (
     <article
+      id={commentAnchor(comment.id)}
       className={`review-comment-thread ${comment.resolved ? "is-resolved" : ""}`}
     >
       <div className="review-comment-author">
         <span className="review-comment-avatar">
           {comment.authorName?.slice(0, 1) || t("검")}
         </span>
-        <strong>
-          {comment.authorName ||
-            (comment.userId === userId ? t("나") : t("검토 참여자"))}
-        </strong>
+        <strong>{authorOf(comment)}</strong>
         <time>{timeText(comment.createdAt)}</time>
+        <CommentMenu
+          comment={comment}
+          authorLabel={authorOf(comment)}
+          onCopyLink={onCopyLink}
+        />
       </div>
       <p className="review-comment-body">{comment.body}</p>
       <div className="review-comment-actions">
@@ -124,13 +173,19 @@ function CommentThread({
         )}
       </div>
       {replies.map((reply) => (
-        <div className="review-comment-reply" key={reply.id}>
+        <div
+          className="review-comment-reply"
+          key={reply.id}
+          id={commentAnchor(reply.id)}
+        >
           <div className="review-comment-author">
-            <strong>
-              {reply.authorName ||
-                (reply.userId === userId ? t("나") : t("검토 참여자"))}
-            </strong>
+            <strong>{authorOf(reply)}</strong>
             <time>{timeText(reply.createdAt)}</time>
+            <CommentMenu
+              comment={reply}
+              authorLabel={authorOf(reply)}
+              onCopyLink={onCopyLink}
+            />
           </div>
           <p className="review-comment-body">{reply.body}</p>
         </div>
@@ -259,6 +314,9 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const [recheckConfirmed, setRecheckConfirmed] = useState(false);
   const [history, setHistory] = useState<Record<string, ReviewResponse[]>>({});
   const [historyOpen, setHistoryOpen] = useState(false);
+  // 해결한 댓글은 접어 두고, 펼친 상태는 차수를 바꾸면 처음으로 돌아가요(감사 F6).
+  const [resolvedOpen, setResolvedOpen] = useState(false);
+  const scrolledAnchor = useRef("");
   const seen = useRef(new Set<string>());
   const recheckKey = useRef(uid());
   const comments = data.comments
@@ -271,6 +329,16 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
         comment: ownResponse?.comment ?? "",
       })
     : { result: "" as const, comment: "" };
+  // 이미 남긴 응답은 바꾼 것이 있을 때만 저장할 수 있어요(감사 B2·B4).
+  const responseReason = useDisabledReason(
+    !busy &&
+      (!draft.result
+        ? t("검토 결과를 고르면 저장할 수 있어요.")
+        : !!ownResponse &&
+          draft.result === ownResponse.result &&
+          draft.comment.trim() === (ownResponse.comment ?? "").trim() &&
+          t("바뀐 내용이 없어요.")),
+  );
   const responseIsDirty = Object.entries(responseDrafts).some(([id, value]) => {
     const saved = data.responses.find(
       (r) => r.roundId === id && r.userId === user.id,
@@ -299,6 +367,15 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   );
   const privateVersion = data.versions.find(
     (r) => r.id === privateResult?.versionId,
+  );
+  // 근거 문제는 창 안의 경고 문장이 알려 주므로 그 문장과 버튼을 잇습니다.
+  const recheckIssue = privateResult ? evidenceIssue(privateResult, data) : "";
+  const evidenceWarningId = useId();
+  const recheckReason = useDisabledReason(
+    !busy &&
+      !recheckIssue &&
+      !recheckConfirmed &&
+      t("공개 확인에 체크하면 요청할 수 있어요."),
   );
   const doAction = async (
     key: string,
@@ -335,7 +412,66 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     setError("");
     setReasonError("");
     setHistoryOpen(false);
+    setResolvedOpen(false);
   }, [round?.id]);
+  const commentThreads = comments.filter(
+    (r) => !r.parentId || !comments.some((parent) => parent.id === r.parentId),
+  );
+  const { open: openThreads, resolved: resolvedThreads } =
+    splitResolvedThreads(commentThreads);
+  // #comment-<id> 링크로 열면 그 댓글로 내려가요. 해결해서 접힌 댓글이면 먼저 펼쳐요.
+  useEffect(() => {
+    const anchor = window.location.hash.slice(1);
+    if (!anchor || scrolledAnchor.current === anchor) return;
+    const target = comments.find((c) => commentAnchor(c.id) === anchor);
+    if (!target) return;
+    const thread =
+      commentThreads.find((c) => c.id === (target.parentId ?? target.id)) ??
+      target;
+    if (thread.resolved && !resolvedOpen) {
+      setResolvedOpen(true);
+      return;
+    }
+    const element = document.getElementById(anchor);
+    if (!element) return;
+    scrolledAnchor.current = anchor;
+    element.scrollIntoView({ block: "center" });
+  }, [round?.id, comments.length, resolvedOpen]);
+  const copyCommentLink = async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(
+        commentLink(window.location.href, id),
+      );
+      toast.success(t("댓글 링크를 복사했어요."));
+    } catch {
+      toast.error(
+        t("링크를 복사하지 못했어요. 브라우저 주소창의 링크를 복사해 주세요."),
+      );
+    }
+  };
+  const renderThread = (record: ReviewComment) => (
+    <CommentThread
+      key={record.id}
+      comment={record}
+      replies={comments.filter((reply) => reply.parentId === record.id)}
+      canWrite={canWrite}
+      busy={!!busy}
+      userId={user.id}
+      onReply={(parent) => {
+        if (!round) return;
+        setReplyTo((current) => ({ ...current, [round.id]: parent }));
+        setMobilePanel("response");
+      }}
+      onResolve={(id, value) =>
+        void doAction(
+          `resolve-${id}`,
+          () => resolveComment(id, value),
+          value ? t("대화를 해결로 표시했어요.") : t("대화를 다시 열었어요."),
+        )
+      }
+      onCopyLink={(id) => void copyCommentLink(id)}
+    />
+  );
   const selectItem = (value: ReviewItem) => {
     const next = new URLSearchParams(params);
     next.set("item", value.id);
@@ -565,6 +701,13 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           </Link>
           {!embedded && <span className="review-header-divider" />}
           <div>
+            {/* 교수는 받은 검토 요청 목록(/r)으로 바로 돌아가요(감사 F5·F6). */}
+            {isProfessor && (
+              <TextLink className="review-back-link" to="/r">
+                <Icon name="arrow-left" size={14} />
+                {t("받은 검토 요청")}
+              </TextLink>
+            )}
             <h1>{request.title}</h1>
             <p>
               {isOwner
@@ -1010,6 +1153,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                             draft.comment.trim() ===
                               (ownResponse.comment ?? "").trim())
                         }
+                        aria-describedby={responseReason.describedBy}
                       >
                         {busy === "response"
                           ? t("저장 중")
@@ -1017,6 +1161,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                             ? t("변경 내용 저장")
                             : t("응답 저장")}
                       </Button>
+                      {responseReason.node}
                     </form>
                   ) : (
                     <p className="review-response-help">
@@ -1088,40 +1233,25 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                       {t("아직 댓글이 없어요.")}
                     </p>
                   )}
-                  {comments
-                    .filter(
-                      (r) =>
-                        !r.parentId ||
-                        !comments.some((parent) => parent.id === r.parentId),
-                    )
-                    .map((record) => (
-                      <CommentThread
-                        key={record.id}
-                        comment={record}
-                        replies={comments.filter(
-                          (reply) => reply.parentId === record.id,
-                        )}
-                        canWrite={canWrite}
-                        busy={!!busy}
-                        userId={user.id}
-                        onReply={(parent) => {
-                          setReplyTo((current) => ({
-                            ...current,
-                            [round.id]: parent,
-                          }));
-                          setMobilePanel("response");
-                        }}
-                        onResolve={(id, value) =>
-                          void doAction(
-                            `resolve-${id}`,
-                            () => resolveComment(id, value),
-                            value
-                              ? t("대화를 해결로 표시했어요.")
-                              : t("대화를 다시 열었어요."),
-                          )
-                        }
+                  {openThreads.map((record) => renderThread(record))}
+                  {!!resolvedThreads.length && (
+                    <button
+                      type="button"
+                      className="review-resolved-toggle"
+                      aria-expanded={resolvedOpen}
+                      onClick={() => setResolvedOpen((value) => !value)}
+                    >
+                      <Icon
+                        name={resolvedOpen ? "chevron-down" : "chevron-right"}
+                        size={14}
                       />
-                    ))}
+                      {t("해결한 댓글 {count}개", {
+                        count: resolvedThreads.length,
+                      })}
+                    </button>
+                  )}
+                  {resolvedOpen &&
+                    resolvedThreads.map((record) => renderThread(record))}
                   {canWrite && (
                     <form
                       className="review-comment-form"
@@ -1355,19 +1485,18 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                     </span>
                   </div>
                 )}
-                {evidenceIssue(privateResult, data) && (
-                  <p className="review-evidence-warning">
-                    {evidenceIssue(privateResult, data)}
+                {recheckIssue && (
+                  <p id={evidenceWarningId} className="review-evidence-warning">
+                    {recheckIssue}
                   </p>
                 )}
-                <Link
-                  className="review-text-link"
+                <TextLink
                   to={`/r/${request.researchId}/results/${privateResult.id}`}
                   state={back(request.title)}
                 >
                   {t("수정 결과에서 고치기")}
                   <Icon name="arrow-right" size={14} />
-                </Link>
+                </TextLink>
               </div>
               <label className="review-recheck-confirmation">
                 <Checkbox
@@ -1394,10 +1523,9 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   {t("취소")}
                 </Button>
                 <Button
-                  disabled={
-                    !!busy ||
-                    !recheckConfirmed ||
-                    !!evidenceIssue(privateResult, data)
+                  disabled={!!busy || !recheckConfirmed || !!recheckIssue}
+                  aria-describedby={
+                    recheckIssue ? evidenceWarningId : recheckReason.describedBy
                   }
                   onClick={submitRecheck}
                 >
@@ -1406,6 +1534,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                     : t("{number}차 검토 요청", { number: nextRoundNumber })}
                 </Button>
               </div>
+              {recheckReason.node}
             </>
           ) : (
             <p className="muted">

@@ -9,7 +9,13 @@ import {
 } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Segments } from "@/components/experience";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  TextLink,
+  InlineEmpty,
+} from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import type { RevisionResult } from "@/lib/domain";
@@ -117,7 +123,7 @@ export function ResultsPage() {
               </BackLink>
             }
             title={current.title}
-            description={t("실제로 고친 내용과 근거를 기록해요.")}
+            description={t("실제로 고친 내용과 교수님이 볼 파일을 남겨요.")}
             actions={
               <div className="button-row">
                 <Button
@@ -184,7 +190,7 @@ export function ResultsPage() {
               </div>
               <p className="student-body-text">{current.description}</p>
               <div className="result-evidence">
-                <h3>{t("확인할 근거")}</h3>
+                <h3>{t("교수님이 볼 파일")}</h3>
                 {version ? (
                   <Link
                     className="student-simple-row"
@@ -204,11 +210,13 @@ export function ResultsPage() {
                     <Icon name="arrow-up-right" size={16} />
                   </Link>
                 ) : (
-                  <p className="student-empty-inline">
+                  <InlineEmpty>
                     {current.kind === "document"
                       ? t("아직 파일을 연결하지 않았어요.")
-                      : t("문서 외 수정이라 위에 적은 내용을 근거로 사용해요.")}
-                  </p>
+                      : t(
+                          "문서 외 수정이라 파일 없이 위에 적은 설명만 보여요.",
+                        )}
+                  </InlineEmpty>
                 )}
                 {current.kind === "document" && !ready && (
                   <p className="student-inline-note">
@@ -450,23 +458,20 @@ function ResultPanel({
                     </ul>
                   )}
                   {request && (
-                    <Link
-                      className="student-text-link"
-                      to={`/reviews/${request.id}`}
-                    >
+                    <TextLink to={`/reviews/${request.id}`}>
                       {t("검토 요청 열기")}
                       <Icon name="arrow-right" size={14} />
-                    </Link>
+                    </TextLink>
                   )}
                 </article>
               );
             })}
             {!items.length && (
-              <p className="student-empty-inline">
+              <InlineEmpty>
                 {t(
                   "아직 검토 요청에 넣지 않았어요. 넣으면 교수 응답이 여기에 보여요.",
                 )}
-              </p>
+              </InlineEmpty>
             )}
           </div>
         )}
@@ -490,9 +495,7 @@ function ResultPanel({
               </Link>
             ))}
             {!feedback.length && (
-              <p className="student-empty-inline">
-                {t("연결한 피드백이 없어요.")}
-              </p>
+              <InlineEmpty>{t("연결한 피드백이 없어요.")}</InlineEmpty>
             )}
             <h3>
               {t("할 일")}
@@ -512,9 +515,7 @@ function ResultPanel({
               </Link>
             ))}
             {!tasks.length && (
-              <p className="student-empty-inline">
-                {t("연결한 할 일이 없어요.")}
-              </p>
+              <InlineEmpty>{t("연결한 할 일이 없어요.")}</InlineEmpty>
             )}
           </div>
         )}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "./icons";
+import { StatusBadge } from "./common";
 import {
   Dialog,
   DialogContent,
@@ -83,9 +84,9 @@ export function SubscriptionPlans({
               <span className="subscription-icon">
                 <Icon name={plan.icon} size={22} />
               </span>
-              <span className="subscription-status">
+              <StatusBadge>
                 {plan.id === "free" ? t("기본 플랜") : t("출시 예정")}
-              </span>
+              </StatusBadge>
             </div>
             <h3>{plan.name}</h3>
             <p className="subscription-line">{plan.line}</p>

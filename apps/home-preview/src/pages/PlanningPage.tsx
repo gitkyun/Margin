@@ -4,7 +4,7 @@ import themePlugin from "@fullcalendar/react/themes/forma";
 import { Input } from "@/components/ui/input";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useId, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -36,6 +36,10 @@ import {
   StatusBadge,
   EmptyState,
   LoadingState,
+  TextLink,
+  InlineEmpty,
+  DisabledReason,
+  useDisabledReason,
 } from "@/components/common";
 import { Choice, Segments } from "@/components/experience";
 import { Tabs } from "@/components/ui/tabs";
@@ -62,6 +66,8 @@ const EVENT_TONE: Record<EventTone, string> = {
   violet: "--semantic-foreground-accent-violet",
   positive: "--semantic-foreground-positive-primary",
 };
+/** 시간 조율 후보는 이 개수까지 넣을 수 있어요. */
+const POLL_OPTION_LIMIT = 12;
 function eventTone(tone: EventTone) {
   const token = EVENT_TONE[tone];
   return {
@@ -124,7 +130,7 @@ export function PlanningPage() {
   return (
     <div className="experience-page">
       <PageHeader
-        title={t("계획·일정")}
+        title={t("일정")}
         description={t("연구 단계와 중요한 일정을 확인하세요.")}
         actions={
           // 탭마다 그 탭에서 만드는 것 하나만 주 행동으로 둡니다.
@@ -185,12 +191,11 @@ export function PlanningPage() {
       {tab === "roadmap" ? (
         <>
           <div className="roadmap-summary">
-            <span className="rms-pill">
-              <Icon name="flag" size={14} />
+            <StatusBadge tone="blue" icon={<Icon name="flag" size={14} />}>
               {phases.find((p) => p.id === research.currentPhaseId)?.title ??
                 phases.find((p) => p.status === "active")?.title ??
                 t("현재 단계 미정")}
-            </span>
+            </StatusBadge>
             <p>
               {t("단계와 목표의 날짜를 바꿔도 할 일 기한은 바뀌지 않아요.")}
             </p>
@@ -526,7 +531,7 @@ export function PlanningPage() {
                 <div>
                   <strong>{p.title}</strong>
                   <small>
-                    {t("후보 시간 {options}개 · 참여자 {participants}명", {
+                    {t("후보 시간 {options}개 · 참석자 {participants}명", {
                       options: p.options.length,
                       participants: p.participants.length,
                     })}
@@ -551,7 +556,9 @@ export function PlanningPage() {
             ))}
           </div>
           {!polls.length && (
-            <p className="quiet-placeholder">{t("아직 시간 조율이 없어요.")}</p>
+            <InlineEmpty variant="panel">
+              {t("아직 시간 조율이 없어요.")}
+            </InlineEmpty>
           )}
         </section>
       )}
@@ -800,6 +807,12 @@ function PollCreate({
     [options, setOptions] = useState([{ id: uid(), start: "", end: "" }]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const optionLimitReason = useDisabledReason(
+    options.length >= POLL_OPTION_LIMIT &&
+      t("후보 시간은 {count}개까지 넣을 수 있어요.", {
+        count: POLL_OPTION_LIMIT,
+      }),
+  );
   return (
     <Dialog
       open={open}
@@ -853,7 +866,7 @@ function PollCreate({
             />
           </label>
           <label className="field">
-            {t("참여자 이메일")}
+            {t("참석자 이메일")}
             <Input
               required
               value={emails}
@@ -916,7 +929,8 @@ function PollCreate({
           <Button
             type="button"
             variant="outline"
-            disabled={options.length >= 12}
+            disabled={options.length >= POLL_OPTION_LIMIT}
+            aria-describedby={optionLimitReason.describedBy}
             onClick={() =>
               setOptions([...options, { id: uid(), start: "", end: "" }])
             }
@@ -924,6 +938,7 @@ function PollCreate({
             <Icon name="plus" size={16} />
             {t("후보 추가")}
           </Button>
+          {optionLimitReason.node}
           {error && <p className="rms-error">{error}</p>}
           <div className="bottom-actions">
             <Button
@@ -950,7 +965,8 @@ export function PollPage() {
     p = data.polls.find((p) => p.id === pollId);
   const [selected, setSelected] = useState<string[] | null>(null),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    participantReasonId = useId();
   if (!p)
     return (
       <EmptyState
@@ -967,7 +983,12 @@ export function PollPage() {
     available = selected ?? mine?.available ?? [],
     owner =
       data.researches.find((r) => r.id === p.researchId)?.ownerId === user.id,
-    canConfirm = owner || p.organizerId === user.id;
+    canConfirm = owner || p.organizerId === user.id,
+    // 확정·취소는 머리의 상태 배지가 알려 주므로 참여자가 아닐 때만 이유를 보여요.
+    participantReason =
+      !mine &&
+      p.status === "open" &&
+      t("참석자로 초대된 사람만 가능한 시간을 고를 수 있어요.");
   async function run(input: Record<string, unknown>) {
     setBusy(true);
     setError("");
@@ -989,8 +1010,7 @@ export function PollPage() {
   }
   return (
     <div className="experience-page poll-page">
-      <Link
-        className="text-link"
+      <TextLink
         to={
           data.researches.some((r) => r.id === p.researchId)
             ? `/r/${p.researchId}/planning?tab=schedule`
@@ -999,7 +1019,7 @@ export function PollPage() {
       >
         <Icon name="arrow-left" size={16} />
         {t("돌아가기")}
-      </Link>
+      </TextLink>
       <PageHeader
         title={p.title}
         description={`${p.researchName} · ${
@@ -1021,6 +1041,7 @@ export function PollPage() {
       />
       {error && <p className="rms-error">{error}</p>}
       <section className="experience-panel">
+        <DisabledReason id={participantReasonId} reason={participantReason} />
         <div className="poll-options">
           {p.options.map((o) => (
             <div
@@ -1030,6 +1051,9 @@ export function PollPage() {
               <label>
                 <Checkbox
                   disabled={!mine || p.status !== "open" || busy}
+                  aria-describedby={
+                    participantReason ? participantReasonId : undefined
+                  }
                   checked={available.includes(o.id)}
                   onCheckedChange={(next) =>
                     setSelected(
@@ -1065,14 +1089,19 @@ export function PollPage() {
               )}
               <div className="poll-responses">
                 {p.participants.map((m) => (
-                  <span key={m.userId} className="rms-pill">
-                    <Icon
-                      name={m.available.includes(o.id) ? "check" : "user"}
-                      size={13}
-                    />
+                  <StatusBadge
+                    key={m.userId}
+                    tone={m.available.includes(o.id) ? "green" : "neutral"}
+                    icon={
+                      <Icon
+                        name={m.available.includes(o.id) ? "check" : "user"}
+                        size={13}
+                      />
+                    }
+                  >
                     {m.name}
                     {m.available.includes(o.id) ? ` · ${t("가능")}` : ""}
-                  </span>
+                  </StatusBadge>
                 ))}
               </div>
               {canConfirm && p.status === "open" && (

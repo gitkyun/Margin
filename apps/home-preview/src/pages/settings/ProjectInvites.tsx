@@ -1,10 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ErrorNotice, StatusBadge } from "@/components/common";
+import {
+  ErrorNotice,
+  StatusBadge,
+  InlineEmpty,
+  useDisabledReason,
+} from "@/components/common";
 import { Segments } from "@/components/experience";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { formatDateTime } from "@/lib/domain";
 import { t } from "@/lib/i18n";
@@ -74,6 +80,7 @@ export function ProjectInvites({
   canInviteAdvisor,
 }: ProjectInvitesProps) {
   const client = useQueryClient();
+  const [confirmDialog, confirm] = useConfirm();
   const queryKey = ["project-invites", researchId];
   const invites = useQuery({
     queryKey,
@@ -89,6 +96,11 @@ export function ProjectInvites({
   const [busy, setBusy] = useState("");
   const [problem, setProblem] = useState("");
   const [latest, setLatest] = useState<InviteSendOutcome | null>(null);
+  const emailReason = useDisabledReason(
+    !busy &&
+      !email.trim() &&
+      t("이메일을 입력하면 초대 메일을 보낼 수 있어요."),
+  );
 
   async function run(key: string, task: () => Promise<void>) {
     if (busy) return;
@@ -129,6 +141,7 @@ export function ProjectInvites({
 
   return (
     <div className="project-invites">
+      {confirmDialog}
       {roles.length > 0 && (
         <form onSubmit={submit}>
           <h3>{t("이메일로 초대")}</h3>
@@ -175,11 +188,16 @@ export function ProjectInvites({
             </p>
           )}
           <div className="bottom-actions">
-            <Button type="submit" disabled={!!busy || !email.trim()}>
+            <Button
+              type="submit"
+              disabled={!!busy || !email.trim()}
+              aria-describedby={emailReason.describedBy}
+            >
               <Icon name="send" size={16} />
               {busy === "send" ? t("보내는 중") : t("초대 메일 보내기")}
             </Button>
           </div>
+          {emailReason.node}
         </form>
       )}
       {latest && (
@@ -229,7 +247,7 @@ export function ProjectInvites({
           retry={() => void invites.refetch()}
         />
       ) : list.length === 0 ? (
-        <p className="student-empty-inline">{t("아직 보낸 초대가 없어요.")}</p>
+        <InlineEmpty>{t("아직 보낸 초대가 없어요.")}</InlineEmpty>
       ) : (
         <ul className="project-invite-list">
           {list.map((invite) => {
@@ -243,7 +261,7 @@ export function ProjectInvites({
                     {roleLabel(invite.role)}
                     {" · "}
                     {t("{name}님이 {when}에 초대", {
-                      name: invite.invitedByName ?? t("참여자"),
+                      name: invite.invitedByName ?? t("공동연구자"),
                       when: formatDateTime(invite.createdAt),
                     })}
                   </small>
@@ -296,14 +314,16 @@ export function ProjectInvites({
                       variant="ghost"
                       size="sm"
                       disabled={!!busy}
-                      onClick={() => {
+                      onClick={async () => {
                         if (
-                          !confirm(
-                            t(
+                          !(await confirm({
+                            title: t(
                               "{email}님의 초대를 취소할까요? 이미 보낸 링크는 쓸 수 없게 돼요.",
                               { email: invite.email },
                             ),
-                          )
+                            confirmLabel: t("초대 취소"),
+                            destructive: true,
+                          }))
                         )
                           return;
                         void run(`revoke:${invite.id}`, async () => {

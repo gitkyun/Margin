@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { emptyWorkspace, type ReviewRound } from "@/lib/domain";
-import { isLatestRound, knownProfessorEmails } from "./helpers";
+import {
+  commentLink,
+  isLatestRound,
+  knownProfessorEmails,
+  splitResolvedThreads,
+} from "./helpers";
 
 function round(id: string, itemId: string, number: number): ReviewRound {
   return { id, itemId, number } as ReviewRound;
@@ -55,5 +60,26 @@ describe("knownProfessorEmails", () => {
 
   it("returns nothing when the research has no review requests", () => {
     expect(knownProfessorEmails([], "r1")).toEqual([]);
+  });
+});
+
+describe("댓글 링크와 해결한 댓글 접기", () => {
+  it("지금 주소의 검토 항목·차수를 유지하고 #조각만 댓글로 바꾼다", () => {
+    const href = "https://example.test/reviews/req?item=i1&round=r2#old";
+    expect(commentLink(href, "c9")).toBe(
+      "https://example.test/reviews/req?item=i1&round=r2#comment-c9",
+    );
+  });
+
+  it("해결한 댓글만 따로 모으고 원래 순서를 지킨다", () => {
+    const threads = [
+      { id: "a", resolved: false },
+      { id: "b", resolved: true },
+      { id: "c", resolved: false },
+      { id: "d", resolved: true },
+    ];
+    const { open, resolved } = splitResolvedThreads(threads);
+    expect(open.map((x) => x.id)).toEqual(["a", "c"]);
+    expect(resolved.map((x) => x.id)).toEqual(["b", "d"]);
   });
 });
