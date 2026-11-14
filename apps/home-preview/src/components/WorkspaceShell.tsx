@@ -199,7 +199,7 @@ const FOCUS_ROUTE = /^\/r\/[^/]+\/(assistant(\/|$)|writing\/[^/]+)/;
 const NAV_GROUPS: { label: string | null; paths: string[] }[] = [
   { label: null, paths: [""] },
   {
-    label: t("지도 흐름"),
+    label: t("지도 기록"),
     paths: ["meetings", "feedback", "tasks", "reviews"],
   },
   { label: t("연구 작업"), paths: ["writing", "materials", "planning"] },
@@ -322,9 +322,11 @@ export function WorkspaceShell({
             ? t("할 일")
             : location.pathname.includes("/results")
               ? t("수정 결과")
-              : (navigation.find(
-                  ([path]) => path && location.pathname.includes("/" + path),
-                )?.[2] ?? (research ? t("연구 홈") : homeLabel));
+              : location.pathname.includes("/feedback")
+                ? t("피드백")
+                : (navigation.find(
+                    ([path]) => path && location.pathname.includes("/" + path),
+                  )?.[2] ?? (research ? t("연구 홈") : homeLabel));
   useEffect(() => {
     document.title = t("{name} · 마진", {
       name: `${current}${research ? ` · ${research.name}` : ""}`,
@@ -439,7 +441,7 @@ export function WorkspaceShell({
             <div
               className="nav-group"
               key={group.label ?? "home"}
-              data-tour={group.label === t("지도 흐름") ? "flow" : undefined}
+              data-tour={group.label === t("지도 기록") ? "flow" : undefined}
             >
               {group.label && <p className="nav-group-label">{group.label}</p>}
               {navigation
@@ -743,7 +745,8 @@ export function WorkspaceShell({
           />
         </div>
         <footer className="workspace-footer">
-          <span>{t("마진 · 흩어진 기록을 모아, 다음 연구가 되도록")}</span>
+          {/* 슬로건은 소개 화면에만 둡니다(ux-writing). 작업 화면은 이름만. */}
+          <span>{t("마진")}</span>
           <span className="workspace-footer-links">
             <a href="mailto:admin@margin.com">{t("문의 admin@margin.com")}</a>
             <Link to="/privacy">{t("자료·개인정보 안내")}</Link>

@@ -159,7 +159,8 @@
     height: 52px;
     min-height: 52px;
     padding: 0 20px 0 24px;
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    /* 반투명이면 스크롤할 때 본문 글자가 비칩니다. */
+    background: var(--surface);
     z-index: 5;
   }
   .floating-workspace .breadcrumbs {
@@ -381,7 +382,8 @@
     inset: 0;
     z-index: 30;
     border: 0;
-    background: transparent;
+    /* 펼친 메뉴가 본문을 덮고 있다는 것을 알 수 있게 뒤를 어둡게 합니다. */
+    background: var(--semantic-effect-dimmer-primary);
     cursor: default;
   }
   /*

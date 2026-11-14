@@ -371,11 +371,12 @@ export function TasksPage() {
         <>
           <PageHeader
             title={t("할 일")}
-            description={t(
-              "미팅 준비에 포함하지 않은 할 일까지 모두 볼 수 있어요.",
-            )}
             actions={
-              <Button onClick={startCreate}>
+              // 할 일이 없을 때는 빈 상태의 '할 일 추가'가 주 행동이라 여기는 보조로 낮춥니다.
+              <Button
+                variant={hasTasks ? undefined : "outline"}
+                onClick={startCreate}
+              >
                 <Icon name="plus" size={17} />
                 {t("할 일 추가")}
               </Button>

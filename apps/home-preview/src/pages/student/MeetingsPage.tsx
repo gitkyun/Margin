@@ -189,14 +189,17 @@ export function MeetingsPage() {
     <div className="student-page">
       <PageHeader
         title={t("미팅")}
-        description={t("다음 미팅을 준비하고 지난 기록을 확인하세요.")}
         actions={
           <>
             <Button variant="outline" onClick={() => setLogOpen(true)}>
               <Icon name="history" size={16} />
               {t("결정 기록")}
             </Button>
-            <Button onClick={openCreate}>
+            {/* 미팅이 없을 때는 빈 상태의 '미팅 만들기'가 주 행동이라 여기는 보조로 낮춥니다. */}
+            <Button
+              variant={hasMeetings ? undefined : "outline"}
+              onClick={openCreate}
+            >
               <Icon name="plus" size={17} />
               {t("미팅 만들기")}
             </Button>
@@ -409,6 +412,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [memoState, setMemoState] = useState<
     "saved" | "dirty" | "saving" | "error"
   >(memo === meeting.memo ? "saved" : "dirty");
+  // 메모를 고친 적이 없으면 '저장됨'을 띄우지 않습니다. 탭만 바꿔도 저장된 것처럼 보였어요.
+  const [memoTouched, setMemoTouched] = useState(memo !== meeting.memo);
   const [memoError, setMemoError] = useState<string | null>(null);
   const [memoConflict, setMemoConflict] = useState(false);
   const [memoTick, setMemoTick] = useState(0);
@@ -574,7 +579,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     }
   }, [meeting.memo, meeting.memoRevision]);
   useEffect(() => {
-    if (memo === savedMemo.current) return;
+    if (memo === savedMemo.current) {
+      // 고쳤다가 저장본과 같게 되돌리면 저장할 것이 없어요. '작성 중'에 머물거나
+      // 되돌리기 전 임시본이 새로고침 뒤 살아나지 않게 정리합니다.
+      if (!memoConflict && !memoPending.current) {
+        setMemoState((state) => (state === "dirty" ? "saved" : state));
+        try {
+          sessionStorage.removeItem(draftKey);
+        } catch {}
+      }
+      return;
+    }
     try {
       sessionStorage.setItem(
         draftKey,
@@ -586,6 +601,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       );
     } catch {}
     if (memoConflict) return;
+    setMemoTouched(true);
     setMemoState("dirty");
     const timer = setTimeout(() => {
       void commitMemo();
@@ -1065,9 +1081,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   }
                 />
               )}
-              <p className="student-footnote">
-                {t("할 일의 기한과 진행 상태는 미팅 준비와 따로 관리돼요.")}
-              </p>
             </section>
             <section className="surface">
               <div className="section-heading">
@@ -1153,16 +1166,20 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             <div className="section-heading">
               <h2>{t("미팅 원문 메모")}</h2>
               <span role="status" className={`save-state ${memoState}`}>
-                <span />
-                {memoState === "saved"
-                  ? mode === "preview"
-                    ? t("이 브라우저에 저장됨")
-                    : t("저장됨")
-                  : memoState === "saving"
-                    ? t("저장 중")
-                    : memoState === "error"
-                      ? t("저장 실패")
-                      : t("작성 중")}
+                {(memoTouched || memoState === "error") && (
+                  <>
+                    <span />
+                    {memoState === "saved"
+                      ? mode === "preview"
+                        ? t("이 브라우저에 저장됨")
+                        : t("저장됨")
+                      : memoState === "saving"
+                        ? t("저장 중")
+                        : memoState === "error"
+                          ? t("저장 실패")
+                          : t("작성 중")}
+                  </>
+                )}
               </span>
             </div>
             <p className="student-footnote">

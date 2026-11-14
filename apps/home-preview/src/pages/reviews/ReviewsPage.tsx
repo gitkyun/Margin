@@ -101,6 +101,7 @@ export function ReviewsPage() {
     [data.results, researchId],
   );
   const picks = results.filter((r) => selected.includes(r.id));
+  const hasReviews = data.reviews.some((r) => r.researchId === researchId);
   const requests = data.reviews
     .filter(
       (r) =>
@@ -262,9 +263,9 @@ export function ReviewsPage() {
     <div className="reviews-page">
       <PageHeader
         title={t("검토 요청")}
-        description={t("교수님의 항목별 응답과 공유 상태를 확인하세요.")}
         actions={
-          <Button onClick={begin}>
+          // 검토 요청이 없을 때는 빈 상태의 버튼이 주 행동이라 여기는 보조로 낮춥니다.
+          <Button variant={hasReviews ? undefined : "outline"} onClick={begin}>
             <Icon name="plus" size={17} />
             {t("검토 요청 만들기")}
           </Button>

@@ -184,6 +184,11 @@
   align-items: center;
   gap: var(--spacing-4);
 }
+/* 캘린더 목록 보기의 날짜·요일: 각 줄이 "11월/10일"처럼 갈라지지 않게 합니다. */
+.rms-calendar .rms-list-day,
+.rms-calendar .rms-list-day * {
+  white-space: nowrap;
+}
 /* 캘린더 목록 보기의 일정 이름: 좁은 화면에서 잘리지 않고 줄바꿈합니다(검수 P1-7). */
 .rms-calendar .rms-list-title {
   min-width: 0;

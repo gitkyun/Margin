@@ -390,23 +390,40 @@ export function PlanningPage() {
               // 목록 보기로 시작합니다(검수 P1-7). 달력 보기는 위 버튼으로 바꿀 수 있어요.
               initialView={
                 window.matchMedia(queryDown("sm")).matches
-                  ? "listMonth"
+                  ? "listUpcoming"
                   : "dayGridMonth"
               }
+              // 목록 보기는 달의 1일이 아니라 오늘부터 31일을 보여 줍니다.
+              // 지난 일정부터 내려 보지 않아도 다음 일정이 맨 위에 와요.
+              views={{
+                listUpcoming: {
+                  type: "list",
+                  duration: { days: 31 },
+                  // 버튼 이름은 언어 사전의 목록 보기 이름("일정")을 그대로 씁니다.
+                  buttonTextKey: "listText",
+                  titleFormat: { month: "long", day: "numeric" },
+                },
+              }}
               // 달 이름 양옆에 이전·다음 버튼을 두어 한 곳에서 달을 넘깁니다.
               headerToolbar={{
                 left: "prev title next",
                 center: "",
-                right: "today dayGridMonth,timeGridWeek,listMonth",
+                right: "today dayGridMonth,timeGridWeek,listUpcoming",
               }}
               // 날짜 칸은 숫자만 보여 줍니다("10일" → "10").
               dayCellFormat={{ day: "numeric" }}
               dayCellTopContent={(info) =>
                 info.dayNumberText.replace(/[일日]/, "")
               }
-              // 목록 보기: 날짜는 "11월 10일"처럼 짧게(요일은 아래 줄에 따로 나와요),
-              // 일정 이름은 잘리지 않고 줄바꿈합니다(검수 P1-7).
+              // 목록 보기: 날짜는 "11월 10일", 그 아래 요일. 휴대폰에서 "11월/10일/화요일" 세 줄로
+              // 갈라지지 않게 각 줄을 줄바꿈 없이 둡니다(rms-list-day). 일정 이름은 줄바꿈합니다(검수 P1-7).
               listDayFormat={{ month: "short", day: "numeric" }}
+              listDayAltFormat={{ weekday: "long" }}
+              listDayHeaderClass="rms-list-day"
+              // 라이브러리 기본 문구("일정이 없습니다") 대신 해요체로, 지난 일정 보는 법을 함께 알려요.
+              noEventsText={t(
+                "이 기간에는 일정이 없어요. ‹ 버튼으로 지난 일정을 볼 수 있어요.",
+              )}
               listItemEventTitleClass="rms-list-title"
               height="auto"
               events={[

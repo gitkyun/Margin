@@ -139,7 +139,7 @@
       inset: 0;
       z-index: 39;
       border: 0;
-      background: var(--semantic-material-dimmer, rgba(0, 0, 0, 0.4));
+      background: var(--semantic-effect-dimmer-primary);
       animation: margin-panel-fade var(--motion-duration-enter) ease-out;
     }
     @keyframes margin-panel-in {

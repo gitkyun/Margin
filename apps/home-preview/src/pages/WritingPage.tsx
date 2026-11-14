@@ -135,7 +135,6 @@ export function WritingPage() {
     <div className="experience-page">
       <PageHeader
         title={t("글쓰기")}
-        description={t("계획서와 원고를 쓰고, 버전을 남겨 비교할 수 있어요.")}
         actions={
           <DropdownMenu>
             <DropdownMenuTrigger>
@@ -390,7 +389,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   // "Save page" dialog.
   const saveShortcut = useRef(saveNow);
   saveShortcut.current = () => {
-    if (!busy && title.trim()) saveNow();
+    if (!busy && dirty && title.trim()) saveNow();
   };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -553,7 +552,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           >
             {t("검토용 PDF")}
           </Button>
-          <Button disabled={!!busy || !title.trim()} onClick={saveNow}>
+          {/* 바뀐 것이 없으면 '저장됨' 상태와 맞게 저장 버튼을 끕니다. */}
+          <Button
+            disabled={!!busy || !dirty || !title.trim()}
+            onClick={saveNow}
+          >
             {busy === "save" ? t("저장 중") : t("저장")}
           </Button>
         </div>

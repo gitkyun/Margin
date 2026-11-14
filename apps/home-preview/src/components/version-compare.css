@@ -30,7 +30,7 @@
   }
   /* 손잡이(role=slider) 자체는 라이브러리가 outline을 0으로 두므로 둥근 손잡이에 표시합니다. */
   .version-compare-handle-root:focus-visible .version-compare-knob {
-    outline: 3px solid var(--semantic-line-brand-focus);
+    outline: 2px solid var(--brand);
     outline-offset: 3px;
   }
 

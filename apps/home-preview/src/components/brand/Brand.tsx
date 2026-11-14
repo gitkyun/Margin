@@ -90,10 +90,11 @@ export function AssistantMascot({
       aria-hidden="true"
     >
       <img
-        src={`/brand/mascot/${mascotImages[state]}.png`}
+        // 화면에는 64px 이하로만 그려서 1024px 원본(약 250KB) 대신 192px 사본(약 4KB)을 씁니다.
+        src={`/brand/mascot/192/${mascotImages[state]}.webp`}
         alt=""
-        width="1024"
-        height="1024"
+        width="192"
+        height="192"
         loading={eager ? "eager" : "lazy"}
         decoding="async"
         draggable={false}

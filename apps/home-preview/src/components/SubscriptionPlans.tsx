@@ -71,7 +71,6 @@ export function SubscriptionPlans({
       {!publicView && (
         <div className="subscription-heading">
           <h2>{t("플랜")}</h2>
-          <p>{t("플랜별 제공 기능을 비교할 수 있어요.")}</p>
         </div>
       )}
       <div className="subscription-grid">

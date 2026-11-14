@@ -384,7 +384,7 @@ export function App() {
                                         ? t("계획·일정")
                                         : t("연구 홈")
                           : path.startsWith("/reviews")
-                            ? t("교수 검토")
+                            ? t("검토 요청")
                             : path.startsWith("/schedule")
                               ? t("미팅 시간 조율")
                               : t("페이지를 찾을 수 없어요"));

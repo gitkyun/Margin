@@ -643,16 +643,14 @@ export function ResearchAssistant() {
           {!messages.length ? (
             <div className="assistant-welcome">
               <AssistantMascot state="ready" size={64} eager />
-              <h2>{t("무엇을 도와드릴까요?")}</h2>
-              <p>
-                {t("미팅 메모, 문서, 파일을 첨부하면 그 기록만 읽고 답해요.")}
-              </p>
+              <h2>{t("아직 대화가 없어요")}</h2>
+              {/* 첨부 안내는 입력창 안내 문구 한 곳에만 둡니다. */}
               {!unavailable && (
                 <div className="assistant-prompts">
                   {[
-                    t("다음 미팅까지 할 일을 정리해 줘"),
-                    t("이 피드백의 수정 방법을 비교해 줘"),
-                    t("이 문단에서 더 구체화할 부분을 찾아 줘"),
+                    t("다음 미팅 전에 끝낼 일이 뭐가 있지?"),
+                    t("이 피드백은 어떻게 고치면 좋을까?"),
+                    t("이 문단에서 더 구체적으로 쓸 곳을 찾아 줘"),
                   ].map((prompt) => (
                     <button
                       key={prompt}
@@ -744,11 +742,10 @@ export function ResearchAssistant() {
           <textarea
             ref={composerRef}
             aria-label={t("연구 도우미에게 질문")}
+            // 쓸 수 없는 이유는 입력창 바로 위 한 줄에서 알려 주므로 여기서 되풀이하지 않습니다.
             placeholder={
               unavailable
-                ? aiNotConfigured
-                  ? t("연구 도우미가 연결되면 질문을 보낼 수 있어요.")
-                  : t("미리보기에서는 질문을 보낼 수 없어요.")
+                ? undefined
                 : contexts.length
                   ? t("첨부한 기록에 대해 물어보세요")
                   : t(
