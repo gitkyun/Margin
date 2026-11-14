@@ -108,6 +108,13 @@
     color: inherit;
     text-decoration: none;
   }
+  /* 제출할 때 막힌 칸(lib/form-validation.ts가 표시). 고치면 바로 사라져요. */
+  input[aria-invalid="true"],
+  textarea[aria-invalid="true"],
+  select[aria-invalid="true"] {
+    outline: 2px solid var(--danger);
+    outline-offset: 1px;
+  }
   button:focus-visible,
   a:focus-visible,
   summary:focus-visible {

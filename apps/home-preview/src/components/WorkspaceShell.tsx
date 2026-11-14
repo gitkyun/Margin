@@ -1,5 +1,4 @@
-import { LanguageMenu } from "./LanguageMenu";
-import { t } from "@/lib/i18n";
+import { LANGUAGES, currentLang, setLang, t } from "@/lib/i18n";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -123,6 +122,18 @@ function AccountMenu() {
             <Icon name="monitor" size={17} />
             {t("화면 설정")}
           </DropdownMenuItem>
+          {/* 언어는 자주 바꾸지 않아 상단 줄 대신 계정 메뉴에 둡니다(결정 D2). */}
+          {LANGUAGES.filter((option) => option.value !== currentLang()).map(
+            (option) => (
+              <DropdownMenuItem
+                key={option.value}
+                onSelect={() => setLang(option.value)}
+              >
+                <span aria-hidden="true">{option.flag}</span>
+                <span lang={option.value}>{option.label}</span>
+              </DropdownMenuItem>
+            ),
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/guide")}>
             <Icon name="help" size={17} />
@@ -665,7 +676,6 @@ export function WorkspaceShell({
                 </Button>
               </Hint>
             )}
-            <LanguageMenu />
             <Hint
               label={t("사용 안내")}
               detail={t("키보드 단축키는 ? 키로 볼 수 있어요.")}

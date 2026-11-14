@@ -101,6 +101,24 @@ describe("selectHomeAction", () => {
     ).toBe("sort_feedback");
   });
 
+  it("asks to record the latest past meeting that was never recorded (A10)", () => {
+    const past = meeting({ id: "m3", status: "preparing", date: "2026-11-06" });
+    const older = meeting({
+      id: "m4",
+      status: "preparing",
+      date: "2026-10-01",
+    });
+    expect(pick({ meetings: [older, past] })).toMatchObject({
+      kind: "record_past_meeting",
+      label: "지난 미팅 기록 남기기",
+      href: "/r/r1/meetings/m3?tab=record",
+    });
+    // 다음 미팅이 있으면 그 미팅 준비가 먼저예요.
+    expect(
+      pick({ next: meeting({}), meetings: [past, meeting({})] }).kind,
+    ).toBe("prepare_meeting");
+  });
+
   it("offers a new meeting when nothing is scheduled", () => {
     expect(pick({})).toMatchObject({
       kind: "create_meeting",

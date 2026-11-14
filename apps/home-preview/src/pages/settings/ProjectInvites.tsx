@@ -5,6 +5,7 @@ import { ErrorNotice, StatusBadge } from "@/components/common";
 import { Segments } from "@/components/experience";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { formatDateTime } from "@/lib/domain";
 import { t } from "@/lib/i18n";
@@ -74,6 +75,7 @@ export function ProjectInvites({
   canInviteAdvisor,
 }: ProjectInvitesProps) {
   const client = useQueryClient();
+  const [confirmDialog, confirm] = useConfirm();
   const queryKey = ["project-invites", researchId];
   const invites = useQuery({
     queryKey,
@@ -129,6 +131,7 @@ export function ProjectInvites({
 
   return (
     <div className="project-invites">
+      {confirmDialog}
       {roles.length > 0 && (
         <form onSubmit={submit}>
           <h3>{t("이메일로 초대")}</h3>
@@ -296,14 +299,16 @@ export function ProjectInvites({
                       variant="ghost"
                       size="sm"
                       disabled={!!busy}
-                      onClick={() => {
+                      onClick={async () => {
                         if (
-                          !confirm(
-                            t(
+                          !(await confirm({
+                            title: t(
                               "{email}님의 초대를 취소할까요? 이미 보낸 링크는 쓸 수 없게 돼요.",
                               { email: invite.email },
                             ),
-                          )
+                            confirmLabel: t("초대 취소"),
+                            destructive: true,
+                          }))
                         )
                           return;
                         void run(`revoke:${invite.id}`, async () => {

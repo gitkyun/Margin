@@ -1,5 +1,6 @@
 import { t } from "@/lib/i18n";
 import { formatClock } from "@/lib/time-format";
+import { seoulToday } from "@/lib/home-meeting";
 import { AnimatedList } from "@/components/AnimatedList";
 import { isImeComposing } from "@/lib/ime";
 import { VisibilityField } from "@/components/experience";
@@ -380,8 +381,15 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [params, setParams] = useSearchParams();
   const researchId = meeting.researchId;
   const research = data.researches.find((item) => item.id === researchId);
+  // 기록했거나 날짜가 지난 미팅은 '기록' 탭으로 엽니다(감사 A10).
   const tab =
-    params.get("tab") ?? (meeting.status === "recorded" ? "record" : "prepare");
+    params.get("tab") ??
+    (meeting.status === "recorded" ||
+    (meeting.status === "preparing" &&
+      !!meeting.date &&
+      meeting.date < seoulToday())
+      ? "record"
+      : "prepare");
   const [editingMeta, setEditingMeta] = useState(false);
   const [meta, setMeta] = useState({
     title: meeting.title,

@@ -30,6 +30,7 @@ import { ThemeSwitch } from "./AuthPages";
 import { HourStyleSwitch } from "@/components/HourStyleSwitch";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { AdvisorSettings } from "./settings/AdvisorSettings";
 import { ProjectInvites } from "./settings/ProjectInvites";
 import {
@@ -466,6 +467,7 @@ export function ResearchSettingsPage() {
       "archive" | "trash" | "restore" | null
     >(null);
   const base = useRef(research);
+  const [confirmDialog, confirm] = useConfirm();
   // 이름을 비우면 저장 버튼만 꺼지지 않고 이유를 칸 아래에 알려 줍니다(QA F-005).
   const nameErrorId = useId();
   const nameBlank = !name.trim();
@@ -505,6 +507,7 @@ export function ResearchSettingsPage() {
   }
   return (
     <div className="settings-page">
+      {confirmDialog}
       <div className="settings-heading">
         <h1>{t("연구 설정")}</h1>
         <p>{research.name}</p>
@@ -687,18 +690,24 @@ export function ResearchSettingsPage() {
                       <Button
                         variant="ghost"
                         disabled={busy}
-                        onClick={() => {
+                        onClick={async () => {
                           if (
-                            confirm(
-                              m.status === "pending"
-                                ? t("{name}님의 초대를 취소할까요?", {
-                                    name: m.name,
-                                  })
-                                : t(
-                                    "{name}님의 연구 접근을 해제할까요? 작성한 공동 기록은 그대로 남아요.",
-                                    { name: m.name },
-                                  ),
-                            )
+                            await confirm({
+                              title:
+                                m.status === "pending"
+                                  ? t("{name}님의 초대를 취소할까요?", {
+                                      name: m.name,
+                                    })
+                                  : t(
+                                      "{name}님의 연구 접근을 해제할까요? 작성한 공동 기록은 그대로 남아요.",
+                                      { name: m.name },
+                                    ),
+                              confirmLabel:
+                                m.status === "pending"
+                                  ? t("초대 취소")
+                                  : t("접근 해제"),
+                              destructive: true,
+                            })
                           )
                             void perform(() =>
                               w.action("rms_member_action", {

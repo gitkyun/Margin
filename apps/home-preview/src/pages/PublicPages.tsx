@@ -952,6 +952,7 @@ export function SignupPage() {
     [name, setName] = useState(""),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
+    [passwordProblem, setPasswordProblem] = useState(""),
     [role, setRole] = useState("student");
   return (
     <PublicFrame compact>
@@ -991,6 +992,12 @@ export function SignupPage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
+                  // 입력 부품이 minLength를 넘기지 않아 3자도 통과했어요(감사 B1).
+                  if (password.length < MIN_PASSWORD_LENGTH) {
+                    setPasswordProblem(PASSWORD_HELP);
+                    return;
+                  }
+                  setPasswordProblem("");
                   setPassword("");
                   setStep(1);
                 }}
@@ -1029,6 +1036,11 @@ export function SignupPage() {
                     placeholder={PASSWORD_HELP}
                   />
                   <small>{t("실제로 쓰는 비밀번호는 입력하지 마세요.")}</small>
+                  {passwordProblem && (
+                    <span className="rms-error" role="alert">
+                      {passwordProblem}
+                    </span>
+                  )}
                 </label>
                 <fieldset className="role-choice">
                   <legend>{t("어떤 목적으로 사용하나요?")}</legend>

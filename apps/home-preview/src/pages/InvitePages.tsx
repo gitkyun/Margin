@@ -133,6 +133,11 @@ export function InviteSignupPage() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (pending) return;
+    // 입력 부품이 minLength를 넘기지 않아 3자도 통과했어요(감사 B1). 여기서 직접 확인합니다.
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setProblem(PASSWORD_HELP);
+      return;
+    }
     setPending(true);
     setProblem("");
     try {

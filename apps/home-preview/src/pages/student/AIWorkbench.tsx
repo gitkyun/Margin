@@ -17,6 +17,7 @@ import { Choice } from "@/components/experience";
 import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Icon } from "@/components/icons";
@@ -86,15 +87,17 @@ export function AIWorkbench({
     },
     [],
   );
+  const [confirmDialog, confirm] = useConfirm();
   async function generate() {
     if (running || savingRef.current) return;
     if (
       candidates.length &&
-      !window.confirm(
-        t(
+      !(await confirm({
+        title: t(
           "지금 보이는 AI 제안을 새 제안으로 바꿀까요? 저장하지 않은 편집 내용은 사라져요.",
         ),
-      )
+        confirmLabel: t("다시 제안받기"),
+      }))
     )
       return;
     const current = ++sequence.current;
@@ -189,6 +192,7 @@ export function AIWorkbench({
   }
   return (
     <aside className="ai-workbench" aria-label={title} hidden={hidden}>
+      {confirmDialog}
       <div className="ai-workbench-heading">
         <div className="ai-workbench-title">
           <AssistantMascot

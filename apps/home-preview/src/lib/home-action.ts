@@ -2,7 +2,11 @@ import { t } from "./i18n";
 import type { Feedback, Meeting } from "./domain";
 
 export type HomeActionKind =
-  "record_meeting" | "prepare_meeting" | "sort_feedback" | "create_meeting";
+  | "record_meeting"
+  | "prepare_meeting"
+  | "record_past_meeting"
+  | "sort_feedback"
+  | "create_meeting";
 
 export interface HomeAction {
   kind: HomeActionKind;
@@ -51,6 +55,24 @@ export function selectHomeAction({
       label: t("미팅 준비하기"),
       href: `${base}/meetings/${next.id}?tab=prepare`,
       icon: "calendar",
+    };
+  }
+  // 날짜가 지났는데 기록하지 않은 미팅은 '준비 중'에 머물러 홈에서 사라졌어요(감사 A10).
+  const unrecorded = meetings
+    .filter(
+      (meeting) =>
+        meeting.status === "preparing" &&
+        !meeting.archivedAt &&
+        !!meeting.date &&
+        meeting.date < today,
+    )
+    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))[0];
+  if (unrecorded) {
+    return {
+      kind: "record_past_meeting",
+      label: t("지난 미팅 기록 남기기"),
+      href: `${base}/meetings/${unrecorded.id}?tab=record`,
+      icon: "edit",
     };
   }
   const sorted = new Set(

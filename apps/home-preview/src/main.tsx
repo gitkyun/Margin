@@ -15,6 +15,7 @@ import { AppCrash } from "./components/AppCrash";
 import { currentLang } from "./lib/i18n";
 import { ThemeProvider, useTheme } from "./lib/theme";
 import { NavigationGuardProvider } from "./lib/navigation-guard";
+import { installFormValidation } from "./lib/form-validation";
 import "@montage-ui/core/theme.css";
 import "./styles.css";
 import "./design/tokens.css";
@@ -48,6 +49,7 @@ const router = createBrowserRouter([
     ),
   },
 ]);
+installFormValidation();
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={client}>

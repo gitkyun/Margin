@@ -265,6 +265,8 @@ export function WritingPage() {
     </div>
   );
 }
+/** 입력을 멈추고 이만큼 지나면 자동 저장합니다. */
+const AUTOSAVE_DELAY_MS = 1500;
 function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   const navigate = useNavigate();
   const { data, save, user, upload } = useWorkspace(),
@@ -287,6 +289,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     [title, setTitle] = useState(restored?.title ?? initial.title),
     [visibility, setVisibility] = useState(initial.visibility ?? "private"),
     [dirty, setDirty] = useState(!!restored),
+    // 고칠 때마다 올라가서 자동 저장 타이머를 다시 잽니다.
+    [editTick, setEditTick] = useState(0),
     [busy, setBusy] = useState(""),
     [conflict, setConflict] = useState<DocumentRecord | null>(null),
     [versionsOpen, setVersionsOpen] = useState(false),
@@ -330,6 +334,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     onUpdate: ({ editor }) => {
       if (discarded.current) return;
       setDirty(true);
+      setEditTick((value) => value + 1);
       localStorage.setItem(
         key,
         JSON.stringify({
@@ -405,6 +410,25 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+  // 자동 저장(결정 D3): 입력을 멈추고 잠시 뒤 저장합니다. 버전은 따로 남겨요.
+  // 실패하거나 충돌이 나면 다음 입력까지 다시 시도하지 않습니다.
+  const failedTick = useRef(-1);
+  useEffect(() => {
+    if (!dirty || busy || conflict || !title.trim()) return;
+    if (failedTick.current === editTick) return;
+    const tick = editTick;
+    const timer = setTimeout(() => {
+      void action("save", async () => {
+        try {
+          await persist();
+        } catch (e) {
+          failedTick.current = tick;
+          throw e;
+        }
+      });
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [dirty, editTick, busy, conflict, title]);
   async function persist() {
     if (!editor || !title.trim())
       throw new Error(t("문서 제목을 적어 주세요."));
@@ -435,8 +459,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       }
     }
     setBase(value);
-    setDirty(false);
-    localStorage.removeItem(key);
+    // 저장하는 동안 더 쓴 내용이 있으면 '저장하지 않은 변경'으로 남겨 다음 자동 저장이 맡아요.
+    if (JSON.stringify(editor.getJSON()) === JSON.stringify(input.content)) {
+      setDirty(false);
+      localStorage.removeItem(key);
+    }
     return value;
   }
   async function action(name: string, fn: () => Promise<void>) {
@@ -508,6 +535,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             onChange={(e) => {
               setTitle(e.target.value);
               setDirty(true);
+              setEditTick((value) => value + 1);
             }}
           />
           <div className="writing-meta">
@@ -552,13 +580,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           >
             {t("검토용 PDF")}
           </Button>
-          {/* 바뀐 것이 없으면 '저장됨' 상태와 맞게 저장 버튼을 끕니다. */}
-          <Button
-            disabled={!!busy || !dirty || !title.trim()}
-            onClick={saveNow}
-          >
-            {busy === "save" ? t("저장 중") : t("저장")}
-          </Button>
+          {/* 저장 버튼은 두지 않아요. 자동 저장하고, ⌘S로 바로 저장할 수 있어요(결정 D3). */}
         </div>
       </header>
       {error && (
