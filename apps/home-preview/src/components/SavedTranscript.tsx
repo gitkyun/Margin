@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { formatDateTime } from "@/lib/domain";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ import {
 } from "@/lib/live-transcript";
 import type { Recording } from "@/lib/domain";
 import { Button } from "./ui/button";
-import { StatusBadge } from "./common";
+import { DisabledReason, StatusBadge } from "./common";
 import {
   Dialog,
   DialogContent,
@@ -42,7 +42,9 @@ export function SavedTranscript({
     [saving, setSaving] = useState(false),
     [error, setError] = useState(""),
     [append, setAppend] = useState(false);
-  const base = useRef<LiveTranscript | null>(null);
+  const base = useRef<LiveTranscript | null>(null),
+    saveReasonId = useId(),
+    appendReasonId = useId();
   const current = query.data,
     dirty = draft !== null && draft !== base.current?.edited_text;
   useNavigationGuard({
@@ -106,6 +108,20 @@ export function SavedTranscript({
     base.current &&
     base.current.revision !== current.revision,
   );
+  // 충돌은 위 안내가 이미 알려 주므로 바뀐 것이 없을 때만 이유를 보여요.
+  const saveReason =
+    draft !== null &&
+    !saving &&
+    !conflict &&
+    !dirty &&
+    t("바뀐 내용이 없어요.");
+  const appendReason =
+    !!onAppend &&
+    !saving &&
+    (dirty
+      ? t("수정한 전사문을 저장하면 메모에 추가할 수 있어요.")
+      : !current.edited_text.trim() &&
+        t("전사문이 비어 있어 메모에 추가할 수 없어요."));
   return (
     <details className="saved-transcript" open={draft !== null || undefined}>
       <summary>
@@ -220,6 +236,7 @@ export function SavedTranscript({
               <Button
                 size="sm"
                 disabled={saving || conflict || !dirty}
+                aria-describedby={saveReason ? saveReasonId : undefined}
                 onClick={() => void store()}
               >
                 {saving ? t("저장 중") : t("전사문 저장")}
@@ -238,12 +255,15 @@ export function SavedTranscript({
               size="sm"
               variant="outline"
               disabled={dirty || !current.edited_text.trim() || saving}
+              aria-describedby={appendReason ? appendReasonId : undefined}
               onClick={() => setAppend(true)}
             >
               {t("미팅 메모에 추가")}
             </Button>
           )}
         </div>
+        <DisabledReason id={saveReasonId} reason={saveReason} />
+        <DisabledReason id={appendReasonId} reason={appendReason} />
         <small className="student-footnote">
           {t("수정본 v{revision} · {date}", {
             revision: current.revision,

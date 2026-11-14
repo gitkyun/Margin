@@ -4,26 +4,26 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: var(--spacing-16);
     margin-left: auto;
   }
   .lp-footer-theme {
     display: inline-flex;
     align-items: center;
     padding: 3px;
-    gap: 2px;
+    gap: var(--spacing-2);
     border-radius: var(--radius-12);
     background: var(--surface-muted);
   }
   .lp-footer-theme button {
     min-height: 40px;
-    padding: 0 10px;
+    padding: 0 var(--spacing-10);
     border: 0;
     border-radius: var(--radius-10);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: var(--spacing-6);
     background: transparent;
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
@@ -47,8 +47,8 @@
     align-items: center;
     justify-content: center;
     min-height: 40px;
-    gap: 8px;
-    padding: 0 6px;
+    gap: var(--spacing-8);
+    padding: 0 var(--spacing-6);
     border: 0;
     background: transparent;
     color: var(--text);
@@ -66,8 +66,8 @@
     .lp-footer-controls {
       width: 100%;
       justify-content: space-between;
-      margin: 4px 0 0;
-      gap: 12px;
+      margin: var(--spacing-4) 0 0;
+      gap: var(--spacing-12);
     }
     .lp-footer-theme button {
       padding-inline: 9px;

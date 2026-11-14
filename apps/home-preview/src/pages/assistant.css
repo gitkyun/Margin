@@ -119,6 +119,16 @@
   .ai-message.assistant > div {
     padding: 2px 0;
   }
+  /* 답변 아래 동작 줄(복사·다시 답하기). 본문 줄바꿈 규칙을 물려받지 않게 합니다. */
+  .ai-message.assistant > .ai-answer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 0;
+    margin-inline-start: -8px;
+    white-space: normal;
+    color: var(--text-secondary);
+  }
   .message-role {
     font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
@@ -360,10 +370,10 @@
   .candidate-overview-row blockquote small {
     display: block;
     margin-bottom: 4px;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
     color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .candidate-overview-row .button-row {
     flex-shrink: 0;

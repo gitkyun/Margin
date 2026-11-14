@@ -46,6 +46,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Switch } from "@montage-ui/core";
+import {
+  DisabledReason,
+  StatusBadge,
+  useDisabledReason,
+} from "@/components/common";
 export function UsageDetails() {
   const { mode } = useWorkspace();
   const usage = useAIUsage();
@@ -123,6 +128,10 @@ export function AccountPage() {
     busy,
     label: t("표시 이름"),
   });
+  // 빈 이름은 required가 막으므로 바뀐 것이 없을 때만 이유를 보여요.
+  const nameReason = useDisabledReason(
+    !busy && name.trim() === user.name && t("바뀐 내용이 없어요."),
+  );
   return (
     <div className="settings-page">
       <div className="settings-heading">
@@ -267,15 +276,17 @@ export function AccountPage() {
                     disabled={busy}
                     onClick={() => setName(user.name)}
                   >
-                    {t("변경 취소")}
+                    {t("취소")}
                   </Button>
                   <Button
                     type="submit"
                     disabled={busy || name.trim() === user.name}
+                    aria-describedby={nameReason.describedBy}
                   >
                     {busy ? t("저장 중") : t("저장")}
                   </Button>
                 </div>
+                {nameReason.node}
               </form>
               <PasswordSettings />
               <div className="settings-security">
@@ -471,6 +482,10 @@ export function ResearchSettingsPage() {
   // 이름을 비우면 저장 버튼만 꺼지지 않고 이유를 칸 아래에 알려 줍니다(QA F-005).
   const nameErrorId = useId();
   const nameBlank = !name.trim();
+  // 꺼진 버튼의 이유 한 줄(감사 B2). 조건은 research를 확인한 뒤에 정합니다.
+  const unchangedReasonId = useId(),
+    inviteReasonId = useId(),
+    ownerReasonId = useId();
   useEffect(() => {
     base.current = research;
     setName(research?.name ?? "");
@@ -494,6 +509,13 @@ export function ResearchSettingsPage() {
     );
   const owner = research.ownerId === user.id,
     members = data.members.filter((m) => m.researchId === researchId);
+  // 빈 이름은 칸 아래 오류가 알려 주므로 바뀐 것이 없을 때만 보여요.
+  const unchangedReason =
+      !busy && !nameBlank && !dirty && t("바뀐 내용이 없어요."),
+    inviteReason =
+      !busy && !email.trim() && t("이메일을 입력하면 초대할 수 있어요."),
+    ownerReason =
+      !owner && t("연구 소유자만 보관하거나 휴지통으로 옮길 수 있어요.");
   async function perform(fn: () => Promise<unknown>) {
     setBusy(true);
     setError("");
@@ -631,15 +653,22 @@ export function ResearchSettingsPage() {
                         setQuestions(questionsText(research.questions));
                       }}
                     >
-                      {t("변경 취소")}
+                      {t("취소")}
                     </Button>
                     <Button
                       type="submit"
                       disabled={busy || !name.trim() || !dirty}
+                      aria-describedby={
+                        unchangedReason ? unchangedReasonId : undefined
+                      }
                     >
                       {busy ? t("저장 중") : t("저장")}
                     </Button>
                   </div>
+                  <DisabledReason
+                    id={unchangedReasonId}
+                    reason={unchangedReason}
+                  />
                 </form>
               </section>
               <AdvisorSettings
@@ -668,7 +697,7 @@ export function ResearchSettingsPage() {
               <h2>{t("공동연구자")}</h2>
               <p>
                 {t(
-                  "참여자는 공동 기록을 함께 보고 편집할 수 있어요. ‘나만 보기’로 둔 기록, 개인 메모, AI 대화, 선택하지 않은 AI 제안은 다른 참여자에게 보이지 않아요.",
+                  "공동연구자는 공동 기록을 함께 보고 편집할 수 있어요. ‘나만 보기’로 둔 기록, 개인 메모, AI 대화, 선택하지 않은 AI 제안은 다른 공동연구자에게 보이지 않아요.",
                 )}
               </p>
               <div className="member-list">
@@ -679,13 +708,21 @@ export function ResearchSettingsPage() {
                       <strong>{m.name}</strong>
                       <small>{m.email}</small>
                     </div>
-                    <span className="rms-pill">
+                    <StatusBadge
+                      tone={
+                        m.role === "owner"
+                          ? "blue"
+                          : m.status === "pending"
+                            ? "amber"
+                            : "neutral"
+                      }
+                    >
                       {m.role === "owner"
                         ? t("소유자")
                         : m.status === "pending"
                           ? t("수락 대기")
                           : t("편집자")}
-                    </span>
+                    </StatusBadge>
                     {owner && m.userId !== user.id && (
                       <Button
                         variant="ghost"
@@ -784,10 +821,17 @@ export function ResearchSettingsPage() {
                       )}
                     </p>
                     <div className="bottom-actions">
-                      <Button type="submit" disabled={busy || !email.trim()}>
+                      <Button
+                        type="submit"
+                        disabled={busy || !email.trim()}
+                        aria-describedby={
+                          inviteReason ? inviteReasonId : undefined
+                        }
+                      >
                         {t("초대하기")}
                       </Button>
                     </div>
+                    <DisabledReason id={inviteReasonId} reason={inviteReason} />
                   </form>
                 )
               )}
@@ -840,6 +884,7 @@ export function ResearchSettingsPage() {
                 <Button
                   variant="outline"
                   disabled={!owner || busy}
+                  aria-describedby={ownerReason ? ownerReasonId : undefined}
                   onClick={() =>
                     setConfirmAction(
                       research.archivedAt ? "restore" : "archive",
@@ -859,15 +904,12 @@ export function ResearchSettingsPage() {
                 <Button
                   variant="destructive"
                   disabled={!owner || busy}
+                  aria-describedby={ownerReason ? ownerReasonId : undefined}
                   onClick={() => setConfirmAction("trash")}
                 >
                   {t("휴지통으로 옮기기")}
                 </Button>
-                {!owner && (
-                  <p className="settings-note">
-                    {t("연구 소유자만 보관하거나 휴지통으로 옮길 수 있어요.")}
-                  </p>
-                )}
+                <DisabledReason id={ownerReasonId} reason={ownerReason} />
               </section>
             </section>
           )}
@@ -960,6 +1002,11 @@ function PasswordSettings() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const passwordReason = useDisabledReason(
+    !busy &&
+      (!current || !next || !confirmation) &&
+      t("세 칸을 모두 입력하면 비밀번호를 바꿀 수 있어요."),
+  );
   return (
     <section className="password-settings">
       <h3>{t("비밀번호 변경")}</h3>
@@ -1043,10 +1090,12 @@ function PasswordSettings() {
           <Button
             type="submit"
             disabled={busy || !current || !next || !confirmation}
+            aria-describedby={passwordReason.describedBy}
           >
             {busy ? t("변경 중") : t("비밀번호 변경")}
           </Button>
         </div>
+        {passwordReason.node}
       </form>
     </section>
   );

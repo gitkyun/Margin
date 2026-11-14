@@ -1,11 +1,11 @@
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
   .subscription-plans {
-    margin-block: 40px;
+    margin-block: var(--spacing-40);
     min-width: 0;
   }
   .subscription-heading h2 {
-    margin: 0 0 8px;
+    margin: 0 0 var(--spacing-8);
     font-size: var(--typography-heading1-fontSize);
     letter-spacing: var(--typography-heading1-letterSpacing);
   }
@@ -20,13 +20,13 @@
   .subscription-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    gap: var(--spacing-16);
   }
   .subscription-card {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    padding: 28px 24px;
+    padding: 28px var(--spacing-24);
     border: 1px solid var(--line);
     border-radius: var(--radius-20);
     background: var(--surface);
@@ -35,8 +35,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 24px;
+    gap: var(--spacing-10);
+    margin-bottom: var(--spacing-24);
   }
   .subscription-icon {
     display: grid;
@@ -45,14 +45,6 @@
     height: 44px;
     background: var(--surface-muted);
     border-radius: var(--radius-14);
-  }
-  .subscription-status {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    background: var(--surface-muted);
-    padding: 5px 9px;
-    border-radius: var(--radius-8);
-    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .subscription-card h3 {
     font-size: var(--typography-title3-fontSize);
@@ -89,7 +81,7 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .subscription-card ul {
-    padding: 24px 0 0;
+    padding: var(--spacing-24) 0 0;
     margin: 0;
     list-style: none;
     display: grid;
@@ -98,7 +90,7 @@
   .subscription-card li,
   .subscription-detail-list li {
     display: flex;
-    gap: 10px;
+    gap: var(--spacing-10);
     align-items: flex-start;
     font-size: var(--typography-label1-fontSize);
     line-height: var(--typography-label1-lineHeight);
@@ -107,7 +99,7 @@
   .subscription-card li svg,
   .subscription-detail-list svg {
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: var(--spacing-2);
     color: var(--primary);
   }
   .subscription-card .subscription-note {
@@ -120,7 +112,7 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .subscription-disclosure {
-    margin: 20px 0 0;
+    margin: var(--spacing-20) 0 0;
     text-align: center;
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
@@ -129,7 +121,7 @@
   }
   .subscription-detail-list {
     display: grid;
-    gap: 12px;
+    gap: var(--spacing-12);
     list-style: none;
     padding: 0;
   }
@@ -141,12 +133,12 @@
   }
   .visibility-private {
     min-height: 42px;
-    padding: 10px 13px;
+    padding: var(--spacing-10) 13px;
     border: 1px solid var(--line);
     border-radius: var(--radius-10);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-8);
     background: var(--surface-muted);
     font-size: var(--typography-label1-fontSize);
     letter-spacing: var(--typography-label1-letterSpacing);
@@ -158,7 +150,7 @@
     .settings-body .subscription-card {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px 24px;
+      gap: var(--spacing-8) var(--spacing-24);
     }
     .settings-body .subscription-card-top,
     .settings-body .subscription-card h3,
@@ -180,7 +172,7 @@
   @media (max-width: 767px) {
     .subscription-grid {
       grid-template-columns: 1fr;
-      gap: 16px;
+      gap: var(--spacing-16);
     }
     .subscription-card {
       padding: 26px;

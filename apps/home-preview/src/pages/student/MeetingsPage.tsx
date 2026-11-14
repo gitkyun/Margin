@@ -17,7 +17,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  InlineEmpty,
+  useDisabledReason,
+} from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { useNavigationGuard } from "@/lib/navigation-guard";
@@ -425,6 +431,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [memoError, setMemoError] = useState<string | null>(null);
   const [memoConflict, setMemoConflict] = useState(false);
   const [memoTick, setMemoTick] = useState(0);
+  const memoAIReason = useDisabledReason(
+    !memo.trim() && t("메모를 적으면 AI로 정리할 수 있어요."),
+  );
   const latest = useRef(meeting);
   latest.current = meeting;
   const metaBase = useRef(meeting);
@@ -700,7 +709,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     await taskForm.perform(async () => {
       await save("tasks", task);
       setTaskFrom(null);
-      toast.success(t("할 일을 만들었어요"), {
+      toast.success(t("할 일을 추가했어요"), {
         action: {
           label: t("열기"),
           onClick: () => navigate(`/r/${researchId}/tasks/${task.id}`),
@@ -1118,11 +1127,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   </Link>
                 ))
               ) : (
-                <p className="student-empty-inline">
+                <InlineEmpty>
                   {t(
                     "고른 자료가 없어요. 자료를 고르면 그 버전 그대로 준비에 추가돼요.",
                   )}
-                </p>
+                </InlineEmpty>
               )}
               <div className="student-subsection">
                 <div className="section-heading">
@@ -1146,9 +1155,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       </div>
                     ))
                 ) : (
-                  <p className="student-empty-inline">
-                    {t("물어볼 질문이 없어요.")}
-                  </p>
+                  <InlineEmpty>{t("물어볼 질문이 없어요.")}</InlineEmpty>
                 )}
               </div>
             </section>
@@ -1283,6 +1290,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               <Button
                 variant="outline"
                 disabled={memoState === "saving" || !memo.trim()}
+                aria-describedby={memoAIReason.describedBy}
                 onClick={() => void openAI()}
               >
                 <Icon name="sparkles" size={16} />
@@ -1291,6 +1299,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   : t("AI로 메모 정리")}
               </Button>
             </div>
+            {memoAIReason.node}
             <div className="student-subsection">
               <div className="section-heading">
                 <h3>{t("저장한 피드백")}</h3>
@@ -1322,11 +1331,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   </Link>
                 ))
               ) : (
-                <p className="student-empty-inline">
+                <InlineEmpty>
                   {t(
                     "저장한 피드백이 없어요. 직접 추가하거나 AI 제안에서 골라 저장할 수 있어요.",
                   )}
-                </p>
+                </InlineEmpty>
               )}
             </div>
           </section>
@@ -1349,7 +1358,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   label: t("준비"),
                   count: preparedQuestions.length + linkedVersions.length,
                 },
-                { value: "assistant", label: t("도우미") },
+                { value: "assistant", label: t("연구 도우미") },
               ]}
             >
               {panelTab === "prepared" && (
@@ -1379,9 +1388,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     </div>
                   ))}
                   {!preparedQuestions.length && (
-                    <p className="student-empty-inline">
-                      {t("준비한 질문이 없어요.")}
-                    </p>
+                    <InlineEmpty>{t("준비한 질문이 없어요.")}</InlineEmpty>
                   )}
                   <h3>
                     {t("보여줄 자료")}
@@ -1402,9 +1409,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     </Link>
                   ))}
                   {!linkedVersions.length && (
-                    <p className="student-empty-inline">
+                    <InlineEmpty>
                       {t("보여줄 자료를 고르지 않았어요.")}
-                    </p>
+                    </InlineEmpty>
                   )}
                   <p className="panel-frame-note">
                     {t("준비 탭에서 바꾼 내용이 여기에 보여요.")}
@@ -1479,14 +1486,14 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     size="sm"
                     onClick={() => openEntry("decision", decision)}
                   >
-                    {t("고치기")}
+                    {t("편집")}
                   </Button>
                   <Button
                     variant="link"
                     size="sm"
                     onClick={() => openTaskFrom(decision)}
                   >
-                    {t("할 일로 만들기")}
+                    {t("할 일에 추가")}
                   </Button>
                 </div>
               ))
@@ -1681,11 +1688,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 </label>
               ))}
             {!data.versions.some((v) => v.researchId === researchId) && (
-              <p className="student-empty-inline">
+              <InlineEmpty>
                 {t(
                   "아직 올린 파일이 없어요. 여기서 바로 PDF를 올릴 수 있어요.",
                 )}
-              </p>
+              </InlineEmpty>
             )}
             <QuickPdfUpload
               researchId={researchId}
@@ -1842,7 +1849,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             ? t("피드백 직접 추가")
             : entry === "decision"
               ? editingDecision
-                ? t("결정 사항 고치기")
+                ? t("결정 사항 편집")
                 : t("결정 사항 추가")
               : t("질문 추가")
         }
@@ -1916,7 +1923,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         onOpenChange={(open) => {
           if (!open) setTaskFrom(null);
         }}
-        title={t("할 일로 만들기")}
+        title={t("할 일에 추가")}
         description={t(
           "결정 사항은 그대로 두고, 할 일 목록에 새 할 일을 만들어요. 기한과 우선순위는 할 일 화면에서 정할 수 있어요.",
         )}
@@ -1940,7 +1947,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           <SaveActions
             saving={taskForm.saving}
             onCancel={() => setTaskFrom(null)}
-            label={t("할 일 만들기")}
+            label={t("할 일 추가")}
           />
         </form>
       </FormDialog>

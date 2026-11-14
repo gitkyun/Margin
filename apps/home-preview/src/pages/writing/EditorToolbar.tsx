@@ -220,8 +220,8 @@ export function EditorToolbar({
             >
               <Icon name="sparkles" size={16} />
               {editor?.state.selection.empty === false
-                ? t("선택 부분 AI 검토")
-                : t("AI 검토")}
+                ? t("선택 부분 AI 문장 점검")
+                : t("AI 문장 점검")}
             </Button>
           </span>
         </Hint>

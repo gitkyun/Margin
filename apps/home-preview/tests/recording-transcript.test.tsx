@@ -144,7 +144,7 @@ function view() {
 }
 async function begin() {
   fireEvent.click(screen.getByRole("button", { name: "녹음 시작" }));
-  fireEvent.click(screen.getByRole("checkbox", { name: /참여자에게/ }));
+  fireEvent.click(screen.getByRole("checkbox", { name: /참석자에게/ }));
   fireEvent.click(screen.getByRole("button", { name: "녹음·전사 시작" }));
   await waitFor(() => expect(Recognition.instances).toHaveLength(1));
 }

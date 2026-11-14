@@ -5,8 +5,8 @@ import { MemoryRouter } from "react-router-dom";
 import { GuideReplay } from "../src/components/GuideReplay";
 import { HomeTour } from "../src/components/home/HomeTour";
 import {
-  isTourSeen,
-  markTourSeen,
+  clearTourRequest,
+  isTourRequested,
   placeCard,
   shouldShowTour,
   type TourStep,
@@ -38,22 +38,23 @@ afterEach(() => {
 });
 
 describe("화면 안내를 보여 줄지", () => {
-  it("아직 보지 않았을 때 보여 주고, ?tour=1이면 다시 보여 준다", () => {
-    expect(shouldShowTour({ seen: false, forced: false })).toBe(true);
-    expect(shouldShowTour({ seen: true, forced: false })).toBe(false);
-    expect(shouldShowTour({ seen: true, forced: true })).toBe(true);
+  it("처음 왔다고 저절로 열지 않고, 부탁했거나 ?tour=1일 때만 연다(감사 F3)", () => {
+    expect(shouldShowTour({ requested: false, forced: false })).toBe(false);
+    expect(shouldShowTour({ requested: true, forced: false })).toBe(true);
+    expect(shouldShowTour({ requested: false, forced: true })).toBe(true);
   });
 
-  it("봤다는 기록을 이 브라우저에 남긴다", () => {
-    expect(isTourSeen()).toBe(false);
-    markTourSeen();
-    expect(isTourSeen()).toBe(true);
+  it("보고 싶다는 기록은 안내를 닫으면 지운다", () => {
+    expect(isTourRequested()).toBe(false);
+    localStorage.setItem("margin-home-tour-requested", "true");
+    expect(isTourRequested()).toBe(true);
+    clearTourRequest();
+    expect(isTourRequested()).toBe(false);
   });
 });
 
 describe("사용 안내의 다시 보기", () => {
-  it("서비스 소개는 바로 열고, 화면 안내는 기록을 지운 뒤 내 연구로 보낸다", () => {
-    markTourSeen();
+  it("서비스 소개는 바로 열고, 화면 안내는 보고 싶다는 기록을 남긴 뒤 내 연구로 보낸다", () => {
     render(
       <MemoryRouter>
         <GuideReplay />
@@ -67,7 +68,7 @@ describe("사용 안내의 다시 보기", () => {
     const tour = screen.getByRole("link", { name: "화면 안내 다시 보기" });
     expect(tour.getAttribute("href")).toBe("/r");
     fireEvent.click(tour);
-    expect(isTourSeen()).toBe(false);
+    expect(isTourRequested()).toBe(true);
   });
 });
 

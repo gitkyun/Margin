@@ -124,9 +124,9 @@ describe("experience pages render with an empty research", () => {
         screen.getByText("AI 제안이 나오면 여기에 표시돼요."),
       ).toBeTruthy(),
     );
-    fireEvent.click(screen.getByRole("tab", { name: "기록" }));
+    fireEvent.click(screen.getByRole("tab", { name: "실행 내역" }));
     await waitFor(() =>
-      expect(screen.getByText("아직 실행 기록이 없어요.")).toBeTruthy(),
+      expect(screen.getByText("아직 실행 내역이 없어요.")).toBeTruthy(),
     );
   });
   it("assistant opens the suggestions tab for the old overview address", async () => {

@@ -1,7 +1,11 @@
 import { t } from "@/lib/i18n";
 import { useState } from "react";
 import { Icon } from "@/components/icons";
-import { IconButton } from "@/components/common";
+import {
+  IconButton,
+  InlineEmpty,
+  useDisabledReason,
+} from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InviteLinkButton } from "@/components/InviteLinkButton";
@@ -29,6 +33,13 @@ export function AdvisorSettings({
   const [draft, setDraft] = useState("");
   const [problem, setProblem] = useState("");
   const full = emails.length >= MAX_ADVISORS;
+  const draftReason = useDisabledReason(
+    canEdit &&
+      !full &&
+      !busy &&
+      !draft.trim() &&
+      t("지도교수 이메일을 입력하면 추가할 수 있어요."),
+  );
 
   async function add() {
     const value = draft.trim();
@@ -79,9 +90,7 @@ export function AdvisorSettings({
           ))}
         </div>
       ) : (
-        <p className="student-empty-inline">
-          {t("아직 등록한 지도교수가 없어요.")}
-        </p>
+        <InlineEmpty>{t("아직 등록한 지도교수가 없어요.")}</InlineEmpty>
       )}
       {canEdit && !full && (
         <form
@@ -105,11 +114,13 @@ export function AdvisorSettings({
             type="submit"
             variant="outline"
             disabled={busy || !draft.trim()}
+            aria-describedby={draftReason.describedBy}
           >
             {t("추가")}
           </Button>
         </form>
       )}
+      {draftReason.node}
       {problem && (
         <p className="rms-error" role="alert">
           {problem}

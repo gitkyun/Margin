@@ -38,7 +38,7 @@
     letter-spacing: var(--typography-body1-letterSpacing);
   }
   .command-palette-field input::placeholder {
-    color: var(--semantic-foreground-neutral-quaternary);
+    color: var(--semantic-foreground-neutral-tertiary);
   }
 
   .command-palette kbd {
@@ -49,9 +49,9 @@
     padding: 0 var(--spacing-4);
     border: 1px solid var(--semantic-line-neutral-tertiary);
     border-radius: var(--radius-4);
-    color: var(--semantic-foreground-neutral-tertiary);
+    color: var(--semantic-foreground-neutral-secondary);
     font-family: inherit;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     line-height: 1;
   }
 
@@ -64,7 +64,7 @@
   }
   .command-palette [cmdk-group-heading] {
     padding: var(--spacing-12) var(--spacing-12) var(--spacing-6);
-    color: var(--semantic-foreground-neutral-tertiary);
+    color: var(--semantic-foreground-neutral-secondary);
     font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -98,7 +98,7 @@
   }
   .command-palette [cmdk-item] small {
     flex: none;
-    color: var(--semantic-foreground-neutral-tertiary);
+    color: var(--semantic-foreground-neutral-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -111,7 +111,7 @@
 
   .command-palette-empty {
     padding: var(--spacing-32) var(--spacing-12);
-    color: var(--semantic-foreground-neutral-tertiary);
+    color: var(--semantic-foreground-neutral-secondary);
     text-align: center;
     font-size: var(--typography-body2-fontSize);
   }
@@ -123,7 +123,7 @@
     margin: 0;
     padding: var(--spacing-12) var(--spacing-20);
     border-top: 1px solid var(--semantic-line-neutral-tertiary);
-    color: var(--semantic-foreground-neutral-tertiary);
+    color: var(--semantic-foreground-neutral-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }

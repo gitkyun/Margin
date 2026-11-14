@@ -16,7 +16,7 @@
   .roadmap-summary > p {
     margin: 0;
     font-size: var(--typography-label2-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .roadmap-timeline {
@@ -88,7 +88,7 @@
   .phase-card-body > p {
     margin: 3px 0 0;
     font-size: var(--typography-label2-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .phase-milestones {
@@ -115,7 +115,7 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .phase-milestones > button small {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -149,7 +149,7 @@
   .roadmap-goals > p {
     margin: 0;
     font-size: var(--typography-label2-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .goal-row {
@@ -183,7 +183,7 @@
   }
   .goal-row > span:not(.status-badge) {
     font-size: var(--typography-label2-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .roadmap-diagram {
@@ -200,12 +200,12 @@
     bottom: 10px;
     margin: 0;
     font-size: var(--typography-caption1-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-8);
     padding: 4px 8px;
-    z-index: 5;
+    z-index: var(--z-sticky);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
 
@@ -432,7 +432,7 @@
   }
   .saved-recording small {
     font-size: var(--typography-caption1-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -493,7 +493,7 @@
   }
   .member-row small {
     font-size: var(--typography-caption1-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -580,7 +580,7 @@
     align-items: center;
     gap: 6px;
     font-size: var(--typography-caption1-fontSize);
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .result-body,

@@ -13,7 +13,7 @@ import {
 import { KakaoLoginButton } from "@/components/KakaoLoginButton";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "@/lib/password-policy";
 import { assertConnected, friendlyError } from "@/lib/supabase";
-import { PublicFrame } from "./PublicPages";
+import { AuthStory, PublicFrame } from "./PublicPages";
 
 const NAME_MAX = 40;
 
@@ -21,26 +21,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <PublicFrame compact>
       <section className="signup-layout">
-        <div className="auth-story">
-          <h1>
-            {t("지난 미팅에서")}
-            <br />
-            {t("다음 미팅까지")}
-          </h1>
-          <p>
-            {t("피드백, 할 일, 원고 버전, 교수님 응답을")}
-            <br />
-            {t("연구별로 모아 둬요.")}
-          </p>
-          <div className="auth-proof">
-            <Icon name="lock" size={19} />
-            <span>
-              {t("공동연구자가 참여하기 전에는 기록을 나만 볼 수 있어요.")}
-              <br />
-              {t("교수님께는 검토 요청에 넣은 항목과 연구 방향만 보여요.")}
-            </span>
-          </div>
-        </div>
+        <AuthStory />
         <div className="auth-panel">{children}</div>
       </section>
     </PublicFrame>

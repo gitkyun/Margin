@@ -7,6 +7,7 @@ import { recordBase, type MaterialFolder } from "@/lib/domain";
 import { Icon } from "./icons";
 import { Button } from "./ui/button";
 import { Choice } from "./experience";
+import { useDisabledReason } from "./common";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +30,12 @@ export function MaterialFolders({
     ),
     [draft, setDraft] = useState<MaterialFolder | null>(null),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    titleReason = useDisabledReason(
+      draft &&
+        !draft.title.trim() &&
+        t("폴더 이름을 입력하면 저장할 수 있어요."),
+    );
   function node(f: MaterialFolder, depth = 0) {
     if (depth > 12) return null;
     const children = folders.filter((c) => c.parentId === f.id);
@@ -257,10 +263,15 @@ export function MaterialFolders({
                 >
                   {t("취소")}
                 </Button>
-                <Button type="submit" disabled={busy || !draft.title.trim()}>
+                <Button
+                  type="submit"
+                  disabled={busy || !draft.title.trim()}
+                  aria-describedby={titleReason.describedBy}
+                >
                   {busy ? t("저장 중") : t("저장")}
                 </Button>
               </div>
+              {titleReason.node}
             </form>
           )}
         </DialogContent>

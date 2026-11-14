@@ -1,7 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ErrorNotice, StatusBadge } from "@/components/common";
+import {
+  ErrorNotice,
+  StatusBadge,
+  InlineEmpty,
+  useDisabledReason,
+} from "@/components/common";
 import { Segments } from "@/components/experience";
 import { Icon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -91,6 +96,11 @@ export function ProjectInvites({
   const [busy, setBusy] = useState("");
   const [problem, setProblem] = useState("");
   const [latest, setLatest] = useState<InviteSendOutcome | null>(null);
+  const emailReason = useDisabledReason(
+    !busy &&
+      !email.trim() &&
+      t("이메일을 입력하면 초대 메일을 보낼 수 있어요."),
+  );
 
   async function run(key: string, task: () => Promise<void>) {
     if (busy) return;
@@ -178,11 +188,16 @@ export function ProjectInvites({
             </p>
           )}
           <div className="bottom-actions">
-            <Button type="submit" disabled={!!busy || !email.trim()}>
+            <Button
+              type="submit"
+              disabled={!!busy || !email.trim()}
+              aria-describedby={emailReason.describedBy}
+            >
               <Icon name="send" size={16} />
               {busy === "send" ? t("보내는 중") : t("초대 메일 보내기")}
             </Button>
           </div>
+          {emailReason.node}
         </form>
       )}
       {latest && (
@@ -232,7 +247,7 @@ export function ProjectInvites({
           retry={() => void invites.refetch()}
         />
       ) : list.length === 0 ? (
-        <p className="student-empty-inline">{t("아직 보낸 초대가 없어요.")}</p>
+        <InlineEmpty>{t("아직 보낸 초대가 없어요.")}</InlineEmpty>
       ) : (
         <ul className="project-invite-list">
           {list.map((invite) => {
@@ -246,7 +261,7 @@ export function ProjectInvites({
                     {roleLabel(invite.role)}
                     {" · "}
                     {t("{name}님이 {when}에 초대", {
-                      name: invite.invitedByName ?? t("참여자"),
+                      name: invite.invitedByName ?? t("공동연구자"),
                       when: formatDateTime(invite.createdAt),
                     })}
                   </small>

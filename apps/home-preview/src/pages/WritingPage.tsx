@@ -32,7 +32,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  InlineEmpty,
+  useDisabledReason,
+} from "@/components/common";
 import {
   Dialog,
   DialogContent,
@@ -93,6 +99,9 @@ export function WritingPage() {
     null,
   );
   const [newTitle, setNewTitle] = useState("");
+  const titleReason = useDisabledReason(
+    !newTitle.trim() && t("문서 제목을 입력하면 만들 수 있어요."),
+  );
   function beginCreate(type: DocumentRecord["type"] = "plan") {
     creationBase.current = null;
     setNewTitle("");
@@ -209,10 +218,15 @@ export function WritingPage() {
               >
                 {t("취소")}
               </Button>
-              <Button type="submit" disabled={creating || !newTitle.trim()}>
+              <Button
+                type="submit"
+                disabled={creating || !newTitle.trim()}
+                aria-describedby={titleReason.describedBy}
+              >
                 {creating ? t("만드는 중") : t("문서 만들기")}
               </Button>
             </div>
+            {titleReason.node}
           </form>
         </DialogContent>
       </Dialog>
@@ -319,6 +333,12 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       .filter((v) => v.documentId === initial.id)
       .sort((a, b) => a.number - b.number),
     current = data.documents.find((d) => d.id === initial.id) ?? initial;
+  // 버전이 하나도 없으면 아래 안내 문장이 이유를 알려 줍니다.
+  const restoreReason = useDisabledReason(
+    !from &&
+      versionList.length > 0 &&
+      t("이전 버전을 고르면 되돌릴 수 있어요."),
+  );
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -597,7 +617,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         aiDisabled={dirty || !!busy || !editor?.getText().trim()}
         aiHint={
           dirty
-            ? t("저장한 뒤에 AI 검토를 할 수 있어요.")
+            ? t("저장한 뒤에 AI 문장 점검을 할 수 있어요.")
             : t(
                 "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토해요.",
               )
@@ -700,11 +720,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 </button>
               ))}
               {!versionList.length && (
-                <p className="student-empty-inline">
+                <InlineEmpty>
                   {t(
                     "아직 남긴 버전이 없어요. ‘버전’에서 지금 내용을 버전으로 남길 수 있어요.",
                   )}
-                </p>
+                </InlineEmpty>
               )}
               <p className="panel-frame-note">
                 {t(
@@ -735,9 +755,9 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 </Link>
               ))}
               {!milestones.length && (
-                <p className="student-empty-inline">
+                <InlineEmpty>
                   {t("계획·일정의 목표에 이 문서를 넣으면 여기에 보여요.")}
-                </p>
+                </InlineEmpty>
               )}
             </div>
           )}
@@ -884,16 +904,17 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               )}
             </>
           ) : (
-            <p className="quiet-placeholder">
+            <InlineEmpty variant="panel">
               {t(
                 "저장만 해서는 버전이 생기지 않아요. ‘지금 버전 남기기’로 버전을 남기면 이후에 고친 내용과 비교할 수 있어요.",
               )}
-            </p>
+            </InlineEmpty>
           )}
           <div className="bottom-actions">
             <Button
               variant="outline"
               disabled={!from || !!busy}
+              aria-describedby={restoreReason.describedBy}
               onClick={() =>
                 void action("restore", async () => {
                   const v = versionList.find((v) => v.id === from)!;
@@ -947,6 +968,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               {t("지금 버전 남기기")}
             </Button>
           </div>
+          {restoreReason.node}
         </DialogContent>
       </Dialog>
       <Dialog

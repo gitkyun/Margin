@@ -6,7 +6,7 @@
   .lp-public-nav-list {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: var(--spacing-24);
     list-style: none;
     padding: 0;
     margin: 0;
@@ -18,7 +18,7 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    padding: 10px 0;
+    padding: var(--spacing-10) 0;
     border: 0;
     border-radius: 8px;
     background: transparent;
@@ -44,7 +44,7 @@
     top: calc(100% + 18px);
     left: -24px;
     width: 520px;
-    padding: 12px;
+    padding: var(--spacing-12);
     border: 1px solid var(--line);
     border-radius: var(--radius-16);
     background: var(--surface);
@@ -60,14 +60,14 @@
   .lp-nav-feature-links {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px;
+    gap: var(--spacing-4);
   }
   .lp-header nav .lp-nav-feature-link {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--spacing-12);
     min-height: 84px;
-    padding: 14px 10px;
+    padding: var(--spacing-14) var(--spacing-10);
     border-radius: var(--radius-12);
     color: var(--text);
     transition: background var(--motion-duration-micro);
@@ -88,10 +88,10 @@
   .lp-nav-feature-link small {
     display: block;
     margin-top: 5px;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    line-height: var(--typography-caption2-lineHeight);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .lp-nav-feature-link > svg {
     margin-left: auto;
@@ -110,8 +110,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 8px;
-    padding: 14px 16px;
+    margin-top: var(--spacing-8);
+    padding: var(--spacing-14) var(--spacing-16);
     border-top: 1px solid var(--line);
     color: var(--primary);
     font-size: var(--typography-label2-fontSize);
@@ -126,8 +126,8 @@
   .lp-header nav .lp-nav-help-panel a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 15px 12px;
+    gap: var(--spacing-12);
+    padding: 15px var(--spacing-12);
     border-radius: var(--radius-10);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
@@ -151,13 +151,6 @@
     }
   }
   @media (max-width: 767px) {
-    .lp-public-nav-list {
-      gap: 15px;
-    }
-    .lp-nav-trigger {
-      font-size: var(--typography-caption1-fontSize);
-      letter-spacing: var(--typography-caption1-letterSpacing);
-    }
     .lp-header .lp-nav-feature-panel {
       left: -110px;
     }
@@ -168,7 +161,7 @@
       left: 0;
       right: 0;
       top: 100%;
-      padding: 10px 20px 20px;
+      padding: var(--spacing-10) var(--spacing-20) var(--spacing-20);
       background: var(--surface);
       border-bottom: 1px solid var(--line);
     }
@@ -203,7 +196,7 @@
       width: 100%;
       box-shadow: none;
       padding: 5px;
-      margin-bottom: 12px;
+      margin-bottom: var(--spacing-12);
       background: var(--surface-muted);
       border: 0;
       border-radius: var(--radius-12);
@@ -216,7 +209,7 @@
     }
     .lp-header nav .lp-nav-feature-link {
       min-height: 64px;
-      padding: 10px;
+      padding: var(--spacing-10);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -234,16 +227,16 @@
   @media (max-width: 767px) {
     .lp-header .lp-mobile-auth {
       display: flex;
-      gap: 12px;
-      margin-top: 12px;
-      padding-top: 16px;
+      gap: var(--spacing-12);
+      margin-top: var(--spacing-12);
+      padding-top: var(--spacing-16);
       border-top: 1px solid var(--line);
     }
     .lp-header .lp-mobile-auth a {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: var(--spacing-8);
       min-height: 44px;
       flex: 1;
       border: 1px solid var(--line);

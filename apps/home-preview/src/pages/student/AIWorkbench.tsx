@@ -15,7 +15,8 @@ import {
 } from "@/lib/ai-availability";
 import { Choice } from "@/components/experience";
 import { SelectField } from "@/components/experience";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { useDisabledReason } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,15 @@ export function AIWorkbench({
   const { runAI, mode, user } = useWorkspace();
   const caps = useAICapabilities();
   const aiNotConfigured = useAINotConfigured();
+  // 미리보기·AI 미연결·원문 변경은 위 안내 문장이 이유라서 그 문장과 버튼을 잇습니다.
+  const availabilityNoteId = useId(),
+    staleNoteId = useId();
+  const aiBlocked = mode === "preview" || aiNotConfigured;
+  const sourceReason = useDisabledReason(
+    !aiBlocked &&
+      !input.sourceText.trim() &&
+      t("원문이 비어 있어 제안받을 수 없어요."),
+  );
   const [selectedModelId, setSelectedModelId] = useState(
     String(input.model ?? user.preferences?.model ?? ""),
   );
@@ -282,18 +292,22 @@ export function AIWorkbench({
           : t("원문과 AI 제안을 구분해 확인하고, 필요한 것만 선택하세요.")}
       </p>
       {mode === "preview" ? (
-        <p className="student-inline-note">
+        <p id={availabilityNoteId} className="student-inline-note">
           {t("이 미리보기에서는 AI를 실행할 수 없어요.")}
         </p>
       ) : (
         aiNotConfigured && (
-          <p className="student-inline-note" role="status">
+          <p
+            id={availabilityNoteId}
+            className="student-inline-note"
+            role="status"
+          >
             {AI_NOT_CONFIGURED_MESSAGE}
           </p>
         )
       )}
       {stale && (
-        <p className="student-inline-note" role="status">
+        <p id={staleNoteId} className="student-inline-note" role="status">
           {input.mode === "organize_meeting"
             ? t(
                 "AI를 실행한 뒤 원문이 바뀌었어요. 아래 AI 제안은 바뀌기 전 원문을 기준으로 해서 저장할 수 없어요.",
@@ -322,12 +336,16 @@ export function AIWorkbench({
               saving !== null ||
               !input.sourceText.trim()
             }
+            aria-describedby={
+              aiBlocked ? availabilityNoteId : sourceReason.describedBy
+            }
           >
             <Icon name="sparkles" size={16} />
             {candidates.length ? t("다시 제안받기") : t("제안받기")}
           </Button>
         )}
       </div>
+      {!running && !stale && sourceReason.node}
       {running && (
         <div className="ai-running" role="status">
           <span>
@@ -472,6 +490,7 @@ export function AIWorkbench({
               <Button
                 variant="outline"
                 disabled={saving !== null || saved.includes(index) || stale}
+                aria-describedby={stale ? staleNoteId : undefined}
                 onClick={() => saveCandidate(candidate, index)}
               >
                 {saved.includes(index) ? (

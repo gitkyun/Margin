@@ -3,6 +3,7 @@ import { useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
+import { StatusBadge } from "@/components/common";
 import "./material-upload-field.css";
 
 // Aceternity File Upload's grid/lifted-file pattern, adapted to RMS's real
@@ -121,7 +122,7 @@ export function MaterialUploadField({
               <strong>{file.name}</strong>
               <div>
                 <span>{fileSize}</span>
-                <span className="mu-state">
+                <StatusBadge tone="blue">
                   {connecting
                     ? t("자료에 등록 중")
                     : transferring
@@ -129,7 +130,7 @@ export function MaterialUploadField({
                       : pending
                         ? t("업로드됨 · 등록 전")
                         : t("선택됨")}
-                </span>
+                </StatusBadge>
               </div>
             </div>
             {!busy && !pending && (

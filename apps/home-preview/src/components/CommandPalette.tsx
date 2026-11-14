@@ -8,6 +8,7 @@ import { Icon } from "./icons";
 import { useExperience } from "@/lib/experience";
 import {
   buildCommands,
+  isIncomingOnly,
   rankSections,
   type CommandEntry,
 } from "@/lib/command-items";
@@ -48,14 +49,19 @@ export function CommandPalette({
   researchId,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
-  const { data } = useExperience();
+  const { data, user } = useExperience();
   const navigate = useNavigate();
   const location = useLocation();
   const searching = query.trim().length > 0;
   const sections = useMemo(
-    () => rankSections(buildCommands({ data, researchId, searching }), query),
-    [data, researchId, searching, query],
+    () =>
+      rankSections(
+        buildCommands({ data, researchId, searching, userId: user.id }),
+        query,
+      ),
+    [data, researchId, searching, query, user.id],
   );
+  const incomingOnly = !researchId && isIncomingOnly(data, user.id);
 
   function changeOpen(next: boolean) {
     onOpenChange(next);
@@ -87,7 +93,9 @@ export function CommandPalette({
               placeholder={
                 researchId
                   ? t("기록 제목, 화면, 할 일을 찾아요")
-                  : t("연구 이름이나 화면을 찾아요")
+                  : incomingOnly
+                    ? t("받은 검토 요청 제목이나 연구 이름을 찾아요")
+                    : t("연구 이름이나 화면을 찾아요")
               }
               autoFocus
             />

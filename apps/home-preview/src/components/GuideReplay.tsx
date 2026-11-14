@@ -2,11 +2,11 @@ import { t } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
-import { resetTourSeen } from "@/lib/tour";
+import { requestTour } from "@/lib/tour";
 
 /**
- * 사용 안내의 ‘다시 보기’. 서비스 소개는 바로 열고, 화면 안내는 연구 홈에서만 뜨기 때문에
- * 봤다는 기록을 지운 뒤 내 연구로 보냅니다. 로그인한 사람에게만 보여 줍니다.
+ * 사용 안내의 ‘다시 보기’. 서비스 소개는 바로 열고, 화면 안내는 저절로 뜨지 않고 연구 홈에서만
+ * 열리기 때문에 보고 싶다는 기록을 남긴 뒤 내 연구로 보냅니다. 로그인한 사람에게만 보여 줍니다.
  */
 export function GuideReplay() {
   return (
@@ -23,7 +23,7 @@ export function GuideReplay() {
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/r" onClick={resetTourSeen}>
+          <Link to="/r" onClick={requestTour}>
             <Icon name="eye" size={18} />
             {t("화면 안내 다시 보기")}
           </Link>

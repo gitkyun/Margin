@@ -20,6 +20,7 @@ import { useWorkspace } from "@/lib/workspace";
 import { motion, useReducedMotion, useMotionValue } from "motion/react";
 import { Icon } from "./icons";
 import { Hint } from "./ui/hint";
+import { PROFESSOR_VISIBILITY } from "@/lib/sharing-copy";
 /**
  * 선택 상자. 모양·키보드·목록은 Montage Select가 맡습니다.
  * 접근성 이름은 "이름, 현재 값"으로 둬 보이는 글자가 이름에 들어가게 합니다(WCAG 2.5.3).
@@ -254,7 +255,7 @@ export function VisibilityField({
         : t("공동 기록 · 공동연구자 없음"),
     });
   const help = collaborative
-    ? t("교수님께는 검토 요청에 넣은 내용과 연구 방향만 보여요.")
+    ? PROFESSOR_VISIBILITY
     : t("공동연구자가 참여하면 기록을 공유할 수 있어요.");
   if (compact)
     return collaborative || value === "shared" ? (
@@ -290,7 +291,7 @@ export function VisibilityField({
       )}
       <small>
         {collaborative
-          ? t("교수님께는 검토 요청에 넣은 내용과 연구 방향만 보여요.")
+          ? PROFESSOR_VISIBILITY
           : t("공동연구자가 참여하면 기록을 공유할 수 있어요.")}
       </small>
     </div>

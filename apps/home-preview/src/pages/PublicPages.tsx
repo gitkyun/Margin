@@ -31,6 +31,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { configured } from "@/lib/supabase";
 import { GuideReplay } from "@/components/GuideReplay";
+import { PRIVATE_BY_DEFAULT, PROFESSOR_VISIBILITY } from "@/lib/sharing-copy";
+import { TextLink } from "@/components/common";
 
 /** 히어로 제목 등장(최대 600ms)이 끝난 뒤에 시작 버튼 강조를 돌립니다. */
 const HERO_SETTLE_MS = 700;
@@ -48,7 +50,7 @@ const journey = [
   {
     label: t("수정 방법"),
     icon: "sparkles",
-    title: t("정답 대신 고를 수 있는 수정 방법"),
+    title: t("연구 도우미가 수정 방법을 제안해요"),
     body: t(
       "연구 도우미가 제안한 수정 방법과 가정을 읽고, 내 연구에 맞는 방법을 선택하세요.",
     ),
@@ -74,6 +76,75 @@ const journey = [
   },
 ];
 
+type FaqItem = readonly [question: string, answer: string];
+
+/** 소개 화면의 자주 묻는 질문: 쓰기 전에 알아야 할 것 */
+const INTRO_FAQ: readonly FaqItem[] = [
+  [
+    t("AI 없이도 사용할 수 있나요?"),
+    t(
+      "네. 메모, 피드백, 수정 방법, 할 일, 검토 요청은 모두 직접 쓸 수 있어요. AI는 기록을 선택해 요청할 때만 실행되고, 직접 고른 AI 제안만 기록에 들어가요.",
+    ),
+  ],
+  [
+    t("교수님께는 어디까지 보이나요?"),
+    `${PROFESSOR_VISIBILITY} ${t("개인 메모, AI 대화, 선택하지 않은 AI 제안은 보이지 않아요.")}`,
+  ],
+  [
+    t("지금 가입하거나 결제할 수 있나요?"),
+    t(
+      "가입은 초대 링크를 받은 사람만 할 수 있어요. Free는 ₩0이고, Pro와 Team은 출시 예정이라 결제는 아직 열리지 않았어요.",
+    ),
+  ],
+];
+
+/** 사용 안내의 자주 묻는 질문: 쓰는 중에 생기는 것 */
+const GUIDE_FAQ: readonly FaqItem[] = [
+  [
+    t("동료와 함께 쓰려면 어떻게 하나요?"),
+    t(
+      "연구 설정에서 마진 계정이 있는 동료를 초대하세요. 동료가 수락하면 공동 기록과 할 일, 일정 조율을 함께 쓸 수 있어요. 개인 메모와 AI 대화는 자동으로 공개되지 않아요.",
+    ),
+  ],
+  [
+    t("AI 제안을 선택하면 할 일이 끝나나요?"),
+    t(
+      "아니요. 선택한 방법은 할 일에 추가할 수 있어요. 할 일을 끝냈다는 표시는 직접 해요.",
+    ),
+  ],
+  [
+    t("버전은 언제 생기나요?"),
+    t(
+      "저장만으로는 버전이 생기지 않아요. 비교하고 싶은 시점에 ‘지금 버전 남기기’로 직접 남겨요.",
+    ),
+  ],
+  [
+    t("검토 링크를 만들면 교수님께 바로 가나요?"),
+    t("아니요. 링크만 만들어져요. 복사해서 교수님께 직접 전달해 주세요."),
+  ],
+  [
+    t("다시 고치면 이전 검토는 사라지나요?"),
+    t(
+      "아니요. 보낸 설명, 파일, 교수님 응답은 그때 그대로 남아요. 고친 항목에 다시 확인을 요청하면 2차, 3차 검토로 따로 쌓여요.",
+    ),
+  ],
+];
+
+function FaqList({ items }: { items: readonly FaqItem[] }) {
+  return (
+    <div className="lp-faq-list">
+      {items.map(([question, answer]) => (
+        <details key={question}>
+          <summary>
+            {question}
+            <Icon name="plus" size={18} />
+          </summary>
+          <p>{answer}</p>
+        </details>
+      ))}
+    </div>
+  );
+}
 function ResearchMark({ small = false }: { small?: boolean }) {
   return <BrandMark className={`lp-mark ${small ? "lp-mark-small" : ""}`} />;
 }
@@ -380,10 +451,6 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
     <PublicFrame signedIn={signedIn}>
       <section className="lp-hero">
         <div className="lp-hero-copy">
-          <span className="lp-hero-intro">
-            <ResearchMark small />
-            {t("논문을 쓰는 사람의 작업 공간")}
-          </span>
           <h1>
             <RevealLine>{t("흩어진 기록을 모아,")}</RevealLine>
             <br />
@@ -449,16 +516,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
       </section>
       <section className="lp-section lp-features" id="features">
         <div className="lp-section-heading">
-          <h2>
-            {t("피드백은 할 일로,")}
-            <br />
-            <RevealLine>{t("수정 결과는 검토 요청으로")}</RevealLine>
-          </h2>
-          <p>
-            {t("지난 미팅 기록을 다시 뒤지지 않아도")}
-            <br />
-            {t("남은 할 일을 바로 확인할 수 있어요.")}
-          </p>
+          <h2>{t("주요 기능")}</h2>
         </div>
         <div className="lp-bento">
           <SpotlightCard className="lp-feature-card lp-feature-wide">
@@ -507,7 +565,7 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <span className="lp-feature-icon">
                 <Icon name="sparkles" size={22} />
               </span>
-              <h3>{t("제안은 연구 도우미가, 선택은 내가")}</h3>
+              <h3>{t("AI 제안은 직접 골라요")}</h3>
               <p>
                 {t("원문에서 확인한 내용과 AI 제안, 확인할 가정을")}
                 <br />
@@ -567,13 +625,13 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
               <span className="lp-feature-icon">
                 <Icon name="check-circle" size={22} />
               </span>
-              <h3>
-                {t("교수님께는 검토 요청에 넣은 항목과 연구 방향만 보여요")}
-              </h3>
+              <h3>{t("항목마다 교수님 응답을 받아요")}</h3>
               <p>
                 {t(
                   "검토 링크를 만들어 직접 전달하면, 교수님이 항목마다 응답을 남겨요.",
                 )}
+                <br />
+                {PROFESSOR_VISIBILITY}
               </p>
               <Link className="lp-feature-more" to="/features?view=review">
                 {t("자세히 보기")} <Icon name="arrow-right" size={15} />
@@ -604,11 +662,6 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
                 </button>
               ))}
             </div>
-            <p>
-              {t("직접 쓰든 AI 제안을 선택하든")}
-              <br />
-              {t("기록은 같은 연구에 남아요.")}
-            </p>
           </div>
           <div
             className={`lp-workflow-preview lp-tone-${journey[feature].color}`}
@@ -642,24 +695,24 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
           {[
             {
               icon: "mic",
-              title: t("말한 내용은 기록으로"),
+              title: t("녹음과 전사"),
               body: t("녹음하면서 한국어 전사문도 함께 남길 수 있어요."),
             },
             {
               icon: "calendar",
-              title: t("다음 미팅은 미리 준비"),
+              title: t("미팅 준비"),
               body: t("보여 드릴 할 일과 파일, 물어볼 질문을 모아 둬요."),
             },
             {
               icon: "folder",
-              title: t("자료는 찾기 쉽게"),
+              title: t("자료"),
               body: t(
                 "파일은 버전별로 쌓이고, 그 파일을 쓴 기록으로 바로 갈 수 있어요.",
               ),
             },
             {
               icon: "users",
-              title: t("공동연구자와 함께"),
+              title: t("공동연구자"),
               body: t(
                 "동료를 초대해 공동 기록을 함께 쓰고 미팅 시간을 조율해요.",
               ),
@@ -702,57 +755,11 @@ export function LandingPage({ signedIn = false }: { signedIn?: boolean }) {
             <Icon name="arrow-right" size={17} />
           </Link>
         </div>
-        <div className="lp-faq-list">
-          {[
-            [
-              t("AI 없이도 사용할 수 있나요?"),
-              t(
-                "네. 메모 정리부터 수정 방법, 할 일, 검토 요청까지 모두 AI 없이 할 수 있어요. AI는 선택한 기록으로만 실행되고, AI 제안은 직접 선택한 것만 기록에 들어가요. 선택하지 않은 AI 제안과 AI 대화도 저장되지만 나만 볼 수 있어요.",
-              ),
-            ],
-            [
-              t("교수님께는 어디까지 보이나요?"),
-              t(
-                "검토 요청에 넣은 항목과 첨부 파일, 연구 이름과 연구 방향(목적·질문)만 지정한 교수 계정에 보여요. 개인 메모, AI 대화, 선택하지 않은 AI 제안은 교수님께 보이지 않아요.",
-              ),
-            ],
-            [
-              t("동료와 함께 쓰려면 어떻게 하나요?"),
-              t(
-                "연구 설정에서 마진 계정이 있는 동료를 초대하세요. 동료가 수락하면 공동 기록과 할 일, 일정 조율을 함께 쓸 수 있어요. 교수님의 검토 권한은 공동 편집 권한과 달라요.",
-              ),
-            ],
-            [
-              t("다시 고치면 이전 검토는 사라지나요?"),
-              t(
-                "아니요. 보낸 설명, 파일, 교수님 응답은 그때 그대로 남아요. 고친 항목에 다시 확인을 요청하면 2차, 3차 검토로 따로 쌓여요.",
-              ),
-            ],
-            [
-              t("지금 가입하거나 결제할 수 있나요?"),
-              t(
-                "가입은 초대 링크를 받은 사람만 할 수 있어요. 마진을 쓰고 있는 사람에게 초대 링크를 받아 주세요. 유료 플랜 결제는 아직 열리지 않았어요.",
-              ),
-            ],
-          ].map(([q, a]) => (
-            <details key={q}>
-              <summary>
-                {q}
-                <Icon name="plus" size={19} />
-              </summary>
-              <p>{a}</p>
-            </details>
-          ))}
-        </div>
+        <FaqList items={INTRO_FAQ} />
       </section>
       <section className="lp-close">
         <BrandMark inverse />
-        <h2>
-          {t("다음 미팅은")}
-          <br />
-          {t("고친 내용부터")}
-        </h2>
-        <p>{t("지난 기록을 다시 찾는 시간이 줄어요.")}</p>
+        <h2>{t("마진 시작하기")}</h2>
         <StartGlow tone="on-brand">
           <Link
             className="lp-button lp-button-on-brand"
@@ -822,12 +829,7 @@ const tourDetails = [
     ],
   ],
   [
-    [
-      t("공개 범위"),
-      t(
-        "지정한 교수 계정에만 검토 요청에 넣은 항목과 그때의 파일, 연구 방향을 공개해요.",
-      ),
-    ],
+    [t("공개 범위"), PROFESSOR_VISIBILITY],
     [
       t("항목별 응답"),
       t(
@@ -937,13 +939,39 @@ export function PricingPage({ signedIn = false }: { signedIn?: boolean }) {
                 "아니요. 초대한 공동연구자가 수락하면 Free에서도 공동 기록을 쓸 수 있어요. Team은 연구실 운영을 위해 준비 중인 플랜이고, 결제는 아직 열리지 않았어요.",
               )}
             </p>
-            <Link to="/guide#questions">
+            <Link to="/#faq">
               {t("자주 묻는 질문 보기")} <Icon name="arrow-right" size={16} />
             </Link>
           </div>
         </div>
       </section>
     </PublicFrame>
+  );
+}
+
+/** 가입·초대 화면 왼쪽 안내. 가입 미리보기와 초대 가입(`AuthLayout`)이 함께 씁니다. */
+export function AuthStory() {
+  return (
+    <div className="auth-story">
+      <h1>
+        {t("지난 미팅에서")}
+        <br />
+        {t("다음 미팅까지")}
+      </h1>
+      <p>
+        {t("피드백, 할 일, 원고 버전, 교수님 응답을")}
+        <br />
+        {t("연구별로 모아 둬요.")}
+      </p>
+      <div className="auth-proof">
+        <Icon name="lock" size={19} />
+        <span>
+          {PRIVATE_BY_DEFAULT}
+          <br />
+          {PROFESSOR_VISIBILITY}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -957,26 +985,7 @@ export function SignupPage() {
   return (
     <PublicFrame compact>
       <section className="signup-layout">
-        <div className="auth-story">
-          <h1>
-            {t("지난 미팅에서")}
-            <br />
-            {t("다음 미팅까지")}
-          </h1>
-          <p>
-            {t("피드백, 할 일, 원고 버전, 교수님 응답을")}
-            <br />
-            {t("연구별로 모아 둬요.")}
-          </p>
-          <div className="auth-proof">
-            <Icon name="lock" size={19} />
-            <span>
-              {t("공동연구자가 참여하기 전에는 기록을 나만 볼 수 있어요.")}
-              <br />
-              {t("교수님께는 검토 요청에 넣은 항목과 연구 방향만 보여요.")}
-            </span>
-          </div>
-        </div>
+        <AuthStory />
         <div className="auth-panel">
           <span className="demo-label">{t("가입 과정 미리보기")}</span>
           {step === 0 ? (
@@ -1120,10 +1129,10 @@ export function InfoPage({
   return (
     <PublicFrame compact signedIn={signedIn}>
       <article className="public-article">
-        <Link to="/" className="text-link">
+        <TextLink to="/">
           <Icon name="arrow-left" size={16} />
           {t("서비스 소개")}
-        </Link>
+        </TextLink>
         <h1>{privacy ? t("자료와 개인정보") : t("마진 사용 안내")}</h1>
         <p>
           {privacy
@@ -1183,48 +1192,7 @@ export function InfoPage({
         {!privacy && (
           <section className="lp-guide-questions" id="questions">
             <h2>{t("자주 묻는 질문")}</h2>
-            <div className="lp-faq-list">
-              {[
-                [
-                  t("AI를 꼭 사용해야 하나요?"),
-                  t(
-                    "아니요. 메모, 피드백, 수정 방법, 할 일은 모두 직접 쓸 수 있어요. AI는 기록을 선택해 요청할 때만 실행돼요.",
-                  ),
-                ],
-                [
-                  t("함께 연구하려면 어떻게 하나요?"),
-                  t(
-                    "연구 설정에서 마진 계정이 있는 동료를 초대하세요. 동료가 초대를 수락하면 기록을 공동 기록으로 지정할 수 있어요. 개인 메모와 AI 대화는 자동으로 공개되지 않아요.",
-                  ),
-                ],
-                [
-                  t("교수님께는 어떤 내용이 보이나요?"),
-                  t(
-                    "지정한 교수 계정에서는 검토 요청에 넣은 항목과 그때의 파일, 연구 이름과 연구 방향(목적·질문)만 볼 수 있어요. 개인 메모, AI 대화, 다른 기록은 볼 수 없어요.",
-                  ),
-                ],
-                [
-                  t("원고를 고치면 이전 응답은 어떻게 되나요?"),
-                  t(
-                    "교수님 응답은 보낸 당시 내용과 함께 그대로 남아요. 고친 항목에 다시 확인을 요청하면 2차 검토가 새로 생겨요.",
-                  ),
-                ],
-                [
-                  t("지금 가입하거나 결제할 수 있나요?"),
-                  t(
-                    "가입은 초대 링크를 받은 사람만 할 수 있어요. Free는 ₩0이고, Pro와 Team은 출시 예정이라 결제는 아직 열리지 않았어요.",
-                  ),
-                ],
-              ].map(([question, answer]) => (
-                <details key={question}>
-                  <summary>
-                    {question}
-                    <Icon name="plus" size={18} />
-                  </summary>
-                  <p>{answer}</p>
-                </details>
-              ))}
-            </div>
+            <FaqList items={GUIDE_FAQ} />
           </section>
         )}
         <Link className="rms-action primary" to={signedIn ? "/r" : "/signup"}>

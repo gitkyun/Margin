@@ -16,7 +16,12 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { PageHeader, EmptyState, StatusBadge } from "@/components/common";
+import {
+  PageHeader,
+  EmptyState,
+  StatusBadge,
+  InlineEmpty,
+} from "@/components/common";
 import { PdfViewer } from "@/components/PdfViewer";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { queryUp } from "@/design/responsive";
@@ -504,9 +509,9 @@ export function MaterialsPage() {
                     </button>
                   ))
                 ) : (
-                  <p className="student-empty-inline">
+                  <InlineEmpty>
                     {t("PDF를 올리면 여기에서 버전별로 다시 열 수 있어요.")}
-                  </p>
+                  </InlineEmpty>
                 )}
                 <p className="student-footnote">
                   {t(
@@ -561,9 +566,9 @@ export function MaterialsPage() {
                     !data.meetings.some((meeting) =>
                       meeting.versionIds.includes(selected.id),
                     ) && (
-                      <p className="student-empty-inline">
+                      <InlineEmpty>
                         {t("아직 이 버전을 사용한 기록이 없어요.")}
-                      </p>
+                      </InlineEmpty>
                     )}
                 </section>
               )}
@@ -1043,9 +1048,7 @@ function MaterialPreviewPanel({
               </Link>
             ))}
             {!results.length && !meetings.length && (
-              <p className="student-empty-inline">
-                {t("아직 이 자료를 쓴 기록이 없어요.")}
-              </p>
+              <InlineEmpty>{t("아직 이 자료를 쓴 기록이 없어요.")}</InlineEmpty>
             )}
           </div>
         </PanelFrame>

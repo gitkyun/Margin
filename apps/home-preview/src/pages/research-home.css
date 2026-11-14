@@ -60,7 +60,7 @@
   }
   .rh-intro-copy {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-raised);
     flex: 1;
     min-width: 0;
     padding: 14px 0 20px;
@@ -107,7 +107,7 @@
   }
   .rh-direction h2 {
     margin: 0;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -129,7 +129,7 @@
     gap: var(--spacing-4) var(--spacing-12);
     padding-left: 0;
     border-left: 0;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
   .rh-people {
     display: inline-flex;
@@ -160,9 +160,9 @@
     border-radius: 50%;
     background: color-mix(in srgb, var(--brand) 12%, var(--surface));
     color: var(--brand);
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-avatars > span:first-child {
     margin-left: 0;
@@ -190,20 +190,10 @@
     margin-left: auto;
     color: var(--text-tertiary);
   }
+  /* 색·글자는 공통 .text-link(styles.css). 홈 머리 줄에서는 높이만 맞춥니다. */
   .rh-text-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
     flex: 0 0 auto;
     min-height: 32px;
-    color: var(--text-secondary);
-    font-size: var(--typography-label2-fontSize);
-    font-weight: 500;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .rh-text-link:hover {
-    color: var(--brand);
   }
   /* ── 시작하기(새 연구 체크리스트) ─────────────────────── */
   .rh-start {
@@ -324,7 +314,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
-  @media (max-width: 480px) {
+  @media (max-width: 767px) {
     .rh-start-list {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -381,7 +371,7 @@
   .rh-date-month {
     background: var(--semantic-surface-brand-primary);
     color: var(--semantic-static-white);
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
     line-height: 20px;
   }
@@ -394,8 +384,8 @@
     letter-spacing: -0.04em;
   }
   .rh-date-tile small {
-    color: var(--text-tertiary);
-    font-size: var(--typography-caption2-fontSize);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
     line-height: 1;
   }
   .rh-date-tile > svg {
@@ -434,37 +424,6 @@
   .rh-meeting-title h3 a:hover {
     color: var(--brand);
   }
-  .rh-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    width: fit-content;
-    min-height: 24px;
-    padding: 2px 8px;
-    border-radius: var(--radius-8);
-    font-size: var(--typography-caption2-fontSize);
-    font-weight: 600;
-    line-height: var(--typography-caption2-lineHeight);
-    white-space: nowrap;
-    letter-spacing: var(--typography-caption2-letterSpacing);
-  }
-  .rh-badge-blue {
-    color: var(--brand);
-    background: var(--brand-soft);
-  }
-  .rh-badge-green {
-    color: var(--success);
-    background: color-mix(in srgb, var(--success) 9%, var(--surface));
-  }
-  .rh-badge-amber {
-    color: var(--warning);
-    background: color-mix(in srgb, var(--warning) 9%, var(--surface));
-  }
-  .rh-badge-neutral {
-    color: var(--text-secondary);
-    background: var(--surface-muted);
-  }
   .rh-meeting-goal {
     margin-top: 21px;
     padding-bottom: 23px;
@@ -494,7 +453,7 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-muted {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
   .rh-progress {
     overflow: hidden;
@@ -556,7 +515,7 @@
     text-decoration: line-through;
   }
   .rh-inline-empty {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
     word-break: var(--text-word-break, keep-all);
@@ -629,7 +588,7 @@
     display: flex;
     gap: 7px;
     margin-top: 5px;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -678,7 +637,7 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -692,7 +651,7 @@
     color: var(--text-tertiary);
     text-decoration: line-through;
   }
-  .rh-task > .rh-badge {
+  .rh-task > .status-badge {
     margin-left: 3px;
   }
   .rh-list-empty {
@@ -701,7 +660,7 @@
     gap: 10px;
     min-height: 96px;
     padding: 19px 0;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
   .rh-list-empty p {
     font-size: var(--typography-label1-fontSize);
@@ -760,7 +719,7 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .rh-document-copy small {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -790,7 +749,7 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .rh-writing-empty small {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -886,7 +845,7 @@
   }
   .rh-attention-empty p {
     margin-top: 5px;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
     word-break: var(--text-word-break, keep-all);
@@ -912,9 +871,9 @@
     gap: 3px;
   }
   .rh-deadline small {
-    color: var(--text-tertiary);
-    font-size: var(--typography-caption2-fontSize);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-deadline strong {
     font-size: var(--typography-label2-fontSize);
@@ -952,7 +911,7 @@
   }
   .rh-activity-dot {
     position: relative;
-    z-index: 1;
+    z-index: var(--z-raised);
     width: 9px;
     height: 9px;
     flex: 0 0 9px;
@@ -986,9 +945,9 @@
   .rh-activity-list small {
     display: block;
     margin-top: 7px;
-    color: var(--text-tertiary);
-    font-size: var(--typography-caption2-fontSize);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-activity-list a:hover strong {
     color: var(--brand);
@@ -1059,33 +1018,14 @@
   @media (max-width: 767px) {
     .rh-home {
       padding-top: 0;
+      padding-bottom: 20px;
     }
     .rh-intro {
       flex-direction: column;
       align-items: stretch;
       gap: 0;
-      min-height: 0;
-      margin-bottom: 22px;
-    }
-    .rh-intro-copy {
-      width: 100%;
-    }
-    .rh-intro h1 {
-      font-size: var(--typography-title2-fontSize);
-      letter-spacing: var(--typography-title2-letterSpacing);
-    }
-  }
-  @media (max-width: 480px) {
-    .rh-home {
-      padding-bottom: 20px;
-    }
-    .rh-intro {
       min-height: 166px;
       margin-bottom: 17px;
-    }
-    .rh-intro-copy {
-      width: 100%;
-      padding-top: 8px;
     }
     .rh-intro h1 {
       max-width: 95%;
@@ -1119,8 +1059,8 @@
       letter-spacing: var(--typography-headline1-letterSpacing);
     }
     .rh-meeting-title-copy > p {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .rh-meeting-goal {
       margin-top: 18px;
@@ -1141,11 +1081,6 @@
     .rh-task-copy strong {
       font-size: var(--typography-label2-fontSize);
       letter-spacing: var(--typography-label2-letterSpacing);
-    }
-    .rh-task > .rh-badge {
-      font-size: var(--typography-caption2-fontSize);
-      padding: 2px 6px;
-      letter-spacing: var(--typography-caption2-letterSpacing);
     }
     .rh-text-link {
       font-size: var(--typography-caption1-fontSize);
@@ -1281,8 +1216,9 @@
       margin-bottom: var(--spacing-24);
     }
   }
-  @media (max-width: 480px) {
+  @media (max-width: 767px) {
     .rh-intro-copy {
+      padding-top: 8px;
       width: 100%;
     }
   }

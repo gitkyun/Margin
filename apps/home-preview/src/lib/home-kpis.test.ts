@@ -88,7 +88,7 @@ describe("homeKpis", () => {
     expect(kpis.map((k) => [k.value, k.context, k.tone])).toEqual([
       ["미정", "일정 없음", "gray"],
       ["0", "전체 0개", "green"],
-      ["0", "새 소식 없음", "gray"],
+      ["0", "새 알림 없음", "gray"],
       ["0", "버전 0개", "gray"],
     ]);
     expect(kpis[0].to).toBe("/r/abc/meetings");

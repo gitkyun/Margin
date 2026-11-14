@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { Icon } from "@/components/icons";
-import { StatusBadge } from "@/components/common";
+import { StatusBadge, InlineEmpty } from "@/components/common";
 import { modeLabels } from "@/lib/experience";
 import {
   formatDateTime,
@@ -77,7 +77,7 @@ const sameSource = (a: AIContext, b: AIContext) =>
   a.kind === b.kind && a.id === b.id;
 
 /**
- * 연구 도우미 작업대의 여백 패널. 근거(고른 기록), 제안(확인할 AI 제안), 기록(실행 기록).
+ * 연구 도우미 작업대의 여백 패널. 근거(고른 기록), 제안(확인할 AI 제안), 기록(실행 내역).
  * 근거는 늘 이 패널 위쪽에서 보이고, 같은 자리에서 바꿉니다(모달 없음).
  */
 export function AssistantPanel(props: AssistantPanelProps) {
@@ -92,7 +92,7 @@ export function AssistantPanel(props: AssistantPanelProps) {
       tabs={[
         { value: "sources", label: t("근거"), count: contexts.length },
         { value: "suggestions", label: t("제안"), count: pending.length },
-        { value: "runs", label: t("기록") },
+        { value: "runs", label: t("실행 내역") },
       ]}
     >
       {tab === "sources" && <SourcesTab {...props} />}
@@ -152,13 +152,13 @@ function SourcesTab({
           ))}
         </ul>
       ) : (
-        <p className="quiet-placeholder">
+        <InlineEmpty variant="panel">
           {single
             ? t("정리할 미팅 메모를 하나 골라 주세요.")
             : t(
                 "아래에서 기록을 고르거나 파일을 첨부해 주세요. 고른 기록만 읽어요.",
               )}
-        </p>
+        </InlineEmpty>
       )}
       <div className="source-picker">
         <Button variant="outline" disabled={busy} onClick={onAttach}>
@@ -186,9 +186,9 @@ function SourcesTab({
           );
         })}
         {!sourceOptions.length && (
-          <p className="quiet-placeholder">
+          <InlineEmpty variant="panel">
             {t("아직 고를 수 있는 연구 기록이 없어요.")}
-          </p>
+          </InlineEmpty>
         )}
         {!!versions.length && (
           <>
@@ -237,9 +237,9 @@ function SuggestionsTab({ pending, onAdopt, onDismiss }: AssistantPanelProps) {
       {pending.map((item) => (
         <article key={item.id} className="candidate-overview-row">
           <div>
-            <span className="rms-pill">
+            <StatusBadge>
               {modeLabels[item.mode ?? ""] ?? t("AI 제안")}
-            </span>
+            </StatusBadge>
             <h4>{item.title}</h4>
             <p>{item.candidate.body ?? item.candidate.method}</p>
             {item.candidate.sourceQuote && (
@@ -272,9 +272,9 @@ function SuggestionsTab({ pending, onAdopt, onDismiss }: AssistantPanelProps) {
         </article>
       ))}
       {!pending.length && (
-        <p className="quiet-placeholder">
+        <InlineEmpty variant="panel">
           {t("AI 제안이 나오면 여기에 표시돼요.")}
-        </p>
+        </InlineEmpty>
       )}
     </div>
   );
@@ -286,7 +286,7 @@ function RunsTab({
 }: Pick<AssistantPanelProps, "runs" | "onCancelRun">) {
   return (
     <div className="panel-frame-body">
-      <h3>{t("실행 기록")}</h3>
+      <h3>{t("실행 내역")}</h3>
       {runs.map((run) => (
         <div className="run-row" key={run.id}>
           <Icon
@@ -330,7 +330,9 @@ function RunsTab({
         </div>
       ))}
       {!runs.length && (
-        <p className="quiet-placeholder">{t("아직 실행 기록이 없어요.")}</p>
+        <InlineEmpty variant="panel">
+          {t("아직 실행 내역이 없어요.")}
+        </InlineEmpty>
       )}
       <p className="panel-frame-note">
         {t("이번 달 사용량은")}{" "}

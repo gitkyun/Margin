@@ -96,7 +96,7 @@ export function startChecklist(
     },
     {
       key: "task",
-      label: t("할 일 만들기"),
+      label: t("할 일 추가"),
       hint: t("다음 미팅까지 할 일을 적어요."),
       href: `${base}/tasks?new=1`,
       done: mine(data.tasks).length > 0,

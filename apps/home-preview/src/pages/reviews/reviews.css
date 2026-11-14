@@ -318,7 +318,7 @@
     border-bottom: 1px solid var(--line);
     background: var(--surface);
     position: relative;
-    z-index: 5;
+    z-index: var(--z-sticky);
   }
   .review-header-left,
   .review-header-actions {
@@ -353,6 +353,13 @@
   .review-header-actions > a {
     flex: none;
     white-space: nowrap;
+  }
+  /* 교수 화면의 '← 받은 검토 요청'(감사 F5·F6). */
+  /* 색·간격은 공통 .text-link(styles.css). 검토 머리에서는 한 단계 작은 글자를 씁니다. */
+  .review-back-link {
+    margin-bottom: 2px;
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-header-left p {
     font-size: var(--typography-caption1-fontSize);
@@ -485,11 +492,11 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-item-version {
-    font-size: var(--typography-caption2-fontSize);
-    line-height: var(--typography-caption2-lineHeight);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
     width: 100%;
     overflow-wrap: anywhere;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-sidebar-note {
     display: flex;
@@ -538,9 +545,9 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-round-picker select {
     height: 36px;
@@ -600,8 +607,8 @@
   }
   .review-description-meta > time {
     color: var(--text-secondary);
-    font-size: var(--typography-caption2-fontSize);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-description-card > h3 {
     font-size: var(--typography-label1-fontSize);
@@ -659,18 +666,18 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-file-heading > span {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     flex-shrink: 0;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-file-note {
     color: var(--text-secondary);
-    font-size: var(--typography-caption2-fontSize);
-    line-height: var(--typography-caption2-lineHeight);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
     padding: 12px 18px;
     border-top: 1px solid var(--line);
     margin: 0;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-missing-file,
   .review-nondocument {
@@ -717,8 +724,8 @@
     margin-bottom: 18px;
   }
   .review-saved-response > .meta {
-    font-size: var(--typography-caption2-fontSize);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-saved-response p {
     font-size: var(--typography-label1-fontSize);
@@ -730,10 +737,10 @@
   }
   .review-edited-label {
     display: block;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     margin-top: 10px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-response-form {
     display: grid;
@@ -835,10 +842,10 @@
   }
   .review-response-history time {
     display: block;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     margin-top: 7px;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-response-history p {
     font-size: var(--typography-label2-fontSize);
@@ -869,9 +876,9 @@
     background: var(--surface-muted);
     border: 1px solid var(--line);
     border-radius: 50%;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-comment-author strong {
     font-size: var(--typography-caption1-fontSize);
@@ -879,10 +886,10 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-comment-author time {
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     margin-left: auto;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-comment-body {
     font-size: var(--typography-label2-fontSize);
@@ -901,11 +908,40 @@
     color: var(--text-secondary);
     border: 0;
     background: none;
-    font-size: var(--typography-caption2-fontSize);
+    font-size: var(--typography-caption1-fontSize);
     padding: 0;
-    letter-spacing: var(--typography-caption2-letterSpacing);
+    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-comment-actions > button:hover {
+    color: var(--brand);
+  }
+  /* 댓글 ⋯ 메뉴: 작성자 줄 오른쪽 끝, 시간 옆(감사 F6). */
+  .review-comment-author .review-comment-menu {
+    flex: none;
+    margin-inline-end: -6px;
+    color: var(--text-secondary);
+  }
+  /* 링크로 들어온 댓글이 고정 머리 아래에 가려지지 않게 합니다. */
+  .review-comment-thread,
+  .review-comment-reply {
+    scroll-margin-top: 96px;
+  }
+  .review-resolved-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    width: 100%;
+    background: none;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    cursor: pointer;
+  }
+  .review-resolved-toggle:hover {
     color: var(--brand);
   }
   .review-comment-reply {
@@ -1000,15 +1036,6 @@
   .review-recheck-confirmation > [role="checkbox"] {
     margin-top: 4px;
     flex-shrink: 0;
-  }
-  .review-text-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--brand);
-    font-size: var(--typography-caption1-fontSize);
-    text-decoration: none;
-    letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-loading {
     min-height: 70dvh;
@@ -1122,11 +1149,8 @@
       letter-spacing: var(--typography-label2-letterSpacing);
     }
     .review-item-version {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
-    }
-    .review-reading-grid {
-      grid-template-columns: minmax(0, 1fr) 330px;
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .review-round-actions {
       gap: 10px;
@@ -1196,8 +1220,8 @@
       letter-spacing: var(--typography-body2-letterSpacing);
     }
     .review-header-left p {
-      font-size: var(--typography-caption2-fontSize);
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .review-header-divider {
       height: 30px;
@@ -1302,9 +1326,9 @@
     .review-preview-banner,
     .review-stopped-banner {
       justify-content: flex-start;
-      font-size: var(--typography-caption2-fontSize);
+      font-size: var(--typography-label2-fontSize);
       align-items: flex-start;
-      letter-spacing: var(--typography-caption2-letterSpacing);
+      letter-spacing: var(--typography-label2-letterSpacing);
     }
     .review-preview-banner > svg,
     .review-stopped-banner > svg {

@@ -16,6 +16,7 @@ import {
   Skeleton,
   type ThemeColorsToken,
 } from "@montage-ui/core";
+import { Link } from "react-router-dom";
 import { Icon } from "./icons";
 import { Button } from "@/components/ui/button";
 /**
@@ -124,6 +125,62 @@ export function EmptyState({
       </FallbackViewContent>
       {action && <FallbackViewActionArea>{action}</FallbackViewActionArea>}
     </FallbackView>
+  );
+}
+/**
+ * 목록·칸 안의 한 줄 빈 상태. 아이콘·제목이 있는 큰 빈 상태는 `EmptyState`를 씁니다.
+ * `panel`은 AI·버전 패널처럼 칸 하나를 다 채우는 여백 넓은 모양입니다.
+ */
+export function InlineEmpty({
+  children,
+  action,
+  variant = "inline",
+}: {
+  children: ReactNode;
+  /** 문장 뒤에 붙는 작은 행동(예: `TextLink`). */
+  action?: ReactNode;
+  variant?: "inline" | "panel";
+}) {
+  return (
+    <p
+      className={
+        variant === "panel" ? "quiet-placeholder" : "student-empty-inline"
+      }
+    >
+      {children}
+      {action && <> {action}</>}
+    </p>
+  );
+}
+/**
+ * 글자형 링크(열기 →, 추가 +, 목록 보기). 모양은 styles.css의 `.text-link` 하나입니다.
+ * `external`이면 새 탭으로 엽니다.
+ */
+export function TextLink({
+  to,
+  state,
+  external = false,
+  className,
+  children,
+}: {
+  to: string;
+  state?: unknown;
+  external?: boolean;
+  /** 자리 잡기(여백·정렬)만 더할 때 씁니다. 색·글자는 바꾸지 않습니다. */
+  className?: string;
+  children: ReactNode;
+}) {
+  const classes = className ? `text-link ${className}` : "text-link";
+  if (external)
+    return (
+      <a className={classes} href={to} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    );
+  return (
+    <Link className={classes} to={to} state={state}>
+      {children}
+    </Link>
   );
 }
 type BadgeTone = "neutral" | "blue" | "green" | "amber" | "red";
@@ -381,4 +438,35 @@ export function ErrorNotice({
       )}
     </div>
   );
+}
+
+type Reason = string | false | null | undefined;
+
+/**
+ * 버튼이 꺼진 이유 한 줄. 이유가 있을 때만 그립니다.
+ * 버튼에는 같은 `id`를 `aria-describedby`로 붙입니다(감사 B2).
+ * 목록 안처럼 훅을 쓸 수 없는 곳에서 직접 씁니다.
+ */
+export function DisabledReason({ id, reason }: { id: string; reason: Reason }) {
+  if (!reason) return null;
+  return (
+    <p id={id} className="disabled-reason">
+      {reason}
+    </p>
+  );
+}
+
+/**
+ * 꺼진 버튼과 이유 한 줄을 잇습니다.
+ * `describedBy`는 버튼의 `aria-describedby`에, `node`는 버튼 아래에 둡니다.
+ */
+export function useDisabledReason(reason: Reason): {
+  describedBy: string | undefined;
+  node: ReactNode;
+} {
+  const id = useId();
+  return {
+    describedBy: reason ? id : undefined,
+    node: <DisabledReason id={id} reason={reason} />,
+  };
 }

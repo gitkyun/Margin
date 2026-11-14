@@ -125,7 +125,7 @@
       top: 0;
       right: 0;
       bottom: 0;
-      z-index: 40;
+      z-index: var(--z-sheet);
       width: min(420px, 100vw);
       height: 100dvh;
       border-radius: 0;
@@ -137,7 +137,7 @@
       display: block;
       position: fixed;
       inset: 0;
-      z-index: 39;
+      z-index: calc(var(--z-sheet) - 1);
       border: 0;
       background: var(--semantic-effect-dimmer-primary);
       animation: margin-panel-fade var(--motion-duration-enter) ease-out;

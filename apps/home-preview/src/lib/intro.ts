@@ -20,16 +20,16 @@ export function markIntroSeen(): void {
 }
 
 /**
- * 소개를 보여 줄지 정합니다. 연구가 하나도 없고 아직 보지 않았을 때만 자동으로 뜨고,
- * `/r/new?intro=1`로 들어오면 다시 볼 수 있습니다.
+ * 소개를 보여 줄지 정합니다. 처음 쓰는 사람의 안내는 연구 만들기와 시작 체크리스트 두 겹만 두므로
+ * 소개는 저절로 뜨지 않고, 사용 안내의 '서비스 소개 다시 보기'(`/r/new?intro=1`)로만 엽니다(감사 F3).
+ * `hasResearches`·`seen`은 호출 쪽 호환을 위해 받기만 합니다.
  */
 export function shouldShowIntro(input: {
   hasResearches: boolean;
   seen: boolean;
   forced: boolean;
 }): boolean {
-  if (input.forced) return true;
-  return !input.hasResearches && !input.seen;
+  return input.forced;
 }
 
 export interface IntroFlowStep {
@@ -40,7 +40,7 @@ export interface IntroFlowStep {
   example: string;
 }
 
-/** 사이드바 ‘지도 흐름’과 같은 순서·이름입니다. */
+/** 작업 흐름(미팅 → 피드백 → 할 일 → 수정 결과 → 검토 요청) 순서·이름입니다. */
 export const INTRO_FLOW: IntroFlowStep[] = [
   {
     icon: "calendar",
@@ -57,7 +57,7 @@ export const INTRO_FLOW: IntroFlowStep[] = [
   {
     icon: "tasks",
     label: t("할 일"),
-    text: t("고칠 것을 할 일로 만들어요."),
+    text: t("고칠 것을 할 일에 추가해요."),
     example: t("연구 질문을 두 개로 줄이기"),
   },
   {

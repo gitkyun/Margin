@@ -62,4 +62,61 @@ describe("⌘K 명령 목록", () => {
       expect.arrayContaining(["create:result", "create:review"]),
     );
   });
+
+  it("교수 계정은 받은 검토 요청과 그 목록으로만 꾸미고 만들기는 뺀다(감사 F5)", () => {
+    const review = (id: string, status: string, professorId = "prof") => ({
+      id,
+      researchId: "student-r",
+      title: `요청 ${id}`,
+      professorEmail: "prof@example.invalid",
+      professorId,
+      status,
+      researchName: "학생 연구",
+      createdAt: "2026-11-01T00:00:00Z",
+      updatedAt: `2026-11-0${id.length}T00:00:00Z`,
+    });
+    const data = {
+      ...empty,
+      researches: [],
+      reviews: [
+        review("a", "shared"),
+        review("b", "draft"),
+        review("c", "shared", "other"),
+      ],
+    } as never;
+    const sections = buildCommands({
+      data,
+      searching: false,
+      userId: "prof",
+    });
+    expect(sections.map((s) => s.id)).toEqual(["incoming", "go"]);
+    const ids = sections.flatMap((s) => s.entries).map((e) => e.id);
+    expect(ids).toEqual(["incoming:a", "go:inbox", "go:account", "go:guide"]);
+    expect(sections[0].entries[0].action.to).toBe("/reviews/a");
+    expect(ids.some((id) => id.startsWith("create:"))).toBe(false);
+  });
+
+  it("내 연구가 있으면 받은 요청이 있어도 학생 팔레트를 그대로 둔다", () => {
+    const sections = buildCommands({
+      data: {
+        ...empty,
+        researches: [{ id: R, name: "내 연구" }],
+        reviews: [
+          {
+            id: "a",
+            researchId: "x",
+            title: "요청",
+            professorId: "me",
+            status: "shared",
+            updatedAt: "2026-11-01T00:00:00Z",
+          },
+        ],
+      } as never,
+      searching: false,
+      userId: "me",
+    });
+    const ids = sections.flatMap((s) => s.entries).map((e) => e.id);
+    expect(ids).toContain("create:research");
+    expect(ids).not.toContain("go:inbox");
+  });
 });

@@ -1,4 +1,4 @@
-import type { WorkspaceData } from "./domain";
+import type { ReviewRequest, WorkspaceData } from "./domain";
 import { commandFilter } from "./hangul-search";
 import { goShortcutLabel } from "./go-shortcuts";
 import { t } from "./i18n";
@@ -7,13 +7,14 @@ import { t } from "./i18n";
 const KEYWORDS = {
   newResearch: ["연구 추가", "研究を追加"], // i18n-ignore
   newMeeting: ["미팅 추가", "회의", "ミーティングを追加", "会議"], // i18n-ignore
-  newTask: ["할 일 만들기", "투두", "タスクを作成", "ToDo"], // i18n-ignore
+  newTask: ["할 일 추가", "할 일 만들기", "투두", "タスクを作成", "ToDo"], // i18n-ignore
   newResult: ["수정 결과 만들기", "고친 내용", "修正結果を作成"], // i18n-ignore
   newReview: ["교수 검토", "리뷰 요청", "先生のレビュー"], // i18n-ignore
   newWriting: ["문서 만들기", "새 글", "文書を作成", "新しい原稿"], // i18n-ignore
   researchList: ["연구 목록", "研究一覧"], // i18n-ignore
   account: ["프로필", "プロフィール"], // i18n-ignore
   guide: ["도움말", "ヘルプ"], // i18n-ignore
+  inbox: ["받은 검토", "교수", "受け取ったレビュー", "先生"], // i18n-ignore
 };
 
 /** 연구 안 사이드바 메뉴: [경로, 아이콘, 이름]. 사이드바와 ⌘K 팔레트가 같이 씁니다. */
@@ -162,7 +163,8 @@ function navigateEntry(
   };
 }
 
-function createEntries(researchId: string | undefined): CommandEntry[] {
+/** 만들기 항목. ⌘K와 상단 줄 '+' 메뉴가 같은 목록을 씁니다(감사 F2). */
+export function createEntries(researchId: string | undefined): CommandEntry[] {
   const newResearch = navigateEntry(
     "create:research",
     t("새 연구 만들기"),
@@ -288,6 +290,68 @@ function researchEntries(
     }));
 }
 
+/** 이 사람이 교수로 받은, 공유 중인 검토 요청(최근 순). */
+export function incomingReviews(
+  data: Pick<WorkspaceData, "reviews">,
+  userId: string,
+): ReviewRequest[] {
+  return data.reviews
+    .filter(
+      (request) =>
+        request.professorId === userId && request.status === "shared",
+    )
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/**
+ * 교수 계정: 내 연구는 없고 받은 검토 요청만 있는 사람. 사이드바·⌘K를
+ * 학생 연구 메뉴 대신 '받은 검토 요청' 기준으로 꾸밉니다(감사 F5).
+ */
+export function isIncomingOnly(
+  data: Pick<WorkspaceData, "researches" | "reviews">,
+  userId: string,
+): boolean {
+  return (
+    data.researches.length === 0 && incomingReviews(data, userId).length > 0
+  );
+}
+
+/** 교수 계정의 ⌘K: 받은 검토 요청 한 건씩, 그리고 받은 검토 요청 목록·계정·사용 안내로 이동. */
+function incomingSections(
+  data: Pick<WorkspaceData, "reviews">,
+  userId: string,
+): CommandSection[] {
+  const requests = incomingReviews(data, userId).map((request) => ({
+    id: `incoming:${request.id}`,
+    label: request.title || t("제목 없음"),
+    icon: "send",
+    hint: request.researchName,
+    keywords: [request.title, request.researchName ?? "", t("받은 검토 요청")],
+    action: { kind: "navigate" as const, to: `/reviews/${request.id}` },
+  }));
+  const go = [
+    navigateEntry(
+      "go:inbox",
+      t("받은 검토 요청"),
+      "send",
+      "/r",
+      KEYWORDS.inbox,
+    ),
+    navigateEntry(
+      "go:account",
+      t("계정 설정"),
+      "user",
+      "/account",
+      KEYWORDS.account,
+    ),
+    navigateEntry("go:guide", t("사용 안내"), "help", "/guide", KEYWORDS.guide),
+  ];
+  return [
+    { id: "incoming", heading: t("받은 검토 요청"), entries: requests },
+    { id: "go", heading: t("이동"), entries: go },
+  ].filter((section) => section.entries.length > 0);
+}
+
 /**
  * ⌘K 팔레트 묶음. 빈 입력이면 최근 기록·만들기·이동을,
  * 입력이 있으면 기록 전체와 다른 연구도 함께 넣고 cmdk가 걸러 냅니다.
@@ -296,11 +360,16 @@ export function buildCommands({
   data,
   researchId,
   searching,
+  userId,
 }: {
   data: WorkspaceData;
   researchId?: string;
   searching: boolean;
+  /** 주면 교수 계정인지 보고, 교수 계정이면 받은 검토 요청 기준으로 꾸밉니다. */
+  userId?: string;
 }): CommandSection[] {
+  if (!researchId && userId && isIncomingOnly(data, userId))
+    return incomingSections(data, userId);
   const records = researchId ? recordEntries(data, researchId) : [];
   const showResearches = searching || !researchId;
   const sections: CommandSection[] = [
