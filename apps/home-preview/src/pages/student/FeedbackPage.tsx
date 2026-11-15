@@ -11,6 +11,7 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Textarea } from "@/components/ui/textarea";
 import {
   PageHeader,
@@ -681,12 +682,12 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               <EmptyState title={t("아직 정한 수정 방법이 없어요")} />
             )}
             {plans.some((plan) => plan.status === "cancelled") && (
-              <details className="student-details">
-                <summary>
-                  {t("선택 취소한 방법 {count}개", {
-                    count: plans.filter((p) => p.status === "cancelled").length,
-                  })}
-                </summary>
+              <Disclosure
+                className="student-details"
+                summary={t("선택 취소한 방법 {count}개", {
+                  count: plans.filter((p) => p.status === "cancelled").length,
+                })}
+              >
                 {plans
                   .filter((p) => p.status === "cancelled")
                   .map((plan) => (
@@ -710,7 +711,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                       </Button>
                     </div>
                   ))}
-              </details>
+              </Disclosure>
             )}
           </section>
           <section className="surface">

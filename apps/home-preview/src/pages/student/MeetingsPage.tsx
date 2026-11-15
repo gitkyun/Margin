@@ -24,6 +24,7 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -1313,16 +1314,16 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             <ErrorNotice error={memoError} />
             {memoConflict ? (
               <div className="stack">
-                <details className="student-details">
-                  <summary>
-                    {t("저장본과 비교하기 · 원문 v{revision}", {
-                      revision: meeting.memoRevision,
-                    })}
-                  </summary>
+                <Disclosure
+                  className="student-details"
+                  summary={t("저장본과 비교하기 · 원문 v{revision}", {
+                    revision: meeting.memoRevision,
+                  })}
+                >
                   <p className="student-body-text">
                     {meeting.memo || t("저장된 메모가 없어요.")}
                   </p>
-                </details>
+                </Disclosure>
                 <div className="button-row">
                   <Button variant="outline" onClick={loadSavedMemo}>
                     {t("저장본으로 바꾸기")}

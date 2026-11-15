@@ -494,7 +494,6 @@ export function buildCommands({
   if (!researchId && userId && isIncomingOnly(data, userId))
     return incomingSections(data, userId);
   const records = researchId ? recordEntries(data, researchId) : [];
-  const showResearches = searching || !researchId;
   const sections: CommandSection[] = [
     searching
       ? { id: "records", heading: t("기록"), entries: records }
@@ -514,7 +513,7 @@ export function buildCommands({
     {
       id: "researches",
       heading: researchId ? t("다른 연구로") : t("연구"),
-      entries: showResearches ? researchEntries(data, researchId) : [],
+      entries: researchEntries(data, researchId),
     },
   ];
   return sections.filter((s) => s.entries.length > 0);

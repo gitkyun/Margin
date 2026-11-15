@@ -9,7 +9,8 @@ export type PromptMode =
   | "review_writing"
   | "plan_research"
   | "read_material"
-  | "propose_roadmap";
+  | "propose_roadmap"
+  | "continue_writing";
 export type Locale = "ko" | "ja";
 export type Depth = "low" | "medium" | "high";
 
@@ -195,6 +196,8 @@ const NOTHING_FOUND =
   "원문에서 쓸 만한 내용을 찾지 못하면 candidates를 빈 배열로 반환한다. 후보를 지어내 채우지 않는다.";
 
 const MODE_RULES: Record<PromptMode, string> = {
+  continue_writing:
+    "작업: sourceText 바로 뒤에 이어질 한두 문장만 answer에 쓴다. 원문의 주장 강도와 문체를 보존하고 없는 수치·인용·결과를 만들지 않는다. 후보 목록이나 설명을 덧붙이지 않는다.",
   ask_research:
     "작업: 학생의 질문(question)에 답한다. history는 이 대화의 앞부분이다. 질문이 원문과 관련 있으면 원문에 적힌 내용부터 짚고, 그다음 제안을 말한다. 질문이 원문 범위를 벗어나면 원문에는 그 내용이 없다고 말한 뒤 일반적인 연구 조언으로 답하고, 그것이 학생 기록에 근거한 답이 아님을 알린다. 질문이 모호하면 가장 그럴듯한 뜻으로 짧게 답하고 확인할 점을 하나 묻는다. answer에 답을 담는다. 마크다운 제목(#)과 표는 쓰지 않는다.",
   organize_meeting:
@@ -264,6 +267,11 @@ export function buildSystemPrompt({
         ? ""
         : CANDIDATE_LENGTH[depth],
     OUTPUT,
+    ...(mode === "ask_research" && usesSource
+      ? [
+          "sourceText의 [근거 N] 번호에 해당하는 내용을 실제로 사용한 문장에만 [근거 N]을 붙인다. 보내지 않은 번호를 만들지 않는다. 이 번호는 문헌 인용이나 사실 검증의 증명이 아니다.",
+        ]
+      : []),
     personalRule(personal),
   ]
     .filter(Boolean)

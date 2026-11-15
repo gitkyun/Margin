@@ -1220,10 +1220,12 @@
     margin-top: 22px;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .lp-faq-list details {
+  .lp-faq-list details,
+  .lp-faq-list .disclosure-root {
     border-bottom: 1px solid var(--line);
   }
-  .lp-faq-list summary {
+  .lp-faq-list summary,
+  .lp-faq-list .disclosure-trigger {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1239,15 +1241,18 @@
   .lp-faq-list summary::-webkit-details-marker {
     display: none;
   }
-  .lp-faq-list summary svg {
+  .lp-faq-list summary svg,
+  .lp-faq-list .disclosure-trigger svg {
     flex-shrink: 0;
     color: var(--text-tertiary);
     transition: transform var(--motion-duration-enter);
   }
-  .lp-faq-list details[open] summary svg {
+  .lp-faq-list details[open] summary svg,
+  .lp-faq-list .disclosure-root[data-open] .disclosure-trigger svg {
     transform: rotate(45deg);
   }
-  .lp-faq-list details > p {
+  .lp-faq-list details > p,
+  .lp-faq-list .disclosure-panel > p {
     font-size: var(--typography-label1-fontSize);
     line-height: var(--typography-label1Reading-lineHeight);
     color: var(--text-secondary);
@@ -1847,12 +1852,14 @@
     .lp-faq h2 br {
       display: none;
     }
-    .lp-faq-list summary {
+    .lp-faq-list summary,
+    .lp-faq-list .disclosure-trigger {
       font-size: var(--typography-label1-fontSize);
       min-height: 72px;
       letter-spacing: var(--typography-label1-letterSpacing);
     }
-    .lp-faq-list details > p {
+    .lp-faq-list details > p,
+    .lp-faq-list .disclosure-panel > p {
       font-size: var(--typography-label2-fontSize);
       letter-spacing: var(--typography-label2-letterSpacing);
     }
@@ -2401,22 +2408,23 @@
   }
 }
 
-/* FAQ 여닫기: 지원하는 브라우저(::details-content)에서는 높이가 부드럽게 바뀌고, 아니면 바로 열려요. */
+/* FAQ 여닫기: Panel 높이 CSS 변수(--collapsible-panel-height)를 써서 부드럽게 바뀌고, prefers-reduced-motion에서는 바로 열려요. */
 @layer margin {
-  .lp-faq-list {
-    interpolate-size: allow-keywords;
-  }
-  .lp-faq-list details::details-content {
-    block-size: 0;
+  .lp-faq-list .disclosure-panel {
     overflow: hidden;
-    opacity: 0;
+    height: var(--collapsible-panel-height);
     transition:
-      block-size var(--motion-duration-page) var(--motion-ease-standard),
-      opacity var(--motion-duration-enter) var(--motion-ease-standard),
-      content-visibility var(--motion-duration-page) allow-discrete;
+      height var(--motion-duration-page) var(--motion-ease-standard),
+      opacity var(--motion-duration-enter) var(--motion-ease-standard);
   }
-  .lp-faq-list details[open]::details-content {
-    block-size: auto;
-    opacity: 1;
+  .lp-faq-list .disclosure-panel[data-starting-style],
+  .lp-faq-list .disclosure-panel[data-ending-style] {
+    height: 0;
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lp-faq-list .disclosure-panel {
+      transition: none;
+    }
   }
 }

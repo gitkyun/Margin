@@ -3,38 +3,22 @@ import { InviteGate, InviteSignupPage } from "./pages/InvitePages";
 import { admit, finishSocialLogin } from "@/lib/social-login";
 import { JoinPage } from "./pages/JoinPage";
 import { INVITE_PARAM, inviteCodeFrom } from "./lib/invites";
-import { useNavigationGuard } from "@/lib/navigation-guard";
 import { Suspense, lazy, useEffect, useState } from "react";
 import {
   Link,
   Navigate,
-  NavLink,
-  Outlet,
   Route,
   Routes,
   useLocation,
-  useNavigate,
   useParams,
 } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
-import { toast } from "sonner";
-import { supabase, configured, friendlyError } from "@/lib/supabase";
+import { supabase, configured } from "@/lib/supabase";
 import { previewUser } from "@/lib/demo";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
 import { RecordingProvider } from "@/components/recording/RecordingProvider";
-import { useTheme } from "@/lib/theme";
-import {
-  notificationHref,
-  unreadReviewNotifications,
-} from "@/lib/notifications";
 import { Icon } from "@/components/icons";
-import {
-  EmptyState,
-  ErrorNotice,
-  HomeSkeleton,
-  IconButton,
-  LoadingState,
-} from "@/components/common";
+import { ErrorNotice, HomeSkeleton, LoadingState } from "@/components/common";
 import { WorkspaceShell as Shell } from "@/components/WorkspaceShell";
 import {
   LandingPage,
@@ -49,41 +33,10 @@ import { ResearchAssistant } from "@/pages/ResearchAssistant";
 import { isHomeEntry } from "@/lib/entry-route";
 import { isWorkspaceShellPath } from "@/lib/page-title";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { HomePage } from "@/pages/HomePage";
-import { LoginPage, ResearchSelectPage, ThemeSwitch } from "@/pages/AuthPages";
+import { LoginPage, ResearchSelectPage } from "@/pages/AuthPages";
 const WritingPage = lazy(() =>
   import("@/pages/WritingPage").then((m) => ({ default: m.WritingPage })),
-);
-const LabComponentsPage = lazy(() =>
-  import("@/lab/LabComponentsPage").then((m) => ({
-    default: m.LabComponentsPage,
-  })),
-);
-const LabExpandPage = lazy(() =>
-  import("@/lab/LabExpandPage").then((m) => ({ default: m.LabExpandPage })),
 );
 const OnboardingPage = lazy(() =>
   import("@/pages/OnboardingPage").then((m) => ({ default: m.OnboardingPage })),
@@ -199,23 +152,6 @@ function WorkspaceRoutes() {
           element={
             <Suspense fallback={<LoadingState />}>
               <OnboardingPage />
-            </Suspense>
-          }
-        />
-        {/* 시안 화면. 제품 메뉴에는 연결하지 않습니다. */}
-        <Route
-          path="/lab/components"
-          element={
-            <Suspense fallback={<LoadingState />}>
-              <LabComponentsPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/lab/expand"
-          element={
-            <Suspense fallback={<LoadingState />}>
-              <LabExpandPage />
             </Suspense>
           }
         />
@@ -426,7 +362,7 @@ export function App() {
       />
     );
   if (
-    !/^\/(login|account|lab\/(?:components|expand)|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
+    !/^\/(login|account|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
       location.pathname,
     )
   )

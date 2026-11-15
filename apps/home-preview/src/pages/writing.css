@@ -614,7 +614,8 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
     word-break: var(--text-word-break, keep-all);
   }
-  .writing-apply-method summary {
+  .writing-apply-method summary,
+  .writing-apply-method .disclosure-trigger {
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     cursor: pointer;

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import "./recording.css";
 
-/** 막대 수. 좁은 화면에서도 막대 사이가 보이도록 너무 많지 않게 둬요. */
-const BARS = 40;
+/** 기본 막대 수. 좁은 화면에서도 막대 사이가 보이도록 너무 많지 않게 둬요. */
+const DEFAULT_BARS = 40;
 /** 막대 최소 높이 비율. 조용해도 막대 자리가 보여요. */
 const FLOOR = 0.08;
 
@@ -12,13 +12,22 @@ interface LiveWaveformProps {
   /** 일시정지 중이면 막대를 바닥에 둬요. */
   active: boolean;
   label: string;
+  /** 막대 수(미니 녹음 창처럼 좁은 곳은 적게) */
+  bars?: number;
+  className?: string;
 }
 
 /**
  * 마이크 음량에 반응하는 막대 파형. React 렌더 없이 막대 높이만 바꿔요.
  * 동작 줄이기를 켜면 4프레임에 한 번만 갱신해요(정보는 유지하고 깜빡임만 줄여요).
  */
-export function LiveWaveform({ analyser, active, label }: LiveWaveformProps) {
+export function LiveWaveform({
+  analyser,
+  active,
+  label,
+  bars: count = DEFAULT_BARS,
+  className = "",
+}: LiveWaveformProps) {
   const bars = useRef<(HTMLSpanElement | null)[]>([]);
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -39,7 +48,7 @@ export function LiveWaveform({ analyser, active, label }: LiveWaveformProps) {
       if (node && samples.length !== node.frequencyBinCount)
         samples = new Uint8Array(node.frequencyBinCount);
       if (node && activeRef.current) node.getByteTimeDomainData(samples);
-      const per = Math.max(1, Math.floor(samples.length / BARS));
+      const per = Math.max(1, Math.floor(samples.length / count));
       bars.current.forEach((bar, b) => {
         if (!bar) return;
         let peak = 0;
@@ -55,10 +64,14 @@ export function LiveWaveform({ analyser, active, label }: LiveWaveformProps) {
     };
     draw();
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [count]);
   return (
-    <div className="live-waveform" role="img" aria-label={label}>
-      {Array.from({ length: BARS }, (_, i) => (
+    <div
+      className={`live-waveform ${className}`}
+      role="img"
+      aria-label={label}
+    >
+      {Array.from({ length: count }, (_, i) => (
         <span
           key={i}
           ref={(el) => {

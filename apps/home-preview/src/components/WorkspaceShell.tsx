@@ -90,11 +90,17 @@ const activityTitles: Record<string, string> = {
   // i18n-ignore: 서버에 저장된 알림 제목(자료)
   "시간 조율이 취소되었습니다": t("시간 조율을 취소했어요"),
 };
-function AccountMenu() {
+function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
   const { user, mode, signOut } = useWorkspace(),
     navigate = useNavigate();
   const [logoutOpen, setLogoutOpen] = useState(false),
     [loggingOut, setLoggingOut] = useState(false);
+  const roleLabel =
+    mode === "preview"
+      ? t("미리보기")
+      : incomingOnly
+        ? t("교수")
+        : t("학생");
   return (
     <>
       <DropdownMenu>
@@ -106,7 +112,13 @@ function AccountMenu() {
               email: user.email,
             })}
           >
-            <span className="avatar">{user.name.slice(0, 1)}</span>
+            <span className="profile-avatar-wrap">
+              <span className="avatar">{user.name.slice(0, 1)}</span>
+              <span
+                className={`profile-status-dot${mode === "preview" ? " is-preview" : ""}`}
+                aria-hidden="true"
+              />
+            </span>
             <span>
               <strong>{user.name}</strong>
               <small>{user.email}</small>
@@ -115,27 +127,40 @@ function AccountMenu() {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start" className="account-menu">
-          {/* 카드형 머리: 누구로 로그인했는지 먼저 보여 줘요(affectUI Profile Menu). */}
+          {/* 카드형 머리: 이름·이메일·역할 배지를 먼저 보여 줘요(Kokonut UI Account Menu). */}
           <DropdownMenuLabel>
             <div className="account-menu-card">
               <span className="avatar" aria-hidden="true">
                 {user.name.slice(0, 1)}
               </span>
               <div>
-                <strong>{user.name}</strong>
+                <div className="account-menu-card-title">
+                  <strong>{user.name}</strong>
+                  <span className="account-menu-role">{roleLabel}</span>
+                </div>
                 <small className="menu-email">{user.email}</small>
               </div>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuItem onSelect={() => navigate("/account")}>
-            <Icon name="settings" size={17} />
-            {t("계정 설정")}
+          <DropdownMenuItem onSelect={() => navigate("/account?tab=profile")}>
+            <Icon name="user" size={17} />
+            {t("프로필 설정")}
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => navigate("/account?tab=appearance")}
+          >
+            <Icon name="sun" size={17} />
+            {t("화면 설정")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => navigate("/account?tab=ai")}>
+            <Icon name="sparkles" size={17} />
+            {t("AI 기본 설정")}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/guide")}>
             <Icon name="help" size={17} />
             {t("사용 안내")}
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setLogoutOpen(true)}>
             <Icon name="logout" size={17} />
             {mode === "preview" ? t("로그인 화면으로") : t("로그아웃")}
@@ -585,7 +610,7 @@ export function WorkspaceShell({
             )}
           </Link>
         ) : null}
-        <AccountMenu />
+        <AccountMenu incomingOnly={incomingOnly} />
       </div>
     </>
   );
@@ -726,6 +751,22 @@ export function WorkspaceShell({
                 <Link aria-label={t("사용 안내")} to="/guide">
                   <Icon name="help" size={19} />
                 </Link>
+              </Button>
+            </Hint>
+            <Hint
+              label={t("단축키 보기")}
+              detail={t("키보드 단축키는 ? 키로도 볼 수 있어요.")}
+            >
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t("단축키 보기")}
+                aria-keyshortcuts="?"
+                onClick={() => setShortcutsOpen(true)}
+              >
+                <span aria-hidden="true" style={{ fontWeight: 700 }}>
+                  ?
+                </span>
               </Button>
             </Hint>
             <Hint

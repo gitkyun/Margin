@@ -633,3 +633,114 @@ test('R2 file registry: upload permission, secret-only register, versions accept
  assert.equal(await call('rms_file_is_service'),false);await failure(()=>call('rms_file_list_service'),'42501')
  await db.exec('reset role');await db.exec('set role service_role');assert.equal(await call('rms_file_is_service'),true);assert.equal((await call('rms_file_list_service')).r2.length,1);await db.exec('reset role')
 })
+
+// ---- AI 크레딧: 월 20000, 예약→확정/반환, 원장, 접근 격리 ----
+let creditRunSeq=0
+const service=async()=>{await db.exec('reset role;set role service_role')}
+const resetCredits=async()=>{await db.exec('reset role');await db.exec('delete from public.rms_ai_credit_holds;delete from public.rms_ai_credit_ledger;delete from public.rms_ai_credit_balances')}
+const newRun=async(user=ids.student)=>{
+ await db.exec('reset role');await db.query("update public.rms_ai_runs set created_at=now()-interval '2 days' where user_id=$1",[user])
+ const id=`c0ffee00-0000-4000-8000-${String(++creditRunSeq).padStart(12,'0')}`;await service()
+ await call('rms_ai_begin_v2',[user,ids.research,`credit-${id}`,id,'organize_meeting','test-model','minimal']);return id
+}
+const summary=async user=>{await as(user);return(await call('rms_ai_usage')).credits}
+const reserve=async(run,amount,user=ids.student)=>{await service();return call('rms_ai_reserve_credits',[run,user,amount])}
+const settle=async(run,amount,refund=false,usage={})=>{await service();return call('rms_ai_settle_credits',[run,amount,JSON.stringify(usage),refund])}
+const ghost='99999999-0000-4000-8000-000000000000'
+test('credits: browser, anonymous, professor and other accounts cannot reserve, settle, grant or read the tables',async()=>{
+ await resetCredits();const run=await newRun()
+ for(const role of ['student','professor','anon']){
+  if(role==='anon'){await db.exec('reset role;set role anon')}else await as(ids[role])
+  await failure(()=>call('rms_ai_reserve_credits',[run,ids.student,1]),'42501');await failure(()=>call('rms_ai_settle_credits',[run,1,'{}',false]),'42501')
+  await failure(()=>call('rms_ai_credit_grant',[ids.student,1000,'x','k']),'42501');await failure(()=>call('rms_ai_credit_init',[ids.student]),'42501')
+  await failure(()=>db.query('select * from public.rms_ai_credit_ledger'),'42501');await failure(()=>db.query('select * from public.rms_ai_credit_balances'),'42501')
+  await failure(()=>call('rms_ai_credit_summary',[ids.student]),'42501')
+ }
+ await service();await failure(()=>reserve(run,1,ids.professor),'42501')
+ await reserve(run,5);await settle(run,2,false,{model:'test-model',inputTokens:10,outputTokens:20})
+ const mine=await summary(ids.student);assert.equal(mine.ledger.length,1)
+ const theirs=await summary(ids.professor);assert.equal(theirs.balance,20000);assert.deepEqual(theirs.ledger,[]);assert.equal(theirs.used,0)
+ await db.exec('reset role;set role anon');await failure(()=>call('rms_ai_usage'),'42501')
+})
+test('credits: usage keeps the old fields and reports balance, allowance, reserved, used, resetsAt and ledger',async()=>{
+ await resetCredits();await as(ids.student);const usage=await call('rms_ai_usage')
+ for(const key of ['total','complete','failed','running','cancelled','limit','windowHours'])assert.ok(key in usage,key)
+ const c=usage.credits;assert.equal(c.allowance,20000);assert.equal(c.balance,20000);assert.equal(c.reserved,0);assert.equal(c.used,0);assert.deepEqual(c.ledger,[])
+ const now=new Date();assert.equal(new Date(c.resetsAt).getTime(),Date.UTC(now.getUTCFullYear(),now.getUTCMonth()+1,1))
+ await service();assert.equal((await call('rms_ai_credit_init',[ids.student])).balance,20000);await failure(()=>call('rms_ai_credit_init',[ghost]),'42501')
+})
+test('credits: reserve is idempotent, settle rounds up to 0.001 once, late or repeated results never charge twice',async()=>{
+ await resetCredits();const run=await newRun();await service()
+ assert.equal(await reserve(run,12.5),true);assert.equal(await reserve(run,12.5),true);await failure(()=>reserve(run,13),'55000')
+ let c=await summary(ids.student);assert.equal(c.reserved,12.5);assert.equal(c.balance,19987.5)
+ await service();assert.equal(await settle(run,3.0004,false,{inputTokens:100}),true)
+ c=await summary(ids.student);assert.equal(c.used,3.001);assert.equal(c.reserved,0);assert.equal(c.balance,19996.999)
+ await service();assert.equal(await settle(run,50),false);assert.equal(await settle(run,0,true),false);assert.equal(await reserve(run,12.5),false)
+ c=await summary(ids.student);assert.equal(c.used,3.001);assert.equal(c.ledger.length,1)
+ assert.deepEqual([c.ledger[0].kind,c.ledger[0].amount,c.ledger[0].runId,c.ledger[0].model],['charge',-3.001,run,'test-model']);assert.ok(c.ledger[0].id&&c.ledger[0].createdAt)
+ assert.equal(await settle('c0ffee00-0000-4000-8000-ffffffffffff',1),false)
+ for(const bad of [0,-1,null])await failure(()=>reserve(run,bad),'22023');await failure(()=>settle(run,-1),'22023')
+})
+test('credits: refund returns the whole hold once; a late result after a refund or cancellation is ignored',async()=>{
+ await resetCredits();const run=await newRun();await service();await reserve(run,100)
+ assert.equal(await settle(run,0,true),true);let c=await summary(ids.student);assert.equal(c.balance,20000);assert.equal(c.used,0);assert.equal(c.ledger[0].kind,'refund')
+ await service();assert.equal(await settle(run,40),false);assert.equal((await summary(ids.student)).used,0)
+ const cancelled=await newRun();await service();await reserve(cancelled,50);await as(ids.student);await call('rms_cancel_ai',[cancelled])
+ await service();assert.equal((await summary(ids.student)).reserved,50)
+ assert.equal(await settle(cancelled,12),true);assert.equal(await settle(cancelled,12),false);assert.equal((await summary(ids.student)).used,12)
+ const before=await newRun();await as(ids.student);await call('rms_cancel_ai',[before]);await service();await failure(()=>reserve(before,5),'57014')
+})
+test('credits: insufficient balance is rejected and parallel reserves cannot exceed the allowance',async()=>{
+ await resetCredits();const runs=[await newRun(),await newRun(),await newRun()];await service()
+ const results=await Promise.allSettled(runs.map(r=>reserve(r,9000)))
+ assert.equal(results.filter(x=>x.status==='fulfilled'&&x.value===true).length,2)
+ const refused=results.find(x=>x.status==='rejected');assert.equal(refused.reason.code,'P0001')
+ let c=await summary(ids.student);assert.equal(c.reserved,18000);assert.equal(c.balance,2000)
+ const last=await newRun();await service();assert.equal(await reserve(last,2000),true);const tiny=await newRun();await service();await failure(()=>reserve(tiny,0.001),'P0001')
+ await service();for(const r of [...runs,last])await settle(r,0,true)
+ await service();const dup=await newRun();await service()
+ const twice=await Promise.all([reserve(dup,10),reserve(dup,10)]);assert.deepEqual(twice,[true,true]);assert.equal((await summary(ids.student)).reserved,10)
+ await service();const both=await Promise.all([settle(dup,4),settle(dup,0,true)]);assert.equal(both.filter(Boolean).length,1)
+ await service();assert.equal(await db.query('select count(*)::int n from public.rms_ai_credit_ledger where run_id=$1 and kind<>$2',[dup,'reserve']).then(x=>x.rows[0].n),1)
+})
+test('credits: a result larger than the hold only charges what remains and never makes the balance negative',async()=>{
+ await resetCredits();const run=await newRun();await service();await reserve(run,10)
+ await db.exec('reset role');await db.exec("update public.rms_ai_credit_balances set monthly_used=19990");await service()
+ assert.equal(await settle(run,25),true);const c=await summary(ids.student)
+ assert.equal(c.used,20000);assert.equal(c.balance,0);assert.equal(c.reserved,0);assert.equal(c.ledger[0].amount,-10)
+ await db.exec('reset role');assert.equal(Number((await db.query("select usage->>'clamped' as c from public.rms_ai_credit_ledger where run_id=$1 and kind='charge'",[run])).rows[0].c),15)
+})
+test('credits: on the 1st (UTC) usage resets without carry-over, an old hold settles to its own month, grants stay',async()=>{
+ await resetCredits();await service();await call('rms_ai_credit_grant',[ids.student,700,'운영 지급','g-reset'])
+ const old=await newRun();await service();await reserve(old,100)
+ await db.exec('reset role');await db.exec("update public.rms_ai_credit_balances set period_start=period_start-interval '1 month',monthly_used=5000;update public.rms_ai_credit_holds set period_start=period_start-interval '1 month'")
+ let c=await summary(ids.student);assert.equal(c.used,0);assert.equal(c.reserved,0);assert.equal(c.balance,20700);assert.equal(c.grant,700)
+ const fresh=await newRun();await service();assert.equal(await reserve(fresh,200),true)
+ assert.equal(await settle(old,40),true);c=await summary(ids.student);assert.equal(c.used,0);assert.equal(c.reserved,200);assert.equal(c.balance,20500)
+ await service();assert.equal(await settle(fresh,150),true);c=await summary(ids.student);assert.equal(c.used,150);assert.equal(c.balance,20550)
+ assert.equal(c.ledger.filter(x=>x.runId===old).length,1)
+})
+test('credits: operator grants are a separate balance, applied after the monthly allowance and idempotent by key',async()=>{
+ await resetCredits();await service()
+ let g=await call('rms_ai_credit_grant',[ids.student,500.0004,'운영 지급','promo-1']);assert.equal(g.grant,500.001)
+ g=await call('rms_ai_credit_grant',[ids.student,500,'재시도','promo-1']);assert.equal(g.grant,500.001);assert.equal(g.balance,20500.001)
+ await failure(()=>call('rms_ai_credit_grant',[ids.student,0,'x','k']),'22023');await failure(()=>call('rms_ai_credit_grant',[ghost,10,'x','k2']),'42501')
+ const run=await newRun();await service();await db.exec('reset role');await db.exec('update public.rms_ai_credit_balances set monthly_used=19990');await service()
+ assert.equal(await reserve(run,100),true);let c=await summary(ids.student);assert.equal(c.reserved,100);assert.equal(c.balance,410.001)
+ await service();assert.equal(await settle(run,95),true);c=await summary(ids.student);assert.equal(c.used,20000);assert.equal(c.grant,415.001);assert.equal(c.balance,415.001);assert.equal(c.reserved,0)
+})
+test('credits: the old 24-hour 100-run limit is gone but the per-minute safety limit stays',async()=>{
+ await db.exec('reset role');await db.query("update public.rms_ai_runs set created_at=now()-interval '2 days' where user_id=$1",[ids.student]);await db.query("insert into public.rms_ai_runs(user_id,research_id,input_hash,status,created_at) select $1,$2,'bulk-'||g,'complete',now()-interval '2 hours' from generate_series(1,101) g",[ids.student,ids.research])
+ await service();const id=await call('rms_ai_begin',[ids.student,ids.research,'after-bulk']);assert.ok(id)
+ for(let i=0;i<5;i++)await call('rms_ai_begin',[ids.student,ids.research,`burst-${i}`]);await failure(()=>call('rms_ai_begin',[ids.student,ids.research,'burst-6']),'P0001')
+})
+test('credits: operators can list stale unsettled holds, browsers cannot',async()=>{
+ await resetCredits();await service()
+ const stale=await newRun();await service();await reserve(stale,50)
+ const done=await newRun();await service();await reserve(done,60);await settle(done,10)
+ await db.exec('reset role');await db.query("update public.rms_ai_credit_holds set created_at=now()-interval '1 hour' where run_id in($1,$2)",[stale,done])
+ const fresh=await newRun();await service();await reserve(fresh,70)
+ await service();const rows=(await db.query('select * from public.rms_ai_credit_unresolved()')).rows
+ assert.deepEqual(rows.map(r=>r.run_id),[stale]);assert.equal(Number(rows[0].reserved),50)
+ await as(ids.student);await failure(()=>db.query('select * from public.rms_ai_credit_unresolved()'),'42501')
+})

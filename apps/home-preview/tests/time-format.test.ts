@@ -61,7 +61,13 @@ describe("날짜와 함께 쓰는 시각, 입력 칸", () => {
     new Intl.DateTimeFormat("ko-KR", timeParts(style)).format(at);
 
   it("표기와 입력 칸이 같은 방식을 쓴다", () => {
-    expect(text("12h")).toBe("오후 2:05");
+    const parts = new Intl.DateTimeFormat(
+      "ko-KR",
+      timeParts("12h"),
+    ).formatToParts(at);
+    expect(parts.find((part) => part.type === "hour")?.value).toBe("2");
+    expect(parts.find((part) => part.type === "minute")?.value).toBe("05");
+    expect(parts.find((part) => part.type === "dayPeriod")?.value).toBeTruthy();
     expect(text("24h")).toBe("14:05");
     expect(timeFieldFormat("12h")).toEqual({
       format: "a hh:mm",

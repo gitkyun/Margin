@@ -30,6 +30,18 @@ Resend에서 발신 도메인을 추가하고 안내된 DNS 레코드(SPF·DKIM,
 
 Gemini 키와 `ALLOWED_ORIGINS`는 Supabase 서버 Secrets에서 관리합니다. GitHub 빌드나 브라우저에 Gemini 키를 주입하지 않습니다. 일반 배포는 Auth 정책·계정·서버 Secrets를 덮어쓰지 않습니다.
 
+연구 도우미의 모델 목록은 `ai-assist/models.ts`에서 관리합니다. Gemini 4 Carbon·Hydrogen·Argon과 Gemini 3.8 Flash를 허용하며, `GEMINI_MODEL`에 설정한 기존 기본 모델을 목록 맨 앞에 둡니다(미설정 시 `gemini-3.8-flash`). API 키가 없으면 모델 목록은 비어 있습니다. 모델 선택과 답변 깊이는 서버에서도 검증합니다. 목록 변경은 `ai-assist` 함수만 배포하면 기존 화면에 반영됩니다.
+
+Google Cloud 일반 프로젝트는 서버 Secrets에 `GEMINI_PROVIDER=vertex`와 `GEMINI_PROJECT_ID`를 설정합니다. 서비스 계정에 연결된 기존 API 키로 `projects/{project}/locations/global` 경로를 호출합니다. 프로젝트 설정이 없으면 기존 Express 경로를 유지합니다. Express 가입 지역은 전역 호스트를 호출해도 그대로 쓰이므로 카본이 지원되지 않는 지역에서는 404가 발생할 수 있습니다.
+
+### AI 크레딧 운영
+
+- 정책(시범): 개인별 월 20,000크레딧, 1크레딧 = 모델 비용 0.001달러, 매월 1일 UTC(한국시간 오전 9시) 초기화, 월 지급분 이월 없음. 운영 추가 지급분(`rms_ai_credit_grant`)은 따로 남고 달이 바뀌어도 유지됩니다. 구매·결제는 없습니다.
+- 단가는 `ai-assist/models.ts`에 있고, 2026년 12월 1일부터 Carbon·Argon, 2027년 1월 1일부터 Flash 3.8 가격이 바뀝니다(공식 Model Garden 가격 페이지 기준, 프로모션 청구 크레딧 반환은 계산에 넣지 않음).
+- 서버는 제공사 호출 전에 최대 비용을 예약하고, 실제 사용량을 받으면 출력 해석 전에 정산합니다. 제공사가 거절한 요청만 전액 반환합니다.
+- 시간 초과·연결 끊김·사용량 누락처럼 처리 여부를 알 수 없는 요청은 예약이 그대로 남습니다. 사용자에게는 '예약 중' 금액으로 보이고 잔액에서 빠져 있습니다. 운영자는 service role로 `select * from rms_ai_credit_unresolved();`(기본 15분 이상 지난 예약)을 조회해 제공사 청구 내역과 대조합니다. 청구됐으면 `rms_ai_settle_credits(실행 번호, 금액, 사용량, false)`로 확정하고, 처리되지 않은 것이 확실할 때만 `rms_ai_settle_credits(실행 번호, 0, '{}', true)`로 반환합니다. 토큰 수를 추측해 적지 않습니다.
+- 확정·반환은 실행마다 한 번만 반영되고, 이후 호출은 `false`를 돌려줍니다. 월 경계를 넘긴 예약은 새 달 잔액을 건드리지 않고 이전 달 몫만 정리됩니다.
+
 ## DB와 서버 배포
 
 마이그레이션은 파일명 버전 그대로 적용합니다. 원격에 적용된 SQL을 수정하지 않습니다. 현재 이력에 맞춘 14개 파일은 현재 DB 이력과 맞춘 상태입니다. 이력 충돌이 발생하면 자동 repair/reset하지 않고 중단합니다.

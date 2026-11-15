@@ -1,17 +1,11 @@
 import { LanguageSwitch } from "@/components/LanguageSwitch";
-import { t, tc } from "@/lib/i18n";
+import { t, tc, dateLocale } from "@/lib/i18n";
 import { DateField } from "@/components/ui/date-field";
 import { submissionDateProblem, todayKey } from "@/lib/roadmap-plan";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
 import { PasswordStrength } from "@/components/PasswordStrength";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import {
-  reviewDepthOptions,
-  resolveReviewDepth,
-  reviewDepthHints,
-  researchModelLabel,
-} from "@/lib/assistant-presentation";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   Link,
@@ -25,14 +19,15 @@ import { useWorkspace } from "@/lib/workspace";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { assertConnected, friendlyError } from "@/lib/supabase";
 import { changeAccountPassword } from "@/lib/password-change";
-import { useAIUsage } from "@/lib/ai-usage";
+import { useAIUsage, MONTHLY_AI_CREDITS, formatCredits } from "@/lib/ai-usage";
+import { AIModelSelector } from "@/components/ai/AIModelSelector";
 import { useExperience } from "@/lib/experience";
-import { useAICapabilities } from "@/lib/ai-capabilities";
-import { Choice } from "@/components/experience";
+import { useAICapabilities, resolveAISelection } from "@/lib/ai-capabilities";
 import { ThemeSwitch } from "./AuthPages";
 import { HourStyleSwitch } from "@/components/HourStyleSwitch";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { Button } from "@/components/ui/button";
+import { Disclosure } from "@/components/ui/disclosure";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { AdvisorSettings } from "./settings/AdvisorSettings";
 import { ProjectInvites } from "./settings/ProjectInvites";
@@ -70,65 +65,124 @@ import {
 export function UsageDetails() {
   const { mode } = useWorkspace();
   const usage = useAIUsage();
+  const credits = usage.isError ? undefined : usage.data?.credits;
+  const amount = (value: number | undefined) =>
+    value === undefined ? "—" : formatCredits(value);
+  const date = (value: string) =>
+    Number.isNaN(Date.parse(value))
+      ? "—"
+      : new Date(value).toLocaleString(dateLocale());
+  const kinds: Record<string, string> = {
+    grant: t("크레딧 지급"),
+    allowance: t("월 지급"),
+    monthly_grant: t("크레딧 지급"),
+    reserve: t("사용 예약"),
+    reservation: t("사용 예약"),
+    release: t("예약 해제"),
+    refund: t("환급"),
+    usage: t("실제 사용"),
+    charge: t("실제 사용"),
+    debit: t("실제 사용"),
+    settle: t("실제 사용"),
+    settlement: t("실제 사용"),
+  };
   return (
     <section className="settings-section">
-      <h2>{t("AI 사용량")}</h2>
-      <p>{t("최근 24시간 동안의 실행 요청 수예요.")}</p>
+      <h2>{t("내 AI 크레딧")}</h2>
+      <p>
+        {t("개인 계정에 매월 20,000크레딧을 지급해요. 1크레딧은 $0.001이에요.")}
+      </p>
       <div className="usage-summary">
         <div>
-          <span>{t("실행 요청")}</span>
-          <strong>
-            {usage.data?.total ?? "—"}
-            <small>
-              {" "}
-              / {t("{limit}회", { limit: usage.data?.limit ?? 100 })}
-            </small>
-          </strong>
+          <span>{t("남은 크레딧")}</span>
+          <strong>{amount(credits?.balance)}</strong>
         </div>
         <div>
-          <span>{t("성공")}</span>
-          <strong>{usage.data?.complete ?? "—"}</strong>
+          <span>{t("이번 달 실제 사용")}</span>
+          <strong>{amount(credits?.used)}</strong>
         </div>
         <div>
-          <span>{t("실패")}</span>
-          <strong>{usage.data?.failed ?? "—"}</strong>
+          <span>{t("사용 예약 중")}</span>
+          <strong>{amount(credits?.reserved)}</strong>
         </div>
       </div>
-      {usage.data && (
+      {credits && (
         <progress
           className="usage-progress"
-          max={usage.data.limit}
-          value={usage.data.total}
-          aria-label={t("최근 24시간 AI 사용량")}
+          max={credits.allowance}
+          value={Math.min(credits.allowance, Math.max(0, credits.used))}
+          aria-label={t("이번 달 크레딧 사용량")}
         />
       )}
       <p className="settings-note">
-        {t("실행 요청에는 실행 중이거나 중단한 실행도 포함돼요.")}
+        {t(
+          "실제 입력·출력 토큰과 모델 단가로 서버에서 정산해요. 사용 예약은 확정 사용량이 아니에요.",
+        )}
       </p>
       {mode === "preview" ? (
         <p className="inline-notice">
-          {t("미리보기에서는 AI를 실행할 수 없어 사용량을 세지 않아요.")}
+          {t("미리보기에서는 크레딧 잔액과 이력을 만들지 않아요.")}
         </p>
       ) : usage.isError ? (
         <div className="inline-notice" role="alert">
-          {t("사용량을 불러오지 못했어요.")}{" "}
+          {t("크레딧 정보를 불러오지 못했어요.")}{" "}
           <Button variant="link" onClick={() => usage.refetch()}>
             {t("다시 불러오기")}
           </Button>
         </div>
       ) : usage.isPending ? (
         <p role="status">{t("사용량을 불러오는 중")}</p>
+      ) : !credits ? (
+        <p className="inline-notice">
+          {t("서버에서 크레딧 정보를 아직 제공하지 않아요.")}
+        </p>
       ) : null}
       <div className="settings-list">
+        <div>
+          <span>{t("월 지급 크레딧")}</span>
+          <strong>
+            {formatCredits(credits?.allowance ?? MONTHLY_AI_CREDITS)}
+          </strong>
+        </div>
+        <div>
+          <span>{t("다음 지급일")}</span>
+          <strong>{credits?.resetsAt ? date(credits.resetsAt) : "—"}</strong>
+        </div>
         <div>
           <span>{t("사용 범위")}</span>
           <strong>{t("선택한 기록과 질문만")}</strong>
         </div>
-        <div>
-          <span>{t("실행 제한")}</span>
-          <strong>{t("최근 24시간 100회 · 분당 6회")}</strong>
-        </div>
       </div>
+      <Disclosure summary={t("크레딧 이력")}>
+        {credits?.ledger.length ? (
+          <ul className="ai-credit-ledger">
+            {[...credits.ledger]
+              .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+              .map((entry) => (
+                <li key={entry.id}>
+                  <div>
+                    <strong>{kinds[entry.kind] ?? t("크레딧 조정")}</strong>
+                    <small>
+                      {date(entry.createdAt)}
+                      {entry.model ? ` · ${entry.model}` : ""}
+                    </small>
+                  </div>
+                  <strong>
+                    {t("{amount}크레딧", {
+                      amount: `${entry.amount > 0 ? "+" : ""}${formatCredits(entry.amount)}`,
+                    })}
+                  </strong>
+                </li>
+              ))}
+          </ul>
+        ) : (
+          <p className="settings-note">
+            {credits
+              ? t("아직 크레딧 이력이 없어요.")
+              : t("크레딧 정보는 서버 연결 후 표시돼요.")}
+          </p>
+        )}
+      </Disclosure>
     </section>
   );
 }
@@ -209,17 +263,13 @@ export function AccountPage() {
                 <h2>{t("언어")}</h2>
                 <p>
                   {t(
-                    t(
-                      "화면에 보이는 말을 바꿔요. 이 브라우저에만 저장되고, 고르면 화면을 새로 불러와요.",
-                    ),
+                    "화면에 보이는 말을 바꿔요. 이 브라우저에만 저장되고, 고르면 화면을 새로 불러와요.",
                   )}
                 </p>
                 <LanguageSwitch />
                 <p className="settings-note">
                   {t(
-                    t(
-                      "적어 둔 기록과 교수님 응답은 번역하지 않고 쓴 그대로 보여 줘요.",
-                    ),
+                    "적어 둔 기록과 교수님 응답은 번역하지 않고 쓴 그대로 보여 줘요.",
                   )}
                 </p>
               </section>
@@ -246,7 +296,12 @@ export function AccountPage() {
                   {user.name.slice(0, 1)}
                 </span>
                 <div>
-                  <h2>{t("내 프로필")}</h2>
+                  <div className="profile-heading-title">
+                    <h2>{t("내 프로필")}</h2>
+                    <StatusBadge tone={mode === "preview" ? "neutral" : "blue"}>
+                      {mode === "preview" ? t("미리보기") : t("연결됨")}
+                    </StatusBadge>
+                  </div>
                   <p>{user.email}</p>
                 </div>
               </div>
@@ -330,11 +385,9 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
     caps = useAICapabilities(),
     preferences = usePreferences(),
     { prefs, setPrefs, persist, busy, error, setError } = preferences;
-  const selectedModel =
-    caps.data?.models.find((m) => m.id === prefs.model) ?? caps.data?.models[0];
-  const selectedDepth = resolveReviewDepth(
-    selectedModel?.thinking ?? [],
-    String(prefs.thinking ?? "high"),
+  const selection = resolveAISelection(
+    caps.isError ? [] : caps.data?.models,
+    prefs,
   );
   return (
     <>
@@ -352,7 +405,7 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            if (kind === "ai" && !selectedModel) {
+            if (kind === "ai" && !selection.model) {
               setError(t("모델 목록을 불러온 뒤 다시 저장해 주세요."));
               return;
             }
@@ -360,8 +413,8 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
               kind === "ai"
                 ? {
                     ...prefs,
-                    model: selectedModel!.id,
-                    thinking: selectedDepth,
+                    model: selection.model!,
+                    thinking: selection.thinking ?? "",
                   }
                 : prefs;
             if (await persist(preferences))
@@ -370,53 +423,18 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
         >
           {kind === "ai" ? (
             <>
-              <label className="field">
-                {t("기본 모델")}
-                <Choice
-                  value={selectedModel?.id ?? ""}
-                  label={t("기본 모델")}
-                  disabled={!caps.data}
-                  onChange={(v) =>
-                    setPrefs({
-                      ...prefs,
-                      model: v,
-                      thinking: resolveReviewDepth(
-                        caps.data?.models.find((m) => m.id === v)?.thinking ??
-                          [],
-                        String(prefs.thinking ?? "high"),
-                      ),
-                    })
-                  }
-                  options={
-                    caps.data?.models.map((m) => ({
-                      value: m.id,
-                      label: researchModelLabel(m),
-                    })) ?? [
-                      {
-                        value: "",
-                        label:
-                          mode === "preview"
-                            ? t("미리보기에서는 고를 수 없어요")
-                            : caps.isError
-                              ? t("모델을 불러오지 못했어요")
-                              : t("모델 불러오는 중"),
-                      },
-                    ]
-                  }
+              <div className="field">
+                <span>{t("기본 모델")}</span>
+                <AIModelSelector
+                  models={caps.data?.models ?? []}
+                  model={selection.model}
+                  thinking={selection.thinking}
+                  disabled={busy || mode === "preview"}
+                  loading={mode === "connected" && caps.isPending}
+                  failed={caps.isError}
+                  onChange={(next) => setPrefs({ ...prefs, ...next })}
                 />
-              </label>
-              {!!selectedModel?.thinking.length && (
-                <label className="field">
-                  {t("기본 답변 깊이")}
-                  <Choice
-                    value={selectedDepth}
-                    label={t("기본 답변 깊이")}
-                    options={reviewDepthOptions(selectedModel.thinking)}
-                    onChange={(v) => setPrefs({ ...prefs, thinking: v })}
-                  />
-                  <small>{reviewDepthHints[selectedDepth]}</small>
-                </label>
-              )}
+              </div>
               {caps.isError && (
                 <Button
                   type="button"
@@ -564,6 +582,24 @@ export function ResearchSettingsPage() {
       <div className="settings-heading">
         <h1>{t("연구 설정")}</h1>
         <p>{research.name}</p>
+        <div className="research-settings-summary">
+          <span>
+            {t("현재 단계 · {title}", {
+              title:
+                data.phases.find((p) => p.id === research.currentPhaseId)
+                  ?.title ?? t("단계 미지정"),
+            })}
+          </span>
+          <span>
+            {t("지도교수 {count}명", {
+              count: (research.advisorEmails ?? []).length,
+            })}
+          </span>
+          <span>{t("키워드 {count}개", { count: keywords.length })}</span>
+          {research.submissionDate && (
+            <span>{t("목표일 {date}", { date: research.submissionDate })}</span>
+          )}
+        </div>
       </div>
       <div className="settings-layout">
         <nav aria-label={t("연구 설정 항목")}>

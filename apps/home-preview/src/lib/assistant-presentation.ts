@@ -8,12 +8,16 @@ export const reviewDepthLabels: Record<string, string> = {
   minimal: t("간단히"),
   medium: t("보통"),
   high: t("자세히"),
+  max: t("최대한 자세히"),
+  xhigh: t("최대한 자세히"),
 };
 export const reviewDepthHints: Record<string, string> = {
   low: t("빠르게 답해요."),
   minimal: t("빠르게 답해요."),
   medium: t("조금 더 생각한 뒤 답해요."),
   high: t("더 오래 생각한 뒤 답해요. 시간이 더 걸릴 수 있어요."),
+  max: t("더 깊이 검토해요. 시간과 크레딧이 더 들 수 있어요."),
+  xhigh: t("더 깊이 검토해요. 시간과 크레딧이 더 들 수 있어요."),
 };
 export function resolveReviewDepth(allowed: string[], preferred: string) {
   return allowed.includes(preferred) ? preferred : (allowed[0] ?? "");
@@ -39,6 +43,7 @@ export function workingMascot(mode: AIInput["mode"] | string): MascotState {
       return "processing";
     case "suggest_revisions":
       return "thinking";
+    case "continue_writing":
     case "review_writing":
       return "writing";
     case "plan_research":
@@ -52,6 +57,7 @@ export function workingMascot(mode: AIInput["mode"] | string): MascotState {
 export const workMessages: Record<AIInput["mode"], string> = {
   organize_meeting: t("메모에서 피드백과 결정 사항을 정리하고 있어요."),
   suggest_revisions: t("선택한 피드백의 수정 방법을 살펴보고 있어요."),
+  continue_writing: t("선택한 문맥을 바탕으로 다음 문장을 준비하고 있어요."),
   review_writing: t("선택한 문단의 근거와 표현을 살펴보고 있어요."),
   plan_research: t("남은 할 일과 다음 미팅 준비를 살펴보고 있어요."),
   read_material: t("선택한 자료 구간을 읽고 있어요."),

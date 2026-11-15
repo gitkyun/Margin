@@ -2,7 +2,10 @@ import { useEffect, useId, useRef, useState } from "react";
 import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useAICapabilities } from "@/lib/ai-capabilities";
+import { useAICapabilities, resolveAISelection } from "@/lib/ai-capabilities";
+import { AIModelSelector } from "@/components/ai/AIModelSelector";
+import { AICreditStatus } from "@/components/ai/AICreditStatus";
+import { useAIUsage } from "@/lib/ai-usage";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
   AINotConfiguredError,
@@ -20,6 +23,7 @@ import { Hint } from "@/components/ui/hint";
 import { assertConnected } from "@/lib/supabase";
 import { readPDFPage } from "@/lib/pdf-text";
 import { useNavigationGuard } from "@/lib/navigation-guard";
+import { useFileDrop, ASSISTANT_ACCEPT } from "@/lib/use-file-drop";
 import {
   recordBase,
   now,
@@ -51,14 +55,10 @@ import {
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
+import { AssistantMessageText } from "./assistant/AssistantMessageText";
 import { AssistantFace } from "@/components/brand/BotAvatar";
 import { readAgentProfile } from "@/lib/research-agent";
-import {
-  workingMascot,
-  reviewDepthOptions,
-  resolveReviewDepth,
-  researchModelLabel,
-} from "@/lib/assistant-presentation";
+import { workingMascot } from "@/lib/assistant-presentation";
 import {
   Dialog,
   DialogContent,
@@ -69,6 +69,8 @@ import {
 import { Icon } from "@/components/icons";
 import { assistantSteps, type AssistantStep } from "@/lib/assistant-steps";
 import { AnswerSteps, AssistantThinking } from "./assistant/AssistantThinking";
+import { VoiceGlow } from "@/components/recording/VoiceGlow";
+import { useDictation } from "@/lib/use-dictation";
 import { t } from "@/lib/i18n";
 
 /** md(992px) 미만에서는 패널이 본문을 덮으므로 처음에는 닫아 둡니다. */
@@ -81,7 +83,7 @@ export function ResearchAssistant() {
     w = useExperience(),
     navigate = useNavigate(),
     { data, user, save, runAI, mode, refresh } = w,
-    [params] = useSearchParams(),
+    [params, setParams] = useSearchParams(),
     // 예전 주소(?tab=overview)는 패널의 제안 탭으로 엽니다.
     wantsSuggestions = params.get("tab") === "overview";
   // 계정 설정에서 고른 나만의 연구 도우미(이름·아바타). 고르지 않았으면 기존 마스코트.
@@ -102,6 +104,7 @@ export function ResearchAssistant() {
     [thinking, setThinking] = useState(
       String(user.preferences?.thinking || "high"),
     ),
+    [lastRunId, setLastRunId] = useState(""),
     [running, setRunning] = useState(false),
     // 이번 요청에서 읽는 것(단계)과, 방금 받은 답이 거친 단계. 새로고침하면 사라져요.
     [waiting, setActiveRun] = useState<{
@@ -129,9 +132,13 @@ export function ResearchAssistant() {
     ),
     unavailableId = useId();
   const aiNotConfigured = useAINotConfigured();
+  const dictation = useDictation(() => draft, setDraft);
+  const usage = useAIUsage();
   const caps = useAICapabilities(),
-    allowedModel =
-      caps.data?.models.find((m) => m.id === model) ?? caps.data?.models[0],
+    selection = resolveAISelection(caps.isError ? [] : caps.data?.models, {
+      model,
+      thinking,
+    }),
     abort = useRef<AbortController | null>(null),
     runId = useRef(""),
     sequence = useRef(0),
@@ -179,6 +186,12 @@ export function ResearchAssistant() {
     const doc = data.documents.find(
       (d) => d.id === id && d.researchId === researchId,
     );
+    if (!id || !doc) return;
+    const consumed = new URLSearchParams(params);
+    consumed.delete("document");
+    consumed.delete("selection");
+    consumed.delete("tab");
+    setParams(consumed, { replace: true });
     let selectedText: string | undefined;
     if (doc && params.get("selection") === "1") {
       try {
@@ -215,11 +228,7 @@ export function ResearchAssistant() {
           ...(selectedText ? { text: selectedText } : {}),
         },
       ]);
-  }, [params.get("document")]);
-  useEffect(() => {
-    if (allowedModel && !allowedModel.thinking.includes(thinking))
-      setThinking(resolveReviewDepth(allowedModel.thinking, thinking));
-  }, [allowedModel?.id, allowedModel?.thinking.join(","), thinking]);
+  }, [params, data.documents, researchId, user.id, setParams]);
   const sourceOptions: AIContext[] = [
     ...data.meetings
       .filter(
@@ -375,9 +384,14 @@ export function ResearchAssistant() {
    * 이때는 지금 고른 근거만 읽고, 입력창에 적던 글은 그대로 둬요.
    */
   async function send(retryQuestion?: string) {
+    if (dictation.listening) dictation.stop();
     const question = retryQuestion ?? draft;
     // 연구 대화는 기록 없이도 보낼 수 있어요. 나머지 요청은 읽을 기록이 있어야 해요.
-    if (running || !question.trim()) return;
+    if (working || unavailable || !question.trim()) return;
+    if (!selection.model) {
+      setError(t("사용 가능한 모델을 확인한 뒤 다시 보내 주세요."));
+      return;
+    }
     if (!contexts.length && task !== "ask_research") {
       setError(
         t("이 요청은 읽을 기록이 필요해요. 기록이나 파일을 첨부해 주세요."),
@@ -401,6 +415,7 @@ export function ResearchAssistant() {
       id = uid(),
       controller = new AbortController();
     runId.current = id;
+    setLastRunId(id);
     abort.current = controller;
     const research = data.researches.find((r) => r.id === researchId);
     const run = {
@@ -444,10 +459,7 @@ export function ResearchAssistant() {
           question: text,
           sourceText: "",
           contexts,
-          model: allowedModel?.id,
-          thinking: allowedModel?.thinking.includes(thinking)
-            ? (thinking as AIInput["thinking"])
-            : undefined,
+          ...selection,
           history: c.messages
             .slice(-10, -1)
             .map(({ role, text }) => ({ role, text })),
@@ -485,7 +497,7 @@ export function ResearchAssistant() {
         setRunning(false);
         runId.current = "";
       }
-      await refresh();
+      await Promise.allSettled([refresh(), usage.refetch()]);
     }
   }
   async function cancel() {
@@ -634,6 +646,20 @@ export function ResearchAssistant() {
   // 미리보기이거나 서버에 AI가 아직 연결되지 않았으면 실행할 수 없어요.
   // 예시 답변·진행률·모델 설정을 만들어 보여 주지 않습니다.
   const unavailable = mode === "preview" || aiNotConfigured;
+  const {
+    getRootProps: getComposerDropProps,
+    getInputProps: getComposerInputProps,
+    isDragActive: isComposerDragActive,
+    open: openComposerFileDialog,
+  } = useFileDrop({
+    accept: ASSISTANT_ACCEPT,
+    kind: "assistant",
+    disabled: uploading || unavailable || working,
+    noClick: true,
+    noKeyboard: true,
+    onSelect: (file) => void attach(file),
+    onError: (err) => setError(err),
+  });
   const models = caps.data?.models ?? [];
   return (
     <div className="assistant-experience">
@@ -728,7 +754,15 @@ export function ResearchAssistant() {
                     )}
                   </span>
                 )}
-                <div>{m.text}</div>
+                {m.role === "assistant" ? (
+                  <AssistantMessageText
+                    text={m.text}
+                    contexts={conversation?.contexts ?? contexts}
+                    onOpenSources={() => openPanel("sources")}
+                  />
+                ) : (
+                  <div>{m.text}</div>
+                )}
                 {m.role === "assistant" &&
                   answered?.at === m.createdAt &&
                   i === messages.length - 1 && (
@@ -784,132 +818,202 @@ export function ResearchAssistant() {
                 )}
           </p>
         )}
-        <form
-          className="ai-composer"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void send();
-          }}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            if (!uploading && !unavailable)
-              void attach(e.dataTransfer.files[0]);
-          }}
+        <VoiceGlow
+          className="ai-composer-glow"
+          active={dictation.listening}
+          processing={running}
+          stream={dictation.stream}
         >
-          <textarea
-            ref={composerRef}
-            aria-label={t("연구 도우미에게 질문")}
-            // 쓸 수 없는 이유는 입력창 바로 위 한 줄에서 알려 주므로 여기서 되풀이하지 않습니다.
-            placeholder={
-              unavailable
-                ? undefined
-                : contexts.length
-                  ? t("첨부한 기록에 대해 물어보세요")
-                  : t(
-                      "질문을 적어 주세요. 기록을 첨부하면 그 기록을 읽고 답해요.",
-                    )
-            }
-            value={draft}
-            disabled={unavailable}
-            onChange={(e) => setDraft(e.target.value)}
-            maxLength={2000}
-            rows={1}
-            onKeyDown={(e) => {
-              // 다른 AI 입력창과 같게: Enter로 보내고 Shift+Enter로 줄을 바꿉니다.
-              if (e.key === "Enter" && !e.shiftKey && !isImeComposing(e)) {
+          <form
+            {...getComposerDropProps({
+              className: `ai-composer${isComposerDragActive ? " is-dragging" : ""}`,
+              onSubmit: (e) => {
                 e.preventDefault();
                 void send();
-              }
-            }}
-          />
-          <div className="composer-actions">
-            <Hint label={t("기록·파일 첨부")} position="top-center">
-              <button
-                type="button"
-                className="composer-attach"
-                aria-label={
-                  contexts.length
-                    ? t("첨부한 기록 {count}개, 바꾸기", {
-                        count: contexts.length,
-                      })
-                    : t("기록·파일 첨부")
+              },
+              onPaste: (e) => {
+                const file = e.clipboardData.files[0];
+                if (file && !working && !uploading && !unavailable) {
+                  e.preventDefault();
+                  void attach(file);
                 }
-                onClick={() => openPanel("sources")}
+              },
+            })}
+          >
+            {!!contexts.length && (
+              <div
+                className="context-chips"
+                role="group"
+                aria-label={t("첨부한 기록")}
               >
-                <Icon name="plus" size={20} />
-                {!!contexts.length && <span>{contexts.length}</span>}
-              </button>
-            </Hint>
-            <Choice
-              compact
-              value={task}
-              onChange={(v) => setTask(v as AIInput["mode"])}
-              label={t("요청 종류")}
-              disabled={running || unavailable}
-              options={Object.entries(modeLabels).map(([value, label]) => ({
-                value,
-                label,
-              }))}
+                {contexts.map((context, index) => (
+                  <span
+                    className="context-chip"
+                    key={`${context.kind}:${context.id}`}
+                  >
+                    <Icon name="file" size={15} />
+                    <span title={context.title}>{context.title}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      disabled={working || uploading}
+                      aria-label={t("{title} 첨부 해제", {
+                        title: context.title,
+                      })}
+                      onClick={() =>
+                        setContexts((items) =>
+                          items.filter((_, i) => i !== index),
+                        )
+                      }
+                    >
+                      <Icon name="close" size={13} />
+                    </Button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <textarea
+              ref={composerRef}
+              aria-label={t("연구 도우미에게 질문")}
+              // 쓸 수 없는 이유는 입력창 바로 위 한 줄에서 알려 주므로 여기서 되풀이하지 않습니다.
+              placeholder={
+                unavailable
+                  ? undefined
+                  : contexts.length
+                    ? t("첨부한 기록에 대해 물어보세요")
+                    : t(
+                        "질문을 적어 주세요. 기록을 첨부하면 그 기록을 읽고 답해요.",
+                      )
+              }
+              value={draft}
+              disabled={unavailable}
+              onChange={(e) => setDraft(e.target.value)}
+              maxLength={2000}
+              rows={1}
+              onKeyDown={(e) => {
+                // 다른 AI 입력창과 같게: Enter로 보내고 Shift+Enter로 줄을 바꿉니다.
+                if (e.key === "Enter" && !e.shiftKey && !isImeComposing(e)) {
+                  e.preventDefault();
+                  void send();
+                }
+              }}
             />
-            {/* 고를 모델이 둘 이상일 때만 보입니다. 연결 전에는 모델 이름을 보여 주지 않아요. */}
-            {!unavailable && models.length > 1 && (
+            <div className="composer-actions">
+              <Hint label={t("기록·파일 첨부")} position="top-center">
+                <button
+                  type="button"
+                  className="composer-attach"
+                  aria-label={
+                    contexts.length
+                      ? t("첨부한 기록 {count}개, 바꾸기", {
+                          count: contexts.length,
+                        })
+                      : t("기록·파일 첨부")
+                  }
+                  onClick={() => openPanel("sources")}
+                >
+                  <Icon name="plus" size={20} />
+                  {!!contexts.length && <span>{contexts.length}</span>}
+                </button>
+              </Hint>
               <Choice
                 compact
-                value={allowedModel?.id ?? ""}
-                onChange={setModel}
-                disabled={running}
-                label={t("AI 모델")}
-                options={models.map((m) => ({
-                  value: m.id,
-                  label: researchModelLabel(m),
+                value={task}
+                onChange={(v) => setTask(v as AIInput["mode"])}
+                label={t("요청 종류")}
+                disabled={running || unavailable}
+                options={Object.entries(modeLabels).map(([value, label]) => ({
+                  value,
+                  label,
                 }))}
               />
-            )}
-            {!unavailable && !!allowedModel?.thinking.length && (
-              <Choice
+              <AIModelSelector
                 compact
-                label={t("답변 깊이")}
-                value={thinking}
-                onChange={setThinking}
-                disabled={running}
-                options={reviewDepthOptions(allowedModel.thinking).map(
-                  (option) => ({
-                    ...option,
-                    search: option.label,
-                    label: option.label,
-                  }),
-                )}
+                models={models}
+                model={selection.model}
+                thinking={selection.thinking}
+                disabled={working || unavailable}
+                loading={mode === "connected" && caps.isPending}
+                failed={caps.isError}
+                onChange={(next) => {
+                  setModel(next.model);
+                  setThinking(next.thinking);
+                }}
               />
-            )}{" "}
-            {running ? (
-              <Button
-                type="button"
-                size="icon"
-                aria-label={t("실행 중단")}
-                onClick={() => void cancel()}
-              >
-                <Icon name="stop" size={17} />
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                size="icon"
-                aria-label={t("질문 보내기")}
-                disabled={unavailable || !draft.trim() || uploading}
-                aria-describedby={unavailable ? unavailableId : undefined}
-              >
-                <Icon name="arrow-up" size={19} />
-              </Button>
+              {dictation.supported && !unavailable && (
+                <Hint
+                  label={
+                    dictation.listening
+                      ? t("음성 입력 멈추기")
+                      : t("음성으로 질문 입력")
+                  }
+                  position="top-center"
+                >
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant={dictation.listening ? "default" : "ghost"}
+                    disabled={running || uploading}
+                    aria-pressed={dictation.listening}
+                    aria-label={
+                      dictation.listening
+                        ? t("음성 입력 멈추기")
+                        : t("음성으로 질문 입력")
+                    }
+                    onClick={() =>
+                      dictation.listening ? dictation.stop() : dictation.start()
+                    }
+                  >
+                    <Icon
+                      name={dictation.listening ? "stop" : "mic"}
+                      size={17}
+                    />
+                  </Button>
+                </Hint>
+              )}
+              {running ? (
+                <Button
+                  type="button"
+                  size="icon"
+                  aria-label={t("실행 중단")}
+                  onClick={() => void cancel()}
+                >
+                  <Icon name="stop" size={17} />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  size="icon"
+                  aria-label={t("질문 보내기")}
+                  disabled={
+                    unavailable ||
+                    !selection.model ||
+                    working ||
+                    !draft.trim() ||
+                    uploading
+                  }
+                  aria-describedby={unavailable ? unavailableId : undefined}
+                >
+                  <Icon name="arrow-up" size={19} />
+                </Button>
+              )}
+            </div>
+            {dictation.message && (
+              <p className="rms-error" role="alert">
+                {dictation.message}
+              </p>
             )}
-          </div>
-          {uploading && (
-            <p role="status">
-              {t("자료 준비 중")}
-              {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
-            </p>
-          )}
-        </form>
+            {uploading && (
+              <p role="status">
+                {t("자료 준비 중")}
+                {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
+              </p>
+            )}
+          </form>
+        </VoiceGlow>
+        <AICreditStatus />
+        {lastRunId && <AICreditStatus runId={lastRunId} />}
         {caps.isError && (
           <p className="rms-error" role="alert">
             {t("AI 모델 정보를 불러오지 못했어요.")}{" "}
@@ -960,7 +1064,7 @@ export function ResearchAssistant() {
           onRemoveSource={(index) =>
             setContexts(contexts.filter((_, i) => i !== index))
           }
-          onAttach={() => fileInput.current?.click()}
+          onAttach={() => openComposerFileDialog()}
           versions={data.versions.filter((v) => v.researchId === researchId)}
           page={page}
           onPage={setPage}
@@ -973,11 +1077,17 @@ export function ResearchAssistant() {
         />
       </MarginPanel>
       <input
-        hidden
-        type="file"
-        accept=".pdf,.txt,.md"
-        ref={fileInput}
-        onChange={(e) => void attach(e.target.files?.[0])}
+        {...getComposerInputProps({
+          hidden: true,
+          disabled: uploading || unavailable || working,
+        })}
+        ref={(node) => {
+          const dropzoneRef = (getComposerInputProps() as any).ref;
+          if (typeof dropzoneRef === "function") dropzoneRef(node);
+          else if (dropzoneRef && typeof dropzoneRef === "object")
+            dropzoneRef.current = node;
+          fileInput.current = node;
+        }}
       />
       <Dialog
         open={!!adopting}

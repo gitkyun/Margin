@@ -153,9 +153,22 @@
   }
   button:focus-visible,
   a:focus-visible,
-  summary:focus-visible {
+  summary:focus-visible,
+  .disclosure-trigger:focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 4px;
+  }
+  .disclosure-trigger {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
   }
   button svg {
     flex-shrink: 0;
@@ -880,6 +893,34 @@
     max-width: none;
     flex-shrink: 0;
   }
+  .pdf-canvas-stage {
+    position: relative;
+    margin: 0 auto;
+    flex-shrink: 0;
+  }
+  .pdf-canvas-stage.is-pinning {
+    cursor: crosshair;
+  }
+  .pdf-pin-marker {
+    position: absolute;
+    z-index: var(--z-raised);
+    width: 24px;
+    height: 24px;
+    display: inline-grid;
+    place-items: center;
+    border: 2px solid var(--semantic-static-white);
+    border-radius: 50% 50% 50% 4px;
+    background: var(--brand);
+    color: var(--semantic-static-white);
+    font-size: var(--typography-caption2-fontSize, 11px);
+    font-weight: 700;
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+  }
+  .pdf-pin-marker:hover {
+    transform: translate(-50%, -108%) scale(1.08);
+  }
   .pdf-canvas-host canvas.pdf-loading {
     opacity: 0.3;
   }
@@ -902,7 +943,8 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .pdf-text summary {
+  .pdf-text summary,
+  .pdf-text .disclosure-trigger {
     cursor: pointer;
   }
   .pdf-text p {
@@ -1658,10 +1700,13 @@
     height: 8px;
     border: 2px solid var(--sidebar);
     border-radius: 50%;
-    background: var(--danger);
+    background: var(--brand);
     box-sizing: content-box;
     animation: text-swap-in var(--motion-duration-enter)
       var(--motion-ease-standard);
+  }
+  .sidebar-collapsed .nav-dot {
+    left: calc(50% + 4px);
   }
 }
 
@@ -1745,5 +1790,114 @@
   }
   .email-chips small {
     color: var(--text-secondary);
+  }
+}
+
+/* 테마 전환 스위치 버튼(Kokonut UI Switch Button 원형 확산) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 9999;
+}
+@layer margin {
+  .theme-switch-group {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    gap: 2px;
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+  }
+  .theme-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-6);
+    min-height: 34px;
+    padding: 0 var(--spacing-12);
+    border: 0;
+    border-radius: var(--radius-10);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 500;
+    letter-spacing: var(--typography-label2-letterSpacing);
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out,
+      box-shadow var(--motion-duration-micro) ease-out;
+  }
+  .theme-switch-btn:hover {
+    color: var(--text);
+  }
+  .theme-switch-btn.is-selected {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: var(--semantic-elevation-shadow-normal-xsmall);
+  }
+  .theme-switch-btn.is-selected .theme-switch-icon {
+    color: var(--brand);
+    animation: theme-icon-pop var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .theme-switch-icon {
+    display: inline-flex;
+    align-items: center;
+  }
+  @keyframes theme-icon-pop {
+    from {
+      transform: rotate(-35deg) scale(0.75);
+      opacity: 0.4;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-switch-btn,
+    .theme-switch-btn.is-selected .theme-switch-icon {
+      transition: none;
+      animation: none;
+    }
+  }
+  .review-pin-bar {
+    display: flex;
+    justify-content: flex-start;
+  }
+  .writing-autocomplete {
+    margin-top: var(--spacing-12);
+    padding-top: var(--spacing-10);
+    border-top: 1px dashed var(--line);
+  }
+  .writing-autocomplete-trigger {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .writing-autocomplete-card {
+    display: grid;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12);
+    border: 1px solid var(--selected-line);
+    border-radius: var(--radius-10);
+    background: var(--selected-fill);
+  }
+  .writing-autocomplete-ghost {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1Reading-lineHeight);
+  }
+  .writing-autocomplete-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .writing-autocomplete-actions > small {
+    margin-right: auto;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
   }
 }

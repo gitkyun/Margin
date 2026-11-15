@@ -1,0 +1,169 @@
+@layer margin {
+  .ai-model-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+    min-width: 0;
+  }
+  .ai-model-trigger,
+  .ai-model-quick-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    min-height: 40px;
+    padding: var(--spacing-8) var(--spacing-12);
+    border: 1px solid var(--semantic-line-neutral-secondary);
+    border-radius: var(--radius-12);
+    background: var(--semantic-background-neutral-primary);
+    color: var(--semantic-foreground-neutral-primary);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    cursor: pointer;
+    text-align: start;
+  }
+  .ai-model-trigger {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .ai-model-trigger > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .ai-model-trigger > svg {
+    flex-shrink: 0;
+  }
+  .ai-model-trigger small,
+  .ai-model-recommendation {
+    color: var(--semantic-foreground-brand-primary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .ai-model-quick-pick {
+    border-color: var(--semantic-line-brand-primary);
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .ai-model-trigger:disabled,
+  .ai-model-option:disabled {
+    opacity: var(--opacity-48);
+    cursor: not-allowed;
+  }
+  .ai-model-trigger:hover:not(:disabled),
+  .ai-model-option:hover:not(:disabled) {
+    background: var(--semantic-surface-neutral-secondary);
+  }
+  .ai-model-trigger:focus-visible,
+  .ai-model-option:focus-visible,
+  .ai-model-quick-pick:focus-visible {
+    outline: 2px solid var(--semantic-line-brand-strong);
+    outline-offset: 2px;
+  }
+  .ai-model-popover {
+    z-index: 100;
+    width: min(400px, calc(100vw - 32px));
+    max-height: min(560px, var(--radix-popover-content-available-height));
+    overflow-y: auto;
+    display: grid;
+    gap: var(--spacing-12);
+    padding: var(--spacing-16);
+    border: 1px solid var(--semantic-line-neutral-secondary);
+    border-radius: var(--radius-16);
+    background: var(--semantic-surface-elevated-primary);
+    color: var(--semantic-foreground-neutral-primary);
+    box-shadow: var(--semantic-elevation-shadow-normal-large);
+    font-family: inherit;
+  }
+  .ai-model-menu-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .ai-model-options {
+    display: grid;
+    gap: var(--spacing-4);
+  }
+  .ai-model-option {
+    position: relative;
+    display: grid;
+    gap: var(--spacing-4);
+    padding: var(--spacing-12) var(--spacing-24) var(--spacing-12)
+      var(--spacing-12);
+    border: 1px solid transparent;
+    border-radius: var(--radius-12);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+  .ai-model-option[aria-pressed="true"] {
+    border-color: var(--semantic-line-brand-primary);
+    background: var(--semantic-surface-brand-subtle);
+  }
+  .ai-model-option > span {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-6);
+  }
+  .ai-model-option strong {
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+  }
+  .ai-model-option small,
+  .ai-model-note,
+  .ai-model-depth-hint {
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    color: var(--semantic-foreground-neutral-secondary);
+  }
+  .ai-model-option > svg {
+    position: absolute;
+    right: var(--spacing-8);
+    top: var(--spacing-12);
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .ai-model-note {
+    margin: 0;
+  }
+  .ai-model-depth-hint {
+    flex-basis: 100%;
+  }
+  .ai-credit-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4) var(--spacing-12);
+    margin: var(--spacing-8) 0;
+    color: var(--semantic-foreground-neutral-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+  }
+  .ai-credit-status small {
+    font: inherit;
+  }
+  .ai-credit-ledger {
+    display: grid;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-16);
+    padding: 0;
+    list-style: none;
+  }
+  .ai-credit-ledger li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    padding-block: var(--spacing-12);
+    border-bottom: 1px solid var(--semantic-line-neutral-secondary);
+  }
+  .ai-credit-ledger li > div {
+    display: grid;
+    gap: var(--spacing-4);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .ai-credit-ledger small {
+    color: var(--semantic-foreground-neutral-secondary);
+  }
+}

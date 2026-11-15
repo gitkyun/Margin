@@ -14,6 +14,7 @@ import "./recording.css";
  */
 export const CLIP_LEAD_MS = 1500;
 export const CLIP_TAIL_MS = 500;
+const SCRUB_TICKS = 15;
 
 export interface SourceAudioClipProps {
   /** 피드백에 저장된 녹음 위치(Feedback.audioSource) */
@@ -34,7 +35,7 @@ export function findSourceRecording(
 }
 
 /**
- * 피드백이 나온 녹음 구간만 재생해요(재생/정지, 구간 스크러버).
+ * 피드백이 나온 녹음 구간만 재생해요(재생/정지, 타임라인 눈금 오디오 스크러버).
  * 녹음을 저장하지 않았거나 볼 수 없는 미팅이면 버튼을 끄고 이유를 한 줄 보여요.
  * 음성 파일은 눌렀을 때 처음 한 번만 불러와요.
  */
@@ -42,10 +43,13 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
   const { data, mode } = useWorkspace();
   const recording = findSourceRecording(data.recordings, source);
   const audio = useRef<HTMLAudioElement>(null);
+  const track = useRef<HTMLDivElement>(null);
   const url = useRef("");
   const [loading, setLoading] = useState(false),
     [playing, setPlaying] = useState(false),
     [position, setPosition] = useState(0),
+    [hoverRatio, setHoverRatio] = useState<number | null>(null),
+    [dragging, setDragging] = useState(false),
     [error, setError] = useState("");
   const reasonId = useId();
   const from = Math.max(0, source.startMs - CLIP_LEAD_MS);
@@ -107,6 +111,20 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
     setPlaying(false);
   }
   const length = to - from;
+  const clamped = Math.min(position, length);
+  const progress = length > 0 ? Math.max(0, Math.min(1, clamped / length)) : 0;
+  function seekToRatio(ratio: number) {
+    if (!recording || length <= 0) return;
+    const next = Math.round(Math.max(0, Math.min(1, ratio)) * length);
+    setPosition(next);
+    if (audio.current && url.current)
+      audio.current.currentTime = (from + next) / 1000;
+  }
+  function ratioFromClientX(clientX: number): number {
+    const rect = track.current?.getBoundingClientRect();
+    if (!rect || rect.width <= 0) return 0;
+    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  }
   const name = label ?? t("녹음 구간");
   const reason = !recording
     ? t("이 미팅에 저장한 녹음이 없거나 볼 수 없어서 재생할 수 없어요.")
@@ -125,25 +143,87 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
       >
         <Icon name={playing ? "pause" : "play"} size={16} />
       </Button>
-      <input
-        type="range"
-        className="source-audio-scrubber"
-        min={0}
-        max={length}
-        step={100}
-        value={Math.min(position, length)}
-        disabled={!recording}
+      <div
+        ref={track}
+        role="slider"
+        tabIndex={recording ? 0 : -1}
+        aria-disabled={!recording || undefined}
         aria-label={t("{name} 재생 위치", { name })}
-        aria-valuetext={clockText(from + position)}
-        onChange={(e) => {
-          const next = Number(e.target.value);
-          setPosition(next);
-          if (audio.current && url.current)
-            audio.current.currentTime = (from + next) / 1000;
+        aria-valuemin={0}
+        aria-valuemax={length}
+        aria-valuenow={clamped}
+        aria-valuetext={clockText(from + clamped)}
+        className={`timeline-scrubber${dragging ? " is-dragging" : ""}${!recording ? " is-disabled" : ""}`}
+        onPointerDown={(e) => {
+          if (!recording) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          setDragging(true);
+          const ratio = ratioFromClientX(e.clientX);
+          setHoverRatio(ratio);
+          seekToRatio(ratio);
         }}
-      />
+        onPointerMove={(e) => {
+          if (!recording) return;
+          const ratio = ratioFromClientX(e.clientX);
+          setHoverRatio(ratio);
+          if (dragging) seekToRatio(ratio);
+        }}
+        onPointerUp={() => setDragging(false)}
+        onPointerCancel={() => setDragging(false)}
+        onPointerLeave={() => {
+          if (!dragging) setHoverRatio(null);
+        }}
+        onKeyDown={(e) => {
+          if (!recording) return;
+          const step = e.shiftKey ? 5000 : 1000;
+          if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+            e.preventDefault();
+            seekToRatio((clamped + step) / length);
+          } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+            e.preventDefault();
+            seekToRatio((clamped - step) / length);
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            seekToRatio(0);
+          } else if (e.key === "End") {
+            e.preventDefault();
+            seekToRatio(1);
+          }
+        }}
+      >
+        <div className="timeline-scrubber-ticks" aria-hidden="true">
+          {Array.from({ length: SCRUB_TICKS }, (_, index) => {
+            const active = index / (SCRUB_TICKS - 1) <= progress;
+            return (
+              <span
+                key={index}
+                className={active ? "is-active" : undefined}
+              />
+            );
+          })}
+        </div>
+        <div
+          className="timeline-scrubber-fill"
+          style={{ width: `${progress * 100}%` }}
+          aria-hidden="true"
+        />
+        <span
+          className="timeline-scrubber-thumb"
+          style={{ left: `${progress * 100}%` }}
+          aria-hidden="true"
+        />
+        {hoverRatio !== null && recording && (
+          <span
+            className="timeline-scrubber-preview"
+            style={{ left: `${hoverRatio * 100}%` }}
+            aria-hidden="true"
+          >
+            {clockText(from + Math.round(hoverRatio * length))}
+          </span>
+        )}
+      </div>
       <span className="source-audio-time">
-        {clockText(from + position)} / {clockText(to)}
+        {clockText(from + clamped)} / {clockText(to)}
       </span>
       <audio
         ref={audio}

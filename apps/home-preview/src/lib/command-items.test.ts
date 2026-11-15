@@ -61,7 +61,7 @@ describe("buildCommands", () => {
       "recent:tasks:t2",
       "recent:tasks:t1",
     ]);
-    expect(ids(sections, "researches")).toEqual([]);
+    expect(ids(sections, "researches")).toEqual(["research:r2"]);
   });
 
   it("offers every record and the other live researches while searching", () => {

@@ -284,7 +284,13 @@ export interface RoadmapProposalResult {
  * 날짜가 오늘~투고일을 벗어난 제안은 보여 주지 않습니다.
  */
 export async function requestRoadmapProposal(
-  input: { researchId: string; clientRunId: string; plan: RoadmapPlan },
+  input: {
+    researchId: string;
+    clientRunId: string;
+    plan: RoadmapPlan;
+    model?: string;
+    thinking?: AIInput["thinking"];
+  },
   signal?: AbortSignal,
 ): Promise<RoadmapProposalResult> {
   const payload = await postAI({ mode: ROADMAP_MODE, ...input }, signal);

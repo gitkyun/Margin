@@ -848,7 +848,8 @@
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .student-details summary {
+  .student-details summary,
+  .student-details .disclosure-trigger {
     cursor: pointer;
     padding: 8px 0;
   }
@@ -1467,6 +1468,42 @@
     padding: 14px;
     border: 1px dashed var(--line);
     border-radius: var(--radius-10);
+  }
+  .quick-upload-dropzone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+    cursor: pointer;
+    min-height: 44px;
+    transition:
+      border-color var(--motion-duration-micro) ease,
+      background var(--motion-duration-micro) ease;
+  }
+  .quick-upload-dropzone:hover {
+    border-color: var(--hover-line);
+    background: var(--hover-fill);
+  }
+  .quick-upload-dropzone.is-dragging {
+    border-color: var(--brand);
+    background: var(--hover-fill);
+  }
+  .quick-upload-dropzone:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .quick-upload-dropzone-text {
+    font-size: var(--typography-body2-fontSize);
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .quick-upload-dropzone.has-file .quick-upload-dropzone-text {
+    color: var(--text);
   }
   .quick-upload .upload-progress {
     margin-top: 0;

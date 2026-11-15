@@ -1,19 +1,14 @@
 import { AssistantMascot } from "@/components/brand/Brand";
-import {
-  workingMascot,
-  workMessages,
-  researchModelLabel,
-  reviewDepthOptions,
-  resolveReviewDepth,
-  reviewDepthHints,
-} from "@/lib/assistant-presentation";
-import { useAICapabilities } from "@/lib/ai-capabilities";
+import { workingMascot, workMessages } from "@/lib/assistant-presentation";
+import { useAICapabilities, resolveAISelection } from "@/lib/ai-capabilities";
+import { AIModelSelector } from "@/components/ai/AIModelSelector";
+import { AICreditStatus } from "@/components/ai/AICreditStatus";
+import { useAIUsage } from "@/lib/ai-usage";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
   AINotConfiguredError,
   useAINotConfigured,
 } from "@/lib/ai-availability";
-import { Choice } from "@/components/experience";
 import { SelectField } from "@/components/experience";
 import { useEffect, useId, useRef, useState } from "react";
 import { useDisabledReason } from "@/components/common";
@@ -25,6 +20,7 @@ import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import {
   recordBase,
+  uid,
   type AICandidate,
   type AIInput,
   type BaseRecord,
@@ -56,6 +52,8 @@ export function AIWorkbench({
 }) {
   const { runAI, mode, user } = useWorkspace();
   const caps = useAICapabilities();
+  const usage = useAIUsage();
+  const [lastRunId, setLastRunId] = useState("");
   // 글쓰기 여백 패널의 AI 문장 점검. 피드백용 문구 대신 원고용 문구를 써요.
   const writing = input.mode === "review_writing";
   const aiNotConfigured = useAINotConfigured();
@@ -74,13 +72,10 @@ export function AIWorkbench({
   const [preferredDepth, setPreferredDepth] = useState(
     String(input.thinking ?? user.preferences?.thinking ?? "high"),
   );
-  const selectedModel =
-    caps.data?.models.find((m) => m.id === selectedModelId) ??
-    caps.data?.models[0];
-  const depth = resolveReviewDepth(
-    selectedModel?.thinking ?? [],
-    preferredDepth,
-  );
+  const selection = resolveAISelection(caps.isError ? [] : caps.data?.models, {
+    model: selectedModelId,
+    thinking: preferredDepth,
+  });
   const [running, setRunning] = useState(false);
   const [stopped, setStopped] = useState(false);
   const [candidates, setCandidates] = useState<AICandidate[]>([]);
@@ -101,7 +96,18 @@ export function AIWorkbench({
   );
   const [confirmDialog, confirm] = useConfirm();
   async function generate() {
-    if (running || savingRef.current) return;
+    if (
+      running ||
+      savingRef.current ||
+      aiBlocked ||
+      stale ||
+      !input.sourceText.trim()
+    )
+      return;
+    if (!selection.model) {
+      setError(t("사용 가능한 모델을 확인한 뒤 다시 보내 주세요."));
+      return;
+    }
     if (
       candidates.length &&
       !(await confirm({
@@ -113,6 +119,8 @@ export function AIWorkbench({
     )
       return;
     const current = ++sequence.current;
+    const clientRunId = uid();
+    setLastRunId(clientRunId);
     const abort = new AbortController();
     controller.current = abort;
     setRunning(true);
@@ -122,12 +130,8 @@ export function AIWorkbench({
       const result = await runAI(
         {
           ...input,
-          ...(selectedModel
-            ? {
-                model: selectedModel.id,
-                thinking: depth ? (depth as AIInput["thinking"]) : undefined,
-              }
-            : {}),
+          ...selection,
+          clientRunId,
         },
         abort.signal,
       );
@@ -152,6 +156,7 @@ export function AIWorkbench({
         );
     } finally {
       if (current === sequence.current) setRunning(false);
+      void usage.refetch();
     }
   }
   function cancel() {
@@ -254,42 +259,29 @@ export function AIWorkbench({
             : ""}
         </small>
       </div>
-      {selectedModel && !aiNotConfigured && (
-        <details className="margin-review-settings">
-          <summary>
-            {t("이번 실행 설정")}
-            <Icon name="chevron-down" size={15} />
-          </summary>
-          <div className="margin-review-fields">
-            <label className="field">
-              {t("AI 모델")}
-              <Choice
-                label={t("AI 모델")}
-                value={selectedModel.id}
-                disabled={running || saving !== null}
-                onChange={setSelectedModelId}
-                options={caps.data!.models.map((m) => ({
-                  value: m.id,
-                  label: researchModelLabel(m),
-                }))}
-              />
-            </label>
-            {!!selectedModel.thinking.length && (
-              <label className="field">
-                {t("답변 깊이")}
-                <Choice
-                  label={t("답변 깊이")}
-                  value={depth}
-                  disabled={running || saving !== null}
-                  onChange={setPreferredDepth}
-                  options={reviewDepthOptions(selectedModel.thinking)}
-                />
-                <small>{reviewDepthHints[depth]}</small>
-              </label>
-            )}
-          </div>
-        </details>
+      <AIModelSelector
+        models={caps.data?.models ?? []}
+        model={selection.model}
+        thinking={selection.thinking}
+        disabled={running || saving !== null || aiBlocked}
+        loading={mode === "connected" && caps.isPending}
+        failed={caps.isError}
+        onChange={(next) => {
+          setSelectedModelId(next.model);
+          setPreferredDepth(next.thinking);
+        }}
+      />
+      {caps.isError && (
+        <Button
+          type="button"
+          variant="link"
+          onClick={() => void caps.refetch()}
+        >
+          {t("모델 다시 불러오기")}
+        </Button>
       )}
+      <AICreditStatus />
+      {lastRunId && <AICreditStatus runId={lastRunId} />}
       <p className="ai-disclosure">
         {input.mode === "organize_meeting"
           ? t("원문과 AI 제안을 구분해 확인하고, 필요한 것만 저장하세요.")
@@ -337,6 +329,7 @@ export function AIWorkbench({
             disabled={
               mode === "preview" ||
               aiNotConfigured ||
+              !selection.model ||
               saving !== null ||
               !input.sourceText.trim()
             }

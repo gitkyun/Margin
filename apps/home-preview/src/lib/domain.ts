@@ -420,6 +420,8 @@ export interface AICandidate {
   suggestedTasks?: string[];
 }
 export interface AIResult {
+  creditsUsed?: number;
+  creditStatus?: "settled" | "pending";
   answer?: string;
   runId?: ID;
   candidates: AICandidate[];
@@ -434,7 +436,8 @@ export interface AIInput {
     | "ask_research"
     | "review_writing"
     | "plan_research"
-    | "read_material";
+    | "read_material"
+    | "continue_writing";
   model?: string;
   thinking?: "minimal" | "low" | "medium" | "high";
   /** 화면 언어. 요청을 보낼 때 채워지고, 서버가 이 언어로 답하게 합니다. */

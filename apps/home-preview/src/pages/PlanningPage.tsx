@@ -42,6 +42,7 @@ import {
   DisabledReason,
   useDisabledReason,
 } from "@/components/common";
+import { SectionBoundary } from "@/components/SectionBoundary";
 import { Choice, Segments } from "@/components/experience";
 import { Tabs } from "@/components/ui/tabs";
 import {
@@ -305,16 +306,18 @@ export function PlanningPage() {
               </InlineEmpty>
             )
           ) : view === "diagram" ? (
-            <Suspense fallback={<LoadingState />}>
-              <Diagram
-                phases={phases}
-                currentId={
-                  research.currentPhaseId ??
-                  phases.find((p) => p.status === "active")?.id
-                }
-                onEdit={setPhase}
-              />
-            </Suspense>
+            <SectionBoundary>
+              <Suspense fallback={<LoadingState />}>
+                <Diagram
+                  phases={phases}
+                  currentId={
+                    research.currentPhaseId ??
+                    phases.find((p) => p.status === "active")?.id
+                  }
+                  onEdit={setPhase}
+                />
+              </Suspense>
+            </SectionBoundary>
           ) : (
             <div className="roadmap-timeline">
               {phases.map((p, i) => (

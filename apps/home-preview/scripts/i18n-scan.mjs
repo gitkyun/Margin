@@ -17,7 +17,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const HANGUL = /[가-힣]/;
 /** 화면 문구가 아닌 파일: 가상 데이터, 한글 검색 규칙, 사전, 테스트 */
 const SKIP = [
-  /^src\/lab\//, // 시안 화면(제품 문구가 아님)
   /\.test\.tsx?$/,
   /^src\/i18n\//,
   /^src\/lib\/demo\.ts$/,

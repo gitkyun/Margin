@@ -2,10 +2,12 @@
 @layer margin {
   /* Small text buttons: at least a 24px target (WCAG 2.5.8). */
   .review-history-button,
-  .pdf-text > summary {
+  .pdf-text > summary,
+  .pdf-text > .disclosure-trigger {
     min-height: 24px;
   }
-  .pdf-text > summary {
+  .pdf-text > summary,
+  .pdf-text > .disclosure-trigger {
     display: flex;
     align-items: center;
   }
@@ -1429,6 +1431,48 @@
     .review-notify-bar > button {
       width: 100%;
     }
+  }
+  .review-email-draft {
+    display: grid;
+    gap: var(--spacing-10);
+    padding: var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+  }
+  .review-email-draft-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-12);
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .review-email-draft-row > span {
+    flex: none;
+    width: 72px;
+    color: var(--text-secondary);
+  }
+  .review-email-draft-row > strong {
+    min-width: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .review-email-draft-body {
+    display: grid;
+    gap: var(--spacing-6);
+    padding-top: var(--spacing-10);
+    border-top: 1px solid var(--line);
+  }
+  .review-email-draft-body p {
+    margin: 0;
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .review-email-draft-body small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    overflow-wrap: anywhere;
   }
 
   /* 댓글·볼 위치 속 페이지 표기(p.4 · 4쪽): 누르면 가운데 PDF가 그 페이지로 가요. */

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Checkbox } from "@montage-ui/core";
 import { useExperience } from "@/lib/experience";
+import { useAIRequestOptions } from "@/lib/ai-request-options";
 import { AINotConfiguredError } from "@/lib/ai-availability";
 import {
   formatDate,
@@ -92,6 +93,7 @@ export function RoadmapProposalDialog({
 }: RoadmapProposalDialogProps) {
   const even = kind === "even";
   const { save, refresh, cancelRun, saveResearch, data } = useExperience();
+  const aiOptions = useAIRequestOptions();
   const [submissionDate, setSubmissionDate] = useState(""),
     [proposal, setProposal] = useState<Proposal | null>(null),
     [addGoal, setAddGoal] = useState(true),
@@ -194,7 +196,8 @@ export function RoadmapProposalDialog({
     const { plan, sent } = buildRoadmapPlan(phases, submissionDate, today);
     try {
       const result: RoadmapProposalResult = await requestRoadmapProposal(
-        { researchId: research.id, clientRunId: id, plan },
+        // 사용자가 정한 모델·생각 깊이를 함께 보내요(서버가 허용하지 않으면 거절해요).
+        { researchId: research.id, clientRunId: id, plan, ...aiOptions() },
         controller.signal,
       );
       if (controller.signal.aborted) return;
