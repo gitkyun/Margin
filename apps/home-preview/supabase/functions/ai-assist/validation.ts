@@ -6,7 +6,8 @@ export type Mode =
   | "plan_research"
   | "read_material"
   | "propose_roadmap"
-  | "continue_writing";
+  | "continue_writing"
+  | "inline_edit";
 export interface AIInput {
   mode: Mode;
   model?: string;
@@ -86,6 +87,7 @@ export function validateInput(value: unknown): AIInput {
         "plan_research",
         "read_material",
         "continue_writing",
+        "inline_edit",
       ].includes(String(input.mode))
     )
       throw new AIError("INVALID_INPUT", "실행 범위를 확인해 주세요.");

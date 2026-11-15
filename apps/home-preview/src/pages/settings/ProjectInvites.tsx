@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -96,6 +96,11 @@ export function ProjectInvites({
   const [busy, setBusy] = useState("");
   const [problem, setProblem] = useState("");
   const [latest, setLatest] = useState<InviteSendOutcome | null>(null);
+  const [pendingSend, setPendingSend] = useState<{
+    email: string;
+    role: ProjectInviteRole;
+    seconds: number;
+  } | null>(null);
   const emailReason = useDisabledReason(
     !busy &&
       !email.trim() &&
@@ -127,14 +132,42 @@ export function ProjectInvites({
     else toast.error(emailFailureMessage(outcome.emailFailure));
   }
 
-  function submit(event: FormEvent) {
-    event.preventDefault();
+  function executeInviteSend(
+    targetEmail: string,
+    targetRole: ProjectInviteRole,
+  ) {
+    setPendingSend(null);
     void run("send", async () => {
       report(
-        await sendProjectInvite({ researchId, email: email.trim(), role }),
+        await sendProjectInvite({
+          researchId,
+          email: targetEmail,
+          role: targetRole,
+        }),
       );
       setEmail("");
     });
+  }
+
+  useEffect(() => {
+    if (!pendingSend) return;
+    if (pendingSend.seconds <= 0) {
+      executeInviteSend(pendingSend.email, pendingSend.role);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setPendingSend((cur) =>
+        cur ? { ...cur, seconds: cur.seconds - 1 } : null,
+      );
+    }, 1000);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSend]);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!email.trim() || busy) return;
+    setPendingSend({ email: email.trim(), role, seconds: 5 });
   }
 
   const list = invites.data ?? [];
@@ -190,13 +223,44 @@ export function ProjectInvites({
           <div className="bottom-actions">
             <Button
               type="submit"
-              disabled={!!busy || !email.trim()}
+              disabled={!!busy || !email.trim() || !!pendingSend}
               aria-describedby={emailReason.describedBy}
             >
               <Icon name="send" size={16} />
               {busy === "send" ? t("보내는 중") : t("초대 메일 보내기")}
             </Button>
           </div>
+          {pendingSend && (
+            <div className="project-invite-result" role="status">
+              <Icon name="send" size={16} />
+              <div>
+                <strong>{t("초대 메일을 보낼 내용을 확인해 주세요")}</strong>
+                <p>
+                  {t("{seconds}초 뒤 {email}로 초대 메일을 보내요", {
+                    seconds: pendingSend.seconds,
+                    email: pendingSend.email,
+                  })}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setPendingSend(null)}
+              >
+                {t("되돌리기")}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() =>
+                  executeInviteSend(pendingSend.email, pendingSend.role)
+                }
+              >
+                {t("지금 보내기")}
+              </Button>
+            </div>
+          )}
           {emailReason.node}
         </form>
       )}

@@ -2,46 +2,91 @@ import { Link } from "react-router-dom";
 import { Icon } from "@/components/icons";
 import { formatCredits, runCreditUsage, useAIUsage } from "@/lib/ai-usage";
 import { t } from "@/lib/i18n";
+import { ModelLogo } from "./ModelLogo";
 import "./ai-controls.css";
 
+export interface ComposerPromo {
+  /** 권하는 모델 이름 */
+  label: string;
+  /** 서버가 알려 준 그 모델의 한 줄 설명 */
+  note?: string;
+  provider?: string;
+}
+
+export interface ComposerBannerCommand {
+  label: string;
+  description: string;
+  icon: string;
+  onChangeCommand: () => void;
+}
+
 /**
- * 입력창 위 회색 띠(Kokonut AI Prompt 패턴). 내 잔액과 방금 요청의 실제 사용량을 한 줄로 보여 주고,
- * 추천 모델이 아닐 때는 바로 바꾸는 버튼을, 아니면 사용 내역 링크를 둡니다.
+ * 입력창 위 한 줄 띠(Kokonut AI Input Selector / AI Input Search의 머리 줄).
+ * 요청 종류를 골랐으면 그 설명과 '바꾸기 /'를, 고르지 않았으면 추천 모델 '써 보기'나 내 잔액을 보여 줘요.
  */
 export function AIComposerBanner({
   runId,
   usedCredits,
   usageHref,
-  recommendedLabel,
-  onPickRecommended,
+  provider,
+  promo,
+  command,
+  onTryPromo,
 }: {
   /** 방금 보낸 요청의 실행 번호 */
   runId?: string;
   /** 서버 응답이 알려 준 이번 요청 사용량(원장보다 먼저 도착해요) */
   usedCredits?: number;
   usageHref: string;
-  /** 지금 모델이 추천이 아닐 때만 추천 모델 이름 */
-  recommendedLabel?: string;
-  onPickRecommended?: () => void;
+  /** 지금 고른 모델의 제공사(로고용) */
+  provider?: string;
+  /** 지금 모델이 추천이 아닐 때만 */
+  promo?: ComposerPromo;
+  /** `/` 명령으로 고른 요청 종류 */
+  command?: ComposerBannerCommand;
+  onTryPromo?: () => void;
 }) {
   const usage = useAIUsage();
   const credits = usage.isError ? undefined : usage.data?.credits;
   const used = runId
     ? (runCreditUsage(credits, runId) ?? usedCredits)
     : undefined;
+  if (command)
+    return (
+      <div className="ai-composer-banner" role="status">
+        <Icon name={command.icon} size={14} />
+        <p>
+          <strong>{command.label}</strong>
+          <span>{command.description}</span>
+        </p>
+        <button type="button" onClick={command.onChangeCommand}>
+          {t("바꾸기 /")}
+        </button>
+      </div>
+    );
+  if (promo && onTryPromo)
+    return (
+      <div className="ai-composer-banner" role="status">
+        <ModelLogo provider={promo.provider} />
+        <p>
+          <strong>{promo.label}</strong>
+          {promo.note && <span>{promo.note}</span>}
+        </p>
+        <button type="button" onClick={onTryPromo}>
+          {t("써 보기")}
+        </button>
+      </div>
+    );
   return (
     <div className="ai-composer-banner" role="status">
-      <Icon name="sparkles" size={18} className="ai-composer-banner-icon" />
+      <ModelLogo provider={provider} />
       <p>
         {used !== undefined && (
-          <>
-            <span>
-              {t("이번 요청 실제 사용 · {credits}크레딧", {
-                credits: formatCredits(used),
-              })}
-            </span>
-            <i aria-hidden="true">·</i>
-          </>
+          <span>
+            {t("이번 요청 실제 사용 · {credits}크레딧", {
+              credits: formatCredits(used),
+            })}
+          </span>
         )}
         <span>
           {credits
@@ -58,14 +103,6 @@ export function AIComposerBanner({
       {usage.isError ? (
         <button type="button" onClick={() => void usage.refetch()}>
           {t("다시 불러오기")}
-        </button>
-      ) : recommendedLabel && onPickRecommended ? (
-        <button
-          type="button"
-          title={recommendedLabel}
-          onClick={onPickRecommended}
-        >
-          {t("추천 모델로 바꾸기")}
         </button>
       ) : (
         <Link to={usageHref}>{t("사용 내역")}</Link>

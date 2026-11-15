@@ -26,9 +26,8 @@ const clock = (date: Date) =>
   date.toLocaleTimeString(dateLocale(), timeParts());
 
 /**
- * 가능 시간 격자. 열은 날짜, 줄은 시간대이고 칸 색이 진할수록 가능한 사람이 많아요.
- * 내 칸은 눌러서 가능/불가를 바꾸고, 가장 많은 사람이 가능한 칸에는 표시가 붙어요.
- * 데이터 계약은 그대로(후보 id 목록)이고 보기만 격자로 바꿔요.
+ * 가능 시간 격자 + 투표 기반 확정 요약(Kokonut AI Schedule 패턴).
+ * 캘린더 연동 없이 참여자 투표 수를 바탕으로 가능한 후보를 한눈에 비교해요.
  */
 export function AvailabilityGrid({
   poll,
@@ -40,8 +39,51 @@ export function AvailabilityGrid({
   const grid = pollGrid(poll.options, poll.participants);
   const total = poll.participants.length;
   if (!grid.rows.length) return null;
+
+  const ranked = [...poll.options]
+    .map((option) => {
+      const count = poll.participants.filter((p) =>
+        p.available.includes(option.id),
+      ).length;
+      return { option, count };
+    })
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
   return (
     <div className="availability-grid-wrap">
+      {ranked.length > 0 && (
+        <div
+          className="availability-vote-summary"
+          aria-label={t("투표 결과 요약")}
+        >
+          {ranked.map(({ option, count }) => {
+            const start = new Date(option.start);
+            const confirmed = poll.selectedOptionId === option.id;
+            const ratio = total > 0 ? Math.round((count / total) * 100) : 0;
+            return (
+              <div
+                key={option.id}
+                className={`availability-vote-card${confirmed ? " is-confirmed" : ""}`}
+              >
+                <div className="availability-vote-head">
+                  <strong>
+                    {day(start)} · {clock(start)}
+                  </strong>
+                  <span>
+                    {confirmed
+                      ? t("확정됨")
+                      : t("{count}/{total}명 가능", { count, total })}
+                  </span>
+                </div>
+                <div className="availability-vote-bar" aria-hidden="true">
+                  <i style={{ width: `${ratio}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <table className="availability-grid">
         <caption className="sr-only">
           {t("가능한 시간 격자. 칸을 누르면 내 가능 여부가 바뀌어요.")}

@@ -271,9 +271,18 @@ export interface AIContext {
   text?: string;
   page?: number;
 }
+export interface AIConversationMessage {
+  role: "user" | "assistant";
+  text: string;
+  createdAt: string;
+  steps?: string[];
+  elapsedMs?: number;
+  contexts?: AIContext[];
+}
+
 export interface AIConversation extends BaseRecord {
   title: string;
-  messages: { role: "user" | "assistant"; text: string; createdAt: string }[];
+  messages: AIConversationMessage[];
   contexts: AIContext[];
 }
 export interface Attachment extends BaseRecord {
@@ -437,7 +446,8 @@ export interface AIInput {
     | "review_writing"
     | "plan_research"
     | "read_material"
-    | "continue_writing";
+    | "continue_writing"
+    | "inline_edit";
   model?: string;
   thinking?: "minimal" | "low" | "medium" | "high";
   /** 화면 언어. 요청을 보낼 때 채워지고, 서버가 이 언어로 답하게 합니다. */

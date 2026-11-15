@@ -3,9 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import { toast } from "sonner";
 import { uid, type AICandidate, type AIInput } from "@/lib/domain";
+import { useWorkspace } from "@/lib/workspace";
+import { useAIRequestOptions } from "@/lib/ai-request-options";
+import { useAINotConfigured } from "@/lib/ai-availability";
 import { AIWorkbench } from "../student/AIWorkbench";
 import { Button } from "@/components/ui/button";
 import { Disclosure } from "@/components/ui/disclosure";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Icon } from "@/components/icons";
 import { InlineEmpty, useDisabledReason } from "@/components/common";
@@ -76,6 +80,17 @@ export function useWritingReview({
   const [pending, setPending] = useState<PendingApply | null>(null);
   const [applyError, setApplyError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const { runAI, mode } = useWorkspace();
+  const aiOptions = useAIRequestOptions();
+  const aiNotConfigured = useAINotConfigured();
+  const [inlineInstruction, setInlineInstruction] = useState("");
+  const [inlineEdit, setInlineEdit] = useState<{
+    range: DocRange;
+    original: string;
+    rewritten: string;
+    instruction: string;
+    busy: boolean;
+  } | null>(null);
   const settle = useRef<{
     resolve(): void;
     reject(error: Error): void;
@@ -262,8 +277,173 @@ export function useWritingReview({
         }
       : null;
 
+  async function runInlineEdit(instruction: string) {
+    if (!editor || dirty || busy || mode === "preview" || aiNotConfigured)
+      return;
+    const sel = editor.state.selection;
+    if (sel.empty) {
+      toast.info(t("고칠 문장을 먼저 선택해 주세요."));
+      return;
+    }
+    const original = editor.state.doc.textBetween(sel.from, sel.to);
+    if (!original.trim()) return;
+    const targetRange = { from: sel.from, to: sel.to };
+    setInlineEdit({
+      range: targetRange,
+      original,
+      rewritten: "",
+      instruction,
+      busy: true,
+    });
+    try {
+      const res = await runAI({
+        mode: "inline_edit",
+        ...aiOptions(),
+        researchId,
+        question: instruction,
+        sourceText: original,
+        contexts: [
+          {
+            kind: "documents",
+            id: documentId,
+            title: `${savedTitle} · ${t("선택 문단")}`,
+            revision: savedRevision,
+            text: original,
+          },
+        ],
+        clientRunId: uid(),
+      });
+      const rewritten = res.answer?.trim() ?? "";
+      if (!rewritten) {
+        toast.info(t("고쳐 쓴 문장을 찾지 못했어요."));
+        setInlineEdit(null);
+        return;
+      }
+      setInlineEdit({
+        range: targetRange,
+        original,
+        rewritten,
+        instruction,
+        busy: false,
+      });
+    } catch (error) {
+      toast.error((error as Error).message);
+      setInlineEdit(null);
+    }
+  }
+
+  function applyInlineEdit() {
+    if (!editor || !inlineEdit || !inlineEdit.rewritten.trim()) return;
+    if (inlineEdit.range.to > editor.state.doc.content.size) {
+      toast.error(
+        t(
+          "확인하는 사이 원문이 바뀌어 반영하지 않았어요. 바뀐 원문으로 다시 제안받아 주세요.",
+        ),
+      );
+      setInlineEdit(null);
+      return;
+    }
+    const current = editor.state.doc.textBetween(
+      inlineEdit.range.from,
+      inlineEdit.range.to,
+    );
+    if (current !== inlineEdit.original) {
+      toast.error(
+        t(
+          "확인하는 사이 원문이 바뀌어 반영하지 않았어요. 바뀐 원문으로 다시 제안받아 주세요.",
+        ),
+      );
+      setInlineEdit(null);
+      return;
+    }
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(inlineEdit.range, inlineEdit.rewritten.trim())
+      .run();
+    setInlineEdit(null);
+    toast.success(
+      t("제안 문장을 반영했어요. 되돌리려면 ⌘Z(Ctrl+Z)를 눌러 주세요."),
+    );
+  }
+
+  const inlinePresets = [
+    t("더 간결하게"),
+    t("더 명확하게"),
+    t("더 자연스럽게"),
+    t("문장 다듬기"),
+  ];
+
   const panel = (
     <div className="panel-frame-body writing-review">
+      <div className="writing-inline-edit">
+        <div className="writing-inline-edit-head">
+          <strong>{t("인라인 고쳐 쓰기")}</strong>
+          <small>
+            {t("선택한 문장을 바로 고쳐 쓰고 단어 차이를 확인해요.")}
+          </small>
+        </div>
+        <div className="writing-inline-presets">
+          {inlinePresets.map((preset) => (
+            <Button
+              key={preset}
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={
+                dirty ||
+                busy ||
+                mode === "preview" ||
+                aiNotConfigured ||
+                !!inlineEdit?.busy
+              }
+              title={
+                mode === "preview"
+                  ? t("미리보기에서는 인라인 고쳐 쓰기를 쓸 수 없어요.")
+                  : undefined
+              }
+              onClick={() => void runInlineEdit(preset)}
+            >
+              {preset}
+            </Button>
+          ))}
+        </div>
+        {inlineEdit && (
+          <div className="writing-inline-edit-result" role="status">
+            {inlineEdit.busy ? (
+              <p>{t("문장을 고쳐 쓰는 중")}</p>
+            ) : (
+              <>
+                <WordDiff
+                  before={inlineEdit.original}
+                  after={inlineEdit.rewritten}
+                />
+                <div className="writing-inline-edit-actions">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setInlineEdit(null)}
+                  >
+                    {t("닫기")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void runInlineEdit(inlineEdit.instruction)}
+                  >
+                    {t("다시 쓰기")}
+                  </Button>
+                  <Button type="button" size="sm" onClick={applyInlineEdit}>
+                    {t("반영")}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
       {input ? (
         <>
           <div className="writing-review-scope">
@@ -399,5 +579,86 @@ export function useWritingReview({
     </Dialog>
   );
 
-  return { start, active: !!input, panel, dialog };
+  const selectedText =
+    editor && !editor.state.selection.empty
+      ? editor.state.doc
+          .textBetween(editor.state.selection.from, editor.state.selection.to)
+          .trim()
+      : "";
+  const inlineDisabled =
+    dirty ||
+    busy ||
+    mode === "preview" ||
+    aiNotConfigured ||
+    !!inlineEdit?.busy;
+  const selectionBar =
+    selectedText || inlineEdit ? (
+      <div
+        className="writing-selection-bar"
+        role="region"
+        aria-label={t("선택 문장 고쳐 쓰기")}
+      >
+        <form
+          className="writing-selection-bar-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const q = inlineInstruction.trim();
+            if (!q) return;
+            void runInlineEdit(q);
+          }}
+        >
+          <Input
+            value={inlineInstruction}
+            onChange={(e) => setInlineInstruction(e.target.value)}
+            placeholder={t("어떻게 고칠까요? 예: 더 간결하게")}
+            maxLength={500}
+            disabled={inlineDisabled}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            disabled={inlineDisabled || !inlineInstruction.trim()}
+          >
+            {t("고쳐 쓰기")}
+          </Button>
+        </form>
+        {inlineEdit && (
+          <div className="writing-inline-edit-result" role="status">
+            {inlineEdit.busy ? (
+              <p>{t("문장을 고쳐 쓰는 중")}</p>
+            ) : (
+              <>
+                <WordDiff
+                  before={inlineEdit.original}
+                  after={inlineEdit.rewritten}
+                />
+                <div className="writing-inline-edit-actions">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setInlineEdit(null)}
+                  >
+                    {t("닫기")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void runInlineEdit(inlineEdit.instruction)}
+                  >
+                    {t("다시 쓰기")}
+                  </Button>
+                  <Button type="button" size="sm" onClick={applyInlineEdit}>
+                    {t("반영")}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    ) : null;
+
+  return { start, active: !!input, panel, dialog, selectionBar };
 }

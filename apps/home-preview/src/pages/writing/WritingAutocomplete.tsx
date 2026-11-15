@@ -1,11 +1,75 @@
 import { useEffect, useRef, useState } from "react";
-import type { Editor } from "@tiptap/react";
+import { Extension, type Editor } from "@tiptap/react";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n";
 import { uid, type AIInput } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { useAIRequestOptions } from "@/lib/ai-request-options";
+
+interface GhostState {
+  text: string;
+  pos: number;
+}
+
+type GhostMeta = { type: "set"; text: string; pos: number } | { type: "clear" };
+
+export const aiAutocompleteKey = new PluginKey<GhostState>(
+  "margin-ai-autocomplete",
+);
+
+const EMPTY_GHOST: GhostState = { text: "", pos: 0 };
+
+/** 커서 뒤에 회색 이어쓰기 제안을 띄우는 TipTap 장식 확장. 문서 내용에는 남지 않아요. */
+export const AIAutocompleteGhost = Extension.create({
+  name: "marginAIAutocomplete",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin<GhostState>({
+        key: aiAutocompleteKey,
+        state: {
+          init: () => EMPTY_GHOST,
+          apply(tr, value) {
+            const meta = tr.getMeta(aiAutocompleteKey) as GhostMeta | undefined;
+            if (meta?.type === "clear") return EMPTY_GHOST;
+            if (meta?.type === "set") return { text: meta.text, pos: meta.pos };
+            if (tr.docChanged) return EMPTY_GHOST;
+            if (
+              tr.selectionSet &&
+              (!tr.selection.empty || tr.selection.to !== value.pos)
+            )
+              return EMPTY_GHOST;
+            return value;
+          },
+        },
+        props: {
+          decorations(state) {
+            const value = aiAutocompleteKey.getState(state);
+            if (!value?.text) return null;
+            const pos = Math.min(
+              Math.max(0, value.pos),
+              state.doc.content.size,
+            );
+            const widget = Decoration.widget(
+              pos,
+              () => {
+                const span = document.createElement("span");
+                span.className = "writing-autocomplete-ghost-inline";
+                span.setAttribute("aria-hidden", "true");
+                span.textContent = ` ${value.text}`;
+                return span;
+              },
+              { side: 1 },
+            );
+            return DecorationSet.create(state.doc, [widget]);
+          },
+        },
+      }),
+    ];
+  },
+});
 
 interface WritingAutocompleteProps {
   editor: Editor | null;
@@ -27,7 +91,7 @@ interface WritingAutocompleteProps {
 
 /**
  * 집필실 AI 자동완성(Kokonut UI AI Autocomplete 패턴).
- * 사용자가 ‘문장 이어쓰기’를 누르면 현재 문단 뒤를 제안하고, Tab으로 본문에 넣거나 Esc로 닫아요.
+ * 커서 뒤에 회색 글로 제안을 띄우고, Tab으로 전체를 넣고, →(ArrowRight)로 한 단어씩 넣으며, Esc로 닫아요.
  */
 export function WritingAutocomplete({
   editor,
@@ -44,17 +108,56 @@ export function WritingAutocomplete({
   const [suggestion, setSuggestion] = useState("");
   const [busy, setBusy] = useState(false);
   const aiOptions = useAIRequestOptions();
-  // 키 처리기가 항상 최신 제안·편집기를 보도록 ref로 들고 있어요.
   const latest = useRef({ suggestion, editor });
   latest.current = { suggestion, editor };
+
+  useEffect(() => {
+    if (!editor) return;
+    const clearInvalidSuggestion = () => {
+      if (!aiAutocompleteKey.getState(editor.state)?.text) setSuggestion("");
+    };
+    editor.on("transaction", clearInvalidSuggestion);
+    return () => {
+      editor.off("transaction", clearInvalidSuggestion);
+    };
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    if (suggestion) {
+      const pos = editor.state.selection.to;
+      editor.view.dispatch(
+        editor.state.tr.setMeta(aiAutocompleteKey, {
+          type: "set",
+          text: suggestion,
+          pos,
+        }),
+      );
+    } else {
+      editor.view.dispatch(
+        editor.state.tr.setMeta(aiAutocompleteKey, { type: "clear" }),
+      );
+    }
+  }, [editor, suggestion]);
+
+  useEffect(
+    () => () => {
+      if (editor && !editor.isDestroyed) {
+        editor.view.dispatch(
+          editor.state.tr.setMeta(aiAutocompleteKey, { type: "clear" }),
+        );
+      }
+    },
+    [editor],
+  );
 
   useEffect(() => {
     if (!suggestion) return;
     const onKey = (e: KeyboardEvent) => {
       const { editor: current, suggestion: text } = latest.current;
       if (!current || !text || e.isComposing) return;
-      if (e.key !== "Tab" && e.key !== "Escape") return;
-      // 본문에 커서가 있고 열린 창이 없을 때만 가로채요(다른 입력·창의 Tab/Esc는 그대로 둬요).
+      if (e.key !== "Tab" && e.key !== "Escape" && e.key !== "ArrowRight")
+        return;
       const inEditor =
         e.target instanceof Node && current.view.dom.contains(e.target);
       if (
@@ -63,29 +166,44 @@ export function WritingAutocomplete({
       )
         return;
       e.preventDefault();
+      e.stopPropagation();
       if (e.key === "Tab") accept();
+      else if (e.key === "ArrowRight") acceptOneWord();
       else setSuggestion("");
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // accept는 latest ref만 읽어서 다시 만들 필요가 없어요.
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!!suggestion]);
 
   function accept() {
     const { editor: current, suggestion: text } = latest.current;
     if (!current || !text) return;
-    current.chain().focus().insertContent(` ${text}`).run();
     setSuggestion("");
+    current.chain().focus().insertContent(` ${text}`).run();
+  }
+
+  function acceptOneWord() {
+    const { editor: current, suggestion: text } = latest.current;
+    if (!current || !text) return;
+    const match = /^\s*\S+/.exec(text);
+    if (!match) {
+      accept();
+      return;
+    }
+    const word = match[0].trimStart();
+    const rest = text.slice(match[0].length).trimStart();
+    current.chain().focus().insertContent(` ${word}`).run();
+    setSuggestion(rest);
   }
 
   async function requestSuggestion() {
     if (!editor || busy || disabled) return;
     const typed = editor.getText();
+    const requestedAt = editor.state.selection.to;
     if (!typed.trim()) return;
     setBusy(true);
     try {
-      // 저장한 원고와 같은 저장 횟수로만 실행해요. 저장하지 않은 내용은 먼저 저장해요.
       const savedRevision = dirty ? (await saveFirst()).revision : revision;
       if (editor.getText() !== typed) {
         toast.info(t("저장하는 사이 본문이 바뀌었어요. 다시 눌러 주세요."));
@@ -93,7 +211,6 @@ export function WritingAutocomplete({
       }
       const excerpt = typed.trim().slice(-600);
       const res = await runAI({
-        // 서버의 이어쓰기 전용 방식이에요. 답 문장만 받고 후보는 쌓지 않아요.
         mode: "continue_writing",
         ...aiOptions(),
         researchId,
@@ -113,11 +230,19 @@ export function WritingAutocomplete({
         clientRunId: uid(),
       });
       const text = res.answer?.trim() ?? "";
+      if (
+        editor.isDestroyed ||
+        editor.getText() !== typed ||
+        !editor.state.selection.empty ||
+        editor.state.selection.to !== requestedAt
+      )
+        return;
       if (!text) {
         toast.info(t("이어 쓸 문장을 찾지 못했어요."));
         return;
       }
       setSuggestion(text);
+      editor.commands.focus();
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -129,25 +254,30 @@ export function WritingAutocomplete({
     <div className="writing-autocomplete">
       {suggestion ? (
         <div
-          className="writing-autocomplete-card"
+          className="writing-autocomplete-bar"
           role="status"
           aria-live="polite"
         >
-          <p className="writing-autocomplete-ghost">{suggestion}</p>
-          <div className="writing-autocomplete-actions">
-            <small>{t("Tab으로 반영 · Esc로 닫기")}</small>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setSuggestion("")}
-            >
-              {t("닫기")}
-            </Button>
-            <Button type="button" size="sm" onClick={accept}>
-              {t("문장 넣기")}
-            </Button>
-          </div>
+          <small>{t("Tab 전체 넣기 · → 한 단어 · Esc 닫기")}</small>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setSuggestion("")}
+          >
+            {t("닫기")}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={acceptOneWord}
+          >
+            {t("한 단어")}
+          </Button>
+          <Button type="button" size="sm" onClick={accept}>
+            {t("문장 넣기")}
+          </Button>
         </div>
       ) : (
         <div className="writing-autocomplete-trigger">

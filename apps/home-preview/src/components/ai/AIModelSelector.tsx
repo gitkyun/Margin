@@ -1,4 +1,3 @@
-import { Icon } from "@/components/icons";
 import {
   isAIModelAvailable,
   resolveAISelection,
@@ -12,6 +11,7 @@ import {
 import { t } from "@/lib/i18n";
 import { ChipSelect, type ChipOption } from "./ChipSelect";
 import { DepthBars } from "./DepthBars";
+import { ModelLogo } from "./ModelLogo";
 import "./ai-controls.css";
 
 /** 제공사 이름을 화면용으로 다듬어요(서버는 소문자 식별자를 보내요). */
@@ -20,7 +20,7 @@ function providerLabel(provider?: string) {
 }
 
 /**
- * AI 모델·답변 깊이 선택(Kokonut AI Model Selector 패턴). 두 칩으로 나뉘고,
+ * AI 모델·답변 깊이 선택(Kokonut AI Input Selector의 모델·Effort 칩). 두 칩으로 나뉘고,
  * 목록 접근성은 Base UI Select가 맡아요. 서버가 허용한 모델만 고를 수 있어요.
  */
 export function AIModelSelector({
@@ -61,6 +61,7 @@ export function AIModelSelector({
       .filter(Boolean)
       .join(" · "),
     badge: item.recommended ? t("추천") : undefined,
+    leading: <ModelLogo provider={item.provider} />,
     disabled: !isAIModelAvailable(item),
     note: isAIModelAvailable(item)
       ? undefined
@@ -92,13 +93,11 @@ export function AIModelSelector({
         value={model}
         options={modelOptions}
         placeholder={status}
-        leading={
-          <Icon name="sparkles" size={18} className="composer-chip-icon" />
-        }
+        leading={<ModelLogo provider={selected?.provider} />}
         disabled={disabled || loading || failed || !models.length}
         onChange={choose}
       />
-      {!!selected?.thinking.length && (
+      {compact && !!selected?.thinking.length && (
         <ChipSelect
           className="ai-depth-trigger"
           label={t("답변 깊이")}
@@ -111,10 +110,55 @@ export function AIModelSelector({
           }
         />
       )}
-      {!compact && thinking && reviewDepthHints[thinking] && (
-        <small className="ai-model-depth-hint">
-          {reviewDepthHints[thinking]}
-        </small>
+      {!compact && !!selected?.thinking.length && (
+        <div
+          className="ai-model-detent-panel"
+          role="radiogroup"
+          aria-label={t("답변 깊이 선택")}
+          onKeyDown={(e) => {
+            if (disabled || failed || !isAIModelAvailable(selected)) return;
+            const idx = depthOptions.findIndex((o) => o.value === thinking);
+            if (idx < 0) return;
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+              e.preventDefault();
+              const next = depthOptions[(idx + 1) % depthOptions.length];
+              if (next) onChange({ model: selected.id, thinking: next.value });
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+              e.preventDefault();
+              const prev =
+                depthOptions[
+                  (idx - 1 + depthOptions.length) % depthOptions.length
+                ];
+              if (prev) onChange({ model: selected.id, thinking: prev.value });
+            }
+          }}
+        >
+          <div className="ai-model-detent-track">
+            {depthOptions.map((option) => {
+              const active = option.value === thinking;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  disabled={disabled || failed || !isAIModelAvailable(selected)}
+                  className={`ai-model-detent-stop${active ? " is-active" : ""}`}
+                  onClick={() =>
+                    onChange({ model: selected.id, thinking: option.value })
+                  }
+                >
+                  <DepthBars level={option.value} />
+                  <span>{option.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <small className="ai-model-depth-hint">
+            {(thinking && reviewDepthHints[thinking]) ||
+              t("생각하는 길이에 따라 응답 속도와 크레딧 사용량이 달라져요.")}
+          </small>
+        </div>
       )}
       {!compact &&
         recommended &&

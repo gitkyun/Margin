@@ -29,11 +29,11 @@ interface ReviewNotifyBarProps {
   preview: boolean;
 }
 
+const UNDO_SECONDS = 5;
+
 /**
- * 학생이 원할 때만 누르는 ‘교수님께 메일로도 알리기’.
- * 검토 링크를 만든 것만으로는 아무것도 보내지 않아요(링크 생성 ≠ 전송).
- * 보내기 전에 수신자·제목·내용을 확인하는 이메일 초안 미리보기를 거쳐요.
- * 보낸 뒤에도 ‘메일 발송 요청함’까지만 말하고 도착했다고 하지 않아요.
+ * 학생이 원할 때만 누르는 ‘교수님께 메일로도 알리기’(Kokonut AI Send 기준 5초 되돌리기).
+ * 보내기 전에 수신자·제목·내용을 확인하고, 전송을 누르면 5초 카운트다운 후 발송돼요.
  */
 export function ReviewNotifyBar({
   requestId,
@@ -50,9 +50,12 @@ export function ReviewNotifyBar({
   );
   const [busy, setBusy] = useState(false);
   const [draftOpen, setDraftOpen] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
   useEffect(() => {
     setRecord(readNotifyRecord(requestId));
   }, [requestId]);
+
   useEffect(() => {
     if (preview) return;
     let active = true;
@@ -63,6 +66,22 @@ export function ReviewNotifyBar({
       active = false;
     };
   }, [preview]);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown <= 0) {
+      setCountdown(null);
+      void sendNow();
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setCountdown((c) => (c === null ? null : c - 1)),
+      1000,
+    );
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countdown]);
+
   const waiting = !canNotifyAgain(record);
   const reason = preview
     ? t("미리보기에서는 메일을 보낼 수 없어요.")
@@ -83,8 +102,10 @@ export function ReviewNotifyBar({
     typeof window !== "undefined"
       ? `${window.location.origin}/reviews/${requestId}`
       : `/reviews/${requestId}`;
-  async function send() {
+
+  async function sendNow() {
     if (busy || reason) return;
+    setCountdown(null);
     setBusy(true);
     try {
       const next = await requestReviewNotify(requestId);
@@ -103,6 +124,7 @@ export function ReviewNotifyBar({
       setBusy(false);
     }
   }
+
   return (
     <>
       <div className="review-notify-bar">
@@ -144,7 +166,10 @@ export function ReviewNotifyBar({
       <Dialog
         open={draftOpen}
         onOpenChange={(open) => {
-          if (!busy) setDraftOpen(open);
+          if (!busy) {
+            setCountdown(null);
+            setDraftOpen(open);
+          }
         }}
       >
         <DialogContent className="rms-dialog">
@@ -175,23 +200,43 @@ export function ReviewNotifyBar({
               <small>{reviewUrl}</small>
             </div>
           </div>
-          <div className="form-actions">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={() => setDraftOpen(false)}
-            >
-              {t("취소")}
-            </Button>
-            <Button
-              type="button"
-              disabled={busy || !!reason}
-              onClick={() => void send()}
-            >
-              {busy ? t("요청하는 중") : t("메일 발송 요청하기")}
-            </Button>
-          </div>
+          {countdown !== null ? (
+            <div className="form-actions" role="status">
+              <span>
+                {t("{seconds}초 뒤 메일 발송을 요청해요", {
+                  seconds: countdown,
+                })}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCountdown(null)}
+              >
+                {t("되돌리기")}
+              </Button>
+              <Button type="button" onClick={() => void sendNow()}>
+                {t("지금 보내기")}
+              </Button>
+            </div>
+          ) : (
+            <div className="form-actions">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                onClick={() => setDraftOpen(false)}
+              >
+                {t("취소")}
+              </Button>
+              <Button
+                type="button"
+                disabled={busy || !!reason}
+                onClick={() => setCountdown(UNDO_SECONDS)}
+              >
+                {busy ? t("요청하는 중") : t("메일 발송 요청하기")}
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

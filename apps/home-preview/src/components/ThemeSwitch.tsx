@@ -1,90 +1,141 @@
 import { flushSync } from "react-dom";
-import { t } from "@/lib/i18n";
 import { Icon } from "@/components/icons";
+import { t } from "@/lib/i18n";
 import { useTheme, type ThemePreference } from "@/lib/theme";
 
-const THEMES = [
-  { value: "light", label: t("라이트"), icon: "sun" },
-  { value: "dark", label: t("다크"), icon: "moon" },
-  { value: "system", label: t("시스템"), icon: "monitor" },
-] as const;
+function resolveTheme(pref: ThemePreference): "light" | "dark" {
+  if (pref === "light" || pref === "dark") return pref;
+  if (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
+    return "dark";
+  }
+  return "light";
+}
 
-type ViewTransitionDocument = Document & {
-  startViewTransition?: (callback: () => void) => {
-    ready: Promise<void>;
-  };
-};
-
-/**
- * 화면 테마 고르기(Kokonut UI Switch Button 원형 확산 전환 + Montage 토큰).
- * 지원하는 브라우저에서 동작 줄이기 설정이 꺼져 있으면 누른 버튼 자리에서 새 테마가 원형으로 퍼져요.
- */
-export function ThemeSwitch() {
-  const { theme, setTheme } = useTheme();
-
-  function selectTheme(next: ThemePreference, button: HTMLButtonElement) {
-    if (next === theme) return;
-    const doc = document as ViewTransitionDocument;
-    const reduce =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (typeof doc.startViewTransition !== "function" || reduce) {
-      setTheme(next);
-      return;
+function switchWithCircle(
+  el: HTMLElement | null,
+  apply: () => void,
+  willChangeVisualTheme: boolean,
+) {
+  const reduced =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const startVT = (
+    document as Document & {
+      startViewTransition?: (cb: () => void) => { ready: Promise<void> };
     }
-    const rect = button.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    const endRadius = Math.hypot(
-      Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y),
-    );
-    const transition = doc.startViewTransition(() => {
-      flushSync(() => setTheme(next));
-    });
-    void transition.ready
-      .then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${endRadius}px at ${x}px ${y}px)`,
-            ],
-          },
-          {
-            duration: 420,
-            easing: "cubic-bezier(0.2, 0, 0, 1)",
-            pseudoElement: "::view-transition-new(root)",
-          },
-        );
-      })
-      .catch(() => {});
+  ).startViewTransition;
+
+  if (
+    !willChangeVisualTheme ||
+    reduced ||
+    typeof startVT !== "function" ||
+    !el
+  ) {
+    apply();
+    return;
   }
 
+  const rect = el.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const endRadius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y),
+  );
+
+  const transition = startVT.call(document, () => {
+    flushSync(apply);
+  });
+
+  void transition.ready
+    .then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 450,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          pseudoElement: "::view-transition-new(root)",
+        },
+      );
+    })
+    .catch(() => {});
+}
+
+const THEME_OPTIONS: ReadonlyArray<{
+  value: ThemePreference;
+  label: () => string;
+  icon: string;
+}> = [
+  { value: "light", label: () => t("라이트"), icon: "sun" },
+  { value: "dark", label: () => t("다크"), icon: "moon" },
+  { value: "system", label: () => t("시스템"), icon: "monitor" },
+];
+
+export function ThemeSwitch({ compact = false }: { compact?: boolean }) {
+  const { theme, resolvedTheme, setTheme } = useTheme();
+
+  function choose(next: ThemePreference, target: HTMLElement | null) {
+    if (next === theme) return;
+    const nextResolved = resolveTheme(next);
+    switchWithCircle(
+      target,
+      () => setTheme(next),
+      nextResolved !== resolvedTheme,
+    );
+  }
+
+  if (compact) {
+    return (
+      <div
+        className="theme-switch-row"
+        role="group"
+        aria-label={t("화면 테마")}
+      >
+        <span className="theme-switch-label">
+          <Icon name={resolvedTheme === "dark" ? "moon" : "sun"} size={15} />
+          <span>{t("화면 테마")}</span>
+        </span>
+        <div className="theme-switch-pills">
+          {THEME_OPTIONS.map((opt) => {
+            const active = theme === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                className={`theme-switch-pill${active ? " is-active" : ""}`}
+                aria-pressed={active}
+                onClick={(e) => choose(opt.value, e.currentTarget)}
+              >
+                {opt.label()}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  const nextTheme: ThemePreference =
+    resolvedTheme === "dark" ? "light" : "dark";
   return (
-    <div
-      className="theme-switch-group"
-      role="radiogroup"
-      aria-label={t("화면 테마")}
+    <button
+      type="button"
+      className="theme-switch-button"
+      aria-label={t("테마 전환")}
+      onClick={(e) => choose(nextTheme, e.currentTarget)}
     >
-      {THEMES.map((option) => {
-        const selected = theme === option.value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            className={`theme-switch-btn${selected ? " is-selected" : ""}`}
-            onClick={(e) => selectTheme(option.value, e.currentTarget)}
-          >
-            <span className="theme-switch-icon" aria-hidden="true">
-              <Icon name={option.icon} size={16} />
-            </span>
-            <span>{option.label}</span>
-          </button>
-        );
-      })}
-    </div>
+      <Icon name={resolvedTheme === "dark" ? "moon" : "sun"} size={15} />
+      <span>{resolvedTheme === "dark" ? t("다크") : t("라이트")}</span>
+    </button>
   );
 }

@@ -107,13 +107,6 @@
       transform: scale(1.045);
     }
   }
-  /* 로그인 후 연구 도우미 봇(bot-avatars 캔버스). 소개 화면은 위 이미지 마스코트를 그대로 써요. */
-  .margin-bot {
-    display: inline-grid;
-    place-items: center;
-    flex: none;
-    vertical-align: middle;
-  }
   .lp-cute-chat > .margin-mascot {
     position: absolute;
     top: -20px;

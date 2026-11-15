@@ -465,12 +465,15 @@ Deno.serve(async (request) => {
     });
     const schema = plan
       ? roadmapSchema
-      : ["ask_research", "continue_writing"].includes(input.mode)
+      : ["ask_research", "continue_writing", "inline_edit"].includes(input.mode)
         ? chatSchema
         : input.mode === "organize_meeting"
           ? organizeSchema
           : revisionSchema;
-    const maxOutput = input.mode === "continue_writing" ? 2048 : 8192;
+    const maxOutput =
+      input.mode === "continue_writing" || input.mode === "inline_edit"
+        ? 2048
+        : 8192;
     const prompt = buildUserPayload({
       mode: input.mode,
       sourceText: input.sourceText,
@@ -591,7 +594,9 @@ Deno.serve(async (request) => {
     }
     const roadmap = plan ? normalizeRoadmap(candidateData, plan) : undefined;
     const candidates =
-      ["ask_research", "continue_writing"].includes(input.mode) || plan
+      ["ask_research", "continue_writing", "inline_edit"].includes(
+        input.mode,
+      ) || plan
         ? []
         : normalizeCandidates(
             candidateData,
@@ -601,7 +606,9 @@ Deno.serve(async (request) => {
           );
     const output = {
       candidates,
-      ...(["ask_research", "continue_writing"].includes(input.mode)
+      ...(["ask_research", "continue_writing", "inline_edit"].includes(
+        input.mode,
+      )
         ? { answer: normalizeAnswer(candidateData) }
         : {}),
       ...(roadmap ? { roadmap } : {}),
@@ -619,7 +626,9 @@ Deno.serve(async (request) => {
       candidates,
       creditsUsed: chargedCredits > 0 ? chargedCredits : undefined,
       creditStatus: settled ? "settled" : "pending",
-      ...(["ask_research", "continue_writing"].includes(input.mode)
+      ...(["ask_research", "continue_writing", "inline_edit"].includes(
+        input.mode,
+      )
         ? { answer: normalizeAnswer(candidateData) }
         : {}),
       ...(roadmap ? { roadmap } : {}),

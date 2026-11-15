@@ -196,7 +196,7 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
-  /* 첫 질문을 읽는 동안 가운데에 고른 도우미 봇이 깡충거려요(뒤 배경 없이). */
+  /* 첫 질문을 읽는 동안 가운데에 도우미 이미지가 보여요. */
   .ai-reading-logo {
     display: grid;
     place-items: center;
@@ -320,65 +320,67 @@
     }
   }
 
-  /* 입력창: 대화 면 안에서 가장 높은 면. 초점이 오면 브랜드 테두리와 고리. */
-  /* 입력창 바깥 회색 면: 위 띠(잔액·추천)와 흰 카드를 한 덩어리로 묶어요(Kokonut AI Prompt 패턴). */
+  /* 입력창(Kokonut AI Input Selector 치수 그대로): 회색 바깥 면 4px 안에 머리 띠와 흰 카드가 들어가요. */
   .ai-composer-shell {
     width: 100%;
-    padding: 0 var(--spacing-8) var(--spacing-8);
-    border-radius: calc(var(--radius-24) + var(--spacing-4));
+    padding: var(--spacing-4);
+    border-radius: 22px;
     background: var(--semantic-surface-neutral-secondary);
   }
-  .ai-composer-shell:not(:has(.ai-composer-banner)) {
-    padding-top: var(--spacing-8);
-  }
   .ai-composer {
-    display: grid;
-    gap: var(--spacing-8);
+    position: relative;
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    padding: var(--spacing-16) var(--spacing-12) var(--spacing-12);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-24);
+    border-radius: 18px;
     background: var(--surface-raised);
-    box-shadow: 0 1px 3px color-mix(in srgb, var(--text) 10%, transparent);
-    transition:
-      border-color var(--motion-duration-micro) ease-out,
-      box-shadow var(--motion-duration-micro) ease-out;
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 1px 2px color-mix(in srgb, var(--text) 4%, transparent),
+      0 6px 20px -10px color-mix(in srgb, var(--text) 12%, transparent);
+    transition: box-shadow var(--motion-duration-micro) ease-out;
   }
-  .ai-composer:focus-within,
-  .ai-composer.is-dragging {
-    border-color: var(--semantic-line-brand-strong);
-    box-shadow: 0 0 0 3px var(--selected-fill);
+  .ai-composer:has(textarea:focus-visible) {
+    box-shadow:
+      0 0 0 1px var(--line-strong),
+      0 1px 2px color-mix(in srgb, var(--text) 4%, transparent),
+      0 6px 20px -10px color-mix(in srgb, var(--text) 12%, transparent);
   }
   .ai-composer.is-dragging {
+    box-shadow: 0 0 0 1px var(--semantic-line-brand-strong);
     background: var(--hover-fill);
   }
   .ai-composer textarea {
     width: 100%;
     min-height: 56px;
     max-height: 220px;
-    padding: var(--spacing-4) var(--spacing-8);
+    padding: 14px var(--spacing-16) var(--spacing-4);
     border: 0;
     outline: none;
     resize: none;
     background: transparent;
     color: var(--text);
     font: inherit;
-    font-size: var(--typography-body1-fontSize);
-    line-height: 1.6;
+    font-size: var(--typography-body2-fontSize);
+    line-height: 1.625;
     field-sizing: content;
   }
   .ai-composer textarea::placeholder {
     color: var(--text-tertiary);
   }
-  .ai-composer > p[role="status"] {
-    padding: 0 var(--spacing-6);
+  .ai-composer > p {
+    margin: 0;
+    padding: 0 var(--spacing-16) var(--spacing-10);
     font-size: var(--typography-caption1-fontSize);
+  }
+  .ai-composer > p[role="status"] {
     color: var(--text-secondary);
   }
   .context-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-6);
+    gap: var(--spacing-8);
+    padding: var(--spacing-12) var(--spacing-12) 0;
   }
   .context-chips:empty {
     display: none;
@@ -404,39 +406,84 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* 입력창 도구 줄. 좁은 화면에서는 모델과 깊이를 별도 줄에 둡니다. */
+  /* 입력창 도구 줄: 첨부(+) · 모델 · 답변 깊이 · 요청 종류 ─ 마이크 · 보내기. 모두 32px 높이예요. */
   .composer-actions {
     display: flex;
     align-items: center;
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
     min-width: 0;
+    padding: var(--spacing-4) var(--spacing-10) var(--spacing-10);
   }
-  .composer-attach {
+  .composer-spacer {
+    flex: 1;
+  }
+  .composer-attach,
+  .composer-mic,
+  .composer-send {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-4);
     flex: none;
-    min-width: 44px;
-    height: 44px;
-    padding: 0 var(--spacing-8);
-    border: 1px solid var(--line-strong);
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
     border-radius: var(--radius-full);
     background: transparent;
-    color: var(--text);
+    color: var(--text-secondary);
     cursor: pointer;
-    font-size: var(--typography-label2-fontSize);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
   }
-  .composer-attach:hover {
+  .composer-attach {
+    gap: var(--spacing-2);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .composer-attach:has(span) {
+    padding: 0 var(--spacing-8);
+    background: var(--selected-fill);
+    box-shadow: none;
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .composer-attach:hover,
+  .composer-mic:hover:not(:disabled) {
     background: var(--hover-fill);
     color: var(--text);
   }
-  .composer-attach:has(span) {
-    background: var(--selected-fill);
-    color: var(--semantic-foreground-brand-primary);
+  .composer-mic[aria-pressed="true"] {
+    background: var(--text);
+    color: var(--surface-raised);
   }
-  .composer-attach:focus-visible {
+  /* 보내기: 보낼 글이 생기면 검게 채워져 '보낼 수 있음'을 먼저 알려요. 중단 버튼도 같은 채움이에요. */
+  .composer-send {
+    background: var(--text);
+    color: var(--surface-raised);
+  }
+  .composer-send:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--text) 80%, transparent);
+  }
+  .composer-send:disabled {
+    background: var(--hover-fill);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+  }
+  .composer-mic:disabled {
+    opacity: var(--opacity-48);
+    cursor: not-allowed;
+  }
+  .composer-stop-mark {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: currentColor;
+  }
+  .composer-attach:focus-visible,
+  .composer-mic:focus-visible,
+  .composer-send:focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 1px;
   }
@@ -445,16 +492,20 @@
     flex: 0 1 auto;
     min-width: 0;
   }
-  /* 모델·깊이 칩 뒤의 마이크와 보내기는 오른쪽 끝으로 */
   .composer-actions > .ai-model-controls {
-    margin-right: auto;
+    flex-wrap: nowrap;
   }
-  .composer-actions > button[type="submit"],
-  .composer-actions > button[aria-label="실행 중단"] {
-    flex: none;
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-full);
+  /* 손가락으로 누르는 화면에서는 누르는 면을 44px로 키워요. */
+  @media (pointer: coarse) {
+    .composer-attach,
+    .composer-mic,
+    .composer-send {
+      min-width: 44px;
+      height: 44px;
+    }
+    .composer-actions {
+      flex-wrap: wrap;
+    }
   }
   .ai-chat-main > .rms-error {
     display: flex;
@@ -898,13 +949,590 @@
       flex: 1 1 100%;
       margin-right: 0;
     }
-    .composer-actions > .composer-chip {
-      margin-right: auto;
-    }
     .composer-actions > button[aria-pressed],
     .composer-actions > button[type="submit"],
     .composer-actions > button[aria-label="실행 중단"] {
       order: 0;
     }
+  }
+
+  /* 1단계 Kokonut 입력창 마무리: 명령 메뉴·알약·대기 줄·컨텍스트 고리·첨부 카드·음성 파형 */
+  .composer-command-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + var(--spacing-8));
+    z-index: 20;
+    display: grid;
+    gap: 2px;
+    padding: var(--spacing-6);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    background: var(--surface-raised);
+    box-shadow: var(--semantic-elevation-shadow-normal-medium);
+  }
+  .composer-command-heading {
+    margin: 0;
+    padding: var(--spacing-4) var(--spacing-8) var(--spacing-6);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .composer-command-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    width: 100%;
+    padding: var(--spacing-8) var(--spacing-10);
+    border: 0;
+    border-radius: var(--radius-10);
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+  }
+  .composer-command-item:hover,
+  .composer-command-item.is-active {
+    background: var(--hover-fill);
+  }
+  .composer-command-item > svg {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+  .composer-command-item > span {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+  }
+  .composer-command-item strong {
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+  }
+  .composer-command-item small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .composer-command-empty {
+    margin: 0;
+    padding: var(--spacing-12);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    text-align: center;
+  }
+  .composer-pill-row {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-10) var(--spacing-12) 0;
+  }
+  .composer-command-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding: 3px var(--spacing-6) 3px var(--spacing-10);
+    border-radius: var(--radius-full);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .composer-command-pill button {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .composer-command-pill button:hover {
+    background: var(--hover-fill);
+  }
+
+  /* 근거 스택 아이콘 */
+  .composer-source-stack {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  .composer-source-stack > i {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--surface-raised);
+    border-radius: var(--radius-full);
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+    font-style: normal;
+  }
+  .composer-source-stack > i + i {
+    margin-inline-start: -8px;
+  }
+
+  /* 대기 줄(ai-message-queue) */
+  .composer-queue {
+    margin-bottom: var(--spacing-8);
+    padding: var(--spacing-8) var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-14);
+    background: var(--surface);
+  }
+  .composer-queue-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .composer-queue-head button {
+    padding: 2px var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-6);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    cursor: pointer;
+  }
+  .composer-queue-head button:hover {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .composer-queue-list {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: var(--spacing-8) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .composer-queue-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    padding: var(--spacing-6) var(--spacing-8);
+    border-radius: var(--radius-10);
+    background: var(--surface-muted);
+  }
+  .composer-queue-num {
+    flex-shrink: 0;
+    width: 18px;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    text-align: center;
+  }
+  .composer-queue-text {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .composer-queue-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .composer-queue-actions button {
+    display: inline-grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 var(--spacing-4);
+    border: 0;
+    border-radius: var(--radius-6);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    cursor: pointer;
+  }
+  .composer-queue-actions .composer-queue-send-now {
+    padding: 0 var(--spacing-8);
+    color: var(--semantic-foreground-brand-primary);
+    font-weight: 600;
+  }
+  .composer-queue-actions button:hover:not(:disabled) {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .composer-queue-actions button:disabled {
+    opacity: var(--opacity-48);
+    cursor: not-allowed;
+  }
+
+  /* 컨텍스트 미터(ai-context-meter) */
+  .composer-context-wrap {
+    position: relative;
+    flex: none;
+  }
+  .composer-context-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .composer-context-trigger:hover {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .composer-context-popover {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--spacing-8));
+    z-index: 20;
+    width: min(304px, calc(100vw - 32px));
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-14);
+    background: var(--surface-raised);
+    box-shadow: var(--semantic-elevation-shadow-normal-medium);
+  }
+  .composer-context-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-8);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .composer-context-head button {
+    padding: 2px var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    cursor: pointer;
+  }
+  .composer-context-head button:hover:not(:disabled) {
+    border-color: var(--hover-line);
+    color: var(--text);
+  }
+  .composer-context-stats {
+    display: grid;
+    gap: var(--spacing-6);
+    margin: 0;
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .composer-context-stats > div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .composer-context-stats dt {
+    color: var(--text-secondary);
+  }
+  .composer-context-stats dd {
+    margin: 0;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .composer-context-sources {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: var(--spacing-10) 0 0;
+    padding: var(--spacing-8) 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .composer-context-sources li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .composer-context-sources span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .composer-context-sources small {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+  .composer-context-warn {
+    margin: var(--spacing-8) 0 0;
+    color: var(--danger);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+
+  /* 첨부 카드(ai-attachment) */
+  .composer-attachment-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12) var(--spacing-12) 0;
+  }
+  .composer-attachment-card {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    max-width: 240px;
+    padding: var(--spacing-6) var(--spacing-6) var(--spacing-6)
+      var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .composer-attachment-card > svg {
+    flex-shrink: 0;
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .composer-attachment-card > div {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+  }
+  .composer-attachment-card strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .composer-attachment-card small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--spacing-6);
+  }
+  .message-attachment-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: 2px var(--spacing-8);
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+
+  /* 음성 입력(ai-voice) */
+  .composer-voice-box,
+  .composer-voice-review {
+    display: grid;
+    gap: var(--spacing-8);
+    margin: var(--spacing-10) var(--spacing-12) var(--spacing-4);
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .composer-voice-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+  }
+  .composer-voice-stop {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: var(--text);
+    color: var(--surface-raised);
+    cursor: pointer;
+  }
+  .composer-voice-time {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    color: var(--text);
+  }
+  .composer-voice-wave {
+    flex: 1;
+    min-width: 0;
+    height: 24px;
+  }
+  .composer-voice-preview {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: 1.5;
+  }
+  .composer-voice-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--spacing-6);
+  }
+
+  /* 3단계: 도구 호출 요약, 통합 대기, 인라인 인용 미리보기 */
+  .ai-tool-elapsed {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    color: var(--text-tertiary);
+  }
+  .ai-tool-summary {
+    display: grid;
+    gap: var(--spacing-6);
+    margin-top: var(--spacing-6);
+  }
+  .ai-tool-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    width: fit-content;
+    padding: 2px var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .ai-tool-toggle:hover {
+    border-color: var(--hover-line);
+    color: var(--text);
+  }
+  .ai-workbench-loading {
+    display: grid;
+    gap: var(--spacing-4);
+  }
+  .ai-workbench-loading-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .ai-workbench-loading-head strong {
+    flex: 1;
+    font-size: var(--typography-label2-fontSize);
+  }
+  .ai-workbench-loading-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--brand);
+    animation: ai-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes ai-pulse {
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(0.9);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+  .ai-citation-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .ai-inline-citation.is-highlighted,
+  .ai-citation-chip.is-highlighted {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .ai-citation-preview {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + var(--spacing-6));
+    z-index: 30;
+    display: grid;
+    gap: var(--spacing-2);
+    width: min(260px, 75vw);
+    padding: var(--spacing-8) var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface-raised);
+    box-shadow: var(--semantic-elevation-shadow-normal-medium);
+    text-align: left;
+    white-space: normal;
+  }
+  .ai-citation-preview small {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption2-fontSize, 11px);
+  }
+  .ai-citation-preview strong {
+    color: var(--text);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .ai-citation-preview p {
+    margin: var(--spacing-2) 0 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: 1.45;
+  }
+
+  /* 근거 패널 포커스 */
+  .assistant-sources li.is-focused {
+    box-shadow: inset 0 0 0 1.5px var(--brand);
+    background: var(--brand-soft);
+  }
+
+  /* 5단계: 답변 아래 핸드오프 카드 */
+  .ai-answer-actions-wrap {
+    display: grid;
+    gap: var(--spacing-8);
+    padding: 0;
+    white-space: normal;
+  }
+  .ai-answer-actions-wrap > .ai-answer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    color: var(--text-secondary);
+  }
+  .ai-handoff-card {
+    display: grid;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12) var(--spacing-14);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    font-size: var(--typography-label2-fontSize);
+    color: var(--text);
+  }
+  .ai-handoff-card strong {
+    font-weight: 600;
+  }
+  .ai-handoff-card ul {
+    margin: 0;
+    padding-inline-start: var(--spacing-18);
+    display: grid;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .ai-handoff-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-6);
   }
 }

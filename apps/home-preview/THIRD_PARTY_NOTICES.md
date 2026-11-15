@@ -32,3 +32,7 @@ PDF.js 배포의 CMap·표준 글꼴·WASM 보조 파일은 `public/pdfjs/`에 �
 
 - Montage (`@montage-ui/core`, `@montage-ui/icon` 4.2.0, 내부 의존 `@montage-ui/engine`·`@montage-ui/theme` 4.2.0) · Wanted Lab · MIT · https://github.com/wanteddev/montage-web · 색·글자·간격 토큰, 테마(쿠키 저장), 공통 버튼의 기준. 공식 CSS 변수(`theme.css`)와 공개 API만 사용한다. 스타일 엔진 의존 Emotion(`@emotion/react`·`@emotion/cache`·`@emotion/serialize`·`@emotion/utils`, MIT)을 함께 설치한다.
 - `@ybouane/liquidglass`와 이를 위한 `patch-package`는 로그인 후 광학 굴절 금지 기준에 따라 제거했다.
+
+## 2026-11-15 Kokonut UI 참고
+
+- **Kokonut UI** (`kokonut-labs/kokonutui`, MIT License, Copyright (c) 2025 kokonutUI, https://github.com/kokonut-labs/kokonutui/blob/main/LICENSE) · AI 입력창·명령 메뉴·대기 줄·컨텍스트 고리·첨부 카드·음성 입력 등의 구조·치수·모션 값을 참고해 Montage 토큰으로 구현했다.

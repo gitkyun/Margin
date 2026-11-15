@@ -121,7 +121,7 @@
   .ai-composer-glow {
     display: block;
     width: 100%;
-    border-radius: var(--radius-24);
+    border-radius: 18px;
   }
   .mini-recorder[data-alert] {
     border-color: var(--danger-line);
@@ -257,11 +257,6 @@
     gap: var(--spacing-8);
     min-width: 0;
   }
-  .source-audio-scrubber {
-    flex: 1 1 140px;
-    min-width: 0;
-    accent-color: var(--brand);
-  }
   .timeline-scrubber {
     position: relative;
     flex: 1 1 160px;
@@ -393,5 +388,52 @@
   .synced-transcript-text {
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
+  }
+
+  /* 5단계 Clip Trimmer: 양끝 손잡이 + 선택 구간 + 재생선 */
+  .clip-trimmer-track {
+    position: relative;
+    flex: 1 1 180px;
+    min-width: 120px;
+    height: 32px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+  }
+  .clip-trimmer-track.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .clip-trimmer-range {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: var(--radius-6);
+    background: var(--brand-soft);
+    pointer-events: none;
+  }
+  .clip-trimmer-playhead {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    width: 2px;
+    background: var(--text);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .clip-trimmer-handle {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    width: 10px;
+    padding: 0;
+    border: 1.5px solid var(--surface-raised);
+    border-radius: var(--radius-4);
+    background: var(--brand);
+    transform: translateX(-50%);
+    cursor: ew-resize;
   }
 }

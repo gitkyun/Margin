@@ -50,7 +50,10 @@ import { EditorToolbar } from "./writing/EditorToolbar";
 import { WordDiff } from "./writing/WordDiff";
 import { AIReviewHighlight } from "./writing/ai-review";
 import { useWritingReview } from "./writing/WritingReview";
-import { WritingAutocomplete } from "./writing/WritingAutocomplete";
+import {
+  AIAutocompleteGhost,
+  WritingAutocomplete,
+} from "./writing/WritingAutocomplete";
 import { DocumentTabs } from "./student/shared";
 import {
   VersionCompareSlider,
@@ -311,8 +314,9 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     extensions: [
       StarterKit,
       TableKit.configure({ table: { resizable: true } }),
-      // AI 문장 점검 범위·원문 강조(꾸밈만, 문서 내용에는 남지 않아요)
+      // AI 문장 점검 범위·원문 강조 및 커서 뒤 이어쓰기(꾸밈만, 문서 내용에는 남지 않아요)
       AIReviewHighlight,
+      AIAutocompleteGhost,
     ],
     content: restored?.content ?? initial.content,
     // 도구 줄의 눌림 상태·글자 수·표 행 추가 버튼이 커서 이동과 입력을 따라가게 한다.
@@ -712,6 +716,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           </aside>
         )}
         <div className="writing-paper">
+          {review.selectionBar}
           <SectionBoundary>
             <EditorContent editor={editor} />
           </SectionBoundary>

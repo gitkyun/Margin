@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,7 @@ export interface AssistantPanelProps {
   onDismiss(candidate: SavedAICandidate): void;
   runs: RunRecord[];
   onCancelRun(runId: string): void;
+  focusedSourceIndex?: number | null;
 }
 
 const sameSource = (a: AIContext, b: AIContext) =>
@@ -116,7 +118,16 @@ function SourcesTab({
   page,
   onPage,
   onAddPdf,
+  focusedSourceIndex,
 }: AssistantPanelProps) {
+  useEffect(() => {
+    if (focusedSourceIndex === null || focusedSourceIndex === undefined) return;
+    const el = document.getElementById(
+      `assistant-source-${focusedSourceIndex}`,
+    );
+    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [focusedSourceIndex]);
+
   return (
     <div className="panel-frame-body">
       <h3>
@@ -128,7 +139,13 @@ function SourcesTab({
       {contexts.length ? (
         <ul className="assistant-sources">
           {contexts.map((context, index) => (
-            <li key={`${context.kind}-${context.id}`}>
+            <li
+              key={`${context.kind}-${context.id}`}
+              id={`assistant-source-${index}`}
+              className={
+                focusedSourceIndex === index ? "is-focused" : undefined
+              }
+            >
               <Icon name="file" size={15} />
               <span>
                 {context.title}

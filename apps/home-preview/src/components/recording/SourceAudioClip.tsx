@@ -14,7 +14,7 @@ import "./recording.css";
  */
 export const CLIP_LEAD_MS = 1500;
 export const CLIP_TAIL_MS = 500;
-const SCRUB_TICKS = 15;
+const MIN_TRIM_MS = 1000;
 
 export interface SourceAudioClipProps {
   /** 피드백에 저장된 녹음 위치(Feedback.audioSource) */
@@ -35,9 +35,8 @@ export function findSourceRecording(
 }
 
 /**
- * 피드백이 나온 녹음 구간만 재생해요(재생/정지, 타임라인 눈금 오디오 스크러버).
+ * 피드백이 나온 녹음 구간만 재생해요(Kokonut Clip Trimmer 기준 양끝 손잡이 + 반복 재생).
  * 녹음을 저장하지 않았거나 볼 수 없는 미팅이면 버튼을 끄고 이유를 한 줄 보여요.
- * 음성 파일은 눌렀을 때 처음 한 번만 불러와요.
  */
 export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
   const { data, mode } = useWorkspace();
@@ -45,27 +44,40 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
   const audio = useRef<HTMLAudioElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const url = useRef("");
-  const [loading, setLoading] = useState(false),
-    [playing, setPlaying] = useState(false),
-    [position, setPosition] = useState(0),
-    [hoverRatio, setHoverRatio] = useState<number | null>(null),
-    [dragging, setDragging] = useState(false),
-    [error, setError] = useState("");
-  const reasonId = useId();
   const from = Math.max(0, source.startMs - CLIP_LEAD_MS);
   const to = Math.max(
-    from + 1000,
+    from + MIN_TRIM_MS,
     Math.min(
       source.endMs + CLIP_TAIL_MS,
       recording ? recording.duration * 1000 + CLIP_TAIL_MS : Infinity,
     ),
   );
+  const length = to - from;
+  const [loading, setLoading] = useState(false),
+    [playing, setPlaying] = useState(false),
+    [loop, setLoop] = useState(false),
+    [trimStart, setTrimStart] = useState(0),
+    [trimEnd, setTrimEnd] = useState(length),
+    [position, setPosition] = useState(0),
+    [draggingHandle, setDraggingHandle] = useState<
+      "playhead" | "start" | "end" | null
+    >(null),
+    [error, setError] = useState("");
+  const reasonId = useId();
+
+  useEffect(() => {
+    setTrimStart(0);
+    setTrimEnd(length);
+    setPosition(0);
+  }, [length]);
+
   useEffect(
     () => () => {
       if (url.current) URL.revokeObjectURL(url.current);
     },
     [],
   );
+
   async function ensureLoaded(): Promise<HTMLAudioElement | null> {
     const el = audio.current;
     if (!el || !recording) return null;
@@ -95,7 +107,8 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
       setLoading(false);
     }
   }
-  async function play(at = position) {
+
+  async function play(at = Math.max(trimStart, Math.min(position, trimEnd))) {
     const el = await ensureLoaded();
     if (!el) return;
     el.currentTime = (from + at) / 1000;
@@ -106,29 +119,53 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
       setError((e as Error).message);
     }
   }
+
   function pause() {
     audio.current?.pause();
     setPlaying(false);
   }
-  const length = to - from;
-  const clamped = Math.min(position, length);
+
+  const clamped = Math.max(trimStart, Math.min(position, trimEnd));
   const progress = length > 0 ? Math.max(0, Math.min(1, clamped / length)) : 0;
-  function seekToRatio(ratio: number) {
-    if (!recording || length <= 0) return;
-    const next = Math.round(Math.max(0, Math.min(1, ratio)) * length);
-    setPosition(next);
-    if (audio.current && url.current)
-      audio.current.currentTime = (from + next) / 1000;
-  }
-  function ratioFromClientX(clientX: number): number {
+  const startPct = length > 0 ? (trimStart / length) * 100 : 0;
+  const endPct = length > 0 ? (trimEnd / length) * 100 : 100;
+
+  function msFromClientX(clientX: number): number {
     const rect = track.current?.getBoundingClientRect();
     if (!rect || rect.width <= 0) return 0;
-    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return Math.round(ratio * length);
   }
+
+  function seekToMs(ms: number) {
+    if (!recording || length <= 0) return;
+    const next = Math.max(trimStart, Math.min(trimEnd, ms));
+    setPosition(next);
+    if (audio.current && url.current) {
+      audio.current.currentTime = (from + next) / 1000;
+    }
+  }
+
+  function updateHandle(handle: "playhead" | "start" | "end", ms: number) {
+    if (handle === "start") {
+      const next = Math.max(0, Math.min(ms, trimEnd - MIN_TRIM_MS));
+      setTrimStart(next);
+      if (position < next) seekToMs(next);
+    } else if (handle === "end") {
+      const next = Math.min(length, Math.max(ms, trimStart + MIN_TRIM_MS));
+      setTrimEnd(next);
+      if (position > next) seekToMs(next);
+    } else {
+      seekToMs(ms);
+    }
+  }
+
   const name = label ?? t("녹음 구간");
   const reason = !recording
     ? t("이 미팅에 저장한 녹음이 없거나 볼 수 없어서 재생할 수 없어요.")
     : "";
+  const isTrimmed = trimStart > 0 || trimEnd < length;
+
   return (
     <div className="source-audio-clip">
       <Button
@@ -149,99 +186,128 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
         tabIndex={recording ? 0 : -1}
         aria-disabled={!recording || undefined}
         aria-label={t("{name} 재생 위치", { name })}
-        aria-valuemin={0}
-        aria-valuemax={length}
+        aria-valuemin={trimStart}
+        aria-valuemax={trimEnd}
         aria-valuenow={clamped}
         aria-valuetext={clockText(from + clamped)}
-        className={`timeline-scrubber${dragging ? " is-dragging" : ""}${!recording ? " is-disabled" : ""}`}
+        className={`clip-trimmer-track${!recording ? " is-disabled" : ""}`}
         onPointerDown={(e) => {
           if (!recording) return;
           e.currentTarget.setPointerCapture(e.pointerId);
-          setDragging(true);
-          const ratio = ratioFromClientX(e.clientX);
-          setHoverRatio(ratio);
-          seekToRatio(ratio);
+          setDraggingHandle("playhead");
+          seekToMs(msFromClientX(e.clientX));
         }}
         onPointerMove={(e) => {
-          if (!recording) return;
-          const ratio = ratioFromClientX(e.clientX);
-          setHoverRatio(ratio);
-          if (dragging) seekToRatio(ratio);
+          if (!recording || !draggingHandle) return;
+          updateHandle(draggingHandle, msFromClientX(e.clientX));
         }}
-        onPointerUp={() => setDragging(false)}
-        onPointerCancel={() => setDragging(false)}
-        onPointerLeave={() => {
-          if (!dragging) setHoverRatio(null);
-        }}
+        onPointerUp={() => setDraggingHandle(null)}
+        onPointerCancel={() => setDraggingHandle(null)}
         onKeyDown={(e) => {
           if (!recording) return;
           const step = e.shiftKey ? 5000 : 1000;
           if (e.key === "ArrowRight" || e.key === "ArrowUp") {
             e.preventDefault();
-            seekToRatio((clamped + step) / length);
+            seekToMs(clamped + step);
           } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
             e.preventDefault();
-            seekToRatio((clamped - step) / length);
+            seekToMs(clamped - step);
           } else if (e.key === "Home") {
             e.preventDefault();
-            seekToRatio(0);
+            seekToMs(trimStart);
           } else if (e.key === "End") {
             e.preventDefault();
-            seekToRatio(1);
+            seekToMs(trimEnd);
           }
         }}
       >
-        <div className="timeline-scrubber-ticks" aria-hidden="true">
-          {Array.from({ length: SCRUB_TICKS }, (_, index) => {
-            const active = index / (SCRUB_TICKS - 1) <= progress;
-            return (
-              <span
-                key={index}
-                className={active ? "is-active" : undefined}
-              />
-            );
-          })}
-        </div>
         <div
-          className="timeline-scrubber-fill"
-          style={{ width: `${progress * 100}%` }}
+          className="clip-trimmer-range"
+          style={{ left: `${startPct}%`, width: `${endPct - startPct}%` }}
           aria-hidden="true"
         />
-        <span
-          className="timeline-scrubber-thumb"
+        <div
+          className="clip-trimmer-playhead"
           style={{ left: `${progress * 100}%` }}
           aria-hidden="true"
         />
-        {hoverRatio !== null && recording && (
-          <span
-            className="timeline-scrubber-preview"
-            style={{ left: `${hoverRatio * 100}%` }}
-            aria-hidden="true"
-          >
-            {clockText(from + Math.round(hoverRatio * length))}
-          </span>
-        )}
+        <button
+          type="button"
+          className="clip-trimmer-handle is-start"
+          style={{ left: `${startPct}%` }}
+          disabled={!recording}
+          aria-label={t("시작 위치")}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            if (!recording) return;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            setDraggingHandle("start");
+          }}
+        />
+        <button
+          type="button"
+          className="clip-trimmer-handle is-end"
+          style={{ left: `${endPct}%` }}
+          disabled={!recording}
+          aria-label={t("끝 위치")}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            if (!recording) return;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            setDraggingHandle("end");
+          }}
+        />
       </div>
       <span className="source-audio-time">
-        {clockText(from + clamped)} / {clockText(to)}
+        {clockText(from + clamped)} / {clockText(from + trimEnd)}
       </span>
+      <Button
+        type="button"
+        variant={loop ? "secondary" : "ghost"}
+        size="sm"
+        disabled={!recording}
+        aria-pressed={loop}
+        onClick={() => setLoop((v) => !v)}
+      >
+        <Icon name="refresh" size={14} />
+        {t("반복 재생")}
+      </Button>
+      {isTrimmed && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setTrimStart(0);
+            setTrimEnd(length);
+            seekToMs(0);
+          }}
+        >
+          {t("구간 초기화")}
+        </Button>
+      )}
       <audio
         ref={audio}
         preload="none"
         onTimeUpdate={(e) => {
           const at = e.currentTarget.currentTime * 1000 - from;
-          if (at >= length) {
+          if (at >= trimEnd) {
+            if (loop) {
+              e.currentTarget.currentTime = (from + trimStart) / 1000;
+              setPosition(trimStart);
+              return;
+            }
             e.currentTarget.pause();
             setPlaying(false);
-            setPosition(0);
+            setPosition(trimStart);
             return;
           }
-          setPosition(Math.max(0, at));
+          setPosition(Math.max(trimStart, at));
         }}
         onPause={() => setPlaying(false)}
         onEnded={() => {
           setPlaying(false);
-          setPosition(0);
+          setPosition(trimStart);
         }}
       />
       {reason && (

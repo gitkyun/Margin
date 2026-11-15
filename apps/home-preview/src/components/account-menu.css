@@ -2,6 +2,20 @@
   /* 계정 메뉴 머리: 이름·이메일·역할 배지를 묶은 카드(Kokonut UI Account Menu + Montage 토큰) */
   .account-menu {
     min-width: 264px;
+    max-height: min(460px, calc(100dvh - 100px));
+    overflow-y: auto;
+    transform-origin: bottom left;
+    animation: account-menu-morph 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes account-menu-morph {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
   .account-menu-card {
     display: flex;
@@ -22,7 +36,8 @@
   }
   .account-menu-card-title {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: var(--spacing-6);
     min-width: 0;
   }
@@ -31,15 +46,22 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .account-menu-role {
+  .account-menu-role-quiet {
     flex: none;
-    padding: 1px var(--spacing-6);
-    border-radius: var(--radius-full);
-    background: var(--brand-soft);
-    color: var(--brand);
+    color: var(--text-tertiary);
     font-size: var(--typography-caption2-fontSize, 11px);
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.5;
+  }
+  .account-menu-item-plan {
+    display: flex;
+    align-items: center;
+  }
+  .account-menu-plan-value {
+    margin-left: auto;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
   }
   .account-menu-card .menu-email {
     overflow: hidden;
@@ -90,9 +112,117 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .account-menu,
     .profile-button .avatar,
     .profile-button > svg {
+      animation: none;
       transition: none;
     }
   }
+
+  /* 인라인 테마 전환 줄(Switch Button) 및 길게 눌러 로그아웃 */
+  .account-menu-theme-wrap {
+    padding: var(--spacing-4) var(--spacing-6);
+  }
+  .theme-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .theme-switch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .theme-switch-pills {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+  }
+  .theme-switch-pill {
+    padding: 3px var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
+  }
+  .theme-switch-pill.is-active {
+    background: var(--surface-raised);
+    color: var(--text);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+  }
+  .theme-switch-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    height: 32px;
+    padding: 0 var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    cursor: pointer;
+  }
+  .account-menu-hold-wrap {
+    padding: var(--spacing-4) var(--spacing-4) var(--spacing-2);
+  }
+  .account-menu-hold-logout {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    width: 100%;
+    min-height: 36px;
+    padding: 0 var(--spacing-10);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--danger);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+  }
+  .account-menu-hold-logout:hover:not(:disabled) {
+    background: var(--hover-fill);
+  }
+  .account-menu-hold-logout:disabled {
+    opacity: var(--opacity-48);
+    cursor: not-allowed;
+  }
+  .account-menu-hold-fill {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    transform-origin: left;
+    pointer-events: none;
+  }
+  .account-menu-hold-logout > svg,
+  .account-menu-hold-logout > span:last-child {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

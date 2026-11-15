@@ -272,6 +272,8 @@ test.describe("초대한 사람: 연구 설정의 초대 관리", () => {
     });
     await page.getByLabel("초대할 이메일").fill(GUEST.email);
     await page.getByRole("button", { name: "초대 메일 보내기" }).click();
+    // 5초 되돌리기 시간을 기다리지 않고 바로 보내요.
+    await page.getByRole("button", { name: "지금 보내기" }).click();
     const result = page.locator(".project-invite-result");
     await expect(result).toContainText(
       "초대는 만들었지만 메일을 보내지 못했어요",
@@ -338,10 +340,34 @@ test.describe("초대한 사람: 연구 설정의 초대 관리", () => {
     }));
     await page.getByLabel("초대할 이메일").fill(GUEST.email);
     await page.getByRole("button", { name: "초대 메일 보내기" }).click();
+    // 5초 되돌리기 시간을 기다리지 않고 바로 보내요.
+    await page.getByRole("button", { name: "지금 보내기" }).click();
     await expect(page.locator("#project-invite-error")).toHaveText(
       "이미 초대한 이메일이에요. 아래 초대 목록에서 다시 보낼 수 있어요.",
     );
     // 입력한 이메일은 그대로 남는다
+    await expect(page.getByLabel("초대할 이메일")).toHaveValue(GUEST.email);
+  });
+
+  test("보내기를 누른 뒤 되돌리면 초대 요청이 서버로 나가지 않는다", async ({
+    page,
+  }) => {
+    const { server } = await openSettings(page);
+    await page.getByLabel("초대할 이메일").fill(GUEST.email);
+    await page.getByRole("button", { name: "초대 메일 보내기" }).click();
+    await page.getByRole("button", { name: "되돌리기" }).click();
+    await expect(page.getByRole("button", { name: "지금 보내기" })).toHaveCount(
+      0,
+    );
+    // 되돌리기 시간(5초)이 지나도 보내지 않아요.
+    await page.waitForTimeout(5500);
+    expect(
+      server.calls.filter(
+        (call) =>
+          call.name === "project-invite" &&
+          (call.body as { action?: string } | null)?.action === "send",
+      ),
+    ).toEqual([]);
     await expect(page.getByLabel("초대할 이메일")).toHaveValue(GUEST.email);
   });
 
@@ -365,6 +391,8 @@ test.describe("초대한 사람: 연구 설정의 초대 관리", () => {
     );
     await page.getByLabel("초대할 이메일").fill(GUEST.email);
     await page.getByRole("button", { name: "초대 메일 보내기" }).click();
+    // 5초 되돌리기 시간을 기다리지 않고 바로 보내요.
+    await page.getByRole("button", { name: "지금 보내기" }).click();
     await expect(page.locator(".project-invite-row")).toContainText("지도교수");
     expect(
       server.calls.find((call) => call.name === "project-invite")?.body,

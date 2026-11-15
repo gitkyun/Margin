@@ -44,6 +44,7 @@ export function workingMascot(mode: AIInput["mode"] | string): MascotState {
     case "suggest_revisions":
       return "thinking";
     case "continue_writing":
+    case "inline_edit":
     case "review_writing":
       return "writing";
     case "plan_research":
@@ -58,6 +59,7 @@ export const workMessages: Record<AIInput["mode"], string> = {
   organize_meeting: t("메모에서 피드백과 결정 사항을 정리하고 있어요."),
   suggest_revisions: t("선택한 피드백의 수정 방법을 살펴보고 있어요."),
   continue_writing: t("선택한 문맥을 바탕으로 다음 문장을 준비하고 있어요."),
+  inline_edit: t("선택한 문장을 요청에 맞게 다듬고 있어요."),
   review_writing: t("선택한 문단의 근거와 표현을 살펴보고 있어요."),
   plan_research: t("남은 할 일과 다음 미팅 준비를 살펴보고 있어요."),
   read_material: t("선택한 자료 구간을 읽고 있어요."),

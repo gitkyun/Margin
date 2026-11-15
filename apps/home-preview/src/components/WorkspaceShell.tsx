@@ -1,5 +1,6 @@
 import { t } from "@/lib/i18n";
 import { MiniRecorder } from "@/components/recording/MiniRecorder";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
 import {
@@ -90,136 +91,159 @@ const activityTitles: Record<string, string> = {
   // i18n-ignore: 서버에 저장된 알림 제목(자료)
   "시간 조율이 취소되었습니다": t("시간 조율을 취소했어요"),
 };
+const HOLD_LOGOUT_MS = 1100;
+
 function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
   const { user, mode, signOut } = useWorkspace(),
     navigate = useNavigate();
-  const [logoutOpen, setLogoutOpen] = useState(false),
-    [loggingOut, setLoggingOut] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const holdTimerRef = useRef<number | null>(null);
+  const holdStartRef = useRef(0);
   const roleLabel =
+    mode === "preview" ? t("미리보기") : incomingOnly ? t("교수") : t("학생");
+
+  function stopHold() {
+    if (holdTimerRef.current !== null) {
+      window.clearInterval(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setHoldProgress(0);
+  }
+
+  async function completeLogout() {
+    stopHold();
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      if (mode === "connected") await signOut();
+      navigate("/login");
+    } catch (e) {
+      toast.error(friendlyError(e));
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
+  function startHold() {
+    if (loggingOut || holdTimerRef.current !== null) return;
+    holdStartRef.current = Date.now();
+    holdTimerRef.current = window.setInterval(() => {
+      const elapsed = Date.now() - holdStartRef.current;
+      const ratio = Math.min(1, elapsed / HOLD_LOGOUT_MS);
+      setHoldProgress(ratio);
+      if (ratio >= 1) void completeLogout();
+    }, 16);
+  }
+
+  useEffect(() => () => stopHold(), []);
+
+  const logoutLabel =
     mode === "preview"
-      ? t("미리보기")
-      : incomingOnly
-        ? t("교수")
-        : t("학생");
+      ? t("길게 눌러 이동")
+      : loggingOut
+        ? t("로그아웃 중")
+        : t("길게 눌러 로그아웃");
+
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <button
-            className="profile-button"
-            aria-label={t("{name} {email} 계정 메뉴", {
-              name: user.name,
-              email: user.email,
-            })}
-          >
-            <span className="profile-avatar-wrap">
-              <span className="avatar">{user.name.slice(0, 1)}</span>
-              <span
-                className={`profile-status-dot${mode === "preview" ? " is-preview" : ""}`}
-                aria-hidden="true"
-              />
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <button
+          className="profile-button"
+          aria-label={t("{name} {email} 계정 메뉴", {
+            name: user.name,
+            email: user.email,
+          })}
+        >
+          <span className="profile-avatar-wrap">
+            <span className="avatar">{user.name.slice(0, 1)}</span>
+            <span
+              className={`profile-status-dot${mode === "preview" ? " is-preview" : ""}`}
+              aria-hidden="true"
+            />
+          </span>
+          <span>
+            <strong>{user.name}</strong>
+            <small>{user.email}</small>
+          </span>
+          <Icon name="chevron-down" size={14} />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start" className="account-menu">
+        {/* 카드형 머리: 이름·이메일과 오른쪽 위 조용한 역할 글씨(Kokonut UI Account Menu). */}
+        <DropdownMenuLabel>
+          <div className="account-menu-card">
+            <span className="avatar" aria-hidden="true">
+              {user.name.slice(0, 1)}
             </span>
-            <span>
-              <strong>{user.name}</strong>
-              <small>{user.email}</small>
-            </span>
-            <Icon name="chevron-down" size={14} />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="top" align="start" className="account-menu">
-          {/* 카드형 머리: 이름·이메일·역할 배지를 먼저 보여 줘요(Kokonut UI Account Menu). */}
-          <DropdownMenuLabel>
-            <div className="account-menu-card">
-              <span className="avatar" aria-hidden="true">
-                {user.name.slice(0, 1)}
-              </span>
-              <div>
-                <div className="account-menu-card-title">
-                  <strong>{user.name}</strong>
-                  <span className="account-menu-role">{roleLabel}</span>
-                </div>
-                <small className="menu-email">{user.email}</small>
+            <div>
+              <div className="account-menu-card-title">
+                <strong>{user.name}</strong>
+                <span className="account-menu-role-quiet">{roleLabel}</span>
               </div>
+              <small className="menu-email">{user.email}</small>
             </div>
-          </DropdownMenuLabel>
-          <DropdownMenuItem onSelect={() => navigate("/account?tab=profile")}>
-            <Icon name="user" size={17} />
-            {t("프로필 설정")}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={() => navigate("/account?tab=appearance")}
-          >
-            <Icon name="sun" size={17} />
-            {t("화면 설정")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => navigate("/account?tab=ai")}>
-            <Icon name="sparkles" size={17} />
-            {t("AI 기본 설정")}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => navigate("/guide")}>
-            <Icon name="help" size={17} />
-            {t("사용 안내")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setLogoutOpen(true)}>
-            <Icon name="logout" size={17} />
-            {mode === "preview" ? t("로그인 화면으로") : t("로그아웃")}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Dialog
-        open={logoutOpen}
-        onOpenChange={(open: boolean) => {
-          if (!loggingOut) setLogoutOpen(open);
-        }}
-      >
-        <DialogContent className="rms-dialog">
-          <DialogHeader>
-            <DialogTitle>
-              {mode === "preview"
-                ? t("로그인 화면으로 이동할까요?")
-                : t("로그아웃할까요?")}
-            </DialogTitle>
-            <DialogDescription>
-              {mode === "preview"
-                ? t("미리보기 기록은 이 브라우저에 그대로 남아요.")
-                : t(
-                    "저장한 기록은 그대로 남아요. 저장하지 않은 입력은 사라지니 먼저 저장해 주세요.",
-                  )}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="form-actions">
-            <Button
-              variant="outline"
-              disabled={loggingOut}
-              onClick={() => setLogoutOpen(false)}
-            >
-              {t("취소")}
-            </Button>
-            <Button
-              disabled={loggingOut}
-              onClick={async () => {
-                setLoggingOut(true);
-                try {
-                  if (mode === "connected") await signOut();
-                  navigate("/login");
-                } catch (e) {
-                  toast.error(friendlyError(e));
-                } finally {
-                  setLoggingOut(false);
-                }
-              }}
-            >
-              {mode === "preview"
-                ? t("이동")
-                : loggingOut
-                  ? t("로그아웃 중")
-                  : t("로그아웃")}
-            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </DropdownMenuLabel>
+        <DropdownMenuItem onSelect={() => navigate("/account?tab=profile")}>
+          <Icon name="user" size={17} />
+          {t("프로필 설정")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => navigate("/account?tab=ai")}>
+          <Icon name="sparkles" size={17} />
+          {t("AI 기본 설정")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => navigate("/account?tab=usage")}>
+          <span className="account-menu-item-plan">
+            <Icon name="chart" size={17} />
+            <span>{t("사용량·플랜")}</span>
+            <span className="account-menu-plan-value">Free</span>
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div
+          className="account-menu-theme-wrap"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ThemeSwitch compact />
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => navigate("/guide")}>
+          <Icon name="help" size={17} />
+          {t("사용 안내")}
+        </DropdownMenuItem>
+        <div className="account-menu-hold-wrap">
+          <button
+            type="button"
+            className="account-menu-hold-logout"
+            disabled={loggingOut}
+            aria-label={logoutLabel}
+            title={t("계속 누르면 실행돼요")}
+            onPointerDown={startHold}
+            onPointerUp={stopHold}
+            onPointerLeave={stopHold}
+            onPointerCancel={stopHold}
+            onKeyDown={(e) => {
+              if ((e.key === " " || e.key === "Enter") && !e.repeat) {
+                e.preventDefault();
+                startHold();
+              }
+            }}
+            onKeyUp={(e) => {
+              if (e.key === " " || e.key === "Enter") stopHold();
+            }}
+          >
+            <span
+              className="account-menu-hold-fill"
+              style={{ transform: `scaleX(${holdProgress})` }}
+              aria-hidden="true"
+            />
+            <Icon name="logout" size={16} />
+            <span>{logoutLabel}</span>
+          </button>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 /** sm 이상 lg 미만(768~1199px). 이 구간에서는 메뉴를 좁은 레일로 두고, 펼치면 본문 위에 뜹니다. */
