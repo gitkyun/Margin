@@ -1,4 +1,4 @@
-import { useMemo, type ComponentProps } from "react";
+import { useMemo, useState, type ComponentProps } from "react";
 import Markdown from "react-markdown";
 import { t } from "@/lib/i18n";
 import type { AIContext } from "@/lib/domain";
@@ -6,7 +6,7 @@ import type { AIContext } from "@/lib/domain";
 interface AssistantMessageTextProps {
   text: string;
   contexts: AIContext[];
-  onOpenSources?: () => void;
+  onOpenSources?: (index?: number) => void;
 }
 
 const CITATION_PATTERN = /\[근거\s*(\d+)\]/g;
@@ -27,6 +27,16 @@ const ALLOWED_ELEMENTS = [
   "a",
 ];
 
+function contextKindLabel(kind: AIContext["kind"]): string {
+  if (kind === "meetings") return t("미팅 메모");
+  if (kind === "feedback") return t("피드백");
+  if (kind === "documents") return t("문서");
+  if (kind === "versions") return t("파일 버전");
+  if (kind === "attachments") return t("첨부 자료");
+  if (kind === "tasks") return t("할 일");
+  return t("연구 단계");
+}
+
 /** `[근거 1]`을 마크다운 링크(`#cite-1`)로 바꿔 화면에서 출처 배지로 그려요. */
 export function citationsToLinks(text: string): string {
   return text.replace(
@@ -36,15 +46,16 @@ export function citationsToLinks(text: string): string {
 }
 
 /**
- * 연구 도우미 답변. 굵게·목록·인용·코드 같은 간단한 서식을 보여 주고,
- * 본문의 [근거 1] 표식은 클릭 가능한 출처 배지로 바꿉니다(Kokonut UI AI Inline Citations 패턴).
- * 첨부 근거가 있으면 아래에 요약 칩을 둡니다. 원문 HTML과 그림은 그리지 않습니다.
+ * 연구 도우미 답변(Kokonut AI Inline Citations).
+ * 본문의 [근거 N] 표식에 호버·포커스하면 출처 스냅샷 미리보기가 뜨고,
+ * 아래 출처 칩과 같은 번호를 함께 강조해요.
  */
 export function AssistantMessageText({
   text,
   contexts,
   onOpenSources,
 }: AssistantMessageTextProps) {
+  const [activeCite, setActiveCite] = useState<number | null>(null);
   const markdown = useMemo(() => citationsToLinks(text), [text]);
   const components = useMemo(
     () => ({
@@ -53,22 +64,45 @@ export function AssistantMessageText({
         if (cite) {
           const index = Number(cite[1]) - 1;
           const source = contexts[index];
-          // 보내지 않은 번호는 배지 대신 적힌 그대로 둬요.
           if (!source) return <>{`[근거 ${index + 1}]`}</>; // i18n-ignore: 모델과 맞춘 표식
+          const isActive = activeCite === index;
+          const snippet = source.text?.trim().slice(0, 140);
           return (
-            <button
-              type="button"
-              className="ai-inline-citation"
-              title={source.title}
-              aria-label={t("근거 {number}: {title}", {
-                number: index + 1,
-                title: source.title,
-              })}
-              onClick={onOpenSources}
+            <span
+              className="ai-citation-wrap"
+              onMouseEnter={() => setActiveCite(index)}
+              onMouseLeave={() =>
+                setActiveCite((cur) => (cur === index ? null : cur))
+              }
             >
-              <span className="ai-inline-citation-num">{index + 1}</span>
-              <span className="ai-inline-citation-label">{source.title}</span>
-            </button>
+              <button
+                type="button"
+                className={`ai-inline-citation${isActive ? " is-highlighted" : ""}`}
+                title={source.title}
+                aria-label={t("근거 {number}: {title}", {
+                  number: index + 1,
+                  title: source.title,
+                })}
+                onFocus={() => setActiveCite(index)}
+                onBlur={() =>
+                  setActiveCite((cur) => (cur === index ? null : cur))
+                }
+                onClick={() => onOpenSources?.(index)}
+              >
+                <span className="ai-inline-citation-num">{index + 1}</span>
+                <span className="ai-inline-citation-label">{source.title}</span>
+              </button>
+              {isActive && (
+                <span className="ai-citation-preview" role="tooltip">
+                  <small>{contextKindLabel(source.kind)}</small>
+                  <strong>{source.title}</strong>
+                  {source.page && (
+                    <small>{t("{page}쪽", { page: source.page })}</small>
+                  )}
+                  {snippet && <p>{snippet}</p>}
+                </span>
+              )}
+            </span>
           );
         }
         return (
@@ -78,7 +112,7 @@ export function AssistantMessageText({
         );
       },
     }),
-    [contexts, onOpenSources],
+    [contexts, onOpenSources, activeCite],
   );
   return (
     <div className="ai-message-content">
@@ -97,8 +131,14 @@ export function AssistantMessageText({
             <button
               key={`${c.kind}-${c.id}`}
               type="button"
-              className="ai-citation-chip"
-              onClick={onOpenSources}
+              className={`ai-citation-chip${activeCite === idx ? " is-highlighted" : ""}`}
+              onMouseEnter={() => setActiveCite(idx)}
+              onMouseLeave={() =>
+                setActiveCite((cur) => (cur === idx ? null : cur))
+              }
+              onFocus={() => setActiveCite(idx)}
+              onBlur={() => setActiveCite((cur) => (cur === idx ? null : cur))}
+              onClick={() => onOpenSources?.(idx)}
             >
               <span>{idx + 1}</span>
               <strong>{c.title}</strong>

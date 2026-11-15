@@ -7,13 +7,18 @@ const FILLED: Record<string, number> = {
   xhigh: 3,
   max: 3,
 };
+const BARS = [1, 2, 3];
 
 export function DepthBars({ level }: { level?: string }) {
   const filled = FILLED[level ?? ""] ?? 2;
   return (
     <span className="depth-bars" aria-hidden="true">
-      {[1, 2, 3].map((n) => (
-        <i key={n} data-on={n <= filled ? "true" : undefined} />
+      {BARS.map((n) => (
+        <i
+          key={n}
+          data-on={n <= filled ? "true" : undefined}
+          style={{ height: `${(n / BARS.length) * 100}%` }}
+        />
       ))}
     </span>
   );

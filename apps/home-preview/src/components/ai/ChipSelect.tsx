@@ -60,7 +60,7 @@ export function ChipSelect({
         {leading ?? current?.leading}
         <span className="composer-chip-label">{text}</span>
         <Select.Icon className="composer-chip-caret">
-          <Icon name="chevron-down" size={14} />
+          <Icon name="chevron-down" size={12} />
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
@@ -73,6 +73,9 @@ export function ChipSelect({
           className="chip-select-positioner"
         >
           <Select.Popup className="chip-select-popup" aria-label={label}>
+            <p className="chip-select-heading" aria-hidden="true">
+              {label}
+            </p>
             <Select.List className="chip-select-list">
               {options.map((option) => (
                 <Select.Item
@@ -103,7 +106,7 @@ export function ChipSelect({
                     )}
                   </span>
                   <Select.ItemIndicator className="chip-select-check">
-                    <Icon name="check" size={16} />
+                    <Icon name="check" size={14} />
                   </Select.ItemIndicator>
                 </Select.Item>
               ))}

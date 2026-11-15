@@ -4,7 +4,6 @@
 - **함께 읽을 문서**:
   - [AGENTS.md](../../../AGENTS.md): 제품 불변 조건, Montage 4.2.0 토큰 규칙, UX 라이팅(해요체), 일본어 i18n(`t("...")`) 규칙
   - [ux-redesign/README.md](README.md) · [design-b.md](design-b.md) · [upper-review-2026-11-14.md](upper-review-2026-11-14.md)
-  - [free-ui-libraries-reference-2026-11-15.md](free-ui-libraries-reference-2026-11-15.md): 9개 무료 UI 라이브러리 전체 카탈로그, 공식 링크, 섹션별 전체 제안 아카이브
 
 ---
 
@@ -21,7 +20,7 @@
 
 | 번호 | 제안 항목 | 사용자 결정 | 구현 방향 및 대상 파일 |
 | :--- | :--- | :--- | :--- |
-| **#1** | 나만의 연구 에이전트 & 3인 서브에이전트 병렬 점검 | **단일 에이전트로 축소 채택** | 멀티 서브에이전트 병렬 실행은 제외. **계정 설정 › AI 탭(`SettingsPage.tsx`)** 등에 **‘나만의 연구 에이전트’ 1개**를 만들어 개인 지침·말투를 설정하고, [Libraries.dev Bots](https://libraries.dev/bots)의 귀여운 봇 아바타를 선택·적용해 `ResearchAssistant.tsx` 및 패널(`AIWorkbench.tsx`)에 표시. |
+| **#1** | 나만의 연구 에이전트 & 3인 서브에이전트 병렬 점검 | **단일 에이전트로 축소 채택** | 멀티 서브에이전트 병렬 실행은 제외. **계정 설정 › AI 탭(`SettingsPage.tsx`)** 등에 **‘나만의 연구 에이전트’ 1개**를 만들어 이름·개인 지침·말투를 설정해 `ResearchAssistant.tsx`에 표시(봇 아바타는 삭제함). |
 | **#2** | 교수님 음성 타임스탬프 ↔ 전사문 ↔ 피드백 연결 | **채택** | `RecordingPanel.tsx`, `SavedTranscript.tsx`, `FeedbackPage.tsx`: 전사문 문장을 드래그해 피드백으로 저장할 때 해당 구간 오디오 타임스탬프를 함께 저장하고, 피드백 상세에서 1클릭으로 해당 구간 음성을 파형 스크러버로 재생. |
 | **#3** | 글쓰기 → AI 문장 점검 → 검토용 PDF → 수정 결과 루프 | **채택** | `WritingPage.tsx`, `ResultsPage.tsx`: ‘AI 문장 점검’ 클릭 시 `/assistant`로 이동하지 않고 에디터 오른쪽 여백 패널에서 인라인 점검·반영. ‘검토용 PDF’ 생성 시 다운로드·재업로드 없이 자료/수정 결과로 바로 연결. |
 | **#4** | 투고일 역산 + 교수 검토 버퍼 + 지연 시뮬레이션 | **보류 (제외)** | 사용자가 별로라고 판단해 추후 재검토로 보류. |
@@ -120,7 +119,13 @@
   * 연구 삭제: **슬라이드해서 바로 삭제** ([Bencho Slide to confirm](https://bencho.dev/blocks/slide-confirm)) — `AGENTS.md` 및 `docs/architecture.md`의 기존 연구명 입력 규칙은 슬라이드 확인 방식으로 개정 완료됨.
   * 연구 기본 정보 탭: **연구 키워드(칩 태그) 및 지도교수(최대 5명) 관리** ([affectUI Tag Input](https://www.affectui.com/components/tag-input)) + **‘목표 학회 인용 양식 프리셋(APA, IEEE, ADR 등)’** 추가
   * 계정 설정 › 화면 탭: `HourStyleSwitch.tsx` 전환 시 **예시 시각(`14:00` ↔ `오후 2:00`) 회전 및 즉시 미리보기** ([Bencho Liquid toggle](https://bencho.dev/blocks/liq-toggle) + [Transitions.dev](https://transitions.dev/) `Number pop-in`) + **실제 미팅 카드 미리보기** 배치
-  * 계정 설정 › AI 탭: **나만의 연구 에이전트 1개 설정(지침·말투 + [Libraries.dev Bots](https://libraries.dev/bots))** (섹션 0 #1 연계)
+  * 계정 설정 › AI 탭: **나만의 연구 에이전트 1개 설정(이름·지침·말투)** (섹션 0 #1 연계, 봇 아바타 제외)
   * 계정 설정 › 사용량 탭: **월간 AI 사용량 및 R2 500MB 단위 스토리지 점유율 게이지** 표시 ([BoardUI Meter](https://www.boardui.com/components/meter) / [Bencho Context meter](https://bencho.dev/blocks/context-meter))
   * 계정 설정 › 알림 탭: **스위치 조작 시 즉시 저장** ([BoardUI](https://www.boardui.com/components))
 * **대상 파일**: `pages/SettingsPage.tsx`, `components/PermanentResearchDelete.tsx`, `components/HourStyleSwitch.tsx`, `components/SubscriptionPlans.tsx`
+
+---
+
+## 변경 기록
+
+- 2026-11-15: 섹션 0 #1의 봇 아바타([Libraries.dev Bots](https://libraries.dev/bots)) 선택·적용은 사용자 결정으로 삭제함. 이름·말투·개인 지침 설정만 남기고, 연구 도우미 화면은 마진 이미지 마스코트를 씀. 연구 도우미 입력창은 [Kokonut UI AI Input Selector](https://kokonutui.com/docs/ai/ai-prompt) 형태를 따름.

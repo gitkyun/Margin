@@ -1,4 +1,5 @@
 import { AssistantMascot } from "@/components/brand/Brand";
+import { WorkbenchLoading } from "@/pages/assistant/AssistantThinking";
 import {
   researchModelLabel,
   resolveReviewDepth,
@@ -309,12 +310,10 @@ export function RevisionSuggestions({
       </div>
       {!running && !stale && sourceReason.node}
       {running && (
-        <div className="ai-running" role="status">
-          <span>
-            {workMessages[input.mode]}
-            <small>{t("제안을 저장하기 전에는 기록이 바뀌지 않아요.")}</small>
-          </span>
-        </div>
+        <WorkbenchLoading
+          label={workMessages[input.mode]}
+          detail={t("제안을 저장하기 전에는 기록이 바뀌지 않아요.")}
+        />
       )}
       <ErrorNotice error={error} />
       {candidates.length > 0 && (

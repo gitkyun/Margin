@@ -1876,28 +1876,78 @@
     display: flex;
     justify-content: flex-end;
   }
-  .writing-autocomplete-card {
-    display: grid;
+  .writing-autocomplete-ghost-inline {
+    color: var(--text-tertiary);
+    pointer-events: none;
+    user-select: none;
+  }
+  .writing-autocomplete-bar {
+    display: flex;
+    align-items: center;
     gap: var(--spacing-8);
-    padding: var(--spacing-12);
+    padding: var(--spacing-6) var(--spacing-10);
     border: 1px solid var(--selected-line);
     border-radius: var(--radius-10);
     background: var(--selected-fill);
   }
-  .writing-autocomplete-ghost {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-  }
-  .writing-autocomplete-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-8);
-  }
-  .writing-autocomplete-actions > small {
+  .writing-autocomplete-bar > small {
     margin-right: auto;
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
+  }
+  .writing-selection-bar {
+    display: grid;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-12);
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px solid var(--selected-line);
+    border-radius: var(--radius-12);
+    background: var(--surface-raised);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+  }
+  .writing-selection-bar-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-6);
+  }
+  .writing-selection-bar-form input {
+    flex: 1 1 200px;
+    min-width: 0;
+  }
+  .writing-inline-edit {
+    display: grid;
+    gap: var(--spacing-8);
+    padding: var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .writing-inline-edit-head {
+    display: grid;
+    gap: 2px;
+  }
+  .writing-inline-edit-head strong {
+    font-size: var(--typography-label2-fontSize);
+  }
+  .writing-inline-edit-head small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .writing-inline-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-6);
+  }
+  .writing-inline-edit-result {
+    display: grid;
+    gap: var(--spacing-8);
+    padding-top: var(--spacing-8);
+    border-top: 1px solid var(--line);
+  }
+  .writing-inline-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-6);
   }
 }

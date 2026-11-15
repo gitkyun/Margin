@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
@@ -14,9 +16,7 @@ export interface AnswerActionsProps {
 }
 
 /**
- * 연구 도우미 답변 아래 동작 줄(감사 F4): 복사, 다시 답하기.
- * ‘저장’은 넣지 않습니다. 자유 질문 답변을 담을 서버 저장 대상이 없고,
- * 답변은 이미 대화 기록에 남아 있어요.
+ * 연구 도우미 답변 아래 동작 줄: 복사(체크 아이콘 피드백), 다시 답하기, 교수님 검토로 넘기기(Kokonut AI Handoff).
  */
 export function AnswerActions({
   text,
@@ -24,38 +24,103 @@ export function AnswerActions({
   disabled,
   onRetry,
 }: AnswerActionsProps) {
+  const { researchId } = useParams();
+  const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
+  const copyTimer = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+    },
+    [],
+  );
+
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(t("복사했어요"));
+      setCopied(true);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 1800);
     } catch {
       toast.error(t("복사하지 못했어요. 답변을 직접 선택해 복사해 주세요."));
     }
   }
   return (
-    <div className="ai-answer-actions" role="group" aria-label={t("답변 동작")}>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        aria-label={t("답변 복사")}
-        onClick={() => void copy()}
+    <div className="ai-answer-actions-wrap">
+      <div
+        className="ai-answer-actions"
+        role="group"
+        aria-label={t("답변 동작")}
       >
-        <Icon name="copy" size={15} />
-        {t("복사")}
-      </Button>
-      {question && (
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          aria-label={t("같은 질문으로 다시 답하기")}
-          disabled={disabled}
-          onClick={() => onRetry(question)}
+          aria-label={t("답변 복사")}
+          onClick={() => void copy()}
         >
-          <Icon name="refresh" size={15} />
-          {t("다시 답하기")}
+          <Icon name={copied ? "check" : "copy"} size={15} />
+          {copied ? t("복사됨") : t("복사")}
         </Button>
+        {question && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            aria-label={t("같은 질문으로 다시 답하기")}
+            disabled={disabled}
+            onClick={() => onRetry(question)}
+          >
+            <Icon name="refresh" size={15} />
+            {t("다시 답하기")}
+          </Button>
+        )}
+        {researchId && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="ai-handoff-button"
+            aria-expanded={handoffOpen}
+            onClick={() => setHandoffOpen((v) => !v)}
+          >
+            <Icon name="send" size={14} />
+            {t("교수님 검토로 넘기기")}
+          </Button>
+        )}
+      </div>
+      {handoffOpen && researchId && (
+        <div
+          className="ai-handoff-card"
+          role="region"
+          aria-label={t("교수님이 보게 될 것")}
+        >
+          <strong>{t("교수님이 보게 될 것")}</strong>
+          <ul>
+            <li>{t("연구 이름과 연구 방향(목적·연구 질문)")}</li>
+            <li>{t("검토 요청에서 직접 골라 공유하는 수정 결과와 첨부 파일")}</li>
+            <li>{t("이 AI 대화와 개인 메모는 공유되지 않아요.")}</li>
+          </ul>
+          <div className="ai-handoff-actions">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setHandoffOpen(false)}
+            >
+              {t("닫기")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => navigate(`/r/${researchId}/reviews?new=1`)}
+            >
+              {t("검토 요청 만들기")}
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );

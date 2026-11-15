@@ -7,7 +7,7 @@ import {
   signInAs,
 } from "./support/supabase-mock";
 
-// 연구 도우미 입력창(모델·답변 깊이·첨부·보내기)의 화면 흐름. 서버 응답은 가로채서 정합니다.
+// 연구 도우미 입력창(모델·답변 깊이·명령·대기 줄·컨텍스트·첨부·보내기)의 화면 흐름. 서버 응답은 가로채서 정합니다.
 const SHOTS = process.env.SHOTS_DIR;
 const models = [
   "gemini-3.8-flash",
@@ -52,7 +52,7 @@ const credits = {
   },
 };
 
-async function open(page: Page, width = 1440, height = 900) {
+async function open(page: Page, width = 1440, height = 900, delayMs = 0) {
   await page.setViewportSize({ width, height });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message.slice(0, 160)));
@@ -68,19 +68,18 @@ async function open(page: Page, width = 1440, height = 900) {
     "rms_save_record",
     (body) => (body as { p_value: unknown }).p_value,
   );
-  server.fn("ai-assist", (body, route) =>
-    route.request().method() === "GET"
-      ? { models }
-      : {
-          runId: "run-1",
-          candidates: [],
-          answer:
-            "**핵심만** 말씀드릴게요 [근거 1].\n\n- 첫째 확인\n- 둘째 확인",
-          creditsUsed: 0.831,
-          creditStatus: "settled",
-          model: (body as { model?: string }).model,
-        },
-  );
+  server.fn("ai-assist", async (body, route) => {
+    if (route.request().method() === "GET") return { models };
+    if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
+    return {
+      runId: "run-1",
+      candidates: [],
+      answer: "**핵심만** 말씀드릴게요 [근거 1].\n\n- 첫째 확인\n- 둘째 확인",
+      creditsUsed: 0.831,
+      creditStatus: "settled",
+      model: (body as { model?: string }).model,
+    };
+  });
   await page.goto(`/r/${RESEARCH_ID}/assistant`);
   await expect(page.locator("form.ai-composer")).toBeVisible();
   return { errors, server };
@@ -89,13 +88,15 @@ const shot = async (page: Page, name: string) => {
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${name}.png` });
 };
 
-test("입력창이 한 줄 도구 막대로 보이고 화면 밖으로 넘치지 않는다", async ({
+test("입력창이 한 줄 도구 막대로 보이고 360~1440px에서 화면 밖으로 넘치지 않는다", async ({
   page,
 }) => {
   for (const [w, h] of [
     [1440, 900],
+    [1024, 900],
     [768, 900],
     [390, 800],
+    [360, 800],
   ]) {
     const { errors } = await open(page, w, h);
     await expect(page.locator("button.ai-model-trigger")).toBeVisible();
@@ -122,6 +123,12 @@ test("모델 목록을 열고 고르고 닫는 동작을 빠르게 반복해도 
   await page.getByRole("option", { name: /Gemini 4 Carbon/ }).click();
   await expect(page.locator(".chip-select-popup")).toBeHidden();
   await expect(trigger).toContainText("Gemini 4 Carbon");
+  const banner = page.locator(".ai-composer-banner");
+  await expect(banner).toContainText("Gemini 3.8 Flash");
+  await shot(page, "promo");
+  await banner.getByRole("button", { name: "써 보기" }).click();
+  await expect(trigger).toContainText("Gemini 3.8 Flash");
+  await expect(banner).toContainText("내 잔액");
   for (let i = 0; i < 4; i += 1) {
     await trigger.click();
     await page.keyboard.press("Escape");
@@ -131,17 +138,66 @@ test("모델 목록을 열고 고르고 닫는 동작을 빠르게 반복해도 
   expect(errors).toEqual([]);
 });
 
-test("질문을 보내면 서식 있는 답변과 출처가 보인다", async ({ page }) => {
-  const { errors, server } = await open(page);
-  await page
-    .locator("form.ai-composer textarea")
-    .fill("이 연구의 핵심만 알려 줘");
-  await page.getByRole("button", { name: "질문 보내기" }).click();
-  await expect(page.locator(".ai-message-body strong").first()).toHaveText(
-    "핵심만",
+test("Enter로 보내면 입력창이 즉시 비고 빛 요소가 없으며 중단 시 글이 돌아온다", async ({
+  page,
+}) => {
+  const { errors } = await open(page, 1440, 900, 3000);
+  const box = page.locator("form.ai-composer textarea");
+  await box.fill("이 연구의 핵심만 알려 줘");
+  await box.press("Enter");
+  // 보내는 즉시 비어야 함
+  await expect(box).toHaveValue("");
+  // 글로 보낸 요청 중에 빛 요소가 DOM에 없어야 함
+  await expect(page.locator(".ai-composer-glow")).toHaveCount(0);
+  // 중단 시 글이 돌아옴
+  await page.getByRole("button", { name: "실행 중단" }).click();
+  await expect(box).toHaveValue("이 연구의 핵심만 알려 줘");
+  expect(errors).toEqual([]);
+});
+
+test("/ 명령 메뉴를 키보드로 열고 검색·선택·해제할 수 있다", async ({
+  page,
+}) => {
+  const { errors } = await open(page);
+  const box = page.locator("form.ai-composer textarea");
+  await box.fill("/ㅇㄱ");
+  await expect(page.locator(".composer-command-menu")).toBeVisible();
+  await expect(page.locator(".composer-command-item").first()).toContainText(
+    "원고 검토",
   );
-  await shot(page, "answered");
-  expect(server.count("ai-assist")).toBeGreaterThanOrEqual(2);
+  await box.press("Enter");
+  await expect(page.locator(".composer-command-pill")).toContainText(
+    "원고 검토",
+  );
+  await expect(page.locator(".ai-composer-banner")).toContainText("바꾸기 /");
+  await expect(box).toHaveValue("");
+  await box.press("Backspace");
+  await expect(page.locator(".composer-command-pill")).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("기다리는 동안 보낸 글이 대기 줄에 쌓여 순서대로 나가고 컨텍스트 고리가 동작한다", async ({
+  page,
+}) => {
+  const { errors } = await open(page, 1440, 900, 1500);
+  const box = page.locator("form.ai-composer textarea");
+  await box.fill("첫 번째 질문");
+  await box.press("Enter");
+  await box.fill("두 번째 대기 질문");
+  await box.press("Enter");
+  await expect(page.locator(".composer-queue")).toBeVisible();
+  await expect(page.locator(".composer-queue-text")).toHaveText(
+    "두 번째 대기 질문",
+  );
+  await page.waitForTimeout(4000);
+  await expect(page.locator(".composer-queue")).toHaveCount(0);
+  await expect(page.locator(".ai-message.user")).toHaveCount(2);
+
+  await page.getByRole("button", { name: "컨텍스트 한도 보기" }).click();
+  await expect(page.locator(".composer-context-popover")).toBeVisible();
+  await expect(page.locator(".composer-context-popover")).toContainText(
+    "50,000자",
+  );
   expect(errors).toEqual([]);
 });
 

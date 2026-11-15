@@ -73,67 +73,6 @@
     }
   }
 
-  /* 나만의 연구 도우미 */
-  .agent-preview {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-12);
-    margin: var(--spacing-16) 0 var(--spacing-20);
-    padding: var(--spacing-12) var(--spacing-16);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-12);
-    background: var(--surface-muted);
-  }
-  .agent-preview > span {
-    display: grid;
-    gap: var(--spacing-2);
-  }
-  .agent-preview small {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-  }
-  .agent-avatar-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-    gap: var(--spacing-8);
-  }
-  .agent-avatar-option {
-    display: grid;
-    justify-items: center;
-    gap: var(--spacing-4);
-    padding: var(--spacing-10) var(--spacing-4);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-12);
-    background: var(--surface);
-    cursor: pointer;
-    transition:
-      border-color var(--motion-duration-micro) ease-out,
-      background-color var(--motion-duration-micro) ease-out,
-      transform var(--motion-duration-micro) ease-out;
-  }
-  .agent-avatar-option small {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    text-align: center;
-    word-break: var(--text-word-break, keep-all);
-  }
-  .agent-avatar-option:hover {
-    border-color: var(--hover-line);
-    transform: translateY(-2px);
-  }
-  .agent-avatar-option:has(input:checked) {
-    border-color: var(--selected-line);
-    background: var(--selected-fill);
-  }
-  .agent-avatar-option:has(input:checked) small {
-    color: var(--brand);
-    font-weight: 600;
-  }
-  .agent-avatar-option:has(input:focus-visible) {
-    outline: 2px solid var(--brand);
-    outline-offset: 2px;
-  }
-
   /* 사용량 › 저장 공간 게이지(500MB 눈금) */
   .storage-meter {
     margin: var(--spacing-20) 0 var(--spacing-12);
@@ -200,21 +139,13 @@
     .hour-pop {
       animation: none;
     }
-    .agent-avatar-option,
     .storage-meter-fill {
       transition: none;
-    }
-    .agent-avatar-option:hover {
-      transform: none;
     }
   }
 }
 
 @layer margin {
-  /* 도우미 미리보기: 큰 봇 + 이름·움직임 고르기 */
-  .agent-preview > span {
-    gap: var(--spacing-6);
-  }
   .profile-heading-title {
     display: flex;
     align-items: center;

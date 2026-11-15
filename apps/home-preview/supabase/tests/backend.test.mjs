@@ -744,3 +744,14 @@ test('credits: operators can list stale unsettled holds, browsers cannot',async(
  assert.deepEqual(rows.map(r=>r.run_id),[stale]);assert.equal(Number(rows[0].reserved),50)
  await as(ids.student);await failure(()=>db.query('select * from public.rms_ai_credit_unresolved()'),'42501')
 })
+test('inline_edit mode runs without saving ai_candidates and enforces per-run limits',async()=>{
+ await db.exec('reset role');await db.query("update public.rms_ai_runs set created_at=now()-interval '2 days' where user_id=$1",[ids.student]);
+ const run='b1111111-1111-4111-8111-111111111111';
+ await service();
+ await call('rms_ai_begin_v2',[ids.student,ids.research,'inline-edit-input',run,'inline_edit','test-model','minimal']);
+ await failure(()=>call('rms_ai_begin_v2',[ids.student,ids.research,'inline-edit-input','b2222222-2222-4222-8222-222222222222','inline_edit','test-model','minimal']),'55000');
+ assert.equal(await call('rms_ai_finish_v2',[run,'complete',JSON.stringify({candidates:[]}),'[]',null]),true);
+ await as(ids.student);const data=await call('rms_bootstrap');
+ assert.ok(!data.aiCandidates.some(c=>c.runId===run));
+ assert.equal(data.aiRuns.find(r=>r.id===run).status,'complete');
+})

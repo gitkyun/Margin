@@ -16,43 +16,17 @@ export const AGENT_TONES = [
 ] as const;
 export type AgentTone = (typeof AGENT_TONES)[number];
 
-/**
- * 연구 도우미 봇 모양 12종: 마진이(`margin`, 기존 마스코트 윤곽) + libraries.dev Bot avatars 형태 11종.
- * 라이브러리 형태는 값이 라이브러리 이름 그대로예요. 생김새는 components/brand/bot-looks.ts,
- * 화면 이름은 pages/settings/AgentSettings.tsx에 있어요.
- */
-export const BOT_TYPES = [
-  "margin",
-  "clover",
-  "flower",
-  "star",
-  "ghost",
-  "circle",
-  "hexagon",
-  "square",
-  "triangle",
-  "blob",
-  "cloud",
-  "puddle",
-] as const;
-export type BotType = (typeof BOT_TYPES)[number];
-
-/** 아무것도 고르지 않은 사람에게 보이는 마진 기본 도우미 */
-export const DEFAULT_BOT_TYPE: BotType = "margin";
-
 /** preferences 안의 키 이름 */
 export const AGENT_KEYS = {
   name: "agentName",
   instructions: "agentInstructions",
   tone: "agentTone",
-  botType: "agentBotType",
 } as const;
 
 export interface AgentProfile {
   name: string;
   instructions: string;
   tone: AgentTone;
-  botType: BotType;
 }
 
 export function agentToneOptions(): { value: AgentTone; label: string }[] {
@@ -80,9 +54,6 @@ export function readAgentProfile(
 ): AgentProfile {
   const prefs = preferences ?? {};
   const tone = AGENT_TONES.find((value) => value === prefs[AGENT_KEYS.tone]);
-  const botType =
-    BOT_TYPES.find((value) => value === prefs[AGENT_KEYS.botType]) ??
-    DEFAULT_BOT_TYPE;
   return {
     name: cleanAgentText(prefs[AGENT_KEYS.name], AGENT_NAME_MAX).replace(
       /\s+/g,
@@ -93,7 +64,6 @@ export function readAgentProfile(
       AGENT_INSTRUCTIONS_MAX,
     ),
     tone: tone ?? "default",
-    botType,
   };
 }
 
@@ -105,21 +75,16 @@ export function agentPreferencePatch(
     [AGENT_KEYS.name]: profile.name,
     [AGENT_KEYS.instructions]: profile.instructions,
     [AGENT_KEYS.tone]: profile.tone,
-    [AGENT_KEYS.botType]: profile.botType,
   });
   return {
     [AGENT_KEYS.name]: clean.name,
     [AGENT_KEYS.instructions]: clean.instructions,
     [AGENT_KEYS.tone]: clean.tone,
-    [AGENT_KEYS.botType]: clean.botType,
   };
 }
 
 export function sameAgentProfile(a: AgentProfile, b: AgentProfile): boolean {
   return (
-    a.name === b.name &&
-    a.instructions === b.instructions &&
-    a.tone === b.tone &&
-    a.botType === b.botType
+    a.name === b.name && a.instructions === b.instructions && a.tone === b.tone
   );
 }

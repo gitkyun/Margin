@@ -194,4 +194,43 @@
   .availability-legend-mine svg {
     color: var(--brand);
   }
+  .availability-vote-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-4);
+  }
+  .availability-vote-card {
+    display: grid;
+    gap: var(--spacing-6);
+    padding: var(--spacing-8) var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface);
+  }
+  .availability-vote-card.is-confirmed {
+    border-color: var(--success);
+  }
+  .availability-vote-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-6);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .availability-vote-head span {
+    color: var(--text-secondary);
+  }
+  .availability-vote-bar {
+    height: 4px;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+  }
+  .availability-vote-bar > i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--brand);
+  }
 }

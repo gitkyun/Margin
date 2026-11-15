@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -9,23 +9,26 @@ import {
 } from "@/lib/ai-capabilities";
 import { AIModelSelector } from "@/components/ai/AIModelSelector";
 import { AIComposerBanner } from "@/components/ai/AIComposerBanner";
-import { ChipSelect } from "@/components/ai/ChipSelect";
+import {
+  ComposerAttachmentCards,
+  ComposerCommandMenu,
+  ComposerCommandPill,
+  ComposerContextMeter,
+  ComposerQueue,
+  filterComposerCommands,
+  findComposerCommand,
+  type QueuedQuestion,
+} from "@/components/ai/ComposerCommands";
 import { useAIUsage } from "@/lib/ai-usage";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
   AINotConfiguredError,
   useAINotConfigured,
 } from "@/lib/ai-availability";
-import {
-  Link,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useExperience, uploadPrivate, modeLabels } from "@/lib/experience";
+import { useExperience, uploadPrivate } from "@/lib/experience";
 import { Hint } from "@/components/ui/hint";
-import { assertConnected } from "@/lib/supabase";
 import { readPDFPage } from "@/lib/pdf-text";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useFileDrop, ASSISTANT_ACCEPT } from "@/lib/use-file-drop";
@@ -45,7 +48,6 @@ import {
   StatusBadge,
   useDisabledReason,
 } from "@/components/common";
-import { Choice } from "@/components/experience";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,7 +63,7 @@ import {
 } from "./assistant/AssistantPanel";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
 import { AssistantMessageText } from "./assistant/AssistantMessageText";
-import { AssistantFace } from "@/components/brand/BotAvatar";
+import { AssistantMascot } from "@/components/brand/Brand";
 import { readAgentProfile } from "@/lib/research-agent";
 import {
   researchModelLabel,
@@ -77,7 +79,7 @@ import {
 import { Icon } from "@/components/icons";
 import { assistantSteps, type AssistantStep } from "@/lib/assistant-steps";
 import { AnswerSteps, AssistantThinking } from "./assistant/AssistantThinking";
-import { VoiceGlow } from "@/components/recording/VoiceGlow";
+import { LiveWaveform } from "@/components/recording/LiveWaveform";
 import { useDictation } from "@/lib/use-dictation";
 import { t } from "@/lib/i18n";
 
@@ -86,6 +88,17 @@ function panelStartsOpen(): boolean {
   if (typeof window === "undefined" || !window.matchMedia) return true;
   return !window.matchMedia(queryDown("md")).matches;
 }
+
+const clockLabel = (sec: number) =>
+  `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+
+function contextIconName(kind: AIContext["kind"]): string {
+  if (kind === "meetings") return "calendar";
+  if (kind === "feedback") return "chat";
+  if (kind === "tasks") return "check";
+  return "file";
+}
+
 export function ResearchAssistant() {
   const { researchId = "" } = useParams(),
     w = useExperience(),
@@ -94,7 +107,7 @@ export function ResearchAssistant() {
     [params, setParams] = useSearchParams(),
     // 예전 주소(?tab=overview)는 패널의 제안 탭으로 엽니다.
     wantsSuggestions = params.get("tab") === "overview";
-  // 계정 설정에서 고른 나만의 연구 도우미(이름·아바타). 고르지 않았으면 기존 마스코트.
+  // 계정 설정에서 고른 나만의 연구 도우미 이름. 고르지 않았으면 기본 마스코트.
   const agent = readAgentProfile(user.preferences);
   const [panelTab, setPanelTab] = useState<AssistantPanelTab>(
       wantsSuggestions ? "suggestions" : "sources",
@@ -115,7 +128,6 @@ export function ResearchAssistant() {
     [lastRunId, setLastRunId] = useState(""),
     [lastUsedCredits, setLastUsedCredits] = useState<number | undefined>(),
     [running, setRunning] = useState(false),
-    // 이번 요청에서 읽는 것(단계)과, 방금 받은 답이 거친 단계. 새로고침하면 사라져요.
     [waiting, setActiveRun] = useState<{
       first: boolean;
       steps: AssistantStep[];
@@ -123,7 +135,9 @@ export function ResearchAssistant() {
     [answered, setAnswered] = useState<{
       at: string;
       steps: AssistantStep[];
+      elapsedMs: number;
     } | null>(null),
+    [focusedSourceIndex, setFocusedSourceIndex] = useState<number | null>(null),
     [error, setError] = useState(""),
     [page, setPage] = useState(1),
     [uploading, setUploading] = useState(false),
@@ -131,7 +145,15 @@ export function ResearchAssistant() {
     [adopting, setAdopting] = useState<SavedAICandidate | null>(null),
     [candidateTitle, setCandidateTitle] = useState(""),
     [candidateBody, setCandidateBody] = useState(""),
-    [saveBusy, setSaveBusy] = useState(false);
+    [saveBusy, setSaveBusy] = useState(false),
+    [commandDismissed, setCommandDismissed] = useState(false),
+    [commandIndex, setCommandIndex] = useState(0),
+    [queue, setQueue] = useState<QueuedQuestion[]>([]),
+    [voiceSeconds, setVoiceSeconds] = useState(0),
+    [voiceReview, setVoiceReview] = useState<{
+      before: string;
+      spoken: string;
+    } | null>(null);
   const candidateReason = useDisabledReason(
       !saveBusy &&
         (!candidateTitle.trim()
@@ -152,13 +174,22 @@ export function ResearchAssistant() {
     runId = useRef(""),
     sequence = useRef(0),
     fileInput = useRef<HTMLInputElement>(null),
+    scrollRef = useRef<HTMLDivElement>(null),
+    stickToBottom = useRef(true),
     end = useRef<HTMLDivElement>(null),
     composerRef = useRef<HTMLTextAreaElement>(null),
+    lastSentRef = useRef(""),
+    restoreDraftRef = useRef<string | null>(null),
+    skipRestoreOnCancel = useRef(false),
+    queueRef = useRef<QueuedQuestion[]>([]),
+    voiceBeforeRef = useRef(""),
+    voiceAnalyserRef = useRef<AnalyserNode | null>(null),
     pendingFile = useRef<{
       file: File;
       record: Attachment;
       uploaded: boolean;
     } | null>(null);
+  queueRef.current = queue;
   const conversations = data.conversations
       .filter((c) => c.researchId === researchId && !c.archivedAt)
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
@@ -169,9 +200,58 @@ export function ResearchAssistant() {
     messages = conversation?.messages ?? [];
   const activeRun = runs.find((r) => r.status === "running");
   const working = running || !!activeRun;
-  // 첫 질문에 답하는 동안에는 대화 면 전체를 '연구를 읽는 화면'으로 씁니다.
   const readingFirst = running && !!waiting?.first;
-  const currentTask = running ? task : (activeRun?.mode ?? task);
+
+  // `/` 명령 메뉴: 입력 맨 앞이 `/`이고 줄바꿈이 없을 때만 열어요.
+  const slashQuery =
+    draft.startsWith("/") && !draft.includes("\n") ? draft.slice(1) : null;
+  const commandMenuOpen = slashQuery !== null && !commandDismissed;
+  const filteredCommands = useMemo(
+    () => (slashQuery === null ? [] : filterComposerCommands(slashQuery)),
+    [slashQuery],
+  );
+  const activeCommand = findComposerCommand(task);
+
+  useEffect(() => {
+    setCommandIndex(0);
+  }, [slashQuery]);
+
+  // 받아쓰기 중 실제 시계(초)와 마이크 파형 분석기를 연결해요.
+  useEffect(() => {
+    if (!dictation.listening) {
+      setVoiceSeconds(0);
+      return;
+    }
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      setVoiceSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, [dictation.listening]);
+
+  useEffect(() => {
+    if (!dictation.listening || !dictation.stream) {
+      voiceAnalyserRef.current = null;
+      return;
+    }
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const source = ctx.createMediaStreamSource(dictation.stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    voiceAnalyserRef.current = analyser;
+    return () => {
+      voiceAnalyserRef.current = null;
+      source.disconnect();
+      void ctx.close().catch(() => {});
+    };
+  }, [dictation.listening, dictation.stream]);
+
   useNavigationGuard({
     dirty: !!draft.trim(),
     busy: uploading,
@@ -186,8 +266,7 @@ export function ResearchAssistant() {
     [],
   );
   useEffect(() => {
-    // 첫 안내 화면에서는 아래로 끌어내리지 않아 캐릭터·제목이 잘리지 않게 합니다.
-    if (!messages.length && !running) return;
+    if ((!messages.length && !running) || !stickToBottom.current) return;
     end.current?.scrollIntoView({ block: "nearest" });
   }, [messages.length, running]);
   useEffect(() => {
@@ -227,16 +306,15 @@ export function ResearchAssistant() {
         return;
       }
     }
-    if (doc)
-      setContexts([
-        {
-          kind: "documents",
-          id: doc.id,
-          title: doc.title + (selectedText ? ` · ${t("선택 문단")}` : ""),
-          revision: doc.revision,
-          ...(selectedText ? { text: selectedText } : {}),
-        },
-      ]);
+    setContexts([
+      {
+        kind: "documents",
+        id: doc.id,
+        title: doc.title + (selectedText ? ` · ${t("선택 문단")}` : ""),
+        revision: doc.revision,
+        ...(selectedText ? { text: selectedText } : {}),
+      },
+    ]);
   }, [params, data.documents, researchId, user.id, setParams]);
   const sourceOptions: AIContext[] = [
     ...data.meetings
@@ -270,9 +348,10 @@ export function ResearchAssistant() {
       .filter((a) => a.researchId === researchId && !a.archivedAt)
       .map((a) => ({ kind: "attachments" as const, id: a.id, title: a.title })),
   ];
-  function openPanel(next: AssistantPanelTab) {
+  function openPanel(next: AssistantPanelTab, sourceIndex?: number) {
     setPanelTab(next);
     setPanelOpen(true);
+    if (sourceIndex !== undefined) setFocusedSourceIndex(sourceIndex);
   }
   async function addContext(c: AIContext) {
     if (task === "organize_meeting") {
@@ -388,20 +467,49 @@ export function ResearchAssistant() {
       if (fileInput.current) fileInput.current.value = "";
     }
   }
+  function startVoiceInput() {
+    voiceBeforeRef.current = draft;
+    setVoiceReview(null);
+    dictation.start();
+  }
+  function stopVoiceInput() {
+    const spoken = draft;
+    dictation.stop();
+    if (spoken.trim()) {
+      setVoiceReview({ before: voiceBeforeRef.current, spoken });
+    }
+  }
+  function selectCommand(id: AIInput["mode"]) {
+    setTask(id);
+    setCommandDismissed(false);
+    setDraft("");
+    composerRef.current?.focus();
+  }
+  function enqueueCurrentDraft() {
+    const text = draft.trim();
+    if (!text) return;
+    setQueue((prev) => [...prev, { id: uid(), text, mode: task }]);
+    setDraft("");
+  }
+
   /**
    * `retryQuestion`을 주면 입력창 대신 그 질문을 다시 보내요(답변 아래 ‘다시 답하기’).
-   * 이때는 지금 고른 근거만 읽고, 입력창에 적던 글은 그대로 둬요.
+   * 이때는 입력창을 건드리지 않고, 일반 전송은 보내는 즉시 입력창을 비워요.
    */
-  async function send(retryQuestion?: string) {
+  async function send(
+    retryQuestion?: string,
+    override?: { mode?: AIInput["mode"]; conversation?: AIConversation | null },
+  ) {
     if (dictation.listening) dictation.stop();
+    setVoiceReview(null);
+    const activeMode = override?.mode ?? task;
     const question = retryQuestion ?? draft;
-    // 연구 대화는 기록 없이도 보낼 수 있어요. 나머지 요청은 읽을 기록이 있어야 해요.
-    if (working || unavailable || !question.trim()) return;
+    if ((!override && working) || unavailable || !question.trim()) return;
     if (!selection.model) {
       setError(t("사용 가능한 모델을 확인한 뒤 다시 보내 주세요."));
       return;
     }
-    if (!contexts.length && task !== "ask_research") {
+    if (!contexts.length && activeMode !== "ask_research") {
       setError(
         t("이 요청은 읽을 기록이 필요해요. 기록이나 파일을 첨부해 주세요."),
       );
@@ -409,7 +517,7 @@ export function ResearchAssistant() {
       return;
     }
     if (
-      task === "organize_meeting" &&
+      activeMode === "organize_meeting" &&
       (contexts.length !== 1 || contexts[0]?.kind !== "meetings")
     ) {
       setError(
@@ -420,6 +528,14 @@ export function ResearchAssistant() {
       openPanel("sources");
       return;
     }
+    const text = question.trim();
+    if (retryQuestion === undefined) {
+      setDraft("");
+      lastSentRef.current = text;
+      restoreDraftRef.current = text;
+    } else {
+      restoreDraftRef.current = null;
+    }
     const seq = ++sequence.current,
       id = uid(),
       controller = new AbortController();
@@ -428,8 +544,12 @@ export function ResearchAssistant() {
     setLastUsedCredits(undefined);
     abort.current = controller;
     const research = data.researches.find((r) => r.id === researchId);
+    const baseConv =
+      override?.conversation !== undefined
+        ? override.conversation
+        : conversation;
     const run = {
-      first: !conversation?.messages.some((m) => m.role === "assistant"),
+      first: !baseConv?.messages.some((m) => m.role === "assistant"),
       steps: [] as AssistantStep[],
     };
     run.steps = assistantSteps({
@@ -441,18 +561,20 @@ export function ResearchAssistant() {
       contexts,
     });
     setActiveRun(run);
+    stickToBottom.current = true;
     setRunning(true);
     setError("");
+    let succeeded = false;
+    let savedConversation: AIConversation | null = null;
     try {
-      let c = conversation ?? {
+      let c = baseConv ?? {
         ...recordBase(researchId),
-        title: question.slice(0, 100),
+        title: text.slice(0, 100),
         messages: [],
         contexts,
         visibility: "private" as const,
       };
-      const text = question.trim(),
-        last = c.messages.at(-1);
+      const last = c.messages.at(-1);
       c = await save("conversations", {
         ...c,
         contexts,
@@ -462,9 +584,10 @@ export function ResearchAssistant() {
             : [...c.messages, { role: "user", text, createdAt: now() }],
       });
       setConversation(c);
+      const runStartedAt = Date.now();
       const result = await runAI(
         {
-          mode: task,
+          mode: activeMode,
           researchId,
           question: text,
           sourceText: "",
@@ -489,34 +612,63 @@ export function ResearchAssistant() {
           )
           .join("\n\n");
       const answeredAt = now();
+      const elapsedMs = Date.now() - runStartedAt;
       const saved = await save("conversations", {
         ...c,
         messages: [
           ...c.messages,
-          { role: "assistant", text: answer, createdAt: answeredAt },
+          {
+            role: "assistant",
+            text: answer,
+            createdAt: answeredAt,
+            steps: run.steps.map((s) => s.done),
+            elapsedMs,
+            contexts,
+          },
         ],
       });
+      savedConversation = saved;
       setConversation(saved);
-      setAnswered({ at: answeredAt, steps: run.steps });
-      if (retryQuestion === undefined) setDraft("");
+      setAnswered({ at: answeredAt, steps: run.steps, elapsedMs });
+      restoreDraftRef.current = null;
+      succeeded = true;
     } catch (e) {
-      // 연결 전이면 아래 '쓸 수 없음' 안내가 대신 보여요(다시 보내기를 권하지 않음).
-      if (seq === sequence.current && !controller.signal.aborted)
+      if (seq === sequence.current && !controller.signal.aborted) {
+        if (restoreDraftRef.current !== null) {
+          const toRestore = restoreDraftRef.current;
+          setDraft((cur) => cur || toRestore);
+          restoreDraftRef.current = null;
+        }
         setError(e instanceof AINotConfiguredError ? "" : (e as Error).message);
+      }
     } finally {
       if (seq === sequence.current) {
         setRunning(false);
         runId.current = "";
       }
       await Promise.allSettled([refresh(), usage.refetch()]);
+      if (succeeded && seq === sequence.current && queueRef.current.length) {
+        const [nextItem, ...rest] = queueRef.current;
+        setQueue(rest);
+        void send(nextItem.text, {
+          mode: nextItem.mode,
+          conversation: savedConversation,
+        });
+      }
     }
   }
-  async function cancel() {
+  async function cancel(silent = false) {
     sequence.current++;
     abort.current?.abort();
     setRunning(false);
     const id = runId.current;
     runId.current = "";
+    if (!skipRestoreOnCancel.current && restoreDraftRef.current !== null) {
+      const toRestore = restoreDraftRef.current;
+      setDraft((cur) => cur || toRestore);
+    }
+    restoreDraftRef.current = null;
+    skipRestoreOnCancel.current = false;
     if (id) {
       try {
         await w.cancelRun(id);
@@ -528,7 +680,15 @@ export function ResearchAssistant() {
         );
       }
     }
-    toast.info(t("실행을 중단했어요. 질문은 그대로 있어요."));
+    if (!silent) toast.info(t("실행을 중단했어요. 질문은 그대로 있어요."));
+  }
+  async function sendQueuedNow(itemId: string) {
+    const target = queueRef.current.find((item) => item.id === itemId);
+    if (!target) return;
+    setQueue((prev) => prev.filter((item) => item.id !== itemId));
+    skipRestoreOnCancel.current = true;
+    await cancel(true);
+    void send(target.text, { mode: target.mode });
   }
   function adopt(c: SavedAICandidate) {
     setAdopting(c);
@@ -617,7 +777,6 @@ export function ResearchAssistant() {
         },
       );
       setAdopting(null);
-      // 만든 기록으로 바로 갈 수 있게 알림에 ‘열기’를 붙입니다(검수 H-4).
       const savedId = saved?.id ?? (targetValue.id as string | undefined);
       const href =
         targetKind === "feedback" && savedId
@@ -652,10 +811,9 @@ export function ResearchAssistant() {
     setConversation(null);
     setContexts([]);
     setDraft("");
+    setQueue([]);
     setError("");
   }
-  // 미리보기이거나 서버에 AI가 아직 연결되지 않았으면 실행할 수 없어요.
-  // 예시 답변·진행률·모델 설정을 만들어 보여 주지 않습니다.
   const unavailable = mode === "preview" || aiNotConfigured;
   const {
     getRootProps: getComposerDropProps,
@@ -665,14 +823,17 @@ export function ResearchAssistant() {
   } = useFileDrop({
     accept: ASSISTANT_ACCEPT,
     kind: "assistant",
-    disabled: uploading || unavailable || working,
+    // 답을 기다리는 중을 여기 넣으면 폼 전체에 aria-disabled가 붙어 입력창·중단 버튼까지 꺼진 것으로 읽혀요.
+    disabled: uploading || unavailable,
     noClick: true,
     noKeyboard: true,
-    onSelect: (file) => void attach(file),
+    onSelect: (file) => {
+      if (working) return;
+      void attach(file);
+    },
     onError: (err) => setError(err),
   });
   const models = caps.data?.models ?? [];
-  // 지금 모델이 추천이 아니면 입력창 위 띠에서 한 번에 추천 모델로 바꿀 수 있어요.
   const recommendedModel = models.find(
     (item) => item.recommended && isAIModelAvailable(item),
   );
@@ -687,6 +848,10 @@ export function ResearchAssistant() {
     setModel(next.model ?? "");
     setThinking(next.thinking ?? "");
   }
+  const messageFiles = (conversation?.contexts ?? contexts).filter(
+    (c) => c.kind === "attachments" || c.kind === "versions",
+  );
+
   return (
     <div className="assistant-experience">
       <PageHeader
@@ -739,12 +904,20 @@ export function ResearchAssistant() {
         }
       />
       <section className="ai-chat-main">
-        <div className="chat-scroll">
+        <div
+          ref={scrollRef}
+          className="chat-scroll"
+          onScroll={() => {
+            const el = scrollRef.current;
+            if (!el) return;
+            stickToBottom.current =
+              el.scrollHeight - el.scrollTop - el.clientHeight < 64;
+          }}
+        >
           {readingFirst ? null : !messages.length ? (
             <div className="assistant-welcome">
-              <AssistantFace state="ready" size={64} eager />
+              <AssistantMascot state="ready" size={64} eager />
               <h2>{t("아직 대화가 없어요")}</h2>
-              {/* 첨부 안내는 입력창 안내 문구 한 곳에만 둡니다. */}
               {!unavailable && (
                 <div className="assistant-prompts">
                   {[
@@ -773,7 +946,7 @@ export function ResearchAssistant() {
                   <span className="sr-only">{t("나")}</span>
                 ) : (
                   <span className="message-role">
-                    <AssistantFace state="chatting" size={28} />
+                    <AssistantMascot state="chatting" size={28} />
                     {t("연구 도우미")}
                     {agent.name && (
                       <span className="message-role-name">· {agent.name}</span>
@@ -783,16 +956,45 @@ export function ResearchAssistant() {
                 {m.role === "assistant" ? (
                   <AssistantMessageText
                     text={m.text}
-                    contexts={conversation?.contexts ?? contexts}
-                    onOpenSources={() => openPanel("sources")}
+                    contexts={m.contexts ?? conversation?.contexts ?? contexts}
+                    onOpenSources={(index) => openPanel("sources", index)}
                   />
                 ) : (
-                  <div>{m.text}</div>
+                  <>
+                    <div>{m.text}</div>
+                    {!!messageFiles.length && (
+                      <div className="message-attachments">
+                        {messageFiles.map((f) => (
+                          <span
+                            key={`${f.kind}:${f.id}:${f.page ?? ""}`}
+                            className="message-attachment-pill"
+                          >
+                            <Icon name="file" size={12} />
+                            <span>{f.title}</span>
+                            {f.page && (
+                              <small>{t("{page}쪽", { page: f.page })}</small>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
                 {m.role === "assistant" &&
-                  answered?.at === m.createdAt &&
-                  i === messages.length - 1 && (
-                    <AnswerSteps steps={answered.steps} />
+                  (m.steps?.length ||
+                    (answered?.at === m.createdAt &&
+                      i === messages.length - 1)) && (
+                    <AnswerSteps
+                      steps={
+                        m.steps?.length ? m.steps : (answered?.steps ?? [])
+                      }
+                      elapsedMs={
+                        m.elapsedMs ??
+                        (answered?.at === m.createdAt
+                          ? answered.elapsedMs
+                          : undefined)
+                      }
+                    />
                   )}
                 {m.role === "assistant" && (
                   <AnswerActions
@@ -849,211 +1051,385 @@ export function ResearchAssistant() {
             <AIComposerBanner
               runId={lastRunId || undefined}
               usedCredits={lastUsedCredits}
-              usageHref={`/r/${researchId}/settings?tab=usage`}
-              recommendedLabel={
-                offerRecommended && recommendedModel
-                  ? researchModelLabel(recommendedModel)
+              usageHref="/account?tab=usage"
+              provider={
+                models.find((item) => item.id === selection.model)?.provider
+              }
+              command={
+                activeCommand
+                  ? {
+                      label: activeCommand.label,
+                      description: activeCommand.description,
+                      icon: activeCommand.icon,
+                      onChangeCommand: () => {
+                        setCommandDismissed(false);
+                        setDraft("/");
+                        composerRef.current?.focus();
+                      },
+                    }
                   : undefined
               }
-              onPickRecommended={pickRecommended}
+              promo={
+                offerRecommended && recommendedModel
+                  ? {
+                      label: researchModelLabel(recommendedModel),
+                      note:
+                        recommendedModel.description &&
+                        t(recommendedModel.description),
+                      provider: recommendedModel.provider,
+                    }
+                  : undefined
+              }
+              onTryPromo={pickRecommended}
             />
           )}
-          <VoiceGlow
-            className="ai-composer-glow"
-            active={dictation.listening}
-            processing={running}
-            stream={dictation.stream}
-          >
-            <form
-              {...getComposerDropProps({
-                className: `ai-composer${isComposerDragActive ? " is-dragging" : ""}`,
-                onSubmit: (e) => {
+          <ComposerQueue
+            items={queue}
+            onMove={(idx, delta) => {
+              setQueue((prev) => {
+                const next = [...prev];
+                const [moved] = next.splice(idx, 1);
+                next.splice(idx + delta, 0, moved);
+                return next;
+              });
+            }}
+            onEdit={(itemId) => {
+              const target = queue.find((item) => item.id === itemId);
+              if (!target) return;
+              setDraft(target.text);
+              setTask(target.mode);
+              setQueue((prev) => prev.filter((item) => item.id !== itemId));
+              composerRef.current?.focus();
+            }}
+            onSendNow={(itemId) => void sendQueuedNow(itemId)}
+            onRemove={(itemId) =>
+              setQueue((prev) => prev.filter((item) => item.id !== itemId))
+            }
+            onClear={() => setQueue([])}
+          />
+          <form
+            {...getComposerDropProps({
+              className: `ai-composer${isComposerDragActive ? " is-dragging" : ""}`,
+              onSubmit: (e) => {
+                e.preventDefault();
+                if (working) enqueueCurrentDraft();
+                else void send();
+              },
+              onPaste: (e) => {
+                const file = e.clipboardData.files[0];
+                if (file && !working && !uploading && !unavailable) {
                   e.preventDefault();
-                  void send();
-                },
-                onPaste: (e) => {
-                  const file = e.clipboardData.files[0];
-                  if (file && !working && !uploading && !unavailable) {
-                    e.preventDefault();
-                    void attach(file);
-                  }
-                },
-              })}
-            >
-              {!!contexts.length && (
-                <div
-                  className="context-chips"
-                  role="group"
-                  aria-label={t("첨부한 기록")}
-                >
-                  {contexts.map((context, index) => (
-                    <span
-                      className="context-chip"
-                      key={`${context.kind}:${context.id}`}
-                    >
-                      <Icon name="file" size={15} />
-                      <span title={context.title}>{context.title}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        disabled={working || uploading}
-                        aria-label={t("{title} 첨부 해제", {
-                          title: context.title,
-                        })}
-                        onClick={() =>
-                          setContexts((items) =>
-                            items.filter((_, i) => i !== index),
-                          )
-                        }
-                      >
-                        <Icon name="close" size={13} />
-                      </Button>
-                    </span>
-                  ))}
+                  void attach(file);
+                }
+              },
+            })}
+          >
+            {commandMenuOpen && (
+              <ComposerCommandMenu
+                commands={filteredCommands}
+                activeIndex={commandIndex}
+                onSelect={(id) => selectCommand(id)}
+              />
+            )}
+            {activeCommand && (
+              <div className="composer-pill-row">
+                <ComposerCommandPill
+                  command={activeCommand}
+                  disabled={running || unavailable}
+                  onClear={() => setTask("ask_research")}
+                />
+              </div>
+            )}
+            <ComposerAttachmentCards
+              contexts={contexts}
+              data={data}
+              uploading={uploading}
+              uploadProgress={uploadProgress}
+              uploadError={error && pendingFile.current ? error : undefined}
+              disabled={working || uploading}
+              onRemove={(index) =>
+                setContexts((items) => items.filter((_, i) => i !== index))
+              }
+            />
+            {dictation.listening ? (
+              <div className="composer-voice-box">
+                <div className="composer-voice-row">
+                  <button
+                    type="button"
+                    className="composer-voice-stop"
+                    aria-label={t("음성 입력 멈추기")}
+                    onClick={stopVoiceInput}
+                  >
+                    <Icon name="stop" size={14} />
+                  </button>
+                  <span className="composer-voice-time">
+                    {clockLabel(voiceSeconds)}
+                  </span>
+                  <LiveWaveform
+                    className="composer-voice-wave"
+                    analyser={() => voiceAnalyserRef.current}
+                    active={dictation.listening}
+                    bars={28}
+                    label={t("음성 입력 파형")}
+                  />
                 </div>
-              )}
+                <p className="composer-voice-preview">
+                  {draft.trim() ? draft : t("듣고 있어요")}
+                </p>
+              </div>
+            ) : voiceReview ? (
+              <div className="composer-voice-review">
+                <p className="composer-voice-preview">{voiceReview.spoken}</p>
+                <div className="composer-voice-actions">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setDraft(voiceReview.before);
+                      setVoiceReview(null);
+                    }}
+                  >
+                    {t("버리기")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setVoiceReview(null);
+                      composerRef.current?.focus();
+                    }}
+                  >
+                    {t("글로 넣기")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={unavailable || !selection.model || working}
+                    onClick={() => void send(voiceReview.spoken)}
+                  >
+                    {t("보내기")}
+                  </Button>
+                </div>
+              </div>
+            ) : (
               <textarea
                 ref={composerRef}
                 aria-label={t("연구 도우미에게 질문")}
-                // 쓸 수 없는 이유는 입력창 바로 위 한 줄에서 알려 주므로 여기서 되풀이하지 않습니다.
                 placeholder={
                   unavailable
                     ? undefined
                     : contexts.length
-                      ? t("첨부한 기록에 대해 물어보세요")
+                      ? t(
+                          "첨부한 기록에 대해 물어보세요 · / 를 치면 요청 종류를 고를 수 있어요",
+                        )
                       : t(
-                          "질문을 적어 주세요. 기록을 첨부하면 그 기록을 읽고 답해요.",
+                          "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
                         )
                 }
                 value={draft}
                 disabled={unavailable}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => {
+                  setCommandDismissed(false);
+                  setDraft(e.target.value);
+                }}
                 maxLength={2000}
                 rows={1}
                 onKeyDown={(e) => {
-                  // 다른 AI 입력창과 같게: Enter로 보내고 Shift+Enter로 줄을 바꿉니다.
+                  if (commandMenuOpen) {
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setCommandIndex((i) =>
+                        filteredCommands.length
+                          ? (i + 1) % filteredCommands.length
+                          : 0,
+                      );
+                      return;
+                    }
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setCommandIndex((i) =>
+                        filteredCommands.length
+                          ? (i - 1 + filteredCommands.length) %
+                            filteredCommands.length
+                          : 0,
+                      );
+                      return;
+                    }
+                    if (
+                      (e.key === "Enter" || e.key === "Tab") &&
+                      !isImeComposing(e) &&
+                      filteredCommands.length
+                    ) {
+                      e.preventDefault();
+                      const chosen =
+                        filteredCommands[commandIndex] ?? filteredCommands[0];
+                      if (chosen) selectCommand(chosen.id);
+                      return;
+                    }
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      setCommandDismissed(true);
+                      return;
+                    }
+                  }
+                  if (e.key === "Escape" && running) {
+                    e.preventDefault();
+                    void cancel();
+                    return;
+                  }
+                  if (
+                    e.key === "Backspace" &&
+                    !draft &&
+                    task !== "ask_research"
+                  ) {
+                    e.preventDefault();
+                    setTask("ask_research");
+                    return;
+                  }
+                  if (e.key === "ArrowUp" && !draft && !commandMenuOpen) {
+                    const lastUser = [...messages]
+                      .reverse()
+                      .find((m) => m.role === "user")?.text;
+                    const recall = lastSentRef.current || lastUser;
+                    if (recall) {
+                      e.preventDefault();
+                      setDraft(recall);
+                    }
+                    return;
+                  }
                   if (e.key === "Enter" && !e.shiftKey && !isImeComposing(e)) {
                     e.preventDefault();
-                    void send();
+                    if (working) enqueueCurrentDraft();
+                    else void send();
                   }
                 }}
               />
-              <div className="composer-actions">
-                <Hint label={t("기록·파일 첨부")} position="top-center">
+            )}
+            <div className="composer-actions">
+              <Hint label={t("기록·파일 첨부")} position="top-center">
+                <button
+                  type="button"
+                  className="composer-attach"
+                  aria-label={
+                    contexts.length
+                      ? t("첨부한 기록 {count}개, 바꾸기", {
+                          count: contexts.length,
+                        })
+                      : t("기록·파일 첨부")
+                  }
+                  onClick={() => openPanel("sources")}
+                >
+                  <Icon name="plus" size={16} />
+                  {!!contexts.length && (
+                    <span className="composer-source-stack" aria-hidden="true">
+                      {contexts.slice(0, 3).map((c) => (
+                        <i key={`${c.kind}:${c.id}`}>
+                          <Icon name={contextIconName(c.kind)} size={11} />
+                        </i>
+                      ))}
+                      <span>{contexts.length}</span>
+                    </span>
+                  )}
+                </button>
+              </Hint>
+              <AIModelSelector
+                compact
+                models={models}
+                model={selection.model}
+                thinking={selection.thinking}
+                disabled={working || unavailable}
+                loading={mode === "connected" && caps.isPending}
+                failed={caps.isError}
+                onChange={(next) => {
+                  setModel(next.model);
+                  setThinking(next.thinking);
+                }}
+              />
+              <span className="composer-spacer" />
+              {!unavailable && (
+                <ComposerContextMeter
+                  contexts={contexts}
+                  data={data}
+                  draft={draft}
+                  history={messages}
+                  disabled={running}
+                  onNewChat={startNew}
+                />
+              )}
+              {dictation.supported && !unavailable && (
+                <Hint
+                  label={
+                    dictation.listening
+                      ? t("음성 입력 멈추기")
+                      : t("음성으로 질문 입력")
+                  }
+                  position="top-center"
+                >
                   <button
                     type="button"
-                    className="composer-attach"
+                    className="composer-mic"
+                    disabled={running || uploading}
+                    aria-pressed={dictation.listening}
                     aria-label={
-                      contexts.length
-                        ? t("첨부한 기록 {count}개, 바꾸기", {
-                            count: contexts.length,
-                          })
-                        : t("기록·파일 첨부")
-                    }
-                    onClick={() => openPanel("sources")}
-                  >
-                    <Icon name="plus" size={20} />
-                    {!!contexts.length && <span>{contexts.length}</span>}
-                  </button>
-                </Hint>
-                <ChipSelect
-                  className="ai-mode-trigger"
-                  label={t("요청 종류")}
-                  value={task}
-                  disabled={running || unavailable}
-                  onChange={(value) => setTask(value as AIInput["mode"])}
-                  options={Object.entries(modeLabels).map(([value, label]) => ({
-                    value,
-                    label: String(label),
-                  }))}
-                />
-                <AIModelSelector
-                  compact
-                  models={models}
-                  model={selection.model}
-                  thinking={selection.thinking}
-                  disabled={working || unavailable}
-                  loading={mode === "connected" && caps.isPending}
-                  failed={caps.isError}
-                  onChange={(next) => {
-                    setModel(next.model);
-                    setThinking(next.thinking);
-                  }}
-                />
-                {dictation.supported && !unavailable && (
-                  <Hint
-                    label={
                       dictation.listening
                         ? t("음성 입력 멈추기")
                         : t("음성으로 질문 입력")
                     }
-                    position="top-center"
-                  >
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant={dictation.listening ? "default" : "ghost"}
-                      disabled={running || uploading}
-                      aria-pressed={dictation.listening}
-                      aria-label={
-                        dictation.listening
-                          ? t("음성 입력 멈추기")
-                          : t("음성으로 질문 입력")
-                      }
-                      onClick={() =>
-                        dictation.listening
-                          ? dictation.stop()
-                          : dictation.start()
-                      }
-                    >
-                      <Icon
-                        name={dictation.listening ? "stop" : "mic"}
-                        size={17}
-                      />
-                    </Button>
-                  </Hint>
-                )}
-                {running ? (
-                  <Button
-                    type="button"
-                    size="icon"
-                    aria-label={t("실행 중단")}
-                    onClick={() => void cancel()}
-                  >
-                    <Icon name="stop" size={17} />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    size="icon"
-                    aria-label={t("질문 보내기")}
-                    disabled={
-                      unavailable ||
-                      !selection.model ||
-                      working ||
-                      !draft.trim() ||
-                      uploading
+                    onClick={() =>
+                      dictation.listening ? stopVoiceInput() : startVoiceInput()
                     }
-                    aria-describedby={unavailable ? unavailableId : undefined}
                   >
-                    <Icon name="arrow-up" size={19} />
-                  </Button>
-                )}
-              </div>
-              {dictation.message && (
-                <p className="rms-error" role="alert">
-                  {dictation.message}
-                </p>
+                    <Icon
+                      name={dictation.listening ? "stop" : "mic"}
+                      size={16}
+                    />
+                  </button>
+                </Hint>
               )}
-              {uploading && (
-                <p role="status">
-                  {t("자료 준비 중")}
-                  {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
-                </p>
+              {/* key가 없으면 React가 같은 버튼을 재사용해, 중단 클릭이 곧바로 '보내기' 제출로 이어져요. */}
+              {running ? (
+                <button
+                  key="stop"
+                  type="button"
+                  className="composer-send"
+                  aria-label={t("실행 중단")}
+                  onClick={() => void cancel()}
+                >
+                  <span className="composer-stop-mark" aria-hidden="true" />
+                </button>
+              ) : (
+                <button
+                  key="send"
+                  type="submit"
+                  className="composer-send"
+                  aria-label={t("질문 보내기")}
+                  disabled={
+                    unavailable ||
+                    !selection.model ||
+                    working ||
+                    !draft.trim() ||
+                    uploading
+                  }
+                  aria-describedby={unavailable ? unavailableId : undefined}
+                >
+                  <Icon name="arrow-up" size={16} />
+                </button>
               )}
-            </form>
-          </VoiceGlow>
+            </div>
+            {dictation.message && (
+              <p className="rms-error" role="alert">
+                {dictation.message}
+              </p>
+            )}
+            {uploading && (
+              <p role="status">
+                {t("자료 준비 중")}
+                {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
+              </p>
+            )}
+          </form>
         </div>
         {caps.isError && (
           <p className="rms-error" role="alert">
@@ -1070,7 +1446,7 @@ export function ResearchAssistant() {
         {error && (
           <div className="rms-error" role="alert">
             <span className="margin-error-content">
-              <AssistantFace state="attention" size={36} />
+              <AssistantMascot state="attention" size={36} />
               <span>{error}</span>
             </span>
             <Button
@@ -1115,6 +1491,7 @@ export function ResearchAssistant() {
           onDismiss={(c) => void dismiss(c)}
           runs={runs}
           onCancelRun={(id) => void w.cancelRun(id)}
+          focusedSourceIndex={focusedSourceIndex}
         />
       </MarginPanel>
       <input

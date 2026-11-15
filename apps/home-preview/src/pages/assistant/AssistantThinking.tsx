@@ -1,33 +1,29 @@
 import { useEffect, useState } from "react";
-import {
-  AssistantFace,
-  type AssistantState,
-} from "@/components/brand/BotAvatar";
+import { AssistantMascot, type MascotState } from "@/components/brand/Brand";
 import { Icon } from "@/components/icons";
 import type { AssistantStep } from "@/lib/assistant-steps";
 import { t } from "@/lib/i18n";
 
-/** 단계 하나를 보여 주는 시간(ms). 마지막 단계는 답이 올 때까지 머뭅니다. */
-export const STEP_INTERVAL_MS = 1600;
-
-/** 단계를 일정한 간격으로 하나씩 넘깁니다. 마지막 단계에서 멈춥니다. */
-function useStepIndex(count: number) {
-  const [index, setIndex] = useState(0);
+/** 실제 시계로 경과 시간(초)을 잽니다. 가짜 타이머나 가짜 진행률은 쓰지 않아요. */
+function useElapsedSeconds(active: boolean) {
+  const [elapsedMs, setElapsedMs] = useState(0);
   useEffect(() => {
-    if (index >= count - 1) return;
-    const timer = window.setTimeout(
-      () => setIndex((current) => current + 1),
-      STEP_INTERVAL_MS,
-    );
-    return () => window.clearTimeout(timer);
-  }, [index, count]);
-  return Math.min(index, count - 1);
+    if (!active) {
+      setElapsedMs(0);
+      return;
+    }
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      setElapsedMs(Date.now() - startedAt);
+    }, 200);
+    return () => window.clearInterval(timer);
+  }, [active]);
+  return `${(elapsedMs / 1000).toFixed(1)}s`;
 }
 
 /**
- * 답을 기다리는 동안의 표시.
- * 첫 질문: 대화 면 가운데에서 고른 도우미 봇이 생각하며 깡충거리고, 지금 읽는 것이 한 줄씩 바뀝니다.
- * 그다음부터: 도우미 얼굴 옆에서 단계 글자가 위로 넘어갑니다.
+ * 답을 기다리는 동안의 표시(Kokonut AI State Loading + AI Tool Calls 기준).
+ * 가짜 진행률 대신 실제 경과 시간과 현재 단계 목록을 보여 줘요.
  */
 export function AssistantThinking({
   first,
@@ -37,42 +33,33 @@ export function AssistantThinking({
 }: {
   first: boolean;
   steps: AssistantStep[];
-  mascot: AssistantState;
+  mascot: MascotState;
   /** 첫 질문 화면 아래에 작게 보여 줄 내 질문 */
   question?: string;
 }) {
-  const index = useStepIndex(steps.length);
-  const current = steps[index];
-  if (!current) return null;
+  const elapsed = useElapsedSeconds(true);
+  const primary = steps[0];
+  if (!primary) return null;
   if (first)
     return (
       <div className="ai-reading" role="status">
         <span className="ai-reading-logo">
-          <AssistantFace state={mascot} active size={120} />
+          <AssistantMascot state={mascot} active size={120} eager />
         </span>
-        {/* 지금 읽는 것 한 줄이 크게 바뀌고, 읽은 것은 아래에 작게 쌓입니다. */}
         <p className="ai-reading-now">
-          <span key={current.doing}>{current.doing}</span>
+          <span>{primary.doing}</span>
         </p>
-        <span className="ai-reading-progress" aria-hidden="true">
-          {steps.map((step, position) => (
-            <i
-              key={step.doing}
-              className={
-                position < index
-                  ? "is-done"
-                  : position === index
-                    ? "is-current"
-                    : ""
-              }
-            />
-          ))}
+        <span className="ai-tool-elapsed" aria-label={t("경과 시간")}>
+          {elapsed}
         </span>
         <ol className="ai-reading-steps">
-          {steps.slice(0, index).map((step) => (
-            <li key={step.doing}>
-              <Icon name="check" size={14} />
-              {step.done}
+          {steps.map((step, position) => (
+            <li
+              key={step.doing}
+              className={position === 0 ? "is-current" : undefined}
+            >
+              <Icon name={position === 0 ? "sparkles" : "check"} size={14} />
+              {step.doing}
             </li>
           ))}
         </ol>
@@ -83,29 +70,77 @@ export function AssistantThinking({
   return (
     <div className="ai-processing" role="status">
       <div className="ai-step-pill">
-        <AssistantFace state={mascot} active size={32} />
+        <AssistantMascot state={mascot} active size={32} eager />
         <span className="ai-step-window">
-          <span key={current.doing} className="ai-step-text">
-            {current.doing}
-          </span>
+          <span className="ai-step-text">{primary.doing}</span>
         </span>
+        <span className="ai-tool-elapsed">{elapsed}</span>
       </div>
     </div>
   );
 }
 
-/** 답 아래에 붙는 '거친 단계'. 이번 화면에서 받은 답에만 보입니다. */
-export function AnswerSteps({ steps }: { steps: AssistantStep[] }) {
-  if (!steps.length) return null;
+/** 작업대·수정 제안 패널에서 쓰는 통합 대기 표시(Kokonut AI State Loading). */
+export function WorkbenchLoading({
+  label,
+  detail,
+}: {
+  label: string;
+  detail?: string;
+}) {
+  const elapsed = useElapsedSeconds(true);
   return (
-    <p className="ai-answer-steps">
-      <span>{t("거친 단계")}</span>
-      {steps.map((step, index) => (
-        <span key={step.done} className="ai-answer-step">
-          {index > 0 && <Icon name="chevron-right" size={12} />}
-          {step.done}
+    <div className="ai-running ai-workbench-loading" role="status">
+      <div className="ai-workbench-loading-head">
+        <span className="ai-workbench-loading-dot" aria-hidden="true" />
+        <strong>{label}</strong>
+        <span className="ai-tool-elapsed">{elapsed}</span>
+      </div>
+      {detail && <small>{detail}</small>}
+    </div>
+  );
+}
+
+/** 답 아래에 붙는 접힌 한 줄 요약(Kokonut AI Tool Calls). 누르면 거친 단계를 펼쳐요. */
+export function AnswerSteps({
+  steps,
+  elapsedMs,
+}: {
+  steps: Array<AssistantStep | string>;
+  elapsedMs?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  if (!steps.length) return null;
+  const elapsedLabel =
+    elapsedMs !== undefined ? `${(elapsedMs / 1000).toFixed(1)}s` : null;
+  return (
+    <div className="ai-tool-summary">
+      <button
+        type="button"
+        className="ai-tool-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <Icon name="sparkles" size={12} />
+        <span>
+          {t("거친 단계 {count}개", { count: steps.length })}
+          {elapsedLabel ? ` · ${elapsedLabel}` : ""}
         </span>
-      ))}
-    </p>
+        <Icon name={open ? "chevron-down" : "chevron-right"} size={12} />
+      </button>
+      {open && (
+        <p className="ai-answer-steps">
+          {steps.map((step, index) => {
+            const label = typeof step === "string" ? step : step.done;
+            return (
+              <span key={`${index}:${label}`} className="ai-answer-step">
+                {index > 0 && <Icon name="chevron-right" size={12} />}
+                {label}
+              </span>
+            );
+          })}
+        </p>
+      )}
+    </div>
   );
 }
