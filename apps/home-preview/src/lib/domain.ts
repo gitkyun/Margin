@@ -36,6 +36,8 @@ export interface Research {
   deletedAt?: string;
   example?: boolean;
   archivedAt?: string;
+  /** 연구를 끝냈다고 표시한 시각. 내 연구의 ‘완료된 연구’에 모여요(보관·휴지통과 별개). */
+  completedAt?: string;
 }
 export interface Meeting extends BaseRecord {
   title: string;
