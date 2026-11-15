@@ -197,156 +197,12 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
-  /* 심볼 뒤에서 옅은 원이 숨 쉬듯 커졌다 줄어듭니다. */
+  /* 첫 질문을 읽는 동안 가운데에 고른 도우미 봇이 깡충거려요(뒤 배경 없이). */
   .ai-reading-logo {
-    position: relative;
     display: grid;
     place-items: center;
     width: clamp(140px, 26vh, 200px);
     aspect-ratio: 1;
-  }
-  .ai-reading-logo::before,
-  .ai-reading-logo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: var(--brand-soft);
-    animation: ai-reading-halo 2.4s ease-out infinite;
-  }
-  .ai-reading-logo::after {
-    animation-delay: 1.2s;
-  }
-  .ai-reading-logo > svg {
-    position: relative;
-    width: 74%;
-    height: auto;
-  }
-  @keyframes ai-reading-halo {
-    from {
-      opacity: 0.9;
-      transform: scale(0.55);
-    }
-    to {
-      opacity: 0;
-      transform: scale(1);
-    }
-  }
-  .ai-logo-flip {
-    overflow: visible;
-    animation: ai-logo-bob 2.4s ease-in-out infinite;
-  }
-  @keyframes ai-logo-bob {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-5px);
-    }
-  }
-  .ai-logo-flip path {
-    fill: var(--brand);
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  /* 두 장이 4.8초에 한 번씩 크기·농도를 맞바꾸며 서로 지나갑니다. 자세에 닿을 때 살짝 넘쳤다가 돌아옵니다. */
-  .ai-logo-back {
-    fill-opacity: 0.3;
-    animation:
-      ai-logo-back 4.8s infinite,
-      ai-tint-back 4.8s ease-in-out infinite;
-  }
-  .ai-logo-front {
-    fill-opacity: 0.7;
-    animation:
-      ai-logo-front 4.8s infinite,
-      ai-tint-front 4.8s ease-in-out infinite;
-  }
-  @keyframes ai-tint-back {
-    0%,
-    10%,
-    100% {
-      fill-opacity: 0.3;
-    }
-    50%,
-    60% {
-      fill-opacity: 0.7;
-    }
-  }
-  @keyframes ai-tint-front {
-    0%,
-    10%,
-    100% {
-      fill-opacity: 0.7;
-    }
-    50%,
-    60% {
-      fill-opacity: 0.3;
-    }
-  }
-  /*
-   * 자세 1(0~10%): 왼쪽 위 장이 크고 진함, 오른쪽 아래 장이 작고 옅음(로고 그대로).
-   * 교차(28%, 80%): 두 장이 가운데로 모여 깊이 겹치며 살짝 기웁니다.
-   * 자세 2(50~60%): 크기와 농도가 맞바뀜. 닿기 직전(44%, 94%)에 한 번 넘쳐 튕깁니다.
-   */
-  @keyframes ai-logo-back {
-    0%,
-    10%,
-    100% {
-      transform: translate(0, 0) scale(1) rotate(0deg);
-      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
-    }
-    28% {
-      transform: translate(-22px, -14px) scale(1.1) rotate(-5deg);
-      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    44% {
-      transform: translate(10px, 7px) scale(1.3) rotate(2deg);
-      animation-timing-function: ease-in-out;
-    }
-    50%,
-    60% {
-      transform: translate(6px, 4px) scale(1.2) rotate(0deg);
-      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
-    }
-    80% {
-      transform: translate(-22px, -14px) scale(1.1) rotate(5deg);
-      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    94% {
-      transform: translate(3px, 2px) scale(0.93) rotate(-2deg);
-      animation-timing-function: ease-in-out;
-    }
-  }
-  @keyframes ai-logo-front {
-    0%,
-    10%,
-    100% {
-      transform: translate(0, 0) scale(1) rotate(0deg);
-      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
-    }
-    28% {
-      transform: translate(22px, 14px) scale(0.9) rotate(5deg);
-      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    44% {
-      transform: translate(-10px, -7px) scale(0.72) rotate(-2deg);
-      animation-timing-function: ease-in-out;
-    }
-    50%,
-    60% {
-      transform: translate(-6px, -4px) scale(0.8) rotate(0deg);
-      animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
-    }
-    80% {
-      transform: translate(22px, 14px) scale(0.9) rotate(-5deg);
-      animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    94% {
-      transform: translate(-3px, -2px) scale(1.08) rotate(2deg);
-      animation-timing-function: ease-in-out;
-    }
   }
   .ai-reading-now {
     margin: 0;
@@ -456,16 +312,8 @@
   @media (prefers-reduced-motion: reduce) {
     .ai-step-text,
     .ai-reading-now > span,
-    .ai-reading-steps li,
-    .ai-reading-logo::before,
-    .ai-reading-logo::after,
-    .ai-logo-flip,
-    .ai-logo-back,
-    .ai-logo-front {
+    .ai-reading-steps li {
       animation: none;
-    }
-    .ai-reading-logo::after {
-      opacity: 0;
     }
     .ai-reading-progress i.is-current::after {
       animation: none;

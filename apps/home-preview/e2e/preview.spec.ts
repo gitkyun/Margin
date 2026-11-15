@@ -42,11 +42,14 @@ test("할 일 목록에 가상 연구의 할 일이 보인다", async ({ page })
     .first()
     .getByRole("link", { name: "할 일", exact: true })
     .click();
+  // 연구 홈에도 같은 제목의 링크가 있어서, 할 일 화면에 도착한 뒤 목록 행 안에서 찾아요.
+  await expect(page).toHaveURL(/\/tasks$/);
+  const rows = page.locator(".student-task-row");
   await expect(
-    page.getByRole("link", { name: "선행연구 비교 기준 정리", exact: true }),
+    rows.getByText("선행연구 비교 기준 정리", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "인터뷰 질문지 보완", exact: true }),
+    rows.getByText("인터뷰 질문지 보완", { exact: true }),
   ).toBeVisible();
 });
 
