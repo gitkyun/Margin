@@ -1,7 +1,25 @@
-export type Mode = "organize_meeting" | "suggest_revisions" | "ask_research" | "review_writing" | "plan_research" | "read_material" | "propose_roadmap";
+export type Mode =
+  | "organize_meeting"
+  | "suggest_revisions"
+  | "ask_research"
+  | "review_writing"
+  | "plan_research"
+  | "read_material"
+  | "propose_roadmap"
+  | "continue_writing";
 export interface AIInput {
   mode: Mode;
-  model?:string;thinking?:string;clientRunId?:string;contexts?:{kind:string;id:string;title:string;text?:string;revision?:number;page?:number}[];
+  model?: string;
+  thinking?: string;
+  clientRunId?: string;
+  contexts?: {
+    kind: string;
+    id: string;
+    title: string;
+    text?: string;
+    revision?: number;
+    page?: number;
+  }[];
   researchId: string;
   meetingId?: string;
   feedbackId?: string;
@@ -55,21 +73,108 @@ function text(value: unknown, max: number, required = false): string {
 }
 export function validateInput(value: unknown): AIInput {
   const input = object(value);
-  const contexts = Array.isArray(input.contexts)?input.contexts:[];
-  if(contexts.length){
-   if(contexts.length>8||!uuid.test(String(input.researchId))||!["organize_meeting","suggest_revisions","ask_research","review_writing","plan_research","read_material"].includes(String(input.mode)))throw new AIError("INVALID_INPUT","실행 범위를 확인해 주세요.");
-   const selected=contexts.map(v=>{const c=object(v);if(!uuid.test(String(c.id))||!["meetings","feedback","documents","versions","attachments","tasks","phases","milestones"].includes(String(c.kind))||typeof c.title!=="string"||(c.text!==undefined&&(typeof c.text!=="string"||c.text.length>50000))||(c.page!==undefined&&(!Number.isInteger(c.page)||Number(c.page)<1||Number(c.page)>1000)))throw new AIError("INVALID_INPUT","선택한 자료를 확인해 주세요.");return c as unknown as NonNullable<AIInput['contexts']>[number]});
-   if(typeof input.question!=='string'||input.question.length>2000||typeof input.sourceText!=='string'||input.sourceText.length>50000||!uuid.test(String(input.clientRunId)))throw new AIError("INVALID_INPUT","질문과 실행 정보를 확인해 주세요.");
-   if(input.history!==undefined&&(!Array.isArray(input.history)||input.history.length>10||input.history.some(v=>{const m=object(v);return !['user','assistant'].includes(String(m.role))||typeof m.text!=='string'||m.text.length>10000})))throw new AIError("INVALID_INPUT","대화 범위를 줄여 주세요.");
-   if(Array.isArray(input.history)&&input.history.reduce((n,m)=>n+String(object(m).text).length,0)>30000)throw new AIError("INVALID_INPUT","대화 범위를 줄여 주세요.");
-   return {...input,contexts:selected} as unknown as AIInput;
+  const contexts = Array.isArray(input.contexts) ? input.contexts : [];
+  if (contexts.length) {
+    if (
+      contexts.length > 8 ||
+      !uuid.test(String(input.researchId)) ||
+      ![
+        "organize_meeting",
+        "suggest_revisions",
+        "ask_research",
+        "review_writing",
+        "plan_research",
+        "read_material",
+        "continue_writing",
+      ].includes(String(input.mode))
+    )
+      throw new AIError("INVALID_INPUT", "실행 범위를 확인해 주세요.");
+    const selected = contexts.map((v) => {
+      const c = object(v);
+      if (
+        !uuid.test(String(c.id)) ||
+        ![
+          "meetings",
+          "feedback",
+          "documents",
+          "versions",
+          "attachments",
+          "tasks",
+          "phases",
+          "milestones",
+        ].includes(String(c.kind)) ||
+        typeof c.title !== "string" ||
+        (c.text !== undefined &&
+          (typeof c.text !== "string" || c.text.length > 50000)) ||
+        (c.page !== undefined &&
+          (!Number.isInteger(c.page) ||
+            Number(c.page) < 1 ||
+            Number(c.page) > 1000))
+      )
+        throw new AIError("INVALID_INPUT", "선택한 자료를 확인해 주세요.");
+      return c as unknown as NonNullable<AIInput["contexts"]>[number];
+    });
+    if (
+      typeof input.question !== "string" ||
+      input.question.length > 2000 ||
+      typeof input.sourceText !== "string" ||
+      input.sourceText.length > 50000 ||
+      !uuid.test(String(input.clientRunId))
+    )
+      throw new AIError("INVALID_INPUT", "질문과 실행 정보를 확인해 주세요.");
+    if (
+      input.history !== undefined &&
+      (!Array.isArray(input.history) ||
+        input.history.length > 10 ||
+        input.history.some((v) => {
+          const m = object(v);
+          return (
+            !["user", "assistant"].includes(String(m.role)) ||
+            typeof m.text !== "string" ||
+            m.text.length > 10000
+          );
+        }))
+    )
+      throw new AIError("INVALID_INPUT", "대화 범위를 줄여 주세요.");
+    if (
+      Array.isArray(input.history) &&
+      input.history.reduce((n, m) => n + String(object(m).text).length, 0) >
+        30000
+    )
+      throw new AIError("INVALID_INPUT", "대화 범위를 줄여 주세요.");
+    return { ...input, contexts: selected } as unknown as AIInput;
   }
   // 기록을 첨부하지 않은 연구 대화: 질문만으로 답합니다.
-  if(input.mode==="ask_research"&&!input.meetingId&&!input.feedbackId){
-   if(!uuid.test(String(input.researchId))||typeof input.question!=='string'||!input.question.trim()||input.question.length>2000||!uuid.test(String(input.clientRunId)))throw new AIError("INVALID_INPUT","질문과 실행 정보를 확인해 주세요.");
-   if(input.history!==undefined&&(!Array.isArray(input.history)||input.history.length>10||input.history.some(v=>{const m=object(v);return !['user','assistant'].includes(String(m.role))||typeof m.text!=='string'||m.text.length>10000})))throw new AIError("INVALID_INPUT","대화 범위를 줄여 주세요.");
-   if(Array.isArray(input.history)&&input.history.reduce((n,m)=>n+String(object(m).text).length,0)>30000)throw new AIError("INVALID_INPUT","대화 범위를 줄여 주세요.");
-   return {...input,sourceText:"",contexts:[]} as unknown as AIInput;
+  if (input.mode === "ask_research" && !input.meetingId && !input.feedbackId) {
+    if (
+      !uuid.test(String(input.researchId)) ||
+      typeof input.question !== "string" ||
+      !input.question.trim() ||
+      input.question.length > 2000 ||
+      !uuid.test(String(input.clientRunId))
+    )
+      throw new AIError("INVALID_INPUT", "질문과 실행 정보를 확인해 주세요.");
+    if (
+      input.history !== undefined &&
+      (!Array.isArray(input.history) ||
+        input.history.length > 10 ||
+        input.history.some((v) => {
+          const m = object(v);
+          return (
+            !["user", "assistant"].includes(String(m.role)) ||
+            typeof m.text !== "string" ||
+            m.text.length > 10000
+          );
+        }))
+    )
+      throw new AIError("INVALID_INPUT", "대화 범위를 줄여 주세요.");
+    if (
+      Array.isArray(input.history) &&
+      input.history.reduce((n, m) => n + String(object(m).text).length, 0) >
+        30000
+    )
+      throw new AIError("INVALID_INPUT", "대화 범위를 줄여 주세요.");
+    return { ...input, sourceText: "", contexts: [] } as unknown as AIInput;
   }
 
   if (
@@ -167,10 +272,7 @@ export function normalizeCandidates(
       "선택한 원문에서 AI가 제안할 내용을 찾지 못했습니다. 원문을 보완하거나 직접 작성해 주세요.",
       422,
     );
-  if (
-    !Array.isArray(output.candidates) ||
-    output.candidates.length > 8
-  )
+  if (!Array.isArray(output.candidates) || output.candidates.length > 8)
     throw new AIError(
       "INVALID_OUTPUT",
       "AI가 사용할 수 있는 후보를 반환하지 않았습니다. 직접 작성하거나 다시 시도해 주세요.",

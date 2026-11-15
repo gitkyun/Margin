@@ -34,10 +34,10 @@ import { Input } from "@/components/ui/input";
 import {
   PageHeader,
   EmptyState,
-  StatusBadge,
   InlineEmpty,
   useDisabledReason,
 } from "@/components/common";
+import { SectionBoundary } from "@/components/SectionBoundary";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +50,7 @@ import { EditorToolbar } from "./writing/EditorToolbar";
 import { WordDiff } from "./writing/WordDiff";
 import { AIReviewHighlight } from "./writing/ai-review";
 import { useWritingReview } from "./writing/WritingReview";
+import { WritingAutocomplete } from "./writing/WritingAutocomplete";
 import { DocumentTabs } from "./student/shared";
 import {
   VersionCompareSlider,
@@ -253,7 +254,7 @@ export function WritingPage() {
 const AUTOSAVE_DELAY_MS = 1500;
 function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   const navigate = useNavigate();
-  const { data, save, user, upload } = useWorkspace(),
+  const { data, save, user, upload, runAI, mode } = useWorkspace(),
     // 편집기를 만들기 전에 이 브라우저의 작성본을 읽어 초기 내용으로 쓴다.
     [restored] = useState(() => {
       try {
@@ -299,8 +300,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   const key = `rms-writing-draft:${user.id}:${initial.id}`,
     versionList = data.documentVersions
       .filter((v) => v.documentId === initial.id)
-      .sort((a, b) => a.number - b.number),
-    current = data.documents.find((d) => d.id === initial.id) ?? initial;
+      .sort((a, b) => a.number - b.number);
   // 버전이 하나도 없으면 아래 안내 문장이 이유를 알려 줍니다.
   const restoreReason = useDisabledReason(
     !from &&
@@ -712,7 +712,32 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           </aside>
         )}
         <div className="writing-paper">
-          <EditorContent editor={editor} />
+          <SectionBoundary>
+            <EditorContent editor={editor} />
+          </SectionBoundary>
+          <WritingAutocomplete
+            editor={editor}
+            researchId={initial.researchId}
+            documentId={initial.id}
+            title={base.title}
+            revision={base.revision}
+            dirty={dirty}
+            saveFirst={async () => {
+              // 자동 저장과 겹치지 않게 저장하는 동안 busy로 표시해요.
+              setBusy("save");
+              try {
+                return await persist();
+              } catch (e) {
+                setError((e as Error).message);
+                throw e;
+              } finally {
+                setBusy("");
+              }
+            }}
+            disabled={mode === "preview" || !!busy || !editor?.getText().trim()}
+            preview={mode === "preview"}
+            runAI={runAI}
+          />
         </div>
       </div>
       <MarginPanel

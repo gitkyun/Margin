@@ -7,6 +7,7 @@ import {
   screen,
   waitFor,
   fireEvent,
+  within,
 } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -172,8 +173,17 @@ describe("writing selections keep the AI scope explicit", () => {
         ResearchAssistant,
         "/r/r1/assistant?document=d-selection&selection=1",
       );
+      const attached = await screen.findByRole("group", {
+        name: "첨부한 기록",
+      });
+      expect(within(attached).getByText("계획서 · 선택 문단")).toBeTruthy();
+      fireEvent.click(
+        within(attached).getByRole("button", {
+          name: "계획서 · 선택 문단 첨부 해제",
+        }),
+      );
       await waitFor(() =>
-        expect(screen.getByText("계획서 · 선택 문단")).toBeTruthy(),
+        expect(screen.queryByRole("group", { name: "첨부한 기록" })).toBeNull(),
       );
     } finally {
       state.workspace.data.documents = [];

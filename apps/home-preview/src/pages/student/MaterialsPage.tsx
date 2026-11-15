@@ -30,6 +30,7 @@ import {
   StatusBadge,
   InlineEmpty,
 } from "@/components/common";
+import { SectionBoundary } from "@/components/SectionBoundary";
 import { PdfViewer } from "@/components/PdfViewer";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { queryUp } from "@/design/responsive";
@@ -469,7 +470,9 @@ export function MaterialsPage() {
                       ))}
                     </SelectField>
                   </div>
-                  <PdfViewer key={selected.id} version={selected} />
+                  <SectionBoundary resetKeys={[selected.id]}>
+                    <PdfViewer key={selected.id} version={selected} />
+                  </SectionBoundary>
                 </>
               ) : (
                 <section className="surface">

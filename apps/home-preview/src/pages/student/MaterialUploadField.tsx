@@ -1,9 +1,11 @@
 import { t } from "@/lib/i18n";
-import { useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { StatusBadge } from "@/components/common";
+import { useFileDrop } from "@/lib/use-file-drop";
+import { ErrorNotice } from "./shared";
 import "./material-upload-field.css";
 
 // Aceternity File Upload's grid/lifted-file pattern, adapted to RMS's real
@@ -25,10 +27,10 @@ export function MaterialUploadField({
   onClear: () => void;
   onAbort: () => void;
 }) {
-  const input = useRef<HTMLInputElement>(null);
   const hintId = useId();
+  const errorId = useId();
   const reduced = useReducedMotion();
-  const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const transferring = busy && progress !== null && progress < 100;
   const connecting = busy && (progress === 100 || pending);
   const percentage = Math.min(100, Math.max(0, progress ?? 0));
@@ -37,42 +39,34 @@ export function MaterialUploadField({
       ? `${(file.size / 1048576).toFixed(1)}MB`
       : `${Math.max(1, Math.round(file.size / 1024))}KB`
     : "";
+
+  const { getRootProps, getInputProps, isDragActive } = useFileDrop({
+    disabled: busy || pending,
+    onSelect: (selectedFile) => {
+      setError(null);
+      onSelect(selectedFile);
+    },
+    onError: (err) => setError(err || null),
+  });
+
   return (
     <div className="mu-field">
       <input
-        ref={input}
-        type="file"
-        accept="application/pdf,.pdf"
-        disabled={busy || pending}
-        hidden
-        onChange={(e) => {
-          onSelect(e.target.files?.[0]);
-          e.target.value = "";
-        }}
+        {...getInputProps({
+          hidden: true,
+          disabled: busy || pending,
+        })}
       />
       <motion.button
-        type="button"
-        className={`mu-dropzone${dragging ? " is-dragging" : ""}${file ? " has-file" : ""}`}
-        disabled={busy || pending}
-        aria-describedby={hintId}
-        onClick={() => input.current?.click()}
-        onDragOver={(e) => {
-          e.preventDefault();
-          if (busy || pending) return;
-          e.dataTransfer.dropEffect = "copy";
-          setDragging(true);
-        }}
-        onDragLeave={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node | null))
-            setDragging(false);
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          if (!busy && !pending) onSelect(e.dataTransfer.files[0]);
-        }}
+        {...getRootProps({
+          type: "button" as const,
+          role: "button",
+          className: `mu-dropzone${isDragActive ? " is-dragging" : ""}${file ? " has-file" : ""}`,
+          disabled: busy || pending,
+          "aria-describedby": error ? `${hintId} ${errorId}` : hintId,
+        })}
         whileHover={reduced || busy || pending ? undefined : "hover"}
-        animate={dragging && !reduced ? "hover" : "rest"}
+        animate={isDragActive && !reduced ? "hover" : "rest"}
         initial="rest"
       >
         <span className="mu-grid" aria-hidden="true" />
@@ -96,8 +90,8 @@ export function MaterialUploadField({
           </motion.span>
         </span>
         {/* 끌고 있는 동안 문구를 바꿔 놓을 자리라는 걸 알려 줘요 */}
-        <strong key={dragging ? "drop" : "idle"} className="text-swap">
-          {dragging
+        <strong key={isDragActive ? "drop" : "idle"} className="text-swap">
+          {isDragActive
             ? t("여기에 놓으면 이 PDF를 골라요")
             : file
               ? t("다른 파일로 바꾸려면 누르거나 끌어다 놓아 주세요")
@@ -109,6 +103,7 @@ export function MaterialUploadField({
             : t("또는 눌러서 파일 선택 · 500MB 이하")}
         </span>
       </motion.button>
+      {error && <ErrorNotice error={error} />}
       <AnimatePresence initial={false}>
         {file && (
           <motion.div
@@ -145,7 +140,10 @@ export function MaterialUploadField({
                 className="mu-remove"
                 aria-label={t("{fileName} 선택 해제", { fileName: file.name })}
                 title={t("파일 선택 해제")}
-                onClick={onClear}
+                onClick={() => {
+                  setError(null);
+                  onClear();
+                }}
               >
                 <Icon name="close" size={17} />
               </Button>

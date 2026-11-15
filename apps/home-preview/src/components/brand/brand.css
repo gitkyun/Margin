@@ -167,7 +167,8 @@
     border-bottom: 1px solid var(--line);
     padding-bottom: var(--spacing-12);
   }
-  .margin-review-settings > summary {
+  .margin-review-settings > summary,
+  .margin-review-settings > .disclosure-trigger {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -181,7 +182,8 @@
   .margin-review-settings > summary::-webkit-details-marker {
     display: none;
   }
-  .margin-review-settings[open] > summary > svg {
+  .margin-review-settings[open] > summary > svg,
+  .margin-review-settings[data-open] > .disclosure-trigger > svg {
     transform: rotate(180deg);
   }
   .margin-review-fields {

@@ -17,6 +17,7 @@ import { Choice } from "@/components/experience";
 import { useEffect, useId, useRef, useState } from "react";
 import { useDisabledReason } from "@/components/common";
 import { Button } from "@/components/ui/button";
+import { Disclosure } from "@/components/ui/disclosure";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
@@ -219,11 +220,15 @@ export function RevisionSuggestions({
         </small>
       </div>
       {selectedModel && !aiNotConfigured && (
-        <details className="margin-review-settings">
-          <summary>
-            {t("이번 실행 설정")}
-            <Icon name="chevron-down" size={15} />
-          </summary>
+        <Disclosure
+          className="margin-review-settings"
+          summary={
+            <>
+              {t("이번 실행 설정")}
+              <Icon name="chevron-down" size={15} />
+            </>
+          }
+        >
           <div className="margin-review-fields">
             <label className="field">
               {t("AI 모델")}
@@ -252,7 +257,7 @@ export function RevisionSuggestions({
               </label>
             )}
           </div>
-        </details>
+        </Disclosure>
       )}
       <p className="ai-disclosure">
         {t("원문과 AI 제안을 구분해 확인하고, 필요한 것만 선택하세요.")}

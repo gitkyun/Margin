@@ -14,6 +14,7 @@ import { Icon } from "./icons";
 import { Button } from "./ui/button";
 import { Choice } from "./experience";
 import { useDisabledReason } from "./common";
+import { Disclosure } from "./ui/disclosure";
 import {
   Dialog,
   DialogContent,
@@ -229,8 +230,7 @@ export function MaterialFolders({
       {data.folders.some(
         (f) => f.researchId === researchId && f.archivedAt,
       ) && (
-        <details className="archived-folders">
-          <summary>{t("보관한 폴더")}</summary>
+        <Disclosure className="archived-folders" summary={t("보관한 폴더")}>
           {data.folders
             .filter((f) => f.researchId === researchId && f.archivedAt)
             .map((f) => (
@@ -263,7 +263,7 @@ export function MaterialFolders({
                 </Button>
               </div>
             ))}
-        </details>
+        </Disclosure>
       )}
       <Dialog
         open={!!draft}

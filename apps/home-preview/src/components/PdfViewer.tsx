@@ -11,6 +11,7 @@ import type { MaterialVersion } from "@/lib/domain";
 import { useWorkspace } from "@/lib/workspace";
 import { friendlyError } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Icon } from "./icons";
 import { ErrorNotice } from "./common";
 /** 바깥에서 페이지를 옮길 때 쓰는 손잡이(예: 검토 댓글의 ‘p.4’ 누르기). */
@@ -19,12 +20,30 @@ export interface PdfViewerHandle {
   goToPage(page: number): void;
 }
 
+export interface PdfPin {
+  id: string;
+  /** PDF 전체에서 매긴 핀 번호(쪽이 달라도 겹치지 않게 부모가 정해요). */
+  number: number;
+  page: number;
+  x: number;
+  y: number;
+  label: string;
+}
+
 export function PdfViewer({
   version,
   ref,
+  pins = [],
+  pinMode = false,
+  onDropPin,
+  onSelectPin,
 }: {
   version: MaterialVersion;
   ref?: Ref<PdfViewerHandle>;
+  pins?: PdfPin[];
+  pinMode?: boolean;
+  onDropPin?: (pin: { page: number; x: number; y: number }) => void;
+  onSelectPin?: (id: string) => void;
 }) {
   const { openFile } = useWorkspace();
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null),
@@ -248,7 +267,27 @@ export function PdfViewer({
         {error ? (
           <ErrorNotice message={error} retry={() => setRetry((n) => n + 1)} />
         ) : (
-          <>
+          <div
+            className={`pdf-canvas-stage${pinMode ? " is-pinning" : ""}`}
+            onClick={(e) => {
+              if (!pinMode || !onDropPin || !canvas.current) return;
+              const rect = canvas.current.getBoundingClientRect();
+              if (rect.width <= 0 || rect.height <= 0) return;
+              const x = Math.round(
+                Math.max(
+                  0,
+                  Math.min(100, ((e.clientX - rect.left) / rect.width) * 100),
+                ),
+              );
+              const y = Math.round(
+                Math.max(
+                  0,
+                  Math.min(100, ((e.clientY - rect.top) / rect.height) * 100),
+                ),
+              );
+              onDropPin({ page, x, y });
+            }}
+          >
             <canvas
               ref={canvas}
               aria-label={t("{fileName}, {page}페이지", {
@@ -257,20 +296,40 @@ export function PdfViewer({
               })}
               className={loading ? "pdf-loading" : ""}
             />
+            {pins
+              .filter((pin) => pin.page === page)
+              .map((pin) => (
+                <button
+                  key={pin.id}
+                  type="button"
+                  className="pdf-pin-marker"
+                  style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
+                  title={pin.label}
+                  aria-label={t("위치 핀 {number}: {label}", {
+                    number: pin.number,
+                    label: pin.label,
+                  })}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectPin?.(pin.id);
+                  }}
+                >
+                  {pin.number}
+                </button>
+              ))}
             {loading && (
               <div className="pdf-loading-label" role="status">
                 <span className="spinner" />
                 {t("PDF 불러오는 중")}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
       {doc && (
-        <details className="pdf-text">
-          <summary>{t("이 페이지 텍스트 보기")}</summary>
+        <Disclosure className="pdf-text" summary={t("이 페이지 텍스트 보기")}>
           <p>{text || t("이 페이지에는 읽을 수 있는 텍스트가 없어요.")}</p>
-        </details>
+        </Disclosure>
       )}
     </div>
   );

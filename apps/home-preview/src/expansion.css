@@ -923,7 +923,8 @@
   .saved-transcript {
     border-top: 1px solid var(--line);
   }
-  .saved-transcript > summary {
+  .saved-transcript > summary,
+  .saved-transcript > .disclosure-trigger {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -934,11 +935,13 @@
     font-weight: 600;
     letter-spacing: var(--typography-label1-letterSpacing);
   }
-  .saved-transcript > summary:focus-visible {
+  .saved-transcript > summary:focus-visible,
+  .saved-transcript > .disclosure-trigger:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: -3px;
   }
-  .saved-transcript > summary > span:last-child {
+  .saved-transcript > summary > span:last-child,
+  .saved-transcript > .disclosure-trigger > span:last-child {
     margin-left: auto;
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
@@ -964,7 +967,8 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .transcript-original summary {
+  .transcript-original summary,
+  .transcript-original .disclosure-trigger {
     cursor: pointer;
     padding: 8px 0;
   }
@@ -1338,7 +1342,8 @@
     margin-left: auto;
     color: var(--text-secondary);
   }
-  .folder-tree summary {
+  .folder-tree summary,
+  .folder-tree .disclosure-trigger {
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     padding: 6px 12px;

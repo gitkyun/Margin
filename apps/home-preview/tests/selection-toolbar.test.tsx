@@ -1,0 +1,41 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import { SelectionToolbar } from "@/components/recording/SelectionPopover";
+
+afterEach(cleanup);
+
+it("shows the actions near the picked text and closes after one is chosen", async () => {
+  const onSelect = vi.fn();
+  const onDismiss = vi.fn();
+  render(
+    <div style={{ position: "relative" }}>
+      <SelectionToolbar
+        anchor={{ x: 40, y: 60 }}
+        actions={[{ key: "feedback", label: "+ 피드백", onSelect }]}
+        onDismiss={onDismiss}
+      />
+    </div>,
+  );
+  const toolbar = await screen.findByRole("toolbar");
+  fireEvent.click(screen.getByRole("button", { name: "+ 피드백" }));
+  expect(onSelect).toHaveBeenCalledTimes(1);
+  expect(onDismiss).toHaveBeenCalledTimes(1);
+  fireEvent.keyDown(toolbar, { key: "Escape" });
+  expect(onDismiss).toHaveBeenCalledTimes(2);
+});
+
+it("renders nothing without a picked text or actions", () => {
+  const { container, rerender } = render(
+    <SelectionToolbar anchor={null} actions={[]} onDismiss={() => undefined} />,
+  );
+  expect(container.querySelector("[role=toolbar]")).toBeNull();
+  rerender(
+    <SelectionToolbar
+      anchor={{ x: 1, y: 1 }}
+      actions={[]}
+      onDismiss={() => undefined}
+    />,
+  );
+  expect(container.querySelector("[role=toolbar]")).toBeNull();
+});

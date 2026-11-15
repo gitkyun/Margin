@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { uid, type AICandidate, type AIInput } from "@/lib/domain";
 import { AIWorkbench } from "../student/AIWorkbench";
 import { Button } from "@/components/ui/button";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Textarea } from "@/components/ui/textarea";
 import { Icon } from "@/components/icons";
 import { InlineEmpty, useDisabledReason } from "@/components/common";
@@ -366,10 +367,12 @@ export function useWritingReview({
             </label>
             <WordDiff before={pending.original} after={pending.draft} />
             {pending.method && (
-              <details className="writing-apply-method">
-                <summary>{t("AI가 적은 고칠 방법")}</summary>
+              <Disclosure
+                className="writing-apply-method"
+                summary={t("AI가 적은 고칠 방법")}
+              >
                 <p>{pending.method}</p>
-              </details>
+              </Disclosure>
             )}
             {applyError && (
               <p className="rms-error" role="alert">

@@ -11,6 +11,7 @@ import { useTheme } from "@/lib/theme";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Icon } from "@/components/icons";
+import { Disclosure } from "@/components/ui/disclosure";
 import { t } from "@/lib/i18n";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { CloudShader } from "@/components/marketing/CloudShader";
@@ -135,13 +136,17 @@ function FaqList({ items }: { items: readonly FaqItem[] }) {
   return (
     <div className="lp-faq-list">
       {items.map(([question, answer]) => (
-        <details key={question}>
-          <summary>
-            {question}
-            <Icon name="plus" size={18} />
-          </summary>
+        <Disclosure
+          key={question}
+          summary={
+            <>
+              {question}
+              <Icon name="plus" size={18} />
+            </>
+          }
+        >
           <p>{answer}</p>
-        </details>
+        </Disclosure>
       ))}
     </div>
   );

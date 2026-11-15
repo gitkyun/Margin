@@ -1,9 +1,15 @@
 import { t } from "@/lib/i18n";
 import {
+  autoUpdate,
+  flip,
+  offset,
+  shift,
+  useFloating,
+} from "@floating-ui/react";
+import {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useRef,
   useState,
   type RefObject,
 } from "react";
@@ -52,45 +58,77 @@ export function SelectionToolbar({
   onDismiss,
   label,
 }: SelectionToolbarProps) {
-  const box = useRef<HTMLDivElement>(null);
-  const [left, setLeft] = useState<number | null>(null);
+  // 위치 계산은 Floating UI가 맡아요. 선택 위 가운데에 두고, 위가 좁으면 아래로 뒤집고,
+  // 가장자리에서는 EDGE만큼 띄워 밀어요. 기준점은 감싸는 상자(offsetParent) 기준 좌표예요.
+  const { refs, floatingStyles, isPositioned } = useFloating({
+    open: !!anchor,
+    placement: "top",
+    strategy: "absolute",
+    middleware: [
+      offset(GAP),
+      flip({ padding: EDGE }),
+      shift({ padding: EDGE }),
+    ],
+    whileElementsMounted: autoUpdate,
+  });
+  const { setPositionReference, floating } = refs;
   useLayoutEffect(() => {
-    const el = box.current,
-      host = el?.offsetParent as HTMLElement | null;
-    if (!el || !anchor) return;
-    const half = el.offsetWidth / 2,
-      width = host?.clientWidth ?? Infinity;
-    setLeft(Math.max(half + EDGE, Math.min(anchor.x, width - half - EDGE)));
-  }, [anchor?.x, anchor?.y]);
+    if (!anchor) return;
+    setPositionReference({
+      getBoundingClientRect: () => {
+        const host = (floating.current as HTMLElement | null)?.offsetParent;
+        const origin = host?.getBoundingClientRect();
+        const x = (origin?.left ?? 0) + anchor.x,
+          y = (origin?.top ?? 0) + anchor.y;
+        return {
+          x,
+          y,
+          left: x,
+          right: x,
+          top: y,
+          bottom: y,
+          width: 0,
+          height: 0,
+        };
+      },
+    });
+  }, [anchor, floating, setPositionReference]);
   if (!anchor || !actions.length) return null;
   return (
     <div
-      ref={box}
-      className="selection-toolbar"
-      role="toolbar"
-      aria-label={label ?? t("고른 글로 만들기")}
-      style={{ left: left ?? anchor.x, top: anchor.y - GAP }}
-      onMouseDown={(e) => e.preventDefault()}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") {
-          e.stopPropagation();
-          onDismiss();
-        }
+      ref={refs.setFloating}
+      className="selection-toolbar-position"
+      style={{
+        ...floatingStyles,
+        visibility: isPositioned ? undefined : "hidden",
       }}
     >
-      {actions.map((action) => (
-        <button
-          key={action.key}
-          type="button"
-          onClick={() => {
-            action.onSelect();
+      <div
+        className="selection-toolbar"
+        role="toolbar"
+        aria-label={label ?? t("고른 글로 만들기")}
+        onMouseDown={(e) => e.preventDefault()}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
             onDismiss();
-          }}
-        >
-          {action.icon && <Icon name={action.icon} size={14} />}
-          {action.label}
-        </button>
-      ))}
+          }
+        }}
+      >
+        {actions.map((action) => (
+          <button
+            key={action.key}
+            type="button"
+            onClick={() => {
+              action.onSelect();
+              onDismiss();
+            }}
+          >
+            {action.icon && <Icon name={action.icon} size={14} />}
+            {action.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

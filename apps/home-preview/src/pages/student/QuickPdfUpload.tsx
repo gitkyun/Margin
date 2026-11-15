@@ -8,6 +8,7 @@ import { useDisabledReason } from "@/components/common";
 import { useWorkspace } from "@/lib/workspace";
 import { UploadConnectionError, validatePDF } from "@/lib/repository";
 import { recordBase, type MaterialVersion } from "@/lib/domain";
+import { useFileDrop } from "@/lib/use-file-drop";
 import { ErrorNotice } from "./shared";
 import {
   OrphanMaterialError,
@@ -40,6 +41,12 @@ export function QuickPdfUpload({
   const fileMaterials = data.materials.filter(
     (item) => item.researchId === researchId && !item.externalUrl,
   );
+
+  const { getRootProps, getInputProps, isDragActive } = useFileDrop({
+    disabled: busy,
+    onSelect: choose,
+    onError: (err) => setError(err || null),
+  });
   function close() {
     setOpen(false);
     setFile(null);
@@ -130,15 +137,37 @@ export function QuickPdfUpload({
     );
   return (
     <div className="quick-upload">
-      <label className="field">
+      <div className="field">
         <span className="field-name">{t("PDF 파일 · 500MB 이하")}</span>
-        <input
-          type="file"
-          accept="application/pdf,.pdf"
-          disabled={busy}
-          onChange={(event) => choose(event.target.files?.[0])}
-        />
-      </label>
+        <div
+          {...getRootProps({
+            className: `quick-upload-dropzone${isDragActive ? " is-dragging" : ""}${file ? " has-file" : ""}`,
+            tabIndex: busy ? -1 : 0,
+            role: "button",
+            "aria-label": t("PDF 파일 끌어놓기 또는 선택"),
+          })}
+        >
+          <input {...getInputProps()} />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            tabIndex={-1}
+            aria-hidden="true"
+          >
+            <Icon name="upload" size={15} />
+            {file ? t("파일 바꾸기") : t("파일 선택")}
+          </Button>
+          <span className="quick-upload-dropzone-text">
+            {isDragActive
+              ? t("여기에 놓으면 이 PDF를 골라요")
+              : file
+                ? file.name
+                : t("또는 여기에 PDF를 끌어다 놓아 주세요")}
+          </span>
+        </div>
+      </div>
       <label className="field">
         <span className="field-name">{t("올릴 자료")}</span>
         <SelectField

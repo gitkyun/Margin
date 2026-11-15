@@ -60,20 +60,68 @@
   }
 
   /* 상단 미니 녹음 컨트롤 */
+  .mini-recorder-glow {
+    display: inline-flex;
+    min-width: 0;
+    max-width: 100%;
+    border-radius: var(--radius-full);
+  }
   .mini-recorder {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-6);
+    gap: var(--spacing-8);
+    height: 36px;
     min-width: 0;
     max-width: 100%;
-    padding: var(--spacing-2) var(--spacing-4) var(--spacing-2)
-      var(--spacing-12);
+    padding: 4px 6px 4px 12px;
     border: 1px solid var(--line);
     border-radius: var(--radius-full);
     background: var(--surface);
     color: var(--text);
     animation: mini-recorder-in var(--motion-duration-enter)
       var(--motion-ease-standard);
+  }
+  .mini-recorder-wave {
+    flex: none;
+    width: 52px;
+    height: 20px;
+    gap: 2px;
+  }
+  .mini-recorder-button {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
+  }
+  .mini-recorder-button:hover:not(:disabled) {
+    background: var(--surface-muted);
+    color: var(--text);
+  }
+  .mini-recorder-button:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .mini-recorder-stop {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+  .mini-recorder-stop:hover:not(:disabled) {
+    background: var(--danger);
+    color: var(--semantic-static-white);
+  }
+  .ai-composer-glow {
+    display: block;
+    width: 100%;
+    border-radius: var(--radius-12);
   }
   .mini-recorder[data-alert] {
     border-color: var(--danger-line);
@@ -136,9 +184,11 @@
   .selection-host {
     position: relative;
   }
-  .selection-toolbar {
-    position: absolute;
+  /* 위치는 Floating UI가 이 바깥 상자에 정하고, 안쪽 막대는 모양과 등장 효과만 맡아요. */
+  .selection-toolbar-position {
     z-index: 20;
+  }
+  .selection-toolbar {
     display: flex;
     gap: var(--spacing-2);
     padding: var(--spacing-4);
@@ -146,7 +196,6 @@
     border-radius: var(--radius-10);
     background: var(--surface-raised);
     box-shadow: var(--shadow-pop);
-    transform: translate(-50%, -100%);
     white-space: nowrap;
     animation: selection-toolbar-in var(--motion-duration-micro)
       var(--motion-ease-standard);
@@ -176,7 +225,7 @@
   @keyframes selection-toolbar-in {
     from {
       opacity: 0;
-      transform: translate(-50%, calc(-100% + 4px));
+      transform: translateY(4px);
     }
   }
 
@@ -213,6 +262,83 @@
     min-width: 0;
     accent-color: var(--brand);
   }
+  .timeline-scrubber {
+    position: relative;
+    flex: 1 1 160px;
+    min-width: 120px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-6);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+  }
+  .timeline-scrubber.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .timeline-scrubber:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .timeline-scrubber-ticks {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 14px;
+    pointer-events: none;
+  }
+  .timeline-scrubber-ticks > span {
+    width: 2px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--line-strong);
+    transition:
+      height var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
+  }
+  .timeline-scrubber-ticks > span:nth-child(5n + 1) {
+    height: 14px;
+  }
+  .timeline-scrubber-ticks > span.is-active {
+    background: var(--brand);
+  }
+  .timeline-scrubber-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: var(--brand-soft);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .timeline-scrubber-thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    width: 3px;
+    border-radius: var(--radius-full);
+    background: var(--brand);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .timeline-scrubber-preview {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    padding: 2px var(--spacing-6);
+    border-radius: var(--radius-6, 6px);
+    background: var(--text);
+    color: var(--surface);
+    font-size: var(--typography-caption2-fontSize, 11px);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
   .source-audio-time {
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
@@ -225,5 +351,47 @@
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .synced-transcript {
+    display: grid;
+    gap: var(--spacing-4);
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .synced-transcript-line {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-10);
+    width: 100%;
+    padding: var(--spacing-6) var(--spacing-10);
+    border: 1px solid transparent;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text-secondary);
+    text-align: left;
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      border-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
+  }
+  .synced-transcript-line:hover {
+    background: var(--surface-muted);
+    color: var(--text);
+  }
+  .synced-transcript-line.is-active {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+    color: var(--text);
+  }
+  .synced-transcript-time {
+    flex: none;
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .synced-transcript-text {
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
   }
 }

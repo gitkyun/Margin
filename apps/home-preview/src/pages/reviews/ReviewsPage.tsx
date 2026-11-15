@@ -35,6 +35,7 @@ import {
   PageHeader,
   StatusBadge,
 } from "@/components/common";
+import { SectionBoundary } from "@/components/SectionBoundary";
 import { Icon } from "@/components/icons";
 import { PdfViewer } from "@/components/PdfViewer";
 import { useWorkspace } from "@/lib/workspace";
@@ -626,7 +627,9 @@ export function ReviewsPage() {
               })}
               {previewFile && (
                 <div className="review-compose-pdf">
-                  <PdfViewer version={previewFile} />
+                  <SectionBoundary resetKeys={[previewFile.id]}>
+                    <PdfViewer version={previewFile} />
+                  </SectionBoundary>
                 </div>
               )}
               <p className="review-inline-note">

@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { formatDateTime, type AudioSource } from "@/lib/domain";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -25,8 +25,13 @@ import {
   useDomSelection,
   type SelectionAction,
 } from "./recording/SelectionPopover";
+import {
+  SyncedTranscript,
+  type SyncedTranscriptSegment,
+} from "./recording/SyncedTranscript";
 import { Button } from "./ui/button";
 import { DisabledReason, StatusBadge } from "./common";
+import { Disclosure } from "./ui/disclosure";
 import {
   Dialog,
   DialogContent,
@@ -67,12 +72,58 @@ export function SavedTranscript({
   const [draft, setDraft] = useState<string | null>(null),
     [saving, setSaving] = useState(false),
     [error, setError] = useState(""),
-    [append, setAppend] = useState(false);
+    [append, setAppend] = useState(false),
+    [transcriptOpen, setTranscriptOpen] = useState(false);
+  useEffect(() => {
+    if (draft !== null) {
+      setTranscriptOpen(true);
+    }
+  }, [draft]);
   const base = useRef<LiveTranscript | null>(null),
     saveReasonId = useId(),
     appendReasonId = useId();
   const current = query.data,
     dirty = draft !== null && draft !== base.current?.edited_text;
+  // 재생 위치와 전사문 연결: 녹음에 문장별 시간이 있을 때만 쓰고, 없으면 시간을 만들지 않아요.
+  const [playMs, setPlayMs] = useState(0);
+  const audioId = `audio-${recording.id}`;
+  useEffect(() => {
+    const audio = document.getElementById(audioId);
+    if (!(audio instanceof HTMLAudioElement)) return;
+    const sync = () => setPlayMs(audio.currentTime * 1000);
+    audio.addEventListener("timeupdate", sync);
+    audio.addEventListener("seeked", sync);
+    return () => {
+      audio.removeEventListener("timeupdate", sync);
+      audio.removeEventListener("seeked", sync);
+    };
+  }, [audioId]);
+  const timedSegments: SyncedTranscriptSegment[] | null =
+    current &&
+    recording.segmentTimes &&
+    recording.segmentTimes.length === current.raw_segments.length
+      ? current.raw_segments.flatMap((part, i) => {
+          const time = recording.segmentTimes?.[i];
+          if (!time || !part.text.trim()) return [];
+          return [
+            {
+              startMs: time.startMs,
+              endMs: time.endMs,
+              text: part.text.trim(),
+              pending: !part.final,
+              unsure: isUncertain(time.confidence),
+            },
+          ];
+        })
+      : null;
+  function seekAudio(startMs: number) {
+    const audio = document.getElementById(audioId);
+    if (!(audio instanceof HTMLAudioElement) || !audio.src) {
+      toast.info(t("위의 ‘재생’을 먼저 눌러 주세요."));
+      return;
+    }
+    audio.currentTime = startMs / 1000;
+  }
   const selection = useDomSelection(
     textBox,
     textHost,
@@ -224,16 +275,22 @@ export function SavedTranscript({
       : !current.edited_text.trim() &&
         t("전사문이 비어 있어 메모에 추가할 수 없어요."));
   return (
-    <details className="saved-transcript" open={draft !== null || undefined}>
-      <summary>
-        {t("한국어 전사문")}{" "}
-        <StatusBadge tone="neutral">{t("나만 보기")}</StatusBadge>
-        <span>
-          {t("{count}자", {
-            count: current.edited_text.length.toLocaleString(),
-          })}
-        </span>
-      </summary>
+    <Disclosure
+      className="saved-transcript"
+      open={transcriptOpen}
+      onOpenChange={setTranscriptOpen}
+      summary={
+        <>
+          {t("한국어 전사문")}{" "}
+          <StatusBadge tone="neutral">{t("나만 보기")}</StatusBadge>
+          <span>
+            {t("{count}자", {
+              count: current.edited_text.length.toLocaleString(),
+            })}
+          </span>
+        </>
+      }
+    >
       <div className="transcript-content">
         <p className="student-footnote">
           {t(
@@ -302,10 +359,9 @@ export function SavedTranscript({
         {conflict && (
           <div className="transcript-notice">
             <strong>{t("다른 창에서 저장한 전사문이 있어요.")}</strong>
-            <details>
-              <summary>{t("최신 저장본과 비교하기")}</summary>
+            <Disclosure summary={t("최신 저장본과 비교하기")}>
               <p className="transcript-text">{current.edited_text}</p>
-            </details>
+            </Disclosure>
             <Button
               variant="outline"
               size="sm"
@@ -323,9 +379,17 @@ export function SavedTranscript({
             </p>
           </div>
         )}
-        <details className="transcript-original">
-          <summary>{t("처음 인식한 내용 보기")}</summary>
-          {current.raw_segments.length ? (
+        <Disclosure
+          className="transcript-original"
+          summary={t("처음 인식한 내용 보기")}
+        >
+          {timedSegments?.length ? (
+            <SyncedTranscript
+              segments={timedSegments}
+              currentMs={playMs}
+              onSeek={seekAudio}
+            />
+          ) : current.raw_segments.length ? (
             current.raw_segments.map((part, i) => {
               const unsure = isUncertain(
                 recording.segmentTimes?.[i]?.confidence,
@@ -350,7 +414,7 @@ export function SavedTranscript({
           ) : (
             <p>{t("자동으로 인식한 문장이 없어요.")}</p>
           )}
-        </details>
+        </Disclosure>
         <div className="button-row">
           {draft === null ? (
             <Button
@@ -455,6 +519,6 @@ export function SavedTranscript({
           </div>
         </DialogContent>
       </Dialog>
-    </details>
+    </Disclosure>
   );
 }

@@ -334,9 +334,13 @@
       border-color var(--motion-duration-micro) ease-out,
       box-shadow var(--motion-duration-micro) ease-out;
   }
-  .ai-composer:focus-within {
+  .ai-composer:focus-within,
+  .ai-composer.is-dragging {
     border-color: var(--semantic-line-brand-strong);
     box-shadow: 0 0 0 4px var(--selected-fill);
+  }
+  .ai-composer.is-dragging {
+    background: var(--hover-fill);
   }
   .ai-composer textarea {
     width: 100%;
@@ -390,7 +394,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* 입력창 아래 줄: 왼쪽 첨부(＋), 가운데 선택 칸, 오른쪽 보내기. 줄이 넘어가지 않습니다. */
+  /* 입력창 도구 줄. 좁은 화면에서는 모델과 깊이를 별도 줄에 둡니다. */
   .composer-actions {
     display: flex;
     align-items: center;
@@ -735,6 +739,144 @@
     }
     .ai-composer {
       width: 100%;
+    }
+  }
+  .ai-message-content {
+    display: grid;
+    gap: var(--spacing-8);
+  }
+  .ai-message-body {
+    overflow-wrap: anywhere;
+  }
+  /* 문단 안의 줄바꿈은 그대로 보여 주고, 서식 요소 사이는 토큰 간격으로 띄워요. */
+  .ai-message-body p,
+  .ai-message-body li {
+    white-space: pre-line;
+  }
+  .ai-message-body > * {
+    margin: 0;
+  }
+  .ai-message-body > * + * {
+    margin-top: var(--spacing-8);
+  }
+  .ai-message-body ul,
+  .ai-message-body ol {
+    padding-inline-start: var(--spacing-20);
+  }
+  .ai-message-body li + li {
+    margin-top: var(--spacing-4);
+  }
+  .ai-message-body blockquote {
+    padding-inline-start: var(--spacing-12);
+    border-inline-start: 2px solid var(--line);
+    color: var(--text-secondary, inherit);
+  }
+  .ai-message-body :not(pre) > code {
+    padding: 0 var(--spacing-4);
+    border-radius: var(--radius-4);
+    background: var(--selected-fill);
+    font-size: 0.92em;
+  }
+  .ai-message-body pre {
+    overflow-x: auto;
+    padding: var(--spacing-8) var(--spacing-12);
+    border-radius: var(--radius-8);
+    background: var(--selected-fill);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .ai-message-body a {
+    color: var(--brand);
+    text-decoration: underline;
+  }
+  .ai-inline-citation {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    margin: 0 2px;
+    padding: 1px var(--spacing-6) 1px 2px;
+    border: 1px solid var(--selected-line);
+    border-radius: var(--radius-full);
+    background: var(--selected-fill);
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    vertical-align: baseline;
+    cursor: pointer;
+  }
+  .ai-inline-citation-num {
+    display: inline-grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: var(--semantic-static-white);
+    font-size: var(--typography-caption2-fontSize, 11px);
+  }
+  .ai-inline-citation-label {
+    max-width: 18ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ai-citation-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-6);
+  }
+  .ai-citation-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding: var(--spacing-4) var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    cursor: pointer;
+  }
+  .ai-citation-chip:hover {
+    border-color: var(--hover-line);
+    color: var(--text);
+  }
+  .ai-citation-chip > span {
+    display: inline-grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-weight: 700;
+  }
+  .ai-citation-chip > strong {
+    max-width: 24ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+}
+
+@layer margin {
+  .composer-actions {
+    flex-wrap: wrap;
+  }
+  .composer-actions > .ai-model-controls {
+    flex: 1 1 auto;
+  }
+  .composer-actions .ai-model-quick-pick {
+    flex-basis: 100%;
+  }
+  .composer-actions > button[type="submit"] {
+    margin-inline-start: auto;
+  }
+  @media (max-width: 767px) {
+    .composer-actions > .ai-model-controls {
+      order: 1;
+      flex-basis: 100%;
+      padding-top: var(--spacing-4);
     }
   }
 }
