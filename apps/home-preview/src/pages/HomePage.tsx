@@ -126,9 +126,9 @@ export function HomePage() {
         Number(b.priority === "high") - Number(a.priority === "high") ||
         (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
     );
-  const phases = data.phases.filter(
-    (phase) => phase.researchId === researchId && !phase.archivedAt,
-  );
+  const phases = data.phases
+    .filter((phase) => phase.researchId === researchId && !phase.archivedAt)
+    .sort((a, b) => a.order - b.order);
   const current =
     phases.find((phase) => phase.id === research.currentPhaseId) ??
     phases.find((phase) => phase.status === "active");
@@ -304,6 +304,58 @@ export function HomePage() {
           onFinish={() => setHiddenFor(researchId)}
         />
       )}
+      <section className="rh-phases" aria-labelledby="rh-phase-heading">
+        <div className="rh-section-heading">
+          <h2 id="rh-phase-heading">{t("연구 흐름")}</h2>
+          {current && (
+            <span className="rh-current-label">
+              {t("{title} 진행 중", { title: current.title })}
+            </span>
+          )}
+          <TextLink className="rh-text-link" to={`${base}/planning`}>
+            {t("계획·일정")} <Icon name="arrow-up-right" size={15} />
+          </TextLink>
+        </div>
+        {phases.length ? (
+          <ol className="rh-phase-track">
+            {phases.map((phase, index) => (
+              <li
+                key={phase.id}
+                className={
+                  phase.id === current?.id
+                    ? "rh-phase-current"
+                    : phase.status === "done"
+                      ? "rh-phase-done"
+                      : ""
+                }
+              >
+                <Link
+                  to={`${base}/planning?phase=${phase.id}`}
+                  aria-current={phase.id === current?.id ? "step" : undefined}
+                >
+                  <span className="rh-phase-number" aria-hidden="true">
+                    {phase.status === "done" ? (
+                      <Icon name="check" size={13} />
+                    ) : (
+                      String(index + 1).padStart(2, "0")
+                    )}
+                  </span>
+                  <span>{phase.title}</span>
+                  {phase.id === current?.id && (
+                    <span className="rh-sr-only">{t("현재 단계")}</span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <Link className="rh-phase-start" to={`${base}/planning`}>
+            <Icon name="flag" size={18} />
+            <span>{t("단계와 주요 목표 정하기")}</span>
+            <Icon name="arrow-right" size={16} />
+          </Link>
+        )}
+      </section>
       <div
         className={`rh-columns ${attentionCount > 0 ? "rh-has-attention" : ""}`}
       >

@@ -325,6 +325,105 @@
       transition: none;
     }
   }
+  /* 연구 흐름: 계획·일정의 단계를 홈에서 한 줄로 보여 줍니다. */
+  .rh-phases {
+    margin-bottom: 30px;
+    padding: 21px 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    background: var(--surface);
+  }
+  .rh-phases .rh-section-heading {
+    margin-bottom: 17px;
+  }
+  .rh-phases .rh-section-heading h2 {
+    font-size: var(--typography-body2-fontSize);
+    letter-spacing: var(--typography-body2-letterSpacing);
+  }
+  .rh-current-label {
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .rh-phase-track {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    gap: 16px;
+    padding: 1px 0 5px;
+  }
+  .rh-phase-track li {
+    position: relative;
+    flex: 1 0 auto;
+  }
+  .rh-phase-track li:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 15px;
+    left: 39px;
+    right: -7px;
+    height: 1px;
+    background: var(--line);
+  }
+  .rh-phase-track a {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: max-content;
+    max-width: 190px;
+    min-height: 34px;
+    padding-right: 12px;
+    background: var(--surface);
+    color: var(--text-tertiary);
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .rh-phase-track a:hover {
+    color: var(--text);
+  }
+  .rh-phase-number {
+    display: grid;
+    place-items: center;
+    width: 29px;
+    height: 29px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    font-size: var(--typography-caption2-fontSize);
+    letter-spacing: var(--typography-caption2-letterSpacing);
+  }
+  .rh-phase-current a {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .rh-phase-current .rh-phase-number {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--semantic-static-white);
+    box-shadow: 0 0 0 4px var(--brand-soft);
+  }
+  .rh-phase-done a {
+    color: var(--text-secondary);
+  }
+  .rh-phase-done .rh-phase-number {
+    border-color: var(--selected-line);
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .rh-phase-start {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    color: var(--text-secondary);
+  }
+  .rh-phase-start > svg:last-child {
+    margin-left: auto;
+  }
+  .rh-phase-start:hover {
+    color: var(--brand);
+  }
   .rh-columns {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
@@ -984,6 +1083,13 @@
   }
   /* md(992px) 미만: 두 열이 서로를 누르므로 한 열로 내립니다. */
   @media (max-width: 991px) {
+    .rh-phases {
+      margin-bottom: 25px;
+      padding: 18px 20px;
+    }
+    .rh-current-label {
+      display: none;
+    }
     .rh-columns {
       grid-template-columns: minmax(0, 1fr);
       gap: 28px;
@@ -1016,6 +1122,17 @@
     }
   }
   @media (max-width: 767px) {
+    .rh-phases {
+      padding: 17px;
+      border-radius: var(--radius-12);
+    }
+    .rh-phase-track {
+      gap: 13px;
+    }
+    .rh-phase-track a {
+      font-size: var(--typography-caption1-fontSize);
+      letter-spacing: var(--typography-caption1-letterSpacing);
+    }
     .rh-home {
       padding-top: 0;
       padding-bottom: 20px;
