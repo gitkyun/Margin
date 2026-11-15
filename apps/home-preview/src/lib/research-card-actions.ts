@@ -5,12 +5,14 @@ export type ResearchCardActionId =
   | "open"
   | "open-tab"
   | "settings"
+  | "complete"
+  | "uncomplete"
   | "archive"
   | "unarchive"
   | "trash"
   | "restore";
 
-export type ResearchListView = "active" | "archived" | "trash";
+export type ResearchListView = "active" | "completed" | "archived" | "trash";
 
 export interface ResearchCardAction {
   id: ResearchCardActionId;
@@ -23,11 +25,14 @@ export interface ResearchCardAction {
 }
 
 export function researchListView(value: string | null): ResearchListView {
-  return value === "archived" || value === "trash" ? value : "active";
+  return value === "completed" || value === "archived" || value === "trash"
+    ? value
+    : "active";
 }
 
 /**
  * 카드에서 고를 수 있는 동작. 보관·휴지통·복원은 소유자만 할 수 있어요(서버도 같은 규칙).
+ * 완료 표시·되돌리기도 소유자에게만 보여 줘요.
  * 휴지통의 연구는 열 수 없어 복원만 남깁니다(완전 삭제는 카드 아래 버튼과 슬라이드 확인).
  */
 export function researchCardActions(
@@ -42,8 +47,29 @@ export function researchCardActions(
     { id: "settings", label: t("연구 설정"), icon: "settings" },
   ];
   if (!owner) return open;
+  const progress: ResearchCardAction[] =
+    view === "active"
+      ? [
+          {
+            id: "complete",
+            label: t("완료로 표시"),
+            icon: "check",
+            separated: true,
+          },
+        ]
+      : view === "completed"
+        ? [
+            {
+              id: "uncomplete",
+              label: t("진행 중으로 되돌리기"),
+              icon: "refresh",
+              separated: true,
+            },
+          ]
+        : [];
   return [
     ...open,
+    ...progress,
     view === "archived"
       ? {
           id: "unarchive",
@@ -51,7 +77,12 @@ export function researchCardActions(
           icon: "refresh",
           separated: true,
         }
-      : { id: "archive", label: t("보관"), icon: "folder", separated: true },
+      : {
+          id: "archive",
+          label: t("보관"),
+          icon: "folder",
+          separated: progress.length === 0,
+        },
     { id: "trash", label: t("휴지통으로 옮기기"), icon: "trash", danger: true },
   ];
 }
@@ -59,9 +90,10 @@ export function researchCardActions(
 /** 카드 상태 배지. 투고 D-Day는 카드 아래 줄에 이미 있어 넣지 않아요. */
 export function researchStatusBadge(view: ResearchListView): {
   label: string;
-  tone: "green" | "neutral" | "red";
+  tone: "green" | "blue" | "neutral" | "red";
 } {
   if (view === "trash") return { label: t("휴지통"), tone: "red" };
   if (view === "archived") return { label: t("보관됨"), tone: "neutral" };
+  if (view === "completed") return { label: t("완료"), tone: "blue" };
   return { label: t("진행 중"), tone: "green" };
 }

@@ -243,6 +243,7 @@ export function ResearchSelectPage() {
   const newEvents = unreadReviewNotifications(data, user);
   const view = researchListView(creationParams.get("view")),
     archivedView = view === "archived",
+    completedView = view === "completed",
     trashView = view === "trash";
   const statusBadge = researchStatusBadge(view);
   const invites = data.members.filter(
@@ -251,7 +252,11 @@ export function ResearchSelectPage() {
   const visibleResearches = data.researches.filter((r) =>
     trashView
       ? !!r.deletedAt
-      : !r.deletedAt && (archivedView ? !!r.archivedAt : !r.archivedAt),
+      : !r.deletedAt &&
+        (archivedView
+          ? !!r.archivedAt
+          : !r.archivedAt &&
+            (completedView ? !!r.completedAt : !r.completedAt)),
   );
   const [trashTarget, setTrashTarget] = useState<
     (typeof data.researches)[number] | null
@@ -298,7 +303,17 @@ export function ResearchSelectPage() {
     else if (id === "trash") {
       setTrashTarget(research);
       setTrashName("");
-    } else if (id === "archive")
+    } else if (id === "complete")
+      void changeResearch(
+        { ...research, completedAt: new Date().toISOString() },
+        t("연구를 완료로 표시했어요. 완료된 연구에서 볼 수 있어요."),
+      );
+    else if (id === "uncomplete")
+      void changeResearch(
+        { ...research, completedAt: undefined },
+        t("진행 중인 연구로 되돌렸어요."),
+      );
+    else if (id === "archive")
       void changeResearch(
         { ...research, archivedAt: new Date().toISOString() },
         t("연구를 보관했어요. 보관함에서 복원할 수 있어요."),
@@ -447,6 +462,13 @@ export function ResearchSelectPage() {
             options={[
               { value: "active", label: t("진행 중인 연구") },
               {
+                value: "completed",
+                label: t("완료된 연구"),
+                count: data.researches.filter(
+                  (r) => r.completedAt && !r.archivedAt && !r.deletedAt,
+                ).length,
+              },
+              {
                 value: "archived",
                 label: t("보관함"),
                 count: data.researches.filter(
@@ -579,7 +601,9 @@ export function ResearchSelectPage() {
               ? t("휴지통이 비어 있어요")
               : archivedView
                 ? t("보관한 연구가 없어요")
-                : t("진행 중인 연구가 없어요")
+                : completedView
+                  ? t("완료된 연구가 없어요")
+                  : t("진행 중인 연구가 없어요")
           }
           description={
             trashView
@@ -588,7 +612,11 @@ export function ResearchSelectPage() {
                 )
               : archivedView
                 ? t("연구 설정에서 보관한 연구가 여기에 표시돼요.")
-                : t("연구를 만들거나 보관함의 연구를 복원하세요.")
+                : completedView
+                  ? t(
+                      "진행 중인 연구의 ⋯ 메뉴에서 ‘완료로 표시’를 고르면 여기에 모여요.",
+                    )
+                  : t("연구를 만들거나 보관함의 연구를 복원하세요.")
           }
           action={
             <Button onClick={() => navigate("/r/new")}>

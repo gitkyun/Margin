@@ -14,6 +14,7 @@ describe("research card actions", () => {
       "open",
       "open-tab",
       "settings",
+      "complete",
       "archive",
       "trash",
     ]);
@@ -27,6 +28,19 @@ describe("research card actions", () => {
     ]);
   });
 
+  it("lets the owner move a research between active and completed", () => {
+    expect(ids("completed", true)).toEqual([
+      "open",
+      "open-tab",
+      "settings",
+      "uncomplete",
+      "archive",
+      "trash",
+    ]);
+    expect(ids("completed", false)).toEqual(["open", "open-tab", "settings"]);
+    expect(ids("archived", true)).not.toContain("complete");
+  });
+
   it("offers only restore in the trash, and nothing to non-owners", () => {
     expect(ids("trash", true)).toEqual(["restore"]);
     expect(ids("trash", false)).toEqual([]);
@@ -36,6 +50,11 @@ describe("research card actions", () => {
     expect(researchListView(null)).toBe("active");
     expect(researchListView("weird")).toBe("active");
     expect(researchListView("trash")).toBe("trash");
+    expect(researchListView("completed")).toBe("completed");
+    expect(researchStatusBadge("completed")).toEqual({
+      label: "완료",
+      tone: "blue",
+    });
     expect(researchStatusBadge("archived").tone).toBe("neutral");
     expect(researchStatusBadge("trash").tone).toBe("red");
   });
