@@ -34,7 +34,7 @@ export default defineConfig({
     },
     {
       name: "connected",
-      testMatch: /(project-invite|open-signup)\.spec\.ts/,
+      testMatch: /(project-invite|open-signup|ai-composer)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         baseURL: `http://127.0.0.1:${CONNECTED_PORT}`,

@@ -11,12 +11,19 @@ import { AIModelSelector } from "./AIModelSelector";
 import type { AIModelCapability } from "@/lib/ai-capabilities";
 
 afterEach(cleanup);
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+vi.stubGlobal("ResizeObserver", ResizeObserverStub);
+
 const models: AIModelCapability[] = [
   {
     id: "flash",
     label: "Flash 3.8",
     description: "Quick everyday research",
-    provider: "Google",
+    provider: "google",
     recommended: true,
     thinking: [],
   },
@@ -24,7 +31,7 @@ const models: AIModelCapability[] = [
     id: "review",
     label: "Review",
     description: "Long document review",
-    provider: "Example",
+    provider: "example",
     thinking: [],
   },
   {
@@ -35,49 +42,53 @@ const models: AIModelCapability[] = [
     disabled: true,
   },
 ];
+
+function openByKeyboard(trigger: HTMLElement) {
+  trigger.focus();
+  fireEvent.keyDown(trigger, { key: "ArrowDown" });
+}
+
 describe("model selector", () => {
-  it("focuses search, moves through available models with the keyboard, and closes with Escape", async () => {
+  it("opens as a listbox, moves with the keyboard, and returns focus on Escape", async () => {
     render(
       <AIModelSelector models={models} model="flash" onChange={vi.fn()} />,
     );
-    const trigger = screen.getByRole("button", { name: "AI 모델 · Flash 3.8" });
-    fireEvent.click(trigger);
-    const search = await screen.findByRole("textbox", { name: "모델 검색" });
-    await waitFor(() => expect(document.activeElement).toBe(search));
-    fireEvent.keyDown(search, { key: "ArrowDown" });
-    expect(document.activeElement?.textContent).toContain("Flash 3.8");
-    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
-    expect(document.activeElement?.textContent).toContain("Review");
-    fireEvent.keyDown(document.activeElement!, { key: "ArrowDown" });
-    expect(document.activeElement?.textContent).toContain("Flash 3.8");
+    const trigger = screen.getByRole("combobox", {
+      name: "AI 모델 · Flash 3.8",
+    });
+    openByKeyboard(trigger);
+    const options = await screen.findAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      expect.stringContaining("Flash 3.8"),
+      expect.stringContaining("Review"),
+      expect.stringContaining("Pending"),
+    ]);
+    expect(options[0].getAttribute("aria-selected")).toBe("true");
     fireEvent.keyDown(document.activeElement!, { key: "Escape" });
-    await waitFor(() =>
-      expect(screen.queryByRole("textbox", { name: "모델 검색" })).toBeNull(),
-    );
+    await waitFor(() => expect(screen.queryByRole("option")).toBeNull());
     await waitFor(() => expect(document.activeElement).toBe(trigger));
   });
-  it("searches descriptions and selects the result without submitting a surrounding form", async () => {
-    const onChange = vi.fn(),
-      onSubmit = vi.fn((event) => event.preventDefault());
+
+  it("selects a model with Enter without submitting a surrounding form", async () => {
+    const onChange = vi.fn();
+    const onSubmit = vi.fn((event) => event.preventDefault());
     render(
       <form onSubmit={onSubmit}>
         <AIModelSelector models={models} model="flash" onChange={onChange} />
       </form>,
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "AI 모델 · Flash 3.8" }),
+    openByKeyboard(
+      screen.getByRole("combobox", { name: "AI 모델 · Flash 3.8" }),
     );
-    const search = await screen.findByRole("textbox", { name: "모델 검색" });
-    fireEvent.change(search, { target: { value: "long document" } });
-    expect(screen.queryByRole("button", { name: /Flash 3.8 추천/ })).toBeNull();
-    fireEvent.keyDown(search, { key: "Enter" });
+    const review = await screen.findByRole("option", { name: /Review/ });
+    fireEvent.mouseMove(review);
+    fireEvent.keyDown(review, { key: "Enter" });
     expect(onChange).toHaveBeenCalledWith({ model: "review", thinking: "" });
     expect(onSubmit).not.toHaveBeenCalled();
-    await waitFor(() =>
-      expect(screen.queryByRole("textbox", { name: "모델 검색" })).toBeNull(),
-    );
+    await waitFor(() => expect(screen.queryByRole("option")).toBeNull());
   });
-  it("marks unverified models as disabled and offers a direct recommended-model action", async () => {
+
+  it("shows unverified models as disabled and offers a direct recommended-model action", async () => {
     const onChange = vi.fn();
     render(
       <AIModelSelector models={models} model="review" onChange={onChange} />,
@@ -86,12 +97,24 @@ describe("model selector", () => {
       screen.getByRole("button", { name: "추천 모델로 선택 · Flash 3.8" }),
     );
     expect(onChange).toHaveBeenCalledWith({ model: "flash", thinking: "" });
-    fireEvent.click(screen.getByRole("button", { name: "AI 모델 · Review" }));
-    const pending = await screen.findByRole("button", {
-      name: /^Pending/,
-    });
-    expect((pending as HTMLButtonElement).disabled).toBe(true);
+    openByKeyboard(screen.getByRole("combobox", { name: "AI 모델 · Review" }));
+    const pending = await screen.findByRole("option", { name: /Pending/ });
+    expect(pending.getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(pending);
     expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides the quick pick in compact mode", () => {
+    render(
+      <AIModelSelector
+        models={models}
+        model="review"
+        onChange={vi.fn()}
+        compact
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /추천 모델로 선택/ }),
+    ).toBeNull();
   });
 });
