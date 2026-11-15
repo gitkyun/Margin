@@ -126,6 +126,7 @@ jobs:
           supabase functions deploy ai-assist --use-api
           supabase functions deploy delete-research --use-api
           supabase functions deploy project-invite --use-api
+          supabase functions deploy review-notify --use-api
           supabase functions deploy file-copy-to-r2 --use-api
       - name: Install build dependencies
         run: npm ci --ignore-scripts

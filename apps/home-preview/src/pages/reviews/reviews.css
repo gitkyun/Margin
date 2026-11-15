@@ -1381,3 +1381,188 @@
     gap: var(--spacing-8);
   }
 }
+
+@layer margin {
+  /* 교수님께 메일로도 알리기(ReviewNotifyBar). 링크 생성과 메일 발송을 나눠 보여요. */
+  .review-notify-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    padding: var(--spacing-8) var(--spacing-20);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+  .review-notify-bar > svg {
+    flex: none;
+  }
+  .review-notify-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .review-notify-text p {
+    margin: 0;
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    overflow-wrap: anywhere;
+  }
+  .review-notify-text strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .review-notify-text small {
+    display: block;
+    color: var(--text-secondary);
+  }
+  .review-notify-text .disabled-reason {
+    margin-top: var(--spacing-2);
+  }
+  .review-notify-bar > button {
+    flex: none;
+  }
+  @media (max-width: 767px) {
+    .review-notify-bar {
+      flex-wrap: wrap;
+      padding-inline: var(--spacing-16);
+    }
+    .review-notify-bar > button {
+      width: 100%;
+    }
+  }
+
+  /* 댓글·볼 위치 속 페이지 표기(p.4 · 4쪽): 누르면 가운데 PDF가 그 페이지로 가요. */
+  .review-page-link {
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--brand);
+    font: inherit;
+    letter-spacing: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .review-page-link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* 댓글 작성자 줄: 아바타 · 이름 · (시간 · 수정됨) · ⋯ 를 한 줄 기준선에 맞춰요. */
+  .review-comment-meta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--spacing-4);
+    margin-left: auto;
+    min-width: 0;
+  }
+  .review-comment-author .review-comment-meta time {
+    margin-left: 0;
+  }
+  .review-comment-meta .review-comment-edited {
+    margin-inline-start: 0;
+  }
+  .review-comment-avatar.is-reply {
+    width: 20px;
+    height: 20px;
+    font-size: var(--typography-caption2-fontSize, 11px);
+  }
+  /* 본문은 이름 글자와 같은 세로줄에서 시작해요(아바타 25px + 간격 7px). */
+  .review-comment-thread > .review-comment-body,
+  .review-comment-thread > .review-comment-edit,
+  .review-comment-thread > .review-comment-actions {
+    margin-inline-start: 32px;
+  }
+  .review-comment-reply > .review-comment-body,
+  .review-comment-reply > .review-comment-edit {
+    margin-inline-start: 27px;
+  }
+  .review-comment-edit-actions {
+    align-items: center;
+  }
+  .review-comment-edit-hint {
+    margin-inline-end: auto;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+
+  /* 해결한 댓글 접기: 머리에 개수와 차수·첫 줄 요약을 남기고 높이를 부드럽게 바꿔요. */
+  .review-resolved-toggle {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    min-height: 40px;
+    padding-block: var(--spacing-6);
+    text-align: left;
+  }
+  .review-resolved-chevron {
+    flex: none;
+    transition: transform var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .review-resolved-toggle[aria-expanded="true"] .review-resolved-chevron {
+    transform: rotate(90deg);
+  }
+  .review-resolved-title {
+    flex: none;
+    font-weight: 600;
+  }
+  .review-resolved-summary {
+    flex: 1 1 160px;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .review-resolved-region {
+    overflow: hidden;
+  }
+
+  /* 3열 검토 상세: 문서(PDF) 열과 응답 열 사이 경계(1200px 이상에서만 그려요). */
+  @media (min-width: 1200px) {
+    .review-reading-grid.is-resizable {
+      grid-template-columns:
+        minmax(0, 1fr) var(--spacing-12)
+        var(--review-response-width, 340px);
+      column-gap: var(--spacing-6);
+    }
+  }
+  @media (min-width: 1600px) {
+    .review-reading-grid.is-resizable {
+      grid-template-columns:
+        minmax(0, 1fr) var(--spacing-12)
+        var(--review-response-width, 380px);
+      column-gap: var(--spacing-8);
+    }
+  }
+  .review-column-resizer {
+    position: relative;
+    align-self: stretch;
+    min-height: 120px;
+    cursor: col-resize;
+    touch-action: none;
+  }
+  .review-column-resizer::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--line);
+    transform: translateX(-50%);
+    transition:
+      width var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out;
+  }
+  .review-column-resizer:hover::before,
+  .review-column-resizer.dragging::before,
+  .review-column-resizer:focus-visible::before {
+    width: 3px;
+    background: var(--brand);
+  }
+  .review-column-resizer:focus-visible {
+    outline: none;
+  }
+}

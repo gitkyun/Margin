@@ -17,6 +17,7 @@ import {
 } from "@/lib/repository";
 import {
   buildRoadmapPlan,
+  evenRoadmapDraft,
   planPhaseChanges,
   stageDateProblem,
   submissionDateProblem,
@@ -41,6 +42,8 @@ interface DraftStage extends ProposedStage {
   key: string;
 }
 interface Proposal {
+  /** ai: 연구 도우미 제안, even: 화면에서 계산한 균등 배분 초안(AI 결과 아님) */
+  kind: "ai" | "even";
   stages: DraftStage[];
   assumptions: string;
   model: string;
@@ -55,6 +58,11 @@ interface RoadmapProposalDialogProps {
   research: Research;
   /** 보관하지 않은 이 연구의 단계(순서대로) */
   phases: ResearchPhase[];
+  /**
+   * ai(기본): 연구 도우미에 제안을 요청해요.
+   * even: AI를 쓸 수 없을 때 오늘~투고일을 단계 수로 똑같이 나눈 초안을 이 화면에서 계산해요.
+   */
+  kind?: "ai" | "even";
 }
 
 function dateProblemText(problem: StageDateProblem): string {
@@ -80,8 +88,10 @@ export function RoadmapProposalDialog({
   onClose,
   research,
   phases,
+  kind = "ai",
 }: RoadmapProposalDialogProps) {
-  const { save, refresh, cancelRun } = useExperience();
+  const even = kind === "even";
+  const { save, refresh, cancelRun, saveResearch, data } = useExperience();
   const [submissionDate, setSubmissionDate] = useState(""),
     [proposal, setProposal] = useState<Proposal | null>(null),
     [addGoal, setAddGoal] = useState(true),
@@ -93,7 +103,11 @@ export function RoadmapProposalDialog({
 
   // 창을 닫으면 제안과 입력을 버립니다(저장한 것이 없으므로 남길 것이 없어요).
   useEffect(() => {
-    if (open) return;
+    // 열 때 연구에 적어 둔 투고 목표일을 미리 채워요.
+    if (open) {
+      setSubmissionDate(research.submissionDate ?? "");
+      return;
+    }
     abort.current?.abort();
     // 답을 기다리다 닫았으면 서버 실행도 중단을 요청합니다(늦게 온 결과는 쓰지 않아요).
     if (runId.current) void cancelRun(runId.current).catch(() => undefined);
@@ -122,7 +136,9 @@ export function RoadmapProposalDialog({
           ? t("투고일은 5년 안으로 넣어 주세요.")
           : dateProblem
             ? t("투고일을 다시 확인해 주세요.")
-            : "";
+            : even && !unfinished.length
+              ? t("끝나지 않은 단계가 없어 나눌 단계가 없어요.")
+              : "";
   const requestHint = useDisabledReason(requestReason);
 
   const stageProblems = proposal
@@ -143,7 +159,31 @@ export function RoadmapProposalDialog({
         : "";
   const applyHint = useDisabledReason(applyReason);
 
+  /** 균등 배분 초안: 서버에 아무것도 보내지 않고 이 화면에서 계산해요. */
+  function draftEvenly() {
+    if (requestReason) return;
+    const { sent } = buildRoadmapPlan(phases, submissionDate, today);
+    const stages = evenRoadmapDraft(sent, today, submissionDate);
+    if (!stages) {
+      setError(
+        t("남은 날이 단계 수보다 적어 나눌 수 없어요. 투고일을 늦춰 주세요."),
+      );
+      return;
+    }
+    setError("");
+    setProposal({
+      kind: "even",
+      stages: stages.map((stage) => ({ ...stage, key: uid() })),
+      assumptions: "",
+      model: "",
+      submissionDate,
+      today,
+      sent,
+    });
+  }
+
   async function request() {
+    if (even) return draftEvenly();
     if (requestReason || running) return;
     const controller = new AbortController(),
       id = uid();
@@ -159,6 +199,7 @@ export function RoadmapProposalDialog({
       );
       if (controller.signal.aborted) return;
       setProposal({
+        kind: "ai",
         stages: result.roadmap.stages.map((stage) => ({
           ...stage,
           key: uid(),
@@ -227,6 +268,13 @@ export function RoadmapProposalDialog({
         research.id,
       ))
         await save("phases", phase);
+      // 적용한 투고일을 연구의 목표일로도 남겨 홈 D-Day와 맞춰요.
+      const latest = data.researches.find((item) => item.id === research.id);
+      if (latest && latest.submissionDate !== proposal.submissionDate)
+        await saveResearch({
+          ...latest,
+          submissionDate: proposal.submissionDate,
+        });
       if (addGoal)
         await save("milestones", {
           ...recordBase(research.id),
@@ -261,15 +309,25 @@ export function RoadmapProposalDialog({
     >
       <DialogContent className="rms-dialog wide-dialog roadmap-proposal">
         <DialogHeader>
-          <DialogTitle>{t("투고일로 계획 제안받기")}</DialogTitle>
+          <DialogTitle>
+            {even ? t("균등 배분 초안 만들기") : t("투고일로 계획 제안받기")}
+          </DialogTitle>
           <DialogDescription>
-            {proposal
-              ? t(
-                  "연구 도우미가 제안한 계획이에요. 아직 저장하지 않았어요. 이름과 날짜를 고친 뒤 적용할 수 있어요.",
-                )
-              : t(
-                  "투고일을 넣으면 연구 도우미가 오늘부터 투고일까지 단계별 기간을 제안해요. 적용하기 전에는 저장하지 않아요.",
-                )}
+            {even
+              ? proposal
+                ? t(
+                    "AI 결과가 아니에요. 오늘부터 투고일까지를 단계 수만큼 똑같이 나눈 자동 계산 초안이에요. 아직 저장하지 않았어요.",
+                  )
+                : t(
+                    "연구 도우미가 연결되지 않아 AI 제안 대신 오늘부터 투고일까지를 끝나지 않은 단계 수만큼 똑같이 나눠 드려요. 적용하기 전에는 저장하지 않아요.",
+                  )
+              : proposal
+                ? t(
+                    "연구 도우미가 제안한 계획이에요. 아직 저장하지 않았어요. 이름과 날짜를 고친 뒤 적용할 수 있어요.",
+                  )
+                : t(
+                    "투고일을 넣으면 연구 도우미가 오늘부터 투고일까지 단계별 기간을 제안해요. 적용하기 전에는 저장하지 않아요.",
+                  )}
           </DialogDescription>
         </DialogHeader>
         {!proposal ? (
@@ -288,27 +346,44 @@ export function RoadmapProposalDialog({
                 onChange={setSubmissionDate}
               />
             </label>
-            <div className="roadmap-proposal-scope">
-              <strong>{t("연구 도우미에 보내는 내용")}</strong>
-              <ul>
-                <li>
-                  {research.purpose?.trim() || research.questions?.length
-                    ? t("연구 이름과 연구 설정에 적은 목적·연구 질문")
-                    : t(
-                        "연구 이름(목적과 연구 질문이 비어 있어 일반적인 논문 순서로 제안해요)",
-                      )}
-                </li>
-                <li>
-                  {unfinished.length
-                    ? t("끝나지 않은 단계 {count}개의 이름·상태·목표일", {
-                        count: unfinished.length,
-                      })
-                    : t("단계가 없어 새 단계를 제안받아요")}
-                </li>
-                <li>{t("오늘 날짜와 투고일")}</li>
-              </ul>
-              <p>{t("미팅, 피드백, 원고 내용은 보내지 않아요.")}</p>
-            </div>
+            {even ? (
+              <div className="roadmap-proposal-scope">
+                <strong>{t("이렇게 나눠요")}</strong>
+                <ul>
+                  <li>
+                    {unfinished.length
+                      ? t("끝나지 않은 단계 {count}개를 지금 순서대로", {
+                          count: unfinished.length,
+                        })
+                      : t("끝나지 않은 단계가 없어요")}
+                  </li>
+                  <li>{t("오늘부터 투고일까지 같은 길이로, 겹치지 않게")}</li>
+                </ul>
+                <p>{t("서버나 AI에 아무것도 보내지 않아요.")}</p>
+              </div>
+            ) : (
+              <div className="roadmap-proposal-scope">
+                <strong>{t("연구 도우미에 보내는 내용")}</strong>
+                <ul>
+                  <li>
+                    {research.purpose?.trim() || research.questions?.length
+                      ? t("연구 이름과 연구 설정에 적은 목적·연구 질문")
+                      : t(
+                          "연구 이름(목적과 연구 질문이 비어 있어 일반적인 논문 순서로 제안해요)",
+                        )}
+                  </li>
+                  <li>
+                    {unfinished.length
+                      ? t("끝나지 않은 단계 {count}개의 이름·상태·목표일", {
+                          count: unfinished.length,
+                        })
+                      : t("단계가 없어 새 단계를 제안받아요")}
+                  </li>
+                  <li>{t("오늘 날짜와 투고일")}</li>
+                </ul>
+                <p>{t("미팅, 피드백, 원고 내용은 보내지 않아요.")}</p>
+              </div>
+            )}
             {error && (
               <p className="rms-error" role="alert">
                 {error}
@@ -328,7 +403,11 @@ export function RoadmapProposalDialog({
                 loading={running}
                 aria-describedby={requestHint.describedBy}
               >
-                {running ? t("계획을 만드는 중") : t("계획 제안받기")}
+                {even
+                  ? t("초안 만들기")
+                  : running
+                    ? t("계획을 만드는 중")
+                    : t("계획 제안받기")}
               </Button>
             </div>
             {requestHint.node}
@@ -336,7 +415,11 @@ export function RoadmapProposalDialog({
         ) : (
           <div className="rms-modal-stack">
             <div className="roadmap-proposal-heading">
-              <StatusBadge tone="blue">{t("AI 제안")}</StatusBadge>
+              {proposal.kind === "even" ? (
+                <StatusBadge tone="neutral">{t("자동 계산 초안")}</StatusBadge>
+              ) : (
+                <StatusBadge tone="blue">{t("AI 제안")}</StatusBadge>
+              )}
               <span>
                 {t("투고일 {date} 기준", {
                   date: formatDate(proposal.submissionDate),
@@ -344,7 +427,11 @@ export function RoadmapProposalDialog({
               </span>
             </div>
             <RoadmapTimeline
-              label={t("AI가 제안한 로드맵 미리보기")}
+              label={
+                proposal.kind === "even"
+                  ? t("자동 계산 초안 미리보기")
+                  : t("AI가 제안한 로드맵 미리보기")
+              }
               bars={proposal.stages.map((stage) => ({
                 id: stage.key,
                 title: stage.title.trim() || t("이름 없는 단계"),
@@ -470,7 +557,9 @@ export function RoadmapProposalDialog({
                   setError("");
                 }}
               >
-                {t("다시 제안받기")}
+                {proposal.kind === "even"
+                  ? t("투고일 다시 정하기")
+                  : t("다시 제안받기")}
               </Button>
               <Button
                 type="button"

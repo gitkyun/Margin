@@ -1,4 +1,11 @@
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n";
 import { SelectField } from "@/components/experience";
@@ -23,6 +30,46 @@ interface ResultEditorDialogProps {
   onSaved?: (result: RevisionResult) => void;
 }
 
+interface FieldErrors {
+  title?: string;
+  description?: string;
+}
+
+/** 열린 버튼 자리에서 창이 커지며 자리 잡는 시간·곡선(--motion-duration-page, --motion-ease-standard) */
+const MORPH_MS = 300;
+const MORPH_EASING = "cubic-bezier(0.2, 0, 0, 1)";
+
+/**
+ * 창이 연 버튼 자리에서 부드럽게 커지며 열려요(모핑). 768px 이상 가운데 창에서만,
+ * 동작 줄이기 설정이면 하지 않아요. Montage 창의 스타일을 덮지 않게 Web Animations로
+ * 잠깐만 움직이고 끝나면 원래 모습 그대로예요.
+ */
+function morphFrom(container: Element, from: DOMRect | null) {
+  if (
+    !window.matchMedia("(min-width: 768px)").matches ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  )
+    return;
+  const rect = container.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const dx = from
+    ? from.left + from.width / 2 - (rect.left + rect.width / 2)
+    : 0;
+  const dy = from
+    ? from.top + from.height / 2 - (rect.top + rect.height / 2)
+    : 8;
+  const scale = from
+    ? Math.max(0.3, Math.min(1, from.width / rect.width))
+    : 0.94;
+  container.animate(
+    [
+      { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, opacity: 0 },
+      { transform: "none", opacity: 1 },
+    ],
+    { duration: MORPH_MS, easing: MORPH_EASING, fill: "backwards" },
+  );
+}
+
 // Create/edit dialog for a revision result. Shared by the results list and the
 // feedback detail so the screen behind the dialog stays where the student was.
 export function ResultEditorDialog({
@@ -33,9 +80,54 @@ export function ResultEditorDialog({
 }: ResultEditorDialogProps) {
   const { data, save } = useWorkspace();
   const form = useSaving();
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const titleInput = useRef<HTMLInputElement>(null);
+  const descriptionInput = useRef<HTMLTextAreaElement>(null);
+  const formElement = useRef<HTMLFormElement>(null);
+  // 창을 연 버튼의 자리. 열리는 순간(포커스가 창으로 옮겨 가기 전)에 기억해요.
+  const openedFrom = useRef<DOMRect | null>(null);
+  const openedFor = useRef<string | null>(null);
+  if (
+    draft &&
+    openedFor.current !== draft.id &&
+    typeof document !== "undefined"
+  ) {
+    openedFor.current = draft.id;
+    const active = document.activeElement;
+    openedFrom.current =
+      active instanceof HTMLElement && active !== document.body
+        ? active.getBoundingClientRect()
+        : null;
+  }
+  if (!draft) openedFor.current = null;
   useEffect(() => {
     form.setError(null);
+    setErrors({});
   }, [draft?.id]);
+  useLayoutEffect(() => {
+    if (!draft?.id) return;
+    const run = () => {
+      const container = formElement.current?.closest(
+        '[data-slot="dialog-content"]',
+      );
+      if (!container) return false;
+      morphFrom(container, openedFrom.current);
+      return true;
+    };
+    // 창 내용이 다음 프레임에 붙는 경우를 위해 한 번 더 시도해요.
+    if (run()) return;
+    const frame = requestAnimationFrame(() => void run());
+    return () => cancelAnimationFrame(frame);
+  }, [draft?.id]);
+  /** 비어 있는 필수 칸에 오류를 붙이고(흔들림) 첫 칸으로 포커스를 옮겨요. */
+  function flagMissing(next: FieldErrors) {
+    // 같은 칸을 다시 막아도 흔들리도록 표시를 한 번 지웠다가 다음 프레임에 붙여요.
+    setErrors({});
+    requestAnimationFrame(() => {
+      setErrors(next);
+      (next.title ? titleInput : descriptionInput).current?.focus();
+    });
+  }
   return (
     <FormDialog
       busy={form.saving}
@@ -51,11 +143,21 @@ export function ResultEditorDialog({
       description={t("저장해도 교수님께 공개되지 않아요.")}
     >
       <form
+        ref={formElement}
         className="stack"
+        noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (!draft || !draft.title.trim() || !draft.description.trim()) {
-            form.setError(t("제목과 수정한 내용을 적어 주세요."));
+          if (!draft) return;
+          const missing: FieldErrors = {
+            title: draft.title.trim() ? undefined : t("제목을 입력해 주세요."),
+            description: draft.description.trim()
+              ? undefined
+              : t("실제로 수정한 내용을 적어 주세요."),
+          };
+          if (missing.title || missing.description) {
+            form.setError(null);
+            flagMissing(missing);
             return;
           }
           void form.perform(async () => {
@@ -77,9 +179,12 @@ export function ResultEditorDialog({
               label={t("제목")}
               required
               value={draft.title}
-              onChange={(title) =>
-                setDraft((value) => (value ? { ...value, title } : value))
-              }
+              error={errors.title}
+              inputRef={titleInput}
+              onChange={(title) => {
+                setErrors((current) => ({ ...current, title: undefined }));
+                setDraft((value) => (value ? { ...value, title } : value));
+              }}
             />
             <LabeledText
               label={
@@ -89,9 +194,17 @@ export function ResultEditorDialog({
               }
               required
               value={draft.description}
-              onChange={(description) =>
-                setDraft((value) => (value ? { ...value, description } : value))
-              }
+              error={errors.description}
+              textareaRef={descriptionInput}
+              onChange={(description) => {
+                setErrors((current) => ({
+                  ...current,
+                  description: undefined,
+                }));
+                setDraft((value) =>
+                  value ? { ...value, description } : value,
+                );
+              }}
               placeholder={t("예: 2장 선행연구 비교표에 비교 기준 3개 추가")}
               rows={5}
             />

@@ -56,6 +56,8 @@ export function AIWorkbench({
 }) {
   const { runAI, mode, user } = useWorkspace();
   const caps = useAICapabilities();
+  // 글쓰기 여백 패널의 AI 문장 점검. 피드백용 문구 대신 원고용 문구를 써요.
+  const writing = input.mode === "review_writing";
   const aiNotConfigured = useAINotConfigured();
   // 미리보기·AI 미연결·원문 변경은 위 안내 문장이 이유라서 그 문장과 버튼을 잇습니다.
   const availabilityNoteId = useId(),
@@ -241,7 +243,9 @@ export function AIWorkbench({
         <strong>
           {input.mode === "organize_meeting"
             ? t("이 미팅에 저장된 메모")
-            : t("이 피드백의 내용")}
+            : writing
+              ? t("이 문서에서 고른 원문")
+              : t("이 피드백의 내용")}
         </strong>
         <small>
           {t("{count}자", { count: input.sourceText.length.toLocaleString() })}
@@ -381,7 +385,9 @@ export function AIWorkbench({
               <div className="ai-candidate-number">
                 {input.mode === "organize_meeting"
                   ? t("정리 항목 {number}", { number: index + 1 })
-                  : t("수정 방법 {number}", { number: index + 1 })}
+                  : writing
+                    ? t("문장 제안 {number}", { number: index + 1 })
+                    : t("수정 방법 {number}", { number: index + 1 })}
                 {saved.includes(index) && (
                   <span>
                     {input.mode === "organize_meeting"
@@ -504,6 +510,8 @@ export function AIWorkbench({
                   t("저장 중")
                 ) : input.mode === "organize_meeting" ? (
                   t("이 항목 저장")
+                ) : writing ? (
+                  t("원문과 비교하기")
                 ) : (
                   t("이 방법 선택")
                 )}
@@ -512,7 +520,9 @@ export function AIWorkbench({
                 <small className="ai-candidate-note">
                   {input.mode === "organize_meeting"
                     ? t("저장한 항목만 기록에 남아요.")
-                    : t("선택한 방법만 기록에 남아요.")}
+                    : writing
+                      ? t("비교 창에서 '반영'을 눌러야 글에 들어가요.")
+                      : t("선택한 방법만 기록에 남아요.")}
                 </small>
               )}
             </section>

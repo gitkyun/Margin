@@ -105,9 +105,12 @@ export function ServiceIntro({ onDone, onScene }: ServiceIntroProps) {
     <section className="ob-form ob-intro" aria-labelledby="ob-intro-heading">
       <div className="ob-meter-row">
         <StepMeter
-          count={INTRO_SLIDE_COUNT}
+          labels={TITLES}
           current={slide}
           timedMs={timed && slide !== 1 ? autoMs : undefined}
+          onPick={(index) => {
+            if (index !== slide) go(index);
+          }}
         />
         {!last && (
           <button

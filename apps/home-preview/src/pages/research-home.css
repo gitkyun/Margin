@@ -1268,3 +1268,170 @@
     }
   }
 }
+
+@layer margin {
+  /* 연구 이름 + 투고 D-Day 칩. 좁은 폭에서는 칩이 이름 아래로 내려가요. */
+  .rh-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8) var(--spacing-12);
+  }
+  .rh-title-row h1 {
+    min-width: 0;
+  }
+  .rh-countdown {
+    display: inline-flex;
+    flex: none;
+    align-items: baseline;
+    gap: var(--spacing-6);
+    padding: var(--spacing-4) var(--spacing-10);
+    border: 1px solid var(--selected-line);
+    border-radius: var(--radius-full);
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    white-space: nowrap;
+    transition: background var(--motion-duration-micro)
+      var(--motion-ease-standard);
+  }
+  .rh-countdown strong {
+    font-variant-numeric: tabular-nums;
+  }
+  .rh-countdown:hover {
+    background: var(--selected-fill);
+  }
+  .rh-countdown[data-past] {
+    border-color: var(--line);
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+  }
+}
+
+@layer margin {
+  /* ── 확인할 내용: 디시전 인박스 ───────────────────── */
+  .rh-inbox {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .rh-inbox-body {
+    display: grid;
+    gap: var(--spacing-4);
+    flex: 1;
+    min-width: 0;
+  }
+  .rh-inbox-body .rh-inbox-event {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+  }
+  .rh-inbox-body strong {
+    overflow-wrap: anywhere;
+    word-break: var(--text-word-break, keep-all);
+  }
+  /* 응답·댓글 원문은 한 줄만 보여 주고, 전체는 원래 화면에서 읽어요. */
+  .rh-inbox-excerpt {
+    display: block;
+    overflow: hidden;
+    padding-left: var(--spacing-8);
+    border-left: 2px solid var(--line);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .rh-attention-row .rh-inbox-ask {
+    margin-top: var(--spacing-2);
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+  }
+  .rh-inbox-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-6);
+    margin-top: var(--spacing-6);
+  }
+  /* ‘추가 수정 필요’는 경고색 아이콘으로 구분해요. */
+  .rh-inbox-item.tone-amber .rh-attention-icon {
+    border-color: var(--line);
+    background: var(--surface-muted);
+    color: var(--warning);
+  }
+  .rh-inbox-item.tone-green .rh-attention-icon {
+    border-color: var(--line);
+    background: var(--surface-muted);
+    color: var(--success);
+  }
+  .rh-inbox-more {
+    padding: var(--spacing-12) 0 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+
+  /* ── 시작하기 완료 모션 ───────────────────────────── */
+  .rh-start-progress > span {
+    transition: width var(--motion-duration-page) var(--motion-ease-standard);
+  }
+  .rh-start-tick {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* 지난번에 본 뒤 새로 끝낸 항목: 원이 채워지고 체크 선이 그려져요. */
+  .rh-start-item.is-new .rh-start-check {
+    animation: rh-start-fill var(--motion-duration-enter)
+      var(--motion-ease-standard) both;
+  }
+  .rh-start-item.is-new .rh-start-tick path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: rh-start-draw var(--motion-duration-page)
+      var(--motion-ease-standard) var(--motion-duration-enter) forwards;
+  }
+  @keyframes rh-start-fill {
+    from {
+      border-color: var(--line-strong);
+      background: transparent;
+    }
+  }
+  @keyframes rh-start-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .rh-start-complete {
+    gap: var(--spacing-8);
+    color: var(--brand);
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-body2-letterSpacing);
+  }
+  /* 완료 문구를 보여 주는 동안 목록은 숨겨요(display: grid가 hidden을 덮지 않게). */
+  .rh-start-list[hidden] {
+    display: none;
+  }
+  .rh-start.is-complete .rh-start-head {
+    margin-bottom: var(--spacing-8);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rh-start-progress > span {
+      transition: none;
+    }
+    .rh-start-item.is-new .rh-start-check,
+    .rh-start-item.is-new .rh-start-tick path {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+  }
+}

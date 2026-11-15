@@ -23,10 +23,15 @@ export function DecisionLog({ entries, researchId }: DecisionLogProps) {
       </InlineEmpty>
     );
   return (
-    <ol className="decision-log">
+    <ol className="decision-log" aria-label={t("결정 기록 타임라인")}>
       {entries.map(({ decision, meeting, replaces, replacedBy }) => (
         <li key={decision.id} className={replacedBy ? "is-replaced" : ""}>
-          <p className="decision-log-text">{decision.text}</p>
+          <p className="decision-log-text">
+            {decision.text}
+            {replacedBy && (
+              <span className="sr-only"> ({t("이후 바뀐 결정")})</span>
+            )}
+          </p>
           {decision.reason && (
             <p className="decision-log-reason">
               {t("이유: {reason}", { reason: decision.reason })}
@@ -48,10 +53,19 @@ export function DecisionLog({ entries, researchId }: DecisionLogProps) {
                 to={`/r/${researchId}/meetings/${meeting.id}?tab=questions`}
               >
                 {meeting.title}
-                {meeting.date ? ` · ${formatDate(meeting.date)}` : ""}
+                {meeting.date && (
+                  <>
+                    {" · "}
+                    <time dateTime={meeting.date}>
+                      {formatDate(meeting.date)}
+                    </time>
+                  </>
+                )}
               </Link>
             ) : (
-              formatDate(decision.createdAt.slice(0, 10))
+              <time dateTime={decision.createdAt}>
+                {formatDate(decision.createdAt.slice(0, 10))}
+              </time>
             )}
           </small>
         </li>

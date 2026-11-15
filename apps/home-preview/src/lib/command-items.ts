@@ -1,5 +1,10 @@
 import type { ReviewRequest, WorkspaceData } from "./domain";
-import { commandFilter } from "./hangul-search";
+import {
+  bodyExcerpt,
+  commandFilter,
+  excerptText,
+  type TextExcerpt,
+} from "./hangul-search";
 import { goShortcutLabel } from "./go-shortcuts";
 import { t } from "./i18n";
 
@@ -8,6 +13,7 @@ const KEYWORDS = {
   newResearch: ["연구 추가", "研究を追加"], // i18n-ignore
   newMeeting: ["미팅 추가", "회의", "ミーティングを追加", "会議"], // i18n-ignore
   newTask: ["할 일 추가", "할 일 만들기", "투두", "タスクを作成", "ToDo"], // i18n-ignore
+  newFeedback: ["피드백 만들기", "교수 피드백", "フィードバックを追加"], // i18n-ignore
   newResult: ["수정 결과 만들기", "고친 내용", "修正結果を作成"], // i18n-ignore
   newReview: ["교수 검토", "리뷰 요청", "先生のレビュー"], // i18n-ignore
   newWriting: ["문서 만들기", "새 글", "文書を作成", "新しい原稿"], // i18n-ignore
@@ -43,6 +49,8 @@ export interface CommandEntry {
   /** 검색에 쓰는 말. 첫 번째는 항상 보이는 이름 */
   keywords: string[];
   action: CommandAction;
+  /** 본문에서 찾았을 때 이름 아래 보여 줄 짧은 발췌 */
+  excerpt?: TextExcerpt;
 }
 
 export interface CommandSection {
@@ -132,6 +140,111 @@ export function recordEntries(
   ];
 }
 
+/** 본문 검색 결과 최대 개수. 넘치면 입력을 더 구체적으로 하도록 앞쪽(최근)만 보여요. */
+const BODY_LIMIT = 20;
+
+/**
+ * 미팅 메모·피드백 본문·검토 요청 댓글 본문에서 입력한 말을 찾습니다(⌘K 본문 검색).
+ * 워크스페이스에 이미 내려온 기록만 보므로 이 사람이 읽을 수 있는 것만 나옵니다.
+ * 보관한 미팅·피드백과 삭제한 댓글은 뺍니다.
+ */
+export function bodyEntries(
+  data: Pick<WorkspaceData, "meetings" | "feedback"> &
+    Partial<Pick<WorkspaceData, "reviews" | "rounds" | "comments">>,
+  researchId: string,
+  query: string,
+): RecordEntry[] {
+  const meetings = data.meetings
+    .filter((m) => m.researchId === researchId && !m.archivedAt)
+    .flatMap((m) => {
+      const excerpt = bodyExcerpt(m.memo ?? "", query);
+      if (!excerpt) return [];
+      return [
+        bodyEntry({
+          id: `body:meetings:${m.id}`,
+          label: m.title || t("제목 없음"),
+          icon: "calendar",
+          hint: t("미팅 메모"),
+          excerpt,
+          updatedAt: m.updatedAt,
+          to: `/r/${researchId}/meetings/${m.id}?tab=record`,
+        }),
+      ];
+    });
+  const feedback = data.feedback
+    .filter((f) => f.researchId === researchId && !f.archivedAt)
+    .flatMap((f) => {
+      const excerpt = bodyExcerpt(f.body ?? "", query);
+      if (!excerpt) return [];
+      return [
+        bodyEntry({
+          id: `body:feedback:${f.id}`,
+          label: f.title || t("제목 없음"),
+          icon: "feedback",
+          hint: t("피드백 본문"),
+          excerpt,
+          updatedAt: f.updatedAt,
+          to: `/r/${researchId}/feedback/${f.id}`,
+        }),
+      ];
+    });
+  // 댓글은 차수 → 검토 요청으로 거슬러 올라가 이 연구의 것만 고릅니다.
+  const reviews = new Map(
+    (data.reviews ?? [])
+      .filter((r) => r.researchId === researchId)
+      .map((r) => [r.id, r]),
+  );
+  const rounds = new Map(
+    (data.rounds ?? [])
+      .filter((round) => reviews.has(round.requestId))
+      .map((round) => [round.id, round]),
+  );
+  const comments = (data.comments ?? []).flatMap((c) => {
+    const round = rounds.get(c.roundId);
+    if (!round || c.deletedAt) return [];
+    const excerpt = bodyExcerpt(c.body ?? "", query);
+    if (!excerpt) return [];
+    const review = reviews.get(round.requestId)!;
+    const params = new URLSearchParams({ round: round.id, item: round.itemId });
+    return [
+      bodyEntry({
+        id: `body:comments:${c.id}`,
+        label: review.title || t("제목 없음"),
+        icon: "message",
+        hint: t("{name}의 댓글", { name: c.authorName || t("이름 없음") }),
+        excerpt,
+        updatedAt: c.editedAt ?? c.createdAt,
+        to: `/reviews/${review.id}?${params}`,
+      }),
+    ];
+  });
+  return [...meetings, ...feedback, ...comments]
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, BODY_LIMIT);
+}
+
+function bodyEntry(input: {
+  id: string;
+  label: string;
+  icon: string;
+  hint: string;
+  excerpt: TextExcerpt;
+  updatedAt: string;
+  to: string;
+}): RecordEntry {
+  return {
+    id: input.id,
+    label: input.label,
+    icon: input.icon,
+    hint: input.hint,
+    excerpt: input.excerpt,
+    // 이름으로 안 맞아도 발췌(입력한 말을 그대로 담음)로 걸러지게 둘째 말로 넣어요.
+    keywords: [input.label, excerptText(input.excerpt)],
+    updatedAt: input.updatedAt,
+    action: { kind: "navigate", to: input.to },
+  };
+}
+
 /** 최근에 고친 기록 몇 개(빈 입력일 때 맨 위에 보여 줌). */
 export function recentEntries(records: RecordEntry[]): CommandEntry[] {
   return [...records]
@@ -181,6 +294,13 @@ export function createEntries(researchId: string | undefined): CommandEntry[] {
       "calendar",
       `${base}/meetings?new=1`,
       KEYWORDS.newMeeting,
+    ),
+    navigateEntry(
+      "create:feedback",
+      t("피드백 추가"),
+      "message",
+      `${base}/feedback?new=1`,
+      KEYWORDS.newFeedback,
     ),
     navigateEntry(
       "create:task",
@@ -361,10 +481,13 @@ export function buildCommands({
   researchId,
   searching,
   userId,
+  query = "",
 }: {
   data: WorkspaceData;
   researchId?: string;
   searching: boolean;
+  /** 입력한 말. 연구 안에서는 미팅 메모·피드백·댓글 본문도 이 말로 찾습니다. */
+  query?: string;
   /** 주면 교수 계정인지 보고, 교수 계정이면 받은 검토 요청 기준으로 꾸밉니다. */
   userId?: string;
 }): CommandSection[] {
@@ -382,6 +505,12 @@ export function buildCommands({
         },
     { id: "create", heading: t("만들기"), entries: createEntries(researchId) },
     { id: "go", heading: t("이동"), entries: goEntries(researchId) },
+    {
+      id: "bodies",
+      heading: t("본문에서 찾음"),
+      entries:
+        searching && researchId ? bodyEntries(data, researchId, query) : [],
+    },
     {
       id: "researches",
       heading: researchId ? t("다른 연구로") : t("연구"),

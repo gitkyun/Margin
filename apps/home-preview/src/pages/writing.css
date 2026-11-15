@@ -566,3 +566,66 @@
     cursor: pointer;
   }
 }
+
+@layer margin {
+  /* ── 여백 패널 AI 문장 점검 ─────────────────────── */
+  /* 점검 범위: 옅은 선택 배경으로 어디를 보냈는지 보여 줘요. */
+  .rms-document-editor .writing-ai-range {
+    background: var(--brand-soft);
+    border-radius: var(--radius-4);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  /* 지금 확인 중인 제안의 원문 문장: 브랜드 밑줄로 한 단계 더 강조해요. */
+  .rms-document-editor .writing-ai-quote {
+    background: var(--selected-fill);
+    text-decoration: underline 2px var(--brand);
+    text-underline-offset: 4px;
+  }
+  .writing-review {
+    display: grid;
+    gap: var(--spacing-12);
+  }
+  .writing-review-scope {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-8);
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px solid var(--selected-line);
+    border-radius: var(--radius-10);
+    background: var(--brand-soft);
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+  }
+  .writing-review-scope > svg {
+    flex: none;
+    margin-top: var(--spacing-2);
+    color: var(--brand);
+  }
+  .writing-review > button {
+    justify-self: start;
+  }
+  .writing-apply .field small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+  }
+  .writing-apply-method summary {
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    cursor: pointer;
+  }
+  .writing-apply-method p {
+    margin-top: var(--spacing-8);
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    white-space: pre-wrap;
+    word-break: var(--text-word-break, keep-all);
+    overflow-wrap: anywhere;
+  }
+}

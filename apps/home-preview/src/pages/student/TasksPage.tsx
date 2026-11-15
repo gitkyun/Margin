@@ -25,8 +25,11 @@ import {
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { useTaskCompletion } from "@/lib/use-task-completion";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { useTaskRowMotion } from "@/components/task-row-motion";
+import { RowUndoButton, TaskRowFrame } from "@/components/TaskRowFrame";
+import { DrawnCheck } from "@/components/DrawnCheck";
+import { useMediaQuery } from "@/lib/use-media-query";
 import {
   formatDate,
   originLabels,
@@ -56,6 +59,8 @@ export function TasksPage() {
   const back = useBackState();
   const { data, user, save, remove } = useWorkspace();
   const completion = useTaskCompletion(save);
+  // 행을 밀어 완료하는 동작은 767px 이하에서만 켜요(데스크톱은 체크박스만).
+  const swipeable = useMediaQuery("(max-width: 767px)");
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const filter = params.get("status") ?? "active",
@@ -137,7 +142,10 @@ export function TasksPage() {
         filter === "archived" ||
         (filter === "done"
           ? item.status === "done"
-          : item.status !== "done" || completion.held.has(item.id)),
+          : item.status !== "done" ||
+            completion.held.has(item.id) ||
+            // 되돌리기 시간 동안은 줄 그은 채 자리에 남겨 행의 ‘되돌리기’를 누를 수 있게 해요.
+            completion.recent.has(item.id)),
     )
     .filter(
       (item) =>
@@ -462,16 +470,29 @@ export function TasksPage() {
             {tasks.length ? (
               <AnimatePresence initial={false}>
                 {tasks.map((task) => (
-                  <motion.div
-                    {...taskRowMotion}
+                  <TaskRowFrame
+                    rowMotion={taskRowMotion}
                     key={task.id}
                     className={`student-task-row ${task.status === "done" ? "is-complete" : ""}`}
+                    swipeable={
+                      swipeable &&
+                      !task.archivedAt &&
+                      !completion.busy.has(task.id)
+                    }
+                    done={task.status === "done"}
+                    onSwipe={() => void quickToggle(task)}
                   >
                     <Checkbox
                       checked={task.status === "done"}
                       onCheckedChange={() => void quickToggle(task)}
                       disabled={
                         !!task.archivedAt || completion.busy.has(task.id)
+                      }
+                      icon={<DrawnCheck />}
+                      className={
+                        completion.recent.has(task.id)
+                          ? "task-check-draw"
+                          : undefined
                       }
                       aria-label={t("{title} 완료", { title: task.title })}
                     />
@@ -499,17 +520,26 @@ export function TasksPage() {
                             : t("관련 피드백 없음"))}
                       </small>
                     </Link>
-                    <StatusBadge
-                      tone={
-                        task.status === "done"
-                          ? "green"
-                          : task.status === "doing"
-                            ? "blue"
-                            : "neutral"
-                      }
-                    >
-                      {taskLabels[task.status]}
-                    </StatusBadge>
+                    {task.status === "done" &&
+                    completion.recent.has(task.id) ? (
+                      <RowUndoButton
+                        title={task.title}
+                        completedAt={completion.recent.get(task.id) ?? 0}
+                        onUndo={() => void completion.undo(task.id)}
+                      />
+                    ) : (
+                      <StatusBadge
+                        tone={
+                          task.status === "done"
+                            ? "green"
+                            : task.status === "doing"
+                              ? "blue"
+                              : "neutral"
+                        }
+                      >
+                        {taskLabels[task.status]}
+                      </StatusBadge>
+                    )}
                     <span className="task-list-date">
                       {task.status !== "done" &&
                         task.dueDate &&
@@ -542,7 +572,7 @@ export function TasksPage() {
                     >
                       <Icon name="calendar" size={16} />
                     </Button>
-                  </motion.div>
+                  </TaskRowFrame>
                 ))}
               </AnimatePresence>
             ) : hasTasks ? (

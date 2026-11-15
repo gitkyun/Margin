@@ -58,7 +58,9 @@ export function MaterialUploadField({
         onClick={() => input.current?.click()}
         onDragOver={(e) => {
           e.preventDefault();
-          if (!busy && !pending) setDragging(true);
+          if (busy || pending) return;
+          e.dataTransfer.dropEffect = "copy";
+          setDragging(true);
         }}
         onDragLeave={(e) => {
           if (!e.currentTarget.contains(e.relatedTarget as Node | null))
@@ -93,10 +95,13 @@ export function MaterialUploadField({
             <Icon name={file ? "file" : "upload"} size={25} />
           </motion.span>
         </span>
-        <strong>
-          {file
-            ? t("다른 파일로 바꾸려면 누르거나 끌어다 놓아 주세요")
-            : t("여기에 PDF를 끌어다 놓아 주세요")}
+        {/* 끌고 있는 동안 문구를 바꿔 놓을 자리라는 걸 알려 줘요 */}
+        <strong key={dragging ? "drop" : "idle"} className="text-swap">
+          {dragging
+            ? t("여기에 놓으면 이 PDF를 골라요")
+            : file
+              ? t("다른 파일로 바꾸려면 누르거나 끌어다 놓아 주세요")
+              : t("여기에 PDF를 끌어다 놓아 주세요")}
         </strong>
         <span id={hintId} className="mu-dropzone-hint">
           {file

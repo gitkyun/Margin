@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { supabase, configured, friendlyError } from "@/lib/supabase";
 import { previewUser } from "@/lib/demo";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
+import { RecordingProvider } from "@/components/recording/RecordingProvider";
 import { useTheme } from "@/lib/theme";
 import {
   notificationHref,
@@ -477,7 +478,10 @@ export function App() {
     : previewUser;
   return (
     <WorkspaceProvider user={user} mode={configured ? "connected" : "preview"}>
-      <WorkspaceRoutes />
+      {/* 녹음은 화면을 옮겨도 이어져요(상단 미니 녹음 컨트롤). */}
+      <RecordingProvider>
+        <WorkspaceRoutes />
+      </RecordingProvider>
     </WorkspaceProvider>
   );
 }

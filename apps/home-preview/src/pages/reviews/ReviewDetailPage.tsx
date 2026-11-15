@@ -3,13 +3,18 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { SelectField } from "@/components/experience";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import {
+  Fragment,
   useEffect,
   useId,
   useRef,
   useState,
+  type CSSProperties,
   type FormEvent,
   type ChangeEvent,
+  type KeyboardEvent,
+  type ReactNode,
 } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Link,
   useNavigate,
@@ -48,7 +53,10 @@ import {
   useDisabledReason,
 } from "@/components/common";
 import { Icon } from "@/components/icons";
-import { PdfViewer } from "@/components/PdfViewer";
+import { PdfViewer, type PdfViewerHandle } from "@/components/PdfViewer";
+import { SlideToConfirm } from "@/components/SlideToConfirm";
+import { useMediaQuery } from "@/lib/use-media-query";
+import { playCue } from "@/lib/ui-sound";
 import { useWorkspace } from "@/lib/workspace";
 import { useTheme } from "@/lib/theme";
 import {
@@ -74,6 +82,59 @@ import {
 } from "./helpers";
 import { Tabs } from "@/components/ui/tabs";
 import { RequestDirection } from "./RequestDirection";
+import { ReviewNotifyBar } from "./ReviewNotifyBar";
+import { ColumnResizer } from "./ColumnResizer";
+import { useResponseWidth } from "./column-width";
+import { firstLine, splitPageReferences } from "./review-text";
+
+/** 맥에서는 ⌘, 그 밖에서는 Ctrl을 안내해요. */
+const IS_MAC =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad/.test(navigator.platform);
+
+/**
+ * 글 속 페이지 표기(p.4, 4쪽, 4페이지)를 누르면 가운데 PDF가 그 페이지로 가요.
+ * 첨부 파일이 없으면 onPage가 없어 그냥 글자로 둡니다.
+ */
+function WithPageLinks({
+  text,
+  onPage,
+}: {
+  text: string;
+  onPage?: (page: number) => void;
+}): ReactNode {
+  if (!onPage) return text;
+  return splitPageReferences(text).map((segment, index) =>
+    segment.kind === "page" ? (
+      <button
+        key={index}
+        type="button"
+        className="review-page-link"
+        aria-label={t("{text}, PDF {page}페이지로 이동", {
+          text: segment.text,
+          page: segment.page,
+        })}
+        onClick={() => onPage(segment.page)}
+      >
+        {segment.text}
+      </button>
+    ) : (
+      <Fragment key={index}>{segment.text}</Fragment>
+    ),
+  );
+}
+
+/** 편집 칸·댓글 칸: ⌘Enter(Ctrl+Enter)로 보내기. 한글 조합 중 Enter는 무시해요. */
+function submitOnModEnter(event: KeyboardEvent<HTMLTextAreaElement>) {
+  if (
+    event.key !== "Enter" ||
+    !(event.metaKey || event.ctrlKey) ||
+    event.nativeEvent.isComposing
+  )
+    return;
+  event.preventDefault();
+  event.currentTarget.form?.requestSubmit();
+}
 
 /**
  * 댓글 하나의 ⋯ 메뉴(감사 F6). 링크 복사는 누구나, 편집·삭제는 쓴 사람만 할 수 있어요.
@@ -136,13 +197,16 @@ function CommentBody({
   busy,
   onSave,
   onCancel,
+  onPage,
 }: {
   comment: ReviewComment;
   editing: boolean;
   busy: boolean;
   onSave: (body: string) => void;
   onCancel: () => void;
+  onPage?: (page: number) => void;
 }) {
+  const hintId = useId();
   const [draft, setDraft] = useState(comment.body);
   useEffect(() => {
     if (editing) setDraft(comment.body);
@@ -153,13 +217,11 @@ function CommentBody({
         {t("삭제한 댓글이에요.")}
       </p>
     );
+  // ‘(수정됨)’은 작성자 줄의 시간 옆에 둬요(CommentThread).
   if (!editing)
     return (
       <p className="review-comment-body">
-        {comment.body}
-        {comment.editedAt && (
-          <small className="review-comment-edited">{t("(수정됨)")}</small>
-        )}
+        <WithPageLinks text={comment.body} onPage={onPage} />
       </p>
     );
   const body = draft.trim();
@@ -178,12 +240,26 @@ function CommentBody({
         maxLength={10000}
         rows={3}
         autoFocus
+        aria-describedby={hintId}
+        aria-keyshortcuts={
+          IS_MAC ? "Meta+Enter Escape" : "Control+Enter Escape"
+        }
         onChange={(event) => setDraft(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === "Escape") onCancel();
+          if (event.key === "Escape" && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            onCancel();
+            return;
+          }
+          submitOnModEnter(event);
         }}
       />
       <div className="review-comment-edit-actions">
+        <small id={hintId} className="review-comment-edit-hint">
+          {IS_MAC
+            ? t("⌘Enter로 저장 · Esc로 취소")
+            : t("Ctrl+Enter로 저장 · Esc로 취소")}
+        </small>
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>
           {t("취소")}
         </Button>
@@ -205,6 +281,7 @@ function CommentThread({
   onCopyLink,
   onUpdate,
   onDelete,
+  onPage,
   userId,
 }: {
   comment: ReviewComment;
@@ -216,9 +293,31 @@ function CommentThread({
   onCopyLink: (id: string) => void;
   onUpdate: (id: string, body: string) => Promise<boolean>;
   onDelete: (comment: ReviewComment) => void;
+  onPage?: (page: number) => void;
   userId: string;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  // 작성자 · 시간 · (수정됨)을 한 줄에 맞춰요. 답글도 같은 줄 구조를 써요.
+  const authorLine = (value: ReviewComment, reply = false) => (
+    <div className="review-comment-author">
+      <span
+        className={`review-comment-avatar${reply ? " is-reply" : ""}`}
+        aria-hidden="true"
+      >
+        {value.authorName?.slice(0, 1) || t("검")}
+      </span>
+      <strong>{authorOf(value)}</strong>
+      <span className="review-comment-meta">
+        <time dateTime={value.createdAt} title={value.createdAt}>
+          {timeText(value.createdAt)}
+        </time>
+        {value.editedAt && !value.deletedAt && (
+          <small className="review-comment-edited">{t("(수정됨)")}</small>
+        )}
+      </span>
+      {menuOf(value)}
+    </div>
+  );
   const authorOf = (value: ReviewComment) =>
     value.authorName || (value.userId === userId ? t("나") : t("검토 참여자"));
   const canManage = (value: ReviewComment) =>
@@ -238,6 +337,7 @@ function CommentThread({
       comment={value}
       editing={editingId === value.id}
       busy={busy}
+      onPage={onPage}
       onCancel={() => setEditingId(null)}
       onSave={(body) =>
         void onUpdate(value.id, body).then((saved) => {
@@ -251,14 +351,7 @@ function CommentThread({
       id={commentAnchor(comment.id)}
       className={`review-comment-thread ${comment.resolved ? "is-resolved" : ""}`}
     >
-      <div className="review-comment-author">
-        <span className="review-comment-avatar">
-          {comment.authorName?.slice(0, 1) || t("검")}
-        </span>
-        <strong>{authorOf(comment)}</strong>
-        <time>{timeText(comment.createdAt)}</time>
-        {menuOf(comment)}
-      </div>
+      {authorLine(comment)}
       {bodyOf(comment)}
       <div className="review-comment-actions">
         {comment.resolved && (
@@ -289,11 +382,7 @@ function CommentThread({
           key={reply.id}
           id={commentAnchor(reply.id)}
         >
-          <div className="review-comment-author">
-            <strong>{authorOf(reply)}</strong>
-            <time>{timeText(reply.createdAt)}</time>
-            {menuOf(reply)}
-          </div>
+          {authorLine(reply, true)}
           {bodyOf(reply)}
         </div>
       ))}
@@ -399,6 +488,17 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const [mobilePanel, setMobilePanel] = useState<"document" | "response">(
     "document",
   );
+  const pdfViewer = useRef<PdfViewerHandle>(null);
+  const responseColumn = useRef<HTMLElement>(null);
+  // 1200px 이상에서만 문서 열과 응답 열 사이 경계를 끌어 너비를 바꿔요.
+  const resizable = useMediaQuery("(min-width: 1200px)");
+  const [responseWidth, setResponseWidth] = useResponseWidth();
+  const reduceMotion = useReducedMotion();
+  // 댓글·볼 위치의 ‘p.4’를 누르면 가운데 PDF를 그 페이지로 옮겨요. 좁은 화면은 문서 칸으로 바꿔요.
+  const jumpToPage = (page: number) => {
+    setMobilePanel("document");
+    pdfViewer.current?.goToPage(page);
+  };
   const [responseDrafts, setResponseDrafts] = useState<
     Record<
       string,
@@ -529,6 +629,9 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   );
   const { open: openThreads, resolved: resolvedThreads } =
     splitResolvedThreads(commentThreads);
+  const resolvedRegionId = useId();
+  const firstResolved = resolvedThreads.find((thread) => !thread.deletedAt);
+  const resolvedSummary = firstResolved ? firstLine(firstResolved.body) : "";
   // #comment-<id> 링크로 열면 그 댓글로 내려가요. 해결해서 접힌 댓글이면 먼저 펼쳐요.
   useEffect(() => {
     const anchor = window.location.hash.slice(1);
@@ -552,6 +655,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
       await navigator.clipboard.writeText(
         commentLink(window.location.href, id),
       );
+      playCue("copy");
       toast.success(t("댓글 링크를 복사했어요."));
     } catch {
       toast.error(
@@ -587,6 +691,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           t("댓글을 고쳤어요."),
         )
       }
+      onPage={version ? jumpToPage : undefined}
       onDelete={(target) =>
         void askConfirm({
           title: t("이 댓글을 삭제할까요?"),
@@ -676,6 +781,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
       if (item) url.searchParams.set("item", item.id);
       if (round) url.searchParams.set("round", round.id);
       await navigator.clipboard.writeText(url.href);
+      playCue("copy");
       toast.success(
         request?.status === "stopped"
           ? t(
@@ -927,6 +1033,14 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           )}
         </div>
       )}
+      {isOwner && request.status === "shared" && (
+        <ReviewNotifyBar
+          requestId={request.id}
+          professorEmail={request.professorEmail}
+          status={request.status}
+          preview={mode === "preview"}
+        />
+      )}
       {request.status === "stopped" && (
         <div className="review-stopped-banner">
           <Icon name="lock" size={16} />
@@ -1067,7 +1181,16 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                 { value: "response", label: t("교수 응답·댓글") },
               ]}
             />
-            <div className={`review-reading-grid show-${mobilePanel}`}>
+            <div
+              className={`review-reading-grid show-${mobilePanel}${resizable ? " is-resizable" : ""}`}
+              style={
+                resizable && responseWidth
+                  ? ({
+                      "--review-response-width": `${responseWidth}px`,
+                    } as CSSProperties)
+                  : undefined
+              }
+            >
               <section
                 className="review-document-column"
                 aria-label={t("수정 내용과 파일")}
@@ -1101,7 +1224,12 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                       <Icon name="eye" size={16} />
                       <span>
                         {t("먼저 볼 위치")}
-                        <strong>{round.location}</strong>
+                        <strong>
+                          <WithPageLinks
+                            text={round.location}
+                            onPage={version ? jumpToPage : undefined}
+                          />
+                        </strong>
                       </span>
                     </div>
                   )}
@@ -1116,7 +1244,11 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                       <strong>{version.fileName}</strong>
                       <span>{t("보낸 당시 파일")}</span>
                     </div>
-                    <PdfViewer key={round.id} version={version} />
+                    <PdfViewer
+                      key={round.id}
+                      ref={pdfViewer}
+                      version={version}
+                    />
                     <p className="review-file-note">
                       {t("먼저 볼 위치뿐 아니라 PDF 전체를 볼 수 있어요.")}
                     </p>
@@ -1138,7 +1270,17 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   </div>
                 )}
               </section>
+              {resizable && (
+                <ColumnResizer
+                  width={responseWidth}
+                  onChange={setResponseWidth}
+                  currentWidth={() =>
+                    responseColumn.current?.getBoundingClientRect().width ?? 340
+                  }
+                />
+              )}
               <aside
+                ref={responseColumn}
                 className="review-response-column"
                 aria-label={t("교수 응답과 댓글")}
               >
@@ -1373,19 +1515,48 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                       type="button"
                       className="review-resolved-toggle"
                       aria-expanded={resolvedOpen}
+                      aria-controls={resolvedRegionId}
                       onClick={() => setResolvedOpen((value) => !value)}
                     >
                       <Icon
-                        name={resolvedOpen ? "chevron-down" : "chevron-right"}
+                        name="chevron-right"
                         size={14}
+                        className="review-resolved-chevron"
                       />
-                      {t("해결한 댓글 {count}개", {
-                        count: resolvedThreads.length,
-                      })}
+                      <span className="review-resolved-title">
+                        {t("해결한 댓글 {count}개", {
+                          count: resolvedThreads.length,
+                        })}
+                      </span>
+                      {/* 접혀 있어도 몇 차 검토의 어떤 대화인지 알 수 있게 첫 줄을 남겨요. */}
+                      <span className="review-resolved-summary">
+                        {resolvedSummary
+                          ? t("{number}차 검토 · {line}", {
+                              number: round.number,
+                              line: resolvedSummary,
+                            })
+                          : t("{number}차 검토", { number: round.number })}
+                      </span>
                     </button>
                   )}
-                  {resolvedOpen &&
-                    resolvedThreads.map((record) => renderThread(record))}
+                  <AnimatePresence initial={false}>
+                    {resolvedOpen && (
+                      <motion.div
+                        key="resolved"
+                        id={resolvedRegionId}
+                        className="review-resolved-region"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{
+                          duration: reduceMotion ? 0 : 0.2,
+                          ease: [0.2, 0, 0, 1],
+                        }}
+                      >
+                        {resolvedThreads.map((record) => renderThread(record))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   {canWrite && (
                     <form
                       className="review-comment-form"
@@ -1425,6 +1596,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                         id={`comment-${round.id}`}
                         value={commentDrafts[round.id] ?? ""}
                         maxLength={10000}
+                        onKeyDown={submitOnModEnter}
                         onChange={(
                           e: ChangeEvent<
                             | HTMLInputElement
@@ -1556,18 +1728,24 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                     "공유를 중지하면 교수님은 이 검토를 열 수 없어요. 지금까지의 검토 기록은 그대로 남지만, 이미 내려받은 파일은 회수할 수 없어요.",
                   )}
             </p>
-            <Button
-              variant="outline"
-              disabled={!!busy}
-              onClick={() =>
-                void saveSharing(
-                  request.status === "stopped" ? "shared" : "stopped",
-                  request.status === "stopped",
-                )
-              }
-            >
-              {request.status === "stopped" ? t("다시 공유") : t("공유 중지")}
-            </Button>
+            {request.status === "stopped" ? (
+              <Button
+                variant="outline"
+                disabled={!!busy}
+                onClick={() => void saveSharing("shared", true)}
+              >
+                {t("다시 공유")}
+              </Button>
+            ) : (
+              // 실수로 누르지 않게 끝까지 밀어야 공유를 멈춰요.
+              <SlideToConfirm
+                label={t("밀어서 공유 중지")}
+                confirmLabel={t("공유를 중지하는 중")}
+                tone="danger"
+                disabled={!!busy}
+                onConfirm={() => saveSharing("stopped", false)}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>

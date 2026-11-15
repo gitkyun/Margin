@@ -2,6 +2,7 @@ import { t } from "@/lib/i18n";
 import { assertConnected } from "./supabase";
 import { idbGet, idbSet, rpc } from "./repository";
 import type { SpeechSegment } from "./live-speech";
+import { plainSegments } from "./recording-timeline";
 import { localizeServerMessage } from "@/lib/server-messages";
 
 export interface LiveTranscript {
@@ -67,10 +68,11 @@ export async function saveLiveTranscript(
   userId: string,
   mode: "connected" | "preview",
 ): Promise<LiveTranscript> {
+  const segments = plainSegments(input.raw_segments);
   if (mode === "connected")
     return rpc<LiveTranscript>("rms_save_live_transcript", {
       p_recording_id: input.recording_id,
-      p_segments: input.raw_segments,
+      p_segments: segments,
       p_text: input.edited_text,
       p_consent_at: input.consent_at,
       p_warnings: input.warnings,
@@ -99,7 +101,7 @@ export async function saveLiveTranscript(
     revision: old
       ? old.revision + (old.edited_text === input.edited_text ? 0 : 1)
       : 1,
-    raw_segments: old?.raw_segments ?? input.raw_segments,
+    raw_segments: old?.raw_segments ?? segments,
     consent_at: old?.consent_at ?? input.consent_at,
     warnings: old?.warnings ?? input.warnings,
   };

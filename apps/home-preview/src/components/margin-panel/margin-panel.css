@@ -176,3 +176,66 @@
     }
   }
 }
+
+/* 경계선 끌기로 너비 조절(992px 이상, 패널이 본문 옆에 붙을 때만). 사용자 너비는 본문 절반을 넘지 않아요. */
+@layer margin {
+  .margin-panel-resizer {
+    display: none;
+  }
+  @media (min-width: 992px) {
+    .margin-panel {
+      width: min(
+        var(--margin-panel-user-width, var(--margin-panel-width)),
+        50vw
+      );
+    }
+    .margin-panel-resizer {
+      position: sticky;
+      top: 52px;
+      z-index: 1;
+      display: block;
+      flex: none;
+      align-self: flex-start;
+      width: 9px;
+      height: calc(100dvh - 52px - 16px);
+      margin-right: -5px;
+      cursor: col-resize;
+      touch-action: none;
+    }
+    /* 선 자체는 패널의 왼쪽 선. 올리거나 끌거나 초점이 가면 브랜드 색 2px로 보여요. */
+    .margin-panel-resizer::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 3px;
+      width: 2px;
+      background: transparent;
+      transition: background var(--motion-duration-micro)
+        var(--motion-ease-standard);
+    }
+    .margin-panel-resizer:hover::after,
+    .margin-panel-resizer.dragging::after,
+    .margin-panel-resizer:focus-visible::after {
+      background: var(--brand);
+    }
+    .margin-panel-resizer:focus-visible {
+      outline: none;
+    }
+    .margin-panel-resizer.dragging ~ .margin-panel {
+      user-select: none;
+    }
+    /* 패널이 열릴 때 내용이 흐림에서 선명하게(Panel reveal). 동작 줄이기면 전역 규칙이 멈춰요. */
+    .margin-panel:not([hidden]) > .margin-panel-section:not([hidden]) {
+      animation: margin-panel-reveal var(--motion-duration-page)
+        var(--motion-ease-standard);
+    }
+  }
+  @keyframes margin-panel-reveal {
+    from {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translateX(8px);
+    }
+  }
+}

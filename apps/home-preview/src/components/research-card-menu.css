@@ -1,0 +1,103 @@
+@layer margin {
+  /* 연구 카드 우클릭 메뉴: Montage 메뉴와 같은 표면·간격(토큰만 사용) */
+  .research-context-menu {
+    z-index: 1000;
+    min-width: 200px;
+    padding: var(--spacing-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    box-shadow: var(--shadow-pop);
+    transform-origin: var(--radix-context-menu-content-transform-origin);
+    animation: research-menu-in var(--motion-duration-micro)
+      var(--motion-ease-standard);
+  }
+  .research-context-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-height: 36px;
+    padding: var(--spacing-6) var(--spacing-10);
+    border-radius: var(--radius-8);
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+  }
+  .research-context-item > svg {
+    flex: none;
+    color: var(--text-secondary);
+  }
+  .research-context-item[data-highlighted] {
+    background: var(--hover-fill);
+  }
+  .research-context-item[data-danger] {
+    color: var(--danger);
+  }
+  .research-context-item[data-danger] > svg {
+    color: currentColor;
+  }
+  .research-context-separator {
+    height: 1px;
+    margin: var(--spacing-4) var(--spacing-6);
+    background: var(--line);
+  }
+  @keyframes research-menu-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  /* 카드 상태 배지: 목록을 바꿀 때 살짝 떠오르며 나타나요. */
+  .research-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .research-card-badge {
+    display: inline-flex;
+    animation: research-badge-in var(--motion-duration-enter)
+      var(--motion-ease-standard) both;
+  }
+  @keyframes research-badge-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.92);
+    }
+  }
+
+  /* 카드 호버: 테두리에 더해 아이콘이 브랜드 색으로 살짝 차오릅니다. */
+  .research-card-wrap .research-card-icon {
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-micro) ease-out;
+  }
+  .research-card-wrap:hover .research-card-icon,
+  .research-card-wrap:focus-within .research-card-icon {
+    background: var(--brand);
+    color: var(--surface);
+    transform: translateY(-2px);
+  }
+  .research-card-wrap:hover {
+    box-shadow: var(--raise-shadow);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .research-context-menu,
+    .research-card-badge {
+      animation: none;
+    }
+    .research-card-wrap .research-card-icon {
+      transition: none;
+    }
+    .research-card-wrap:hover .research-card-icon,
+    .research-card-wrap:focus-within .research-card-icon {
+      transform: none;
+    }
+  }
+}

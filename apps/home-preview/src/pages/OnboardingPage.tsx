@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { BrandMark, BrandWordmark } from "@/components/brand/Brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { parseAdvisorEmails } from "@/lib/advisors";
+import { addAdvisor } from "@/lib/advisors";
+import { EmailChips } from "@/components/EmailChips";
 import { PURPOSE_MAX, parseQuestions } from "@/lib/research-direction";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/common";
@@ -19,6 +20,7 @@ import {
   type IntroScene,
 } from "@/components/onboarding/ServiceIntro";
 import { StepMeter } from "@/components/onboarding/StepMeter";
+import { AutoHeight } from "@/components/onboarding/AutoHeight";
 import { isIntroSeen, markIntroSeen, shouldShowIntro } from "@/lib/intro";
 import { useWorkspace } from "@/lib/workspace";
 import { friendlyError } from "@/lib/supabase";
@@ -38,6 +40,7 @@ import {
   type MeetingAnswer,
 } from "@/lib/onboarding";
 import { LabeledInput } from "./student/shared";
+import { submissionDateProblem, todayKey } from "@/lib/roadmap-plan";
 import "./onboarding.css";
 
 const STEP_COUNT = 4;
@@ -84,7 +87,10 @@ export function OnboardingPage() {
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [advisors, setAdvisors] = useState("");
+  const [advisors, setAdvisors] = useState<string[]>([]);
+  const [advisorDraft, setAdvisorDraft] = useState("");
+  // 칩이 되기 전 입력도 형식이 맞으면 함께 넣어요.
+  const advisorEmails = addAdvisor(advisors, advisorDraft);
   const [purpose, setPurpose] = useState("");
   const [questions, setQuestions] = useState("");
   // undefined: 아직 답하지 않음, null: 나중에 정하기
@@ -94,6 +100,7 @@ export function OnboardingPage() {
   >();
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [submission, setSubmission] = useState("");
   const [nameError, setNameError] = useState(false);
   const [pending, setPending] = useState(false);
 
@@ -158,6 +165,20 @@ export function OnboardingPage() {
     return false;
   }
 
+  /**
+   * 단계 막대를 눌러 옮길 때. 뒤로는 바로 가고, 앞으로 건너뛸 때는 '계속'과 같은 검사를 거칩니다:
+   * 연구 이름은 꼭 있어야 하고, 지나친 질문은 '나중에 정하기'로 둡니다.
+   */
+  function pick(target: number) {
+    if (pending || target === step) return;
+    if (target > step) {
+      if (!requireName()) return;
+      if (target > 1 && phaseIndex === undefined) setPhaseIndex(null);
+      if (target > 2 && meetingKind === undefined) setMeetingKind("skip");
+    }
+    moveTo(target);
+  }
+
   function next(event: FormEvent) {
     event.preventDefault();
     if (step === 0 && !requireName()) return;
@@ -181,9 +202,13 @@ export function OnboardingPage() {
           ownerId: user.id,
           name: name.trim(),
           description: description.trim(),
-          advisorEmails: parseAdvisorEmails(advisors),
+          advisorEmails,
           purpose: purpose.trim() || undefined,
           questions: parseQuestions(questions),
+          submissionDate:
+            submission && !submissionDateProblem(todayKey(), submission)
+              ? submission
+              : undefined,
           createdAt: stamp,
           updatedAt: stamp,
         });
@@ -297,125 +322,98 @@ export function OnboardingPage() {
                 ))}
               </ol>
             )}
-            <StepMeter count={STEP_COUNT} current={step} />
-            <div className="ob-step" data-dir={direction} key={step}>
-              {reviewing ? (
-                <>
-                  <h1 tabIndex={-1}>{t("이렇게 시작할게요")}</h1>
-                  <p className="ob-help">
-                    {t(
-                      "연구를 만든 뒤에도 이름, 단계, 미팅, 연구 방향은 모두 바꿀 수 있어요.",
-                    )}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="ob-progress">
-                    {step + 1} / {STEP_COUNT}
-                  </p>
-                  <h1>{QUESTIONS[step]}</h1>
-                </>
-              )}
-              {step === 0 && (
-                <div className="ob-fields">
-                  <p className="ob-help">
-                    {t(
-                      "지도받는 연구마다 하나씩 만들어요. 이름은 나중에 바꿀 수 있어요.",
-                    )}
-                  </p>
-                  <Field label={t("연구 이름")} required>
-                    <Input
-                      ref={nameInput}
-                      value={name}
-                      onChange={(event) => {
-                        setName(event.target.value);
-                        setNameError(false);
-                      }}
-                      maxLength={120}
-                      autoFocus
-                      aria-invalid={nameError || undefined}
-                      placeholder={t("예: 대학원생의 연구 도구 사용 경험")}
-                    />
-                  </Field>
-                  {nameError && (
-                    <p className="ob-error" role="alert">
-                      {t("연구 이름을 입력해 주세요.")}
-                    </p>
-                  )}
-                  <Field
-                    label={t("한 줄 설명")}
-                    hint={t("나중에 적어도 돼요.")}
-                  >
-                    <Textarea
-                      value={description}
-                      onChange={(event) => setDescription(event.target.value)}
-                      placeholder={t(
-                        "예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구",
+            <StepMeter
+              labels={QUESTIONS}
+              current={step}
+              onPick={pick}
+              disabled={pending}
+            />
+            <AutoHeight>
+              <div className="ob-step" data-dir={direction} key={step}>
+                {reviewing ? (
+                  <>
+                    <h1 tabIndex={-1}>{t("이렇게 시작할게요")}</h1>
+                    <p className="ob-help">
+                      {t(
+                        "연구를 만든 뒤에도 이름, 단계, 미팅, 연구 방향은 모두 바꿀 수 있어요.",
                       )}
-                    />
-                  </Field>
-                  <Field
-                    label={t("지도교수 이메일")}
-                    hint={t(
-                      "여러 명이면 쉼표로 나눠 주세요. 나중에 연구 설정에서 바꿀 수 있어요.",
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="ob-progress">
+                      {step + 1} / {STEP_COUNT}
+                    </p>
+                    <h1>{QUESTIONS[step]}</h1>
+                  </>
+                )}
+                {step === 0 && (
+                  <div className="ob-fields">
+                    <p className="ob-help">
+                      {t(
+                        "지도받는 연구마다 하나씩 만들어요. 이름은 나중에 바꿀 수 있어요.",
+                      )}
+                    </p>
+                    <Field label={t("연구 이름")} required>
+                      <Input
+                        ref={nameInput}
+                        value={name}
+                        onChange={(event) => {
+                          setName(event.target.value);
+                          setNameError(false);
+                        }}
+                        maxLength={120}
+                        autoFocus
+                        aria-invalid={nameError || undefined}
+                        placeholder={t("예: 대학원생의 연구 도구 사용 경험")}
+                      />
+                    </Field>
+                    {nameError && (
+                      <p className="ob-error" role="alert">
+                        {t("연구 이름을 입력해 주세요.")}
+                      </p>
                     )}
-                  >
-                    <Input
-                      type="text"
-                      inputMode="email"
-                      autoComplete="off"
-                      value={advisors}
-                      onChange={(event) => setAdvisors(event.target.value)}
-                      placeholder="professor@example.com"
-                    />
-                  </Field>
-                </div>
-              )}
-              {step === 1 && (
-                <fieldset className="ob-choices">
-                  <legend className="ob-sr-only">{QUESTIONS[1]}</legend>
-                  {phaseTitles.map((title, index) => (
-                    <label key={title} className="ob-choice">
-                      <input
-                        type="radio"
-                        name="ob-phase"
-                        checked={phaseIndex === index}
-                        onChange={() => setPhaseIndex(index)}
+                    <Field
+                      label={t("한 줄 설명")}
+                      hint={t("나중에 적어도 돼요.")}
+                    >
+                      <Textarea
+                        value={description}
+                        onChange={(event) => setDescription(event.target.value)}
+                        placeholder={t(
+                          "예: 대학원생 12명 심층 인터뷰를 바탕으로 한 질적 연구",
+                        )}
                       />
-                      <span className="ob-choice-number">{index + 1}</span>
-                      <span>{title}</span>
-                      <Icon
-                        name="check"
-                        size={16}
-                        className="ob-choice-check"
+                    </Field>
+                    <Field
+                      label={t("지도교수 이메일")}
+                      hint={t(
+                        "Enter나 쉼표로 한 명씩 넣어요. 나중에 연구 설정에서 바꿀 수 있어요.",
+                      )}
+                    >
+                      <EmailChips
+                        emails={advisors}
+                        onChange={setAdvisors}
+                        draft={advisorDraft}
+                        onDraftChange={setAdvisorDraft}
+                        placeholder="professor@example.com"
                       />
-                    </label>
-                  ))}
-                  <label className="ob-choice ob-choice-later">
-                    <input
-                      type="radio"
-                      name="ob-phase"
-                      checked={phaseIndex === null}
-                      onChange={() => setPhaseIndex(null)}
-                    />
-                    <span>{t("나중에 정할게요")}</span>
-                    <Icon name="check" size={16} className="ob-choice-check" />
-                  </label>
-                </fieldset>
-              )}
-              {step === 2 && (
-                <>
+                    </Field>
+                  </div>
+                )}
+                {step === 1 && (
                   <fieldset className="ob-choices">
-                    <legend className="ob-sr-only">{QUESTIONS[2]}</legend>
-                    {MEETING_CHOICES.map((choice) => (
-                      <label key={choice.kind} className="ob-choice">
+                    <legend className="ob-sr-only">{QUESTIONS[1]}</legend>
+                    {phaseTitles.map((title, index) => (
+                      <label key={title} className="ob-choice">
                         <input
                           type="radio"
-                          name="ob-meeting"
-                          checked={meetingKind === choice.kind}
-                          onChange={() => setMeetingKind(choice.kind)}
+                          name="ob-phase"
+                          checked={phaseIndex === index}
+                          onChange={() => setPhaseIndex(index)}
                         />
-                        <span>{choice.label}</span>
+                        <span className="ob-choice-number">{index + 1}</span>
+                        <span>{title}</span>
                         <Icon
                           name="check"
                           size={16}
@@ -423,58 +421,111 @@ export function OnboardingPage() {
                         />
                       </label>
                     ))}
-                  </fieldset>
-                  {meetingKind === "dated" && (
-                    <div className="ob-date-fields">
-                      <LabeledInput
-                        label={t("날짜")}
-                        type="date"
-                        value={date}
-                        onChange={setDate}
+                    <label className="ob-choice ob-choice-later">
+                      <input
+                        type="radio"
+                        name="ob-phase"
+                        checked={phaseIndex === null}
+                        onChange={() => setPhaseIndex(null)}
                       />
+                      <span>{t("나중에 정할게요")}</span>
+                      <Icon
+                        name="check"
+                        size={16}
+                        className="ob-choice-check"
+                      />
+                    </label>
+                  </fieldset>
+                )}
+                {step === 2 && (
+                  <>
+                    <fieldset className="ob-choices">
+                      <legend className="ob-sr-only">{QUESTIONS[2]}</legend>
+                      {MEETING_CHOICES.map((choice) => (
+                        <label key={choice.kind} className="ob-choice">
+                          <input
+                            type="radio"
+                            name="ob-meeting"
+                            checked={meetingKind === choice.kind}
+                            onChange={() => setMeetingKind(choice.kind)}
+                          />
+                          <span>{choice.label}</span>
+                          <Icon
+                            name="check"
+                            size={16}
+                            className="ob-choice-check"
+                          />
+                        </label>
+                      ))}
+                    </fieldset>
+                    {meetingKind === "dated" && (
+                      <div className="ob-date-fields">
+                        <LabeledInput
+                          label={t("날짜")}
+                          type="date"
+                          value={date}
+                          onChange={setDate}
+                        />
+                        <LabeledInput
+                          label={t("시각")}
+                          type="time"
+                          value={time}
+                          onChange={setTime}
+                          disabled={!date}
+                        />
+                      </div>
+                    )}
+                    <div className="ob-date-fields ob-submission">
                       <LabeledInput
-                        label={t("시각")}
-                        type="time"
-                        value={time}
-                        onChange={setTime}
-                        disabled={!date}
+                        label={t("투고·제출 목표일")}
+                        hint={
+                          submission &&
+                          submissionDateProblem(todayKey(), submission)
+                            ? t("오늘 뒤 5년 안의 날짜만 저장해요.")
+                            : t(
+                                "정하지 않았으면 비워 두세요. 연구 홈에 D-Day로 보여요.",
+                              )
+                        }
+                        type="date"
+                        value={submission}
+                        onChange={setSubmission}
                       />
                     </div>
-                  )}
-                </>
-              )}
-              {step === 3 && (
-                <div className="ob-fields">
-                  <p className="ob-help">
-                    {t(
-                      "아직 정하지 못했으면 비워 둬도 돼요. 나중에 연구 홈에서 적거나 계획서에서 가져올 수 있어요.",
-                    )}
-                  </p>
-                  <Field label={t("연구 목적")}>
-                    <Textarea
-                      value={purpose}
-                      maxLength={PURPOSE_MAX}
-                      onChange={(event) => setPurpose(event.target.value)}
-                      placeholder={t(
-                        "예: 대학원생이 지도 미팅 뒤 피드백을 어떻게 기록하고 다시 쓰는지 밝힌다",
+                  </>
+                )}
+                {step === 3 && (
+                  <div className="ob-fields">
+                    <p className="ob-help">
+                      {t(
+                        "아직 정하지 못했으면 비워 둬도 돼요. 나중에 연구 홈에서 적거나 계획서에서 가져올 수 있어요.",
                       )}
-                    />
-                  </Field>
-                  <Field
-                    label={t("연구 질문")}
-                    hint={t("한 줄에 하나씩, 5개까지 적을 수 있어요.")}
-                  >
-                    <Textarea
-                      value={questions}
-                      onChange={(event) => setQuestions(event.target.value)}
-                      placeholder={t(
-                        "예: 미팅에서 받은 피드백은 어느 단계에서 사라지는가?",
-                      )}
-                    />
-                  </Field>
-                </div>
-              )}
-            </div>
+                    </p>
+                    <Field label={t("연구 목적")}>
+                      <Textarea
+                        value={purpose}
+                        maxLength={PURPOSE_MAX}
+                        onChange={(event) => setPurpose(event.target.value)}
+                        placeholder={t(
+                          "예: 대학원생이 지도 미팅 뒤 피드백을 어떻게 기록하고 다시 쓰는지 밝힌다",
+                        )}
+                      />
+                    </Field>
+                    <Field
+                      label={t("연구 질문")}
+                      hint={t("한 줄에 하나씩, 5개까지 적을 수 있어요.")}
+                    >
+                      <Textarea
+                        value={questions}
+                        onChange={(event) => setQuestions(event.target.value)}
+                        placeholder={t(
+                          "예: 미팅에서 받은 피드백은 어느 단계에서 사라지는가?",
+                        )}
+                      />
+                    </Field>
+                  </div>
+                )}
+              </div>
+            </AutoHeight>
             <div className="ob-actions">
               {reviewing ? (
                 <StartGlow>
@@ -531,7 +582,7 @@ export function OnboardingPage() {
             }
             today={today}
             focus={(["name", "phase", "meeting"] as const)[step]}
-            advisorCount={parseAdvisorEmails(advisors).length}
+            advisorCount={advisorEmails.length}
           />
         )}
         <p className="ob-preview-note">

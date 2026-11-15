@@ -51,7 +51,8 @@ import {
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
-import { AssistantMascot } from "@/components/brand/Brand";
+import { AssistantFace } from "@/components/brand/BotAvatar";
+import { readAgentProfile } from "@/lib/research-agent";
 import {
   workingMascot,
   reviewDepthOptions,
@@ -83,6 +84,8 @@ export function ResearchAssistant() {
     [params] = useSearchParams(),
     // 예전 주소(?tab=overview)는 패널의 제안 탭으로 엽니다.
     wantsSuggestions = params.get("tab") === "overview";
+  // 계정 설정에서 고른 나만의 연구 도우미(이름·아바타). 고르지 않았으면 기존 마스코트.
+  const agent = readAgentProfile(user.preferences);
   const [panelTab, setPanelTab] = useState<AssistantPanelTab>(
       wantsSuggestions ? "suggestions" : "sources",
     ),
@@ -687,7 +690,7 @@ export function ResearchAssistant() {
         <div className="chat-scroll">
           {readingFirst ? null : !messages.length ? (
             <div className="assistant-welcome">
-              <AssistantMascot state="ready" size={64} eager />
+              <AssistantFace state="ready" size={64} eager />
               <h2>{t("아직 대화가 없어요")}</h2>
               {/* 첨부 안내는 입력창 안내 문구 한 곳에만 둡니다. */}
               {!unavailable && (
@@ -718,8 +721,11 @@ export function ResearchAssistant() {
                   <span className="sr-only">{t("나")}</span>
                 ) : (
                   <span className="message-role">
-                    <AssistantMascot state="chatting" size={28} />
+                    <AssistantFace state="chatting" size={28} />
                     {t("연구 도우미")}
+                    {agent.name && (
+                      <span className="message-role-name">· {agent.name}</span>
+                    )}
                   </span>
                 )}
                 <div>{m.text}</div>
@@ -919,7 +925,7 @@ export function ResearchAssistant() {
         {error && (
           <div className="rms-error" role="alert">
             <span className="margin-error-content">
-              <AssistantMascot state="attention" size={36} />
+              <AssistantFace state="attention" size={36} />
               <span>{error}</span>
             </span>
             <Button

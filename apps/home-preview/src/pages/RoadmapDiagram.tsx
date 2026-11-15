@@ -1,46 +1,110 @@
 import { t, tc } from "@/lib/i18n";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import {
   ReactFlow,
   Background,
   Controls,
+  Handle,
   MarkerType,
+  Position,
   type Node,
-  type NodeMouseHandler,
+  type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
 import { useTheme } from "@/lib/theme";
-import type { ResearchPhase } from "@/lib/domain";
+import { formatDate, type ResearchPhase } from "@/lib/domain";
+import { StatusBadge } from "@/components/common";
+import "./planning/planning.css";
+
+type PhaseNodeData = {
+  number: number;
+  title: string;
+  period: string;
+  status: ResearchPhase["status"];
+  current: boolean;
+};
+type PhaseNode = Node<PhaseNodeData, "phase">;
+
+/** 단계 기간: 시작일·목표일이 다 있으면 둘 다, 아니면 목표일만 */
+function phasePeriod(phase: ResearchPhase): string {
+  if (phase.startDate && phase.dueDate)
+    return `${formatDate(phase.startDate, { month: "short", day: "numeric" })} – ${formatDate(phase.dueDate, { month: "short", day: "numeric" })}`;
+  return t("목표일 · {date}", {
+    date: formatDate(phase.dueDate, { month: "short", day: "numeric" }),
+  });
+}
+
+/**
+ * 관계도의 단계 카드: 번호·단계명·기간·상태. 현재 단계는 브랜드 색 2px 테두리와
+ * 아주 느린 테두리 빛 흐름으로 표시해요(동작 줄이기에서는 멈춰요).
+ */
+function PhaseCard({ data }: NodeProps<PhaseNode>) {
+  return (
+    <div
+      className={`roadmap-node is-${data.status}${data.current ? " is-current" : ""}`}
+    >
+      {data.current && (
+        <span className="roadmap-node-beam" aria-hidden="true" />
+      )}
+      <Handle type="target" position={Position.Top} />
+      <span className="roadmap-node-number">
+        {t("단계 {number}", { number: String(data.number).padStart(2, "0") })}
+      </span>
+      <strong className="roadmap-node-title">{data.title}</strong>
+      <span className="roadmap-node-period">{data.period}</span>
+      <StatusBadge
+        tone={
+          data.current ? "blue" : data.status === "done" ? "green" : "neutral"
+        }
+      >
+        {data.current
+          ? t("현재 단계")
+          : data.status === "done"
+            ? t("완료")
+            : data.status === "active"
+              ? t("진행 중")
+              : t("예정")}
+      </StatusBadge>
+      <Handle type="source" position={Position.Bottom} />
+    </div>
+  );
+}
+const nodeTypes = { phase: PhaseCard };
+
 export default function RoadmapDiagram({
   phases,
+  currentId,
   onEdit,
 }: {
   phases: ResearchPhase[];
+  /** 연구의 현재 단계. 없으면 강조하지 않아요. */
+  currentId?: string;
   onEdit: (phase: ResearchPhase) => void;
 }) {
   const { save } = useWorkspace(),
     { resolvedTheme } = useTheme();
   const nodes = useMemo(
-    () =>
+    (): PhaseNode[] =>
       phases.map((p, i) => ({
         id: p.id,
+        type: "phase",
         position: p.position ?? {
           x: (i % 3) * 270,
-          y: Math.floor(i / 3) * 160,
+          y: Math.floor(i / 3) * 170,
         },
-        data: { label: p.title },
-        style: {
-          background: "var(--surface)",
-          color: "var(--text)",
-          border: "1px solid var(--line-strong)",
-          borderRadius: 12,
-          padding: 20,
-          width: 215,
+        // 화면 읽기 프로그램이 노드 이름으로 읽어요.
+        ariaLabel: `${p.title} · ${phasePeriod(p)}`,
+        data: {
+          number: i + 1,
+          title: p.title,
+          period: phasePeriod(p),
+          status: p.status,
+          current: p.id === currentId,
         },
       })),
-    [phases],
+    [phases, currentId],
   );
   const edges = phases.flatMap((p) =>
     p.dependsOn.map((id) => ({
@@ -68,6 +132,7 @@ export default function RoadmapDiagram({
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes}
         colorMode={resolvedTheme}
         fitView
         ariaLabelConfig={{

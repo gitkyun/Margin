@@ -155,3 +155,38 @@ export function timelineOffset(
     (edge === "end" ? 1 : 0);
   return Math.min(1, Math.max(0, day / total));
 }
+
+/** YYYY-MM-DD에 날짜 수를 더합니다(시간대 영향이 없게 UTC로 계산). */
+function addDays(date: string, days: number): string {
+  return new Date(Date.parse(`${date}T00:00:00Z`) + days * DAY_MS)
+    .toISOString()
+    .slice(0, 10);
+}
+
+/**
+ * AI를 쓸 수 없을 때의 ‘자동 계산 초안’. 오늘부터 투고일까지(둘 다 포함)를
+ * 보낼 단계(`sent`, buildRoadmapPlan과 같은 순서) 수로 똑같이 나눕니다.
+ * 단계끼리 겹치지 않고 빈 날도 없게 잇습니다. 하루씩도 나눌 수 없으면 null.
+ * AI 결과가 아니므로 reason은 비워 둡니다.
+ */
+export function evenRoadmapDraft(
+  sent: Pick<ResearchPhase, "title">[],
+  today: string,
+  submissionDate: string,
+): ProposedStage[] | null {
+  const total =
+    Math.round(
+      (Date.parse(`${submissionDate}T00:00:00Z`) -
+        Date.parse(`${today}T00:00:00Z`)) /
+        DAY_MS,
+    ) + 1;
+  if (!sent.length || !Number.isFinite(total) || total < sent.length)
+    return null;
+  return sent.map((phase, i) => ({
+    title: phase.title,
+    startDate: addDays(today, Math.floor((i * total) / sent.length)),
+    endDate: addDays(today, Math.floor(((i + 1) * total) / sent.length) - 1),
+    reason: "",
+    sourceIndex: i + 1,
+  }));
+}

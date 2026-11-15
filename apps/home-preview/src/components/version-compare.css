@@ -86,3 +86,48 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
 }
+
+@layer margin {
+  /* 좌우 고정 이름 줄: 손잡이가 어디 있든 왼쪽이 이전, 오른쪽이 현재(이후) 버전이에요. */
+  .version-compare-sides {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-12);
+    margin-bottom: var(--spacing-8);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .version-compare-sides > span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-8);
+    border-radius: var(--radius-full);
+  }
+  .version-compare-sides .is-before {
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+  }
+  .version-compare-sides .is-after {
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  /* 끄는 동안 손잡이를 살짝 키워 잡고 있다는 걸 보여 줘요. */
+  .version-compare-knob {
+    transition:
+      transform var(--motion-duration-micro) var(--motion-ease-standard),
+      background-color var(--motion-duration-micro) var(--motion-ease-standard);
+  }
+  .version-compare-handle-root:active .version-compare-knob {
+    transform: scale(1.08);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .version-compare-knob {
+      transition: none;
+    }
+    .version-compare-handle-root:active .version-compare-knob {
+      transform: none;
+    }
+  }
+}

@@ -1,0 +1,268 @@
+/* 일정: 주요 목표 세로 타임라인 · 관계도 단계 카드. Montage 토큰만 씁니다. */
+@layer margin {
+  /* ── 주요 목표 세로 타임라인 ─────────────────────────── */
+  .milestone-timeline {
+    position: relative;
+    display: grid;
+    gap: var(--spacing-8);
+    margin: var(--spacing-8) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* 세로 줄: 점들의 가운데를 잇습니다. */
+  .milestone-timeline::before {
+    content: "";
+    position: absolute;
+    top: var(--spacing-12);
+    bottom: var(--spacing-12);
+    left: 11px;
+    width: 2px;
+    border-radius: var(--radius-full);
+    background: var(--line);
+  }
+  .milestone-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: var(--spacing-12);
+    align-items: start;
+  }
+  .milestone-dot {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    margin-top: var(--spacing-14);
+    border: 2px solid var(--line-strong);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-tertiary);
+  }
+  .milestone-card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-12);
+    width: 100%;
+    padding: var(--spacing-12) var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    color: var(--text);
+    text-align: left;
+    transition: border-color var(--motion-duration-micro)
+      var(--motion-ease-standard);
+  }
+  .milestone-card-body:hover {
+    border-color: var(--hover-line, var(--line-strong));
+  }
+  .milestone-card-body:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .milestone-card-text {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+  }
+  .milestone-card-text strong {
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-body2-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+    overflow-wrap: anywhere;
+  }
+  .milestone-card-text small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .milestone-card-text .milestone-when {
+    color: var(--text-tertiary);
+    font-weight: 600;
+  }
+  /* 지난 것: 한 단계 낮춰 보여 줘요. 끝내지 못했으면 경고색으로 남겨요. */
+  .milestone-card.is-past .milestone-card-body {
+    background: var(--surface-muted);
+  }
+  .milestone-card.is-past .milestone-card-text strong {
+    color: var(--text-secondary);
+  }
+  .milestone-card.is-done .milestone-dot {
+    border-color: var(--success);
+    background: var(--success);
+    color: var(--semantic-static-white);
+  }
+  .milestone-card.is-overdue .milestone-dot {
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+  .milestone-card.is-overdue .milestone-when {
+    color: var(--warning);
+  }
+  /* 오늘: 브랜드 색으로 가장 눈에 띄게 */
+  .milestone-card.is-today .milestone-dot {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--semantic-static-white);
+  }
+  .milestone-card.is-today .milestone-card-body {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+  }
+  .milestone-card.is-today .milestone-when,
+  .milestone-card.is-upcoming .milestone-when {
+    color: var(--brand);
+  }
+  .milestone-card.is-upcoming .milestone-dot {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .milestone-today-line {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    padding-left: 32px;
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .milestone-today-line::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--surface);
+    border-radius: var(--radius-full);
+    background: var(--brand);
+  }
+  .milestone-today-line::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--selected-line);
+  }
+  @media (max-width: 767px) {
+    .milestone-card-body {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  /* ── 관계도 단계 카드 ─────────────────────────────── */
+  .roadmap-node {
+    position: relative;
+    display: grid;
+    gap: var(--spacing-6);
+    justify-items: start;
+    width: 220px;
+    padding: var(--spacing-14) var(--spacing-16);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--semantic-elevation-shadow-normal-xsmall, none);
+  }
+  .roadmap-node-number {
+    color: var(--text-tertiary);
+    font-size: var(
+      --typography-caption2-fontSize,
+      var(--typography-caption1-fontSize)
+    );
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    font-variant-numeric: tabular-nums;
+  }
+  .roadmap-node-title {
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 600;
+    line-height: var(--typography-body2-lineHeight);
+    letter-spacing: var(--typography-body2-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+    overflow-wrap: anywhere;
+  }
+  .roadmap-node-period {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    font-variant-numeric: tabular-nums;
+  }
+  .roadmap-node.is-done {
+    background: var(--surface-muted);
+  }
+  .roadmap-node.is-done .roadmap-node-title {
+    color: var(--text-secondary);
+  }
+  .roadmap-node.is-current {
+    border: 2px solid var(--brand);
+    padding: calc(var(--spacing-14) - 1px) calc(var(--spacing-16) - 1px);
+  }
+  /* 테두리 빛 흐름: 테두리 두께만큼만 보이는 고리 안에서 원뿔 그라디언트가 아주 느리게 돌아요.
+     유리·블러 없이 transform 회전만 씁니다. */
+  .roadmap-node-beam {
+    position: absolute;
+    inset: -2px;
+    padding: 2px;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+    -webkit-mask:
+      linear-gradient(black, black) content-box,
+      linear-gradient(black, black);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(black, black) content-box exclude,
+      linear-gradient(black, black);
+  }
+  .roadmap-node-beam::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    aspect-ratio: 1;
+    background: conic-gradient(
+      transparent 0deg 290deg,
+      color-mix(in srgb, var(--surface) 80%, transparent) 330deg,
+      transparent 360deg
+    );
+    transform: translate(-50%, -50%) rotate(0deg);
+    animation: roadmap-node-beam 8s linear infinite;
+  }
+  @keyframes roadmap-node-beam {
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+  .roadmap-node .react-flow__handle {
+    width: 8px;
+    height: 8px;
+    border: 2px solid var(--surface);
+    background: var(--line-strong);
+  }
+  .roadmap-node.is-current .react-flow__handle {
+    background: var(--brand);
+  }
+  .react-flow__node-phase.selected .roadmap-node,
+  .react-flow__node-phase:focus-visible .roadmap-node {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .roadmap-node-beam::before {
+      animation: none;
+    }
+    .milestone-card-body {
+      transition: none;
+    }
+  }
+}
+
+@layer margin {
+  /* 로드맵 계획 제안: AI가 생각하는 동안 도우미 봇이 깡충 뛰어요. */
+}

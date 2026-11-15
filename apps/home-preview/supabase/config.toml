@@ -33,6 +33,10 @@ verify_jwt = false
 # JWT and invite permission checks are performed inside the function and its RPCs.
 verify_jwt = false
 
+[functions.review-notify]
+# Login and review-request edit permission are checked inside the function.
+verify_jwt = false
+
 [functions.file-copy-to-r2]
 # One-off, idempotent copy to R2 (copies only; never deletes originals).
 verify_jwt = false

@@ -1759,3 +1759,221 @@
     }
   }
 }
+
+@layer margin {
+  /* 스마트 제안 카드(SmartSuggestionCard): 근거(원문) · 제안 내용(AI) · 가정을 칸으로 나눠요. */
+  .smart-suggestion-list {
+    display: grid;
+    gap: var(--spacing-12);
+    margin-top: var(--spacing-20);
+  }
+  .smart-suggestion-summary {
+    margin: 0;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .smart-suggestion {
+    display: grid;
+    gap: var(--spacing-10);
+    padding: var(--spacing-14);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    animation: text-swap-in var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .smart-suggestion.is-adopted {
+    border-color: color-mix(in srgb, var(--success) 35%, var(--line));
+  }
+  .smart-suggestion-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    min-height: 28px;
+  }
+  .smart-suggestion-badge,
+  .smart-suggestion-state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .smart-suggestion-badge {
+    color: var(--brand);
+  }
+  .smart-suggestion-state {
+    color: var(--success);
+  }
+  .smart-suggestion h4 {
+    margin: 0;
+    font-size: var(--typography-body2-fontSize, 15px);
+    font-weight: 600;
+    line-height: var(--typography-body2-lineHeight, 1.5);
+    overflow-wrap: anywhere;
+  }
+  .smart-suggestion-source,
+  .smart-suggestion-body {
+    display: grid;
+    gap: var(--spacing-4);
+    min-width: 0;
+  }
+  .smart-suggestion-source > small,
+  .smart-suggestion-body > small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .smart-suggestion-source blockquote,
+  .smart-suggestion-source p {
+    margin: 0;
+    padding: var(--spacing-8) var(--spacing-12);
+    border-left: 2px solid var(--line-strong);
+    border-radius: 0 var(--radius-8) var(--radius-8) 0;
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    overflow-wrap: anywhere;
+  }
+  .smart-suggestion-body p {
+    margin: 0;
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .smart-suggestion-body dl {
+    display: grid;
+    gap: var(--spacing-2);
+    margin: var(--spacing-4) 0 0;
+  }
+  .smart-suggestion-body dt {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .smart-suggestion-body dd {
+    margin: 0;
+    font-size: var(--typography-label2-fontSize);
+    overflow-wrap: anywhere;
+  }
+  .smart-suggestion .ai-assumption {
+    margin: 0;
+  }
+  .smart-suggestion-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+  }
+
+  /* 피드백 진행 줄 5번째 칸(교수 확인)의 ‘교수에게 보내기’ */
+  .feedback-progress-send {
+    display: grid;
+    gap: var(--spacing-2);
+    justify-items: start;
+    min-width: 0;
+  }
+  .feedback-progress-send > button {
+    margin-top: var(--spacing-2);
+    margin-inline-start: calc(var(--spacing-4) * -1);
+  }
+  .feedback-progress-send .disabled-reason {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+  }
+
+  /* 할 일 완료: 체크 표시가 선으로 그려져요(방금 완료한 줄에만). */
+  .drawn-check path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  .task-check-draw[aria-checked="true"] .drawn-check path {
+    animation: task-check-draw var(--motion-duration-page)
+      var(--motion-ease-standard) both;
+  }
+  @keyframes task-check-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+
+  /* 완료 직후 몇 초 동안 행 안의 ‘되돌리기’. 아래 막대가 남은 시간만큼 줄어요. */
+  .task-row-undo {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-4);
+    min-height: 32px;
+    padding: 0 var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    animation: text-swap-in var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .task-row-undo:hover {
+    background: var(--brand-soft);
+  }
+  .task-row-undo-timer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--brand);
+    transform-origin: left center;
+    animation-name: task-undo-timer;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
+  @keyframes task-undo-timer {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  /* 767px 이하: 할 일 행을 오른쪽으로 밀어 완료를 바꿔요. 뒤에 무엇이 될지 보여요. */
+  .task-swipe {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  .task-swipe:last-child {
+    border-bottom: 0;
+  }
+  .task-swipe > .student-task-row {
+    position: relative;
+    border-bottom: 0;
+    background: var(--surface);
+    touch-action: pan-y;
+  }
+  .task-swipe-hint {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding-inline: var(--spacing-12);
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+}

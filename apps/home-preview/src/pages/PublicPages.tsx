@@ -1,4 +1,5 @@
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
+import { PasswordStrength } from "@/components/PasswordStrength";
 import { Input } from "@/components/ui/input";
 import {
   BrandMark,
@@ -1044,6 +1045,7 @@ export function SignupPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={PASSWORD_HELP}
                   />
+                  <PasswordStrength value={password} />
                   <small>{t("실제로 쓰는 비밀번호는 입력하지 마세요.")}</small>
                   {passwordProblem && (
                     <span className="rms-error" role="alert">

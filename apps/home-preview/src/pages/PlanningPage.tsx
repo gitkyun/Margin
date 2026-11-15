@@ -1,4 +1,5 @@
 import { currentLang, dateLocale, t } from "@/lib/i18n";
+import { AvailabilityGrid } from "@/components/meeting/AvailabilityGrid";
 import { timeParts } from "@/lib/time-format";
 import themePlugin from "@fullcalendar/react/themes/forma";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,8 @@ import { DateField, DateTimeField } from "@/components/ui/date-field";
 import { useAINotConfigured } from "@/lib/ai-availability";
 import { RoadmapProposalDialog } from "./planning/RoadmapProposal";
 import { RoadmapTimeline } from "./planning/RoadmapTimeline";
+import { MilestoneTimeline } from "./planning/MilestoneTimeline";
+import { todayKey } from "@/lib/roadmap-plan";
 import { queryDown } from "@/design/responsive";
 
 /**
@@ -93,7 +96,9 @@ export function PlanningPage() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [pollOpen, setPollOpen] = useState(false),
-    [proposalOpen, setProposalOpen] = useState(false);
+    [proposalOpen, setProposalOpen] = useState(false),
+    // AI를 쓸 수 없으면 같은 창을 '균등 배분 초안'으로 열어요(AI 결과 아님).
+    [proposalKind, setProposalKind] = useState<"ai" | "even">("ai");
   const aiNotConfigured = useAINotConfigured();
   // 연구 도우미를 쓸 수 없으면 제안을 꾸며 내지 않고 이유를 보여 줍니다.
   const proposalHint = useDisabledReason(
@@ -217,15 +222,32 @@ export function PlanningPage() {
               {t("단계와 목표의 날짜를 바꿔도 할 일 기한은 바뀌지 않아요.")}
             </p>
             <div className="roadmap-propose">
-              <Button
-                variant="outline"
-                disabled={!!proposalHint.describedBy}
-                aria-describedby={proposalHint.describedBy}
-                onClick={() => setProposalOpen(true)}
-              >
-                <Icon name="sparkles" size={16} />
-                {t("투고일로 계획 제안받기")}
-              </Button>
+              {proposalHint.describedBy ? (
+                // 연구 도우미를 쓸 수 없을 때는 꺼진 버튼 대신, 화면에서 계산하는 초안을 내요.
+                <Button
+                  variant="outline"
+                  disabled={!phases.length}
+                  aria-describedby={proposalHint.describedBy}
+                  onClick={() => {
+                    setProposalKind("even");
+                    setProposalOpen(true);
+                  }}
+                >
+                  <Icon name="calendar" size={16} />
+                  {t("균등 배분 초안")}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setProposalKind("ai");
+                    setProposalOpen(true);
+                  }}
+                >
+                  <Icon name="sparkles" size={16} />
+                  {t("투고일로 계획 제안받기")}
+                </Button>
+              )}
               {proposalHint.node}
             </div>
           </div>
@@ -284,7 +306,14 @@ export function PlanningPage() {
             )
           ) : view === "diagram" ? (
             <Suspense fallback={<LoadingState />}>
-              <Diagram phases={phases} onEdit={setPhase} />
+              <Diagram
+                phases={phases}
+                currentId={
+                  research.currentPhaseId ??
+                  phases.find((p) => p.status === "active")?.id
+                }
+                onEdit={setPhase}
+              />
             </Suspense>
           ) : (
             <div className="roadmap-timeline">
@@ -411,20 +440,13 @@ export function PlanningPage() {
                 {t("목표 추가")}
               </Button>
             </div>
-            {milestones.map((m) => (
-              <button
-                className="goal-row"
-                key={m.id}
-                onClick={() => setMilestone(m)}
-              >
-                <Icon name={m.status === "done" ? "check" : "flag"} size={17} />
-                <strong>{m.title}</strong>
-                <span>{formatDate(m.dueDate)}</span>
-                <StatusBadge tone={m.status === "done" ? "green" : "neutral"}>
-                  {m.status === "done" ? t("완료") : t("예정")}
-                </StatusBadge>
-              </button>
-            ))}
+            {milestones.length > 0 && (
+              <MilestoneTimeline
+                milestones={milestones}
+                today={todayKey()}
+                onOpen={setMilestone}
+              />
+            )}
             {!milestones.length && (
               <p>{t("아직 주요 목표가 없어요. 예: 계획서 제출, 학회 발표")}</p>
             )}
@@ -729,6 +751,7 @@ export function PlanningPage() {
         onClose={() => setProposalOpen(false)}
         research={research}
         phases={phases}
+        kind={proposalKind}
       />
       <Dialog
         open={!!milestone}
@@ -1114,6 +1137,17 @@ export function PollPage() {
       {error && <p className="rms-error">{error}</p>}
       <section className="experience-panel">
         <DisabledReason id={participantReasonId} reason={participantReason} />
+        <AvailabilityGrid
+          poll={p}
+          available={available}
+          editable={!!mine && p.status === "open" && !busy}
+          describedBy={participantReason ? participantReasonId : undefined}
+          onToggle={(id, next) =>
+            setSelected(
+              next ? [...available, id] : available.filter((x) => x !== id),
+            )
+          }
+        />
         <div className="poll-options">
           {p.options.map((o) => (
             <div

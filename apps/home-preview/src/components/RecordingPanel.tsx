@@ -1,23 +1,25 @@
-import { dateLocale, t } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import { useEffect, useId, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useWorkspace } from "@/lib/workspace";
-import { friendlyError } from "@/lib/supabase";
-import { privateBlob, uploadPrivate } from "@/lib/experience";
-import { recordBase, type Recording } from "@/lib/domain";
-import {
-  KoreanLiveSpeech,
-  recognitionConstructor,
-  type SpeechSnapshot,
-} from "@/lib/live-speech";
-import { saveLiveTranscript, downloadTranscript } from "@/lib/live-transcript";
+import { privateBlob } from "@/lib/experience";
+import type { Recording } from "@/lib/domain";
+import { recognitionConstructor } from "@/lib/live-speech";
+import { downloadTranscript } from "@/lib/live-transcript";
+import { isUncertain } from "@/lib/recording-timeline";
 import { Icon } from "./icons";
 import { Button } from "./ui/button";
 import { VisibilityField } from "./experience";
 import { StatusBadge, useDisabledReason } from "./common";
-import { SavedTranscript } from "./SavedTranscript";
+import { SavedTranscript, type TranscriptPick } from "./SavedTranscript";
+import {
+  RecordingProvider,
+  useOptionalRecorder,
+  useRecorder,
+} from "./recording/RecordingProvider";
+import { LiveWaveform } from "./recording/LiveWaveform";
+import { RecordingAlert } from "./recording/RecordingAlert";
 import {
   Dialog,
   DialogContent,
@@ -27,64 +29,52 @@ import {
 } from "./ui/dialog";
 import { Checkbox } from "@montage-ui/core";
 
+export type { TranscriptPick } from "./SavedTranscript";
+
 const durationText = (n: number) =>
   `${String(Math.floor(n / 60)).padStart(2, "0")}:${String(Math.floor(n % 60)).padStart(2, "0")}`;
-const emptySpeech = (): SpeechSnapshot => ({
-  segments: [],
-  text: "",
-  state: "stopped",
-  message: "",
-  warnings: [],
-});
-type CaptureState =
-  | "idle"
-  | "starting"
-  | "recording"
-  | "paused"
-  | "finishing"
-  | "review"
-  | "uploading";
-export function RecordingPanel({
-  researchId,
-  meetingId,
-  onAppend,
-}: {
+
+interface RecordingPanelProps {
   researchId: string;
   meetingId: string;
   onAppend?: (text: string) => void;
-}) {
-  const { data, user, mode, save } = useWorkspace(),
-    cache = useQueryClient();
+  /** 저장한 전사문에서 고른 글로 피드백·결정·질문을 만들 때 */
+  onPick?: (pick: TranscriptPick) => void;
+}
+
+/**
+ * 미팅 녹음·실시간 전사 패널.
+ * 앱 위에 RecordingProvider(scope="app")가 있으면 그 녹음을 함께 쓰고(다른 화면으로
+ * 가도 녹음이 이어져요), 없으면 이 패널에만 묶인 녹음기를 만들어요(예전 동작).
+ */
+export function RecordingPanel(props: RecordingPanelProps) {
+  const shared = useOptionalRecorder();
+  if (shared) return <RecordingPanelView {...props} />;
+  return (
+    <RecordingProvider scope="panel">
+      <RecordingPanelView {...props} />
+    </RecordingProvider>
+  );
+}
+
+function RecordingPanelView({
+  researchId,
+  meetingId,
+  onAppend,
+  onPick,
+}: RecordingPanelProps) {
+  const { data, user, mode, save } = useWorkspace();
+  const recorder = useRecorder();
   const [consent, setConsent] = useState(false),
     [agree, setAgree] = useState(false),
-    [state, setState] = useState<CaptureState>("idle"),
-    [seconds, setSeconds] = useState(0),
-    [blob, setBlob] = useState<Blob | null>(null),
-    [audioUrl, setAudioUrl] = useState(""),
-    [error, setError] = useState(""),
-    [progress, setProgress] = useState<number | null>(null),
-    [visibility, setVisibility] = useState<"private" | "shared">("private"),
-    [playId, setPlayId] = useState("");
-  const [liveText, setLiveText] = useState(true),
-    [speech, setSpeech] = useState<SpeechSnapshot>(emptySpeech),
-    [transcript, setTranscript] = useState("");
-  const media = useRef<MediaRecorder | null>(null),
-    stream = useRef<MediaStream | null>(null),
-    ctx = useRef<AudioContext | null>(null),
-    canvas = useRef<HTMLCanvasElement>(null),
-    chunks = useRef<Blob[]>([]),
-    animation = useRef(0),
-    record = useRef<Recording | null>(null),
-    uploaded = useRef(false),
-    live = useRef(true),
-    generation = useRef(0),
-    recognition = useRef<KoreanLiveSpeech | null>(null),
-    recognitionConsent = useRef<string | null>(null),
-    recordingConsent = useRef(""),
-    linked = useRef(false),
-    playbackUrls = useRef(new Map<string, string>()),
-    captured = useRef<SpeechSnapshot>(emptySpeech()),
-    clock = useRef({ elapsed: 0, started: 0 });
+    [playId, setPlayId] = useState(""),
+    [liveText, setLiveText] = useState(true);
+  const playbackUrls = useRef(new Map<string, string>()),
+    panel = useRef<HTMLElement>(null);
+  const mine = recorder.session?.meetingId === meetingId;
+  const elsewhere = !!recorder.session && !mine && recorder.state !== "idle";
+  const state = mine ? recorder.state : "idle";
+  const { speech, transcript, seconds } = recorder;
   const speechSupported = Boolean(recognitionConstructor()),
     busy =
       state === "starting" || state === "finishing" || state === "uploading";
@@ -95,7 +85,7 @@ export function RecordingPanel({
     ),
     storeReason = useDisabledReason(
       state === "review" &&
-        !blob?.size &&
+        !recorder.hasAudio &&
         t("녹음된 음성이 없어 저장할 수 없어요."),
     ),
     agreeReason = useDisabledReason(
@@ -104,317 +94,33 @@ export function RecordingPanel({
         t("참석자 동의에 체크하면 시작할 수 있어요."),
     ),
     speechNoticeId = useId();
-  function elapsed() {
-    return Math.floor(
-      (clock.current.elapsed +
-        (clock.current.started
-          ? performance.now() - clock.current.started
-          : 0)) /
-        1000,
-    );
-  }
-  function discard() {
-    generation.current++;
-    recognition.current?.dispose();
-    recognition.current = null;
-    if (media.current && media.current.state !== "inactive")
-      media.current.stop();
-    stream.current?.getTracks().forEach((track) => track.stop());
-    cancelAnimationFrame(animation.current);
-    void ctx.current?.close().catch(() => {});
-    setBlob(null);
-    setState("idle");
-    setSpeech(emptySpeech());
-    setTranscript("");
-    record.current = null;
-    uploaded.current = false;
-    linked.current = false;
-  }
-  useNavigationGuard({
-    dirty: state !== "idle",
-    busy,
-    label: t("녹음과 전사문"),
-    onDiscard: discard,
-  });
+
   useEffect(() => {
-    live.current = true;
-    return () => {
-      live.current = false;
-      generation.current++;
-      recognition.current?.dispose();
-      if (media.current && media.current.state !== "inactive")
-        media.current.stop();
-      stream.current?.getTracks().forEach((track) => track.stop());
-      cancelAnimationFrame(animation.current);
-      void ctx.current?.close().catch(() => {});
-      playbackUrls.current.forEach((url) => URL.revokeObjectURL(url));
-    };
+    const urls = playbackUrls.current;
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, []);
+
+  // 이 패널이 화면에 보이는지 알려 줘요. 안 보이면 상단 미니 컨트롤이 나타나요.
+  const { setPanelVisible } = recorder;
   useEffect(() => {
-    if (state !== "recording") return;
-    const timer = setInterval(() => {
-      const n = elapsed();
-      setSeconds(n);
-      if (n >= 7200) stop();
-    }, 500);
-    return () => clearInterval(timer);
-  }, [state]);
-  useEffect(() => {
-    if (!blob) {
-      setAudioUrl("");
-      return;
-    }
-    const url = URL.createObjectURL(blob);
-    setAudioUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [blob]);
-  async function start() {
-    if (!agree || state !== "idle") return;
-    setState("starting");
-    setError("");
+    const el = panel.current;
+    if (!mine || !el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) =>
+      setPanelVisible(entry.isIntersecting),
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      setPanelVisible(false);
+    };
+  }, [mine, setPanelVisible]);
+
+  function start() {
+    if (!agree || state !== "idle" || elsewhere) return;
     setConsent(false);
-    const gen = ++generation.current;
-    try {
-      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder)
-        throw new Error(
-          t(
-            "이 브라우저에서는 녹음할 수 없어요. 최신 Chrome이나 Safari에서 열어 주세요.",
-          ),
-        );
-      const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!live.current || gen !== generation.current) {
-        s.getTracks().forEach((track) => track.stop());
-        return;
-      }
-      stream.current = s;
-      const mime = [
-        "audio/webm;codecs=opus",
-        "audio/mp4",
-        "audio/ogg;codecs=opus",
-      ].find((candidate) => MediaRecorder.isTypeSupported(candidate));
-      // 32kbps keeps a full 2-hour recording (about 29MB) well under the 500MB upload
-      // limit.
-      const m = new MediaRecorder(s, {
-        ...(mime ? { mimeType: mime } : {}),
-        audioBitsPerSecond: 32000,
-      });
-      media.current = m;
-      chunks.current = [];
-      setSeconds(0);
-      setVisibility("private");
-      record.current = null;
-      uploaded.current = false;
-      linked.current = false;
-      setBlob(null);
-      setSpeech(emptySpeech());
-      setTranscript("");
-      captured.current = emptySpeech();
-      recognition.current?.dispose();
-      recognition.current = null;
-      recordingConsent.current = new Date().toISOString();
-      recognitionConsent.current =
-        liveText && speechSupported ? recordingConsent.current : null;
-      if (recognitionConsent.current)
-        recognition.current = new KoreanLiveSpeech(
-          recognitionConstructor(),
-          (snapshot) => {
-            if (live.current && gen === generation.current) setSpeech(snapshot);
-          },
-        );
-      m.ondataavailable = (e) => {
-        if (e.data.size) chunks.current.push(e.data);
-      };
-      m.onstop = async () => {
-        s.getTracks().forEach((track) => track.stop());
-        cancelAnimationFrame(animation.current);
-        void ctx.current?.close().catch(() => {});
-        if (!live.current || gen !== generation.current) return;
-        setState("finishing");
-        const final = await (recognition.current?.finish() ??
-          Promise.resolve(emptySpeech()));
-        if (!live.current || gen !== generation.current) return;
-        captured.current = final;
-        setSpeech(final);
-        setTranscript(final.text);
-        setBlob(new Blob(chunks.current, { type: m.mimeType.split(";")[0] }));
-        setState("review");
-      };
-      m.onerror = () => {
-        setError(
-          t(
-            "녹음이 중간에 멈췄어요. 멈추기 전까지의 음성과 전사문을 확인하고 저장해 주세요.",
-          ),
-        );
-        stop();
-      };
-      m.start(1000);
-      clock.current = { elapsed: 0, started: performance.now() };
-      setState("recording");
-      recognition.current?.start();
-      // Visualization is optional. An AudioContext failure must not stop capture.
-      try {
-        const ac = new AudioContext(),
-          analyser = ac.createAnalyser();
-        ctx.current = ac;
-        analyser.fftSize = 256;
-        ac.createMediaStreamSource(s).connect(analyser);
-        const samples = new Uint8Array(analyser.frequencyBinCount);
-        function draw() {
-          if (!live.current || gen !== generation.current) return;
-          analyser.getByteTimeDomainData(samples);
-          const c = canvas.current,
-            g = c?.getContext("2d");
-          if (g && c) {
-            g.clearRect(0, 0, c.width, c.height);
-            g.fillStyle =
-              getComputedStyle(c).getPropertyValue("--primary").trim() ||
-              "#0066ff";
-            const bars = 56,
-              step = c.width / bars,
-              per = Math.floor(samples.length / bars);
-            for (let b = 0; b < bars; b++) {
-              let peak = 0;
-              if (m.state === "recording")
-                for (let j = 0; j < per; j++)
-                  peak = Math.max(peak, Math.abs(samples[b * per + j] - 128));
-              const h = Math.max(3, (peak / 128) * c.height);
-              g.fillRect(
-                b * step + step * 0.3,
-                (c.height - h) / 2,
-                step * 0.4,
-                h,
-              );
-            }
-          }
-          animation.current = requestAnimationFrame(draw);
-        }
-        draw();
-      } catch {
-        /* Audio capture and recognition remain available without visualization. */
-      }
-    } catch (e) {
-      recognition.current?.dispose();
-      stream.current?.getTracks().forEach((track) => track.stop());
-      if (media.current && media.current.state !== "inactive")
-        media.current.stop();
-      generation.current++;
-      setError(
-        (e as Error).name === "NotAllowedError"
-          ? t(
-              "마이크 권한이 꺼져 있어요. 브라우저의 사이트 설정에서 마이크를 허용한 뒤 다시 시도해 주세요.",
-            )
-          : (e as Error).message,
-      );
-      setState("idle");
-    }
+    recorder.start({ researchId, meetingId }, { liveText });
   }
-  function stop() {
-    if (!media.current || media.current.state === "inactive") return;
-    if (clock.current.started)
-      clock.current.elapsed += performance.now() - clock.current.started;
-    clock.current.started = 0;
-    setSeconds(elapsed());
-    setState("finishing");
-    media.current.stop();
-  }
-  function togglePause() {
-    const m = media.current;
-    if (m?.state === "recording") {
-      if (clock.current.started)
-        clock.current.elapsed += performance.now() - clock.current.started;
-      clock.current.started = 0;
-      setSeconds(elapsed());
-      m.pause();
-      void recognition.current?.pause();
-      setState("paused");
-    } else if (m?.state === "paused") {
-      m.resume();
-      clock.current.started = performance.now();
-      recognition.current?.start();
-      setState("recording");
-    }
-  }
-  async function store() {
-    if (!blob?.size) return;
-    setState("uploading");
-    setError("");
-    try {
-      let r = record.current;
-      if (!r) {
-        const type = blob.type.split(";")[0] || "audio/webm",
-          ext =
-            type === "audio/mp4"
-              ? "mp4"
-              : type === "audio/ogg"
-                ? "ogg"
-                : "webm",
-          b = recordBase(researchId);
-        r = {
-          ...b,
-          meetingId,
-          title: t("미팅 녹음 · {date}", {
-            date: new Date().toLocaleDateString(dateLocale()),
-          }),
-          storagePath: `${user.id}/${researchId}/${b.id}.${ext}`,
-          fileName: t("미팅녹음.{ext}", { ext }),
-          mimeType: type,
-          size: blob.size,
-          duration: seconds,
-          consentAt: recordingConsent.current,
-          visibility,
-        };
-        record.current = r;
-      }
-      if (!uploaded.current) {
-        await uploadPrivate(
-          new File([blob], r.fileName, { type: r.mimeType }),
-          r.storagePath,
-          mode,
-          setProgress,
-        );
-        uploaded.current = true;
-      }
-      const saved = await save("recordings", { ...r, visibility });
-      record.current = saved;
-      linked.current = true;
-      if (recognitionConsent.current || transcript.trim()) {
-        const savedTranscript = await saveLiveTranscript(
-          {
-            recording_id: r.id,
-            raw_segments: captured.current.segments,
-            edited_text: transcript,
-            consent_at: recognitionConsent.current ?? r.consentAt,
-            warnings: captured.current.warnings,
-            revision: 0,
-          },
-          researchId,
-          user.id,
-          mode,
-        );
-        cache.setQueryData(
-          ["live-transcript", mode, user.id, r.id],
-          savedTranscript,
-        );
-      }
-      recognition.current?.dispose();
-      recognition.current = null;
-      setBlob(null);
-      setState("idle");
-      setProgress(null);
-      setSpeech(emptySpeech());
-      setTranscript("");
-      toast.success(
-        recognitionConsent.current || transcript.trim()
-          ? t("녹음과 전사문을 저장했어요")
-          : t("녹음을 저장했어요"),
-      );
-    } catch (e) {
-      setError(
-        `${friendlyError(e)} ${uploaded.current ? t("음성 파일은 이미 올라갔고, 이 화면의 내용도 그대로 있어요. ‘저장 다시 시도’를 누르면 파일은 다시 올리지 않고 나머지만 저장해요.") : t("녹음과 전사문은 이 화면에 그대로 있어요.")}`,
-      );
-      setState("review");
-    }
-  }
+
   async function play(r: Recording) {
     try {
       const b = await privateBlob(r, mode),
@@ -432,8 +138,11 @@ export function RecordingPanel({
   }
   const liveCapture =
     state === "recording" || state === "paused" || state === "finishing";
+  const otherMeeting = elsewhere
+    ? data.meetings.find((m) => m.id === recorder.session?.meetingId)
+    : undefined;
   return (
-    <section className="recording-panel">
+    <section className="recording-panel" ref={panel}>
       <div className="section-heading">
         <h3>
           <Icon name="mic" size={18} /> {t("미팅 녹음·전사")}
@@ -448,50 +157,86 @@ export function RecordingPanel({
                 : t("음성 기록")}
         </StatusBadge>
       </div>
-      {error && (
+      {mine && recorder.error && (
         <p className="rms-error" role="alert">
-          {error}
+          {recorder.error}
         </p>
       )}
+      {mine && <RecordingAlert alert={recorder.alert} />}
       {state === "idle" ? (
-        <div className="recording-start">
-          <p>
-            {t(
-              "녹음하면서 말한 내용을 한국어로 받아 적을 수 있어요. 저장하기 전에 녹음을 들어 보고 전사문을 고칠 수 있어요.",
+        elsewhere ? (
+          <div className="recording-start recording-elsewhere">
+            <p>
+              {otherMeeting
+                ? t(
+                    "‘{title}’ 미팅에서 녹음하고 있어요. 그 녹음을 마치고 저장하면 여기서 새로 녹음할 수 있어요.",
+                    { title: otherMeeting.title },
+                  )
+                : t(
+                    "다른 미팅에서 녹음하고 있어요. 그 녹음을 마치고 저장하면 여기서 새로 녹음할 수 있어요.",
+                  )}
+            </p>
+            {recorder.session && (
+              <Button variant="outline" size="sm" asChild>
+                <Link
+                  to={`/r/${recorder.session.researchId}/meetings/${recorder.session.meetingId}?tab=record`}
+                >
+                  {t("녹음 중인 미팅으로")}
+                  <Icon name="arrow-right" size={14} />
+                </Link>
+              </Button>
             )}
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setAgree(false);
-              setConsent(true);
-            }}
-          >
-            <Icon name="mic" size={17} /> {t("녹음 시작")}
-          </Button>
-        </div>
+          </div>
+        ) : (
+          <div className="recording-start">
+            <p>
+              {t(
+                "녹음하면서 말한 내용을 한국어로 받아 적을 수 있어요. 저장하기 전에 녹음을 들어 보고 전사문을 고칠 수 있어요.",
+              )}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAgree(false);
+                setConsent(true);
+              }}
+            >
+              <Icon name="mic" size={17} /> {t("녹음 시작")}
+            </Button>
+          </div>
+        )
       ) : (
         <>
-          <div className="recording-wave">
-            <canvas
-              width={620}
-              height={72}
-              ref={canvas}
-              aria-label={t("마이크 입력 파형")}
-            />
+          <div
+            className="recording-wave"
+            data-paused={state !== "recording" || undefined}
+          >
+            {liveCapture || state === "starting" ? (
+              <LiveWaveform
+                analyser={recorder.analyser}
+                active={state === "recording"}
+                label={t("마이크 입력 파형")}
+              />
+            ) : (
+              <span className="grow" />
+            )}
             <strong>{durationText(seconds)}</strong>
           </div>
           {liveCapture || state === "starting" ? (
             <>
               <div className="button-row">
-                <Button variant="outline" disabled={busy} onClick={togglePause}>
+                <Button
+                  variant="outline"
+                  disabled={busy}
+                  onClick={recorder.togglePause}
+                >
                   <Icon
                     name={state === "paused" ? "play" : "pause"}
                     size={16}
                   />
                   {state === "paused" ? t("계속 녹음") : t("일시정지")}
                 </Button>
-                <Button disabled={busy} onClick={stop}>
+                <Button disabled={busy} onClick={recorder.stop}>
                   {state === "starting"
                     ? t("마이크 연결 중")
                     : state === "finishing"
@@ -503,7 +248,7 @@ export function RecordingPanel({
                 <div className="section-heading">
                   <h4>{t("실시간 한국어 전사")}</h4>
                   <span role="status">
-                    {!recognitionConsent.current
+                    {!recorder.recognitionOn
                       ? t("음성만 녹음")
                       : speech.state === "error"
                         ? t("인식 중단")
@@ -523,21 +268,35 @@ export function RecordingPanel({
                   aria-live="off"
                 >
                   {speech.segments.length ? (
-                    speech.segments.map((part, i) => (
-                      <span
-                        key={i}
-                        className={
-                          part.final ? "speech-final" : "speech-interim"
-                        }
-                      >
-                        {part.text}
-                        {!part.final && <small> {t("인식 중")}</small>}
-                        <br />
-                      </span>
-                    ))
+                    speech.segments.map((part, i) => {
+                      const unsure = isUncertain(part.confidence);
+                      return (
+                        <span
+                          key={i}
+                          className={
+                            part.final ? "speech-final" : "speech-interim"
+                          }
+                        >
+                          <span
+                            className={unsure ? "speech-uncertain" : undefined}
+                            title={unsure ? t("인식이 불확실해요") : undefined}
+                          >
+                            {part.text}
+                          </span>
+                          {unsure && (
+                            <span className="sr-only">
+                              {" "}
+                              ({t("인식이 불확실해요")})
+                            </span>
+                          )}
+                          {!part.final && <small> {t("인식 중")}</small>}
+                          <br />
+                        </span>
+                      );
+                    })
                   ) : (
                     <p className="student-footnote">
-                      {recognitionConsent.current
+                      {recorder.recognitionOn
                         ? t("말을 시작하면 여기에 글자가 나타나요.")
                         : t(
                             "실시간 전사 없이 음성만 녹음하고 있어요. 녹음을 마친 뒤 전사문을 직접 쓸 수 있어요.",
@@ -552,7 +311,7 @@ export function RecordingPanel({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => recognition.current?.start()}
+                        onClick={recorder.reconnectSpeech}
                       >
                         {t("음성 인식 다시 연결")}
                       </Button>
@@ -565,7 +324,7 @@ export function RecordingPanel({
             <div className="recording-review">
               <audio
                 controls
-                src={audioUrl}
+                src={recorder.audioUrl}
                 aria-label={t("방금 녹음한 내용")}
               />
               <label className="transcript-field">
@@ -575,7 +334,7 @@ export function RecordingPanel({
                   maxLength={100000}
                   value={transcript}
                   disabled={state === "uploading"}
-                  onChange={(e) => setTranscript(e.target.value)}
+                  onChange={(e) => recorder.setTranscript(e.target.value)}
                   placeholder={t(
                     "인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요.",
                   )}
@@ -593,6 +352,13 @@ export function RecordingPanel({
                   )}
                 </p>
               )}
+              {speech.segments.some((p) => isUncertain(p.confidence)) && (
+                <p className="transcript-notice">
+                  {t(
+                    "인식이 불확실한 문장이 있어요. 저장한 뒤 ‘처음 인식한 내용 보기’에서 점선 밑줄로 확인할 수 있어요.",
+                  )}
+                </p>
+              )}
               {!!speech.warnings.length && (
                 <p className="transcript-notice">
                   {t(
@@ -600,22 +366,25 @@ export function RecordingPanel({
                   )}
                 </p>
               )}
-              <VisibilityField value={visibility} onChange={setVisibility} />
+              <VisibilityField
+                value={recorder.visibility}
+                onChange={recorder.setVisibility}
+              />
               <p className="student-footnote">
                 {t(
                   "공개 범위는 음성 파일에만 적용돼요. 음성을 공유해도 전사문은 나만 볼 수 있어요.",
                 )}
               </p>
-              {progress !== null && state === "uploading" && (
-                <progress max={100} value={progress} />
+              {recorder.progress !== null && state === "uploading" && (
+                <progress max={100} value={recorder.progress} />
               )}
               <div className="button-row">
                 <Button
                   variant="ghost"
                   disabled={state === "uploading"}
-                  onClick={discard}
+                  onClick={recorder.discard}
                 >
-                  {linked.current
+                  {recorder.linked
                     ? t("전사문 버리고 닫기")
                     : t("녹음·전사 버리기")}
                 </Button>
@@ -628,13 +397,13 @@ export function RecordingPanel({
                   {t("전사문 TXT 내려받기")}
                 </Button>
                 <Button
-                  disabled={state === "uploading" || !blob?.size}
+                  disabled={state === "uploading" || !recorder.hasAudio}
                   aria-describedby={storeReason.describedBy}
-                  onClick={() => void store()}
+                  onClick={() => void recorder.store()}
                 >
                   {state === "uploading"
                     ? t("저장 중")
-                    : uploaded.current
+                    : recorder.uploaded
                       ? t("저장 다시 시도")
                       : t("녹음·전사 저장")}
                 </Button>
@@ -698,6 +467,7 @@ export function RecordingPanel({
                   "shared"
                 }
                 onAppend={onAppend}
+                onPick={onPick}
               />
             )}
           </div>
@@ -737,14 +507,21 @@ export function RecordingPanel({
               ? t("참석자에게 녹음과 음성 인식을 알리고 동의를 받았어요.")
               : t("참석자에게 녹음을 알리고 동의를 받았어요.")}
           </label>
+          {recorder.scope === "app" && (
+            <p className="student-footnote">
+              {t(
+                "녹음하는 동안 다른 화면으로 가도 녹음은 이어지고, 위쪽의 작은 녹음 막대에서 멈추거나 이 미팅으로 돌아올 수 있어요.",
+              )}
+            </p>
+          )}
           <div className="bottom-actions">
             <Button variant="outline" onClick={() => setConsent(false)}>
               {t("취소")}
             </Button>
             <Button
-              disabled={!agree || state !== "idle"}
+              disabled={!agree || state !== "idle" || elsewhere}
               aria-describedby={agreeReason.describedBy}
-              onClick={() => void start()}
+              onClick={start}
             >
               {liveText && speechSupported
                 ? t("녹음·전사 시작")

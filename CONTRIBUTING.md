@@ -11,7 +11,7 @@
 
 ## 역할
 
-`gitkyun`: 저장소·Supabase·Cloudflare 관리. `hyouka0508`, `dydtjr54`: 앱 개발·동료 검토. GitHub는 각자 계정을 사용합니다. 서비스 체험용 학생·교수 계정은 별개이며 관리자가 비공개로 전달합니다.
+`gitkyun`: 저장소·Supabase·Cloudflare 관리. `hyouka0508`, `dydtjr54`: 앱 개발·동료 검토. GitHub는 각자 계정을 사용합니다. 서비스 체험용 학생·교수 계정은 별개이며 `AGENTS.md`의 ‘체험 계정’에 있습니다(공개 출시 전에 지웁니다).
 
 ## 변경 기록
 

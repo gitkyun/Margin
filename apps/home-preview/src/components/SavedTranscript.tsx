@@ -1,6 +1,6 @@
 import { t } from "@/lib/i18n";
 import { useId, useRef, useState } from "react";
-import { formatDateTime } from "@/lib/domain";
+import { formatDateTime, type AudioSource } from "@/lib/domain";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
@@ -12,6 +12,19 @@ import {
   type LiveTranscript,
 } from "@/lib/live-transcript";
 import type { Recording } from "@/lib/domain";
+import { isUncertain, timeRangeForSelection } from "@/lib/recording-timeline";
+import {
+  addMark,
+  markedPieces,
+  overlapsMark,
+  removeMarks,
+  validMarks,
+} from "@/lib/recording-marks";
+import {
+  SelectionToolbar,
+  useDomSelection,
+  type SelectionAction,
+} from "./recording/SelectionPopover";
 import { Button } from "./ui/button";
 import { DisabledReason, StatusBadge } from "./common";
 import {
@@ -22,17 +35,30 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 
+/** 전사문에서 고른 글로 만들 항목과 그 글의 녹음 위치 */
+export interface TranscriptPick {
+  kind: "feedback" | "decision" | "question";
+  text: string;
+  /** 녹음 위치를 찾지 못하면 없어요(직접 고친 문장 등). */
+  source?: AudioSource;
+}
+
 export function SavedTranscript({
   recording,
   memoShared,
   onAppend,
+  onPick,
 }: {
   recording: Recording;
   memoShared: boolean;
   onAppend?: (text: string) => void;
+  onPick?: (pick: TranscriptPick) => void;
 }) {
-  const { mode, user } = useWorkspace(),
+  const { mode, user, save } = useWorkspace(),
     cache = useQueryClient();
+  const textBox = useRef<HTMLDivElement>(null),
+    textHost = useRef<HTMLDivElement>(null),
+    [marking, setMarking] = useState(false);
   const query = useQuery({
     queryKey: ["live-transcript", mode, user.id, recording.id],
     queryFn: () => getLiveTranscript(recording.id, user.id, mode),
@@ -47,6 +73,11 @@ export function SavedTranscript({
     appendReasonId = useId();
   const current = query.data,
     dirty = draft !== null && draft !== base.current?.edited_text;
+  const selection = useDomSelection(
+    textBox,
+    textHost,
+    draft === null && !!current?.edited_text,
+  );
   useNavigationGuard({
     dirty,
     busy: saving,
@@ -82,6 +113,16 @@ export function SavedTranscript({
       setSaving(false);
     }
   }
+  async function changeMarks(next: Recording["transcriptMarks"]) {
+    setMarking(true);
+    try {
+      await save("recordings", { ...recording, transcriptMarks: next });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setMarking(false);
+    }
+  }
   if (query.isPending)
     return (
       <p className="student-footnote" role="status">
@@ -115,6 +156,66 @@ export function SavedTranscript({
     !conflict &&
     !dirty &&
     t("바뀐 내용이 없어요.");
+  const marks = validMarks(recording.transcriptMarks, current.edited_text);
+  const lostMarks = (recording.transcriptMarks?.length ?? 0) > marks.length;
+  const picked = selection.picked;
+  const pickActions: SelectionAction[] = [];
+  if (picked && draft === null) {
+    const text = current.edited_text;
+    const marked = overlapsMark(marks, text, picked.start, picked.end);
+    if (!marking)
+      pickActions.push({
+        key: "mark",
+        icon: "edit",
+        label: marked ? t("형광펜 지우기") : t("형광펜"),
+        onSelect: () =>
+          void changeMarks(
+            marked
+              ? removeMarks(marks, text, picked.start, picked.end)
+              : addMark(marks, text, picked.start, picked.end),
+          ),
+      });
+    if (onPick) {
+      const range = timeRangeForSelection(
+        current.raw_segments,
+        recording.segmentTimes,
+        text,
+        picked.start,
+        picked.end,
+      );
+      const source = range
+        ? {
+            meetingId: recording.meetingId,
+            recordingId: recording.id,
+            ...range,
+          }
+        : undefined;
+      const pick = (kind: TranscriptPick["kind"]) => () => {
+        window.getSelection()?.removeAllRanges();
+        onPick({ kind, text: picked.text, source });
+      };
+      pickActions.push(
+        {
+          key: "feedback",
+          icon: "plus",
+          label: t("피드백"),
+          onSelect: pick("feedback"),
+        },
+        {
+          key: "decision",
+          icon: "plus",
+          label: t("결정"),
+          onSelect: pick("decision"),
+        },
+        {
+          key: "question",
+          icon: "plus",
+          label: t("질문"),
+          onSelect: pick("question"),
+        },
+      );
+    }
+  }
   const appendReason =
     !!onAppend &&
     !saving &&
@@ -147,9 +248,26 @@ export function SavedTranscript({
           </div>
         )}
         {draft === null ? (
-          <div className="transcript-text">
-            {value ||
-              t("인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요.")}
+          <div className="selection-host" ref={textHost}>
+            <div className="transcript-text" ref={textBox}>
+              {value
+                ? markedPieces(value, marks).map((piece) =>
+                    piece.marked ? (
+                      <mark key={piece.start} className="transcript-mark">
+                        {piece.text}
+                      </mark>
+                    ) : (
+                      piece.text
+                    ),
+                  )
+                : t("인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요.")}
+            </div>
+            <SelectionToolbar
+              anchor={selection.anchor}
+              actions={pickActions}
+              onDismiss={selection.clear}
+              label={t("고른 전사문으로 만들기")}
+            />
           </div>
         ) : (
           <label className="transcript-field">
@@ -162,6 +280,19 @@ export function SavedTranscript({
               rows={9}
             />
           </label>
+        )}
+        {draft === null && !!value && (
+          <p className="transcript-mark-hint">
+            {onPick
+              ? t(
+                  "문장을 드래그해 고르면 형광펜을 칠하거나 피드백·결정·질문으로 만들 수 있어요. 형광펜은 전사문 글자를 바꾸지 않아요.",
+                )
+              : t(
+                  "문장을 드래그해 고르면 형광펜을 칠할 수 있어요. 형광펜은 전사문 글자를 바꾸지 않아요.",
+                )}
+            {lostMarks &&
+              ` ${t("전사문을 고쳐서 일부 형광펜 표시가 사라졌어요.")}`}
+          </p>
         )}
         {error && (
           <p role="alert" className="rms-error">
@@ -195,14 +326,27 @@ export function SavedTranscript({
         <details className="transcript-original">
           <summary>{t("처음 인식한 내용 보기")}</summary>
           {current.raw_segments.length ? (
-            current.raw_segments.map((part, i) => (
-              <p key={i}>
-                {!part.final && (
-                  <StatusBadge tone="amber">{t("미확정")}</StatusBadge>
-                )}{" "}
-                {part.text}
-              </p>
-            ))
+            current.raw_segments.map((part, i) => {
+              const unsure = isUncertain(
+                recording.segmentTimes?.[i]?.confidence,
+              );
+              return (
+                <p key={i}>
+                  {!part.final && (
+                    <StatusBadge tone="amber">{t("미확정")}</StatusBadge>
+                  )}{" "}
+                  <span
+                    className={unsure ? "speech-uncertain" : undefined}
+                    title={unsure ? t("인식이 불확실해요") : undefined}
+                  >
+                    {part.text}
+                  </span>
+                  {unsure && (
+                    <span className="sr-only"> ({t("인식이 불확실해요")})</span>
+                  )}
+                </p>
+              );
+            })
           ) : (
             <p>{t("자동으로 인식한 문장이 없어요.")}</p>
           )}

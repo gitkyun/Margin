@@ -1,0 +1,229 @@
+/*
+ * 녹음 부품(파형·경고·미니 컨트롤·고른 글 도구 막대·형광펜·구간 재생).
+ * 색·간격·모서리·움직임은 모두 Montage 토큰을 그대로 써요. 유리·흐림 효과는 쓰지 않아요.
+ */
+@layer margin {
+  /* 실시간 파형: 막대 높이는 JS가 scaleY로만 바꿔요. */
+  .live-waveform {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+  .live-waveform > span {
+    flex: 1 1 0;
+    min-width: 2px;
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--brand);
+    transform: scaleY(0.08);
+    transform-origin: center;
+    transition: transform var(--motion-duration-micro) linear;
+  }
+  .recording-wave[data-paused] .live-waveform > span {
+    background: var(--text-tertiary);
+  }
+
+  /* 무음·마이크 끊김 경고. 나타날 때 한 번 흔들려요(동작 줄이기면 전역 규칙이 멈춰요). */
+  .recording-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-8);
+    margin: var(--spacing-12) 0;
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px solid var(--danger-line);
+    border-radius: var(--radius-10);
+    background: var(--danger-soft);
+    color: var(--text);
+    animation: field-shake var(--motion-duration-page)
+      var(--motion-ease-standard);
+  }
+  .recording-alert svg {
+    flex: none;
+    margin-top: var(--spacing-2);
+    color: var(--danger);
+  }
+  .recording-alert p {
+    margin: 0;
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+
+  /* 다른 미팅에서 녹음 중일 때 안내 */
+  .recording-elsewhere {
+    display: grid;
+    gap: var(--spacing-8);
+    justify-items: start;
+  }
+
+  /* 상단 미니 녹음 컨트롤 */
+  .mini-recorder {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    min-width: 0;
+    max-width: 100%;
+    padding: var(--spacing-2) var(--spacing-4) var(--spacing-2)
+      var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text);
+    animation: mini-recorder-in var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  .mini-recorder[data-alert] {
+    border-color: var(--danger-line);
+  }
+  .mini-recorder-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--danger);
+  }
+  .mini-recorder[data-state="recording"] .mini-recorder-dot {
+    animation: mini-recorder-pulse 1.6s var(--motion-ease-standard) infinite;
+  }
+  .mini-recorder:not([data-state="recording"]) .mini-recorder-dot {
+    background: var(--text-tertiary);
+  }
+  .mini-recorder-copy {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--spacing-6);
+    min-width: 0;
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .mini-recorder-copy strong {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mini-recorder-time {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+  }
+  .mini-recorder-title {
+    min-width: 0;
+    max-width: 16ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+  }
+  @media (max-width: 767px) {
+    .mini-recorder-title {
+      display: none;
+    }
+  }
+  @keyframes mini-recorder-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  @keyframes mini-recorder-pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  /* 고른 글 위에 뜨는 도구 막대 */
+  .selection-host {
+    position: relative;
+  }
+  .selection-toolbar {
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    gap: var(--spacing-2);
+    padding: var(--spacing-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface-raised);
+    box-shadow: var(--shadow-pop);
+    transform: translate(-50%, -100%);
+    white-space: nowrap;
+    animation: selection-toolbar-in var(--motion-duration-micro)
+      var(--motion-ease-standard);
+  }
+  .selection-toolbar button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6) var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label2-letterSpacing);
+    cursor: pointer;
+  }
+  .selection-toolbar button:hover {
+    background: var(--selected-fill);
+  }
+  .selection-toolbar button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+  @keyframes selection-toolbar-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, calc(-100% + 4px));
+    }
+  }
+
+  /* 전사문 형광펜과 불확실한 인식 */
+  .transcript-mark {
+    padding: 0;
+    border-radius: var(--radius-4);
+    background: var(--brand-soft);
+    color: inherit;
+  }
+  .speech-uncertain {
+    text-decoration: underline dotted var(--warning);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    cursor: help;
+  }
+  .transcript-mark-hint {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+
+  /* 피드백 출처 구간 재생 */
+  .source-audio-clip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-width: 0;
+  }
+  .source-audio-scrubber {
+    flex: 1 1 140px;
+    min-width: 0;
+    accent-color: var(--brand);
+  }
+  .source-audio-time {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .source-audio-note {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+}

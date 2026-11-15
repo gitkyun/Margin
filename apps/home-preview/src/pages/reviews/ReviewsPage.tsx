@@ -113,25 +113,30 @@ export function ReviewsPage() {
           .includes(search.toLowerCase()),
     )
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // ?result=a 또는 ?result=a,b(피드백 상세의 ‘교수에게 보내기’)로 들어오면 그 수정 결과를
+  // 골라 둔 채 만들기 창을 열어요. 링크는 학생이 이 창에서 직접 만들어요.
   useEffect(() => {
-    const id = params.get("result");
-    if (
-      !loading &&
-      id &&
-      prompted.current !== id &&
-      results.some((r) => r.id === id)
-    ) {
-      prompted.current = id;
-      requestKey.current = uid();
-      setSelected([id]);
-      setTitle(
-        t("{title} 검토", {
-          title: results.find((r) => r.id === id)?.title ?? t("수정 결과"),
-        }),
-      );
-      setOpen(true);
-      setStep("compose");
-    }
+    const raw = params.get("result");
+    if (loading || !raw || prompted.current === raw) return;
+    const ids = [...new Set(raw.split(","))].filter((id) =>
+      results.some((r) => r.id === id),
+    );
+    if (!ids.length) return;
+    prompted.current = raw;
+    requestKey.current = uid();
+    const first = results.find((r) => r.id === ids[0])?.title ?? t("수정 결과");
+    setSelected(ids);
+    setEmail((current) => current || professors[0] || "");
+    setTitle(
+      ids.length > 1
+        ? t("{title} 외 {count}건 검토", {
+            title: first,
+            count: ids.length - 1,
+          })
+        : t("{title} 검토", { title: first }),
+    );
+    setOpen(true);
+    setStep("compose");
   }, [params, results, loading]);
   useEffect(() => {
     requestKey.current = uid();

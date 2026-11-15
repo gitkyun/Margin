@@ -21,7 +21,10 @@ test("내 연구에서 연구 홈으로 들어가 주요 메뉴를 오간다", a
     ["문서", "writing", "글쓰기"],
     ["일정", "planning", "일정"],
   ] as const) {
-    await menu.getByRole("link", { name, exact: true }).click();
+    // 피드백 메뉴는 새 응답이 있으면 이름 뒤에 '새 응답 있음'이 붙어요(사이드바 점의 화면 낭독 문구).
+    await menu
+      .getByRole("link", { name: new RegExp(`^${name}( 새 응답 있음)?$`) })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/${path}$`));
     await expect(page).toHaveTitle(new RegExp(title));
   }
@@ -39,11 +42,14 @@ test("할 일 목록에 가상 연구의 할 일이 보인다", async ({ page })
     .first()
     .getByRole("link", { name: "할 일", exact: true })
     .click();
+  // 연구 홈에도 같은 제목의 링크가 있어서, 할 일 화면에 도착한 뒤 목록 행 안에서 찾아요.
+  await expect(page).toHaveURL(/\/tasks$/);
+  const rows = page.locator(".student-task-row");
   await expect(
-    page.getByRole("link", { name: "선행연구 비교 기준 정리", exact: true }),
+    rows.getByText("선행연구 비교 기준 정리", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "인터뷰 질문지 보완", exact: true }),
+    rows.getByText("인터뷰 질문지 보완", { exact: true }),
   ).toBeVisible();
 });
 

@@ -36,7 +36,7 @@ Gemini 키와 `ALLOWED_ORIGINS`는 Supabase 서버 Secrets에서 관리합니다
 
 기준 커밋 이후 서버 변경이 있으면 Supabase 접근 토큰·DB 비밀번호가 모두 필요합니다. 연결 전에는 서버 변경 배포가 실패하며, 현재 웹앱은 유지됩니다. 기준 커밋은 배포를 우회하려고 변경하면 안 됩니다. 관리자가 원격 적용 및 검증을 확인한 뒤에만 새 성공 커밋으로 갱신합니다.
 
-`config.toml`의 Auth 값은 로컬 개발 기준입니다. 호스팅 Auth 최소 길이 8자는 콘솔에서 별도로 확인합니다. 호스팅의 공개 가입은 초대 링크 가입을 위해 켜 두며(2026-11-10), 접근은 초대 코드를 쓴 계정만 통과하는 허용 목록이 막습니다. `functions`의 JWT 옵션은 배포에 반영합니다. 세 함수(`ai-assist`, `delete-research`, `project-invite`) 모두 내부에서 실제 사용자와 접근 권한을 검사합니다.
+`config.toml`의 Auth 값은 로컬 개발 기준입니다. 호스팅 Auth 최소 길이 8자는 콘솔에서 별도로 확인합니다. 호스팅의 공개 가입은 초대 링크 가입을 위해 켜 두며(2026-11-10), 접근은 초대 코드를 쓴 계정만 통과하는 허용 목록이 막습니다. `functions`의 JWT 옵션은 배포에 반영합니다. 네 함수(`ai-assist`, `delete-research`, `project-invite`, `review-notify`) 모두 내부에서 실제 사용자와 접근 권한을 검사합니다.
 
 `config.toml`은 CI가 고정한 Supabase CLI(현재 2.54.11)로 읽을 수 있어야 합니다. 읽지 못하면 `supabase link`에서 서버 배포가 멈추고, 그 뒤의 웹앱 배포도 진행되지 않습니다(2026-11-10 `[auth.email] enabled` 키로 실패). 이 파일을 바꾸면 같은 버전 CLI로 `supabase status --workdir apps/home-preview`를 실행해 `failed to parse config`가 나오지 않는지 확인합니다(Docker 연결 오류는 무관).
 

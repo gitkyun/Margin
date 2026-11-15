@@ -1,7 +1,15 @@
 import { t } from "@/lib/i18n";
+import { MiniRecorder } from "@/components/recording/MiniRecorder";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import { PanelResizer, usePanelWidth } from "./margin-panel/PanelResizer";
 import {
   Link,
   NavLink,
@@ -17,6 +25,7 @@ import { Hint } from "./ui/hint";
 import { navPreview } from "@/lib/nav-preview";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutHelp } from "./ShortcutHelp";
+import "./account-menu.css";
 import {
   RESEARCH_NAVIGATION,
   createEntries,
@@ -106,30 +115,27 @@ function AccountMenu() {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top" align="start" className="account-menu">
+          {/* 카드형 머리: 누구로 로그인했는지 먼저 보여 줘요(affectUI Profile Menu). */}
           <DropdownMenuLabel>
-            {user.name}
-            <small className="menu-email">{user.email}</small>
+            <div className="account-menu-card">
+              <span className="avatar" aria-hidden="true">
+                {user.name.slice(0, 1)}
+              </span>
+              <div>
+                <strong>{user.name}</strong>
+                <small className="menu-email">{user.email}</small>
+              </div>
+            </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/account")}>
-            <Icon name="user" size={17} />
-            {t("프로필 설정")}
+            <Icon name="settings" size={17} />
+            {t("계정 설정")}
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => navigate("/account?tab=usage")}>
-            <Icon name="sparkles" size={17} />
-            {t("AI 사용량")}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={() => navigate("/account?tab=appearance")}
-          >
-            <Icon name="monitor" size={17} />
-            {t("화면 설정")}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => navigate("/guide")}>
             <Icon name="help" size={17} />
             {t("사용 안내")}
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setLogoutOpen(true)}>
             <Icon name="logout" size={17} />
             {mode === "preview" ? t("로그인 화면으로") : t("로그아웃")}
@@ -239,6 +245,7 @@ export function WorkspaceShell({
     [notifications, setNotifications] = useState(false);
   const usage = useAIUsage();
   const updates = unreadReviewNotifications(data, user, researchId);
+  const [panelWidth, setPanelWidth] = usePanelWidth();
   const [notificationFilter, setNotificationFilter] = useState("unread");
   const events = data.events.filter(
     (e) =>
@@ -486,6 +493,12 @@ export function WorkspaceShell({
                       >
                         <Icon name={icon} size={20} />
                         <span>{label}</span>
+                        {path === "feedback" && updates.length > 0 && (
+                          // 아직 안 본 교수 응답·댓글이 있으면 점을 찍어요(읽음 처리는 하지 않음).
+                          <span className="nav-dot">
+                            <span className="sr-only">{t("새 응답 있음")}</span>
+                          </span>
+                        )}
                       </NavLink>
                     </Hint>
                   );
@@ -578,6 +591,13 @@ export function WorkspaceShell({
   );
   return (
     <div
+      style={
+        panelWidth
+          ? ({
+              "--margin-panel-user-width": `${panelWidth}px`,
+            } as CSSProperties)
+          : undefined
+      }
       className={`app-shell floating-workspace ${railed ? "sidebar-collapsed" : ""} ${floating ? "sidebar-floating" : ""} ${panel.active ? "margin-panel-open" : ""}`}
     >
       <a className="skip-link" href="#main-content">
@@ -640,6 +660,7 @@ export function WorkspaceShell({
               </>
             )}
           </div>
+          <MiniRecorder />
           <div className="topbar-right">
             {panel.offered && (
               <Hint
@@ -765,6 +786,16 @@ export function WorkspaceShell({
               aria-label={t("{label} 닫기", { label: panel.active.label })}
               tabIndex={-1}
               onClick={panel.active.onClose}
+            />
+          )}
+          {panel.active && (
+            <PanelResizer
+              width={panelWidth}
+              onChange={setPanelWidth}
+              currentWidth={() =>
+                document.querySelector<HTMLElement>(".margin-panel")
+                  ?.offsetWidth ?? 360
+              }
             />
           )}
           <aside

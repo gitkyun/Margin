@@ -53,3 +53,48 @@ export function commandFilter(
     ...rest.map((k) => koreanScore(k, search) * SECONDARY_WEIGHT),
   );
 }
+
+/** 본문에서 찾을 때 최소 글자 수. 한 글자는 거의 모든 본문에 걸려 목록이 넘칩니다. */
+export const BODY_QUERY_MIN = 2;
+/** 발췌에서 일치 부분 앞에 남길 글자 수 */
+const EXCERPT_BEFORE = 24;
+/** 발췌 전체 길이(일치 부분 포함) */
+const EXCERPT_LENGTH = 90;
+
+export interface TextExcerpt {
+  before: string;
+  match: string;
+  after: string;
+  /** 앞·뒤가 잘렸는지(화면에서 말줄임표를 붙여요) */
+  clippedStart: boolean;
+  clippedEnd: boolean;
+}
+
+/**
+ * 긴 본문(미팅 메모·피드백·댓글)에서 입력한 말이 그대로 들어 있는 곳을 찾아 짧게 발췌합니다.
+ * 본문은 길어서 초성·자모로 맞추면 엉뚱한 곳이 너무 많이 걸리므로 글자 그대로만 찾습니다
+ * (대소문자와 줄바꿈·연속 공백은 무시). 없으면 null.
+ */
+export function bodyExcerpt(text: string, query: string): TextExcerpt | null {
+  const needle = normalize(query);
+  if ([...needle].length < BODY_QUERY_MIN) return null;
+  // 줄바꿈·연속 공백을 한 칸으로 맞춘 본문에서 찾고, 그 본문으로 발췌합니다.
+  const flat = text.replace(/\s+/g, " ").trim();
+  const index = flat.toLocaleLowerCase().indexOf(needle);
+  if (index < 0) return null;
+  const start = Math.max(0, index - EXCERPT_BEFORE);
+  const matchEnd = index + needle.length;
+  const end = Math.min(flat.length, Math.max(matchEnd, start + EXCERPT_LENGTH));
+  return {
+    before: flat.slice(start, index),
+    match: flat.slice(index, matchEnd),
+    after: flat.slice(matchEnd, end),
+    clippedStart: start > 0,
+    clippedEnd: end < flat.length,
+  };
+}
+
+/** 발췌를 한 줄 글로(검색 보조어·화면 낭독용) */
+export function excerptText(excerpt: TextExcerpt): string {
+  return `${excerpt.clippedStart ? "…" : ""}${excerpt.before}${excerpt.match}${excerpt.after}${excerpt.clippedEnd ? "…" : ""}`;
+}

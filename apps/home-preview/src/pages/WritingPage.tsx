@@ -4,7 +4,6 @@ import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TableKit } from "@tiptap/extension-table";
-import { diffWords, diffChars } from "diff";
 import {
   Link,
   useNavigate,
@@ -48,47 +47,16 @@ import {
 } from "@/components/ui/dialog";
 import { Choice, VisibilityField, Segments } from "@/components/experience";
 import { EditorToolbar } from "./writing/EditorToolbar";
+import { WordDiff } from "./writing/WordDiff";
+import { AIReviewHighlight } from "./writing/ai-review";
+import { useWritingReview } from "./writing/WritingReview";
 import { DocumentTabs } from "./student/shared";
 import {
   VersionCompareSlider,
   VersionSheet,
 } from "@/components/VersionCompareSlider";
-export function TextComparison({
-  before,
-  after,
-}: {
-  before: string;
-  after: string;
-}) {
-  const changes = diffWords(before, after, {
-    intlSegmenter: new Intl.Segmenter("ko", { granularity: "word" }),
-  });
-  return (
-    <div className="text-comparison">
-      <div className="diff-legend">
-        <span>
-          <i className="removed" />
-          {t("삭제")}
-        </span>
-        <span>
-          <i className="added" />
-          {t("추가")}
-        </span>
-      </div>
-      <div className="diff-content">
-        {changes.map((c, i) =>
-          c.added ? (
-            <ins key={i}>{c.value}</ins>
-          ) : c.removed ? (
-            <del key={i}>{c.value}</del>
-          ) : (
-            <span key={i}>{c.value}</span>
-          ),
-        )}
-      </div>
-    </div>
-  );
-}
+/** 예전 이름. 낱말 비교는 writing/WordDiff에 있어요. */
+export const TextComparison = WordDiff;
 export function WritingPage() {
   const { researchId = "", documentId } = useParams(),
     { data, save } = useWorkspace(),
@@ -343,6 +311,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     extensions: [
       StarterKit,
       TableKit.configure({ table: { resizable: true } }),
+      // AI 문장 점검 범위·원문 강조(꾸밈만, 문서 내용에는 남지 않아요)
+      AIReviewHighlight,
     ],
     content: restored?.content ?? initial.content,
     // 도구 줄의 눌림 상태·글자 수·표 행 추가 버튼이 커서 이동과 입력을 따라가게 한다.
@@ -499,6 +469,76 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       setBusy("");
     }
   }
+  // 여백 패널의 AI 문장 점검(교차 #3). 연구 도우미 화면으로 이동하지 않아요.
+  const review = useWritingReview({
+    editor,
+    researchId: initial.researchId,
+    documentId: initial.id,
+    savedTitle: base.title,
+    savedRevision: base.revision,
+    dirty,
+    busy: !!busy,
+    saveFirst: async () => {
+      await persist();
+    },
+  });
+  /**
+   * 검토용 PDF를 내려받거나 다시 올리지 않고 바로 자료(PDF)로 등록해요(기존 업로드 함수 재사용).
+   * stay: 글쓰기에 남고 알림에서 수정 결과로 이어 갈 수 있어요. result: 바로 수정 결과 쓰기로 가요.
+   * 실패하면 이미 만든 자료·올린 파일을 기억해 두고 다시 누르면 이어서 등록해요.
+   */
+  function registerPDF(next: "stay" | "result") {
+    return action(`register-${next}`, async () => {
+      if (!preview) return;
+      const pending = pendingPDF.current;
+      pending.material ??= await save("materials", {
+        ...recordBase(initial.researchId),
+        title: t("{title} · 문서 v{number}", {
+          title: preview.version.title,
+          number: preview.version.number,
+        }),
+        type: "draft",
+        visibility,
+      });
+      pending.file ??= new File(
+        [preview.blob],
+        `${title.replace(/[\\/]/g, "_")}_v${preview.version.number}.pdf`,
+        { type: "application/pdf" },
+      );
+      try {
+        if (pending.version) await save("versions", pending.version);
+        else pending.version = await upload(pending.file, pending.material);
+      } catch (e) {
+        if (e instanceof UploadConnectionError)
+          pending.version = e.uploadedVersion;
+        throw e;
+      }
+      const versionId = pending.version?.id;
+      const materialId = pending.material.id;
+      pendingPDF.current = {};
+      setPreview(null);
+      const resultHref = `/r/${initial.researchId}/results?new=1&version=${versionId}`;
+      if (next === "result" && versionId) {
+        toast.success(
+          t("PDF를 자료로 등록했어요. 수정 결과에 고친 내용을 적어 주세요."),
+        );
+        navigate(resultHref);
+        return;
+      }
+      toast.success(t("PDF를 자료로 등록했어요."), {
+        action: versionId
+          ? {
+              label: t("수정 결과 쓰기"),
+              onClick: () => navigate(resultHref),
+            }
+          : {
+              label: t("자료 보기"),
+              onClick: () =>
+                navigate(`/r/${initial.researchId}/materials/${materialId}`),
+            },
+      });
+    });
+  }
   async function keepVersion() {
     const d = await persist();
     const v = await save("documentVersions", {
@@ -562,12 +602,18 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           />
           <div className="writing-meta">
             <span className="writing-save-status" role="status">
-              <Icon name={busy || dirty ? "clock" : "check"} size={15} />
-              {busy
-                ? t("저장 중")
-                : dirty
-                  ? t("저장하지 않은 변경")
-                  : t("저장됨")}
+              {/* 상태가 바뀔 때마다 key가 바뀌어 흐림→선명 전환이 한 번 재생돼요 */}
+              <span
+                key={busy ? "busy" : dirty ? "dirty" : "saved"}
+                className="text-swap"
+              >
+                <Icon name={busy || dirty ? "clock" : "check"} size={15} />
+                {busy
+                  ? t("저장 중")
+                  : dirty
+                    ? t("저장하지 않은 변경")
+                    : t("저장됨")}
+              </span>
             </span>
             <span>
               {t("{count}자", { count: editor?.getText().length ?? 0 })}
@@ -623,23 +669,10 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               )
         }
         onAiReview={() => {
-          const selection = editor?.state.selection;
-          const text =
-            selection && !selection.empty
-              ? editor?.state.doc
-                  .textBetween(selection.from, selection.to, "\n\n")
-                  .trim()
-              : "";
-          const selectionKey = `rms-ai-selection:${user.id}:${initial.id}`;
-          if (text)
-            sessionStorage.setItem(
-              selectionKey,
-              JSON.stringify({ revision: base.revision, text }),
-            );
-          else sessionStorage.removeItem(selectionKey);
-          navigate(
-            `/r/${initial.researchId}/assistant?mode=review_writing&document=${initial.id}${text ? "&selection=1" : ""}`,
-          );
+          // 이동하지 않고 오른쪽 여백 패널에서 점검해요. 선택한 문단이 있으면 그 원문만 보내요.
+          if (!review.start()) return;
+          setInfoTab("review");
+          setInfoOpen(true);
         }}
       />
       <div className="writing-layout">
@@ -696,8 +729,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           tabs={[
             { value: "versions", label: t("버전"), count: versionList.length },
             { value: "links", label: t("연결"), count: milestones.length },
+            { value: "review", label: t("AI 문장 점검") },
           ]}
         >
+          {/* 다른 탭을 봐도 실행 중인 점검과 제안이 사라지지 않게 숨기기만 해요. */}
+          <div hidden={infoTab !== "review"}>{review.panel}</div>
           {infoTab === "versions" && (
             <div className="panel-frame-body">
               {[...versionList].reverse().map((v) => (
@@ -763,6 +799,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           )}
         </PanelFrame>
       </MarginPanel>
+      {review.dialog}
       <Dialog
         open={!!conflict}
         onOpenChange={(v) => {
@@ -879,6 +916,15 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                         before: beforeLabel,
                         after: afterLabel,
                       })}
+                      sideLabels={{
+                        before: t("이전 버전 · {label}", {
+                          label: beforeLabel,
+                        }),
+                        after:
+                          to === "draft"
+                            ? t("현재 버전")
+                            : t("이후 버전 · {label}", { label: afterLabel }),
+                      }}
                       before={
                         <VersionSheet
                           tone="before"
@@ -1002,54 +1048,17 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               {t("닫기")}
             </Button>
             <Button
+              variant="outline"
               disabled={!!busy}
-              onClick={() =>
-                void action("register", async () => {
-                  if (!preview) return;
-                  const pending = pendingPDF.current;
-                  pending.material ??= await save("materials", {
-                    ...recordBase(initial.researchId),
-                    title: t("{title} · 문서 v{number}", {
-                      title: preview.version.title,
-                      number: preview.version.number,
-                    }),
-                    type: "draft",
-                    visibility,
-                  });
-                  pending.file ??= new File(
-                    [preview.blob],
-                    `${title.replace(/[\\/]/g, "_")}_v${preview.version.number}.pdf`,
-                    { type: "application/pdf" },
-                  );
-                  try {
-                    if (pending.version)
-                      await save("versions", pending.version);
-                    else
-                      pending.version = await upload(
-                        pending.file,
-                        pending.material,
-                      );
-                  } catch (e) {
-                    if (e instanceof UploadConnectionError)
-                      pending.version = e.uploadedVersion;
-                    throw e;
-                  }
-                  const versionId = pending.version?.id;
-                  pendingPDF.current = {};
-                  setPreview(null);
-                  toast.success(
-                    t(
-                      "PDF를 자료로 등록했어요. 수정 결과에 고친 내용을 적어 주세요.",
-                    ),
-                  );
-                  if (versionId)
-                    navigate(
-                      `/r/${initial.researchId}/results?new=1&version=${versionId}`,
-                    );
-                })
-              }
+              onClick={() => void registerPDF("stay")}
             >
-              {busy === "register"
+              {busy === "register-stay" ? t("등록 중") : t("자료에 등록")}
+            </Button>
+            <Button
+              disabled={!!busy}
+              onClick={() => void registerPDF("result")}
+            >
+              {busy === "register-result"
                 ? t("등록 중")
                 : t("등록하고 수정 결과 쓰기")}
             </Button>

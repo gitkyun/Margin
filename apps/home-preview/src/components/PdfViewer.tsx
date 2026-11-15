@@ -1,5 +1,11 @@
 import { t } from "@/lib/i18n";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref,
+} from "react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import type { MaterialVersion } from "@/lib/domain";
 import { useWorkspace } from "@/lib/workspace";
@@ -7,7 +13,19 @@ import { friendlyError } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Icon } from "./icons";
 import { ErrorNotice } from "./common";
-export function PdfViewer({ version }: { version: MaterialVersion }) {
+/** 바깥에서 페이지를 옮길 때 쓰는 손잡이(예: 검토 댓글의 ‘p.4’ 누르기). */
+export interface PdfViewerHandle {
+  /** 1부터 세는 페이지로 이동해요. 범위를 넘으면 처음·끝 페이지로 맞춰요. */
+  goToPage(page: number): void;
+}
+
+export function PdfViewer({
+  version,
+  ref,
+}: {
+  version: MaterialVersion;
+  ref?: Ref<PdfViewerHandle>;
+}) {
   const { openFile } = useWorkspace();
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null),
     [blob, setBlob] = useState<Blob | null>(null),
@@ -24,7 +42,30 @@ export function PdfViewer({ version }: { version: MaterialVersion }) {
     nextButton = useRef<HTMLButtonElement>(null),
     // A paging button disables itself at the first/last page; after that
     // render, move keyboard focus to the other one (WCAG 2.4.3).
-    refocus = useRef<"prev" | "next" | null>(null);
+    refocus = useRef<"prev" | "next" | null>(null),
+    // 파일을 다 불러오기 전에 받은 페이지 이동. 불러온 뒤 한 번 적용해요.
+    pendingPage = useRef<number | null>(null);
+  useImperativeHandle(
+    ref,
+    () => ({
+      goToPage(target: number) {
+        if (!Number.isFinite(target)) return;
+        if (!doc) {
+          pendingPage.current = target;
+          return;
+        }
+        setPage(Math.min(doc.numPages, Math.max(1, Math.round(target))));
+        host.current?.scrollIntoView({ block: "nearest" });
+      },
+    }),
+    [doc],
+  );
+  useEffect(() => {
+    if (!doc || pendingPage.current === null) return;
+    const target = pendingPage.current;
+    pendingPage.current = null;
+    setPage(Math.min(doc.numPages, Math.max(1, Math.round(target))));
+  }, [doc]);
   useEffect(() => {
     const target = refocus.current;
     refocus.current = null;

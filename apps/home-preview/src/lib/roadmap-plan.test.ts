@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ResearchPhase } from "./domain";
 import {
   buildRoadmapPlan,
+  evenRoadmapDraft,
   planPhaseChanges,
   timelineMonths,
   timelineOffset,
@@ -133,5 +134,73 @@ describe("month timeline", () => {
       timelineOffset("2026-11-10", months, "end") -
         timelineOffset("2026-11-10", months),
     ).toBeCloseTo(1 / 61);
+  });
+});
+
+describe("evenRoadmapDraft", () => {
+  it("splits today..submission evenly without gaps or overlaps", () => {
+    const draft = evenRoadmapDraft(
+      [{ title: "문헌 검토" }, { title: "자료 분석" }, { title: "원고 쓰기" }],
+      "2026-11-15",
+      "2026-12-14",
+    );
+    expect(draft).toEqual([
+      {
+        title: "문헌 검토",
+        startDate: "2026-11-15",
+        endDate: "2026-11-24",
+        reason: "",
+        sourceIndex: 1,
+      },
+      {
+        title: "자료 분석",
+        startDate: "2026-11-25",
+        endDate: "2026-12-04",
+        reason: "",
+        sourceIndex: 2,
+      },
+      {
+        title: "원고 쓰기",
+        startDate: "2026-12-05",
+        endDate: "2026-12-14",
+        reason: "",
+        sourceIndex: 3,
+      },
+    ]);
+  });
+
+  it("keeps every stage inside today..submission when days do not divide evenly", () => {
+    const draft = evenRoadmapDraft(
+      [{ title: "a" }, { title: "b" }, { title: "c" }],
+      "2026-12-30",
+      "2027-01-09",
+    )!;
+    expect(draft[0].startDate).toBe("2026-12-30");
+    expect(draft.at(-1)!.endDate).toBe("2027-01-09");
+    for (const [i, stage] of draft.entries()) {
+      expect(stage.startDate <= stage.endDate).toBe(true);
+      if (i > 0) expect(stage.startDate > draft[i - 1].endDate).toBe(true);
+    }
+  });
+
+  it("returns null when there are no stages or fewer days than stages", () => {
+    expect(evenRoadmapDraft([], "2026-11-15", "2026-12-14")).toBeNull();
+    expect(
+      evenRoadmapDraft(
+        [{ title: "a" }, { title: "b" }, { title: "c" }],
+        "2026-11-15",
+        "2026-11-16",
+      ),
+    ).toBeNull();
+  });
+
+  it("feeds planPhaseChanges with the same stage numbers as buildRoadmapPlan", () => {
+    const { sent } = buildRoadmapPlan(phases, "2026-12-31", "2026-11-15");
+    const draft = evenRoadmapDraft(sent, "2026-11-15", "2026-12-31")!;
+    const changed = planPhaseChanges(phases, sent, draft, "r1", base);
+    expect(changed.map((p) => p.id)).toEqual(
+      expect.arrayContaining(["문헌 검토", "자료 분석"]),
+    );
+    expect(changed.every((p) => p.id !== "new")).toBe(true);
   });
 });
