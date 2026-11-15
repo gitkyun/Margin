@@ -460,7 +460,13 @@ export function ResearchSelectPage() {
             }
             label={t("연구 목록")}
             options={[
-              { value: "active", label: t("진행 중인 연구") },
+              {
+                value: "active",
+                label: t("진행 중인 연구"),
+                count: data.researches.filter(
+                  (r) => !r.completedAt && !r.archivedAt && !r.deletedAt,
+                ).length,
+              },
               {
                 value: "completed",
                 label: t("완료된 연구"),
