@@ -121,7 +121,7 @@
   .ai-composer-glow {
     display: block;
     width: 100%;
-    border-radius: var(--radius-12);
+    border-radius: var(--radius-24);
   }
   .mini-recorder[data-alert] {
     border-color: var(--danger-line);

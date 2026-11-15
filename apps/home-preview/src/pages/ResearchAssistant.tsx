@@ -2,9 +2,14 @@ import { useEffect, useId, useRef, useState } from "react";
 import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useAICapabilities, resolveAISelection } from "@/lib/ai-capabilities";
+import {
+  isAIModelAvailable,
+  resolveAISelection,
+  useAICapabilities,
+} from "@/lib/ai-capabilities";
 import { AIModelSelector } from "@/components/ai/AIModelSelector";
-import { AICreditStatus } from "@/components/ai/AICreditStatus";
+import { AIComposerBanner } from "@/components/ai/AIComposerBanner";
+import { ChipSelect } from "@/components/ai/ChipSelect";
 import { useAIUsage } from "@/lib/ai-usage";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
@@ -58,7 +63,10 @@ import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
 import { AssistantMessageText } from "./assistant/AssistantMessageText";
 import { AssistantFace } from "@/components/brand/BotAvatar";
 import { readAgentProfile } from "@/lib/research-agent";
-import { workingMascot } from "@/lib/assistant-presentation";
+import {
+  researchModelLabel,
+  workingMascot,
+} from "@/lib/assistant-presentation";
 import {
   Dialog,
   DialogContent,
@@ -105,6 +113,7 @@ export function ResearchAssistant() {
       String(user.preferences?.thinking || "high"),
     ),
     [lastRunId, setLastRunId] = useState(""),
+    [lastUsedCredits, setLastUsedCredits] = useState<number | undefined>(),
     [running, setRunning] = useState(false),
     // 이번 요청에서 읽는 것(단계)과, 방금 받은 답이 거친 단계. 새로고침하면 사라져요.
     [waiting, setActiveRun] = useState<{
@@ -416,6 +425,7 @@ export function ResearchAssistant() {
       controller = new AbortController();
     runId.current = id;
     setLastRunId(id);
+    setLastUsedCredits(undefined);
     abort.current = controller;
     const research = data.researches.find((r) => r.id === researchId);
     const run = {
@@ -469,6 +479,7 @@ export function ResearchAssistant() {
         controller.signal,
       );
       if (seq !== sequence.current || controller.signal.aborted) return;
+      setLastUsedCredits(result.creditsUsed);
       const answer =
         result.answer ??
         result.candidates
@@ -661,6 +672,21 @@ export function ResearchAssistant() {
     onError: (err) => setError(err),
   });
   const models = caps.data?.models ?? [];
+  // 지금 모델이 추천이 아니면 입력창 위 띠에서 한 번에 추천 모델로 바꿀 수 있어요.
+  const recommendedModel = models.find(
+    (item) => item.recommended && isAIModelAvailable(item),
+  );
+  const offerRecommended =
+    !!recommendedModel && recommendedModel.id !== selection.model;
+  function pickRecommended() {
+    if (!recommendedModel) return;
+    const next = resolveAISelection(models, {
+      model: recommendedModel.id,
+      thinking,
+    });
+    setModel(next.model ?? "");
+    setThinking(next.thinking ?? "");
+  }
   return (
     <div className="assistant-experience">
       <PageHeader
@@ -818,202 +844,217 @@ export function ResearchAssistant() {
                 )}
           </p>
         )}
-        <VoiceGlow
-          className="ai-composer-glow"
-          active={dictation.listening}
-          processing={running}
-          stream={dictation.stream}
-        >
-          <form
-            {...getComposerDropProps({
-              className: `ai-composer${isComposerDragActive ? " is-dragging" : ""}`,
-              onSubmit: (e) => {
-                e.preventDefault();
-                void send();
-              },
-              onPaste: (e) => {
-                const file = e.clipboardData.files[0];
-                if (file && !working && !uploading && !unavailable) {
-                  e.preventDefault();
-                  void attach(file);
-                }
-              },
-            })}
-          >
-            {!!contexts.length && (
-              <div
-                className="context-chips"
-                role="group"
-                aria-label={t("첨부한 기록")}
-              >
-                {contexts.map((context, index) => (
-                  <span
-                    className="context-chip"
-                    key={`${context.kind}:${context.id}`}
-                  >
-                    <Icon name="file" size={15} />
-                    <span title={context.title}>{context.title}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      disabled={working || uploading}
-                      aria-label={t("{title} 첨부 해제", {
-                        title: context.title,
-                      })}
-                      onClick={() =>
-                        setContexts((items) =>
-                          items.filter((_, i) => i !== index),
-                        )
-                      }
-                    >
-                      <Icon name="close" size={13} />
-                    </Button>
-                  </span>
-                ))}
-              </div>
-            )}
-            <textarea
-              ref={composerRef}
-              aria-label={t("연구 도우미에게 질문")}
-              // 쓸 수 없는 이유는 입력창 바로 위 한 줄에서 알려 주므로 여기서 되풀이하지 않습니다.
-              placeholder={
-                unavailable
-                  ? undefined
-                  : contexts.length
-                    ? t("첨부한 기록에 대해 물어보세요")
-                    : t(
-                        "질문을 적어 주세요. 기록을 첨부하면 그 기록을 읽고 답해요.",
-                      )
+        <div className="ai-composer-shell">
+          {!unavailable && (
+            <AIComposerBanner
+              runId={lastRunId || undefined}
+              usedCredits={lastUsedCredits}
+              usageHref={`/r/${researchId}/settings?tab=usage`}
+              recommendedLabel={
+                offerRecommended && recommendedModel
+                  ? researchModelLabel(recommendedModel)
+                  : undefined
               }
-              value={draft}
-              disabled={unavailable}
-              onChange={(e) => setDraft(e.target.value)}
-              maxLength={2000}
-              rows={1}
-              onKeyDown={(e) => {
-                // 다른 AI 입력창과 같게: Enter로 보내고 Shift+Enter로 줄을 바꿉니다.
-                if (e.key === "Enter" && !e.shiftKey && !isImeComposing(e)) {
+              onPickRecommended={pickRecommended}
+            />
+          )}
+          <VoiceGlow
+            className="ai-composer-glow"
+            active={dictation.listening}
+            processing={running}
+            stream={dictation.stream}
+          >
+            <form
+              {...getComposerDropProps({
+                className: `ai-composer${isComposerDragActive ? " is-dragging" : ""}`,
+                onSubmit: (e) => {
                   e.preventDefault();
                   void send();
-                }
-              }}
-            />
-            <div className="composer-actions">
-              <Hint label={t("기록·파일 첨부")} position="top-center">
-                <button
-                  type="button"
-                  className="composer-attach"
-                  aria-label={
-                    contexts.length
-                      ? t("첨부한 기록 {count}개, 바꾸기", {
-                          count: contexts.length,
-                        })
-                      : t("기록·파일 첨부")
+                },
+                onPaste: (e) => {
+                  const file = e.clipboardData.files[0];
+                  if (file && !working && !uploading && !unavailable) {
+                    e.preventDefault();
+                    void attach(file);
                   }
-                  onClick={() => openPanel("sources")}
+                },
+              })}
+            >
+              {!!contexts.length && (
+                <div
+                  className="context-chips"
+                  role="group"
+                  aria-label={t("첨부한 기록")}
                 >
-                  <Icon name="plus" size={20} />
-                  {!!contexts.length && <span>{contexts.length}</span>}
-                </button>
-              </Hint>
-              <Choice
-                compact
-                value={task}
-                onChange={(v) => setTask(v as AIInput["mode"])}
-                label={t("요청 종류")}
-                disabled={running || unavailable}
-                options={Object.entries(modeLabels).map(([value, label]) => ({
-                  value,
-                  label,
-                }))}
-              />
-              <AIModelSelector
-                compact
-                models={models}
-                model={selection.model}
-                thinking={selection.thinking}
-                disabled={working || unavailable}
-                loading={mode === "connected" && caps.isPending}
-                failed={caps.isError}
-                onChange={(next) => {
-                  setModel(next.model);
-                  setThinking(next.thinking);
+                  {contexts.map((context, index) => (
+                    <span
+                      className="context-chip"
+                      key={`${context.kind}:${context.id}`}
+                    >
+                      <Icon name="file" size={15} />
+                      <span title={context.title}>{context.title}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        disabled={working || uploading}
+                        aria-label={t("{title} 첨부 해제", {
+                          title: context.title,
+                        })}
+                        onClick={() =>
+                          setContexts((items) =>
+                            items.filter((_, i) => i !== index),
+                          )
+                        }
+                      >
+                        <Icon name="close" size={13} />
+                      </Button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <textarea
+                ref={composerRef}
+                aria-label={t("연구 도우미에게 질문")}
+                // 쓸 수 없는 이유는 입력창 바로 위 한 줄에서 알려 주므로 여기서 되풀이하지 않습니다.
+                placeholder={
+                  unavailable
+                    ? undefined
+                    : contexts.length
+                      ? t("첨부한 기록에 대해 물어보세요")
+                      : t(
+                          "질문을 적어 주세요. 기록을 첨부하면 그 기록을 읽고 답해요.",
+                        )
+                }
+                value={draft}
+                disabled={unavailable}
+                onChange={(e) => setDraft(e.target.value)}
+                maxLength={2000}
+                rows={1}
+                onKeyDown={(e) => {
+                  // 다른 AI 입력창과 같게: Enter로 보내고 Shift+Enter로 줄을 바꿉니다.
+                  if (e.key === "Enter" && !e.shiftKey && !isImeComposing(e)) {
+                    e.preventDefault();
+                    void send();
+                  }
                 }}
               />
-              {dictation.supported && !unavailable && (
-                <Hint
-                  label={
-                    dictation.listening
-                      ? t("음성 입력 멈추기")
-                      : t("음성으로 질문 입력")
-                  }
-                  position="top-center"
-                >
-                  <Button
+              <div className="composer-actions">
+                <Hint label={t("기록·파일 첨부")} position="top-center">
+                  <button
                     type="button"
-                    size="icon"
-                    variant={dictation.listening ? "default" : "ghost"}
-                    disabled={running || uploading}
-                    aria-pressed={dictation.listening}
+                    className="composer-attach"
                     aria-label={
+                      contexts.length
+                        ? t("첨부한 기록 {count}개, 바꾸기", {
+                            count: contexts.length,
+                          })
+                        : t("기록·파일 첨부")
+                    }
+                    onClick={() => openPanel("sources")}
+                  >
+                    <Icon name="plus" size={20} />
+                    {!!contexts.length && <span>{contexts.length}</span>}
+                  </button>
+                </Hint>
+                <ChipSelect
+                  className="ai-mode-trigger"
+                  label={t("요청 종류")}
+                  value={task}
+                  disabled={running || unavailable}
+                  onChange={(value) => setTask(value as AIInput["mode"])}
+                  options={Object.entries(modeLabels).map(([value, label]) => ({
+                    value,
+                    label: String(label),
+                  }))}
+                />
+                <AIModelSelector
+                  compact
+                  models={models}
+                  model={selection.model}
+                  thinking={selection.thinking}
+                  disabled={working || unavailable}
+                  loading={mode === "connected" && caps.isPending}
+                  failed={caps.isError}
+                  onChange={(next) => {
+                    setModel(next.model);
+                    setThinking(next.thinking);
+                  }}
+                />
+                {dictation.supported && !unavailable && (
+                  <Hint
+                    label={
                       dictation.listening
                         ? t("음성 입력 멈추기")
                         : t("음성으로 질문 입력")
                     }
-                    onClick={() =>
-                      dictation.listening ? dictation.stop() : dictation.start()
-                    }
+                    position="top-center"
                   >
-                    <Icon
-                      name={dictation.listening ? "stop" : "mic"}
-                      size={17}
-                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant={dictation.listening ? "default" : "ghost"}
+                      disabled={running || uploading}
+                      aria-pressed={dictation.listening}
+                      aria-label={
+                        dictation.listening
+                          ? t("음성 입력 멈추기")
+                          : t("음성으로 질문 입력")
+                      }
+                      onClick={() =>
+                        dictation.listening
+                          ? dictation.stop()
+                          : dictation.start()
+                      }
+                    >
+                      <Icon
+                        name={dictation.listening ? "stop" : "mic"}
+                        size={17}
+                      />
+                    </Button>
+                  </Hint>
+                )}
+                {running ? (
+                  <Button
+                    type="button"
+                    size="icon"
+                    aria-label={t("실행 중단")}
+                    onClick={() => void cancel()}
+                  >
+                    <Icon name="stop" size={17} />
                   </Button>
-                </Hint>
+                ) : (
+                  <Button
+                    type="submit"
+                    size="icon"
+                    aria-label={t("질문 보내기")}
+                    disabled={
+                      unavailable ||
+                      !selection.model ||
+                      working ||
+                      !draft.trim() ||
+                      uploading
+                    }
+                    aria-describedby={unavailable ? unavailableId : undefined}
+                  >
+                    <Icon name="arrow-up" size={19} />
+                  </Button>
+                )}
+              </div>
+              {dictation.message && (
+                <p className="rms-error" role="alert">
+                  {dictation.message}
+                </p>
               )}
-              {running ? (
-                <Button
-                  type="button"
-                  size="icon"
-                  aria-label={t("실행 중단")}
-                  onClick={() => void cancel()}
-                >
-                  <Icon name="stop" size={17} />
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  size="icon"
-                  aria-label={t("질문 보내기")}
-                  disabled={
-                    unavailable ||
-                    !selection.model ||
-                    working ||
-                    !draft.trim() ||
-                    uploading
-                  }
-                  aria-describedby={unavailable ? unavailableId : undefined}
-                >
-                  <Icon name="arrow-up" size={19} />
-                </Button>
+              {uploading && (
+                <p role="status">
+                  {t("자료 준비 중")}
+                  {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
+                </p>
               )}
-            </div>
-            {dictation.message && (
-              <p className="rms-error" role="alert">
-                {dictation.message}
-              </p>
-            )}
-            {uploading && (
-              <p role="status">
-                {t("자료 준비 중")}
-                {uploadProgress !== null ? ` · ${uploadProgress}%` : ""}
-              </p>
-            )}
-          </form>
-        </VoiceGlow>
-        <AICreditStatus />
-        {lastRunId && <AICreditStatus runId={lastRunId} />}
+            </form>
+          </VoiceGlow>
+        </div>
         {caps.isError && (
           <p className="rms-error" role="alert">
             {t("AI 모델 정보를 불러오지 못했어요.")}{" "}

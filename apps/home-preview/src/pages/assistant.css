@@ -122,7 +122,6 @@
     flex-wrap: wrap;
     gap: 4px;
     padding: 0;
-    margin-inline-start: -8px;
     white-space: normal;
     color: var(--text-secondary);
   }
@@ -322,14 +321,25 @@
   }
 
   /* 입력창: 대화 면 안에서 가장 높은 면. 초점이 오면 브랜드 테두리와 고리. */
+  /* 입력창 바깥 회색 면: 위 띠(잔액·추천)와 흰 카드를 한 덩어리로 묶어요(Kokonut AI Prompt 패턴). */
+  .ai-composer-shell {
+    width: 100%;
+    padding: 0 var(--spacing-8) var(--spacing-8);
+    border-radius: calc(var(--radius-24) + var(--spacing-4));
+    background: var(--semantic-surface-neutral-secondary);
+  }
+  .ai-composer-shell:not(:has(.ai-composer-banner)) {
+    padding-top: var(--spacing-8);
+  }
   .ai-composer {
     display: grid;
-    gap: var(--spacing-4);
+    gap: var(--spacing-8);
     width: 100%;
-    padding: var(--spacing-12) var(--spacing-12) var(--spacing-8);
-    border: 1px solid var(--line-strong);
+    padding: var(--spacing-16) var(--spacing-12) var(--spacing-12);
+    border: 1px solid var(--line);
     border-radius: var(--radius-24);
     background: var(--surface-raised);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--text) 10%, transparent);
     transition:
       border-color var(--motion-duration-micro) ease-out,
       box-shadow var(--motion-duration-micro) ease-out;
@@ -337,14 +347,14 @@
   .ai-composer:focus-within,
   .ai-composer.is-dragging {
     border-color: var(--semantic-line-brand-strong);
-    box-shadow: 0 0 0 4px var(--selected-fill);
+    box-shadow: 0 0 0 3px var(--selected-fill);
   }
   .ai-composer.is-dragging {
     background: var(--hover-fill);
   }
   .ai-composer textarea {
     width: 100%;
-    min-height: 28px;
+    min-height: 56px;
     max-height: 220px;
     padding: var(--spacing-4) var(--spacing-8);
     border: 0;
@@ -353,7 +363,7 @@
     background: transparent;
     color: var(--text);
     font: inherit;
-    font-size: var(--typography-body2-fontSize);
+    font-size: var(--typography-body1-fontSize);
     line-height: 1.6;
     field-sizing: content;
   }
@@ -407,13 +417,13 @@
     justify-content: center;
     gap: var(--spacing-4);
     flex: none;
-    min-width: 36px;
-    height: 36px;
+    min-width: 44px;
+    height: 44px;
     padding: 0 var(--spacing-8);
-    border: 0;
+    border: 1px solid var(--line-strong);
     border-radius: var(--radius-full);
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--text);
     cursor: pointer;
     font-size: var(--typography-label2-fontSize);
     font-weight: 600;
@@ -430,15 +440,20 @@
     outline: 2px solid var(--brand);
     outline-offset: 1px;
   }
-  .composer-actions > .rms-choice {
+  .composer-actions > .composer-chip,
+  .composer-actions > .ai-model-controls {
     flex: 0 1 auto;
     min-width: 0;
-    white-space: nowrap;
+  }
+  /* 모델·깊이 칩 뒤의 마이크와 보내기는 오른쪽 끝으로 */
+  .composer-actions > .ai-model-controls {
+    margin-right: auto;
   }
   .composer-actions > button[type="submit"],
   .composer-actions > button[aria-label="실행 중단"] {
     flex: none;
-    margin-left: auto;
+    width: 44px;
+    height: 44px;
     border-radius: var(--radius-full);
   }
   .ai-chat-main > .rms-error {
@@ -745,8 +760,10 @@
     display: grid;
     gap: var(--spacing-8);
   }
+  /* 상위 말풍선이 pre-wrap을 물려주므로 서식 요소 사이의 줄바꿈 글자가 빈 줄이 되지 않게 되돌려요. */
   .ai-message-body {
     overflow-wrap: anywhere;
+    white-space: normal;
   }
   /* 문단 안의 줄바꿈은 그대로 보여 주고, 서식 요소 사이는 토큰 간격으로 띄워요. */
   .ai-message-body p,
@@ -759,9 +776,20 @@
   .ai-message-body > * + * {
     margin-top: var(--spacing-8);
   }
+  /* 전역 리셋이 list-style을 없애므로 답변 안 목록의 점·번호를 되살려요. */
   .ai-message-body ul,
   .ai-message-body ol {
-    padding-inline-start: var(--spacing-20);
+    padding-inline-start: var(--spacing-24);
+    list-style-position: outside;
+  }
+  .ai-message-body ul {
+    list-style-type: disc;
+  }
+  .ai-message-body ol {
+    list-style-type: decimal;
+  }
+  .ai-message-body li::marker {
+    color: var(--text-tertiary);
   }
   .ai-message-body li + li {
     margin-top: var(--spacing-4);
@@ -863,20 +891,20 @@
   .composer-actions {
     flex-wrap: wrap;
   }
-  .composer-actions > .ai-model-controls {
-    flex: 1 1 auto;
-  }
-  .composer-actions .ai-model-quick-pick {
-    flex-basis: 100%;
-  }
-  .composer-actions > button[type="submit"] {
-    margin-inline-start: auto;
-  }
+  /* 좁은 화면: 모델·깊이 칩을 아래 줄로 내리고 마이크·보내기는 첫 줄 오른쪽에 둬요. */
   @media (max-width: 767px) {
     .composer-actions > .ai-model-controls {
       order: 1;
-      flex-basis: 100%;
-      padding-top: var(--spacing-4);
+      flex: 1 1 100%;
+      margin-right: 0;
+    }
+    .composer-actions > .composer-chip {
+      margin-right: auto;
+    }
+    .composer-actions > button[aria-pressed],
+    .composer-actions > button[type="submit"],
+    .composer-actions > button[aria-label="실행 중단"] {
+      order: 0;
     }
   }
 }
