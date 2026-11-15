@@ -1,0 +1,32 @@
+@layer margin {
+  /* 봇 캔버스는 상자보다 크게 그리고 음수 여백으로 되돌려요(점프·회전이 잘리지 않게). 바깥 상자가 자리를 지켜요. */
+  .margin-bot canvas {
+    display: block;
+  }
+  .margin-bot-body {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* 마감 칠 캔버스: 라이브러리 캔버스와 같은 자리(몸 상자 기준 왼쪽 25%·위 35% 바깥, 1.5배)에 겹쳐요. */
+  .margin-bot .bot-finish {
+    position: absolute;
+    left: -25%;
+    top: -35%;
+    width: 150%;
+    height: 150%;
+    pointer-events: none;
+    /* 흰 테두리 빛이 밝은 바탕에 묻히지 않게 몸 모양을 따라 옅은 파랑 윤곽과 그림자를 둬요. */
+    filter: drop-shadow(
+        0 0 0.5px color-mix(in srgb, var(--atomic-blue-50) 55%, transparent)
+      )
+      drop-shadow(
+        0 3px 6px color-mix(in srgb, var(--atomic-blue-50) 22%, transparent)
+      );
+  }
+  /* 마감 칠이 그려진 뒤에만 원래 캔버스를 투명하게(마우스 반응은 그대로 받아요). 라이브러리가 opacity를 인라인으로 정해 !important가 필요해요. */
+  .margin-bot.is-finished .margin-bot-body > canvas:not(.bot-finish) {
+    opacity: 0 !important;
+  }
+}

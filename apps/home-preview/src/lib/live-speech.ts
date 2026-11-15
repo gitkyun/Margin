@@ -3,6 +3,12 @@ import { t } from "@/lib/i18n";
 export interface SpeechSegment {
   text: string;
   final: boolean;
+  /** 녹음 시작 기준으로 이 문장이 처음 들린 때(ms). 시계를 넘긴 경우에만 있어요. */
+  startMs?: number;
+  /** 녹음 시작 기준으로 이 문장이 확정된(또는 마지막으로 바뀐) 때(ms) */
+  endMs?: number;
+  /** 브라우저가 준 인식 신뢰도(0~1). 0이나 없음은 모른다는 뜻이에요. */
+  confidence?: number;
 }
 export type SpeechState =
   "starting" | "listening" | "paused" | "stopped" | "error" | "unsupported";
@@ -15,7 +21,7 @@ export interface SpeechSnapshot {
 }
 interface RecognitionResult {
   isFinal: boolean;
-  [index: number]: { transcript: string };
+  [index: number]: { transcript: string; confidence?: number };
 }
 export interface BrowserRecognition {
   lang: string;
@@ -76,9 +82,13 @@ export class KoreanLiveSpeech {
   private stopping: Promise<SpeechSnapshot> | null = null;
   private resolveStop: ((value: SpeechSnapshot) => void) | null = null;
   private stopTimer: ReturnType<typeof setTimeout> | undefined;
+  // 현재 인식 세션의 결과 번호별 시각. 세션이 바뀌면 비워요.
+  private times: { startMs: number; endMs: number; final: boolean }[] = [];
   constructor(
     private Constructor: RecognitionConstructor | undefined,
     private change: (value: SpeechSnapshot) => void,
+    // 녹음 경과 시간(ms)을 돌려주는 시계. 일시정지 시간은 빼고 셉니다.
+    private clock?: () => number,
   ) {}
   snapshot(): SpeechSnapshot {
     const segments = [...this.archived, ...this.current].map((part) => ({
@@ -137,6 +147,7 @@ export class KoreanLiveSpeech {
     }
     this.engine = engine;
     this.current = [];
+    this.times = [];
     this.state = "starting";
     this.emit();
     engine.lang = "ko-KR";
@@ -153,10 +164,32 @@ export class KoreanLiveSpeech {
       if (this.engine !== engine || this.disposed) return;
       // Results for the current session replace earlier interim values. Never append
       // the entire result list repeatedly (it contains already reported finals).
-      this.current = Array.from(event.results, (result) => ({
-        text: result[0]?.transcript ?? "",
-        final: result.isFinal,
-      })).filter((part) => part.text.trim());
+      const now = this.clock?.();
+      this.current = Array.from(event.results, (result, index) => {
+        const part: SpeechSegment = {
+          text: result[0]?.transcript ?? "",
+          final: result.isFinal,
+        };
+        const confidence = result[0]?.confidence;
+        if (typeof confidence === "number" && confidence > 0)
+          part.confidence = confidence;
+        if (typeof now === "number") {
+          const seen = this.times[index];
+          // 확정된 뒤에는 끝 시각을 고정해요. 확정 전에는 마지막으로 바뀐 때까지 늘려요.
+          const time =
+            seen?.final === true
+              ? seen
+              : {
+                  startMs: seen?.startMs ?? now,
+                  endMs: now,
+                  final: result.isFinal,
+                };
+          this.times[index] = time;
+          part.startMs = time.startMs;
+          part.endMs = time.endMs;
+        }
+        return part;
+      }).filter((part) => part.text.trim());
       this.emptyEnds = 0;
       if (this.snapshot().text.length > 50000) {
         this.warn(

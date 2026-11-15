@@ -2400,3 +2400,23 @@
     scroll-padding-top: 96px;
   }
 }
+
+/* FAQ 여닫기: 지원하는 브라우저(::details-content)에서는 높이가 부드럽게 바뀌고, 아니면 바로 열려요. */
+@layer margin {
+  .lp-faq-list {
+    interpolate-size: allow-keywords;
+  }
+  .lp-faq-list details::details-content {
+    block-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      block-size var(--motion-duration-page) var(--motion-ease-standard),
+      opacity var(--motion-duration-enter) var(--motion-ease-standard),
+      content-visibility var(--motion-duration-page) allow-discrete;
+  }
+  .lp-faq-list details[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+}

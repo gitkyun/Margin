@@ -1,0 +1,218 @@
+@layer margin {
+  /* 칩 입력을 감싼 fieldset: 저장 중 잠그는 용도라 모양은 없앱니다. */
+  .research-keyword-field {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  /* 화면 설정 › 시각 표기: 선택지 옆에 미팅 카드 모양 미리보기 */
+  .hour-style-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-16) var(--spacing-24);
+  }
+  .hour-preview {
+    display: grid;
+    gap: var(--spacing-6);
+    margin: 0;
+  }
+  .hour-preview-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    min-width: 220px;
+    padding: var(--spacing-10) var(--spacing-14);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .hour-preview-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-8);
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+  .hour-preview-text {
+    display: grid;
+    gap: var(--spacing-2);
+  }
+  .hour-preview-text strong {
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
+  }
+  .hour-preview-text > span {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .hour-preview figcaption {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  /* 시각이 바뀌면 숫자가 아래에서 살짝 튀어나와요(Number pop-in). */
+  .hour-pop {
+    display: inline-block;
+    color: var(--brand);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    animation: hour-pop-in var(--motion-duration-enter)
+      var(--motion-ease-standard);
+  }
+  @keyframes hour-pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(40%) scale(0.85);
+      filter: blur(2px);
+    }
+  }
+
+  /* 나만의 연구 도우미 */
+  .agent-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    margin: var(--spacing-16) 0 var(--spacing-20);
+    padding: var(--spacing-12) var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+  }
+  .agent-preview > span {
+    display: grid;
+    gap: var(--spacing-2);
+  }
+  .agent-preview small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .agent-avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: var(--spacing-8);
+  }
+  .agent-avatar-option {
+    display: grid;
+    justify-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-10) var(--spacing-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    cursor: pointer;
+    transition:
+      border-color var(--motion-duration-micro) ease-out,
+      background-color var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-micro) ease-out;
+  }
+  .agent-avatar-option small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    text-align: center;
+    word-break: var(--text-word-break, keep-all);
+  }
+  .agent-avatar-option:hover {
+    border-color: var(--hover-line);
+    transform: translateY(-2px);
+  }
+  .agent-avatar-option:has(input:checked) {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+  }
+  .agent-avatar-option:has(input:checked) small {
+    color: var(--brand);
+    font-weight: 600;
+  }
+  .agent-avatar-option:has(input:focus-visible) {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  /* 사용량 › 저장 공간 게이지(500MB 눈금) */
+  .storage-meter {
+    margin: var(--spacing-20) 0 var(--spacing-12);
+  }
+  .storage-meter-value {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-10);
+  }
+  .storage-meter-value strong {
+    font-size: var(--typography-title2-fontSize);
+    letter-spacing: var(--typography-title2-letterSpacing);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .storage-meter-value small {
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .storage-meter-track {
+    position: relative;
+    height: 12px;
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+    overflow: hidden;
+  }
+  .storage-meter-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    min-width: 4px;
+    border-radius: inherit;
+    background: var(--brand);
+    transition: width var(--motion-duration-page) var(--motion-ease-standard);
+  }
+  .storage-meter-tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--surface);
+  }
+  .storage-meter-scale {
+    position: relative;
+    height: 20px;
+    margin-top: var(--spacing-6);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-variant-numeric: tabular-nums;
+  }
+  .storage-meter-scale span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-100%);
+    white-space: nowrap;
+  }
+  .storage-meter-scale span:first-child {
+    left: 0;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hour-pop {
+      animation: none;
+    }
+    .agent-avatar-option,
+    .storage-meter-fill {
+      transition: none;
+    }
+    .agent-avatar-option:hover {
+      transform: none;
+    }
+  }
+}
+
+@layer margin {
+  /* 도우미 미리보기: 큰 봇 + 이름·움직임 고르기 */
+  .agent-preview > span {
+    gap: var(--spacing-6);
+  }
+}

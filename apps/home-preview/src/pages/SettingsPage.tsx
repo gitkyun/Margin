@@ -1,6 +1,9 @@
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { t, tc } from "@/lib/i18n";
+import { DateField } from "@/components/ui/date-field";
+import { submissionDateProblem, todayKey } from "@/lib/roadmap-plan";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "../lib/password-policy";
+import { PasswordStrength } from "@/components/PasswordStrength";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,6 +36,19 @@ import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { AdvisorSettings } from "./settings/AdvisorSettings";
 import { ProjectInvites } from "./settings/ProjectInvites";
+import { ResearchProfileFields } from "./settings/ResearchProfileFields";
+import { usePreferences } from "./settings/use-preferences";
+import { AgentSettings } from "./settings/AgentSettings";
+import { SoundSetting } from "./settings/SoundSetting";
+import { UsageMeters } from "./settings/UsageMeters";
+import "./settings/account-settings.css";
+import {
+  NO_CITATION_STYLE,
+  addKeyword,
+  readCitationStyle,
+  readKeywords,
+  sameKeywords,
+} from "@/lib/research-profile";
 import {
   PURPOSE_MAX,
   parseQuestions,
@@ -160,6 +176,7 @@ export function AccountPage() {
           {tab === "usage" ? (
             <>
               <UsageDetails />
+              <UsageMeters />
               <PlanComparison />
             </>
           ) : tab === "notifications" ? (
@@ -220,6 +237,7 @@ export function AccountPage() {
                   )}
                 </p>
               </section>
+              <SoundSetting />
             </>
           ) : (
             <section className="settings-section">
@@ -310,17 +328,8 @@ export function PlanComparison() {
 function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
   const { mode } = useWorkspace(),
     caps = useAICapabilities(),
-    [prefs, setPrefs] = useState<Record<string, string | boolean>>({}),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
-  useEffect(() => {
-    if (mode === "connected")
-      void assertConnected()
-        .auth.getUser()
-        .then(({ data }) =>
-          setPrefs(data.user?.user_metadata?.preferences ?? {}),
-        );
-  }, [mode]);
+    preferences = usePreferences(),
+    { prefs, setPrefs, persist, busy, error, setError } = preferences;
   const selectedModel =
     caps.data?.models.find((m) => m.id === prefs.model) ?? caps.data?.models[0];
   const selectedDepth = resolveReviewDepth(
@@ -328,27 +337,25 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
     String(prefs.thinking ?? "high"),
   );
   return (
-    <section className="settings-section">
-      <h2>{kind === "ai" ? t("AI 기본 설정") : t("알림 설정")}</h2>
-      <p>
-        {kind === "ai"
-          ? t(
-              "AI를 실행할 때마다 사용할 기록을 확인해요. 기본값을 바꿔도 AI가 자동으로 실행되지 않아요.",
-            )
-          : t(
-              "마진 안에서 받을 알림을 선택하세요. 이메일이나 브라우저 알림은 보내지 않아요.",
-            )}
-      </p>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setBusy(true);
-          setError("");
-          try {
-            if (mode === "preview")
-              throw new Error(t("미리보기에서는 설정을 저장할 수 없어요."));
-            if (kind === "ai" && !selectedModel)
-              throw new Error(t("모델 목록을 불러온 뒤 다시 저장해 주세요."));
+    <>
+      <section className="settings-section">
+        <h2>{kind === "ai" ? t("AI 기본 설정") : t("알림 설정")}</h2>
+        <p>
+          {kind === "ai"
+            ? t(
+                "AI를 실행할 때마다 사용할 기록을 확인해요. 기본값을 바꿔도 AI가 자동으로 실행되지 않아요.",
+              )
+            : t(
+                "마진 안에서 받을 알림을 선택하세요. 이메일이나 브라우저 알림은 보내지 않아요. 스위치를 바꾸면 바로 저장돼요.",
+              )}
+        </p>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (kind === "ai" && !selectedModel) {
+              setError(t("모델 목록을 불러온 뒤 다시 저장해 주세요."));
+              return;
+            }
             const preferences =
               kind === "ai"
                 ? {
@@ -357,106 +364,110 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
                     thinking: selectedDepth,
                   }
                 : prefs;
-            const { error } = await assertConnected().auth.updateUser({
-              data: { preferences },
-            });
-            if (error) throw error;
-            toast.success(t("설정을 저장했어요."));
-          } catch (e) {
-            setError(friendlyError(e));
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        {kind === "ai" ? (
-          <>
-            <label className="field">
-              {t("기본 모델")}
-              <Choice
-                value={selectedModel?.id ?? ""}
-                label={t("기본 모델")}
-                disabled={!caps.data}
-                onChange={(v) =>
-                  setPrefs({
-                    ...prefs,
-                    model: v,
-                    thinking: resolveReviewDepth(
-                      caps.data?.models.find((m) => m.id === v)?.thinking ?? [],
-                      String(prefs.thinking ?? "high"),
-                    ),
-                  })
-                }
-                options={
-                  caps.data?.models.map((m) => ({
-                    value: m.id,
-                    label: researchModelLabel(m),
-                  })) ?? [
-                    {
-                      value: "",
-                      label:
-                        mode === "preview"
-                          ? t("미리보기에서는 고를 수 없어요")
-                          : caps.isError
-                            ? t("모델을 불러오지 못했어요")
-                            : t("모델 불러오는 중"),
-                    },
-                  ]
-                }
-              />
-            </label>
-            {!!selectedModel?.thinking.length && (
+            if (await persist(preferences))
+              toast.success(t("설정을 저장했어요."));
+          }}
+        >
+          {kind === "ai" ? (
+            <>
               <label className="field">
-                {t("기본 답변 깊이")}
+                {t("기본 모델")}
                 <Choice
-                  value={selectedDepth}
-                  label={t("기본 답변 깊이")}
-                  options={reviewDepthOptions(selectedModel.thinking)}
-                  onChange={(v) => setPrefs({ ...prefs, thinking: v })}
+                  value={selectedModel?.id ?? ""}
+                  label={t("기본 모델")}
+                  disabled={!caps.data}
+                  onChange={(v) =>
+                    setPrefs({
+                      ...prefs,
+                      model: v,
+                      thinking: resolveReviewDepth(
+                        caps.data?.models.find((m) => m.id === v)?.thinking ??
+                          [],
+                        String(prefs.thinking ?? "high"),
+                      ),
+                    })
+                  }
+                  options={
+                    caps.data?.models.map((m) => ({
+                      value: m.id,
+                      label: researchModelLabel(m),
+                    })) ?? [
+                      {
+                        value: "",
+                        label:
+                          mode === "preview"
+                            ? t("미리보기에서는 고를 수 없어요")
+                            : caps.isError
+                              ? t("모델을 불러오지 못했어요")
+                              : t("모델 불러오는 중"),
+                      },
+                    ]
+                  }
                 />
-                <small>{reviewDepthHints[selectedDepth]}</small>
               </label>
-            )}
-            {caps.isError && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => void caps.refetch()}
-              >
-                {t("모델 다시 불러오기")}
+              {!!selectedModel?.thinking.length && (
+                <label className="field">
+                  {t("기본 답변 깊이")}
+                  <Choice
+                    value={selectedDepth}
+                    label={t("기본 답변 깊이")}
+                    options={reviewDepthOptions(selectedModel.thinking)}
+                    onChange={(v) => setPrefs({ ...prefs, thinking: v })}
+                  />
+                  <small>{reviewDepthHints[selectedDepth]}</small>
+                </label>
+              )}
+              {caps.isError && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void caps.refetch()}
+                >
+                  {t("모델 다시 불러오기")}
+                </Button>
+              )}
+            </>
+          ) : (
+            <div className="preferences-list">
+              {[
+                ["review", t("검토 요청·응답·댓글")],
+                ["assignment", t("할 일 변경")],
+                ["schedule", t("미팅 일정과 조율")],
+                ["collaboration", t("공동연구 변경")],
+              ].map(([id, label]) => (
+                <label key={id}>
+                  <span>{label}</span>
+                  <Switch
+                    checked={prefs[id] !== false}
+                    disabled={busy}
+                    onCheckedChange={async (next) => {
+                      const before = prefs;
+                      const updated = { ...prefs, [id]: next };
+                      setPrefs(updated);
+                      // 저장에 실패하면 스위치를 원래 자리로 돌려요.
+                      if (!(await persist(updated))) setPrefs(before);
+                    }}
+                  />
+                </label>
+              ))}
+            </div>
+          )}
+          {error && (
+            <p className="rms-error" role="alert">
+              {error}
+            </p>
+          )}
+          {kind === "ai" && (
+            <div className="bottom-actions">
+              <Button type="submit" disabled={busy}>
+                {busy ? t("저장 중") : t("저장")}
               </Button>
-            )}
-          </>
-        ) : (
-          <div className="preferences-list">
-            {[
-              ["review", t("검토 요청·응답·댓글")],
-              ["assignment", t("할 일 변경")],
-              ["schedule", t("미팅 일정과 조율")],
-              ["collaboration", t("공동연구 변경")],
-            ].map(([id, label]) => (
-              <label key={id}>
-                <span>{label}</span>
-                <Switch
-                  checked={prefs[id] !== false}
-                  onCheckedChange={(next) => setPrefs({ ...prefs, [id]: next })}
-                />
-              </label>
-            ))}
-          </div>
-        )}
-        {error && (
-          <p className="rms-error" role="alert">
-            {error}
-          </p>
-        )}
-        <div className="bottom-actions">
-          <Button type="submit" disabled={busy}>
-            {busy ? t("저장 중") : t("저장")}
-          </Button>
-        </div>
-      </form>
-    </section>
+            </div>
+          )}
+        </form>
+      </section>
+      {kind === "ai" && <AgentSettings preferences={preferences} />}
+    </>
   );
 }
 export function ResearchSettingsPage() {
@@ -471,6 +482,12 @@ export function ResearchSettingsPage() {
     [description, setDescription] = useState(research?.description ?? ""),
     [purpose, setPurpose] = useState(research?.purpose ?? ""),
     [questions, setQuestions] = useState(questionsText(research?.questions)),
+    [submission, setSubmission] = useState(research?.submissionDate ?? ""),
+    [keywords, setKeywords] = useState(() => readKeywords(research?.keywords)),
+    [keywordDraft, setKeywordDraft] = useState(""),
+    [citation, setCitation] = useState(
+      research?.citationStyle ?? NO_CITATION_STYLE,
+    ),
     [email, setEmail] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -492,14 +509,28 @@ export function ResearchSettingsPage() {
     setDescription(research?.description ?? "");
     setPurpose(research?.purpose ?? "");
     setQuestions(questionsText(research?.questions));
+    setSubmission(research?.submissionDate ?? "");
+    setKeywords(readKeywords(research?.keywords));
+    setKeywordDraft("");
+    setCitation(research?.citationStyle ?? NO_CITATION_STYLE);
   }, [researchId]);
+  // 칩이 되기 전 입력도 형식이 맞으면 함께 저장해요(온보딩 지도교수 칸과 같은 방식).
+  const keywordList = addKeyword(keywords, keywordDraft);
   const dirty =
       !!research &&
       (name !== research.name ||
         description !== research.description ||
         purpose !== (research.purpose ?? "") ||
-        questions !== questionsText(research.questions)),
-    guard = useNavigationGuard({ dirty, busy, label: t("연구 기본 정보") });
+        questions !== questionsText(research.questions) ||
+        submission !== (research.submissionDate ?? "") ||
+        !sameKeywords(keywordList, readKeywords(research.keywords)) ||
+        citation !== (research.citationStyle ?? NO_CITATION_STYLE)),
+    guard = useNavigationGuard({ dirty, busy, label: t("연구 기본 정보") }),
+    // 이미 저장된 날짜가 지났어도 그대로 두면 막지 않아요(바꿀 때만 검사).
+    submissionProblem =
+      !!submission &&
+      submission !== (research?.submissionDate ?? "") &&
+      !!submissionDateProblem(todayKey(), submission);
   if (!research)
     return (
       <p>
@@ -579,12 +610,19 @@ export function ResearchSettingsPage() {
                         description: description.trim(),
                         purpose: purpose.trim() || undefined,
                         questions: parseQuestions(questions),
+                        submissionDate: submission || undefined,
+                        keywords: keywordList.length ? keywordList : undefined,
+                        citationStyle: readCitationStyle(citation),
                       });
                       base.current = saved;
+                      setKeywords(readKeywords(saved.keywords));
+                      setKeywordDraft("");
+                      setCitation(saved.citationStyle ?? NO_CITATION_STYLE);
                       setName(saved.name);
                       setDescription(saved.description);
                       setPurpose(saved.purpose ?? "");
                       setQuestions(questionsText(saved.questions));
+                      setSubmission(saved.submissionDate ?? "");
                       guard.clear();
                       toast.success(t("연구 정보를 저장했어요."));
                     });
@@ -640,6 +678,29 @@ export function ResearchSettingsPage() {
                       onChange={(e) => setQuestions(e.target.value)}
                     />
                   </label>
+                  <label className="field">
+                    {t("투고·제출 목표일")}{" "}
+                    <small>{tc("optional", "선택")}</small>
+                    <DateField value={submission} onChange={setSubmission} />
+                    <small
+                      className={submissionProblem ? "field-error" : undefined}
+                    >
+                      {submissionProblem
+                        ? t("오늘 뒤 5년 안의 날짜만 저장해요.")
+                        : t(
+                            "연구 홈에 D-Day로 보이고, 로드맵 계획 제안에 미리 채워져요.",
+                          )}
+                    </small>
+                  </label>
+                  <ResearchProfileFields
+                    keywords={keywords}
+                    onKeywordsChange={setKeywords}
+                    keywordDraft={keywordDraft}
+                    onKeywordDraftChange={setKeywordDraft}
+                    citation={citation}
+                    onCitationChange={setCitation}
+                    disabled={busy}
+                  />
                   <div className="bottom-actions">
                     <Button
                       variant="outline"
@@ -647,17 +708,25 @@ export function ResearchSettingsPage() {
                       disabled={busy}
                       onClick={() => {
                         base.current = research;
+                        setKeywords(readKeywords(research.keywords));
+                        setKeywordDraft("");
+                        setCitation(
+                          research.citationStyle ?? NO_CITATION_STYLE,
+                        );
                         setName(research.name);
                         setDescription(research.description);
                         setPurpose(research.purpose ?? "");
                         setQuestions(questionsText(research.questions));
+                        setSubmission(research.submissionDate ?? "");
                       }}
                     >
                       {t("취소")}
                     </Button>
                     <Button
                       type="submit"
-                      disabled={busy || !name.trim() || !dirty}
+                      disabled={
+                        busy || !name.trim() || !dirty || submissionProblem
+                      }
                       aria-describedby={
                         unchangedReason ? unchangedReasonId : undefined
                       }
@@ -1067,7 +1136,11 @@ function PasswordSettings() {
             required
             disabled={busy}
           />
-          <small>{PASSWORD_HELP}</small>
+          {next ? (
+            <PasswordStrength value={next} />
+          ) : (
+            <small>{PASSWORD_HELP}</small>
+          )}
         </label>
         <label className="field">
           {t("새 비밀번호 확인")}

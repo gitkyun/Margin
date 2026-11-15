@@ -88,21 +88,86 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
 
-  /* 단계 진행 막대. 넘어가면 다음 칸이 왼쪽부터 채워집니다(부품 단계 200ms). */
+  /*
+   * 단계 이동 막대(Step player). 지금 단계는 긴 알약으로 강조하고, 지난 단계는 체크,
+   * 남은 단계는 번호 점으로 보여요. 누르는 칸은 24px 이상(작은 점은 안쪽 그림일 뿐).
+   */
   .ob-meter {
     display: flex;
     flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
     gap: var(--spacing-4);
-    margin-bottom: var(--spacing-16);
+    margin: 0 0 var(--spacing-16);
+    padding: 0;
+    list-style: none;
   }
   .ob-meter-row {
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-12);
   }
-  /* 자동 넘김까지 남은 시간: 지금 칸이 일정한 속도로 찹니다. */
-  .ob-meter span[data-timed]::after {
-    transition: none;
+  .ob-meter-step {
+    display: inline-grid;
+    place-items: center;
+    min-width: 24px;
+    min-height: 24px;
+    padding: var(--spacing-2);
+    border: 0;
+    border-radius: var(--radius-full);
+    background: none;
+    color: inherit;
+    cursor: pointer;
+  }
+  .ob-meter-step:disabled {
+    cursor: default;
+  }
+  .ob-meter-step:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+  .ob-meter-dot {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption2-fontSize);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    overflow: hidden;
+    transition:
+      width var(--motion-duration-enter) var(--motion-ease-standard),
+      background-color var(--motion-duration-enter) var(--motion-ease-standard),
+      color var(--motion-duration-micro) ease-out;
+  }
+  .ob-meter-step[data-state="done"] .ob-meter-dot {
+    background: var(--brand);
+    color: var(--surface);
+  }
+  .ob-meter-step[data-state="current"] .ob-meter-dot {
+    width: 44px;
+    background: var(--brand);
+  }
+  .ob-meter-step:hover:not(:disabled) .ob-meter-dot {
+    box-shadow: 0 0 0 3px var(--brand-soft);
+  }
+  .ob-meter-step[data-state="next"]:hover:not(:disabled) .ob-meter-dot {
+    color: var(--brand);
+  }
+  /* 자동 넘김까지 남은 시간: 지금 알약이 연한 색에서 일정한 속도로 찹니다. */
+  .ob-meter-dot[data-timed] {
+    background: var(--brand-soft);
+  }
+  .ob-meter-dot[data-timed]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--brand);
+    transform-origin: left;
     animation: ob-meter-fill linear both;
     animation-duration: inherit;
   }
@@ -128,27 +193,24 @@
   .ob-auto:hover {
     color: var(--brand);
   }
-  .ob-meter span {
-    position: relative;
-    flex: 1;
-    max-width: 48px;
-    height: 4px;
-    border-radius: var(--radius-4);
-    background: var(--surface-muted);
-    overflow: hidden;
+  /* 소개: 단계 막대와 자동 넘김 버튼을 한 줄 가운데에 맞춥니다. */
+  .ob-meter-row {
+    align-items: center;
+    margin-bottom: var(--spacing-16);
   }
-  .ob-meter span::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--brand);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--motion-duration-enter)
-      var(--motion-ease-standard);
+  .ob-meter-row .ob-meter {
+    margin-bottom: 0;
   }
-  .ob-meter span[data-on]::after {
-    transform: scaleX(1);
+  .ob-meter-row .ob-auto {
+    margin-top: 0;
+  }
+
+  /* 질문 단계가 바뀌면 카드 높이가 새 내용 높이로 부드럽게 맞춰져요(AutoHeight). */
+  .ob-auto-height {
+    overflow: clip;
+    /* 입력칸 초점 테두리가 잘리지 않게 바깥으로 조금 여유를 둡니다. */
+    overflow-clip-margin: var(--spacing-8);
+    transition: height var(--motion-duration-enter) var(--motion-ease-standard);
   }
 
   /* 단계가 바뀔 때 내용이 가는 방향에서 들어옵니다. 앞으로는 오른쪽, 뒤로는 왼쪽에서. */
@@ -1232,7 +1294,7 @@
     .ob-gather .ob-shot-title,
     .ob-gather-row,
     .ob-shot,
-    .ob-meter span[data-timed]::after,
+    .ob-meter-dot[data-timed]::after,
     .ob-intro-step[data-timed]::after {
       animation: none;
     }
@@ -1252,7 +1314,8 @@
     .ob-choice,
     .ob-choice-check,
     .ob-intro-icon,
-    .ob-meter span::after {
+    .ob-meter-dot,
+    .ob-auto-height {
       transition: none;
     }
   }

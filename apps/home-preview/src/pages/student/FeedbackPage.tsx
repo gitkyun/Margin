@@ -1,8 +1,14 @@
 import { AnimatedList } from "@/components/AnimatedList";
+import { SourceAudioClip } from "@/components/recording/SourceAudioClip";
 import { WorkTabs, useBackState } from "./shared";
 import { SelectField } from "@/components/experience";
-import { useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,9 +18,10 @@ import {
   StatusBadge,
   TextLink,
   InlineEmpty,
+  useDisabledReason,
 } from "@/components/common";
 import { Icon } from "@/components/icons";
-import { feedbackProgress } from "@/lib/feedback-progress";
+import { feedbackProgress, professorSendTarget } from "@/lib/feedback-progress";
 import { useWorkspace } from "@/lib/workspace";
 import {
   feedbackLabels,
@@ -28,7 +35,7 @@ import {
   type RevisionPlan,
   type RevisionResult,
 } from "@/lib/domain";
-import { AIWorkbench } from "./AIWorkbench";
+import { RevisionSuggestions } from "./RevisionSuggestions";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { ResultEditorDialog } from "./ResultEditorDialog";
 import { newResultDraft } from "./result-draft";
@@ -36,7 +43,6 @@ import { isAISourceStale } from "./ai-source";
 import {
   BackLink,
   ErrorNotice,
-  FilterSegments,
   FormDialog,
   LabeledInput,
   LabeledText,
@@ -46,15 +52,23 @@ import {
   useSaving,
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
+import {
+  matchesAny,
+  readMultiParam,
+  writeMultiParam,
+} from "@/lib/filter-params";
+import { FilterMenu } from "@/components/FilterMenu";
 import { t } from "@/lib/i18n";
 
-const feedbackFilters = [
-  ["all", t("전체")],
+const statusFilters = [
   ["unprocessed", t("시작 전")],
   ["in_progress", t("진행 중")],
   ["recorded", t("수정 결과 있음")],
   ["held", t("보류")],
 ] as const;
+const STATUS_VALUES = new Set<string>(statusFilters.map(([value]) => value));
+/** 미팅 필터에서 ‘미팅 없이 추가한 피드백’을 가리키는 값 */
+const NO_MEETING = "none";
 
 export function FeedbackPage() {
   const { researchId = "", feedbackId } = useParams();
@@ -62,11 +76,20 @@ export function FeedbackPage() {
   const navigate = useNavigate();
   const createBase = useRef<BaseRecord | null>(null);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const form = useSaving();
+  const [params, setParams] = useSearchParams();
+  // ⌘K·상단 '+' 메뉴의 '피드백 추가'가 ?new=1로 들어와요.
+  useEffect(() => {
+    if (params.get("new") !== "1" || feedbackId) return;
+    openCreate();
+    // 필터는 주소에 남겨 두고 ‘new’만 지워요.
+    const next = new URLSearchParams(params);
+    next.delete("new");
+    setParams(next, { replace: true });
+  }, [params.get("new"), feedbackId]);
   if (feedbackId) {
     const feedback = data.feedback.find(
       (item) => item.id === feedbackId && item.researchId === researchId,
@@ -101,14 +124,46 @@ export function FeedbackPage() {
           .toLowerCase()
           .includes(search.toLowerCase())),
   );
-  const matches = (item: (typeof searched)[number], value: string) =>
-    value === "all" || item.status === value;
-  const counts = filterCounts(
-    feedbackFilters.map(([value]) => value),
-    searched,
-    matches,
+  // 상태·미팅 다중 필터는 주소(?status=a,b&meeting=x)에 남겨 뒤로 가기·새로고침에도 유지해요.
+  const meetingOptions = [
+    ...data.meetings
+      .filter(
+        (meeting) =>
+          meeting.researchId === researchId &&
+          data.feedback.some((item) => item.meetingId === meeting.id),
+      )
+      .map((meeting) => ({ value: meeting.id, label: meeting.title })),
+    { value: NO_MEETING, label: t("미팅 없이 추가") },
+  ];
+  const statuses = readMultiParam(params, "status", STATUS_VALUES);
+  const meetings = readMultiParam(
+    params,
+    "meeting",
+    new Set(meetingOptions.map((option) => option.value)),
   );
-  const items = searched.filter((item) => matches(item, filter));
+  const meetingKey = (item: Feedback) => item.meetingId ?? NO_MEETING;
+  const statusCounts = filterCounts(
+    statusFilters.map(([value]) => value),
+    searched.filter((item) => matchesAny(meetings, meetingKey(item))),
+    (item, value) => item.status === value,
+  );
+  const meetingCounts = filterCounts(
+    meetingOptions.map((option) => option.value),
+    searched.filter((item) => matchesAny(statuses, item.status)),
+    (item, value) => meetingKey(item) === value,
+  );
+  const filtered = statuses.length > 0 || meetings.length > 0;
+  const items = searched.filter(
+    (item) =>
+      matchesAny(statuses, item.status) &&
+      matchesAny(meetings, meetingKey(item)),
+  );
+  const setFilter = (key: "status" | "meeting", values: string[]) =>
+    setParams(writeMultiParam(params, key, values), { replace: true });
+  const clearFilters = () => {
+    const next = writeMultiParam(params, "status", []);
+    setParams(writeMultiParam(next, "meeting", []), { replace: true });
+  };
   return (
     <div className="student-page">
       <PageHeader
@@ -127,12 +182,31 @@ export function FeedbackPage() {
       />
 
       <div className="page-toolbar">
-        <FilterSegments
-          label={t("피드백 상태")}
-          options={feedbackFilters}
-          value={filter}
-          onChange={setFilter}
-          counts={counts}
+        <FilterMenu
+          groups={[
+            {
+              key: "status",
+              label: t("피드백 상태"),
+              options: statusFilters.map(([value, label]) => ({
+                value,
+                label,
+                count: statusCounts[value],
+              })),
+              selected: statuses,
+              onChange: (values) => setFilter("status", values),
+            },
+            {
+              key: "meeting",
+              label: t("미팅"),
+              options: meetingOptions.map((option) => ({
+                ...option,
+                count: meetingCounts[option.value],
+              })),
+              selected: meetings,
+              onChange: (values) => setFilter("meeting", values),
+            },
+          ]}
+          onClear={clearFilters}
         />
         <SearchInput
           value={search}
@@ -187,15 +261,25 @@ export function FeedbackPage() {
         ) : (
           <EmptyState
             title={
-              search || filter !== "all"
+              search || filtered
                 ? t("조건에 맞는 피드백이 없어요")
                 : t("아직 피드백이 없어요")
             }
-            description={t("미팅 기록에서 저장하거나 직접 추가할 수 있어요.")}
+            description={
+              filtered
+                ? t("필터를 지우거나 다른 조건을 골라 보세요.")
+                : t("미팅 기록에서 저장하거나 직접 추가할 수 있어요.")
+            }
             action={
-              <Button variant="outline" onClick={openCreate}>
-                {t("피드백 추가")}
-              </Button>
+              filtered ? (
+                <Button variant="outline" onClick={clearFilters}>
+                  {t("모두 지우기")}
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={openCreate}>
+                  {t("피드백 추가")}
+                </Button>
+              )
             }
           />
         )}
@@ -317,6 +401,30 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
     rounds: data.rounds,
     responses: data.responses,
   });
+  // ‘교수 확인’ 칸의 보내기: 검토 요청 만들기를 이 피드백의 수정 결과를 골라 둔 채 열어요.
+  // 링크를 만들거나 보내는 것은 그 창에서 학생이 직접 해요(링크 생성 ≠ 전송).
+  const sendTarget = professorSendTarget(results, data.reviewItems);
+  const sendReason = useDisabledReason(sendTarget.reason);
+  const sourceQuoteOf = (quote: string | undefined) =>
+    quote && (feedback.body.includes(quote) || feedback.sourceQuote === quote)
+      ? quote
+      : undefined;
+  function editCandidate(candidate: AICandidate, base: BaseRecord) {
+    setPlanDraft({
+      ...base,
+      origin: "ai",
+      feedbackId: feedback.id,
+      title: candidate.title.trim(),
+      method: candidate.method ?? candidate.body ?? "",
+      expectedResult: candidate.expectedResult ?? "",
+      assumptions: candidate.assumptions ?? "",
+      requiredMaterials: candidate.requiredMaterials ?? "",
+      suggestedTasks: candidate.suggestedTasks ?? [],
+      status: "saved",
+      sourceQuote: sourceQuoteOf(candidate.sourceQuote),
+    });
+    planForm.setError(null);
+  }
   async function saveCandidate(candidate: AICandidate, base: BaseRecord) {
     await save("plans", {
       ...base,
@@ -329,12 +437,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
       requiredMaterials: candidate.requiredMaterials ?? "",
       suggestedTasks: candidate.suggestedTasks ?? [],
       status: "saved",
-      sourceQuote:
-        candidate.sourceQuote &&
-        (feedback.body.includes(candidate.sourceQuote) ||
-          feedback.sourceQuote === candidate.sourceQuote)
-          ? candidate.sourceQuote
-          : undefined,
+      sourceQuote: sourceQuoteOf(candidate.sourceQuote),
     });
     toast.success(
       t("이 방법을 선택했어요. 수정 방법에서 할 일에 추가할 수 있어요."),
@@ -405,6 +508,26 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                 <span>{step.label}</span>
                 <strong>{step.value}</strong>
               </button>
+            ) : step.key === "review" ? (
+              <div className="feedback-progress-send">
+                <span>{step.label}</span>
+                <strong>{step.value}</strong>
+                <Button
+                  variant="link"
+                  size="sm"
+                  disabled={!!sendTarget.reason}
+                  aria-describedby={sendReason.describedBy}
+                  onClick={() =>
+                    navigate(
+                      `/r/${researchId}/reviews?result=${sendTarget.resultIds.join(",")}`,
+                    )
+                  }
+                >
+                  {t("교수에게 보내기")}
+                  <Icon name="arrow-right" size={14} />
+                </Button>
+                {sendReason.node}
+              </div>
             ) : (
               <>
                 <span>{step.label}</span>
@@ -425,6 +548,13 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               <p className="meta">{originLabels[feedback.origin]}</p>
             )}
             <p className="feedback-body">{feedback.body}</p>
+            {/* 전사문에서 만든 피드백이면 그 구간 녹음을 바로 들을 수 있어요. */}
+            {feedback.audioSource && (
+              <SourceAudioClip
+                source={feedback.audioSource}
+                label={feedback.title}
+              />
+            )}
             {feedback.sourceQuote && (
               <blockquote className="source-excerpt">
                 <small>
@@ -741,15 +871,14 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
               </div>
             )}
             {panelTab === "assistant" && aiInput && (
-              <AIWorkbench
+              <RevisionSuggestions
                 key={aiRun}
-                embedded
-                title={t("수정 방법 제안")}
                 input={aiInput}
                 stale={aiStale}
-                onClose={() => setPanelOpen(false)}
+                isQuoteInSource={(quote) => !!sourceQuoteOf(quote)}
                 onRefresh={openAI}
-                onSave={saveCandidate}
+                onAdopt={saveCandidate}
+                onEdit={editCandidate}
               />
             )}
           </PanelFrame>
@@ -833,7 +962,15 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         title={
           planDraft && plans.some((p) => p.id === planDraft.id)
             ? t("수정 방법 편집")
-            : t("수정 방법 작성")
+            : planDraft?.origin === "ai"
+              ? t("AI 제안 고쳐서 쓰기")
+              : t("수정 방법 작성")
+        }
+        description={
+          planDraft?.origin === "ai" &&
+          !plans.some((p) => p.id === planDraft.id)
+            ? t("고친 뒤 저장해야 기록에 남아요. 닫으면 저장되지 않아요.")
+            : undefined
         }
       >
         <form

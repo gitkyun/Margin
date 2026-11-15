@@ -1,15 +1,10 @@
 import { t } from "@/lib/i18n";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Icon } from "@/components/icons";
-import {
-  IconButton,
-  InlineEmpty,
-  useDisabledReason,
-} from "@/components/common";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { InlineEmpty } from "@/components/common";
+import { EmailChips } from "@/components/EmailChips";
 import { InviteLinkButton } from "@/components/InviteLinkButton";
-import { MAX_ADVISORS, addAdvisor, isEmail } from "@/lib/advisors";
+import { MAX_ADVISORS } from "@/lib/advisors";
 
 interface AdvisorSettingsProps {
   /** 이 연구에 등록된 지도교수 이메일 */
@@ -31,31 +26,8 @@ export function AdvisorSettings({
   onSave,
 }: AdvisorSettingsProps) {
   const [draft, setDraft] = useState("");
-  const [problem, setProblem] = useState("");
+  const hintId = useId();
   const full = emails.length >= MAX_ADVISORS;
-  const draftReason = useDisabledReason(
-    canEdit &&
-      !full &&
-      !busy &&
-      !draft.trim() &&
-      t("지도교수 이메일을 입력하면 추가할 수 있어요."),
-  );
-
-  async function add() {
-    const value = draft.trim();
-    if (!isEmail(value)) {
-      setProblem(t("이메일 형식을 확인해 주세요."));
-      return;
-    }
-    const next = addAdvisor(emails, value);
-    if (next === emails) {
-      setProblem(t("이미 등록한 이메일이에요."));
-      return;
-    }
-    setProblem("");
-    await onSave(next);
-    setDraft("");
-  }
 
   return (
     <section className="settings-section advisor-section">
@@ -65,7 +37,29 @@ export function AdvisorSettings({
           "검토 요청을 만들 때 여기 등록한 교수 중에서 골라요. 등록만으로는 교수님께 알림이 가지 않고 연구 기록도 보이지 않아요.",
         )}
       </p>
-      {emails.length > 0 ? (
+      {canEdit ? (
+        <>
+          {/* 저장하는 동안에는 칩을 잠가 두 번 저장하거나 입력이 사라지지 않게 해요. */}
+          <fieldset disabled={busy} className="research-keyword-field">
+            <EmailChips
+              emails={emails}
+              onChange={(next) => void onSave(next)}
+              draft={draft}
+              onDraftChange={setDraft}
+              placeholder="professor@example.com"
+              aria-label={t("지도교수 이메일")}
+              aria-describedby={hintId}
+            />
+          </fieldset>
+          <small id={hintId} className="settings-note">
+            {full
+              ? t("지도교수는 {max}명까지 등록할 수 있어요.", {
+                  max: MAX_ADVISORS,
+                })
+              : t("Enter나 쉼표로 한 명씩 넣어요. 넣거나 빼면 바로 저장돼요.")}
+          </small>
+        </>
+      ) : emails.length > 0 ? (
         <div className="member-list">
           {emails.map((email) => (
             <div key={email} className="member-row">
@@ -75,61 +69,11 @@ export function AdvisorSettings({
               <div>
                 <strong>{email}</strong>
               </div>
-              {canEdit && (
-                <IconButton
-                  label={t("{email} 등록 해제", { email })}
-                  onClick={() => {
-                    if (busy) return;
-                    void onSave(emails.filter((item) => item !== email));
-                  }}
-                >
-                  <Icon name="close" size={16} />
-                </IconButton>
-              )}
             </div>
           ))}
         </div>
       ) : (
         <InlineEmpty>{t("아직 등록한 지도교수가 없어요.")}</InlineEmpty>
-      )}
-      {canEdit && !full && (
-        <form
-          className="advisor-add"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void add();
-          }}
-        >
-          <Input
-            aria-label={t("지도교수 이메일")}
-            type="email"
-            value={draft}
-            onChange={(event) => {
-              setDraft(event.target.value);
-              setProblem("");
-            }}
-            placeholder="professor@example.com"
-          />
-          <Button
-            type="submit"
-            variant="outline"
-            disabled={busy || !draft.trim()}
-            aria-describedby={draftReason.describedBy}
-          >
-            {t("추가")}
-          </Button>
-        </form>
-      )}
-      {draftReason.node}
-      {problem && (
-        <p className="rms-error" role="alert">
-          {problem}
-        </p>
-      )}
-      {full && (
-        <p>
-          {t("지도교수는 {max}명까지 등록할 수 있어요.", { max: MAX_ADVISORS })}
-        </p>
       )}
       <div className="invite-hint">
         <InviteLinkButton />

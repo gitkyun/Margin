@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { AssistantMascot, type MascotState } from "@/components/brand/Brand";
+import { type AssistantState } from "@/components/brand/BotAvatar";
+import { AssistantFace } from "@/components/brand/BotAvatar";
 import { Icon } from "@/components/icons";
 import type { AssistantStep } from "@/lib/assistant-steps";
 import { t } from "@/lib/i18n";
@@ -59,7 +60,8 @@ export function AssistantThinking({
 }: {
   first: boolean;
   steps: AssistantStep[];
-  mascot: MascotState;
+  mascot: AssistantState;
+  /** 계정 설정에서 고른 도우미 아바타. 없으면 마스코트를 씁니다. */
   /** 첫 질문 화면 아래에 작게 보여 줄 내 질문 */
   question?: string;
 }) {
@@ -105,7 +107,7 @@ export function AssistantThinking({
   return (
     <div className="ai-processing" role="status">
       <div className="ai-step-pill">
-        <AssistantMascot state={mascot} active size={32} eager />
+        <AssistantFace state={mascot} active size={32} />
         <span className="ai-step-window">
           <span key={current.doing} className="ai-step-text">
             {current.doing}

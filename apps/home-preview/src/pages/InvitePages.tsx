@@ -12,6 +12,7 @@ import {
 } from "@/lib/invites";
 import { KakaoLoginButton } from "@/components/KakaoLoginButton";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "@/lib/password-policy";
+import { PasswordStrength } from "@/components/PasswordStrength";
 import { assertConnected, friendlyError } from "@/lib/supabase";
 import { AuthStory, PublicFrame } from "./PublicPages";
 
@@ -256,6 +257,7 @@ export function InviteSignupPage() {
             placeholder={PASSWORD_HELP}
             disabled={pending}
           />
+          <PasswordStrength value={password} />
         </label>
         {problem && (
           <p className="rms-error" role="alert">

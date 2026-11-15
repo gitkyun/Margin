@@ -11,6 +11,8 @@ import {
 } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
+import { useWorkspace } from "@/lib/workspace";
+import { unreadReviewNotifications } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateField, TimeField } from "@/components/ui/date-field";
@@ -304,6 +306,8 @@ export function LabeledText({
   onChange,
   placeholder,
   rows = 4,
+  error,
+  textareaRef,
 }: {
   label: string;
   required?: boolean;
@@ -312,7 +316,12 @@ export function LabeledText({
   onChange(value: string): void;
   placeholder?: string;
   rows?: number;
+  /** 칸 바로 아래에 보여 줄 오류. 입력에 aria-invalid·aria-describedby를 붙여요(흔들림). */
+  error?: string;
+  /** 저장을 막았을 때 화면이 포커스를 옮길 입력 */
+  textareaRef?: Ref<HTMLTextAreaElement>;
 }) {
+  const errorId = useId();
   return (
     <label className="field">
       <span className="field-name">
@@ -320,12 +329,20 @@ export function LabeledText({
         {required && <span className="required-mark"> *</span>}
       </span>
       <Textarea
+        ref={textareaRef}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         required={required}
         rows={rows}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
       />
+      {error && (
+        <small id={errorId} className="field-error" role="alert">
+          {error}
+        </small>
+      )}
       {hint && <small className="field-hint">{hint}</small>}
     </label>
   );
@@ -505,6 +522,16 @@ export function WorkTabs({
   selected: "feedback" | "results" | "reviews";
 }) {
   const navigate = useNavigate();
+  const { data, user } = useWorkspace();
+  // 탭 숫자: 피드백은 아직 다루지 않은 것, 검토 요청은 안 본 교수 응답·댓글. 0이면 숨겨요.
+  const unprocessed = data.feedback.filter(
+    (item) => item.researchId === researchId && item.status === "unprocessed",
+  ).length;
+  const freshResponses = unreadReviewNotifications(
+    data,
+    user,
+    researchId,
+  ).length;
   // 사이드바 '피드백' 메뉴 하나에 받은 것 → 고친 것 → 보낸 것을 보기로 둡니다(감사 F1).
   return (
     <Tabs
@@ -513,9 +540,9 @@ export function WorkTabs({
       value={selected}
       onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
       options={[
-        { value: "feedback", label: t("피드백") },
+        { value: "feedback", label: t("피드백"), count: unprocessed },
         { value: "results", label: t("수정 결과") },
-        { value: "reviews", label: t("검토 요청") },
+        { value: "reviews", label: t("검토 요청"), count: freshResponses },
       ]}
     />
   );

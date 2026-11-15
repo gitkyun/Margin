@@ -1,0 +1,109 @@
+import { t } from "@/lib/i18n";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
+
+const STORAGE_KEY = "margin-panel-width";
+export const PANEL_MIN_WIDTH = 320;
+export const PANEL_MAX_WIDTH = 640;
+const KEY_STEP = 16;
+
+export function clampPanelWidth(width: number): number {
+  return Math.round(
+    Math.min(PANEL_MAX_WIDTH, Math.max(PANEL_MIN_WIDTH, width)),
+  );
+}
+
+function readStored(): number | null {
+  try {
+    const raw = Number(localStorage.getItem(STORAGE_KEY));
+    return raw ? clampPanelWidth(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 사용자가 정한 여백 패널 너비. null이면 화면 너비별 기본값을 써요. */
+export function usePanelWidth(): [
+  number | null,
+  (width: number | null) => void,
+] {
+  const [width, setWidth] = useState<number | null>(readStored);
+  const update = useCallback((next: number | null) => {
+    const value = next === null ? null : clampPanelWidth(next);
+    setWidth(value);
+    try {
+      if (value === null) localStorage.removeItem(STORAGE_KEY);
+      else localStorage.setItem(STORAGE_KEY, String(value));
+    } catch {
+      // 저장소를 못 쓰면 이번 화면에서만 유지해요.
+    }
+  }, []);
+  return [width, update];
+}
+
+interface PanelResizerProps {
+  /** 지금 패널의 실제 너비(px). 끌기 시작점으로 써요. */
+  currentWidth: () => number;
+  width: number | null;
+  onChange: (width: number | null) => void;
+}
+
+/**
+ * 본문과 여백 패널 사이 경계선. 끌거나 ←/→ 키로 너비를 바꾸고, 두 번 누르면 기본 너비로 돌아가요.
+ * 1200px 미만에서는 패널이 시트로 덮이므로 CSS에서 숨겨요.
+ */
+export function PanelResizer({
+  currentWidth,
+  width,
+  onChange,
+}: PanelResizerProps) {
+  const drag = useRef<{ x: number; width: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  function down(event: PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) return;
+    event.preventDefault(); // 끄는 동안 본문 글자가 선택되지 않게
+    drag.current = { x: event.clientX, width: currentWidth() };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+  }
+  function move(event: PointerEvent<HTMLDivElement>) {
+    if (!drag.current) return;
+    onChange(drag.current.width + (drag.current.x - event.clientX));
+  }
+  function up() {
+    drag.current = null;
+    setDragging(false);
+  }
+  function key(event: KeyboardEvent<HTMLDivElement>) {
+    const base = width ?? currentWidth();
+    if (event.key === "ArrowLeft") onChange(base + KEY_STEP);
+    else if (event.key === "ArrowRight") onChange(base - KEY_STEP);
+    else if (event.key === "Home") onChange(null);
+    else return;
+    event.preventDefault();
+  }
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={t("패널 너비 조절")}
+      aria-valuemin={PANEL_MIN_WIDTH}
+      aria-valuemax={PANEL_MAX_WIDTH}
+      aria-valuenow={width ?? undefined}
+      tabIndex={0}
+      title={t("끌어서 너비 조절 · 두 번 누르면 기본 너비")}
+      className={`margin-panel-resizer ${dragging ? "dragging" : ""}`}
+      onPointerDown={down}
+      onPointerMove={move}
+      onPointerUp={up}
+      onPointerCancel={up}
+      onDoubleClick={() => onChange(null)}
+      onKeyDown={key}
+    />
+  );
+}

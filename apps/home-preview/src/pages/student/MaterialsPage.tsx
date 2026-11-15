@@ -5,7 +5,15 @@ import {
   MaterialUploadField,
   MaterialSubmitLabel,
 } from "./MaterialUploadField";
-import { MaterialFolders } from "@/components/MaterialFolders";
+import { MaterialFolders, useMoveMaterial } from "@/components/MaterialFolders";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MATERIAL_DRAG_TYPE } from "@/lib/material-folders";
 import { Segments, SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -98,6 +106,10 @@ export function MaterialsPage() {
   const abort = useRef<AbortController | null>(null);
   const [editing, setEditing] = useState<Material | null>(null);
   const editForm = useSaving();
+  const moveMaterial = useMoveMaterial();
+  const activeFolders = data.folders.filter(
+    (f) => f.researchId === researchId && !f.archivedAt,
+  );
   const pendingKey = pendingUploadKey(researchId);
   const [pending, setPending] = useState<MaterialVersion | null>(() => {
     try {
@@ -623,61 +635,124 @@ export function MaterialsPage() {
                 const materialVersions = data.versions
                   .filter((version) => version.materialId === material.id)
                   .sort((a, b) => b.number - a.number);
+                // 보관한 자료는 옮기지 않아요. 키보드로는 오른쪽 ‘폴더로 옮기기’ 메뉴를 써요.
+                const movable =
+                  folder !== "archived" &&
+                  !material.archivedAt &&
+                  activeFolders.length > 0;
                 return (
-                  <Link
-                    key={material.id}
-                    className="material-list-row"
-                    to={`/r/${researchId}/materials/${material.id}`}
-                    aria-current={
-                      previewId === material.id ? "true" : undefined
-                    }
-                    onClick={(event) => {
-                      if (
-                        event.metaKey ||
-                        event.ctrlKey ||
-                        event.shiftKey ||
-                        !window.matchMedia?.(queryUp("lg")).matches
-                      )
-                        return;
-                      event.preventDefault();
-                      setPreviewId(material.id);
-                    }}
-                  >
-                    {!material.externalUrl && materialVersions[0] ? (
-                      <MaterialPreviewBadge version={materialVersions[0]} />
-                    ) : (
-                      <span
-                        className={`material-symbol ${material.externalUrl ? "is-link" : ""}`}
-                      >
-                        <Icon
-                          name={material.externalUrl ? "link" : "file"}
-                          size={23}
-                        />
-                        {!material.externalUrl && <small>PDF</small>}
+                  <div key={material.id} className="material-list-item">
+                    <Link
+                      className="material-list-row"
+                      to={`/r/${researchId}/materials/${material.id}`}
+                      aria-current={
+                        previewId === material.id ? "true" : undefined
+                      }
+                      draggable={movable}
+                      onDragStart={(event) => {
+                        if (!movable) return;
+                        event.dataTransfer.setData(
+                          MATERIAL_DRAG_TYPE,
+                          material.id,
+                        );
+                        event.dataTransfer.setData(
+                          "text/plain",
+                          material.title,
+                        );
+                        event.dataTransfer.effectAllowed = "move";
+                      }}
+                      onClick={(event) => {
+                        if (
+                          event.metaKey ||
+                          event.ctrlKey ||
+                          event.shiftKey ||
+                          !window.matchMedia?.(queryUp("lg")).matches
+                        )
+                          return;
+                        event.preventDefault();
+                        setPreviewId(material.id);
+                      }}
+                    >
+                      {!material.externalUrl && materialVersions[0] ? (
+                        <MaterialPreviewBadge version={materialVersions[0]} />
+                      ) : (
+                        <span
+                          className={`material-symbol ${material.externalUrl ? "is-link" : ""}`}
+                        >
+                          <Icon
+                            name={material.externalUrl ? "link" : "file"}
+                            size={23}
+                          />
+                          {!material.externalUrl && <small>PDF</small>}
+                        </span>
+                      )}
+                      <span className="grow">
+                        <strong>{material.title}</strong>
+                        <small>
+                          {materialTypes[material.type]} ·{" "}
+                          {material.externalUrl
+                            ? t("링크")
+                            : materialVersions.length
+                              ? t("버전 {count}개 · 최신 v{number}", {
+                                  count: materialVersions.length,
+                                  number: materialVersions[0].number,
+                                })
+                              : t("파일 없음")}
+                        </small>
                       </span>
+                      <span className="material-row-date">
+                        {new Intl.DateTimeFormat(dateLocale(), {
+                          month: "long",
+                          day: "numeric",
+                        }).format(new Date(material.updatedAt))}
+                      </span>
+                      <Icon name="chevron-right" size={17} />
+                    </Link>
+                    {movable && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="material-move-trigger"
+                            aria-label={t("{title} 폴더로 옮기기", {
+                              title: material.title,
+                            })}
+                          >
+                            <Icon name="more" size={17} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>
+                            {t("폴더로 옮기기")}
+                          </DropdownMenuLabel>
+                          {activeFolders
+                            .filter((f) => f.id !== material.folderId)
+                            .map((f) => (
+                              <DropdownMenuItem
+                                key={f.id}
+                                onSelect={() =>
+                                  void moveMaterial(material, f.id)
+                                }
+                              >
+                                <Icon name="folder" size={16} />
+                                {f.title}
+                              </DropdownMenuItem>
+                            ))}
+                          {material.folderId && (
+                            <DropdownMenuItem
+                              onSelect={() =>
+                                void moveMaterial(material, undefined)
+                              }
+                            >
+                              <Icon name="close" size={16} />
+                              {t("폴더에서 빼기")}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
-                    <span className="grow">
-                      <strong>{material.title}</strong>
-                      <small>
-                        {materialTypes[material.type]} ·{" "}
-                        {material.externalUrl
-                          ? t("링크")
-                          : materialVersions.length
-                            ? t("버전 {count}개 · 최신 v{number}", {
-                                count: materialVersions.length,
-                                number: materialVersions[0].number,
-                              })
-                            : t("파일 없음")}
-                      </small>
-                    </span>
-                    <span className="material-row-date">
-                      {new Intl.DateTimeFormat(dateLocale(), {
-                        month: "long",
-                        day: "numeric",
-                      }).format(new Date(material.updatedAt))}
-                    </span>
-                    <Icon name="chevron-right" size={17} />
-                  </Link>
+                  </div>
                 );
               })
             ) : (
@@ -974,6 +1049,14 @@ function MaterialPreviewPanel({
       {material && (
         <PanelFrame title={t("자료 미리보기")} onClose={onClose}>
           <div className="panel-frame-body material-preview-panel">
+            {/* 여백 미리보기 레일: 최신 PDF의 첫 페이지 */}
+            {!material.externalUrl && versions[0] && (
+              <MaterialPreviewBadge
+                key={versions[0].id}
+                version={versions[0]}
+                size="large"
+              />
+            )}
             <strong className="material-preview-title">{material.title}</strong>
             <dl className="material-preview-facts">
               <div>

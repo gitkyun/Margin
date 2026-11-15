@@ -8,12 +8,19 @@ import { ThemeSwitch } from "@/components/ThemeSwitch";
 export { ThemeSwitch } from "@/components/ThemeSwitch";
 import { useId, useRef, useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { dDayLabel, daysUntil } from "@/lib/submission-countdown";
+import { todayKey } from "@/lib/roadmap-plan";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  ResearchCardContextMenu,
+  ResearchCardMoreMenu,
+} from "@/components/ResearchCardMenu";
+import {
+  researchCardActions,
+  researchListView,
+  researchStatusBadge,
+  type ResearchCardActionId,
+} from "@/lib/research-card-actions";
+import type { Research } from "@/lib/domain";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
 import { formatDateTime } from "@/lib/domain";
@@ -234,9 +241,10 @@ export function ResearchSelectPage() {
   const incomingOnly =
     sharedRequests.length > 0 && data.researches.length === 0;
   const newEvents = unreadReviewNotifications(data, user);
-  const view = creationParams.get("view") ?? "active",
+  const view = researchListView(creationParams.get("view")),
     archivedView = view === "archived",
     trashView = view === "trash";
+  const statusBadge = researchStatusBadge(view);
   const invites = data.members.filter(
     (m) => m.userId === user.id && m.status === "pending",
   );
@@ -261,6 +269,52 @@ export function ResearchSelectPage() {
   const wantsNew = creationParams.get("new") === "1";
   const noResearchYet =
     data.researches.length === 0 && !incomingOnly && invites.length === 0;
+
+  /** 보관·복원처럼 연구 상태만 바꾸는 저장. 실패하면 이유를 알리고 화면은 그대로 둡니다. */
+  async function changeResearch(
+    next: Research,
+    success: string,
+  ): Promise<Research | null> {
+    setPending(true);
+    try {
+      const saved = await saveResearch(next);
+      toast.success(success);
+      return saved;
+    } catch (e) {
+      toast.error(friendlyError(e));
+      return null;
+    } finally {
+      setPending(false);
+    }
+  }
+
+  /** 우클릭 메뉴와 ⋯ 메뉴가 함께 쓰는 카드 동작 */
+  function runCardAction(research: Research, id: ResearchCardActionId) {
+    if (pending) return;
+    if (id === "open") navigate(`/r/${research.id}`);
+    else if (id === "open-tab")
+      window.open(`/r/${research.id}`, "_blank", "noopener");
+    else if (id === "settings") navigate(`/r/${research.id}/settings`);
+    else if (id === "trash") {
+      setTrashTarget(research);
+      setTrashName("");
+    } else if (id === "archive")
+      void changeResearch(
+        { ...research, archivedAt: new Date().toISOString() },
+        t("연구를 보관했어요. 보관함에서 복원할 수 있어요."),
+      );
+    else if (id === "unarchive")
+      void changeResearch(
+        { ...research, archivedAt: undefined },
+        t("진행 중인 연구로 복원했어요."),
+      );
+    else if (id === "restore")
+      void changeResearch(
+        { ...research, deletedAt: undefined, archivedAt: undefined },
+        t("연구를 복원했어요. 검토 요청 공유는 직접 다시 시작해 주세요."),
+      );
+  }
+
   if (wantsNew || noResearchYet) return <Navigate to="/r/new" replace />;
   return (
     <div className="research-list-page">
@@ -410,132 +464,112 @@ export function ResearchSelectPage() {
       )}
       {visibleResearches.length ? (
         <div className="research-grid">
-          {visibleResearches.map((research) => (
-            <div key={research.id} className="surface research-card-wrap">
-              <Link
-                className="research-card"
-                to={trashView ? "/r?view=trash" : `/r/${research.id}`}
-                aria-disabled={trashView || undefined}
-                tabIndex={trashView ? -1 : undefined}
-                onClick={(e) => {
-                  if (trashView) e.preventDefault();
-                }}
+          {visibleResearches.map((research) => {
+            const actions = researchCardActions(
+              view,
+              research.ownerId === user.id,
+            );
+            return (
+              <ResearchCardContextMenu
+                key={research.id}
+                actions={actions}
+                disabled={pending}
+                onAction={(id) => runCardAction(research, id)}
               >
-                <span className="research-card-icon">
-                  <Icon name="book" size={24} />
-                </span>
-                <h2>{research.name}</h2>
-                <p>{research.description || t("설명이 없어요.")}</p>
-                <span className="meta">
-                  {trashView ? (
-                    t("복원하면 기록을 다시 볼 수 있어요.")
-                  ) : (
-                    <>
-                      {t("미팅 {meetings}개 · 남은 할 일 {tasks}개", {
-                        meetings: data.meetings.filter(
-                          (m) => m.researchId === research.id,
-                        ).length,
-                        tasks: data.tasks.filter(
-                          (task) =>
-                            task.researchId === research.id &&
-                            task.status !== "done",
-                        ).length,
-                      })}
-                      <Icon name="arrow-up-right" size={16} />
-                    </>
-                  )}
-                </span>
-              </Link>
-              <div className="research-card-actions">
-                {trashView ? (
-                  <Button
-                    variant="outline"
-                    disabled={pending}
-                    onClick={async () => {
-                      setPending(true);
-                      try {
-                        await saveResearch({
-                          ...research,
-                          deletedAt: undefined,
-                          archivedAt: undefined,
-                        });
-                        toast.success(
-                          t(
-                            "연구를 복원했어요. 검토 요청 공유는 직접 다시 시작해 주세요.",
-                          ),
-                        );
-                      } catch (e) {
-                        toast.error(friendlyError(e));
-                      } finally {
-                        setPending(false);
-                      }
+                <div className="surface research-card-wrap">
+                  <Link
+                    className="research-card"
+                    to={trashView ? "/r?view=trash" : `/r/${research.id}`}
+                    aria-disabled={trashView || undefined}
+                    tabIndex={trashView ? -1 : undefined}
+                    onClick={(e) => {
+                      if (trashView) e.preventDefault();
                     }}
                   >
-                    {t("복원")}
-                  </Button>
-                ) : (
-                  <Button asChild variant="outline">
-                    <Link to={`/r/${research.id}/settings`}>
-                      {t("연구 설정")}
-                    </Link>
-                  </Button>
-                )}
-                {archivedView && research.ownerId === user.id && (
-                  <Button
-                    variant="outline"
-                    disabled={pending}
-                    onClick={async () => {
-                      setPending(true);
-                      try {
-                        await saveResearch({
-                          ...research,
-                          archivedAt: undefined,
-                        });
-                        toast.success(t("진행 중인 연구로 복원했어요."));
-                      } catch (e) {
-                        toast.error(friendlyError(e));
-                      } finally {
-                        setPending(false);
-                      }
-                    }}
-                  >
-                    {t("복원")}
-                  </Button>
-                )}
-                {trashView && research.ownerId === user.id && (
-                  <PermanentResearchDelete
-                    id={research.id}
-                    name={research.name}
-                  />
-                )}
-                {!trashView && research.ownerId === user.id && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
+                    <span className="research-card-top">
+                      <span className="research-card-icon">
+                        <Icon name="book" size={24} />
+                      </span>
+                      <span className="research-card-badge" key={view}>
+                        <StatusBadge tone={statusBadge.tone}>
+                          {statusBadge.label}
+                        </StatusBadge>
+                      </span>
+                    </span>
+                    <h2>{research.name}</h2>
+                    <p>{research.description || t("설명이 없어요.")}</p>
+                    <span className="meta">
+                      {trashView ? (
+                        t("복원하면 기록을 다시 볼 수 있어요.")
+                      ) : (
+                        <>
+                          {t("미팅 {meetings}개 · 남은 할 일 {tasks}개", {
+                            meetings: data.meetings.filter(
+                              (m) => m.researchId === research.id,
+                            ).length,
+                            tasks: data.tasks.filter(
+                              (task) =>
+                                task.researchId === research.id &&
+                                task.status !== "done",
+                            ).length,
+                          })}
+                          {research.submissionDate &&
+                            daysUntil(todayKey(), research.submissionDate) !==
+                              null &&
+                            ` · ${t("투고 {label}", {
+                              label: dDayLabel(
+                                daysUntil(todayKey(), research.submissionDate)!,
+                              ),
+                            })}`}
+                          <Icon name="arrow-up-right" size={16} />
+                        </>
+                      )}
+                    </span>
+                  </Link>
+                  <div className="research-card-actions">
+                    {trashView ? (
                       <Button
-                        variant="ghost"
-                        size="icon"
+                        variant="outline"
                         disabled={pending}
-                        aria-label={t("{name} 더보기", { name: research.name })}
+                        onClick={() => runCardAction(research, "restore")}
                       >
-                        <Icon name="more" size={18} />
+                        {t("복원")}
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      <DropdownMenuItem
-                        onSelect={() => {
-                          setTrashTarget(research);
-                          setTrashName("");
-                        }}
+                    ) : (
+                      <Button asChild variant="outline">
+                        <Link to={`/r/${research.id}/settings`}>
+                          {t("연구 설정")}
+                        </Link>
+                      </Button>
+                    )}
+                    {archivedView && research.ownerId === user.id && (
+                      <Button
+                        variant="outline"
+                        disabled={pending}
+                        onClick={() => runCardAction(research, "unarchive")}
                       >
-                        <Icon name="trash" size={16} />
-                        {t("휴지통으로 옮기기")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            </div>
-          ))}
+                        {t("복원")}
+                      </Button>
+                    )}
+                    {trashView && research.ownerId === user.id && (
+                      <PermanentResearchDelete
+                        id={research.id}
+                        name={research.name}
+                      />
+                    )}
+                    {!trashView && (
+                      <ResearchCardMoreMenu
+                        name={research.name}
+                        actions={actions}
+                        disabled={pending}
+                        onAction={(id) => runCardAction(research, id)}
+                      />
+                    )}
+                  </div>
+                </div>
+              </ResearchCardContextMenu>
+            );
+          })}
         </div>
       ) : !incomingOnly ? (
         <EmptyState

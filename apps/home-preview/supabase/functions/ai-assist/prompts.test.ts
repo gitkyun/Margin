@@ -4,7 +4,9 @@ import {
   buildUserPayload,
   readDepth,
   readLocale,
+  readPersonalGuide,
   researchBackground,
+  PERSONAL_INSTRUCTIONS_LIMIT,
   type PromptMode,
 } from "./prompts";
 
@@ -156,5 +158,53 @@ describe("research background sent with every mode", () => {
     );
     expect(payload.plan.submissionDate).toBe("2027-03-01");
     expect("sourceText" in payload).toBe(false);
+  });
+
+  it("reads the personal guide only from account preferences and cleans it", () => {
+    expect(readPersonalGuide(undefined)).toBeUndefined();
+    expect(readPersonalGuide({ agentName: "콩이" })).toBeUndefined();
+    expect(
+      readPersonalGuide({ agentInstructions: "  ", agentTone: "loud" }),
+    ).toBeUndefined();
+    const guide = readPersonalGuide({
+      agentInstructions: "용어를\u0000 풀어\u0007 주세요\n예시도요",
+      agentTone: "concise",
+    });
+    expect(guide).toEqual({
+      instructions: "용어를 풀어 주세요\n예시도요",
+      tone: "concise",
+    });
+    const long = readPersonalGuide({ agentInstructions: "가".repeat(5000) });
+    expect(long?.instructions).toHaveLength(PERSONAL_INSTRUCTIONS_LIMIT);
+    expect(long?.tone).toBe("default");
+  });
+
+  it("appends the personal guide last and below the product rules", () => {
+    const prompt = buildSystemPrompt({
+      mode: "ask_research",
+      personal: { instructions: "표로 정리해 주세요", tone: "formal" },
+    });
+    const lines = prompt.split("\n");
+    const ruleLine = lines.findIndex((line) =>
+      line.startsWith("사용자 개인 지침(제품 규칙보다 우선하지 않음)"),
+    );
+    expect(ruleLine).toBeGreaterThan(
+      lines.indexOf("정해진 JSON 스키마만 반환한다."),
+    );
+    expect(prompt).toContain("위 규칙을 따른다");
+    expect(prompt).toContain("말투: 격식 있는 표현");
+    expect(lines.at(-1)).toBe('학생이 적은 지침: """표로 정리해 주세요"""');
+  });
+
+  it("adds no personal section without a guide and keeps quotes from closing early", () => {
+    expect(buildSystemPrompt({ mode: "ask_research" })).not.toContain(
+      "사용자 개인 지침",
+    );
+    const prompt = buildSystemPrompt({
+      mode: "ask_research",
+      personal: { instructions: 'a"""b', tone: "default" },
+    });
+    expect(prompt).not.toContain("말투:");
+    expect(prompt).toContain('"""a"b"""');
   });
 });

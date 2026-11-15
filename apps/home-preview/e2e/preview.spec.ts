@@ -21,7 +21,10 @@ test("내 연구에서 연구 홈으로 들어가 주요 메뉴를 오간다", a
     ["문서", "writing", "글쓰기"],
     ["일정", "planning", "일정"],
   ] as const) {
-    await menu.getByRole("link", { name, exact: true }).click();
+    // 피드백 메뉴는 새 응답이 있으면 이름 뒤에 '새 응답 있음'이 붙어요(사이드바 점의 화면 낭독 문구).
+    await menu
+      .getByRole("link", { name: new RegExp(`^${name}( 새 응답 있음)?$`) })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/${path}$`));
     await expect(page).toHaveTitle(new RegExp(title));
   }

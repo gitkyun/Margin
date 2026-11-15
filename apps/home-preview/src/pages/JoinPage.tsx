@@ -10,6 +10,7 @@ import { formatDateTime } from "@/lib/domain";
 import { t } from "@/lib/i18n";
 import { signupProblem } from "@/lib/invites";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "@/lib/password-policy";
+import { PasswordStrength } from "@/components/PasswordStrength";
 import {
   JOIN_PARAM,
   acceptProjectInvite,
@@ -389,6 +390,7 @@ export function JoinPage({ session, ready }: JoinPageProps) {
               placeholder={PASSWORD_HELP}
               disabled={pending}
             />
+            <PasswordStrength value={password} />
           </label>
           {problem && (
             <p className="rms-error" role="alert">

@@ -8,6 +8,22 @@
   samp {
     font-family: inherit;
   }
+  /* 키캡: 단축키 도움말·⌘K·사이드바가 같은 모양을 써요. 아래 두꺼운 테두리로 누르는 키처럼 보여요. */
+  kbd {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 var(--spacing-4);
+    border: 1px solid var(--semantic-line-neutral-primary);
+    border-bottom-width: 2px;
+    border-radius: var(--radius-4);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    line-height: 1;
+  }
 
   /* ── Shell ─────────────────────────────────────────────── */
   .floating-workspace {

@@ -15,6 +15,7 @@ import { NavigationGuardProvider } from "../src/lib/navigation-guard";
 const state = vi.hoisted(() => ({ workspace: null as any }));
 vi.mock("../src/lib/workspace", () => ({
   useWorkspace: () => state.workspace,
+  useOptionalWorkspace: () => state.workspace,
 }));
 beforeAll(() => {
   Object.defineProperty(window, "matchMedia", {

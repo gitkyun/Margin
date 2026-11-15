@@ -4,6 +4,7 @@ import {
   buildUserPayload,
   readDepth,
   readLocale,
+  readPersonalGuide,
   researchBackground,
 } from "./prompts.ts";
 import {
@@ -324,6 +325,8 @@ Deno.serve(async (request) => {
       depth: readDepth(input.thinking),
       freeChat,
       background,
+      // 개인 지침은 화면이 보낸 값이 아니라 요청한 사람의 계정 메타데이터에서 읽어요.
+      personal: readPersonalGuide(user.user_metadata?.preferences),
     });
     const controller = new AbortController(),
       timeout = setTimeout(() => controller.abort(), 90000),

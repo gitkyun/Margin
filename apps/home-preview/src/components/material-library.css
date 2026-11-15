@@ -1,0 +1,178 @@
+/* 자료: PDF 썸네일 로딩 · 여백 미리보기 레일 · 폴더 트리 · 끌어 옮기기. Montage 토큰만 씁니다. */
+@layer margin {
+  /* ── PDF 첫 페이지 썸네일 ─────────────────────────── */
+  .material-preview-badge .material-preview-canvas {
+    opacity: 0;
+    transition: opacity var(--motion-duration-page) var(--motion-ease-standard);
+  }
+  .material-preview-badge.is-ready .material-preview-canvas {
+    opacity: 1;
+  }
+  /* 그리는 동안의 자리표시: 옅은 띠가 천천히 지나가요(동작 줄이기에서는 멈춰요). */
+  .material-preview-badge .preview-shimmer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+  }
+  .material-preview-badge .preview-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      color-mix(in srgb, var(--surface) 70%, transparent) 50%,
+      transparent 80%
+    );
+    transform: translateX(-100%);
+    animation: material-preview-shimmer 1.4s var(--motion-ease-standard)
+      infinite;
+  }
+  @keyframes material-preview-shimmer {
+    to {
+      transform: translateX(100%);
+    }
+  }
+  /* 여백 미리보기 레일의 큰 썸네일 */
+  .material-preview-badge.is-large {
+    flex: none;
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+    max-height: 360px;
+    margin-bottom: var(--spacing-12);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+  }
+  .material-preview-badge.is-large::before {
+    display: none;
+  }
+  .material-preview-badge.is-large .material-preview-canvas {
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    border: 0;
+    border-radius: 0;
+    object-fit: contain;
+    object-position: top center;
+  }
+  .material-preview-badge.is-large .preview-shimmer,
+  .material-preview-badge.is-large .preview-fallback {
+    border: 0;
+    border-radius: 0;
+  }
+  .material-preview-badge.is-large .preview-fallback {
+    height: 200px;
+  }
+
+  /* ── 자료 행 + 폴더로 옮기기 메뉴 ─────────────────── */
+  .material-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .material-list-item:last-child {
+    border-bottom: 0;
+  }
+  .material-list-item > .material-list-row {
+    flex: 1;
+    min-width: 0;
+    border-bottom: 0;
+  }
+  .material-list-item > .material-list-row[draggable="true"] {
+    cursor: grab;
+  }
+  .material-list-item > .material-list-row[draggable="true"]:active {
+    cursor: grabbing;
+  }
+
+  /* ── 폴더 트리 ─────────────────────────────────── */
+  .folder-tree-list,
+  .folder-children {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .folder-tree-row {
+    border-radius: var(--radius-8);
+    transition: background-color var(--motion-duration-micro)
+      var(--motion-ease-standard);
+  }
+  .folder-tree-row button.folder-toggle:first-child {
+    flex: none;
+    min-height: 0;
+    padding: 0;
+  }
+  .folder-toggle svg {
+    transition: transform var(--motion-duration-micro)
+      var(--motion-ease-standard);
+  }
+  .folder-toggle[aria-expanded="true"] svg {
+    transform: rotate(90deg);
+  }
+  .folder-toggle-space {
+    flex: none;
+    width: 24px;
+  }
+  .folder-tree-row .folder-select {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+    text-align: left;
+  }
+  .folder-tree-row .folder-select > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .folder-tree-row .folder-select:hover {
+    background: var(--surface);
+  }
+  .folder-tree-row .folder-select[aria-pressed="true"] {
+    background: var(--selected-fill);
+    color: var(--semantic-foreground-brand-primary);
+  }
+  .folder-tree-row .folder-select:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+  /* 자료를 끌어 폴더 위에 올렸을 때 놓을 자리 */
+  .folder-tree-row[data-drop="true"],
+  .folder-all[data-drop="true"] {
+    background: var(--selected-fill);
+    box-shadow: inset 0 0 0 2px var(--brand);
+  }
+  .folder-drop-hint {
+    margin: var(--spacing-8) 0 0;
+    padding: 0 var(--spacing-10);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .material-preview-badge .material-preview-canvas,
+    .folder-tree-row,
+    .folder-toggle svg {
+      transition: none;
+    }
+    .material-preview-badge .preview-shimmer::after {
+      animation: none;
+    }
+  }
+}

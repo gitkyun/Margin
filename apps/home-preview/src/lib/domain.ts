@@ -27,6 +27,12 @@ export interface Research {
   questions?: string[];
   /** 이 연구의 지도교수 이메일(소문자). 검토 요청을 만들 때 여기서 고릅니다. */
   advisorEmails?: string[];
+  /** 투고·제출 목표일(YYYY-MM-DD). 온보딩·연구 설정에서 적고 홈 D-Day와 로드맵 제안에 씁니다. */
+  submissionDate?: string;
+  /** 연구 키워드(최대 10개). 연구 설정 기본 정보에서 칩으로 적어요. */
+  keywords?: string[];
+  /** 목표 학회·학술지 인용 양식 프리셋(apa7·ieee·acm·chicago·mla). lib/research-profile 참고 */
+  citationStyle?: string;
   deletedAt?: string;
   example?: boolean;
   archivedAt?: string;
@@ -52,8 +58,17 @@ export interface Feedback extends BaseRecord {
   sourceMemoRevision?: number;
   sourceStart?: number;
   sourceEnd?: number;
+  /** 전사문에서 고른 구간으로 만든 피드백의 녹음 위치(녹음 시작 기준 ms). */
+  audioSource?: AudioSource;
   status: "unprocessed" | "in_progress" | "recorded" | "held" | "unchanged";
   notes: string;
+}
+/** 피드백이 나온 녹음 구간. recordingId가 없으면 그 미팅의 첫 녹음을 씁니다. */
+export interface AudioSource {
+  meetingId: ID;
+  recordingId?: ID;
+  startMs: number;
+  endMs: number;
 }
 export interface RevisionPlan extends BaseRecord {
   origin?: RecordOrigin;
@@ -223,6 +238,22 @@ export interface Recording extends BaseRecord {
   size: number;
   duration: number;
   consentAt: string;
+  /** 전사 원문(raw_segments)과 같은 순서의 문장별 녹음 위치·인식 신뢰도. 글자는 담지 않아요. */
+  segmentTimes?: SegmentTime[];
+  /** 전사 수정문에 칠한 형광펜 범위. 글자 대신 위치와 확인용 해시만 담아요. */
+  transcriptMarks?: TranscriptMark[];
+}
+/** 전사 문장 하나의 녹음 시작 기준 위치(ms)와 인식 신뢰도(0이면 브라우저가 주지 않은 것). */
+export interface SegmentTime {
+  startMs: number;
+  endMs: number;
+  confidence?: number;
+}
+/** 전사 수정문의 [start, end) 범위. hash가 지금 글자와 다르면 표시하지 않아요. */
+export interface TranscriptMark {
+  start: number;
+  end: number;
+  hash: string;
 }
 export interface AIContext {
   kind:

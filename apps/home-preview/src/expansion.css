@@ -1401,14 +1401,46 @@
     padding: 0;
     list-style: none;
   }
+  /* 시간순 타임라인: 왼쪽 세로선과 점. 바뀐 결정은 속이 빈 점이에요. */
   .decision-log > li {
+    position: relative;
     display: grid;
     gap: var(--spacing-4);
-    padding: var(--spacing-14) 0;
-    border-bottom: 1px solid var(--line);
+    padding: var(--spacing-10) 0 var(--spacing-16) var(--spacing-24);
   }
-  .decision-log > li:last-child {
-    border-bottom: 0;
+  .decision-log > li::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 5px;
+    width: 2px;
+    background: var(--line);
+  }
+  .decision-log > li:first-child::before {
+    top: 16px;
+  }
+  .decision-log > li:last-child::before {
+    bottom: auto;
+    height: 16px;
+  }
+  .decision-log > li:only-child::before {
+    display: none;
+  }
+  .decision-log > li::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border: 2px solid var(--brand);
+    border-radius: 50%;
+    background: var(--brand);
+  }
+  .decision-log > li.is-replaced::after {
+    border-color: var(--tone-gray);
+    background: var(--surface);
   }
   .decision-log p {
     margin: 0;

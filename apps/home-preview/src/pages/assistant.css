@@ -41,9 +41,6 @@
     align-items: center;
     text-align: center;
   }
-  .assistant-welcome > .margin-mascot {
-    box-shadow: var(--semantic-elevation-shadow-normal-small);
-  }
   .assistant-welcome h2 {
     margin: var(--spacing-20) 0 var(--spacing-8);
     color: var(--text);
@@ -742,9 +739,6 @@
   @media (max-width: 767px) {
     .chat-scroll {
       padding: var(--spacing-16) 0;
-    }
-    .assistant-welcome > .margin-mascot {
-      --mascot-size: 48px !important;
     }
     .assistant-welcome h2 {
       margin-top: var(--spacing-14);

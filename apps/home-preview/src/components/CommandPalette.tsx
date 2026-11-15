@@ -56,7 +56,13 @@ export function CommandPalette({
   const sections = useMemo(
     () =>
       rankSections(
-        buildCommands({ data, researchId, searching, userId: user.id }),
+        buildCommands({
+          data,
+          researchId,
+          searching,
+          userId: user.id,
+          query,
+        }),
         query,
       ),
     [data, researchId, searching, query, user.id],
@@ -92,7 +98,7 @@ export function CommandPalette({
               onValueChange={setQuery}
               placeholder={
                 researchId
-                  ? t("기록 제목, 화면, 할 일을 찾아요")
+                  ? t("기록 제목, 메모·피드백·댓글 본문, 화면을 찾아요")
                   : incomingOnly
                     ? t("받은 검토 요청 제목이나 연구 이름을 찾아요")
                     : t("연구 이름이나 화면을 찾아요")
@@ -115,7 +121,22 @@ export function CommandPalette({
                     onSelect={() => run(entry)}
                   >
                     <Icon name={entry.icon} size={18} />
-                    <span className="command-palette-label">{entry.label}</span>
+                    {entry.excerpt ? (
+                      <span className="command-palette-label is-stacked">
+                        <span>{entry.label}</span>
+                        <span className="command-palette-excerpt">
+                          {entry.excerpt.clippedStart && "…"}
+                          {entry.excerpt.before}
+                          <mark>{entry.excerpt.match}</mark>
+                          {entry.excerpt.after}
+                          {entry.excerpt.clippedEnd && "…"}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="command-palette-label">
+                        {entry.label}
+                      </span>
+                    )}
                     {entry.shortcut ? (
                       <span
                         className="command-palette-keys"

@@ -1,6 +1,7 @@
 import { t } from "@/lib/i18n";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { SlideToConfirm } from "./SlideToConfirm";
+import "./permanent-research-delete.css";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/lib/workspace";
 import { assertConnected, friendlyError } from "@/lib/supabase";
@@ -27,17 +28,60 @@ export function PermanentResearchDelete({
 }) {
   const w = useWorkspace();
   const client = useQueryClient();
-  const [open, setOpen] = useState(false),
-    [confirmation, setConfirmation] = useState("");
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  /**
+   * 슬라이드를 끝까지 밀면 서버에서 삭제합니다. 서버는 소유자·휴지통 상태를 다시 확인하고
+   * 확인 값으로 연구 이름을 받으므로, 화면에 보이는 이 연구의 이름을 그대로 넘겨요.
+   */
+  async function remove() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      if (w.mode !== "connected")
+        throw new Error(t("미리보기에서는 완전히 삭제할 수 없어요."));
+      const { data, error } = await assertConnected().functions.invoke(
+        "delete-research",
+        { body: { researchId: id, confirmationName: name } },
+      );
+      if (error) {
+        let message = t("삭제하지 못했어요. 다시 시도해 주세요.");
+        try {
+          const body = await error.context?.json();
+          if (body?.error) message = localizeServerMessage(body.error);
+        } catch {
+          /* Use safe fallback. */
+        }
+        throw new Error(message);
+      }
+      if (!data?.deleted)
+        throw new Error(
+          data?.error ??
+            t(
+              "삭제 결과를 확인하지 못했어요. 새로고침한 뒤 휴지통을 확인해 주세요.",
+            ),
+        );
+      await w.refresh();
+      setOpen(false);
+      toast.success(t("연구와 올린 파일을 완전히 삭제했어요."));
+    } catch (e) {
+      setError(friendlyError(e));
+    } finally {
+      setBusy(false);
+      void client.invalidateQueries({
+        queryKey: ["pending-deletions", w.user.id],
+      });
+    }
+  }
+
   return (
     <>
       <Button
         variant="ghost"
         onClick={() => {
           setOpen(true);
-          setConfirmation("");
           setError("");
         }}
       >
@@ -65,61 +109,14 @@ export function PermanentResearchDelete({
               )}
             </DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (busy || confirmation !== name) return;
-              setBusy(true);
-              setError("");
-              try {
-                if (w.mode !== "connected")
-                  throw new Error(t("미리보기에서는 완전히 삭제할 수 없어요."));
-                const { data, error } =
-                  await assertConnected().functions.invoke("delete-research", {
-                    body: { researchId: id, confirmationName: confirmation },
-                  });
-                if (error) {
-                  let message = t("삭제하지 못했어요. 다시 시도해 주세요.");
-                  try {
-                    const body = await error.context?.json();
-                    if (body?.error)
-                      message = localizeServerMessage(body.error);
-                  } catch {
-                    /* Use safe fallback. */
-                  }
-                  throw new Error(message);
-                }
-                if (!data?.deleted)
-                  throw new Error(
-                    data?.error ??
-                      t(
-                        "삭제 결과를 확인하지 못했어요. 새로고침한 뒤 휴지통을 확인해 주세요.",
-                      ),
-                  );
-                await w.refresh();
-                setOpen(false);
-                setConfirmation("");
-                toast.success(t("연구와 올린 파일을 완전히 삭제했어요."));
-              } catch (e) {
-                setError(friendlyError(e));
-              } finally {
-                setBusy(false);
-                void client.invalidateQueries({
-                  queryKey: ["pending-deletions", w.user.id],
-                });
-              }
-            }}
-          >
-            <label className="field">
-              {t("확인을 위해 연구 이름을 입력하세요")}
-              <Input
-                value={confirmation}
-                onChange={(e) => setConfirmation(e.target.value)}
-                autoComplete="off"
-                disabled={busy}
-                required
-              />
-            </label>
+          <div className="permanent-delete-confirm">
+            <SlideToConfirm
+              tone="danger"
+              label={t("밀어서 완전히 삭제")}
+              confirmLabel={t("삭제 중")}
+              disabled={busy}
+              onConfirm={remove}
+            />
             {error && (
               <p className="form-error" role="alert">
                 {error}
@@ -134,15 +131,8 @@ export function PermanentResearchDelete({
               >
                 {t("취소")}
               </Button>
-              <Button
-                type="submit"
-                variant="destructive"
-                disabled={busy || confirmation !== name}
-              >
-                {busy ? t("삭제 중") : t("완전히 삭제")}
-              </Button>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
     </>

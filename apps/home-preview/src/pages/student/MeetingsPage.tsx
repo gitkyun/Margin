@@ -4,7 +4,16 @@ import { seoulToday } from "@/lib/home-meeting";
 import { AnimatedList } from "@/components/AnimatedList";
 import { isImeComposing } from "@/lib/ime";
 import { VisibilityField } from "@/components/experience";
-import { RecordingPanel } from "@/components/RecordingPanel";
+import {
+  RecordingPanel,
+  type TranscriptPick,
+} from "@/components/RecordingPanel";
+import { SortableList } from "@/components/meeting/SortableList";
+import {
+  SelectionToolbar,
+  useTextareaSelection,
+} from "@/components/recording/SelectionPopover";
+import { orderedBy, reorderIds } from "@/lib/meeting-order";
 import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -64,6 +73,7 @@ import { filterCounts } from "@/lib/filter-counts";
 import { Checkbox } from "@montage-ui/core";
 import { Tabs } from "@/components/ui/tabs";
 import { entryFromSelection } from "@/lib/memo-selection";
+import type { AudioSource } from "@/lib/domain";
 
 const meetingFilters = [
   ["all", t("전체")],
@@ -444,6 +454,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const composingMemo = useRef(false);
   // 메모에서 고른 문장으로 피드백·결정·질문을 채우려고 메모 칸을 기억합니다.
   const memoField = useRef<HTMLTextAreaElement>(null);
+  const memoHost = useRef<HTMLDivElement>(null);
+  const memoSelection = useTextareaSelection(memoField, memoHost);
   const savedMemo = useRef<string | null>(
     restoredDraft?.text === meeting.memo
       ? meeting.memo
@@ -479,8 +491,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [entryBody, setEntryBody] = useState("");
   const [entryReason, setEntryReason] = useState("");
   const [entryReplaces, setEntryReplaces] = useState("");
-  // 메모에서 고른 문장으로 채워 열었는지. 대화상자 안내 문구가 달라집니다.
-  const [entryFromMemo, setEntryFromMemo] = useState(false);
+  // 메모·전사문에서 고른 문장으로 채워 열었는지. 대화상자 안내 문구가 달라집니다.
+  const [entryFrom, setEntryFrom] = useState<"memo" | "transcript" | null>(
+    null,
+  );
+  // 전사문에서 고른 글의 녹음 위치. 피드백으로 저장할 때 함께 남겨요.
+  const [entrySource, setEntrySource] = useState<AudioSource | null>(null);
   // 고치는 중인 결정. 없으면 새로 추가하는 것입니다.
   const [editingDecision, setEditingDecision] = useState<Decision | null>(null);
   const entryForm = useSaving();
@@ -493,8 +509,9 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [linkQuestionId, setLinkQuestionId] = useState<string | null>(null);
   const [targetMeetingId, setTargetMeetingId] = useState("");
   const questionForm = useSaving();
-  const linkedTasks = data.tasks.filter((item) =>
-    meeting.taskIds.includes(item.id),
+  const linkedTasks = orderedBy(
+    data.tasks.filter((item) => meeting.taskIds.includes(item.id)),
+    meeting.taskIds,
   );
   const linkedVersions = data.versions.filter((item) =>
     meeting.versionIds.includes(item.id),
@@ -503,8 +520,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     (item) =>
       meeting.questionIds.includes(item.id) || item.meetingId === meeting.id,
   );
-  const preparedQuestions = data.questions.filter((item) =>
-    meeting.questionIds.includes(item.id),
+  // 준비 목록은 미팅에 저장한 순서(questionIds·taskIds)대로 보여요.
+  const preparedQuestions = orderedBy(
+    data.questions.filter((item) => meeting.questionIds.includes(item.id)),
+    meeting.questionIds,
   );
   // 연구 전체 결정의 연결(무엇을 바꿨고 무엇으로 바뀌었는지)에서 이 미팅 것만 고릅니다.
   const allDecisions = decisionLog(data.decisions, data.meetings, researchId);
@@ -839,20 +858,34 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     }
     toast.success(t("선택한 AI 제안을 저장했어요"));
   }
+  // 준비 목록 순서 바꾸기. 다른 내용은 건드리지 않고 순서만 저장해요.
+  async function reorderPrepared(
+    field: "questionIds" | "taskIds",
+    visibleIds: string[],
+  ) {
+    const current = latest.current;
+    await savePreparation(
+      { ...current, [field]: reorderIds(current[field], visibleIds) },
+      [],
+    );
+  }
   function openEntry(
     kind: "feedback" | "decision" | "question",
     existing?: Decision,
+    preset?: { text: string; source?: AudioSource },
   ) {
     entryBase.current = existing ?? recordBase(researchId);
     setEditingDecision(existing ?? null);
     const field = memoField.current;
-    const draft =
-      !existing && field
+    const draft = preset
+      ? entryFromSelection(preset.text)
+      : !existing && field
         ? entryFromSelection(
             field.value.slice(field.selectionStart, field.selectionEnd),
           )
         : null;
-    setEntryFromMemo(!!draft);
+    setEntryFrom(draft ? (preset ? "transcript" : "memo") : null);
+    setEntrySource(preset?.source ?? null);
     setEntry(kind);
     setEntryTitle(kind === "feedback" ? (draft?.title ?? "") : "");
     setEntryBody(existing?.text ?? draft?.body ?? "");
@@ -882,6 +915,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           body: entryBody.trim(),
           notes: "",
           status: "unprocessed",
+          ...(entrySource ? { audioSource: entrySource } : {}),
         });
       else if (entry === "decision")
         await save("decisions", {
@@ -1053,41 +1087,49 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 </Button>
               </div>
               {linkedTasks.length ? (
-                linkedTasks.map((task) => (
-                  <Link
-                    className="student-simple-row"
-                    key={task.id}
-                    to={`/r/${researchId}/tasks/${task.id}`}
-                    state={back(meeting.title)}
-                  >
-                    <span
-                      className={`student-check-indicator ${task.status === "done" ? "checked" : ""}`}
+                <SortableList
+                  items={linkedTasks}
+                  getKey={(task) => task.id}
+                  label={t("이번 미팅 할 일 순서")}
+                  itemName={(task) => task.title}
+                  onCommit={(ids) => reorderPrepared("taskIds", ids)}
+                  renderItem={(task) => (
+                    <Link
+                      className="student-simple-row"
+                      to={`/r/${researchId}/tasks/${task.id}`}
+                      state={back(meeting.title)}
                     >
-                      {task.status === "done" && (
-                        <Icon name="check" size={13} />
-                      )}
-                    </span>
-                    <span className="grow">
-                      <strong>{task.title}</strong>
-                      <small>
-                        {task.dueDate
-                          ? t("기한 {date}", { date: formatDate(task.dueDate) })
-                          : t("기한 미정")}
-                      </small>
-                    </span>
-                    <StatusBadge
-                      tone={
-                        task.status === "done"
-                          ? "green"
-                          : task.status === "doing"
-                            ? "blue"
-                            : "neutral"
-                      }
-                    >
-                      {taskLabels[task.status]}
-                    </StatusBadge>
-                  </Link>
-                ))
+                      <span
+                        className={`student-check-indicator ${task.status === "done" ? "checked" : ""}`}
+                      >
+                        {task.status === "done" && (
+                          <Icon name="check" size={13} />
+                        )}
+                      </span>
+                      <span className="grow">
+                        <strong>{task.title}</strong>
+                        <small>
+                          {task.dueDate
+                            ? t("기한 {date}", {
+                                date: formatDate(task.dueDate),
+                              })
+                            : t("기한 미정")}
+                        </small>
+                      </span>
+                      <StatusBadge
+                        tone={
+                          task.status === "done"
+                            ? "green"
+                            : task.status === "doing"
+                              ? "blue"
+                              : "neutral"
+                        }
+                      >
+                        {taskLabels[task.status]}
+                      </StatusBadge>
+                    </Link>
+                  )}
+                />
               ) : (
                 <EmptyState
                   title={t("이번 미팅에 고른 할 일이 없어요")}
@@ -1146,14 +1188,19 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   </Button>
                 </div>
                 {preparedQuestions.filter((q) => q.status === "open").length ? (
-                  preparedQuestions
-                    .filter((q) => q.status === "open")
-                    .map((question) => (
-                      <div className="student-question-row" key={question.id}>
+                  <SortableList
+                    items={preparedQuestions.filter((q) => q.status === "open")}
+                    getKey={(question) => question.id}
+                    label={t("물어볼 질문 순서")}
+                    itemName={(question) => question.text.slice(0, 40)}
+                    onCommit={(ids) => reorderPrepared("questionIds", ids)}
+                    renderItem={(question) => (
+                      <div className="student-question-row">
                         <Icon name="message" size={16} />
                         <p>{question.text}</p>
                       </div>
-                    ))
+                    )}
+                  />
                 ) : (
                   <InlineEmpty>{t("물어볼 질문이 없어요.")}</InlineEmpty>
                 )}
@@ -1177,6 +1224,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   );
                 setMemo(draftMemo.current + text);
               }}
+              onPick={(pick: TranscriptPick) =>
+                openEntry(pick.kind, undefined, {
+                  text: pick.text,
+                  source: pick.source,
+                })
+              }
             />
             <div className="section-heading">
               <h2>{t("미팅 원문 메모")}</h2>
@@ -1202,34 +1255,61 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 "들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한 피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.",
               )}{" "}
               {t(
-                "메모에서 문장을 고른 뒤 ‘직접 추가’를 누르면 그 문장으로 채워져요.",
+                "메모에서 문장을 고르면 위에 뜨는 버튼이나 ‘직접 추가’로 그 문장을 채울 수 있어요.",
               )}
             </p>
-            <textarea
-              ref={memoField}
-              className="meeting-memo"
-              aria-label={t("미팅 원문 메모")}
-              value={memo}
-              onCompositionStart={() => {
-                composingMemo.current = true;
-              }}
-              onCompositionEnd={(e) => {
-                composingMemo.current = false;
-                draftMemo.current = e.currentTarget.value;
-                setMemo(e.currentTarget.value);
-                setMemoTick((v) => v + 1);
-              }}
-              onChange={(e) => {
-                draftMemo.current = e.target.value;
-                setMemo(e.target.value);
-              }}
-              onBlur={() => {
-                void commitMemo();
-              }}
-              placeholder={t(
-                "예: 교수님 피드백, 결정한 내용, 다시 확인할 질문",
-              )}
-            />
+            <div className="selection-host" ref={memoHost}>
+              <textarea
+                ref={memoField}
+                className="meeting-memo"
+                aria-label={t("미팅 원문 메모")}
+                value={memo}
+                onCompositionStart={() => {
+                  composingMemo.current = true;
+                }}
+                onCompositionEnd={(e) => {
+                  composingMemo.current = false;
+                  draftMemo.current = e.currentTarget.value;
+                  setMemo(e.currentTarget.value);
+                  setMemoTick((v) => v + 1);
+                }}
+                onChange={(e) => {
+                  draftMemo.current = e.target.value;
+                  setMemo(e.target.value);
+                }}
+                onBlur={() => {
+                  void commitMemo();
+                }}
+                placeholder={t(
+                  "예: 교수님 피드백, 결정한 내용, 다시 확인할 질문",
+                )}
+              />
+              <SelectionToolbar
+                anchor={memoSelection.anchor}
+                onDismiss={memoSelection.clear}
+                label={t("고른 메모로 만들기")}
+                actions={[
+                  {
+                    key: "feedback",
+                    icon: "plus",
+                    label: t("피드백"),
+                    onSelect: () => openEntry("feedback"),
+                  },
+                  {
+                    key: "decision",
+                    icon: "plus",
+                    label: t("결정"),
+                    onSelect: () => openEntry("decision"),
+                  },
+                  {
+                    key: "question",
+                    icon: "plus",
+                    label: t("질문"),
+                    onSelect: () => openEntry("question"),
+                  },
+                ]}
+              />
+            </div>
             <ErrorNotice error={memoError} />
             {memoConflict ? (
               <div className="stack">
@@ -1838,11 +1918,13 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           if (!open) setEntry(null);
         }}
         description={
-          entryFromMemo
+          entryFrom === "memo"
             ? t("메모에서 고른 문장을 채워 뒀어요. 확인하고 저장하세요.")
-            : editingDecision
-              ? undefined
-              : t("내용을 적고 저장하세요.")
+            : entryFrom === "transcript"
+              ? t("전사문에서 고른 문장을 채워 뒀어요. 확인하고 저장하세요.")
+              : editingDecision
+                ? undefined
+                : t("내용을 적고 저장하세요.")
         }
         title={
           entry === "feedback"
@@ -1904,6 +1986,17 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 </label>
               )}
             </>
+          )}
+          {entryFrom === "transcript" && (
+            <p className="transcript-notice">
+              {t(
+                "전사문은 나만 보는 기록이에요. 여기에 저장하면 이 내용은 공동연구자도 볼 수 있어요.",
+              )}
+              {entry === "feedback" &&
+                (entrySource
+                  ? ` ${t("고른 문장의 녹음 위치도 함께 저장해서 피드백에서 그 구간을 들을 수 있어요.")}`
+                  : ` ${t("이 문장의 녹음 위치를 찾지 못해 녹음 구간 없이 저장돼요.")}`)}
+            </p>
           )}
           {!editingDecision && (
             <p className="student-footnote">

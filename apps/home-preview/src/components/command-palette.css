@@ -41,20 +41,6 @@
     color: var(--semantic-foreground-neutral-tertiary);
   }
 
-  .command-palette kbd {
-    display: inline-grid;
-    place-items: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 var(--spacing-4);
-    border: 1px solid var(--semantic-line-neutral-tertiary);
-    border-radius: var(--radius-4);
-    color: var(--semantic-foreground-neutral-secondary);
-    font-family: inherit;
-    font-size: var(--typography-caption1-fontSize);
-    line-height: 1;
-  }
-
   .command-palette-list {
     max-height: min(420px, 56vh);
     overflow-y: auto;
@@ -136,5 +122,31 @@
     .command-palette-help {
       display: none;
     }
+  }
+}
+
+@layer margin {
+  /* 본문에서 찾은 항목: 이름 아래에 일치 부분을 강조한 짧은 발췌를 한 줄로 */
+  .command-palette-label.is-stacked {
+    display: grid;
+    gap: var(--spacing-2);
+    padding-block: var(--spacing-6);
+  }
+  .command-palette-label.is-stacked > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .command-palette-excerpt {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .command-palette-excerpt mark {
+    border-radius: var(--radius-4);
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-weight: 600;
   }
 }

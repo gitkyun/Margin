@@ -1,0 +1,87 @@
+@layer margin {
+  /* 밀어서 확인. 손잡이 40px + 양쪽 4px = 48px(SlideToConfirm.tsx HANDLE_SPACE). */
+  .slide-confirm {
+    --slide-accent: var(--brand);
+    --slide-accent-soft: var(--brand-soft);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 220px;
+    height: 48px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+    overflow: hidden;
+    user-select: none;
+    touch-action: pan-y;
+  }
+  .slide-confirm[data-tone="danger"] {
+    --slide-accent: var(--danger);
+    --slide-accent-soft: color-mix(in srgb, var(--danger) 14%, transparent);
+  }
+  .slide-confirm[aria-disabled="true"] {
+    opacity: 0.5;
+  }
+  .slide-confirm-fill {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: calc(var(--slide-progress) * (100% - 48px) + 48px);
+    background: var(--slide-accent-soft);
+    transition: width var(--motion-duration-enter) var(--motion-ease-standard);
+  }
+  .slide-confirm-label {
+    position: relative;
+    padding-inline: calc(var(--spacing-24) * 2 + var(--spacing-4));
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label2-letterSpacing);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* 밀수록 안내가 옅어져 손잡이에 눈이 가게 해요. */
+    opacity: calc(1 - var(--slide-progress) * 0.8);
+  }
+  .slide-confirm[data-running] .slide-confirm-label {
+    opacity: 1;
+    color: var(--slide-accent);
+  }
+  .slide-confirm-handle {
+    position: absolute;
+    top: 3px;
+    left: calc(4px + var(--slide-progress) * (100% - 48px));
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: var(--slide-accent);
+    color: var(--surface);
+    cursor: grab;
+    touch-action: none;
+    transition: left var(--motion-duration-enter) var(--motion-ease-standard);
+  }
+  .slide-confirm[data-dragging] .slide-confirm-handle,
+  .slide-confirm[data-dragging] .slide-confirm-fill {
+    transition: none;
+  }
+  .slide-confirm[data-dragging] .slide-confirm-handle {
+    cursor: grabbing;
+  }
+  .slide-confirm-handle:focus-visible {
+    outline: 2px solid var(--slide-accent);
+    outline-offset: 3px;
+  }
+  /* 손잡이 위 진행 표시: 바탕과 같은 색이면 안 보여서 표면색으로 돌려요. */
+  .slide-confirm-handle .spinner {
+    border-color: color-mix(in srgb, var(--surface) 40%, transparent);
+    border-top-color: var(--surface);
+  }
+  .slide-confirm[aria-disabled="true"] .slide-confirm-handle,
+  .slide-confirm[data-running] .slide-confirm-handle {
+    cursor: default;
+  }
+}

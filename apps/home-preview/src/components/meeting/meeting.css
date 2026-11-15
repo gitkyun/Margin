@@ -1,0 +1,197 @@
+/*
+ * 미팅 준비 목록 끌어 정렬과 시간 조율 가능 시간 격자.
+ * 색·간격·모서리·움직임은 Montage 토큰만 써요.
+ */
+@layer margin {
+  .sortable-list {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sortable-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    min-width: 0;
+    padding: var(--spacing-4);
+    border-radius: var(--radius-10);
+    background: var(--surface);
+  }
+  .sortable-row:focus-within {
+    background: var(--selected-fill);
+  }
+  .sortable-handle {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: grab;
+    touch-action: none;
+  }
+  .sortable-handle:active {
+    cursor: grabbing;
+  }
+  .sortable-handle:hover {
+    color: var(--text);
+    background: var(--selected-fill);
+  }
+  .sortable-handle:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+  }
+  .sortable-handle:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+  .sortable-content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .sortable-content > * {
+    margin: 0;
+  }
+  .sortable-steps {
+    flex: none;
+    display: inline-flex;
+    gap: var(--spacing-2);
+  }
+  .sortable-down {
+    transform: rotate(180deg);
+  }
+
+  /* 가능 시간 격자 */
+  .availability-grid-wrap {
+    display: grid;
+    gap: var(--spacing-8);
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .availability-grid {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: var(--spacing-4);
+  }
+  .availability-grid th {
+    padding: var(--spacing-4) var(--spacing-6);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label2-letterSpacing);
+    white-space: nowrap;
+    text-align: center;
+  }
+  .availability-grid th[scope="row"] {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .availability-grid th[scope="row"] small {
+    display: block;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .availability-grid td {
+    min-width: 76px;
+    padding: 0;
+  }
+  .availability-grid td.is-empty {
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+  }
+  .availability-cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    gap: var(--spacing-2);
+    width: 100%;
+    min-height: 56px;
+    padding: var(--spacing-6);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-micro) var(--motion-ease-standard),
+      border-color var(--motion-duration-micro) var(--motion-ease-standard);
+  }
+  .availability-cell:disabled {
+    cursor: default;
+  }
+  /* 가능한 사람이 많을수록 브랜드 색을 진하게 섞어요. */
+  .availability-cell[data-level="1"],
+  .availability-legend [data-level="1"] {
+    background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+  }
+  .availability-cell[data-level="2"] {
+    background: color-mix(in srgb, var(--brand) 24%, var(--surface));
+  }
+  .availability-cell[data-level="3"] {
+    background: color-mix(in srgb, var(--brand) 38%, var(--surface));
+  }
+  .availability-cell[data-level="4"],
+  .availability-legend [data-level="4"] {
+    background: color-mix(in srgb, var(--brand) 52%, var(--surface));
+  }
+  .availability-cell[aria-pressed="true"] {
+    border: 2px solid var(--brand);
+  }
+  .availability-cell[data-confirmed] {
+    border: 2px solid var(--success);
+  }
+  .availability-cell svg {
+    position: absolute;
+    top: var(--spacing-4);
+    right: var(--spacing-4);
+    color: var(--brand);
+  }
+  .availability-cell small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .availability-cell:not(:disabled):hover {
+    border-color: var(--brand);
+  }
+  .availability-cell:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  .availability-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-6);
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .availability-legend > span[data-level] {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-4);
+  }
+  .availability-legend-mine {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-left: var(--spacing-8);
+  }
+  .availability-legend-mine svg {
+    color: var(--brand);
+  }
+}

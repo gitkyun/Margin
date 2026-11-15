@@ -1,0 +1,63 @@
+@layer margin {
+  /* 계정 메뉴 머리: 이름·이메일을 묶은 작은 카드(affectUI Profile Menu 패턴, Montage 토큰만) */
+  .account-menu {
+    min-width: 248px;
+  }
+  .account-menu-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    min-width: 0;
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface-muted);
+  }
+  .account-menu-card > div {
+    display: grid;
+    gap: var(--spacing-2);
+    min-width: 0;
+  }
+  .account-menu-card strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .account-menu-card .menu-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .account-menu-card .avatar {
+    border-color: var(--brand-soft);
+    background: var(--brand-soft);
+    color: var(--brand);
+  }
+
+  /* 사이드바 아래 계정 버튼: 가리키면 아바타 테두리가 브랜드 색으로 바뀌어 누를 곳임을 알려요. */
+  .profile-button .avatar {
+    transition:
+      border-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
+  }
+  .profile-button:hover .avatar,
+  .profile-button:focus-visible .avatar,
+  .profile-button[aria-expanded="true"] .avatar {
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .profile-button > svg {
+    transition: transform var(--motion-duration-micro) ease-out;
+  }
+  .profile-button[aria-expanded="true"] > svg {
+    transform: rotate(180deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .profile-button .avatar,
+    .profile-button > svg {
+      transition: none;
+    }
+  }
+}

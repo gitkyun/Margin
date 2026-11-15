@@ -69,6 +69,16 @@ test('only designated professor can respond and read shared file, not private re
  await failure(()=>inputCall('rms_respond',{roundId:roundA.id,result:'changes_requested',comment:'  '}),'22023')
  await inputCall('rms_respond',{roundId:roundA.id,result:'changes_requested',comment:'비교 기준을 하나 더 보완해 주세요.'});await inputCall('rms_respond',{roundId:roundB.id,result:'confirmed',comment:''})
 })
+// functions/review-notify가 쓰는 두 검사: 요청 행을 읽을 수 있고(RLS) 그 연구를 편집할 수 있어야 메일을 보낸다.
+test('review notify: only an editor of the research passes; professor, stranger and anonymous do not',async()=>{
+ const readable=async()=>(await db.query('select id,professor_email,status from public.rms_review_requests where id=$1',[request.id])).rows[0]
+ await as(ids.student);const own=await readable();assert.equal(own.professor_email,'professor@example.test');assert.equal(own.status,'shared');assert.equal(await call('rms_can_edit_research',[ids.research]),true)
+ await as(ids.professor);assert.ok(await readable());assert.equal(await call('rms_can_edit_research',[ids.research]),false)
+ await as(ids.stranger);assert.equal(await readable(),undefined);assert.equal(await call('rms_can_edit_research',[ids.research]),false)
+ await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub','',false)");await db.exec('set role anon')
+ await assert.rejects(()=>db.query('select id from public.rms_review_requests where id=$1',[request.id]))
+ await assert.rejects(()=>call('rms_can_edit_research',[ids.research]))
+})
 test('professor sees research name and direction on the request, but not the research or its records',async()=>{
  await as(ids.student)
  const own=(await call('rms_bootstrap')).researches.find(x=>x.id===ids.research)

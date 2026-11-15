@@ -421,6 +421,11 @@ export function WorkspaceProvider({
     </WorkspaceContext.Provider>
   );
 }
+/** 워크스페이스 밖(공개 화면)에서도 부를 수 있는 판. 밖이면 null이에요. */
+export function useOptionalWorkspace(): WorkspaceContextValue | null {
+  return useContext(WorkspaceContext);
+}
+
 export function useWorkspace() {
   const context = useContext(WorkspaceContext);
   if (!context)

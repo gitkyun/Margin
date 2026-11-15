@@ -137,4 +137,31 @@ describe("live Korean recognition", () => {
     expect(speech.snapshot().text).toBe("");
     speech.dispose();
   });
+  it("records recording offsets per sentence and keeps the end once final", () => {
+    let now = 1000;
+    const speech = new KoreanLiveSpeech(Recognition, vi.fn(), () => now);
+    speech.start();
+    const r = Recognition.instances[0];
+    r.result([["연구", false]]);
+    now = 2500;
+    r.result([["연구 계획", true]]);
+    now = 4000;
+    r.onresult?.({
+      results: [
+        { 0: { transcript: "연구 계획" }, isFinal: true },
+        { 0: { transcript: "표본", confidence: 0.42 }, isFinal: false },
+      ],
+    });
+    expect(speech.snapshot().segments).toEqual([
+      { text: "연구 계획", final: true, startMs: 1000, endMs: 2500 },
+      {
+        text: "표본",
+        final: false,
+        startMs: 4000,
+        endMs: 4000,
+        confidence: 0.42,
+      },
+    ]);
+    speech.dispose();
+  });
 });

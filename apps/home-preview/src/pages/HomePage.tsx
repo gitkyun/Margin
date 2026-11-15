@@ -3,7 +3,12 @@ import { EXPANDING_CLASS } from "@/lib/expand-home";
 import { formatClock, timeParts } from "@/lib/time-format";
 import { RollingNumber } from "@/components/RollingNumber";
 import { useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { toast } from "sonner";
 import { useWorkspace } from "@/lib/workspace";
 import {
@@ -12,11 +17,14 @@ import {
   relativeDay,
   taskLabels,
   formatDateTime,
+  recordBase,
 } from "@/lib/domain";
 import {
   unreadReviewNotifications,
   notificationHref,
+  type ReviewNotification,
 } from "@/lib/notifications";
+import { reviewDecision } from "@/lib/home-inbox";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { EmptyState, TextLink, StatusBadge } from "@/components/common";
@@ -26,6 +34,7 @@ import { startChecklist } from "@/lib/onboarding";
 import {
   StartChecklist,
   isStartChecklistHidden,
+  shouldCelebrateStartChecklist,
 } from "@/components/home/StartChecklist";
 import "./research-home.css";
 import { useTaskCompletion } from "@/lib/use-task-completion";
@@ -35,6 +44,7 @@ import { WeekStrip } from "@/components/home/WeekStrip";
 import { HomeTour } from "@/components/home/HomeTour";
 import { clearTourRequest, isTourRequested, shouldShowTour } from "@/lib/tour";
 import { ResearchDirection } from "@/components/home/ResearchDirection";
+import { SubmissionCountdown } from "@/components/home/SubmissionCountdown";
 import { planExcerpt } from "@/lib/research-direction";
 import { friendlyError } from "@/lib/supabase";
 import { Segments } from "@/components/experience";
@@ -54,6 +64,9 @@ export function HomePage() {
   // 방금 닫은 연구를 기억합니다. 다른 연구로 바꾸면 그 연구의 저장된 상태를 다시 봅니다.
   const [hiddenFor, setHiddenFor] = useState<string | null>(null);
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
+  // ‘할 일로 만들기’를 누르고 저장을 기다리는 알림
+  const [makingTask, setMakingTask] = useState<string | null>(null);
   const forcedTour = params.get("tour") === "1";
   const [tour, setTour] = useState(false);
   // 화면 안내는 저절로 뜨지 않습니다(감사 F3: 처음 안내는 연구 만들기 + 시작 체크리스트 두 겹).
@@ -157,6 +170,39 @@ export function HomePage() {
       )
     : [];
   const attentionCount = updates.length + pending.length;
+  // 확인할 내용에서 바로 할 일을 만듭니다. 알림은 읽음으로 바꾸지 않아요(작업·읽음 분리).
+  const taskFor = (title: string) =>
+    title ? tasks.find((task) => task.title === title) : undefined;
+  async function makeTask(event: ReviewNotification, title: string) {
+    if (makingTask) return;
+    setMakingTask(event.id);
+    try {
+      const task = await save("tasks", {
+        ...recordBase(researchId),
+        origin: "manual",
+        title,
+        description: event.excerpt ?? "",
+        status: "todo",
+        dueDate: null,
+        priority: "normal",
+        visibility: "private",
+        feedbackIds: [],
+      });
+      toast.success(
+        t("할 일로 만들었어요. 알림은 확인할 때까지 여기에 남아요."),
+        {
+          action: {
+            label: t("할 일 보기"),
+            onClick: () => navigate(`${base}/tasks/${task.id}`),
+          },
+        },
+      );
+    } catch (error) {
+      toast.error(friendlyError(error));
+    } finally {
+      setMakingTask(null);
+    }
+  }
   const openCount = work.filter((task) => task.status !== "done").length;
   const completedCount = work.filter((task) => task.status === "done").length;
   // 머리에는 지금 상황에서 할 일 하나만 올립니다. 카드 안 버튼은 보조로 둡니다.
@@ -170,8 +216,11 @@ export function HomePage() {
   // ‘바로 시작’은 할 일도 미팅도 없어 홈이 비어 보일 때만 냅니다.
   // 시작 체크리스트: 다 끝냈거나 닫았으면 내지 않습니다.
   const checklist = startChecklist(data, researchId);
+  // 마지막 항목을 막 끝냈으면 완료 문구를 한 번 보여 주고 접히도록 그때도 냅니다.
   const showChecklist =
-    !checklistHidden && checklist.some((item) => !item.done);
+    !checklistHidden &&
+    (checklist.some((item) => !item.done) ||
+      shouldCelebrateStartChecklist(researchId, checklist));
   const showQuickStart = !next && openCount === 0 && !showChecklist;
   return (
     <div className="rh-home">
@@ -180,7 +229,13 @@ export function HomePage() {
       )}
       <header className="rh-intro">
         <div className="rh-intro-copy">
-          <h1>{research.name}</h1>
+          <div className="rh-title-row">
+            <h1>{research.name}</h1>
+            <SubmissionCountdown
+              date={research.submissionDate}
+              href={`${base}/planning`}
+            />
+          </div>
           <p>{research.description || t("아직 연구 설명이 없어요.")}</p>
           <ResearchDirection
             research={research}
@@ -246,6 +301,7 @@ export function HomePage() {
           researchId={researchId}
           items={checklist}
           onHide={() => setHiddenFor(researchId)}
+          onFinish={() => setHiddenFor(researchId)}
         />
       )}
       <div
@@ -523,38 +579,87 @@ export function HomePage() {
               </h2>
               <Icon name="bell" size={18} />
             </div>
-            {updates.slice(0, 3).map((event) => (
-              <Link
-                className="rh-attention-row"
-                key={event.id}
-                to={notificationHref(event)}
-              >
-                <span className="rh-attention-icon">
-                  <Icon name="feedback" size={18} />
-                </span>
-                <span>
-                  <strong>{event.title}</strong>
-                  <p>{event.message}</p>
-                </span>
-                <Icon name="chevron-right" size={14} />
-              </Link>
-            ))}
-            {pending.length > 0 && (
-              <Link
-                className="rh-attention-row"
-                to={`${base}/assistant?tab=overview`}
-              >
-                <span className="rh-attention-icon">
-                  <Icon name="sparkles" size={18} />
-                </span>
-                <span>
-                  <strong>
-                    {t("확인할 AI 제안 {count}개", { count: pending.length })}
-                  </strong>
-                  <p>{t("기록으로 남길 제안을 선택하세요.")}</p>
-                </span>
-                <Icon name="chevron-right" size={14} />
-              </Link>
+            {/* 디시전 인박스: 무슨 일이 있었는지 · 무엇을 정할지 · 바로 할 행동 1~2개 */}
+            <ul className="rh-inbox" aria-labelledby="rh-attention-heading">
+              {updates.slice(0, 3).map((event) => {
+                const decision = reviewDecision(event);
+                const made = taskFor(decision.taskTitle);
+                return (
+                  <li
+                    className={`rh-attention-row rh-inbox-item tone-${event.tone}`}
+                    key={event.id}
+                  >
+                    <span className="rh-attention-icon">
+                      <Icon name={decision.icon} size={18} />
+                    </span>
+                    <div className="rh-inbox-body">
+                      <small className="rh-inbox-event">{event.message}</small>
+                      <strong>{event.title}</strong>
+                      {event.excerpt && (
+                        <q className="rh-inbox-excerpt">{event.excerpt}</q>
+                      )}
+                      <p className="rh-inbox-ask">{decision.ask}</p>
+                      <div className="rh-inbox-actions">
+                        <Button size="sm" asChild>
+                          <Link to={notificationHref(event)}>
+                            {decision.openLabel}
+                          </Link>
+                        </Button>
+                        {decision.canMakeTask &&
+                          (made ? (
+                            <Button size="sm" variant="ghost" asChild>
+                              <Link to={`${base}/tasks/${made.id}`}>
+                                <Icon name="check" size={14} />
+                                {t("만든 할 일 보기")}
+                              </Link>
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={!!makingTask}
+                              loading={makingTask === event.id}
+                              onClick={() =>
+                                void makeTask(event, decision.taskTitle)
+                              }
+                            >
+                              {t("할 일로 만들기")}
+                            </Button>
+                          ))}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+              {pending.length > 0 && (
+                <li className="rh-attention-row rh-inbox-item">
+                  <span className="rh-attention-icon">
+                    <Icon name="sparkles" size={18} />
+                  </span>
+                  <div className="rh-inbox-body">
+                    <strong>
+                      {t("확인할 AI 제안 {count}개", { count: pending.length })}
+                    </strong>
+                    <p className="rh-inbox-ask">
+                      {t("기록으로 남길 제안을 선택하세요.")}
+                    </p>
+                    <div className="rh-inbox-actions">
+                      <Button size="sm" asChild>
+                        <Link to={`${base}/assistant?tab=overview`}>
+                          {t("제안 확인하기")}
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+              )}
+            </ul>
+            {updates.length > 3 && (
+              <p className="rh-inbox-more">
+                {t("확인할 알림 {count}개가 더 있어요.", {
+                  count: updates.length - 3,
+                })}
+              </p>
             )}
             {!attentionCount && (
               <div className="rh-attention-empty">
