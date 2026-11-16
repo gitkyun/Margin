@@ -1,0 +1,151 @@
+{
+  "retrievedAt": "2026-11-16",
+  "origin": "https://github.com/kokonut-labs/kokonutui",
+  "license": "MIT",
+  "components": [
+    {
+      "name": "profile-dropdown",
+      "registry": "https://kokonutui.com/r/profile-dropdown.json",
+      "sourceSha256": "4fa0a5395d950016f3c0d065af074b674f9fa5d5acced470c609f61f5ff68c8b",
+      "registrySha256": "ce9b3d3ff5445552d560d2bf4125adb5f1e93c8c28bc24c1cd24987b83011bea",
+      "version": "2.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/profile-dropdown.tsx"
+    },
+    {
+      "name": "switch-button",
+      "registry": "https://kokonutui.com/r/switch-button.json",
+      "sourceSha256": "4093f483d657c3f7730bd276d8bd954e1c34a4f2c8f1ff75a2c1bd28b75a37e5",
+      "registrySha256": "116e8b57bade6af2523975187b939076b591b6257317eb3d2a2c3fbfe6d93231",
+      "version": "2.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/switch-button.tsx"
+    },
+    {
+      "name": "ai-prompt",
+      "registry": "https://kokonutui.com/r/ai-prompt.json",
+      "sourceSha256": "3e59ae0ac0e74f532eb25523bedc1624c35e3b75be7581099d62ff84bd4f0b4f",
+      "registrySha256": "c01ad765e11e0392d18f7d3f34918f2acd8f288dc1da511a178e696fbcf1aad6",
+      "version": "2.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-prompt.tsx"
+    },
+    {
+      "name": "ai-input-search",
+      "registry": "https://kokonutui.com/r/ai-input-search.json",
+      "sourceSha256": "2daa3af07d1a96053edd4c8f1ece1b2a50de7c7d9603e85cafb5eb10e3eef7b6",
+      "registrySha256": "e82d9fe341d79163573d7e4f21c852b53e84866ed2fac904dbbed9a7846694f5",
+      "version": "4.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-input-search.tsx"
+    },
+    {
+      "name": "ai-message-queue",
+      "registry": "https://kokonutui.com/r/ai-message-queue.json",
+      "sourceSha256": "7f015a213352d77fcad219b4e0d5a312e0f6d483af2364a929072af767451228",
+      "registrySha256": "57dc8183f632855eef09e8c2d008823735882496bb6aa5c57b53d47b0a349072",
+      "version": "1.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-message-queue.tsx"
+    },
+    {
+      "name": "ai-context-meter",
+      "registry": "https://kokonutui.com/r/ai-context-meter.json",
+      "sourceSha256": "aa2c1c392ccdbca11f7e25211602ff0562b3dc17e1f2b2ae3e9f7e0e7f921ebb",
+      "registrySha256": "becf9ffe5b87b96e89e7c1cfba1e3fc35581eb1da407857b343a579d8e5e10b8",
+      "version": "1.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-context-meter.tsx"
+    },
+    {
+      "name": "ai-attachment",
+      "registry": "https://kokonutui.com/r/ai-attachment.json",
+      "sourceSha256": "62e8c0b3958ef799a74e0906b0292e93284ae2d3fe47cac2f227b383d4c9c2ac",
+      "registrySha256": "4757db8ac4e639d111bf6520e4ef6da6abe7a41a2f3f64f734624ab86bc4ccb3",
+      "version": "1.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-attachment.tsx"
+    },
+    {
+      "name": "ai-voice",
+      "registry": "https://kokonutui.com/r/ai-voice.json",
+      "sourceSha256": "c255cf783641db0aff351db8793a46308697b52bca1fa8b4a311b729b7cf44d9",
+      "registrySha256": "1e38967ca9586f838363b1437636da6ff24dc372ffa5c830ce10279a92722ff3",
+      "version": "2.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-voice.tsx"
+    },
+    {
+      "name": "ai-model-selector",
+      "registry": "https://kokonutui.com/r/ai-model-selector.json",
+      "sourceSha256": "d6357d14e2df56fe3f4409d07dad67e21f42ce382f3b430b4a8dcbabeef24b12",
+      "registrySha256": "3aff7dfd54614e38e07a14a14b965d03ff208e82cfd68ed05031b1407113018f",
+      "version": "1.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-model-selector.tsx"
+    },
+    {
+      "name": "ai-tool-calls",
+      "registry": "https://kokonutui.com/r/ai-tool-calls.json",
+      "sourceSha256": "3307d2c5e8bbcc683dd768633b1c7d7f88d50574c927847c5342666ec98fc63a",
+      "registrySha256": "93c5e87e603e26fbc664303eeed945c76bb9858c4839cc78fac022584fb7359e",
+      "version": "1.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-tool-calls.tsx"
+    },
+    {
+      "name": "ai-loading",
+      "registry": "https://kokonutui.com/r/ai-loading.json",
+      "sourceSha256": "671e6a82878cb96f5dd30dd0c09d573dbcc7a5cc1c29f5a6a728598135642023",
+      "registrySha256": "ec08e7fc996db96a0f1c4b456a95958dd7bc8cc6d1813c3fc59927c2b326010b",
+      "version": "2.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-loading.tsx"
+    },
+    {
+      "name": "ai-citations",
+      "registry": "https://kokonutui.com/r/ai-citations.json",
+      "sourceSha256": "95a98b863333056afc633f618b6eba8d2a209bc28663c425a239b4bd247953d9",
+      "registrySha256": "3756c70c3066b84eabb614e026b737645282dd0289ddd5d04e29447bae479d6d",
+      "version": "1.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-citations.tsx"
+    },
+    {
+      "name": "ai-autocomplete",
+      "registry": "https://kokonutui.com/r/ai-autocomplete.json",
+      "sourceSha256": "01a41ce3712048687e3cb96e3835a2b6e88b864ece1ff058a7fed82501e28c5d",
+      "registrySha256": "b99f73ba1c156ce4ca6bac57fe39f46c3252cb4d82bd5c6dd7c333690b7a7c30",
+      "version": "1.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-autocomplete.tsx"
+    },
+    {
+      "name": "ai-inline-edit",
+      "registry": "https://kokonutui.com/r/ai-inline-edit.json",
+      "sourceSha256": "810a0724d7361a04a9fd5d75a3b56b6f231d2b51729c0f1eb8d5a352f30d2466",
+      "registrySha256": "bec437c18b3c3fa430f734d15afbf0d1672db7dea639d066851332292908ebab",
+      "version": "1.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-inline-edit.tsx"
+    },
+    {
+      "name": "ai-send",
+      "registry": "https://kokonutui.com/r/ai-send.json",
+      "sourceSha256": "263d9d0cca49fd0091ea87898ac56f73b518fe465701466377a49c6e32270c19",
+      "registrySha256": "46a35f8c1a278c907e5097e2d3f7dc214d57b6ac5bdca6a55e1a9a001cbf1277",
+      "version": "1.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-send.tsx"
+    },
+    {
+      "name": "ai-schedule",
+      "registry": "https://kokonutui.com/r/ai-schedule.json",
+      "sourceSha256": "38c9b86b57e402717552486c6f5e6b06bea2174c24fd424f6ab69574545255cf",
+      "registrySha256": "9828d8f295811206bed85fd4895b05ef7b6ba1567bf4ff6290fb86ee429fd4f8",
+      "version": "1.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-schedule.tsx"
+    },
+    {
+      "name": "ai-handoff",
+      "registry": "https://kokonutui.com/r/ai-handoff.json",
+      "sourceSha256": "63d64e8b54a469db046f49c0c55c35bac8d47fb53d2dee03b71a6df22fcae33a",
+      "registrySha256": "b2103e665a9161b4a2513f99f3056d2339990630bcfc12fd560044b76cfbaf9b",
+      "version": "1.1.0",
+      "localSource": "apps/home-preview/src/components/kokonut/ai-handoff.tsx"
+    },
+    {
+      "name": "clip-trimmer",
+      "registry": "https://kokonutui.com/r/clip-trimmer.json",
+      "sourceSha256": "9cb5f59be04f8787c40df06f6dcb619c63b6fc87dab16012878248217df01ebf",
+      "registrySha256": "a88326363ae43477788f6d5781717b9795a9a2450a9028d9dccf9d11c822bf4e",
+      "version": "1.0.0",
+      "localSource": "apps/home-preview/src/components/kokonut/clip-trimmer.tsx"
+    }
+  ]
+}

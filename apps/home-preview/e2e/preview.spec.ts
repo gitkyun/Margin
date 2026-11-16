@@ -86,3 +86,67 @@ test("휴대폰 너비에서 내 연구 화면이 가로로 넘치지 않는다"
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test("일정 단계는 키보드로 순서를 저장하고 편집·현재 단계 설정을 따로 실행한다", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: new RegExp(RESEARCH) })
+    .first()
+    .click();
+  const home = page.url();
+  await page.goto(`${home}/planning`);
+  await page
+    .getByRole("button", { name: "기본 단계로 시작", exact: true })
+    .click();
+  const cards = page.locator(".roadmap-sortable .phase-card");
+  await expect(cards).toHaveCount(6);
+  await expect(
+    page.getByRole("button", { name: "현재 단계로 설정", exact: true }).first(),
+  ).toBeEnabled();
+  const handle = page.getByRole("button", { name: /^연구 설계 끌어서 옮기기/ });
+  await handle.press("Alt+ArrowUp");
+  await expect(cards.nth(1).getByRole("heading")).toHaveText("연구 설계");
+  await expect(handle).toBeEnabled();
+  await page.reload();
+  await expect(cards.nth(1).getByRole("heading")).toHaveText("연구 설계");
+  await cards
+    .nth(1)
+    .getByRole("button", { name: "현재 단계로 설정", exact: true })
+    .click();
+  await expect(cards.nth(1)).toHaveClass(/is-current/);
+  await expect(
+    cards.nth(1).getByRole("button", { name: "현재 단계로 설정", exact: true }),
+  ).toHaveCount(0);
+  await cards
+    .nth(1)
+    .getByRole("button", { name: "연구 설계 단계 편집", exact: true })
+    .click();
+  const dialog = page
+    .getByRole("dialog")
+    .filter({ has: page.getByRole("textbox", { name: /단계 이름/ }) });
+  await dialog
+    .getByRole("textbox", { name: /단계 이름/ })
+    .fill("연구 설계 수정");
+  await dialog.getByRole("button", { name: "단계 저장", exact: true }).click();
+  await expect(cards.nth(1).getByRole("heading")).toHaveText("연구 설계 수정");
+  await page.goto(home);
+  await page
+    .locator(".rh-phase-track")
+    .getByRole("link", { name: /연구 설계 수정/ })
+    .click();
+  await expect(cards.nth(1)).toBeFocused();
+  for (const width of [360, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - innerWidth,
+      ),
+      `${width}px 넘침`,
+    ).toBeLessThanOrEqual(1);
+  }
+  expect(errors).toEqual([]);
+});

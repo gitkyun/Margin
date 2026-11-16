@@ -1,11 +1,9 @@
 import { t } from "@/lib/i18n";
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useWorkspace } from "@/lib/workspace";
 import { privateBlob } from "@/lib/experience";
 import type { AudioSource, Recording } from "@/lib/domain";
-import { clockText } from "@/lib/recording-timeline";
-import { Icon } from "../icons";
-import { Button } from "../ui/button";
+import ClipTrimmer, { type ClipRange } from "@/components/kokonut/clip-trimmer";
 import "./recording.css";
 
 /**
@@ -42,14 +40,15 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
   const { data, mode } = useWorkspace();
   const recording = findSourceRecording(data.recordings, source);
   const audio = useRef<HTMLAudioElement>(null);
-  const track = useRef<HTMLDivElement>(null);
   const url = useRef("");
   const from = Math.max(0, source.startMs - CLIP_LEAD_MS);
   const to = Math.max(
     from + MIN_TRIM_MS,
     Math.min(
       source.endMs + CLIP_TAIL_MS,
-      recording ? recording.duration * 1000 + CLIP_TAIL_MS : Infinity,
+      recording && recording.duration > 0
+        ? recording.duration * 1000
+        : Infinity,
     ),
   );
   const length = to - from;
@@ -59,9 +58,6 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
     [trimStart, setTrimStart] = useState(0),
     [trimEnd, setTrimEnd] = useState(length),
     [position, setPosition] = useState(0),
-    [draggingHandle, setDraggingHandle] = useState<
-      "playhead" | "start" | "end" | null
-    >(null),
     [error, setError] = useState("");
   const reasonId = useId();
 
@@ -69,13 +65,17 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
     setTrimStart(0);
     setTrimEnd(length);
     setPosition(0);
-  }, [length]);
+    audio.current?.pause();
+    setPlaying(false);
+  }, [from, length, recording?.id]);
 
   useEffect(
     () => () => {
+      audio.current?.pause();
       if (url.current) URL.revokeObjectURL(url.current);
+      url.current = "";
     },
-    [],
+    [recording?.id, recording?.storagePath],
   );
 
   async function ensureLoaded(): Promise<HTMLAudioElement | null> {
@@ -126,17 +126,6 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
   }
 
   const clamped = Math.max(trimStart, Math.min(position, trimEnd));
-  const progress = length > 0 ? Math.max(0, Math.min(1, clamped / length)) : 0;
-  const startPct = length > 0 ? (trimStart / length) * 100 : 0;
-  const endPct = length > 0 ? (trimEnd / length) * 100 : 100;
-
-  function msFromClientX(clientX: number): number {
-    const rect = track.current?.getBoundingClientRect();
-    if (!rect || rect.width <= 0) return 0;
-    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    return Math.round(ratio * length);
-  }
-
   function seekToMs(ms: number) {
     if (!recording || length <= 0) return;
     const next = Math.max(trimStart, Math.min(trimEnd, ms));
@@ -146,146 +135,62 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
     }
   }
 
-  function updateHandle(handle: "playhead" | "start" | "end", ms: number) {
-    if (handle === "start") {
-      const next = Math.max(0, Math.min(ms, trimEnd - MIN_TRIM_MS));
-      setTrimStart(next);
-      if (position < next) seekToMs(next);
-    } else if (handle === "end") {
-      const next = Math.min(length, Math.max(ms, trimStart + MIN_TRIM_MS));
-      setTrimEnd(next);
-      if (position > next) seekToMs(next);
-    } else {
-      seekToMs(ms);
-    }
-  }
+  const onTrimRange = useCallback(
+    (range: ClipRange) => {
+      setTrimStart(range.start * 1000);
+      setTrimEnd(range.end * 1000);
+      setPosition((current) =>
+        Math.max(range.start * 1000, Math.min(current, range.end * 1000)),
+      );
+      if (
+        audio.current &&
+        url.current &&
+        (audio.current.currentTime * 1000 < from + range.start * 1000 ||
+          audio.current.currentTime * 1000 > from + range.end * 1000)
+      ) {
+        audio.current.currentTime = (from + range.start * 1000) / 1000;
+      }
+    },
+    [from],
+  );
 
   const name = label ?? t("녹음 구간");
   const reason = !recording
     ? t("이 미팅에 저장한 녹음이 없거나 볼 수 없어서 재생할 수 없어요.")
     : "";
-  const isTrimmed = trimStart > 0 || trimEnd < length;
 
   return (
-    <div className="source-audio-clip">
-      <Button
-        variant="outline"
-        size="icon-sm"
+    <div>
+      <ClipTrimmer
+        key={`${recording?.id}:${from}:${length}`}
+        src=""
+        alt={recording?.title || name}
+        duration={length / 1000}
+        defaultRange={{ start: 0, end: length / 1000 }}
+        minLength={Math.min(1, length / 1000)}
         disabled={!recording || loading}
-        aria-describedby={reason ? reasonId : undefined}
-        aria-label={
-          playing ? t("{name} 정지", { name }) : t("{name} 재생", { name })
-        }
-        onClick={() => (playing ? pause() : void play())}
-      >
-        <Icon name={playing ? "pause" : "play"} size={16} />
-      </Button>
-      <div
-        ref={track}
-        role="slider"
-        tabIndex={recording ? 0 : -1}
-        aria-disabled={!recording || undefined}
-        aria-label={t("{name} 재생 위치", { name })}
-        aria-valuemin={trimStart}
-        aria-valuemax={trimEnd}
-        aria-valuenow={clamped}
-        aria-valuetext={clockText(from + clamped)}
-        className={`clip-trimmer-track${!recording ? " is-disabled" : ""}`}
-        onPointerDown={(e) => {
-          if (!recording) return;
-          e.currentTarget.setPointerCapture(e.pointerId);
-          setDraggingHandle("playhead");
-          seekToMs(msFromClientX(e.clientX));
+        media={{
+          time: clamped / 1000,
+          playing,
+          onSeek: (seconds) => seekToMs(seconds * 1000),
+          onToggle: () => (playing ? pause() : void play()),
         }}
-        onPointerMove={(e) => {
-          if (!recording || !draggingHandle) return;
-          updateHandle(draggingHandle, msFromClientX(e.clientX));
+        onRangeChange={onTrimRange}
+        onReset={() => {
+          setPosition(0);
+          if (audio.current && url.current)
+            audio.current.currentTime = from / 1000;
         }}
-        onPointerUp={() => setDraggingHandle(null)}
-        onPointerCancel={() => setDraggingHandle(null)}
-        onKeyDown={(e) => {
-          if (!recording) return;
-          const step = e.shiftKey ? 5000 : 1000;
-          if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-            e.preventDefault();
-            seekToMs(clamped + step);
-          } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-            e.preventDefault();
-            seekToMs(clamped - step);
-          } else if (e.key === "Home") {
-            e.preventDefault();
-            seekToMs(trimStart);
-          } else if (e.key === "End") {
-            e.preventDefault();
-            seekToMs(trimEnd);
-          }
-        }}
-      >
-        <div
-          className="clip-trimmer-range"
-          style={{ left: `${startPct}%`, width: `${endPct - startPct}%` }}
-          aria-hidden="true"
-        />
-        <div
-          className="clip-trimmer-playhead"
-          style={{ left: `${progress * 100}%` }}
-          aria-hidden="true"
-        />
-        <button
-          type="button"
-          className="clip-trimmer-handle is-start"
-          style={{ left: `${startPct}%` }}
-          disabled={!recording}
-          aria-label={t("시작 위치")}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            if (!recording) return;
-            e.currentTarget.setPointerCapture(e.pointerId);
-            setDraggingHandle("start");
-          }}
-        />
-        <button
-          type="button"
-          className="clip-trimmer-handle is-end"
-          style={{ left: `${endPct}%` }}
-          disabled={!recording}
-          aria-label={t("끝 위치")}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            if (!recording) return;
-            e.currentTarget.setPointerCapture(e.pointerId);
-            setDraggingHandle("end");
-          }}
-        />
-      </div>
-      <span className="source-audio-time">
-        {clockText(from + clamped)} / {clockText(from + trimEnd)}
-      </span>
-      <Button
+      />
+      <button
         type="button"
-        variant={loop ? "secondary" : "ghost"}
-        size="sm"
+        className="mt-2 h-8 rounded-full px-3 text-xs text-[var(--text-secondary)] hover:bg-[var(--hover-fill)] disabled:opacity-50"
         disabled={!recording}
         aria-pressed={loop}
-        onClick={() => setLoop((v) => !v)}
+        onClick={() => setLoop((value) => !value)}
       >
-        <Icon name="refresh" size={14} />
         {t("반복 재생")}
-      </Button>
-      {isTrimmed && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setTrimStart(0);
-            setTrimEnd(length);
-            seekToMs(0);
-          }}
-        >
-          {t("구간 초기화")}
-        </Button>
-      )}
+      </button>
       <audio
         ref={audio}
         preload="none"
@@ -308,6 +213,7 @@ export function SourceAudioClip({ source, label }: SourceAudioClipProps) {
         onEnded={() => {
           setPlaying(false);
           setPosition(trimStart);
+          if (loop) void play(trimStart);
         }}
       />
       {reason && (

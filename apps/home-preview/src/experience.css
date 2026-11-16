@@ -26,10 +26,6 @@
   textarea {
     caret-color: var(--brand);
   }
-  :focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 4px;
-  }
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--line-strong) transparent;
@@ -567,16 +563,16 @@
   .settings-heading > p {
     color: var(--text-secondary);
     font-size: var(--typography-label1-fontSize);
-    margin-top: 9px;
+    margin-top: var(--spacing-8);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .settings-layout {
     display: grid;
     grid-template-columns: 180px 1fr;
-    gap: 52px;
-    margin-top: 39px;
+    gap: var(--spacing-48);
+    margin-top: var(--spacing-32);
     border-top: 1px solid var(--line);
-    padding-top: 28px;
+    padding-top: var(--spacing-24);
   }
   .settings-layout > nav {
     display: flex;
@@ -611,20 +607,22 @@
   }
   .settings-section h2 {
     font-size: var(--typography-headline1-fontSize);
-    margin-bottom: 10px;
+    line-height: var(--typography-headline1-lineHeight);
+    margin: 0 0 var(--spacing-8);
     font-weight: 600;
     letter-spacing: var(--typography-headline1-letterSpacing);
   }
   .settings-section > p {
+    margin: 0;
     font-size: var(--typography-label1-fontSize);
     color: var(--text-secondary);
     line-height: var(--typography-label1Reading-lineHeight);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .settings-section form {
-    margin-top: 28px;
+    margin-top: var(--spacing-24);
     display: grid;
-    gap: 25px;
+    gap: var(--spacing-20);
   }
   /* 기본 정보 폼 아래에 이어지는 지도교수 구역: 위 구역과 40px 띄웁니다. */
   .advisor-section {
@@ -705,13 +703,13 @@
     margin-bottom: 10px;
   }
   .settings-list {
-    margin-top: 28px;
+    margin-top: var(--spacing-24);
   }
   .settings-list > div {
     display: flex;
     justify-content: space-between;
-    gap: 22px;
-    padding: 17px 0;
+    gap: var(--spacing-20);
+    padding: var(--spacing-16) 0;
     border-bottom: 1px solid var(--line);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
@@ -723,7 +721,7 @@
     font-weight: 500;
   }
   .settings-note {
-    margin-top: 17px;
+    margin-top: var(--spacing-16);
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     line-height: var(--typography-caption1-lineHeight);
@@ -731,8 +729,8 @@
   }
   .usage-summary {
     display: flex;
-    gap: 45px;
-    margin: 32px 0 20px;
+    gap: var(--spacing-40);
+    margin: var(--spacing-24) 0 var(--spacing-20);
   }
   .usage-summary span {
     font-size: var(--typography-caption1-fontSize);
@@ -1179,7 +1177,7 @@
     flex: 0 0 auto;
     height: 40px;
     padding-inline: var(--spacing-12);
-    font-size: var(--typography-label1-font-size, 15px);
+    font-size: var(--typography-label1-fontSize);
     font-weight: 600;
   }
   .margin-tabs-list [data-slot="tab-indicator"] {
@@ -1187,7 +1185,7 @@
   }
   .margin-tabs .margin-tabs-list .margin-tabs-tab[data-size="lg"] {
     height: 48px;
-    font-size: var(--typography-headline2-font-size, 17px);
+    font-size: var(--typography-headline2-fontSize);
   }
   .margin-tab-count {
     display: inline-flex;
@@ -1202,5 +1200,12 @@
     color: var(--text-secondary);
     font-size: 12px;
     font-weight: 600;
+  }
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 4px;
   }
 }

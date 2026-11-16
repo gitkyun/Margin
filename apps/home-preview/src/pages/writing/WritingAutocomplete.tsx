@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import {
+  AcceptBar,
+  AutocompleteGhost,
+} from "@/components/kokonut/ai-autocomplete";
+import "./kokonut-writing.css";
 import { Extension, type Editor } from "@tiptap/react";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
@@ -8,6 +14,14 @@ import { uid, type AIInput } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { useAIRequestOptions } from "@/lib/ai-request-options";
+
+/** 이어쓰기는 문서 끝이 아니라 현재 커서 바로 앞의 문맥을 사용합니다. */
+export function continuationExcerpt(editor: Editor): string {
+  return editor.state.doc
+    .textBetween(0, editor.state.selection.to, "\n")
+    .trim()
+    .slice(-600);
+}
 
 interface GhostState {
   text: string;
@@ -58,7 +72,9 @@ export const AIAutocompleteGhost = Extension.create({
                 const span = document.createElement("span");
                 span.className = "writing-autocomplete-ghost-inline";
                 span.setAttribute("aria-hidden", "true");
-                span.textContent = ` ${value.text}`;
+                span.innerHTML = renderToStaticMarkup(
+                  <AutocompleteGhost ghost={` ${value.text}`} />,
+                );
                 return span;
               },
               { side: 1 },
@@ -209,7 +225,7 @@ export function WritingAutocomplete({
         toast.info(t("저장하는 사이 본문이 바뀌었어요. 다시 눌러 주세요."));
         return;
       }
-      const excerpt = typed.trim().slice(-600);
+      const excerpt = continuationExcerpt(editor);
       const res = await runAI({
         mode: "continue_writing",
         ...aiOptions(),
@@ -253,32 +269,7 @@ export function WritingAutocomplete({
   return (
     <div className="writing-autocomplete">
       {suggestion ? (
-        <div
-          className="writing-autocomplete-bar"
-          role="status"
-          aria-live="polite"
-        >
-          <small>{t("Tab 전체 넣기 · → 한 단어 · Esc 닫기")}</small>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setSuggestion("")}
-          >
-            {t("닫기")}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={acceptOneWord}
-          >
-            {t("한 단어")}
-          </Button>
-          <Button type="button" size="sm" onClick={accept}>
-            {t("문장 넣기")}
-          </Button>
-        </div>
+        <AcceptBar visible onAccept={accept} onWord={acceptOneWord} />
       ) : (
         <div className="writing-autocomplete-trigger">
           <Button

@@ -4,7 +4,7 @@ import "./recording.css";
 /** 기본 막대 수. 좁은 화면에서도 막대 사이가 보이도록 너무 많지 않게 둬요. */
 const DEFAULT_BARS = 40;
 /** 막대 최소 높이 비율. 조용해도 막대 자리가 보여요. */
-const FLOOR = 0.08;
+const FLOOR = 0.15;
 
 interface LiveWaveformProps {
   /** 매 프레임 분석기를 가져와요(녹음이 끝나면 null). */

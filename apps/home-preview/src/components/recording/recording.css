@@ -325,7 +325,7 @@
     position: absolute;
     bottom: calc(100% + 6px);
     padding: 2px var(--spacing-6);
-    border-radius: var(--radius-6, 6px);
+    border-radius: var(--radius-4);
     background: var(--text);
     color: var(--surface);
     font-size: var(--typography-caption2-fontSize, 11px);
@@ -411,7 +411,7 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    border-radius: var(--radius-6);
+    border-radius: var(--radius-4);
     background: var(--brand-soft);
     pointer-events: none;
   }
@@ -419,21 +419,35 @@
     position: absolute;
     top: 2px;
     bottom: 2px;
-    width: 2px;
-    background: var(--text);
+    width: 24px;
+    padding: 0;
+    border: 0;
+    background: transparent;
     transform: translateX(-50%);
-    pointer-events: none;
+  }
+  .clip-trimmer-playhead::after {
+    content: "";
+    position: absolute;
+    inset: 0 calc(50% - 1px);
+    background: var(--text);
   }
   .clip-trimmer-handle {
     position: absolute;
     top: 3px;
     bottom: 3px;
-    width: 10px;
+    width: 24px;
     padding: 0;
+    border: 0;
+    background: transparent;
+    transform: translateX(-50%);
+    cursor: ew-resize;
+  }
+  .clip-trimmer-handle::after {
+    content: "";
+    position: absolute;
+    inset: 0 7px;
     border: 1.5px solid var(--surface-raised);
     border-radius: var(--radius-4);
     background: var(--brand);
-    transform: translateX(-50%);
-    cursor: ew-resize;
   }
 }

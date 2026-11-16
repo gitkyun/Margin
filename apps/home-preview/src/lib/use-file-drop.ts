@@ -29,6 +29,7 @@ export interface UseFileDropOptions {
   noKeyboard?: boolean;
   kind?: "pdf" | "assistant";
   onSelect: (file: File) => void;
+  onSelectMultiple?: (files: File[]) => void;
   onError?: (message: string) => void;
 }
 
@@ -41,16 +42,20 @@ export function useFileDrop({
   noKeyboard = false,
   kind = "pdf",
   onSelect,
+  onSelectMultiple,
   onError,
 }: UseFileDropOptions) {
   const handleDropAccepted = useCallback(
     (files: File[]) => {
       onError?.("");
-      if (files[0]) {
+      if (!files.length) return;
+      if (onSelectMultiple) {
+        onSelectMultiple(files);
+      } else {
         onSelect(files[0]);
       }
     },
-    [onError, onSelect],
+    [onError, onSelect, onSelectMultiple],
   );
 
   const handleDropRejected = useCallback(

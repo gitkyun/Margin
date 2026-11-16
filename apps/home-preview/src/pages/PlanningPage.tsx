@@ -5,7 +5,7 @@ import themePlugin from "@fullcalendar/react/themes/forma";
 import { Input } from "@/components/ui/input";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
-import { lazy, Suspense, useId, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -31,6 +31,8 @@ import {
   type MeetingPoll,
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
+import { SortableList } from "@/components/meeting/SortableList";
+import { savePhaseOrder } from "@/lib/phase-order";
 import { Icon } from "@/components/icons";
 import {
   PageHeader,
@@ -126,6 +128,14 @@ export function PlanningPage() {
     datedPhases = phases.filter(
       (p) => p.startDate && p.dueDate && p.startDate <= p.dueDate,
     );
+  const linkedPhase = params.get("phase");
+  useEffect(() => {
+    if (!linkedPhase || tab !== "roadmap" || view !== "timeline") return;
+    const card = document.getElementById(`phase-${linkedPhase}`);
+    card?.scrollIntoView({ block: "center" });
+    card?.focus({ preventScroll: true });
+  }, [linkedPhase, tab, view, phases.length]);
+
   async function run(fn: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -142,7 +152,7 @@ export function PlanningPage() {
     setPhase({
       ...recordBase(researchId),
       title: "",
-      order: phases.length,
+      order: Math.max(-1, ...phases.map((p) => p.order)) + 1,
       status: "planned",
       dependsOn: [],
       dueDate: null,
@@ -319,106 +329,115 @@ export function PlanningPage() {
               </Suspense>
             </SectionBoundary>
           ) : (
-            <div className="roadmap-timeline">
-              {phases.map((p, i) => (
-                <article
-                  key={p.id}
-                  className={`phase-card ${research.currentPhaseId === p.id ? "is-current" : ""}`}
-                >
-                  <span className="phase-number">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="phase-card-body">
-                    <div className="section-heading">
-                      <h2>{p.title}</h2>
-                      <StatusBadge
-                        tone={
-                          research.currentPhaseId === p.id
-                            ? "blue"
+            <div className="roadmap-sortable">
+              <SortableList
+                items={phases}
+                getKey={(p) => p.id}
+                label={t("연구 단계 순서")}
+                itemName={(p) => p.title}
+                disabled={busy}
+                showMoveButtons={false}
+                onCommit={async (keys) => {
+                  try {
+                    await savePhaseOrder(phases, keys, (phase) =>
+                      save("phases", phase),
+                    );
+                  } catch (error) {
+                    await w.refresh();
+                    throw error;
+                  }
+                }}
+                renderItem={(p) => (
+                  <article
+                    key={p.id}
+                    id={`phase-${p.id}`}
+                    tabIndex={-1}
+                    className={`phase-card ${research.currentPhaseId === p.id ? "is-current" : ""}`}
+                  >
+                    <div className="phase-card-body">
+                      <div className="phase-card-heading">
+                        <span className="phase-number" aria-hidden="true">
+                          {String(
+                            phases.findIndex((phase) => phase.id === p.id) + 1,
+                          ).padStart(2, "0")}
+                        </span>
+                        <h2>{p.title}</h2>
+                        <StatusBadge
+                          tone={
+                            research.currentPhaseId === p.id
+                              ? "blue"
+                              : p.status === "done"
+                                ? "green"
+                                : "neutral"
+                          }
+                        >
+                          {research.currentPhaseId === p.id
+                            ? t("현재 단계")
                             : p.status === "done"
-                              ? "green"
-                              : "neutral"
-                        }
-                      >
-                        {research.currentPhaseId === p.id
-                          ? t("현재 단계")
-                          : p.status === "done"
-                            ? t("완료")
-                            : p.status === "active"
-                              ? t("진행 중")
-                              : t("예정")}
-                      </StatusBadge>
+                              ? t("완료")
+                              : p.status === "active"
+                                ? t("진행 중")
+                                : t("예정")}
+                        </StatusBadge>
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          aria-label={t("{title} 단계 편집", {
+                            title: p.title,
+                          })}
+                          disabled={busy}
+                          onClick={() => setPhase(p)}
+                        >
+                          <Icon name="edit" size={16} />
+                        </Button>
+                      </div>
+                      <p>
+                        {t("{date} · 할 일 {count}개", {
+                          date: formatDate(p.dueDate),
+                          count: data.tasks.filter(
+                            (task) => task.phaseId === p.id && !task.archivedAt,
+                          ).length,
+                        })}
+                      </p>
+                      <div className="phase-milestones">
+                        {milestones
+                          .filter((m) => m.phaseId === p.id)
+                          .map((m) => (
+                            <button key={m.id} onClick={() => setMilestone(m)}>
+                              <Icon
+                                name={m.status === "done" ? "check" : "flag"}
+                                size={15}
+                              />
+                              {m.title}
+                              <small>{formatDate(m.dueDate)}</small>
+                            </button>
+                          ))}
+                      </div>
+                      {p.id !== research.currentPhaseId && (
+                        <div className="phase-card-actions">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={busy}
+                            onClick={() =>
+                              void run(async () => {
+                                await saveResearch({
+                                  ...research,
+                                  currentPhaseId: p.id,
+                                });
+                                toast.success(t("현재 단계를 바꿨어요"));
+                              })
+                            }
+                          >
+                            <Icon name="flag" size={14} />
+                            {t("현재 단계로 설정")}
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    <p>
-                      {t("{date} · 할 일 {count}개", {
-                        date: formatDate(p.dueDate),
-                        count: data.tasks.filter(
-                          (task) => task.phaseId === p.id && !task.archivedAt,
-                        ).length,
-                      })}
-                    </p>
-                    <div className="phase-milestones">
-                      {milestones
-                        .filter((m) => m.phaseId === p.id)
-                        .map((m) => (
-                          <button key={m.id} onClick={() => setMilestone(m)}>
-                            <Icon
-                              name={m.status === "done" ? "check" : "flag"}
-                              size={15}
-                            />
-                            {m.title}
-                            <small>{formatDate(m.dueDate)}</small>
-                          </button>
-                        ))}
-                    </div>
-                    <div className="button-row">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setPhase(p)}
-                      >
-                        {t("단계 편집")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={busy || p.id === research.currentPhaseId}
-                        onClick={() =>
-                          void run(async () => {
-                            await saveResearch({
-                              ...research,
-                              currentPhaseId: p.id,
-                            });
-                            toast.success(t("현재 단계를 바꿨어요"));
-                          })
-                        }
-                      >
-                        {t("현재 단계로 설정")}
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={t("{title} 위로 이동", { title: p.title })}
-                        disabled={i === 0 || busy}
-                        onClick={() =>
-                          void run(async () => {
-                            await save("phases", {
-                              ...p,
-                              order: phases[i - 1].order,
-                            });
-                            await save("phases", {
-                              ...phases[i - 1],
-                              order: p.order,
-                            });
-                          })
-                        }
-                      >
-                        <Icon name="arrow-up" size={15} />
-                      </Button>
-                    </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                )}
+              />
             </div>
           )}
           <section className="experience-panel roadmap-goals">
@@ -866,6 +885,25 @@ export function PlanningPage() {
                 </fieldset>
               ))}
               <div className="bottom-actions">
+                {data.milestones.some((m) => m.id === milestone.id) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={busy}
+                    onClick={() =>
+                      void run(async () => {
+                        await save("milestones", {
+                          ...milestone,
+                          archivedAt: new Date().toISOString(),
+                        });
+                        setMilestone(null);
+                        toast.success(t("목표를 삭제했어요"));
+                      })
+                    }
+                  >
+                    {t("목표 삭제")}
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"

@@ -2,7 +2,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { AIAutocompleteGhost, aiAutocompleteKey } from "./WritingAutocomplete";
+import {
+  AIAutocompleteGhost,
+  aiAutocompleteKey,
+  continuationExcerpt,
+} from "./WritingAutocomplete";
 
 let editor: Editor;
 afterEach(() => editor?.destroy());
@@ -45,4 +49,13 @@ describe("이어쓰기 제안의 유효 범위", () => {
     expect(aiAutocompleteKey.getState(editor.state)?.text).toBe("");
     expect(editor.getText()).not.toContain("suggested words");
   });
+});
+
+it("문서 중간 이어쓰기에는 커서 뒤 문단을 보내지 않는다", () => {
+  editor = new Editor({
+    extensions: [StarterKit],
+    content: "<p>first paragraph</p><p>last paragraph</p>",
+  });
+  editor.commands.setTextSelection(6);
+  expect(continuationExcerpt(editor)).toBe("first");
 });

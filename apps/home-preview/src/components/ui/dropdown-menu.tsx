@@ -5,6 +5,7 @@ import {
   useContext,
   useId,
   useState,
+  type ComponentProps,
   type ReactElement,
   type ReactNode,
 } from "react";
@@ -52,15 +53,17 @@ export function DropdownMenuContent({
   side = "bottom",
   align = "center",
   className,
+  contentSx,
   children,
 }: {
   side?: Side;
   align?: Align;
   className?: string;
+  contentSx?: ComponentProps<typeof MenuContent>["sx"];
   children?: ReactNode;
 }) {
   return (
-    <MenuContent position={`${side}-${align}`}>
+    <MenuContent position={`${side}-${align}`} sx={contentSx}>
       <MenuList className={className}>{children}</MenuList>
     </MenuContent>
   );

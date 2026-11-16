@@ -287,6 +287,7 @@ export function RecordingProvider({
         node = ac.createAnalyser();
       node.fftSize = 256;
       ac.createMediaStreamSource(s).connect(node);
+      if (ac.state === "suspended") void ac.resume();
       ctx.current = ac;
       analyserNode.current = node;
     } catch {

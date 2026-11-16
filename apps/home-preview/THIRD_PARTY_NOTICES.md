@@ -36,3 +36,8 @@ PDF.js 배포의 CMap·표준 글꼴·WASM 보조 파일은 `public/pdfjs/`에 �
 ## 2026-11-15 Kokonut UI 참고
 
 - **Kokonut UI** (`kokonut-labs/kokonutui`, MIT License, Copyright (c) 2025 kokonutUI, https://github.com/kokonut-labs/kokonutui/blob/main/LICENSE) · AI 입력창·명령 메뉴·대기 줄·컨텍스트 고리·첨부 카드·음성 입력 등의 구조·치수·모션 값을 참고해 Montage 토큰으로 구현했다.
+
+
+## 2026-11-16 Kokonut UI 실제 원본 도입
+
+앞선 “참고” 기록과 구분하여, 공식 공개 레지스트리의 18개 MIT 컴포넌트를 실제 소스로 가져왔다. 수정본은 `src/components/kokonut/`에 있으며 작성자 헤더를 유지한다. Copyright (c) 2025 kokonutUI. MIT 전문은 `public/licenses/Kokonut-MIT.txt`, 원본 주소·해시·제품 연결에 따른 차이는 `../../docs/design/kokonut-map.md` 및 연결된 소스 명세에 기록했다. Motion·Lucide·Radix와 shadcn 방식의 로컬 기본 부품을 함께 사용한다. 색/글꼴/문구와 실제 제품 기능을 연결했으며, 해당 영역을 Montage 부품으로 재구현하지 않는다.

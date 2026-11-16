@@ -19,6 +19,7 @@ import {
   type NotifyRecord,
 } from "@/lib/review-notify";
 import { timeText } from "./helpers";
+import AISend from "@/components/kokonut/ai-send";
 
 interface ReviewNotifyBarProps {
   requestId: string;
@@ -35,7 +36,7 @@ const UNDO_SECONDS = 5;
  * 학생이 원할 때만 누르는 ‘교수님께 메일로도 알리기’(Kokonut AI Send 기준 5초 되돌리기).
  * 보내기 전에 수신자·제목·내용을 확인하고, 전송을 누르면 5초 카운트다운 후 발송돼요.
  */
-export function ReviewNotifyBar({
+function ReviewNotifyBarForTarget({
   requestId,
   requestTitle,
   professorEmail,
@@ -50,7 +51,6 @@ export function ReviewNotifyBar({
   );
   const [busy, setBusy] = useState(false);
   const [draftOpen, setDraftOpen] = useState(false);
-  const [countdown, setCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     setRecord(readNotifyRecord(requestId));
@@ -66,21 +66,6 @@ export function ReviewNotifyBar({
       active = false;
     };
   }, [preview]);
-
-  useEffect(() => {
-    if (countdown === null) return;
-    if (countdown <= 0) {
-      setCountdown(null);
-      void sendNow();
-      return;
-    }
-    const timer = window.setTimeout(
-      () => setCountdown((c) => (c === null ? null : c - 1)),
-      1000,
-    );
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countdown]);
 
   const waiting = !canNotifyAgain(record);
   const reason = preview
@@ -105,21 +90,19 @@ export function ReviewNotifyBar({
 
   async function sendNow() {
     if (busy || reason) return;
-    setCountdown(null);
     setBusy(true);
     try {
       const next = await requestReviewNotify(requestId);
       setRecord(next);
-      setDraftOpen(false);
       toast.success(
         t("메일 발송을 요청했어요. 도착 여부는 이 화면에서 알 수 없어요."),
       );
     } catch (failure) {
-      toast.error(
-        failure instanceof Error
-          ? failure.message
-          : t("메일 발송을 요청하지 못했어요. 잠시 뒤 다시 시도해 주세요."),
-      );
+      throw failure instanceof Error
+        ? failure
+        : new Error(
+            t("메일 발송을 요청하지 못했어요. 잠시 뒤 다시 시도해 주세요."),
+          );
     } finally {
       setBusy(false);
     }
@@ -167,7 +150,6 @@ export function ReviewNotifyBar({
         open={draftOpen}
         onOpenChange={(open) => {
           if (!busy) {
-            setCountdown(null);
             setDraftOpen(open);
           }
         }}
@@ -181,64 +163,32 @@ export function ReviewNotifyBar({
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="review-email-draft">
-            <div className="review-email-draft-row">
-              <span>{t("받는 사람")}</span>
-              <strong>{professorEmail}</strong>
-            </div>
-            <div className="review-email-draft-row">
-              <span>{t("메일 제목")}</span>
-              <strong>{t("[마진] {title}", { title: displayTitle })}</strong>
-            </div>
-            <div className="review-email-draft-body">
-              <p>
-                {t(
-                  "‘{title}’ 검토 요청이 공유되었어요. 아래 링크에서 수정 내용과 첨부 파일을 확인할 수 있어요.",
-                  { title: displayTitle },
-                )}
-              </p>
-              <small>{reviewUrl}</small>
-            </div>
-          </div>
-          {countdown !== null ? (
-            <div className="form-actions" role="status">
-              <span>
-                {t("{seconds}초 뒤 메일 발송을 요청해요", {
-                  seconds: countdown,
-                })}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCountdown(null)}
-              >
-                {t("되돌리기")}
-              </Button>
-              <Button type="button" onClick={() => void sendNow()}>
-                {t("지금 보내기")}
-              </Button>
-            </div>
-          ) : (
-            <div className="form-actions">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy}
-                onClick={() => setDraftOpen(false)}
-              >
-                {t("취소")}
-              </Button>
-              <Button
-                type="button"
-                disabled={busy || !!reason}
-                onClick={() => setCountdown(UNDO_SECONDS)}
-              >
-                {busy ? t("요청하는 중") : t("메일 발송 요청하기")}
-              </Button>
-            </div>
-          )}
+          <AISend
+            draft={{
+              from: t("마진 · 검토 요청 알림"),
+              toName: professorEmail,
+              toEmail: professorEmail,
+              subject: t("[마진] {title}", { title: displayTitle }),
+              body: `${t("‘{title}’ 검토 요청이 공유되었어요. 아래 링크에서 수정 내용과 첨부 파일을 확인할 수 있어요.", { title: displayTitle })}\n\n${reviewUrl}`,
+            }}
+            readOnly
+            disabled={busy || !!reason || available === null}
+            undoSeconds={UNDO_SECONDS}
+            sendLabel={t("메일 발송 요청하기")}
+            onSend={sendNow}
+          />
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/** 대상이 바뀌면 확인 초안과 예약 타이머를 함께 취소합니다. */
+export function ReviewNotifyBar(props: ReviewNotifyBarProps) {
+  return (
+    <ReviewNotifyBarForTarget
+      key={`${props.requestId}:${props.professorEmail}:${props.requestTitle ?? ""}:${props.status}`}
+      {...props}
+    />
   );
 }

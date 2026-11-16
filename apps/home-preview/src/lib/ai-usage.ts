@@ -19,7 +19,7 @@ export interface AICredits {
   ledger: AICreditEntry[];
 }
 export function formatCredits(value: number) {
-  return value.toLocaleString(undefined, { maximumFractionDigits: 6 });
+  return Math.round(value).toLocaleString();
 }
 /** Reservations are provisional; only settled debits count as actual usage. */
 export function runCreditUsage(credits: AICredits | undefined, runId: string) {

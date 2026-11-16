@@ -1,6 +1,7 @@
 import { t } from "@/lib/i18n";
 import { MiniRecorder } from "@/components/recording/MiniRecorder";
-import { ThemeSwitch } from "@/components/ThemeSwitch";
+import ProfileDropdown from "@/components/kokonut/profile-dropdown";
+import { useTheme } from "@/lib/theme";
 import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
 import {
@@ -26,7 +27,7 @@ import { Hint } from "./ui/hint";
 import { navPreview } from "@/lib/nav-preview";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutHelp } from "./ShortcutHelp";
-import "./account-menu.css";
+
 import {
   RESEARCH_NAVIGATION,
   createEntries,
@@ -91,159 +92,60 @@ const activityTitles: Record<string, string> = {
   // i18n-ignore: 서버에 저장된 알림 제목(자료)
   "시간 조율이 취소되었습니다": t("시간 조율을 취소했어요"),
 };
-const HOLD_LOGOUT_MS = 1100;
-
 function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
-  const { user, mode, signOut } = useWorkspace(),
-    navigate = useNavigate();
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [holdProgress, setHoldProgress] = useState(0);
-  const holdTimerRef = useRef<number | null>(null);
-  const holdStartRef = useRef(0);
-  const roleLabel =
-    mode === "preview" ? t("미리보기") : incomingOnly ? t("교수") : t("학생");
-
-  function stopHold() {
-    if (holdTimerRef.current !== null) {
-      window.clearInterval(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    setHoldProgress(0);
-  }
-
-  async function completeLogout() {
-    stopHold();
-    if (loggingOut) return;
-    setLoggingOut(true);
-    try {
-      if (mode === "connected") await signOut();
-      navigate("/login");
-    } catch (e) {
-      toast.error(friendlyError(e));
-    } finally {
-      setLoggingOut(false);
-    }
-  }
-
-  function startHold() {
-    if (loggingOut || holdTimerRef.current !== null) return;
-    holdStartRef.current = Date.now();
-    holdTimerRef.current = window.setInterval(() => {
-      const elapsed = Date.now() - holdStartRef.current;
-      const ratio = Math.min(1, elapsed / HOLD_LOGOUT_MS);
-      setHoldProgress(ratio);
-      if (ratio >= 1) void completeLogout();
-    }, 16);
-  }
-
-  useEffect(() => () => stopHold(), []);
-
-  const logoutLabel =
-    mode === "preview"
-      ? t("길게 눌러 이동")
-      : loggingOut
-        ? t("로그아웃 중")
-        : t("길게 눌러 로그아웃");
-
+  const { user, mode, signOut } = useWorkspace();
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const [attempt, setAttempt] = useState(0);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <button
-          className="profile-button"
-          aria-label={t("{name} {email} 계정 메뉴", {
-            name: user.name,
-            email: user.email,
-          })}
-        >
-          <span className="profile-avatar-wrap">
-            <span className="avatar">{user.name.slice(0, 1)}</span>
-            <span
-              className={`profile-status-dot${mode === "preview" ? " is-preview" : ""}`}
-              aria-hidden="true"
-            />
-          </span>
-          <span>
-            <strong>{user.name}</strong>
-            <small>{user.email}</small>
-          </span>
-          <Icon name="chevron-down" size={14} />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align="start" className="account-menu">
-        {/* 카드형 머리: 이름·이메일과 오른쪽 위 조용한 역할 글씨(Kokonut UI Account Menu). */}
-        <DropdownMenuLabel>
-          <div className="account-menu-card">
-            <span className="avatar" aria-hidden="true">
-              {user.name.slice(0, 1)}
-            </span>
-            <div>
-              <div className="account-menu-card-title">
-                <strong>{user.name}</strong>
-                <span className="account-menu-role-quiet">{roleLabel}</span>
-              </div>
-              <small className="menu-email">{user.email}</small>
-            </div>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuItem onSelect={() => navigate("/account?tab=profile")}>
-          <Icon name="user" size={17} />
-          {t("프로필 설정")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => navigate("/account?tab=ai")}>
-          <Icon name="sparkles" size={17} />
-          {t("AI 기본 설정")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => navigate("/account?tab=usage")}>
-          <span className="account-menu-item-plan">
-            <Icon name="chart" size={17} />
-            <span>{t("사용량·플랜")}</span>
-            <span className="account-menu-plan-value">Free</span>
-          </span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <div
-          className="account-menu-theme-wrap"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ThemeSwitch compact />
-        </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => navigate("/guide")}>
-          <Icon name="help" size={17} />
-          {t("사용 안내")}
-        </DropdownMenuItem>
-        <div className="account-menu-hold-wrap">
-          <button
-            type="button"
-            className="account-menu-hold-logout"
-            disabled={loggingOut}
-            aria-label={logoutLabel}
-            title={t("계속 누르면 실행돼요")}
-            onPointerDown={startHold}
-            onPointerUp={stopHold}
-            onPointerLeave={stopHold}
-            onPointerCancel={stopHold}
-            onKeyDown={(e) => {
-              if ((e.key === " " || e.key === "Enter") && !e.repeat) {
-                e.preventDefault();
-                startHold();
-              }
-            }}
-            onKeyUp={(e) => {
-              if (e.key === " " || e.key === "Enter") stopHold();
-            }}
-          >
-            <span
-              className="account-menu-hold-fill"
-              style={{ transform: `scaleX(${holdProgress})` }}
-              aria-hidden="true"
-            />
-            <Icon name="logout" size={16} />
-            <span>{logoutLabel}</span>
-          </button>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <ProfileDropdown
+      key={attempt}
+      accounts={[
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          initials: user.name.slice(0, 1),
+          plan: "Free",
+        },
+      ]}
+      theme={theme}
+      onThemeChange={setTheme}
+      items={[
+        {
+          label: t("프로필 설정"),
+          icon: <Icon name="user" size={16} />,
+          onSelect: () => navigate("/account?tab=profile"),
+        },
+        {
+          label: t("AI 기본 설정"),
+          icon: <Icon name="sparkles" size={16} />,
+          onSelect: () => navigate("/account?tab=ai"),
+        },
+        {
+          label: t("사용량·플랜"),
+          icon: <Icon name="chart" size={16} />,
+          value: "Free",
+          onSelect: () => navigate("/account?tab=usage"),
+        },
+        {
+          label: t("사용 안내"),
+          icon: <Icon name="help" size={16} />,
+          onSelect: () => navigate("/guide"),
+        },
+      ]}
+      onSignOut={() =>
+        void (async () => {
+          try {
+            if (mode === "connected") await signOut();
+            navigate("/login");
+          } catch (error) {
+            toast.error(friendlyError(error));
+            setAttempt((value) => value + 1);
+          }
+        })()
+      }
+    />
   );
 }
 /** sm 이상 lg 미만(768~1199px). 이 구간에서는 메뉴를 좁은 레일로 두고, 펼치면 본문 위에 뜹니다. */

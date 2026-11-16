@@ -71,7 +71,7 @@ export function StepMeter({
               >
                 {state === "done" ? (
                   <Icon name="check" size={12} />
-                ) : state === "next" ? (
+                ) : state === "next" || (state === "current" && !timed) ? (
                   index + 1
                 ) : null}
               </span>
