@@ -192,7 +192,8 @@ test.describe("초대받은 사람", () => {
     await expect(
       page.getByRole("heading", { name: "초대를 확인하지 못했어요" }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "다시 시도" }).click();
+    // 불러오기 실패의 버튼 이름은 ‘다시 불러오기’예요(docs/product/user-flow.md 예외 상황).
+    await page.getByRole("button", { name: "다시 불러오기" }).click();
     await expect(
       page.getByRole("heading", { name: "연구에 초대받았어요" }),
     ).toBeVisible();
