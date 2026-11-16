@@ -205,6 +205,28 @@ export function validateInput(value: unknown): AIInput {
     return { ...input, sourceText: "", contexts: [] } as unknown as AIInput;
   }
 
+  // 대상을 고르지 않은 요청: 서버가 이 연구의 기록에서 직접 찾아 읽습니다.
+  if (
+    [
+      "organize_meeting",
+      "suggest_revisions",
+      "review_writing",
+      "plan_research",
+      "read_material",
+    ].includes(String(input.mode)) &&
+    !input.meetingId &&
+    !input.feedbackId &&
+    !(typeof input.sourceText === "string" && input.sourceText.trim())
+  ) {
+    if (
+      !uuid.test(String(input.researchId)) ||
+      !uuid.test(String(input.clientRunId)) ||
+      (input.question !== undefined &&
+        (typeof input.question !== "string" || input.question.length > 2000))
+    )
+      throw new AIError("INVALID_INPUT", "질문과 실행 정보를 확인해 주세요.");
+    return { ...input, sourceText: "", contexts: [] } as unknown as AIInput;
+  }
   if (
     !["organize_meeting", "suggest_revisions", "ask_research"].includes(
       String(input.mode),

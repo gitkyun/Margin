@@ -12,7 +12,7 @@ import { useSyncExternalStore } from "react";
  */
 export const AI_NOT_CONFIGURED_CODE = "NOT_CONFIGURED";
 export const AI_NOT_CONFIGURED_MESSAGE = t(
-  "연구 도우미가 아직 연결되지 않았어요. 연결되면 여기서 바로 쓸 수 있어요. 질문과 고른 기록은 그대로 있어요.",
+  "연구 도우미가 아직 연결되지 않았어요. 연결되면 여기서 바로 쓸 수 있어요. 질문과 붙인 파일은 그대로 있어요.",
 );
 
 const STORAGE_KEY = "margin-ai-not-configured";

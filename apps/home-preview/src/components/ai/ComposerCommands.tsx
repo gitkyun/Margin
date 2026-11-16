@@ -22,31 +22,31 @@ export const COMPOSER_COMMANDS: ComposerCommand[] = [
   {
     id: "organize_meeting",
     label: String(modeLabels.organize_meeting),
-    description: t("미팅 메모에서 피드백·결정·질문을 뽑아요"),
+    description: t("가장 최근 미팅 메모에서 피드백·결정·질문을 뽑아요"),
     icon: "calendar",
   },
   {
     id: "suggest_revisions",
     label: String(modeLabels.suggest_revisions),
-    description: t("피드백이나 원고를 보고 고칠 방법을 제안해요"),
+    description: t("처리 전인 최근 피드백을 고칠 방법을 제안해요"),
     icon: "sparkles",
   },
   {
     id: "review_writing",
     label: String(modeLabels.review_writing),
-    description: t("고른 원고의 흐름·근거·문장을 점검해요"),
+    description: t("가장 최근 문서의 흐름·근거·문장을 점검해요"),
     icon: "edit",
   },
   {
     id: "plan_research",
     label: String(modeLabels.plan_research),
-    description: t("고른 기록에서 해야 할 일을 정리해요"),
+    description: t("이 연구의 기록에서 해야 할 일을 정리해요"),
     icon: "check",
   },
   {
     id: "read_material",
     label: t("논문·자료 요약"),
-    description: t("첨부한 자료나 PDF 핵심 내용을 요약해요"),
+    description: t("첨부한 파일이나 가장 최근 첨부 파일을 요약해요"),
     icon: "file",
   },
 ];
@@ -304,6 +304,12 @@ function contextKindLabel(kind: AIContext["kind"]): string {
       return t("연구 단계");
     case "milestones":
       return t("일정");
+    case "questions":
+      return t("질문");
+    case "decisions":
+      return t("결정");
+    case "materials":
+      return t("자료");
   }
 }
 
@@ -326,7 +332,7 @@ function contextMeta(context: AIContext, size?: number): string {
 }
 
 /**
- * 입력창 안 칩 줄(AIPrompt `tray`)에 그리는 고른 기록·첨부 파일.
+ * 입력창 안 칩 줄(AIPrompt `tray`)에 그리는 붙인 기록·첨부 파일.
  * 라이브러리의 AttachmentChip과 같은 모양을 써서 입력창 밖에 따로 뜨지 않게 해요.
  */
 export function ComposerAttachmentCards({

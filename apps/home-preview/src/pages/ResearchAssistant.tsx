@@ -33,7 +33,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, privateBlob } from "@/lib/experience";
 import { Hint } from "@/components/ui/hint";
-import { readPDFPage, readPDFText } from "@/lib/pdf-text";
+import { readPDFText } from "@/lib/pdf-text";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useFileDrop, ASSISTANT_ACCEPT } from "@/lib/use-file-drop";
 import {
@@ -48,7 +48,6 @@ import {
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import {
-  EmptyState,
   PageHeader,
   StatusBadge,
   useDisabledReason,
@@ -127,11 +126,15 @@ export function ResearchAssistant() {
     wantsSuggestions = params.get("tab") === "overview";
   // 계정 설정에서 고른 나만의 연구 도우미 이름. 고르지 않았으면 기본 마스코트.
   const agent = readAgentProfile(user.preferences);
-  const [panelTab, setPanelTab] = useState<AssistantPanelTab>(
-      wantsSuggestions ? "suggestions" : "sources",
-    ),
+  const [panelTab, setPanelTab] = useState<AssistantPanelTab>("suggestions"),
     [panelOpen, setPanelOpen] = useState(
-      () => wantsSuggestions || panelStartsOpen(),
+      // 확인할 AI 제안이 있을 때만 처음부터 열어 둡니다. 기록을 고르는 탭은 없어요.
+      () =>
+        wantsSuggestions ||
+        (panelStartsOpen() &&
+          data.aiCandidates.some(
+            (c) => c.researchId === researchId && c.status === "pending",
+          )),
     );
   const [conversation, setConversation] = useState<AIConversation | null>(null),
     [draft, setDraft] = useState(""),
@@ -157,13 +160,11 @@ export function ResearchAssistant() {
       steps: AssistantStep[];
       elapsedMs: number;
     } | null>(null),
-    [focusedSourceIndex, setFocusedSourceIndex] = useState<number | null>(null),
     [viewingSources, setViewingSources] = useState<{
       contexts: AIContext[];
       index?: number;
     } | null>(null),
     [error, setError] = useState(""),
-    [page, setPage] = useState(1),
     [uploading, setUploading] = useState(false),
     [uploadProgress, setUploadProgress] = useState<number | null>(null),
     [adopting, setAdopting] = useState<SavedAICandidate | null>(null),
@@ -377,42 +378,9 @@ export function ResearchAssistant() {
       },
     ]);
   }, [params, data.documents, researchId, user.id, setParams]);
-  const sourceOptions: AIContext[] = [
-    ...data.meetings
-      .filter(
-        (m) => m.researchId === researchId && m.memo.trim() && !m.archivedAt,
-      )
-      .map((m) => ({
-        kind: "meetings" as const,
-        id: m.id,
-        title: m.title,
-        revision: m.memoRevision,
-      })),
-    ...data.feedback
-      .filter((f) => f.researchId === researchId && !f.archivedAt)
-      .map((f) => ({ kind: "feedback" as const, id: f.id, title: f.title })),
-    ...data.documents
-      .filter((d) => d.researchId === researchId && !d.archivedAt)
-      .map((d) => ({
-        kind: "documents" as const,
-        id: d.id,
-        title: d.title,
-        revision: d.revision,
-      })),
-    ...data.tasks
-      .filter((d) => d.researchId === researchId && !d.archivedAt)
-      .map((d) => ({ kind: "tasks" as const, id: d.id, title: d.title })),
-    ...data.phases
-      .filter((d) => d.researchId === researchId && !d.archivedAt)
-      .map((d) => ({ kind: "phases" as const, id: d.id, title: d.title })),
-    ...data.attachments
-      .filter((a) => a.researchId === researchId && !a.archivedAt)
-      .map((a) => ({ kind: "attachments" as const, id: a.id, title: a.title })),
-  ];
-  function openPanel(next: AssistantPanelTab, sourceIndex?: number) {
+  function openPanel(next: AssistantPanelTab) {
     setPanelTab(next);
     setPanelOpen(true);
-    if (sourceIndex !== undefined) setFocusedSourceIndex(sourceIndex);
   }
   async function prepareAttachmentContext(
     context: AIContext,
@@ -454,7 +422,7 @@ export function ResearchAssistant() {
       }
       if (contexts.length >= MAX_SOURCES) {
         toast.info(
-          t("근거는 {max}개까지 고를 수 있어요.", { max: MAX_SOURCES }),
+          t("기록과 파일은 {max}개까지 붙일 수 있어요.", { max: MAX_SOURCES }),
         );
         return;
       }
@@ -473,26 +441,6 @@ export function ResearchAssistant() {
       );
     } finally {
       if (extracting) setUploading(false);
-    }
-  }
-  async function addPDF(id: string) {
-    try {
-      setUploading(true);
-      const v = data.versions.find((v) => v.id === id);
-      if (!v) return;
-      const b = await w.openFile(v),
-        result = await readPDFPage(b, page);
-      await addContext({
-        kind: "versions",
-        id: v.id,
-        title: v.fileName,
-        page,
-        text: result.text,
-      });
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setUploading(false);
     }
   }
   async function attach(file?: File) {
@@ -659,15 +607,10 @@ export function ResearchAssistant() {
       setError(t("사용 가능한 모델을 확인한 뒤 다시 보내 주세요."));
       return;
     }
-    if (!requestContexts.length && activeMode !== "ask_research") {
-      setError(
-        t("이 요청은 읽을 기록이 필요해요. 기록이나 파일을 첨부해 주세요."),
-      );
-      openPanel("sources");
-      return;
-    }
+    // 기록을 붙이지 않아도 서버가 이 연구의 기록에서 알맞은 것을 찾아 읽어요.
     if (
       activeMode === "organize_meeting" &&
+      requestContexts.length > 0 &&
       (requestContexts.length !== 1 || requestContexts[0]?.kind !== "meetings")
     ) {
       setError(
@@ -675,8 +618,24 @@ export function ResearchAssistant() {
           "미팅 정리는 미팅 메모 하나로만 할 수 있어요. 다른 자료는 새 대화에서 사용해 주세요.",
         ),
       );
-      openPanel("sources");
       return;
+    }
+    // 자료 요약은 붙인 파일이 없으면 이 연구에 가장 최근에 올린 파일을 읽어요.
+    if (
+      activeMode === "read_material" &&
+      !requestContexts.length &&
+      !override?.contexts
+    ) {
+      const latest = data.attachments
+        .filter((a) => a.researchId === researchId && !a.archivedAt)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+      if (!latest) {
+        setError(t("요약할 파일이 없어요. PDF·TXT·MD 파일을 첨부해 주세요."));
+        return;
+      }
+      requestContexts = [
+        { kind: "attachments", id: latest.id, title: latest.title },
+      ];
     }
     // Keep the original composer entries for removal/restoration; prepared copies must
     // never mutate the contexts preserved on earlier messages.
@@ -818,6 +777,8 @@ export function ResearchAssistant() {
       );
       if (seq !== sequence.current || controller.signal.aborted) return;
       setLastUsedCredits(result.creditsUsed);
+      // 제안이 나오면 선택할 수 있게 제안 탭을 엽니다.
+      if (result.candidates.length) openPanel("suggestions");
       for (const source of result.webGrounding?.sources ?? [])
         override?.onWebSource?.(source);
       const answer =
@@ -1107,7 +1068,7 @@ export function ResearchAssistant() {
       <PageHeader
         title={t("연구 도우미")}
         description={t(
-          "고른 기록과 연구 이름·목적·질문을 읽고 답하거나 수정 방법을 제안해요.",
+          "이 연구의 기록을 모두 읽고 답하거나 수정 방법을 제안해요.",
         )}
         status={
           <StatusBadge icon={<Icon name="lock" size={13} />}>
@@ -1166,32 +1127,7 @@ export function ResearchAssistant() {
               el.scrollHeight - el.scrollTop - el.clientHeight < 64;
           }}
         >
-          {running && !messages.length ? null : !messages.length &&
-            !contexts.length ? (
-            <div className="assistant-welcome">
-              <EmptyState
-                icon="sparkles"
-                title={t("아직 대화와 고른 기록이 없어요")}
-                description={t(
-                  "연구 도우미는 고른 기록만 읽고 답해요. 답은 AI 제안이라 선택해야 기록에 남아요.",
-                )}
-                points={[
-                  t("미팅 메모·피드백·문서에서 읽을 기록을 골라요"),
-                  t("질문하면 고른 기록을 근거로 답해요"),
-                ]}
-                action={
-                  unavailable ? undefined : (
-                    <Button
-                      variant="secondary"
-                      onClick={() => openPanel("sources")}
-                    >
-                      {t("기록 고르기")}
-                    </Button>
-                  )
-                }
-              />
-            </div>
-          ) : !messages.length ? (
+          {running && !messages.length ? null : !messages.length ? (
             <div className="assistant-welcome">
               <AssistantMascot state="ready" size={64} eager />
               <h2>{t("아직 대화가 없어요")}</h2>
@@ -1301,7 +1237,7 @@ export function ResearchAssistant() {
               <Icon name="info" size={17} />
               <span>
                 {t(
-                  "이 질문에는 아직 답변이 없어요. 고른 기록과 질문을 확인한 뒤 다시 보낼 수 있어요.",
+                  "이 질문에는 아직 답변이 없어요. 질문을 확인한 뒤 다시 보낼 수 있어요.",
                 )}
               </span>
               <Button
@@ -1817,7 +1753,7 @@ export function ResearchAssistant() {
         )}
       </section>
       <MarginPanel
-        label={t("근거와 제안")}
+        label={t("제안과 실행 내역")}
         open={panelOpen}
         onOpen={() => setPanelOpen(true)}
         onClose={() => setPanelOpen(false)}
@@ -1826,25 +1762,11 @@ export function ResearchAssistant() {
           tab={panelTab}
           onTab={setPanelTab}
           onClose={() => setPanelOpen(false)}
-          busy={running || uploading}
-          single={task === "organize_meeting"}
-          contexts={contexts}
-          sourceOptions={sourceOptions}
-          onToggleSource={(c) => void addContext(c)}
-          onRemoveSource={(index) =>
-            setContexts(contexts.filter((_, i) => i !== index))
-          }
-          onAttach={() => openComposerFileDialog()}
-          versions={data.versions.filter((v) => v.researchId === researchId)}
-          page={page}
-          onPage={setPage}
-          onAddPdf={(id) => void addPDF(id)}
           pending={pending}
           onAdopt={adopt}
           onDismiss={(c) => void dismiss(c)}
           runs={runs}
           onCancelRun={(id) => void w.cancelRun(id)}
-          focusedSourceIndex={focusedSourceIndex}
         />
       </MarginPanel>
       <input

@@ -1,32 +1,16 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { Icon } from "@/components/icons";
 import { StatusBadge, InlineEmpty } from "@/components/common";
 import { modeLabels } from "@/lib/experience";
-import {
-  formatDateTime,
-  type AIContext,
-  type SavedAICandidate,
-} from "@/lib/domain";
+import { formatDateTime, type SavedAICandidate } from "@/lib/domain";
 import { t } from "@/lib/i18n";
 
-export type AssistantPanelTab = "sources" | "suggestions" | "runs";
+export type AssistantPanelTab = "suggestions" | "runs";
 
 /** 한 번에 고를 수 있는 근거 수 */
 export const MAX_SOURCES = 8;
-
-const KIND_LABELS: Record<string, string> = {
-  meetings: t("미팅 메모"),
-  feedback: t("피드백"),
-  documents: t("문서"),
-  tasks: t("할 일"),
-  phases: t("연구 단계"),
-  attachments: t("내 첨부 파일"),
-  versions: t("PDF 파일"),
-};
 
 const RUN_STATE_LABELS: Record<string, string> = {
   running: t("실행 중"),
@@ -44,46 +28,23 @@ interface RunRecord {
   error?: string | null;
 }
 
-interface PdfVersion {
-  id: string;
-  fileName: string;
-  number: number;
-}
-
 export interface AssistantPanelProps {
   tab: AssistantPanelTab;
   onTab(tab: AssistantPanelTab): void;
   onClose(): void;
-  /** 실행·업로드 중에는 근거를 바꾸지 못하게 합니다. */
-  busy: boolean;
-  /** 미팅 정리는 미팅 메모 하나만 근거로 씁니다. */
-  single: boolean;
-  contexts: AIContext[];
-  sourceOptions: AIContext[];
-  onToggleSource(context: AIContext): void;
-  onRemoveSource(index: number): void;
-  onAttach(): void;
-  versions: PdfVersion[];
-  page: number;
-  onPage(page: number): void;
-  onAddPdf(versionId: string): void;
   pending: SavedAICandidate[];
   onAdopt(candidate: SavedAICandidate): void;
   onDismiss(candidate: SavedAICandidate): void;
   runs: RunRecord[];
   onCancelRun(runId: string): void;
-  focusedSourceIndex?: number | null;
 }
 
-const sameSource = (a: AIContext, b: AIContext) =>
-  a.kind === b.kind && a.id === b.id;
-
 /**
- * 연구 도우미 작업대의 여백 패널. 근거(고른 기록), 제안(확인할 AI 제안), 기록(실행 내역).
- * 근거는 늘 이 패널 위쪽에서 보이고, 같은 자리에서 바꿉니다(모달 없음).
+ * 연구 도우미 작업대의 여백 패널. 제안(확인할 AI 제안), 기록(실행 내역).
+ * 연구 도우미는 이 연구의 기록을 항상 전부 읽으므로 기록을 고르는 탭은 없습니다.
  */
 export function AssistantPanel(props: AssistantPanelProps) {
-  const { tab, onTab, onClose, contexts, pending, runs } = props;
+  const { tab, onTab, onClose, pending, runs } = props;
   return (
     <PanelFrame
       className="assistant-panel"
@@ -92,155 +53,15 @@ export function AssistantPanel(props: AssistantPanelProps) {
       tab={tab}
       onTab={(value) => onTab(value as AssistantPanelTab)}
       tabs={[
-        { value: "sources", label: t("근거"), count: contexts.length },
         { value: "suggestions", label: t("제안"), count: pending.length },
         { value: "runs", label: t("실행 내역") },
       ]}
     >
-      {tab === "sources" && <SourcesTab {...props} />}
       {tab === "suggestions" && <SuggestionsTab {...props} />}
       {tab === "runs" && (
         <RunsTab runs={runs} onCancelRun={props.onCancelRun} />
       )}
     </PanelFrame>
-  );
-}
-
-function SourcesTab({
-  busy,
-  single,
-  contexts,
-  sourceOptions,
-  onToggleSource,
-  onRemoveSource,
-  onAttach,
-  versions,
-  page,
-  onPage,
-  onAddPdf,
-  focusedSourceIndex,
-}: AssistantPanelProps) {
-  useEffect(() => {
-    if (focusedSourceIndex === null || focusedSourceIndex === undefined) return;
-    const el = document.getElementById(
-      `assistant-source-${focusedSourceIndex}`,
-    );
-    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [focusedSourceIndex]);
-
-  return (
-    <div className="panel-frame-body">
-      <h3>
-        {t("고른 근거")}
-        <span className="count-chip">
-          {contexts.length} / {single ? 1 : MAX_SOURCES}
-        </span>
-      </h3>
-      {contexts.length ? (
-        <ul className="assistant-sources">
-          {contexts.map((context, index) => (
-            <li
-              key={`${context.kind}-${context.id}`}
-              id={`assistant-source-${index}`}
-              className={
-                focusedSourceIndex === index ? "is-focused" : undefined
-              }
-            >
-              <Icon name="file" size={15} />
-              <span>
-                {context.title}
-                {context.page
-                  ? ` · ${t("{page}쪽", { page: context.page })}`
-                  : ""}
-                <small>{KIND_LABELS[context.kind] ?? t("기록")}</small>
-              </span>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                disabled={busy}
-                aria-label={t("{title} 근거에서 빼기", {
-                  title: context.title,
-                })}
-                onClick={() => onRemoveSource(index)}
-              >
-                <Icon name="close" size={13} />
-              </Button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <InlineEmpty variant="panel">
-          {single
-            ? t("정리할 미팅 메모를 하나 골라 주세요.")
-            : t(
-                "아래에서 기록을 고르거나 파일을 첨부해 주세요. 고른 기록과 연구 이름·목적·질문만 읽어요.",
-              )}
-        </InlineEmpty>
-      )}
-      <div className="source-picker">
-        <Button variant="outline" disabled={busy} onClick={onAttach}>
-          <Icon name="upload" size={18} />
-          {t("PDF·TXT·MD 첨부")}
-        </Button>
-        <h3>{t("연구 기록")}</h3>
-        {sourceOptions.map((option) => {
-          const selected = contexts.some((c) => sameSource(c, option));
-          return (
-            <button
-              type="button"
-              key={`${option.kind}-${option.id}`}
-              disabled={busy}
-              aria-pressed={selected}
-              onClick={() => onToggleSource(option)}
-            >
-              <Icon name="file" size={17} />
-              <span>
-                {option.title}
-                <small>{KIND_LABELS[option.kind]}</small>
-              </span>
-              <Icon name={selected ? "check" : "plus"} size={16} />
-            </button>
-          );
-        })}
-        {!sourceOptions.length && (
-          <InlineEmpty variant="panel">
-            {t("아직 고를 수 있는 연구 기록이 없어요.")}
-          </InlineEmpty>
-        )}
-        {!!versions.length && (
-          <>
-            <h3>{t("PDF 파일")}</h3>
-            <label className="field">
-              {t("읽을 페이지")}
-              <Input
-                type="number"
-                min={1}
-                max={1000}
-                value={page}
-                onChange={(e) => onPage(Number(e.target.value))}
-              />
-            </label>
-            {versions.map((version) => (
-              <button
-                type="button"
-                key={version.id}
-                disabled={busy}
-                onClick={() => onAddPdf(version.id)}
-              >
-                <Icon name="file" size={17} />
-                <span>
-                  {version.fileName}
-                  <small>
-                    v{version.number} · {t("{page}쪽", { page })}
-                  </small>
-                </span>
-                <Icon name="plus" size={16} />
-              </button>
-            ))}
-          </>
-        )}
-      </div>
-    </div>
   );
 }
 

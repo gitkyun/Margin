@@ -111,15 +111,17 @@ describe("experience pages render with an empty research", () => {
       screen.getAllByRole("button", { name: "계획서 만들기" }).length,
     ).toBeGreaterThan(0);
   });
-  it("assistant keeps sources, suggestions and run history in the margin panel", async () => {
+  it("assistant keeps suggestions and run history in the margin panel", async () => {
     const { ResearchAssistant } =
       await import("../src/pages/ResearchAssistant");
-    await page(ResearchAssistant, "/r/r1/assistant");
+    // 확인할 제안이 없으면 패널은 닫혀 있어요. 제안 주소로 열어서 확인해요.
+    await page(ResearchAssistant, "/r/r1/assistant?tab=overview");
     // 대화 목록 열과 화면 탭(대화·AI 제안·사용량)은 없어요.
     expect(screen.queryByRole("tab", { name: "대화" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "사용량" })).toBeNull();
     expect(screen.getByRole("button", { name: /대화 기록/ })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: /근거/ })).toBeTruthy();
+    // 연구 기록을 항상 전부 읽으므로 기록을 고르는 근거 탭은 없어요.
+    expect(screen.queryByRole("tab", { name: /근거/ })).toBeNull();
     fireEvent.click(screen.getByRole("tab", { name: /제안/ }));
     await waitFor(() =>
       expect(

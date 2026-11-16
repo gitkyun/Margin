@@ -167,3 +167,65 @@ it("loads calendar through the caller's RLS token and returns actual source snap
   expect(provider.body.tools).toBeUndefined();
   expect(provider.body.generationConfig.responseSchema).toBeDefined();
 });
+it("reads the whole research through the caller's RLS token even when nothing is attached", async () => {
+  const { handler, calls } = await endpoint(true);
+  const response = await handler(
+    new Request("https://test.supabase.co/functions/v1/ai-assist", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer user-token",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mode: "ask_research",
+        researchId,
+        clientRunId: runId,
+        question: "다음 미팅이 언제야?",
+      }),
+    }),
+  );
+  expect(response.status).toBe(200);
+  const result = await response.json();
+  // 응답과 실행 기록에는 어떤 기록을 읽었는지만 남기고 본문은 다시 저장하지 않는다.
+  expect(result.contexts).toEqual([
+    {
+      id: "44444444-4444-4444-8444-444444444444",
+      kind: "meetings",
+      title: "미팅 · 미팅",
+    },
+  ]);
+  const records = calls.find((call) => call.url.includes("/rms_records"))!;
+  expect(records.headers.get("Authorization")).toBe("Bearer user-token");
+  expect(records.url).toContain("documents");
+  expect(records.url).not.toContain("conversations");
+  expect(records.url).not.toContain("aiCandidates");
+  const provider = calls.find((call) =>
+    call.url.includes("aiplatform.googleapis.com"),
+  )!;
+  expect(JSON.stringify(provider.body)).toContain("2026-11-20");
+  const finish = calls.find((call) => call.url.endsWith("rms_ai_finish_v2"))!;
+  expect(JSON.stringify(finish.body.p_contexts)).not.toContain("2026-11-20");
+});
+it("tells the student what is missing when a request has no record to work on", async () => {
+  const { handler, calls } = await endpoint();
+  const response = await handler(
+    new Request("https://test.supabase.co/functions/v1/ai-assist", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer user-token",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mode: "organize_meeting",
+        researchId,
+        clientRunId: runId,
+        question: "최근 미팅 정리해 줘",
+      }),
+    }),
+  );
+  expect(response.status).toBe(409);
+  expect((await response.json()).error.message ?? "").toContain("미팅");
+  expect(
+    calls.some((call) => call.url.includes("aiplatform.googleapis.com")),
+  ).toBe(false);
+});

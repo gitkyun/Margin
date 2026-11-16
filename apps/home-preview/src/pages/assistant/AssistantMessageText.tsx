@@ -33,7 +33,11 @@ function contextKindLabel(kind: AIContext["kind"]): string {
   if (kind === "versions") return t("파일 버전");
   if (kind === "attachments") return t("첨부 자료");
   if (kind === "tasks") return t("할 일");
-  return t("연구 단계");
+  if (kind === "phases") return t("연구 단계");
+  if (kind === "milestones") return t("주요 목표");
+  if (kind === "questions") return t("질문");
+  if (kind === "decisions") return t("결정");
+  return t("자료");
 }
 export function citationsToLinks(text: string): string {
   return text.replace(
