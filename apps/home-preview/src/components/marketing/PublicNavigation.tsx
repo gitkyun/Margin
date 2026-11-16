@@ -7,7 +7,7 @@ import "./public-navigation.css";
 
 const features = [
   ["meeting", "microphone", t("미팅과 기록"), t("녹음·전사와 피드백 정리")],
-  ["ai", "sparkles", t("AI와 수정 방법"), t("선택한 기록으로 제안받기")],
+  ["ai", "sparkles", t("AI와 수정 방법"), t("내 연구 기록으로 제안받기")],
   ["writing", "edit", t("작성과 버전 비교"), t("버전별로 바뀐 문장 비교하기")],
   ["review", "check-circle", t("교수 검토"), t("항목마다 교수님 응답 받기")],
 ];

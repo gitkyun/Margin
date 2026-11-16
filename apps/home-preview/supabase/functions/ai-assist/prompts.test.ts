@@ -44,7 +44,7 @@ describe("research assistant guidelines (docs/ai/assistant-guidelines.md)", () =
     expect(new Set(tasks).size).toBe(modes.length);
   });
 
-  it("keeps source-bound modes inside the selected source", () => {
+  it("keeps every mode inside the records it was given", () => {
     for (const mode of modes.filter((m) => m !== "propose_roadmap")) {
       const prompt = buildSystemPrompt({ mode });
       expect(prompt).toContain("유일한 근거");
@@ -75,11 +75,11 @@ describe("research assistant guidelines (docs/ai/assistant-guidelines.md)", () =
     expect(ja).not.toContain("한국어 해요체");
   });
 
-  it("tells a chat without a selected record not to pretend it read one", () => {
+  it("tells a chat in a research with no records not to pretend it read one", () => {
     const free = buildSystemPrompt({ mode: "ask_research", freeChat: true });
-    expect(free).toContain("학생이 기록을 고르지 않은 것이다");
+    expect(free).toContain("이 연구에 아직 저장된 기록이 없는 것이다");
     expect(buildSystemPrompt({ mode: "ask_research" })).not.toContain(
-      "학생이 기록을 고르지 않은 것이다",
+      "이 연구에 아직 저장된 기록이 없는 것이다",
     );
   });
 });
@@ -112,11 +112,11 @@ describe("research background sent with every mode", () => {
     expect(researchBackground([row])).toBeUndefined();
   });
 
-  it("labels it as background, apart from the selected source, in every mode", () => {
+  it("labels it as background, apart from the research records, in every mode", () => {
     const background = researchBackground(row);
     for (const mode of modes) {
       const prompt = buildSystemPrompt({ mode, background });
-      expect(prompt).toContain("학생이 고른 원문이 아니다");
+      expect(prompt).toContain("sourceText의 기록과 구분되는 배경이다");
       expect(prompt).toContain("배경(이름, 목적, 연구 질문)");
       const payload = JSON.parse(
         buildUserPayload({ mode, sourceText: "원문", background }),

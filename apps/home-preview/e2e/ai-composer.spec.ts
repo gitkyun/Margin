@@ -229,17 +229,40 @@ test("AI 기본 설정에서 원본 선택기의 모델과 답변 깊이를 바�
 
 test("입력 검증에 실패해도 적은 질문을 잃지 않는다", async ({ page }) => {
   const { server } = await open(page);
-  await input(page).fill("/원고");
+  // 요약할 파일이 하나도 없으면 AI를 부르지 않고 질문을 남긴다.
+  await input(page).fill("/논문");
   await input(page).press("Enter");
-  await input(page).fill("이 원고의 논리를 점검해 줘");
+  await input(page).fill("이 논문을 요약해 줘");
   await input(page).press("Enter");
-  await expect(input(page)).toHaveValue("이 원고의 논리를 점검해 줘");
+  await expect(page.getByText(/요약할 파일이 없어요/)).toBeVisible();
+  await expect(input(page)).toHaveValue("이 논문을 요약해 줘");
   expect(
     server.calls.filter(
       (call) =>
         call.name === "ai-assist" && (call.body as { mode?: string })?.mode,
     ),
   ).toHaveLength(0);
+});
+
+test("기록을 고르지 않아도 원고 검토 요청을 서버로 보낸다", async ({
+  page,
+}) => {
+  const { server } = await open(page);
+  await input(page).fill("/원고");
+  await input(page).press("Enter");
+  await input(page).fill("이 원고의 논리를 점검해 줘");
+  await input(page).press("Enter");
+  await expect
+    .poll(
+      () =>
+        server.calls.find(
+          (call) =>
+            call.name === "ai-assist" &&
+            (call.body as { mode?: string })?.mode === "review_writing",
+        )?.body,
+    )
+    .toMatchObject({ mode: "review_writing", contexts: [] });
+  await expect(page.getByRole("tab", { name: "근거" })).toHaveCount(0);
 });
 
 test("입력창 너비·크기 조절과 접힌 프로필이 원본 스타일을 침범하지 않는다", async ({
@@ -249,9 +272,6 @@ test("입력창 너비·크기 조절과 접힌 프로필이 원본 스타일을
   await expect(input(page)).toHaveCSS("resize", "none");
   const size = await composer(page).boundingBox();
   expect(size!.width).toBeLessThanOrEqual(760);
-  await expect(
-    composer(page).getByRole("button", { name: "연구 기록 고르기" }),
-  ).toHaveCount(0);
   const trigger = page.locator(".sidebar-collapsed .kokonut-profile-trigger");
   if (await trigger.count()) {
     const box = await trigger.boundingBox();
@@ -432,16 +452,17 @@ test("기존 PDF 전체 본문을 다시 추출하고 보낸 첨부와 후속 �
       }),
   );
   await page.reload();
-  await page.getByRole("button", { name: "기록 고르기", exact: true }).click();
-  await page.getByRole("button", { name: /^전체본문검증.pdf/ }).click();
+  // 기록을 고르지 않아도 자료 요약은 가장 최근에 올린 파일을 전체 본문으로 읽는다.
+  await input(page).fill("/");
+  await page.getByRole("option", { name: /^논문·자료 요약/ }).click();
+  await input(page).fill("이 논문의 내용을 요약해 줘");
+  await input(page).press("Enter");
   await expect
     .poll(() => saves.filter((save) => save.p_kind === "attachments").length)
     .toBe(1);
   expect(attachment.textExtractionVersion).toBe(2);
   expect(String(attachment.text)).not.toBe("기존에 표지만 읽은 내용");
   expect(String(attachment.text)).toMatch(/\[1쪽\]/);
-  await input(page).fill("이 논문의 내용을 요약해 줘");
-  await input(page).press("Enter");
   await expect(page.locator(".ai-message.assistant")).toHaveCount(1);
   await expect(
     composer(page).getByRole("group", { name: "첨부한 기록" }),

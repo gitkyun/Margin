@@ -16,7 +16,7 @@
 | [ai-input-search](https://kokonutui.com/r/ai-input-search.json) | `ResearchAssistant.tsx` | 근거가 있거나 요청 종류를 고른 경우 원본 검색 입력창. 원본 두 입력창을 한 부품으로 재조립하지 않음. |
 | [ai-message-queue](https://kokonutui.com/r/ai-message-queue.json) | `ai/ComposerCommands.tsx` | 원본 QueueList를 분리해 실제 대기 질문 순서·편집·삭제·즉시 전송에 연결. |
 | [ai-context-meter](https://kokonutui.com/r/ai-context-meter.json) | `ai/ComposerCommands.tsx` | 후속 사용자 요청으로 실제 입력창에서는 제거하고 아래에 실제 사용량을 표시. 원본 고리는 로컬 시연에서만 비교 가능. |
-| [ai-attachment](https://kokonutui.com/r/ai-attachment.json) | `assistant/MessageFileChips.tsx`, `ai/ComposerCommands.tsx` | 질문 위 파일은 원본 FileChip 클래스 그대로. 입력창 안 고른 기록은 ai-prompt AttachmentChip 모양(`tray`). 확인 안 된 쪽 수·읽기 진행 띠·페이지 썸네일은 만들지 않음(2026-11-16). |
+| [ai-attachment](https://kokonutui.com/r/ai-attachment.json) | `assistant/MessageFileChips.tsx`, `ai/ComposerCommands.tsx` | 질문 위 파일은 원본 FileChip 클래스 그대로. 입력창 안 붙인 기록·파일은 ai-prompt AttachmentChip 모양(`tray`). 확인 안 된 쪽 수·읽기 진행 띠·페이지 썸네일은 만들지 않음(2026-11-16). |
 | [ai-voice](https://kokonutui.com/r/ai-voice.json) | `ResearchAssistant.tsx` | 실제 마이크 분석·받아쓰기. 데모 파형 제외, 저장하지 않는 음성의 재생 버튼 비활성. |
 | [ai-model-selector](https://kokonutui.com/r/ai-model-selector.json) | `ai/AIModelSelector.tsx` | 설정·작업대에서 원본 모델 목록과 답변 깊이 트랙을 실제 모델에 연결. |
 | [ai-tool-calls](https://kokonutui.com/r/ai-tool-calls.json) | `assistant/AssistantThinking.tsx`, `ResearchAssistant.tsx` | 원본 데모 배치(질문 회색 말풍선 → 작업 줄 → 답변 15px/28px, gap-4)를 따름. 대기 중엔 같은 줄이 스피너, 답이 오면 “작업 N개”로 바뀜. 서버가 세부 도구 이벤트를 주지 않아 한 행으로 표시. |

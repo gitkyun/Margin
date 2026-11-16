@@ -23,7 +23,7 @@ import "./account-settings.css";
 /**
  * 계정 설정 › AI의 '나만의 연구 도우미' 1개 설정: 이름·개인 지침·말투.
  * 저장은 계정 메타데이터(preferences)에 하고, 서버는 그 값을 직접 읽어 지침 끝에 붙입니다.
- * 개인 지침은 제품 규칙(선택한 원문만 근거로 쓰기 등)보다 우선하지 않아요.
+ * 개인 지침은 제품 규칙(받은 연구 기록만 근거로 쓰기 등)보다 우선하지 않아요.
  */
 export function AgentSettings({
   preferences,

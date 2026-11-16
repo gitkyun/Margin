@@ -31,15 +31,19 @@ describe("research chat without an attached record", () => {
     expect(v.sourceText).toBe("");
     expect(v.contexts).toEqual([]);
   });
-  it("still needs a question, a run id, and a record for other requests", () => {
+  it("still needs a question and a run id", () => {
     expect(() => validateInput({ ...free, question: "  " })).toThrow();
     expect(() => validateInput({ ...free, clientRunId: "x" })).toThrow();
-    expect(() =>
-      validateInput({ ...free, mode: "organize_meeting" }),
-    ).toThrow();
-    expect(() =>
-      validateInput({ ...free, mode: "suggest_revisions" }),
-    ).toThrow();
+  });
+  it("lets other requests go without a record: the server finds it in the research", () => {
+    for (const mode of ["organize_meeting", "suggest_revisions"]) {
+      const v = validateInput({ ...free, mode });
+      expect(v.contexts).toEqual([]);
+      expect(v.sourceText).toBe("");
+      expect(() =>
+        validateInput({ ...free, mode, clientRunId: "x" }),
+      ).toThrow();
+    }
   });
 });
 describe("contextual research chat", () => {

@@ -283,7 +283,7 @@ const traceLabel = (
   }
   if (phase === "working") {
     if (count > 0) {
-      return t("고른 기록을 읽고 있어요");
+      return t("연구 기록을 읽고 있어요");
     }
     return tool?.activity ?? t("답변을 만들고 있어요");
   }

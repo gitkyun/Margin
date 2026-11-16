@@ -1,4 +1,11 @@
 import { calendarContexts } from "./calendar.ts";
+import {
+  WORKSPACE_BUDGET,
+  WORKSPACE_KINDS,
+  workspaceContexts,
+  workspaceSourceText,
+  type WorkspaceTask,
+} from "./workspace.ts";
 import type { WebGrounding } from "./grounding.ts";
 import { allowedOrigins } from "./origins.ts";
 import { availableModels } from "./models.ts";
@@ -319,7 +326,46 @@ Deno.serve(async (request) => {
     const kind = isMeeting ? "meetings" : "feedback",
       id = isMeeting ? input.meetingId : input.feedbackId;
     let contexts = input.contexts ?? [];
-    const freeChat =
+    // 서버가 연구 기록에서 직접 읽어 넣은 근거. 실행 기록과 응답에는 본문 없이 제목만 남깁니다.
+    const workspaceIds = new Set<string>();
+    // 요청한 사람의 토큰으로 읽어 기존 RLS 정책이 비공개 기록을 그대로 걸러냅니다.
+    const loadWorkspace = async (task: WorkspaceTask, used = 0) => {
+      const query = new URLSearchParams({
+        research_id: `eq.${input.researchId}`,
+        kind: `in.(${WORKSPACE_KINDS.join(",")})`,
+        select: "id,kind,data",
+        order: "updated_at.desc",
+        limit: "500",
+      });
+      const response = await fetch(`${url}/rest/v1/rms_records?${query}`, {
+        headers: { apikey: publishableKey, Authorization: token },
+      });
+      const rows = response.ok ? await response.json() : null;
+      if (!Array.isArray(rows))
+        throw new AIError(
+          "SOURCE_UNAVAILABLE",
+          "연구 기록을 불러오지 못했어요. 다시 시도해 주세요.",
+          502,
+        );
+      const found = workspaceContexts(rows, task, {
+        exclude: new Set(contexts.map((c) => c.id)),
+        budget: Math.max(0, WORKSPACE_BUDGET - used),
+      });
+      for (const c of found) workspaceIds.add(c.id);
+      return found;
+    };
+    const autoTask =
+      !contexts.length &&
+      !input.meetingId &&
+      !input.feedbackId &&
+      [
+        "organize_meeting",
+        "suggest_revisions",
+        "review_writing",
+        "plan_research",
+        "read_material",
+      ].includes(input.mode);
+    let freeChat =
       !contexts.length &&
       input.mode === "ask_research" &&
       !input.meetingId &&
@@ -431,6 +477,22 @@ Deno.serve(async (request) => {
         .join("\n\n");
       if (input.sourceText.length > 50000)
         throw new AIError("INPUT_TOO_LARGE", "선택한 범위를 줄여 주세요.", 413);
+      if (input.mode === "ask_research") {
+        // 첨부한 기록을 먼저 두고, 남는 한도만큼 이 연구의 나머지 기록을 이어 붙입니다.
+        const rest = await loadWorkspace(
+          "ask_research",
+          input.sourceText.length,
+        );
+        contexts = [...verified, ...rest];
+        input.sourceText = workspaceSourceText(
+          contexts as {
+            id: string;
+            kind: string;
+            title: string;
+            text: string;
+          }[],
+        );
+      }
       if (
         input.mode === "organize_meeting" &&
         (contexts.length !== 1 || contexts[0].kind !== "meetings")
@@ -442,9 +504,34 @@ Deno.serve(async (request) => {
       )
         throw new AIError("INVALID_INPUT", "수정할 피드백을 선택해 주세요.");
     } else if (freeChat) {
-      // 첨부한 기록이 없는 연구 대화. 읽을 원문이 없으므로 질문과 대화 내용만 보냅니다.
-      contexts = [];
-      input.sourceText = "";
+      // 첨부가 없어도 이 연구의 기록 전체를 읽습니다. 기록이 하나도 없을 때만 질문과 대화만 보냅니다.
+      contexts = await loadWorkspace("ask_research");
+      input.sourceText = workspaceSourceText(
+        contexts as { id: string; kind: string; title: string; text: string }[],
+      );
+      freeChat = !contexts.length;
+    } else if (autoTask) {
+      // 대상을 고르지 않은 요청: 서버가 이 연구에서 알맞은 기록을 찾아 읽습니다.
+      contexts = await loadWorkspace(input.mode as WorkspaceTask);
+      if (!contexts.length)
+        throw new AIError(
+          "SOURCE_MISSING",
+          input.mode === "organize_meeting"
+            ? "메모가 적힌 미팅이 아직 없어요. 미팅 메모를 저장한 뒤 다시 요청해 주세요."
+            : input.mode === "suggest_revisions"
+              ? "피드백이 아직 없어요. 피드백을 기록한 뒤 다시 요청해 주세요."
+              : input.mode === "review_writing"
+                ? "검토할 문서가 아직 없어요. 문서를 작성한 뒤 다시 요청해 주세요."
+                : input.mode === "read_material"
+                  ? "요약할 파일이 없어요. PDF·TXT·MD 파일을 첨부해 주세요."
+                  : "정리할 할 일·일정 기록이 아직 없어요.",
+          409,
+        );
+      input.sourceText = workspaceSourceText(
+        contexts as { id: string; kind: string; title: string; text: string }[],
+      );
+      // 대상이 하나인 요청은 저장된 원문 그대로라 발췌 확인(sourceQuote)과 버전 대조가 맞습니다.
+      if (contexts.length === 1) input.sourceRevision = contexts[0].revision;
     } else {
       const rows = (await rest(
         `rms_records?${new URLSearchParams({ id: `eq.${id}`, research_id: `eq.${input.researchId}`, kind: `eq.${kind}`, select: "data" })}`,
@@ -704,18 +791,28 @@ Deno.serve(async (request) => {
         : {}),
       ...(roadmap ? { roadmap } : {}),
     };
+    // 서버가 읽어 넣은 기록은 본문을 다시 저장하지 않고 어떤 기록이었는지만 남깁니다.
+    const storedContexts = contexts.map((c) =>
+      workspaceIds.has(c.id)
+        ? { id: c.id, kind: c.kind, title: c.title, revision: c.revision }
+        : c,
+    );
     const accepted = await rpc("rms_ai_finish_v2", {
       p_run_id: runId,
       p_status: "complete",
       p_output: output,
-      p_contexts: contexts,
+      p_contexts: storedContexts,
     });
     if (!accepted)
       throw new AIError("CANCELLED", "중단한 결과는 적용하지 않았습니다.", 499);
     return reply({
       runId,
       ...(input.webSearch ? { webGrounding } : {}),
-      ...(input.calendar ? { contexts } : {}),
+      ...(input.calendar
+        ? { contexts }
+        : workspaceIds.size
+          ? { contexts: storedContexts }
+          : {}),
       candidates,
       creditsUsed: chargedCredits > 0 ? chargedCredits : undefined,
       creditStatus: settled ? "settled" : "pending",

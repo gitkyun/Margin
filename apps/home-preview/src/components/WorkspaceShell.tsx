@@ -483,7 +483,7 @@ export function WorkspaceShell({
         {research && (
           <Hint
             label={t("연구 도우미")}
-            detail={t("고른 기록과 연구 목적을 읽고 도와요.")}
+            detail={t("이 연구의 기록을 모두 읽고 도와요.")}
             position="right-center"
             display="block"
           >
@@ -532,7 +532,7 @@ export function WorkspaceShell({
                 aria-label={t("최근 24시간 AI 사용량")}
               />
             ) : (
-              <small>{t("고른 기록과 연구 목적만 읽어요.")}</small>
+              <small>{t("이 연구의 기록을 모두 읽어요.")}</small>
             )}
           </Link>
         ) : null}

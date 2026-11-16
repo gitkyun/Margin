@@ -266,7 +266,11 @@ export interface AIContext {
     | "attachments"
     | "tasks"
     | "phases"
-    | "milestones";
+    | "milestones"
+    // 연구 도우미가 이 연구에서 직접 읽어 온 기록(서버가 붙임)
+    | "questions"
+    | "decisions"
+    | "materials";
   id: ID;
   title: string;
   revision?: number;

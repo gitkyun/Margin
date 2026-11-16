@@ -9,10 +9,11 @@ const base = {
 };
 
 describe("연구 도우미가 답하기 전에 보여 주는 단계", () => {
-  it("첫 질문에서는 연구, 주제·목적, 답변 정리 순서로 보여 준다", () => {
+  it("첫 질문에서는 연구, 주제·목적, 연구 기록, 답변 정리 순서로 보여 준다", () => {
     expect(assistantSteps(base).map((step) => step.doing)).toEqual([
       "‘대학원생 협업 연구’ 연구 개요 읽는 중",
       "연구 주제와 목적 읽는 중",
+      "이 연구의 기록 읽는 중",
       "답변 정리하는 중",
     ]);
   });
@@ -30,11 +31,11 @@ describe("연구 도우미가 답하기 전에 보여 주는 단계", () => {
     expect(doing).toContain("‘가’ 읽는 중");
     expect(doing).not.toContain("‘라’ 읽는 중");
     expect(doing).toContain(
-      `그 밖의 기록 ${contexts.length - NAMED_SOURCE_LIMIT}건 읽는 중`,
+      `그 밖에 붙인 기록 ${contexts.length - NAMED_SOURCE_LIMIT}건 읽는 중`,
     );
   });
 
-  it("그다음 질문부터는 질문, 고른 기록, 답변 정리만 보여 준다", () => {
+  it("그다음 질문부터는 질문, 붙인 기록, 연구 기록, 답변 정리만 보여 준다", () => {
     const steps = assistantSteps({
       ...base,
       first: false,
@@ -42,13 +43,18 @@ describe("연구 도우미가 답하기 전에 보여 주는 단계", () => {
     });
     expect(steps.map((step) => step.done)).toEqual([
       "질문 읽기",
-      "기록 2건 확인",
+      "붙인 기록 2건 확인",
+      "연구 기록 확인",
       "답변 정리",
     ]);
   });
 
-  it("기록을 붙이지 않은 질문에는 기록 단계가 없다", () => {
+  it("기록을 붙이지 않은 질문에도 연구 기록을 읽는 단계가 있다", () => {
     const steps = assistantSteps({ ...base, first: false });
-    expect(steps).toHaveLength(2);
+    expect(steps.map((step) => step.done)).toEqual([
+      "질문 읽기",
+      "연구 기록 확인",
+      "답변 정리",
+    ]);
   });
 });
