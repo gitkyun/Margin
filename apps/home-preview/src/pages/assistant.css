@@ -1790,3 +1790,98 @@
     gap: 8px;
   }
 }
+
+@layer margin {
+  .assistant-question-mode {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-web-scope {
+    margin: 8px 4px 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: 1.5;
+  }
+  .assistant-web-answer-label {
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .assistant-web-source-warning {
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .assistant-web-queries {
+    margin-top: 12px;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-web-queries summary {
+    cursor: pointer;
+  }
+  .assistant-web-queries ul {
+    padding-left: 18px;
+    margin-top: 8px;
+  }
+  .assistant-search-suggestions {
+    display: block;
+    width: 100%;
+    min-height: 160px;
+    margin-top: 12px;
+    border: 0;
+    background: var(--surface);
+    border-radius: var(--radius-8);
+  }
+}
+
+@layer margin {
+  .assistant-linked-sources {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 4px 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-linked-sources button {
+    color: var(--text-secondary);
+    background: transparent;
+    border: 0;
+  }
+  .assistant-linked-sources button:disabled {
+    opacity: 0.5;
+  }
+}
+
+@layer margin {
+  .assistant-source-snapshot-list {
+    max-height: 60dvh;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .assistant-source-snapshot-list section {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+  }
+  .assistant-source-snapshot-list section[data-focused="true"] {
+    border-color: var(--brand);
+  }
+  .assistant-source-snapshot-list h3 {
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .assistant-source-snapshot-list p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: var(--typography-label2-fontSize);
+    color: var(--text-secondary);
+  }
+}

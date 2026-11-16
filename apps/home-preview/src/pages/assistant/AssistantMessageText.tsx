@@ -1,5 +1,6 @@
 import { useMemo, type ComponentProps } from "react";
 import Markdown from "react-markdown";
+import { WebGroundedText, type WebGroundingData } from "./WebGroundedText";
 import AICitations from "@/components/kokonut/ai-citations";
 import { t } from "@/lib/i18n";
 import type { AIContext } from "@/lib/domain";
@@ -7,6 +8,7 @@ interface AssistantMessageTextProps {
   text: string;
   contexts: AIContext[];
   onOpenSources?: (index?: number) => void;
+  webGrounding?: WebGroundingData;
 }
 const CITATION_PATTERN = /\[근거\s*(\d+)\]/g;
 const CITATION_HREF = /^#cite-(\d+)$/;
@@ -44,6 +46,7 @@ export function AssistantMessageText({
   text,
   contexts,
   onOpenSources,
+  webGrounding,
 }: AssistantMessageTextProps) {
   const markdown = useMemo(() => citationsToLinks(text), [text]);
   const cited = [
@@ -53,6 +56,8 @@ export function AssistantMessageText({
         .filter((index) => !!contexts[index]),
     ),
   ];
+  if (webGrounding)
+    return <WebGroundedText text={text} grounding={webGrounding} />;
   return (
     <div className="ai-message-content">
       <div className="ai-message-body">

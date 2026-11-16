@@ -9,6 +9,8 @@ export type Mode =
   | "continue_writing"
   | "inline_edit";
 export interface AIInput {
+  webSearch?: boolean;
+  calendar?: boolean;
   mode: Mode;
   model?: string;
   thinking?: string;
@@ -74,6 +76,30 @@ function text(value: unknown, max: number, required = false): string {
 }
 export function validateInput(value: unknown): AIInput {
   const input = object(value);
+  if (
+    (input.webSearch !== undefined && typeof input.webSearch !== "boolean") ||
+    (input.calendar !== undefined && typeof input.calendar !== "boolean")
+  )
+    throw new AIError("INVALID_INPUT", "검색과 일정 옵션을 확인해 주세요.");
+  if (
+    (input.webSearch || input.calendar) &&
+    (input.mode !== "ask_research" ||
+      (input.webSearch && input.calendar) ||
+      input.meetingId ||
+      input.feedbackId)
+  )
+    throw new AIError(
+      "INVALID_INPUT",
+      "웹 검색과 일정 확인은 질문하기에서 따로 실행해 주세요.",
+    );
+  if (
+    input.webSearch &&
+    ((Array.isArray(input.contexts) && input.contexts.length) ||
+      (Array.isArray(input.history) && input.history.length) ||
+      (typeof input.sourceText === "string" && input.sourceText.trim()))
+  )
+    throw new AIError("INVALID_INPUT", "웹 검색에는 질문만 보낼 수 있어요.");
+
   const contexts = Array.isArray(input.contexts) ? input.contexts : [];
   if (contexts.length) {
     if (

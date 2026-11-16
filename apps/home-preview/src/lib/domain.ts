@@ -273,7 +273,20 @@ export interface AIContext {
   text?: string;
   page?: number;
 }
+export interface WebGrounding {
+  sources: { url: string; title: string }[];
+  citations: {
+    startIndex: number;
+    endIndex: number;
+    sourceIndices: number[];
+  }[];
+  queries: string[];
+  searchEntryPointHtml?: string;
+}
 export interface AIConversationMessage {
+  webSearch?: boolean;
+  calendar?: boolean;
+  webGrounding?: WebGrounding;
   role: "user" | "assistant";
   text: string;
   createdAt: string;
@@ -288,6 +301,7 @@ export interface AIConversation extends BaseRecord {
   contexts: AIContext[];
 }
 export interface Attachment extends BaseRecord {
+  textExtractionVersion?: 2;
   title: string;
   fileName: string;
   storagePath: string;
@@ -431,6 +445,8 @@ export interface AICandidate {
   suggestedTasks?: string[];
 }
 export interface AIResult {
+  contexts?: AIContext[];
+  webGrounding?: WebGrounding;
   creditsUsed?: number;
   creditStatus?: "settled" | "pending";
   answer?: string;
@@ -441,6 +457,8 @@ export interface AIResult {
   createdAt: string;
 }
 export interface AIInput {
+  webSearch?: boolean;
+  calendar?: boolean;
   mode:
     | "organize_meeting"
     | "suggest_revisions"

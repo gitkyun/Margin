@@ -70,6 +70,8 @@ export interface SearchTool {
 }
 
 export interface SearchSource {
+  /** Stable identity when several grounding links share a redirect host. */
+  key?: string;
   /** e.g. "developer.mozilla.org" */
   domain: string;
   title: string;
@@ -80,6 +82,7 @@ export interface SearchSource {
 }
 
 export interface AIInputSearchProps {
+  allowAttachments?: boolean;
   modelControls?: React.ReactNode;
   leadingControl?: React.ReactNode;
   value?: string;
@@ -189,7 +192,7 @@ function SourceStack({ sources }: { sources: SearchSource[] }) {
             className={cn(i > 0 && "-ml-1")}
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
             initial={{ opacity: 0, x: -6, filter: "blur(2px)" }}
-            key={source.domain}
+            key={source.key ?? source.domain}
             layout="position"
             transition={{ duration: 0.2, ease: EASE_OUT }}
           >
@@ -235,7 +238,7 @@ function SourceList({ id, sources }: { id: string; sources: SearchSource[] }) {
               "hover:bg-[color-mix(in_srgb,var(--text)_3%,transparent)] ",
             )}
             initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-            key={source.domain}
+            key={source.key ?? source.domain}
             // A short cascade, capped so a long list doesn't drag.
             transition={{
               duration: 0.2,
@@ -265,6 +268,19 @@ const traceLabel = (
   tool: SearchTool | null,
   count: number,
 ): string => {
+  if (tool?.id === "web_search") {
+    if (phase === "working")
+      return count > 0
+        ? t("웹 출처를 확인하고 있어요")
+        : (tool.activity ?? t("웹 검색 응답을 기다리고 있어요"));
+    if (phase === "stopped")
+      return count > 0
+        ? t("웹 출처 {count}개를 확인하고 멈췄어요", { count })
+        : t("멈췄어요");
+    return count > 0
+      ? t("웹 출처 {count}개를 확인했어요", { count })
+      : t("웹 출처가 반환되지 않았어요");
+  }
   if (phase === "working") {
     if (count > 0) {
       return t("고른 기록을 읽고 있어요");
@@ -906,6 +922,7 @@ function SendStopButton({
 }
 
 export default function AI_Input_Search({
+  allowAttachments = true,
   modelControls,
   leadingControl,
   value: controlledValue,
@@ -1031,7 +1048,9 @@ export default function AI_Input_Search({
         return;
       }
       setSources((current) => [
-        ...current.filter((s) => s.domain !== source.domain),
+        ...current.filter(
+          (s) => (s.key ?? s.domain) !== (source.key ?? source.domain),
+        ),
         source,
       ]);
     };
@@ -1138,16 +1157,20 @@ export default function AI_Input_Search({
               disabled={disabled}
               maxLength={2000}
               onPaste={(e) => {
+                if (!allowAttachments && e.clipboardData.files.length) {
+                  e.preventDefault();
+                  return;
+                }
                 if (e.clipboardData.files.length && !disabled && !running) {
                   e.preventDefault();
                   const picked = Array.from(e.clipboardData.files);
-                  setFiles((current) => [...current, ...picked]);
                   if (onAttach) {
                     onAttach(picked);
                     if (e.currentTarget instanceof HTMLInputElement)
                       e.currentTarget.value = "";
                     return;
                   }
+                  setFiles((current) => [...current, ...picked]);
                 }
               }}
               // shadow-none and md:text-[15px] beat the shadow-xs and
@@ -1190,26 +1213,29 @@ export default function AI_Input_Search({
 
             <div className="flex flex-wrap items-center gap-1 px-2.5 pt-1 pb-2.5">
               {leadingControl}
-              <button
-                aria-label={t("파일 첨부")}
-                className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] outline-hidden ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)]  ",
-                  "transition-[background-color,color] duration-150",
-                  EASE_OUT_CSS,
-                  "hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] hover:text-[var(--text)]  ",
-                  "focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--text)_20%,transparent)] ",
-                )}
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-              >
-                <Plus aria-hidden="true" className="size-4" />
-              </button>
+              {allowAttachments && (
+                <button
+                  aria-label={t("파일 첨부")}
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] outline-hidden ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)]  ",
+                    "transition-[background-color,color] duration-150",
+                    EASE_OUT_CSS,
+                    "hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] hover:text-[var(--text)]  ",
+                    "focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--text)_20%,transparent)] ",
+                  )}
+                  onClick={() => fileInputRef.current?.click()}
+                  type="button"
+                >
+                  <Plus aria-hidden="true" className="size-4" />
+                </button>
+              )}
               <input
                 className="hidden"
                 multiple
-                disabled={disabled}
+                disabled={disabled || !allowAttachments}
                 accept=".pdf,.txt,.md"
                 onChange={(e) => {
+                  if (!allowAttachments) return;
                   const picked = Array.from(e.target.files ?? []);
                   if (onAttach) {
                     onAttach(picked);

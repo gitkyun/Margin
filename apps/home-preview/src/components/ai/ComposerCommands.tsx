@@ -45,7 +45,7 @@ export const COMPOSER_COMMANDS: ComposerCommand[] = [
   },
   {
     id: "read_material",
-    label: String(modeLabels.read_material),
+    label: t("논문·자료 요약"),
     description: t("첨부한 자료나 PDF 핵심 내용을 요약해요"),
     icon: "file",
   },
@@ -151,6 +151,9 @@ export interface QueuedQuestion {
   id: string;
   text: string;
   mode: AIInput["mode"];
+  webSearch?: boolean;
+  calendar?: boolean;
+  contexts?: AIContext[];
 }
 
 export function ComposerQueue({

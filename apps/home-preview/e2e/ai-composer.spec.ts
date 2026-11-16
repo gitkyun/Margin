@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import {
   OWNER,
@@ -257,4 +258,231 @@ test("입력창 너비·크기 조절과 접힌 프로필이 원본 스타일을
     expect(box!.width).toBe(40);
     expect(box!.height).toBe(40);
   }
+});
+
+test("웹 검색은 질문만 보내고 실제 반환된 웹 출처를 표시한다", async ({
+  page,
+}) => {
+  const { errors, server } = await open(page);
+  server.fn("ai-assist", async (_body, route) => {
+    if (route.request().method() === "GET") return { models };
+    return {
+      runId: "web-run",
+      candidates: [],
+      model: models[0].id,
+      answer: "웹에서 확인한 연구예요.",
+      webGrounding: {
+        sources: [
+          { url: "https://example.org/research", title: "공개 연구 문서" },
+        ],
+        citations: [
+          {
+            startIndex: 0,
+            endIndex: "웹에서 확인한 연구예요.".length,
+            sourceIndices: [0],
+          },
+        ],
+        queries: ["공개 연구 동향"],
+        searchEntryPointHtml:
+          '<a href="https://www.google.com/search?q=research">Google</a>',
+      },
+    };
+  });
+  await composer(page).getByRole("button", { name: "웹 검색 켜기" }).click();
+  await expect(
+    composer(page).getByRole("button", { name: "파일 첨부" }),
+  ).toHaveCount(0);
+  await input(page).fill("최근 연구 동향을 확인해 줘");
+  await shot(page, "web-search-input");
+  await input(page).press("Enter");
+  await expect(page.getByLabel("웹 검색 답변", { exact: true })).toBeVisible();
+  const request = server.calls.find(
+    (call) =>
+      call.name === "ai-assist" &&
+      (call.body as { webSearch?: boolean })?.webSearch,
+  )?.body;
+  expect(request).toMatchObject({
+    mode: "ask_research",
+    webSearch: true,
+    contexts: [],
+    history: [],
+    question: "최근 연구 동향을 확인해 줘",
+  });
+  await page.getByRole("button", { name: "근거 1개", exact: true }).click();
+  await expect(
+    page.getByRole("link", { name: /공개 연구 문서/ }),
+  ).toHaveAttribute("href", "https://example.org/research");
+  await expect(page.getByTitle("Google 검색 추천")).toHaveAttribute(
+    "sandbox",
+    "allow-popups allow-popups-to-escape-sandbox",
+  );
+  await shot(page, "web-search-sources");
+  expect(
+    errors.filter(
+      (error) =>
+        !error.startsWith("Blocked script execution in 'about:srcdoc'"),
+    ),
+  ).toEqual([]);
+});
+
+test("웹 검색을 해제하면 기존 질문 입력으로 돌아오고 실패한 검색 질문은 남는다", async ({
+  page,
+}) => {
+  const { server } = await open(page);
+  await input(page).fill("지우면 안 되는 질문");
+  await composer(page).getByRole("button", { name: "웹 검색 켜기" }).click();
+  await expect(input(page)).toHaveValue("지우면 안 되는 질문");
+  await composer(page)
+    .getByRole("button", { name: "웹 검색 선택 해제" })
+    .click();
+  await expect(
+    composer(page).getByRole("button", { name: "웹 검색 켜기" }),
+  ).toBeVisible();
+  await expect(input(page)).toHaveValue("지우면 안 되는 질문");
+  await composer(page).getByRole("button", { name: "웹 검색 켜기" }).click();
+  server.fn("ai-assist", async (_body, route) =>
+    route.request().method() === "GET"
+      ? { models }
+      : {
+          error: {
+            message: "검색 연결을 확인해 주세요.",
+            code: "PROVIDER_ERROR",
+          },
+          status: 502,
+        },
+  );
+  await input(page).press("Enter");
+  await expect(input(page)).toHaveValue("지우면 안 되는 질문");
+});
+
+test("슬래시에서 실제 연결된 일곱 기능을 고르고 일정 요청을 실행한다", async ({
+  page,
+}) => {
+  const { server } = await open(page);
+  await input(page).fill("/");
+  for (const name of [
+    "미팅 정리",
+    "수정 방법",
+    "원고 검토",
+    "할 일 정리",
+    "논문·자료 요약",
+    "웹 검색",
+    "일정 확인",
+  ]) {
+    await expect(
+      page.getByRole("option", { name: new RegExp("^" + name) }),
+    ).toBeVisible();
+  }
+  await page.getByRole("option", { name: /일정 확인/ }).click();
+  await input(page).fill("이번 주 미팅과 마감을 알려 줘");
+  await input(page).press("Enter");
+  await expect(page.locator(".ai-message.assistant")).toHaveCount(1);
+  expect(
+    server.calls.find(
+      (call) =>
+        call.name === "ai-assist" &&
+        (call.body as { calendar?: boolean })?.calendar,
+    )?.body,
+  ).toMatchObject({ mode: "ask_research", calendar: true, webSearch: false });
+});
+
+test("기존 PDF 전체 본문을 다시 추출하고 보낸 첨부와 후속 질문의 기록 연결을 관리한다", async ({
+  page,
+}) => {
+  const { server } = await open(page);
+  let attachment = {
+    id: "00000000-0000-4000-8000-000000000031",
+    researchId: RESEARCH_ID,
+    ownerId: OWNER.id,
+    title: "전체본문검증.pdf",
+    fileName: "전체본문검증.pdf",
+    storagePath: `${OWNER.id}/${RESEARCH_ID}/existing.pdf`,
+    mimeType: "application/pdf",
+    size: 5000,
+    text: "기존에 표지만 읽은 내용",
+    visibility: "private",
+    createdAt: "2026-11-16T00:00:00Z",
+    updatedAt: "2026-11-16T00:00:00Z",
+  } as Record<string, unknown>;
+  const saves: { p_kind: string; p_value: Record<string, unknown> }[] = [];
+  server.rpc("rms_bootstrap", () => ({
+    ...WORKSPACE,
+    attachments: [attachment],
+  }));
+  server.rpc("rms_save_record", (body) => {
+    const saved = body as { p_kind: string; p_value: Record<string, unknown> };
+    saves.push(saved);
+    if (saved.p_kind === "attachments") attachment = saved.p_value;
+    return saved.p_value;
+  });
+  const pdf = await readFile(
+    new URL("../public/demo/research-sample.pdf", import.meta.url),
+  );
+  await page.route(
+    "https://margin-files.rlgus801-dad.workers.dev/**",
+    (route) =>
+      route.fulfill({
+        status: 200,
+        headers: {
+          "access-control-allow-origin": "*",
+          "access-control-allow-headers": "*",
+          "content-type": "application/pdf",
+        },
+        body: route.request().method() === "OPTIONS" ? "" : pdf,
+      }),
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "기록 고르기", exact: true }).click();
+  await page.getByRole("button", { name: /^전체본문검증.pdf/ }).click();
+  await expect
+    .poll(() => saves.filter((save) => save.p_kind === "attachments").length)
+    .toBe(1);
+  expect(attachment.textExtractionVersion).toBe(2);
+  expect(String(attachment.text)).not.toBe("기존에 표지만 읽은 내용");
+  expect(String(attachment.text)).toMatch(/\[1쪽\]/);
+  await input(page).fill("이 논문의 내용을 요약해 줘");
+  await input(page).press("Enter");
+  await expect(page.locator(".ai-message.assistant")).toHaveCount(1);
+  await expect(
+    composer(page).getByRole("group", { name: "첨부한 기록" }),
+  ).toHaveCount(0);
+  await expect(
+    page
+      .locator(".ai-message.user")
+      .first()
+      .getByRole("list", { name: "첨부한 파일" }),
+  ).toContainText("전체본문검증.pdf");
+  await expect(
+    page.getByText("이 대화에서 참고하는 기록 1개", { exact: true }),
+  ).toBeVisible();
+  await shot(page, "pdf-sent-linked-sources");
+  await input(page).fill("이 논문의 결과를 더 설명해 줘");
+  await input(page).press("Enter");
+  await expect(page.locator(".ai-message.assistant")).toHaveCount(2);
+  const requests = () =>
+    server.calls
+      .filter(
+        (call) =>
+          call.name === "ai-assist" && (call.body as { mode?: string })?.mode,
+      )
+      .map((call) => call.body as { contexts: { id: string }[] });
+  expect(requests()[1].contexts).toEqual(
+    expect.arrayContaining([expect.objectContaining({ id: attachment.id })]),
+  );
+  await page
+    .getByRole("button", { name: "기록 연결 해제", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "기록 연결 해제", exact: true }),
+  ).toHaveCount(0);
+  await input(page).fill("자료 없이 일반적으로 설명해 줘");
+  await input(page).press("Enter");
+  await expect(page.locator(".ai-message.assistant")).toHaveCount(3);
+  expect(requests()[2].contexts).toEqual([]);
+  await expect(
+    page
+      .locator(".ai-message.user")
+      .nth(2)
+      .getByRole("list", { name: "첨부한 파일" }),
+  ).toHaveCount(0);
 });
