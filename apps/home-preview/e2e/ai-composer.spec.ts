@@ -486,3 +486,122 @@ test("기존 PDF 전체 본문을 다시 추출하고 보낸 첨부와 후속 �
       .getByRole("list", { name: "첨부한 파일" }),
   ).toHaveCount(0);
 });
+
+test("기존 대화의 표지 PDF를 재선택 없이 전체 추출하고 실패하면 후속 질문을 유지한다", async ({
+  page,
+}) => {
+  const { server } = await open(page);
+  const timestamp = "2026-11-16T00:00:00Z";
+  const attachment = {
+    id: "00000000-0000-4000-8000-000000000032",
+    researchId: RESEARCH_ID,
+    ownerId: OWNER.id,
+    title: "기존대화논문.pdf",
+    fileName: "기존대화논문.pdf",
+    storagePath: `${OWNER.id}/${RESEARCH_ID}/old-conversation.pdf`,
+    mimeType: "application/pdf",
+    size: 5000,
+    text: "과거 표지 텍스트",
+    visibility: "private",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+  const context = {
+    kind: "attachments",
+    id: attachment.id,
+    title: attachment.title,
+    text: attachment.text,
+  };
+  const oldConversation = {
+    id: "00000000-0000-4000-8000-000000000033",
+    researchId: RESEARCH_ID,
+    ownerId: OWNER.id,
+    title: "기존 논문 대화",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    contexts: [context],
+    messages: [
+      {
+        role: "user",
+        text: "이 논문 요약",
+        contexts: [context],
+        createdAt: timestamp,
+      },
+      {
+        role: "assistant",
+        text: "과거 표지 요약",
+        contexts: [context],
+        createdAt: timestamp,
+      },
+    ],
+  };
+  const saves: { p_kind: string; p_value: Record<string, unknown> }[] = [];
+  server.rpc("rms_bootstrap", () => ({
+    ...WORKSPACE,
+    attachments: [attachment],
+    conversations: [oldConversation],
+  }));
+  server.rpc("rms_save_record", (body) => {
+    const saved = body as (typeof saves)[number];
+    saves.push(saved);
+    return saved.p_value;
+  });
+  const pdf = await readFile(
+    new URL("../public/demo/research-sample.pdf", import.meta.url),
+  );
+  let available = false;
+  await page.route(
+    "https://margin-files.rlgus801-dad.workers.dev/**",
+    (route) =>
+      route.fulfill({
+        status: available ? 200 : 500,
+        headers: {
+          "access-control-allow-origin": "*",
+          "access-control-allow-headers": "*",
+          "content-type": "application/pdf",
+        },
+        body:
+          route.request().method() === "OPTIONS"
+            ? ""
+            : available
+              ? pdf
+              : "unavailable",
+      }),
+  );
+  await page.reload();
+  await page.getByRole("button", { name: /대화 기록/ }).click();
+  await page.getByRole("menuitemradio", { name: "기존 논문 대화" }).click();
+  await input(page).fill("이 논문의 결과를 본문으로 다시 요약해 줘");
+  await input(page).press("Enter");
+  await expect(
+    page.getByText(/PDF 전체 본문을 준비하지 못했어요/),
+  ).toBeVisible();
+  await expect(input(page)).toHaveValue(
+    "이 논문의 결과를 본문으로 다시 요약해 줘",
+  );
+  expect(
+    server.calls.filter(
+      (call) =>
+        call.name === "ai-assist" && (call.body as { mode?: string })?.mode,
+    ),
+  ).toHaveLength(0);
+  expect(saves).toHaveLength(0);
+  available = true;
+  await input(page).press("Enter");
+  await expect(page.locator(".ai-message.assistant")).toHaveCount(2);
+  const upgraded = saves.find((save) => save.p_kind === "attachments")?.p_value;
+  expect(upgraded?.textExtractionVersion).toBe(2);
+  expect(upgraded?.text).toMatch(/\[1쪽\]/);
+  const request = server.calls.find(
+    (call) =>
+      call.name === "ai-assist" && (call.body as { mode?: string })?.mode,
+  )?.body as { contexts: { text: string }[] };
+  expect(request.contexts[0].text).toBe(upgraded?.text);
+  const savedConversation = saves
+    .filter((save) => save.p_kind === "conversations")
+    .at(-1)?.p_value as typeof oldConversation;
+  expect(savedConversation.messages[0].contexts[0].text).toBe(
+    "과거 표지 텍스트",
+  );
+  expect(savedConversation.contexts[0].text).toBe(upgraded?.text);
+});
