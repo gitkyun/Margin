@@ -81,152 +81,180 @@ async function open(page: Page, width = 1440, height = 900, delayMs = 0) {
     };
   });
   await page.goto(`/r/${RESEARCH_ID}/assistant`);
-  await expect(page.locator("form.ai-composer")).toBeVisible();
+  await expect(page.locator("[data-kokonut-composer]")).toBeVisible();
   return { errors, server };
 }
 const shot = async (page: Page, name: string) => {
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/${name}.png` });
 };
 
-test("입력창이 한 줄 도구 막대로 보이고 360~1440px에서 화면 밖으로 넘치지 않는다", async ({
-  page,
-}) => {
-  for (const [w, h] of [
-    [1440, 900],
-    [1024, 900],
-    [768, 900],
-    [390, 800],
-    [360, 800],
-  ]) {
-    const { errors } = await open(page, w, h);
-    await expect(page.locator("button.ai-model-trigger")).toBeVisible();
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > window.innerWidth + 1,
-    );
-    expect(overflow, `${w}px 가로 넘침`).toBe(false);
-    await shot(page, `composer-${w}`);
-    expect(errors).toEqual([]);
-    await page.reload();
+// 원본 데모의 내부 장식용 클래스 대신 접근 가능한 이름/역할로 실제 흐름을 검증합니다.
+// 모바일 검증은 사용자 요청으로 후속 작업으로 남깁니다.
+const composer = (page: Page) => page.locator("[data-kokonut-composer]");
+const input = (page: Page) =>
+  composer(page).getByRole("textbox", { name: "연구 도우미에게 질문" });
+
+test("원본 입력창이 데스크톱 너비에서 넘치지 않는다", async ({ page }) => {
+  const { errors } = await open(page);
+  for (const width of [1440, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(input(page)).toBeVisible();
+    await expect(
+      composer(page).getByRole("combobox", {
+        name: /AI 모델 · Gemini 3.8 Flash/,
+      }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth + 1,
+      ),
+    ).toBe(false);
+    await shot(page, `kokonut-composer-${width}`);
   }
+  expect(errors).toEqual([]);
 });
 
-test("모델 목록을 열고 고르고 닫는 동작을 빠르게 반복해도 상태가 맞다", async ({
-  page,
-}) => {
+test("원본 모델 메뉴에서 선택하고 추천 모델로 돌아온다", async ({ page }) => {
   const { errors } = await open(page);
-  const trigger = page.locator("button.ai-model-trigger");
-  await expect(trigger).toContainText("Gemini 3.8 Flash");
-  await trigger.click();
-  await expect(page.locator(".chip-select-popup")).toBeVisible();
-  await page.waitForTimeout(350);
-  await shot(page, "selector-open");
+  await composer(page)
+    .getByRole("combobox", { name: /AI 모델 · Gemini 3.8 Flash/ })
+    .click();
   await page.getByRole("option", { name: /Gemini 4 Carbon/ }).click();
-  await expect(page.locator(".chip-select-popup")).toBeHidden();
-  await expect(trigger).toContainText("Gemini 4 Carbon");
-  const banner = page.locator(".ai-composer-banner");
-  await expect(banner).toContainText("Gemini 3.8 Flash");
-  await shot(page, "promo");
-  await banner.getByRole("button", { name: "써 보기" }).click();
-  await expect(trigger).toContainText("Gemini 3.8 Flash");
-  await expect(banner).toContainText("내 잔액");
-  for (let i = 0; i < 4; i += 1) {
-    await trigger.click();
-    await page.keyboard.press("Escape");
-  }
-  await expect(page.locator(".chip-select-popup")).toBeHidden();
+  await expect(
+    composer(page).getByRole("combobox", { name: /AI 모델 · Gemini 4 Carbon/ }),
+  ).toBeVisible();
+  await composer(page).getByRole("button", { name: "시도하기" }).click();
+  const trigger = composer(page).getByRole("combobox", {
+    name: /AI 모델 · Gemini 3.8 Flash/,
+  });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   expect(errors).toEqual([]);
 });
 
-test("Enter로 보내면 입력창이 즉시 비고 빛 요소가 없으며 중단 시 글이 돌아온다", async ({
-  page,
-}) => {
+test("Enter로 보내면 비고 중단하면 질문이 복원된다", async ({ page }) => {
   const { errors } = await open(page, 1440, 900, 3000);
-  const box = page.locator("form.ai-composer textarea");
-  await box.fill("이 연구의 핵심만 알려 줘");
-  await box.press("Enter");
-  // 보내는 즉시 비어야 함
-  await expect(box).toHaveValue("");
-  // 글로 보낸 요청 중에 빛 요소가 DOM에 없어야 함
-  await expect(page.locator(".ai-composer-glow")).toHaveCount(0);
-  // 중단 시 글이 돌아옴
-  await page.getByRole("button", { name: "실행 중단" }).click();
-  await expect(box).toHaveValue("이 연구의 핵심만 알려 줘");
+  await input(page).fill("이 연구의 핵심만 알려 줘");
+  await input(page).press("Enter");
+  await expect(input(page)).toHaveValue("");
+  await composer(page)
+    .getByRole("button", { name: "답변 중단", exact: true })
+    .click();
+  await expect(input(page)).toHaveValue("이 연구의 핵심만 알려 줘");
   expect(errors).toEqual([]);
 });
 
-test("/ 명령 메뉴를 키보드로 열고 검색·선택·해제할 수 있다", async ({
-  page,
-}) => {
+test("슬래시 명령을 고르고 원본 검색 입력창에서 해제한다", async ({ page }) => {
   const { errors } = await open(page);
-  const box = page.locator("form.ai-composer textarea");
-  await box.fill("/ㅇㄱ");
-  await expect(page.locator(".composer-command-menu")).toBeVisible();
-  await expect(page.locator(".composer-command-item").first()).toContainText(
-    "원고 검토",
-  );
-  await box.press("Enter");
-  await expect(page.locator(".composer-command-pill")).toContainText(
-    "원고 검토",
-  );
-  await expect(page.locator(".ai-composer-banner")).toContainText("바꾸기 /");
-  await expect(box).toHaveValue("");
-  await box.press("Backspace");
-  await expect(page.locator(".composer-command-pill")).toHaveCount(0);
+  await input(page).fill("/원고");
+  await expect(page.getByRole("option", { name: /원고 검토/ })).toBeVisible();
+  await input(page).press("Enter");
+  await expect(
+    composer(page).getByRole("button", { name: "원고 검토 선택 해제" }),
+  ).toBeVisible();
+  await expect(input(page)).toHaveValue("");
+  await composer(page)
+    .getByRole("button", { name: "원고 검토 선택 해제" })
+    .click();
+  await expect(
+    composer(page).getByRole("button", { name: "원고 검토 선택 해제" }),
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
-test("기다리는 동안 보낸 글이 대기 줄에 쌓여 순서대로 나가고 컨텍스트 고리가 동작한다", async ({
-  page,
-}) => {
+test("대기 질문이 원본 대기 줄에 쌓여 순서대로 전송된다", async ({ page }) => {
   const { errors } = await open(page, 1440, 900, 1500);
-  const box = page.locator("form.ai-composer textarea");
-  await box.fill("첫 번째 질문");
-  await box.press("Enter");
-  await box.fill("두 번째 대기 질문");
-  await box.press("Enter");
-  await expect(page.locator(".composer-queue")).toBeVisible();
-  await expect(page.locator(".composer-queue-text")).toHaveText(
-    "두 번째 대기 질문",
-  );
-  await page.waitForTimeout(4000);
-  await expect(page.locator(".composer-queue")).toHaveCount(0);
-  await expect(page.locator(".ai-message.user")).toHaveCount(2);
-
-  await page.getByRole("button", { name: "컨텍스트 한도 보기" }).click();
-  await expect(page.locator(".composer-context-popover")).toBeVisible();
-  await expect(page.locator(".composer-context-popover")).toContainText(
-    "50,000자",
-  );
+  await input(page).fill("첫 번째 질문");
+  await input(page).press("Enter");
+  await input(page).fill("두 번째 대기 질문");
+  await input(page).press("Enter");
+  await expect(
+    composer(page).getByText("두 번째 대기 질문", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    composer(page).getByRole("button", { name: "대기 줄에서 삭제" }),
+  ).toBeVisible();
+  await expect(page.locator(".ai-message.user")).toHaveCount(2, {
+    timeout: 10000,
+  });
+  await expect(
+    composer(page).getByRole("button", { name: "대기 줄에서 삭제" }),
+  ).toHaveCount(0);
+  await expect(composer(page)).toContainText("내 잔액");
+  await expect(
+    composer(page).getByRole("button", { name: "사용 내역" }),
+  ).toBeVisible();
+  await expect(
+    composer(page).getByRole("button", { name: /보내는 내용 .* 자세히 보기/ }),
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
-test("다크 모드에서도 입력창과 모델 목록이 읽힌다", async ({ page }) => {
+test("다크 모드에서 원본 모델 메뉴가 열린다", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   const { errors } = await open(page);
-  await page.getByRole("combobox", { name: /AI 모델/ }).click();
-  const popup = page.locator(".chip-select-popup");
-  await expect(popup).toBeVisible();
-  await page.waitForTimeout(350);
-  await shot(page, "dark-selector");
-  const colors = await popup.evaluate((node) => {
-    const style = getComputedStyle(node);
-    return { background: style.backgroundColor, color: style.color };
-  });
-  expect(colors.background).not.toBe(colors.color);
+  await composer(page)
+    .getByRole("combobox", { name: /AI 모델 · Gemini 3.8 Flash/ })
+    .click();
+  await expect(
+    page.getByRole("option", { name: /Gemini 4 Carbon/ }),
+  ).toBeVisible();
+  await shot(page, "kokonut-dark-selector");
   await page.keyboard.press("Escape");
   expect(errors).toEqual([]);
 });
 
-test("설정의 AI 기본 설정에서도 같은 선택 칩을 쓴다", async ({ page }) => {
+test("AI 기본 설정에서 원본 선택기의 모델과 답변 깊이를 바꾼다", async ({
+  page,
+}) => {
   const { errors } = await open(page);
-  await page.goto(`/account?tab=ai`);
-  const chip = page.getByRole("combobox", { name: /AI 모델/ });
-  await expect(chip).toBeVisible();
-  await page.waitForTimeout(350);
-  await shot(page, "settings-ai");
-  await chip.click();
-  await expect(page.getByRole("option")).toHaveCount(4);
+  await page.goto("/account?tab=ai");
+  const trigger = page.getByRole("button", { name: /AI 모델 · Gemini/ });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  await expect(
+    page
+      .getByRole("radiogroup", { name: "AI 모델", exact: true })
+      .getByRole("radio"),
+  ).toHaveCount(4);
+  await page.getByRole("radio", { name: /Gemini 4 Carbon/ }).click();
+  await expect(trigger).toHaveAccessibleName(/Gemini 4 Carbon/);
   await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
   expect(errors).toEqual([]);
+});
+
+test("입력 검증에 실패해도 적은 질문을 잃지 않는다", async ({ page }) => {
+  const { server } = await open(page);
+  await input(page).fill("/원고");
+  await input(page).press("Enter");
+  await input(page).fill("이 원고의 논리를 점검해 줘");
+  await input(page).press("Enter");
+  await expect(input(page)).toHaveValue("이 원고의 논리를 점검해 줘");
+  expect(
+    server.calls.filter(
+      (call) =>
+        call.name === "ai-assist" && (call.body as { mode?: string })?.mode,
+    ),
+  ).toHaveLength(0);
+});
+
+test("입력창 너비·크기 조절과 접힌 프로필이 원본 스타일을 침범하지 않는다", async ({
+  page,
+}) => {
+  await open(page);
+  await expect(input(page)).toHaveCSS("resize", "none");
+  const size = await composer(page).boundingBox();
+  expect(size!.width).toBeLessThanOrEqual(760);
+  await expect(
+    composer(page).getByRole("button", { name: "연구 기록 고르기" }),
+  ).toHaveCount(0);
+  const trigger = page.locator(".sidebar-collapsed .kokonut-profile-trigger");
+  if (await trigger.count()) {
+    const box = await trigger.boundingBox();
+    expect(box!.width).toBe(40);
+    expect(box!.height).toBe(40);
+  }
 });

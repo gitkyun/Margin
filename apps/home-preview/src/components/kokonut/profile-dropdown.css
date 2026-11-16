@@ -1,0 +1,31 @@
+/* Slot anchoring only; internal geometry and animation come from Kokonut source. */
+@layer margin {
+  .kokonut-profile {
+    min-width: 0;
+  }
+  .sidebar-collapsed .kokonut-profile-trigger [data-kokonut-identity-text],
+  .sidebar-collapsed .kokonut-profile-trigger > svg {
+    display: none;
+  }
+  .sidebar-collapsed .kokonut-profile-trigger {
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 4px;
+    margin-inline: auto;
+    border-radius: 12px;
+    gap: 0;
+  }
+  .kokonut-profile-panel {
+    overflow-y: auto;
+  }
+}
+
+@layer margin {
+  .sidebar-collapsed .kokonut-profile-trigger > span {
+    flex: none;
+  }
+  .sidebar-collapsed .kokonut-profile-trigger [data-kokonut-identity-text] {
+    display: none;
+  }
+}

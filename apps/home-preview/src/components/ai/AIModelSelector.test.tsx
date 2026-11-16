@@ -45,7 +45,7 @@ const models: AIModelCapability[] = [
 
 function openByKeyboard(trigger: HTMLElement) {
   trigger.focus();
-  fireEvent.keyDown(trigger, { key: "ArrowDown" });
+  fireEvent.click(trigger);
 }
 
 describe("model selector", () => {
@@ -53,19 +53,19 @@ describe("model selector", () => {
     render(
       <AIModelSelector models={models} model="flash" onChange={vi.fn()} />,
     );
-    const trigger = screen.getByRole("combobox", {
+    const trigger = screen.getByRole("button", {
       name: "AI 모델 · Flash 3.8",
     });
     openByKeyboard(trigger);
-    const options = await screen.findAllByRole("option");
+    const options = await screen.findAllByRole("radio");
     expect(options.map((option) => option.textContent)).toEqual([
       expect.stringContaining("Flash 3.8"),
       expect.stringContaining("Review"),
       expect.stringContaining("Pending"),
     ]);
-    expect(options[0].getAttribute("aria-selected")).toBe("true");
+    expect(options[0].getAttribute("aria-checked")).toBe("true");
     fireEvent.keyDown(document.activeElement!, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("option")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("radio")).toBeNull());
     await waitFor(() => expect(document.activeElement).toBe(trigger));
   });
 
@@ -77,15 +77,11 @@ describe("model selector", () => {
         <AIModelSelector models={models} model="flash" onChange={onChange} />
       </form>,
     );
-    openByKeyboard(
-      screen.getByRole("combobox", { name: "AI 모델 · Flash 3.8" }),
-    );
-    const review = await screen.findByRole("option", { name: /Review/ });
-    fireEvent.mouseMove(review);
-    fireEvent.keyDown(review, { key: "Enter" });
+    openByKeyboard(screen.getByRole("button", { name: "AI 모델 · Flash 3.8" }));
+    const review = await screen.findByRole("radio", { name: /Review/ });
+    fireEvent.click(review);
     expect(onChange).toHaveBeenCalledWith({ model: "review", thinking: "" });
     expect(onSubmit).not.toHaveBeenCalled();
-    await waitFor(() => expect(screen.queryByRole("option")).toBeNull());
   });
 
   it("shows unverified models as disabled and offers a direct recommended-model action", async () => {
@@ -93,13 +89,11 @@ describe("model selector", () => {
     render(
       <AIModelSelector models={models} model="review" onChange={onChange} />,
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "추천 모델로 선택 · Flash 3.8" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "AI 모델 · Review" }));
+    fireEvent.click(await screen.findByRole("radio", { name: /Flash 3.8/ }));
     expect(onChange).toHaveBeenCalledWith({ model: "flash", thinking: "" });
-    openByKeyboard(screen.getByRole("combobox", { name: "AI 모델 · Review" }));
-    const pending = await screen.findByRole("option", { name: /Pending/ });
-    expect(pending.getAttribute("aria-disabled")).toBe("true");
+    const pending = await screen.findByRole("radio", { name: /Pending/ });
+    expect(pending.hasAttribute("disabled")).toBe(true);
     fireEvent.click(pending);
     expect(onChange).toHaveBeenCalledTimes(1);
   });

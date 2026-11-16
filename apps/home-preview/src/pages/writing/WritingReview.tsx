@@ -1,3 +1,9 @@
+import { createPortal } from "react-dom";
+import { AnimatePresence } from "motion/react";
+import {
+  InlineEditBar,
+  InlineDiffPreview,
+} from "@/components/kokonut/ai-inline-edit";
 import { t } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
@@ -91,6 +97,7 @@ export function useWritingReview({
     instruction: string;
     busy: boolean;
   } | null>(null);
+  const inlineAbort = useRef<AbortController | null>(null);
   const settle = useRef<{
     resolve(): void;
     reject(error: Error): void;
@@ -98,7 +105,10 @@ export function useWritingReview({
 
   // 패널이 사라질 때 기다리던 확인을 정리해요.
   useEffect(
-    () => () => settle.current?.reject(new Error(t("반영을 취소했어요."))),
+    () => () => {
+      inlineAbort.current?.abort();
+      settle.current?.reject(new Error(t("반영을 취소했어요.")));
+    },
     [],
   );
 
@@ -280,14 +290,17 @@ export function useWritingReview({
   async function runInlineEdit(instruction: string) {
     if (!editor || dirty || busy || mode === "preview" || aiNotConfigured)
       return;
-    const sel = editor.state.selection;
-    if (sel.empty) {
+    const sel = inlineEdit?.range ?? editor.state.selection;
+    if (sel.from === sel.to) {
       toast.info(t("고칠 문장을 먼저 선택해 주세요."));
       return;
     }
     const original = editor.state.doc.textBetween(sel.from, sel.to);
     if (!original.trim()) return;
     const targetRange = { from: sel.from, to: sel.to };
+    inlineAbort.current?.abort();
+    const controller = new AbortController();
+    inlineAbort.current = controller;
     setInlineEdit({
       range: targetRange,
       original,
@@ -296,23 +309,27 @@ export function useWritingReview({
       busy: true,
     });
     try {
-      const res = await runAI({
-        mode: "inline_edit",
-        ...aiOptions(),
-        researchId,
-        question: instruction,
-        sourceText: original,
-        contexts: [
-          {
-            kind: "documents",
-            id: documentId,
-            title: `${savedTitle} · ${t("선택 문단")}`,
-            revision: savedRevision,
-            text: original,
-          },
-        ],
-        clientRunId: uid(),
-      });
+      const res = await runAI(
+        {
+          mode: "inline_edit",
+          ...aiOptions(),
+          researchId,
+          question: instruction,
+          sourceText: original,
+          contexts: [
+            {
+              kind: "documents",
+              id: documentId,
+              title: `${savedTitle} · ${t("선택 문단")}`,
+              revision: savedRevision,
+              text: original,
+            },
+          ],
+          clientRunId: uid(),
+        },
+        controller.signal,
+      );
+      if (controller.signal.aborted) return;
       const rewritten = res.answer?.trim() ?? "";
       if (!rewritten) {
         toast.info(t("고쳐 쓴 문장을 찾지 못했어요."));
@@ -327,6 +344,7 @@ export function useWritingReview({
         busy: false,
       });
     } catch (error) {
+      if (controller.signal.aborted) return;
       toast.error((error as Error).message);
       setInlineEdit(null);
     }
@@ -376,74 +394,6 @@ export function useWritingReview({
 
   const panel = (
     <div className="panel-frame-body writing-review">
-      <div className="writing-inline-edit">
-        <div className="writing-inline-edit-head">
-          <strong>{t("인라인 고쳐 쓰기")}</strong>
-          <small>
-            {t("선택한 문장을 바로 고쳐 쓰고 단어 차이를 확인해요.")}
-          </small>
-        </div>
-        <div className="writing-inline-presets">
-          {inlinePresets.map((preset) => (
-            <Button
-              key={preset}
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={
-                dirty ||
-                busy ||
-                mode === "preview" ||
-                aiNotConfigured ||
-                !!inlineEdit?.busy
-              }
-              title={
-                mode === "preview"
-                  ? t("미리보기에서는 인라인 고쳐 쓰기를 쓸 수 없어요.")
-                  : undefined
-              }
-              onClick={() => void runInlineEdit(preset)}
-            >
-              {preset}
-            </Button>
-          ))}
-        </div>
-        {inlineEdit && (
-          <div className="writing-inline-edit-result" role="status">
-            {inlineEdit.busy ? (
-              <p>{t("문장을 고쳐 쓰는 중")}</p>
-            ) : (
-              <>
-                <WordDiff
-                  before={inlineEdit.original}
-                  after={inlineEdit.rewritten}
-                />
-                <div className="writing-inline-edit-actions">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setInlineEdit(null)}
-                  >
-                    {t("닫기")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void runInlineEdit(inlineEdit.instruction)}
-                  >
-                    {t("다시 쓰기")}
-                  </Button>
-                  <Button type="button" size="sm" onClick={applyInlineEdit}>
-                    {t("반영")}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
       {input ? (
         <>
           <div className="writing-review-scope">
@@ -591,74 +541,78 @@ export function useWritingReview({
     mode === "preview" ||
     aiNotConfigured ||
     !!inlineEdit?.busy;
+  let toolbarPosition = { x: 16, y: 80, width: 420 };
+  if (editor && !editor.isDestroyed) {
+    const range = inlineEdit?.range ?? editor.state.selection;
+    try {
+      const point = editor.view.coordsAtPos(
+        Math.min(range.to, editor.state.doc.content.size),
+      );
+      const width = Math.min(460, window.innerWidth - 32);
+      toolbarPosition = {
+        x: Math.max(16, Math.min(point.left, window.innerWidth - width - 16)),
+        y: Math.max(16, Math.min(point.bottom + 8, window.innerHeight - 100)),
+        width,
+      };
+    } catch {
+      /* The editor can be changing documents between renders. */
+    }
+  }
+  const discardInline = () => {
+    inlineAbort.current?.abort();
+    setInlineEdit(null);
+    setInlineInstruction("");
+    editor?.commands.focus();
+  };
   const selectionBar =
-    selectedText || inlineEdit ? (
-      <div
-        className="writing-selection-bar"
-        role="region"
-        aria-label={t("선택 문장 고쳐 쓰기")}
-      >
-        <form
-          className="writing-selection-bar-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const q = inlineInstruction.trim();
-            if (!q) return;
-            void runInlineEdit(q);
-          }}
-        >
-          <Input
-            value={inlineInstruction}
-            onChange={(e) => setInlineInstruction(e.target.value)}
-            placeholder={t("어떻게 고칠까요? 예: 더 간결하게")}
-            maxLength={500}
-            disabled={inlineDisabled}
-          />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={inlineDisabled || !inlineInstruction.trim()}
-          >
-            {t("고쳐 쓰기")}
-          </Button>
-        </form>
-        {inlineEdit && (
-          <div className="writing-inline-edit-result" role="status">
-            {inlineEdit.busy ? (
-              <p>{t("문장을 고쳐 쓰는 중")}</p>
-            ) : (
-              <>
-                <WordDiff
-                  before={inlineEdit.original}
-                  after={inlineEdit.rewritten}
+    typeof document !== "undefined"
+      ? createPortal(
+          <AnimatePresence>
+            {(inlineEdit || (selectedText && !inlineDisabled)) && (
+              <div key="kokonut-inline-edit">
+                {inlineEdit && !inlineEdit.busy && (
+                  <div
+                    className="fixed z-[99] max-h-60 overflow-auto rounded-xl bg-[var(--surface-raised)] shadow-lg"
+                    style={{
+                      left: toolbarPosition.x,
+                      top: Math.max(16, toolbarPosition.y - 180),
+                      width: toolbarPosition.width,
+                    }}
+                  >
+                    <InlineDiffPreview
+                      before={inlineEdit.original}
+                      after={inlineEdit.rewritten}
+                    />
+                  </div>
+                )}
+                <InlineEditBar
+                  phase={
+                    inlineEdit?.busy
+                      ? "thinking"
+                      : inlineEdit
+                        ? "review"
+                        : "prompt"
+                  }
+                  instruction={inlineInstruction}
+                  onInstruction={setInlineInstruction}
+                  onRun={(instruction) => void runInlineEdit(instruction)}
+                  onStop={discardInline}
+                  onAccept={applyInlineEdit}
+                  onDiscard={discardInline}
+                  unchanged={
+                    inlineEdit
+                      ? inlineEdit.original === inlineEdit.rewritten
+                      : true
+                  }
+                  label={inlineEdit?.instruction ?? t("고쳐 쓰기")}
+                  position={toolbarPosition}
                 />
-                <div className="writing-inline-edit-actions">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setInlineEdit(null)}
-                  >
-                    {t("닫기")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void runInlineEdit(inlineEdit.instruction)}
-                  >
-                    {t("다시 쓰기")}
-                  </Button>
-                  <Button type="button" size="sm" onClick={applyInlineEdit}>
-                    {t("반영")}
-                  </Button>
-                </div>
-              </>
+              </div>
             )}
-          </div>
-        )}
-      </div>
-    ) : null;
+          </AnimatePresence>,
+          document.body,
+        )
+      : null;
 
   return { start, active: !!input, panel, dialog, selectionBar };
 }

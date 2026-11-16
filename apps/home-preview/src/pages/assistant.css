@@ -4,7 +4,9 @@
    이 화면의 배치 규칙은 이 파일 한 곳에만 둡니다. */
   /* 작업대: 대화가 720px 열을 온전히 씁니다. 근거·제안·기록은 여백 패널에 있어요. */
   .assistant-experience {
-    max-width: 720px;
+    width: 100%;
+    max-width: 1040px;
+    min-width: 0;
     margin: 0 auto;
   }
   .assistant-experience > .page-header {
@@ -17,7 +19,7 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    height: max(480px, calc(100dvh - 232px));
+    height: max(460px, calc(100dvh - 216px));
   }
   .ai-chat-main > .chat-scroll {
     flex: 1;
@@ -28,6 +30,9 @@
     gap: var(--spacing-24);
     min-height: 0;
     padding: var(--spacing-24) 0;
+    width: 100%;
+    max-width: 760px;
+    margin-inline: auto;
     overflow-y: auto;
     scroll-behavior: smooth;
   }
@@ -93,7 +98,7 @@
   .ai-message {
     display: grid;
     gap: 6px;
-    max-width: min(720px, 88%);
+    max-width: min(820px, 92%);
   }
   .ai-message > div {
     font-size: var(--typography-body2-fontSize);
@@ -323,6 +328,8 @@
   /* 입력창(Kokonut AI Input Selector 치수 그대로): 회색 바깥 면 4px 안에 머리 띠와 흰 카드가 들어가요. */
   .ai-composer-shell {
     width: 100%;
+    max-width: 512px;
+    margin-inline: auto;
     padding: var(--spacing-4);
     border-radius: 22px;
     background: var(--semantic-surface-neutral-secondary);
@@ -472,7 +479,7 @@
     cursor: not-allowed;
   }
   .composer-mic:disabled {
-    opacity: var(--opacity-48);
+    opacity: var(--opacity-43);
     cursor: not-allowed;
   }
   .composer-stop-mark {
@@ -812,58 +819,58 @@
     gap: var(--spacing-8);
   }
   /* 상위 말풍선이 pre-wrap을 물려주므로 서식 요소 사이의 줄바꿈 글자가 빈 줄이 되지 않게 되돌려요. */
-  .ai-message-body {
+  .ai-markdown {
     overflow-wrap: anywhere;
     white-space: normal;
   }
   /* 문단 안의 줄바꿈은 그대로 보여 주고, 서식 요소 사이는 토큰 간격으로 띄워요. */
-  .ai-message-body p,
-  .ai-message-body li {
+  .ai-markdown p,
+  .ai-markdown li {
     white-space: pre-line;
   }
-  .ai-message-body > * {
+  .ai-markdown > * {
     margin: 0;
   }
-  .ai-message-body > * + * {
+  .ai-markdown > * + * {
     margin-top: var(--spacing-8);
   }
   /* 전역 리셋이 list-style을 없애므로 답변 안 목록의 점·번호를 되살려요. */
-  .ai-message-body ul,
-  .ai-message-body ol {
+  .ai-markdown ul,
+  .ai-markdown ol {
     padding-inline-start: var(--spacing-24);
     list-style-position: outside;
   }
-  .ai-message-body ul {
+  .ai-markdown ul {
     list-style-type: disc;
   }
-  .ai-message-body ol {
+  .ai-markdown ol {
     list-style-type: decimal;
   }
-  .ai-message-body li::marker {
+  .ai-markdown li::marker {
     color: var(--text-tertiary);
   }
-  .ai-message-body li + li {
+  .ai-markdown li + li {
     margin-top: var(--spacing-4);
   }
-  .ai-message-body blockquote {
+  .ai-markdown blockquote {
     padding-inline-start: var(--spacing-12);
     border-inline-start: 2px solid var(--line);
     color: var(--text-secondary, inherit);
   }
-  .ai-message-body :not(pre) > code {
+  .ai-markdown :not(pre) > code {
     padding: 0 var(--spacing-4);
     border-radius: var(--radius-4);
     background: var(--selected-fill);
     font-size: 0.92em;
   }
-  .ai-message-body pre {
+  .ai-markdown pre {
     overflow-x: auto;
     padding: var(--spacing-8) var(--spacing-12);
     border-radius: var(--radius-8);
     background: var(--selected-fill);
     font-size: var(--typography-label2-fontSize);
   }
-  .ai-message-body a {
+  .ai-markdown a {
     color: var(--brand);
     text-decoration: underline;
   }
@@ -1095,7 +1102,7 @@
   .composer-queue-head button {
     padding: 2px var(--spacing-8);
     border: 0;
-    border-radius: var(--radius-6);
+    border-radius: var(--radius-8);
     background: transparent;
     color: var(--text-secondary);
     font: inherit;
@@ -1151,7 +1158,7 @@
     height: 26px;
     padding: 0 var(--spacing-4);
     border: 0;
-    border-radius: var(--radius-6);
+    border-radius: var(--radius-8);
     background: transparent;
     color: var(--text-secondary);
     font: inherit;
@@ -1168,7 +1175,7 @@
     color: var(--text);
   }
   .composer-queue-actions button:disabled {
-    opacity: var(--opacity-48);
+    opacity: var(--opacity-43);
     cursor: not-allowed;
   }
 
@@ -1524,7 +1531,7 @@
   }
   .ai-handoff-card ul {
     margin: 0;
-    padding-inline-start: var(--spacing-18);
+    padding-inline-start: var(--spacing-20);
     display: grid;
     gap: var(--spacing-4);
     color: var(--text-secondary);
@@ -1534,5 +1541,302 @@
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-6);
+  }
+
+  /* 생각 단계 세로 타임라인 (ai-loading + ai-tool-calls) */
+  .ai-step-card {
+    display: grid;
+    gap: var(--spacing-10);
+    padding: var(--spacing-12) var(--spacing-14);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-14);
+    background: var(--surface);
+  }
+  .ai-step-card-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .ai-step-card-head strong {
+    flex: 1;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .ai-step-timeline {
+    display: grid;
+    gap: var(--spacing-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+  }
+  .ai-step-timeline li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    color: var(--text-secondary);
+  }
+  .ai-step-timeline li.is-done {
+    color: var(--text);
+  }
+  .ai-step-timeline li.is-active {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .ai-step-marker {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--brand);
+  }
+  .ai-step-timeline li.is-done .ai-step-marker {
+    color: var(--success);
+  }
+  .ai-step-pending-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--line-strong);
+  }
+
+  /* 컨텍스트 미터 % 알약 (ai-context-meter) */
+  .composer-context-trigger {
+    width: auto;
+    gap: var(--spacing-6);
+    padding: 0 var(--spacing-8);
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .composer-context-pct {
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+
+  /* 내 연구 소스 칩 (ai-input-search) */
+  .composer-source-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    height: 28px;
+    padding: 0 var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      border-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out;
+  }
+  .composer-source-chip:hover {
+    border-color: var(--hover-line);
+    color: var(--text);
+  }
+  .composer-source-chip.is-active {
+    border-color: var(--selected-line);
+    background: var(--selected-fill);
+    color: var(--brand);
+  }
+
+  /* 파일 첨부 카드 및 PDF 페이지 썸네일 읽음 효과 (ai-attachment) */
+  .message-attachment-card {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    padding: var(--spacing-8) var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .message-attachment-badge {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 36px;
+    border-radius: var(--radius-8);
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: var(--typography-caption2-fontSize, 11px);
+    font-weight: 700;
+  }
+  .message-attachment-card > div {
+    display: grid;
+    min-width: 0;
+  }
+  .message-attachment-card strong {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .message-attachment-card small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .ai-attachment-read-card {
+    display: grid;
+    gap: var(--spacing-8);
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-14);
+    background: var(--surface);
+  }
+  .ai-attachment-read-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    color: var(--text);
+  }
+  .ai-attachment-read-head svg {
+    color: var(--success);
+  }
+  .ai-attachment-read-head small {
+    margin-left: auto;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+  .ai-attachment-pages {
+    display: flex;
+    gap: var(--spacing-6);
+    overflow-x: auto;
+  }
+  .ai-attachment-page-thumb {
+    display: grid;
+    gap: 3px;
+    align-content: start;
+    width: 32px;
+    height: 40px;
+    padding: 6px 5px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-4);
+    background: var(--surface-muted);
+    flex: none;
+    animation: ai-page-in var(--motion-duration-enter)
+      var(--motion-ease-standard) both;
+  }
+  .ai-attachment-page-thumb i {
+    display: block;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background: var(--line-strong);
+  }
+  .ai-attachment-page-thumb i:last-child {
+    width: 65%;
+  }
+  @keyframes ai-page-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ai-attachment-page-thumb {
+      animation: none;
+    }
+  }
+
+  /* 인용 하단 근거 스택 토글 (ai-citations) */
+  .ai-citations-footer {
+    display: grid;
+    gap: var(--spacing-8);
+  }
+  .ai-sources-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    width: fit-content;
+    padding: var(--spacing-4) var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .ai-sources-toggle:hover {
+    border-color: var(--hover-line);
+    color: var(--text);
+  }
+  .ai-sources-stack {
+    display: inline-flex;
+    align-items: center;
+  }
+  .ai-sources-stack > i {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--surface);
+    border-radius: 50%;
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-size: var(--typography-caption2-fontSize, 11px);
+    font-style: normal;
+    font-weight: 700;
+  }
+  .ai-sources-stack > i + i {
+    margin-left: -6px;
+  }
+}
+
+@layer margin {
+  .assistant-composer-wrap {
+    width: 100%;
+    max-width: 760px;
+    margin-inline: auto;
+    min-width: 0;
+  }
+  .assistant-composer-wrap textarea {
+    resize: none;
+  }
+  .composer-usage-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 12px 4px 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .composer-usage-footer > span {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+  .composer-usage-footer button {
+    color: var(--text-secondary);
+    background: transparent;
+    border: 0;
+    white-space: nowrap;
+  }
+  .composer-usage-footer button:hover {
+    color: var(--text);
+  }
+  .assistant-welcome {
+    gap: 4px;
+    padding: 16px 0 32px;
+  }
+  .assistant-prompts {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
   }
 }

@@ -17,6 +17,7 @@ interface SortableListProps<T> {
   /** 바뀐 순서(열쇠 목록)를 저장해요. 실패하면 throw하세요. 원래 순서로 돌아가요. */
   onCommit(keys: string[]): Promise<void>;
   disabled?: boolean;
+  showMoveButtons?: boolean;
 }
 
 interface RowProps<T> {
@@ -28,6 +29,7 @@ interface RowProps<T> {
   children: ReactNode;
   onMove(from: number, to: number): void;
   onDragEnd(): void;
+  showMoveButtons: boolean;
 }
 
 function SortableRow<T>({
@@ -39,6 +41,7 @@ function SortableRow<T>({
   children,
   onMove,
   onDragEnd,
+  showMoveButtons,
 }: RowProps<T>) {
   const controls = useDragControls();
   return (
@@ -78,26 +81,28 @@ function SortableRow<T>({
         <Icon name="menu" size={15} />
       </button>
       <div className="sortable-content">{children}</div>
-      <span className="sortable-steps">
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          disabled={disabled || index === 0}
-          aria-label={t("{name} 위로 옮기기", { name })}
-          onClick={() => onMove(index, index - 1)}
-        >
-          <Icon name="arrow-up" size={14} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          disabled={disabled || index === count - 1}
-          aria-label={t("{name} 아래로 옮기기", { name })}
-          onClick={() => onMove(index, index + 1)}
-        >
-          <Icon name="arrow-up" size={14} className="sortable-down" />
-        </Button>
-      </span>
+      {showMoveButtons && (
+        <span className="sortable-steps">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            disabled={disabled || index === 0}
+            aria-label={t("{name} 위로 옮기기", { name })}
+            onClick={() => onMove(index, index - 1)}
+          >
+            <Icon name="arrow-up" size={14} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            disabled={disabled || index === count - 1}
+            aria-label={t("{name} 아래로 옮기기", { name })}
+            onClick={() => onMove(index, index + 1)}
+          >
+            <Icon name="arrow-up" size={14} className="sortable-down" />
+          </Button>
+        </span>
+      )}
     </Reorder.Item>
   );
 }
@@ -114,6 +119,7 @@ export function SortableList<T>({
   renderItem,
   onCommit,
   disabled = false,
+  showMoveButtons = true,
 }: SortableListProps<T>) {
   const [order, setOrder] = useState<T[]>(() => [...items]);
   const [busy, setBusy] = useState(false);
@@ -127,15 +133,18 @@ export function SortableList<T>({
     if (!dragging.current && !busy) setOrder([...items]);
   }, [sourceKey, busy]);
 
-  async function commit(next: T[]) {
+  async function commit(next: T[], message?: string) {
     const keys = next.map(getKey);
     if (keys.join("|") === sourceKey) return;
     setBusy(true);
     try {
       await onCommit(keys);
+      if (message) setAnnounce(message);
     } catch {
       setOrder([...items]);
-      setAnnounce(t("순서를 저장하지 못해 원래대로 돌렸어요."));
+      setAnnounce(
+        t("순서를 저장하지 못했어요. 현재 순서를 다시 확인해 주세요."),
+      );
     } finally {
       setBusy(false);
     }
@@ -143,13 +152,13 @@ export function SortableList<T>({
   function move(from: number, to: number) {
     const next = moveItem(latest.current, from, to);
     setOrder(next);
-    setAnnounce(
+    void commit(
+      next,
       t("{name}을(를) {position}번째로 옮겼어요.", {
         name: itemName(next[to]),
         position: to + 1,
       }),
     );
-    void commit(next);
     // 버튼으로 옮긴 뒤에도 같은 항목의 버튼에 초점을 둬요.
     requestAnimationFrame(() => {
       const rows = document.querySelectorAll<HTMLElement>(
@@ -180,13 +189,16 @@ export function SortableList<T>({
             count={order.length}
             name={itemName(item)}
             disabled={disabled || busy}
+            showMoveButtons={showMoveButtons}
             onMove={move}
             onDragEnd={() => {
               dragging.current = false;
               void commit(latest.current);
             }}
           >
-            {renderItem(item)}
+            {renderItem(
+              items.find((current) => getKey(current) === getKey(item)) ?? item,
+            )}
           </SortableRow>
         ))}
       </Reorder.Group>

@@ -1,0 +1,15 @@
+/* Kokonut ai-autocomplete's original word reveal; rich-text input remains Tiptap. */
+.ai-autocomplete-word {
+  animation: ai-autocomplete-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@keyframes ai-autocomplete-in {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-autocomplete-word {
+    animation-duration: 1ms;
+  }
+}

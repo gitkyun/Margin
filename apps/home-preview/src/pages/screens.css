@@ -343,13 +343,45 @@
   .phase-milestones > button:hover {
     border-color: var(--hover-line);
   }
-  .phase-card-body .button-row {
+  .roadmap-sortable .sortable-list {
+    gap: var(--spacing-16);
+  }
+  .roadmap-sortable .sortable-row {
+    align-items: flex-start;
+    padding: 0;
+    gap: var(--spacing-8);
+    background: transparent;
+  }
+  .roadmap-sortable .sortable-handle {
+    margin-top: var(--spacing-20);
+  }
+  .roadmap-sortable .phase-card {
+    padding: var(--spacing-20);
+  }
+  .phase-card-heading {
     display: flex;
     align-items: center;
-    gap: 2px;
-    margin: 8px -8px 0;
-    padding-top: 6px;
-    border-top: 1px dashed var(--line);
+    flex-wrap: wrap;
+    gap: var(--spacing-12);
+    margin-bottom: var(--spacing-12);
+  }
+  .phase-card-heading h2 {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .phase-card-heading .phase-number {
+    position: static;
+    flex: none;
+  }
+  .phase-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--spacing-12);
+    margin-top: var(--spacing-20);
+    padding-top: var(--spacing-16);
+    border-top: 1px solid var(--line);
   }
   .roadmap-goals {
     margin-top: 22px;

@@ -14,6 +14,7 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import { formatDateTime } from "@/lib/domain";
 import { t } from "@/lib/i18n";
+import AISend from "@/components/kokonut/ai-send";
 import {
   emailFailureMessage,
   listProjectInvites,
@@ -74,7 +75,7 @@ async function copyLink(link: string): Promise<void> {
 }
 
 /** 연구 초대 메일 보내기와 초대 목록(재발송·취소). 연구 설정의 공동연구자 탭에서 씁니다. */
-export function ProjectInvites({
+function ProjectInvitesForTarget({
   researchId,
   canInviteEditor,
   canInviteAdvisor,
@@ -96,11 +97,6 @@ export function ProjectInvites({
   const [busy, setBusy] = useState("");
   const [problem, setProblem] = useState("");
   const [latest, setLatest] = useState<InviteSendOutcome | null>(null);
-  const [pendingSend, setPendingSend] = useState<{
-    email: string;
-    role: ProjectInviteRole;
-    seconds: number;
-  } | null>(null);
   const emailReason = useDisabledReason(
     !busy &&
       !email.trim() &&
@@ -132,42 +128,33 @@ export function ProjectInvites({
     else toast.error(emailFailureMessage(outcome.emailFailure));
   }
 
-  function executeInviteSend(
+  async function executeInviteSend(
     targetEmail: string,
     targetRole: ProjectInviteRole,
   ) {
-    setPendingSend(null);
-    void run("send", async () => {
-      report(
-        await sendProjectInvite({
-          researchId,
-          email: targetEmail,
-          role: targetRole,
-        }),
-      );
-      setEmail("");
-    });
-  }
-
-  useEffect(() => {
-    if (!pendingSend) return;
-    if (pendingSend.seconds <= 0) {
-      executeInviteSend(pendingSend.email, pendingSend.role);
-      return;
+    if (busy) throw new Error(t("메일을 보내는 중이에요."));
+    setBusy("send");
+    setProblem("");
+    try {
+      const outcome = await sendProjectInvite({
+        researchId,
+        email: targetEmail,
+        role: targetRole,
+      });
+      report(outcome);
+      if (outcome.emailStatus !== "sent")
+        throw new Error(emailFailureMessage(outcome.emailFailure));
+    } catch (failure) {
+      setProblem(friendlyError(failure));
+      throw failure;
+    } finally {
+      setBusy("");
+      void client.invalidateQueries({ queryKey });
     }
-    const timer = window.setTimeout(() => {
-      setPendingSend((cur) =>
-        cur ? { ...cur, seconds: cur.seconds - 1 } : null,
-      );
-    }, 1000);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingSend]);
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!email.trim() || busy) return;
-    setPendingSend({ email: email.trim(), role, seconds: 5 });
   }
 
   const list = invites.data ?? [];
@@ -220,46 +207,27 @@ export function ProjectInvites({
               {problem}
             </p>
           )}
-          <div className="bottom-actions">
-            <Button
-              type="submit"
-              disabled={!!busy || !email.trim() || !!pendingSend}
-              aria-describedby={emailReason.describedBy}
-            >
-              <Icon name="send" size={16} />
-              {busy === "send" ? t("보내는 중") : t("초대 메일 보내기")}
-            </Button>
-          </div>
-          {pendingSend && (
-            <div className="project-invite-result" role="status">
-              <Icon name="send" size={16} />
-              <div>
-                <strong>{t("초대 메일을 보낼 내용을 확인해 주세요")}</strong>
-                <p>
-                  {t("{seconds}초 뒤 {email}로 초대 메일을 보내요", {
-                    seconds: pendingSend.seconds,
-                    email: pendingSend.email,
-                  })}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setPendingSend(null)}
-              >
-                {t("되돌리기")}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() =>
-                  executeInviteSend(pendingSend.email, pendingSend.role)
-                }
-              >
-                {t("지금 보내기")}
-              </Button>
-            </div>
+          {email.trim() && (
+            <AISend
+              key={`${email.trim()}:${role}`}
+              draft={{
+                from: t("마진 · 연구 초대"),
+                toName: email.trim(),
+                toEmail: email.trim(),
+                subject: t("마진 연구 초대"),
+                body: t(
+                  "{role}로 연구에 초대해요. 메일의 초대 링크에서 초대를 수락할 수 있어요.",
+                  { role: roleLabel(role) },
+                ),
+              }}
+              readOnly
+              disabled={
+                !!busy || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+              }
+              undoSeconds={5}
+              sendLabel={t("초대 메일 보내기")}
+              onSend={() => executeInviteSend(email.trim(), role)}
+            />
           )}
           {emailReason.node}
         </form>
@@ -410,4 +378,9 @@ export function ProjectInvites({
       )}
     </div>
   );
+}
+
+/** 대상이 바뀌면 확인 초안과 예약 타이머를 함께 취소합니다. */
+export function ProjectInvites(props: ProjectInvitesProps) {
+  return <ProjectInvitesForTarget key={props.researchId} {...props} />;
 }

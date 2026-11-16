@@ -1,8 +1,9 @@
 @layer margin {
-  /* 계정 메뉴 머리: 이름·이메일·역할 배지를 묶은 카드(Kokonut UI Account Menu + Montage 토큰) */
+  /* 계정 메뉴 머리: 아바타·이름·이메일·역할 배지(Kokonut UI Account Menu + Montage 토큰) */
   .account-menu {
-    min-width: 264px;
-    max-height: min(460px, calc(100dvh - 100px));
+    min-width: 276px;
+    max-height: calc(100dvh - 80px);
+    padding: var(--spacing-6);
     overflow-y: auto;
     transform-origin: bottom left;
     animation: account-menu-morph 200ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -17,31 +18,35 @@
       transform: translateY(0) scale(1);
     }
   }
-  .account-menu-card {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-10);
-    min-width: 0;
-    margin-bottom: var(--spacing-4);
-    padding: var(--spacing-10) var(--spacing-12);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-10);
-    background: var(--surface-muted);
-  }
-  .account-menu-card > div {
+  .account-menu-header {
     display: grid;
     gap: var(--spacing-2);
-    min-width: 0;
-    flex: 1;
+    padding: 0;
   }
-  .account-menu-card-title {
+  .account-menu-header-top {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--spacing-6);
-    min-width: 0;
+    margin-bottom: var(--spacing-10);
   }
-  .account-menu-card strong {
+  .account-menu-avatar {
+    width: 40px;
+    height: 40px;
+    border-color: transparent;
+    background: var(--text);
+    color: var(--surface);
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 600;
+  }
+  .account-menu-status-dot {
+    width: 11px;
+    height: 11px;
+    border-color: var(--surface-raised);
+  }
+  .account-menu-name {
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    color: var(--text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -49,13 +54,14 @@
   .account-menu-role-quiet {
     flex: none;
     color: var(--text-tertiary);
-    font-size: var(--typography-caption2-fontSize, 11px);
+    font-size: var(--typography-caption1-fontSize);
     font-weight: 500;
-    line-height: 1.5;
+    line-height: 1.4;
   }
-  .account-menu-item-plan {
-    display: flex;
+  .account-menu-plan-row {
+    display: inline-flex;
     align-items: center;
+    gap: var(--spacing-12);
   }
   .account-menu-plan-value {
     margin-left: auto;
@@ -63,15 +69,12 @@
     font-size: var(--typography-caption1-fontSize);
     font-weight: 500;
   }
-  .account-menu-card .menu-email {
+  .account-menu-header .menu-email {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .account-menu-card .avatar {
-    border-color: var(--brand-soft);
-    background: var(--brand-soft);
-    color: var(--brand);
   }
 
   /* 사이드바 아래 계정 버튼: 아바타 + 연결 상태 점 + 화살표 회전 */
@@ -122,37 +125,38 @@
 
   /* 인라인 테마 전환 줄(Switch Button) 및 길게 눌러 로그아웃 */
   .account-menu-theme-wrap {
-    padding: var(--spacing-4) var(--spacing-6);
+    padding: var(--spacing-6) var(--spacing-8);
   }
   .theme-switch-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-8);
+    gap: var(--spacing-12);
   }
   .theme-switch-label {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-6);
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
+    font-weight: 500;
   }
   .theme-switch-pills {
     display: inline-flex;
-    gap: 2px;
-    padding: 2px;
-    border-radius: var(--radius-full);
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: 3px;
+    border-radius: var(--radius-10);
     background: var(--surface-muted);
   }
   .theme-switch-pill {
-    padding: 3px var(--spacing-8);
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 28px;
+    padding: 0;
     border: 0;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-8);
     background: transparent;
     color: var(--text-secondary);
     font: inherit;
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 500;
     cursor: pointer;
     transition:
       background-color var(--motion-duration-micro) ease-out,
@@ -178,24 +182,24 @@
     cursor: pointer;
   }
   .account-menu-hold-wrap {
-    padding: var(--spacing-4) var(--spacing-4) var(--spacing-2);
+    padding: var(--spacing-4) var(--spacing-2) 0;
   }
   .account-menu-hold-logout {
     position: relative;
     display: flex;
     align-items: center;
-    gap: var(--spacing-8);
+    gap: var(--spacing-10);
     width: 100%;
     min-height: 36px;
     padding: 0 var(--spacing-10);
     overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    background: var(--surface);
-    color: var(--danger);
+    border: 0;
+    border-radius: var(--radius-10);
+    background: transparent;
+    color: var(--text);
     font: inherit;
-    font-size: var(--typography-label2-fontSize);
-    font-weight: 600;
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 500;
     text-align: left;
     cursor: pointer;
     user-select: none;
@@ -204,7 +208,7 @@
     background: var(--hover-fill);
   }
   .account-menu-hold-logout:disabled {
-    opacity: var(--opacity-48);
+    opacity: var(--opacity-43);
     cursor: not-allowed;
   }
   .account-menu-hold-fill {
@@ -215,9 +219,16 @@
     pointer-events: none;
   }
   .account-menu-hold-logout > svg,
-  .account-menu-hold-logout > span:last-child {
+  .account-menu-hold-logout > span:not(.account-menu-hold-fill),
+  .account-menu-hold-logout > small {
     position: relative;
     z-index: 1;
+  }
+  .account-menu-hold-hint {
+    margin-left: auto;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 400;
   }
 }
 

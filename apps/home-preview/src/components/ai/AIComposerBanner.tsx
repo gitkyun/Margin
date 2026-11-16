@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Icon } from "@/components/icons";
 import { formatCredits, runCreditUsage, useAIUsage } from "@/lib/ai-usage";
 import { t } from "@/lib/i18n";
 import { ModelLogo } from "./ModelLogo";
 import "./ai-controls.css";
+import { PromoHeader } from "@/components/kokonut/ai-prompt";
 
 export interface ComposerPromo {
   /** 권하는 모델 이름 */
@@ -51,62 +52,69 @@ export function AIComposerBanner({
   const used = runId
     ? (runCreditUsage(credits, runId) ?? usedCredits)
     : undefined;
-  if (command)
-    return (
-      <div className="ai-composer-banner" role="status">
-        <Icon name={command.icon} size={14} />
-        <p>
-          <strong>{command.label}</strong>
-          <span>{command.description}</span>
-        </p>
-        <button type="button" onClick={command.onChangeCommand}>
-          {t("바꾸기 /")}
-        </button>
-      </div>
-    );
-  if (promo && onTryPromo)
-    return (
-      <div className="ai-composer-banner" role="status">
-        <ModelLogo provider={promo.provider} />
-        <p>
-          <strong>{promo.label}</strong>
-          {promo.note && <span>{promo.note}</span>}
-        </p>
-        <button type="button" onClick={onTryPromo}>
-          {t("써 보기")}
-        </button>
-      </div>
-    );
+  const navigate = useNavigate();
+  const balance = credits
+    ? t("내 잔액 · {credits}크레딧", {
+        credits: formatCredits(credits.balance),
+      })
+    : usage.isError
+      ? t("크레딧 정보를 불러오지 못했어요.")
+      : usage.isPending
+        ? t("크레딧 불러오는 중")
+        : t("크레딧 정보는 서버 연결 후 표시돼요.");
+  return promo ? (
+    <PromoHeader
+      model={promo.label}
+      text={`${t("추천")} · ${promo.label}${promo.note ? " · " + promo.note : ""}`}
+      action={t("시도하기")}
+      canSwitch={!!onTryPromo}
+      inUse={false}
+      onAction={() => onTryPromo?.()}
+    />
+  ) : null;
+}
+
+export function AIComposerUsage({
+  runId,
+  usedCredits,
+}: {
+  runId?: string;
+  usedCredits?: number;
+}) {
+  const usage = useAIUsage();
+  const navigate = useNavigate();
+  const credits = usage.data?.credits;
+  const used = runId
+    ? (runCreditUsage(credits, runId) ?? usedCredits)
+    : undefined;
   return (
-    <div className="ai-composer-banner" role="status">
-      <ModelLogo provider={provider} />
-      <p>
+    <div className="composer-usage-footer" aria-live="polite">
+      <span>
+        {credits
+          ? t("내 잔액 · {credits}크레딧", {
+              credits: formatCredits(credits.balance),
+            })
+          : usage.isError
+            ? t("크레딧 정보를 불러오지 못했어요.")
+            : usage.isPending
+              ? t("크레딧 불러오는 중")
+              : t("크레딧 정보는 서버 연결 후 표시돼요.")}
         {used !== undefined && (
-          <span>
+          <span className="composer-request-usage">
             {t("이번 요청 실제 사용 · {credits}크레딧", {
               credits: formatCredits(used),
             })}
           </span>
         )}
-        <span>
-          {credits
-            ? t("내 잔액 · {credits}크레딧", {
-                credits: formatCredits(credits.balance),
-              })
-            : usage.isError
-              ? t("크레딧 정보를 불러오지 못했어요.")
-              : usage.isPending
-                ? t("크레딧 불러오는 중")
-                : t("크레딧 정보는 서버 연결 후 표시돼요.")}
-        </span>
-      </p>
-      {usage.isError ? (
-        <button type="button" onClick={() => void usage.refetch()}>
-          {t("다시 불러오기")}
-        </button>
-      ) : (
-        <Link to={usageHref}>{t("사용 내역")}</Link>
-      )}
+      </span>
+      <button
+        type="button"
+        onClick={() =>
+          usage.isError ? void usage.refetch() : navigate("/account?tab=usage")
+        }
+      >
+        {usage.isError ? t("다시 불러오기") : t("사용 내역")}
+      </button>
     </div>
   );
 }

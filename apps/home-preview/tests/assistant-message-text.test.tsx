@@ -22,10 +22,12 @@ it("turns [근거 N] into a clickable badge and keeps unknown numbers as written
       onOpenSources={open}
     />,
   );
-  fireEvent.click(screen.getByRole("button", { name: "근거 1: 미팅 메모" }));
+  fireEvent.click(screen.getByRole("button", { name: "근거: 미팅 메모" }));
+  fireEvent.click(screen.getByRole("button", { name: "근거 1개" }));
+  fireEvent.click(screen.getByRole("link", { name: /미팅 메모/ }));
   expect(open).toHaveBeenCalledTimes(1);
   expect(container.textContent).toContain("[근거 3]");
-  expect(container.querySelectorAll(".ai-inline-citation")).toHaveLength(1);
+  expect(container.querySelectorAll("[data-citation-chip]")).toHaveLength(1);
 });
 
 it("shows simple formatting but never renders raw HTML, images or headings", () => {

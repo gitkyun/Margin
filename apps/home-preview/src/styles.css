@@ -112,12 +112,6 @@
     text-wrap: pretty;
   }
   button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
-  button,
   a {
     -webkit-tap-highlight-color: transparent;
   }
@@ -151,13 +145,6 @@
       transform: translateX(4px);
     }
   }
-  button:focus-visible,
-  a:focus-visible,
-  summary:focus-visible,
-  .disclosure-trigger:focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 4px;
-  }
   .disclosure-trigger {
     display: block;
     width: 100%;
@@ -172,25 +159,6 @@
   }
   button svg {
     flex-shrink: 0;
-  }
-  h1,
-  h2,
-  h3,
-  p {
-    margin: 0;
-  }
-  textarea {
-    resize: vertical;
-  }
-  input,
-  textarea {
-    background: var(--surface);
-    color: var(--text);
-  }
-  input::placeholder,
-  textarea::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.78;
   }
   [data-slot="checkbox"] {
     width: 18px;
@@ -1949,5 +1917,44 @@
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-6);
+  }
+}
+
+/* 기본 HTML 규칙은 가져온 컴포넌트의 유틸리티보다 먼저 적용합니다. */
+@layer base {
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+  textarea {
+    resize: vertical;
+  }
+  input,
+  textarea {
+    background: var(--surface);
+    color: var(--text);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.78;
+  }
+}
+
+@layer base {
+  button:focus-visible,
+  a:focus-visible,
+  summary:focus-visible,
+  .disclosure-trigger:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 4px;
   }
 }

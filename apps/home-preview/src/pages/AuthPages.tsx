@@ -242,8 +242,8 @@ export function ResearchSelectPage() {
     sharedRequests.length > 0 && data.researches.length === 0;
   const newEvents = unreadReviewNotifications(data, user);
   const view = researchListView(creationParams.get("view")),
-    archivedView = view === "archived",
     completedView = view === "completed",
+    archivedView = view === "archived",
     trashView = view === "trash";
   const statusBadge = researchStatusBadge(view);
   const invites = data.members.filter(
@@ -471,7 +471,7 @@ export function ResearchSelectPage() {
                 value: "completed",
                 label: t("완료된 연구"),
                 count: data.researches.filter(
-                  (r) => r.completedAt && !r.archivedAt && !r.deletedAt,
+                  (r) => !!r.completedAt && !r.archivedAt && !r.deletedAt,
                 ).length,
               },
               {
@@ -648,6 +648,7 @@ export function ResearchSelectPage() {
             </DialogDescription>
           </DialogHeader>
           <form
+            className="rms-modal-stack"
             onSubmit={async (e) => {
               e.preventDefault();
               if (!trashTarget || pending || trashName !== trashTarget.name)

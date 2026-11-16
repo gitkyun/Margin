@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { t } from "@/lib/i18n";
+import AIHandoff from "@/components/kokonut/ai-handoff";
 
 export interface AnswerActionsProps {
   /** 복사할 답변 원문 */
@@ -92,35 +93,21 @@ export function AnswerActions({
         )}
       </div>
       {handoffOpen && researchId && (
-        <div
-          className="ai-handoff-card"
-          role="region"
-          aria-label={t("교수님이 보게 될 것")}
-        >
-          <strong>{t("교수님이 보게 될 것")}</strong>
-          <ul>
-            <li>{t("연구 이름과 연구 방향(목적·연구 질문)")}</li>
-            <li>{t("검토 요청에서 직접 골라 공유하는 수정 결과와 첨부 파일")}</li>
-            <li>{t("이 AI 대화와 개인 메모는 공유되지 않아요.")}</li>
-          </ul>
-          <div className="ai-handoff-actions">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setHandoffOpen(false)}
-            >
-              {t("닫기")}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => navigate(`/r/${researchId}/reviews?new=1`)}
-            >
-              {t("검토 요청 만들기")}
-            </Button>
-          </div>
-        </div>
+        <AIHandoff
+          team={t("교수님 검토")}
+          status="waiting"
+          position={0}
+          agents={[]}
+          shared={[
+            t("연구 이름과 연구 방향(목적·연구 질문)"),
+            t("검토 요청에서 직접 골라 공유하는 수정 결과와 첨부 파일"),
+            t("이 AI 대화와 개인 메모는 공유되지 않아요."),
+          ]}
+          waitingLabel={t("검토 요청 전")}
+          waitHint={t("검토 요청에서 공유할 항목을 직접 골라요.")}
+          actionLabel={t("검토 요청 만들기")}
+          onStay={() => navigate(`/r/${researchId}/reviews?new=1`)}
+        />
       )}
     </div>
   );

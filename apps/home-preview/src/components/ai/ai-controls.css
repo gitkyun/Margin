@@ -38,7 +38,7 @@
     outline-offset: 1px;
   }
   .composer-chip[data-disabled] {
-    opacity: var(--opacity-48);
+    opacity: var(--opacity-43);
     cursor: not-allowed;
   }
   .composer-chip-label {
@@ -141,7 +141,7 @@
     background: var(--hover-fill);
   }
   .chip-select-item[data-disabled] {
-    opacity: var(--opacity-48);
+    opacity: var(--opacity-43);
     cursor: not-allowed;
   }
   .chip-select-leading {
@@ -352,7 +352,7 @@
     box-shadow: var(--semantic-elevation-shadow-normal-small);
   }
   .ai-model-detent-stop:disabled {
-    opacity: var(--opacity-48);
+    opacity: var(--opacity-43);
     cursor: not-allowed;
   }
 }
