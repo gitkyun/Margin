@@ -74,6 +74,10 @@ beforeAll(async () => {
           Response.json(name === "rms_ai_begin_v2" ? crypto.randomUUID() : true)
         );
       }
+      if (url.includes("/rms_ai_credit_ledger?")) {
+        const amount = rpcNamed("rms_ai_settle_credits").at(-1)?.body.p_amount ?? 0;
+        return Response.json([{ amount: -amount }]);
+      }
       if (url.includes("/rms_researches?"))
         return Response.json([{ data: { name: "Synthetic test" } }]);
       if (url.startsWith("https://aiplatform.googleapis.com/")) {

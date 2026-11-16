@@ -148,3 +148,31 @@ describe("AI source and citation boundaries", () => {
     ).toThrow();
   });
 });
+describe("web search boundaries", () => {
+  const input = {
+    mode: "ask_research",
+    researchId,
+    clientRunId: meetingId,
+    question: "공개 표준 검색",
+    sourceText: "",
+    webSearch: true,
+  };
+  it("accepts an explicit public-question-only search", () => {
+    expect(validateInput(input).webSearch).toBe(true);
+  });
+  it("rejects mode spoofing and private source/history leakage", () => {
+    expect(() => validateInput({ ...input, webSearch: "true" })).toThrow();
+    expect(() => validateInput({ ...input, mode: "review_writing" })).toThrow();
+    expect(() => validateInput({ ...input, calendar: true })).toThrow();
+    expect(() => validateInput({ ...input, sourceText: "private" })).toThrow();
+    expect(() =>
+      validateInput({ ...input, history: [{ role: "user", text: "private" }] }),
+    ).toThrow();
+    expect(() =>
+      validateInput({
+        ...input,
+        contexts: [{ id: meetingId, kind: "meetings", title: "private" }],
+      }),
+    ).toThrow();
+  });
+});
