@@ -414,31 +414,39 @@ export function ResearchAssistant() {
     setPanelOpen(true);
     if (sourceIndex !== undefined) setFocusedSourceIndex(sourceIndex);
   }
+  async function prepareAttachmentContext(
+    context: AIContext,
+  ): Promise<AIContext> {
+    if (context.kind !== "attachments") return context;
+    const stored = data.attachments.find(
+      (attachment) => attachment.id === context.id,
+    );
+    if (
+      !stored ||
+      !(
+        stored.mimeType === "application/pdf" ||
+        stored.fileName.toLowerCase().endsWith(".pdf")
+      )
+    )
+      return context;
+    if (stored.textExtractionVersion === 2)
+      return { ...context, text: stored.text };
+    const extracted = await readPDFText(await privateBlob(stored, mode));
+    const updated = await save("attachments", {
+      ...stored,
+      text: extracted.text,
+      textExtractionVersion: 2 as const,
+    });
+    return { ...context, text: updated.text };
+  }
   async function addContext(c: AIContext) {
     let extracting = false;
     try {
       if (c.kind === "attachments") {
-        const stored = data.attachments.find(
-          (attachment) => attachment.id === c.id,
-        );
-        if (
-          stored &&
-          (stored.mimeType === "application/pdf" ||
-            stored.fileName.toLowerCase().endsWith(".pdf")) &&
-          stored.textExtractionVersion !== 2
-        ) {
-          extracting = true;
-          setUploading(true);
-          setError("");
-          const blob = await privateBlob(stored, mode);
-          const extracted = await readPDFText(blob);
-          const updated = await save("attachments", {
-            ...stored,
-            text: extracted.text,
-            textExtractionVersion: 2 as const,
-          });
-          c = { ...c, text: updated.text };
-        }
+        extracting = true;
+        setUploading(true);
+        setError("");
+        c = await prepareAttachmentContext(c);
       }
       if (task === "organize_meeting") {
         setContexts([c]);
@@ -631,7 +639,7 @@ export function ResearchAssistant() {
         ? override.conversation
         : conversation
       )?.contexts ?? [];
-    const requestContexts =
+    let requestContexts =
       useWebSearch || useCalendar
         ? []
         : [
@@ -670,6 +678,36 @@ export function ResearchAssistant() {
       openPanel("sources");
       return;
     }
+    // Keep the original composer entries for removal/restoration; prepared copies must
+    // never mutate the contexts preserved on earlier messages.
+    const composerRequestContexts = contexts.filter((context) =>
+      requestContexts.includes(context),
+    );
+    if (
+      !useWebSearch &&
+      !useCalendar &&
+      requestContexts.some((context) => context.kind === "attachments")
+    ) {
+      setUploading(true);
+      setError("");
+      try {
+        const prepared: AIContext[] = [];
+        for (const context of requestContexts)
+          prepared.push(await prepareAttachmentContext(context));
+        requestContexts = prepared;
+      } catch (error) {
+        setError(
+          t(
+            "PDF 전체 본문을 준비하지 못했어요. 파일을 확인하거나 다시 첨부해 주세요.",
+          ) +
+            " " +
+            (error as Error).message,
+        );
+        return false;
+      } finally {
+        setUploading(false);
+      }
+    }
     const text = question.trim();
     if (retryQuestion === undefined || override?.fromComposer) {
       setDraft("");
@@ -678,12 +716,10 @@ export function ResearchAssistant() {
     } else {
       restoreDraftRef.current = null;
     }
-    restoreContextsRef.current = contexts.filter((context) =>
-      requestContexts.includes(context),
-    );
+    restoreContextsRef.current = composerRequestContexts;
     if (requestContexts.length)
       setContexts((current) =>
-        current.filter((context) => !requestContexts.includes(context)),
+        current.filter((context) => !composerRequestContexts.includes(context)),
       );
     const seq = ++sequence.current,
       id = uid(),
