@@ -245,6 +245,20 @@
     opacity: 0.6;
     cursor: default;
   }
+  .social-consent {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: var(--text-word-break, keep-all);
+    overflow-wrap: anywhere;
+  }
+  .social-consent a {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
   .social-login .form-error {
     margin-top: 10px;
   }

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useId, useState } from "react";
+import { Link } from "react-router-dom";
 import { t } from "@/lib/i18n";
 import { assertConnected, friendlyError } from "@/lib/supabase";
 import { startSocialLogin } from "@/lib/social-login";
@@ -30,6 +31,7 @@ export function LineLoginButton({
 }) {
   const [pending, setPending] = useState(false);
   const [problem, setProblem] = useState("");
+  const consentId = useId();
 
   async function start() {
     setPending(true);
@@ -49,10 +51,18 @@ export function LineLoginButton({
         className="line-login"
         onClick={() => void start()}
         disabled={disabled || pending}
+        aria-describedby={consentId}
       >
         <LineSymbol />
         {pending ? t("라인으로 이동하는 중") : label}
       </button>
+      {/* 라인 이메일 주소 권한 신청에 필요한 안내·동의 문구. 버튼을 누르기 전에 읽을 수 있게 바로 아래에 둡니다. */}
+      <p id={consentId} className="social-consent">
+        {t(
+          "라인으로 시작하면 라인 계정의 이메일 주소를 받아 마진 계정을 만들고 확인하는 데, 그리고 검토 요청·초대 같은 알림 메일을 보내는 데에만 써요. 버튼을 누르면 이에 동의하는 것으로 봐요.",
+        )}{" "}
+        <Link to="/privacy">{t("자료와 개인정보")}</Link>
+      </p>
       {problem && (
         <p className="form-error" role="alert">
           {problem}
