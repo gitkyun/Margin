@@ -1359,23 +1359,7 @@
     }
   }
 
-  .ai-message {
-    padding: 20px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .ai-message p {
-    font-size: var(--typography-body2-fontSize);
-    line-height: var(--typography-body2Reading-lineHeight);
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    letter-spacing: var(--typography-body2-letterSpacing);
-  }
-  /* 내 질문은 상자 없이 파란 말풍선 하나만 보입니다. */
-  .ai-message.user {
-    padding: 0;
-    border: 0;
-    margin: 16px 0;
-  }
+  /* 연구 도우미 대화 줄은 pages/assistant.css(Kokonut 원본 배치)에서만 정해요. */
   .message-role {
     display: flex;
     align-items: center;
