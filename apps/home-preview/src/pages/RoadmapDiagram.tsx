@@ -45,9 +45,6 @@ function PhaseCard({ data }: NodeProps<PhaseNode>) {
     <div
       className={`roadmap-node is-${data.status}${data.current ? " is-current" : ""}`}
     >
-      {data.current && (
-        <span className="roadmap-node-beam" aria-hidden="true" />
-      )}
       <Handle type="target" position={Position.Top} />
       <span className="roadmap-node-number">
         {t("단계 {number}", { number: String(data.number).padStart(2, "0") })}

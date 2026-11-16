@@ -29,6 +29,7 @@ import {
   type BaseRecord,
 } from "@/lib/domain";
 import { t } from "@/lib/i18n";
+import { aiWaitKindForMode } from "@/lib/ai-wait";
 import { ErrorNotice } from "./shared";
 import { SmartSuggestionCard } from "./SmartSuggestionCard";
 
@@ -82,6 +83,7 @@ export function RevisionSuggestions({
     preferredDepth,
   );
   const [running, setRunning] = useState(false);
+  const [startedAt, setStartedAt] = useState(0);
   const [stopped, setStopped] = useState(false);
   const [candidates, setCandidates] = useState<AICandidate[]>([]);
   const [dismissed, setDismissed] = useState<number[]>([]);
@@ -123,6 +125,7 @@ export function RevisionSuggestions({
     const abort = new AbortController();
     controller.current = abort;
     setRunning(true);
+    setStartedAt(Date.now());
     setStopped(false);
     setError(null);
     try {
@@ -312,6 +315,8 @@ export function RevisionSuggestions({
       {running && (
         <WorkbenchLoading
           label={workMessages[input.mode]}
+          startedAt={startedAt}
+          kind={aiWaitKindForMode(input.mode)}
           detail={t("제안을 저장하기 전에는 기록이 바뀌지 않아요.")}
         />
       )}

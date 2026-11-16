@@ -700,6 +700,7 @@ export function ResearchSelectPage() {
               </Button>
               <Button
                 type="submit"
+                variant="destructive"
                 disabled={pending || trashName !== trashTarget?.name}
                 aria-describedby={trashReason.describedBy}
               >

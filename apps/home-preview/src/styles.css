@@ -717,11 +717,7 @@
   }
   .home-next {
     position: relative;
-    background: linear-gradient(
-      125deg,
-      var(--surface) 40%,
-      color-mix(in srgb, var(--brand-soft) 50%, var(--surface))
-    );
+    background: var(--surface);
     overflow: hidden;
   }
   .home-next .section-heading {
@@ -877,7 +873,7 @@
     display: inline-grid;
     place-items: center;
     border: 2px solid var(--semantic-static-white);
-    border-radius: 50% 50% 50% 4px;
+    border-radius: 50% 50% 50% var(--radius-4);
     background: var(--brand);
     color: var(--semantic-static-white);
     font-size: var(--typography-caption2-fontSize, 11px);

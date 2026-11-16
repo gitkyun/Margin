@@ -200,7 +200,7 @@ export function JoinPage({ session, ready }: JoinPageProps) {
           )}
         </p>
         <Button fullWidth size="lg" onClick={() => setAttempt((n) => n + 1)}>
-          {t("다시 시도")}
+          {t("다시 불러오기")}
         </Button>
       </AuthLayout>
     );
