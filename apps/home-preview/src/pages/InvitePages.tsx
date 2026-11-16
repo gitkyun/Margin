@@ -11,6 +11,8 @@ import {
   signupProblem,
 } from "@/lib/invites";
 import { KakaoLoginButton } from "@/components/KakaoLoginButton";
+import { LineLoginButton } from "@/components/LineLoginButton";
+import { lineLoginEnabled } from "@/lib/social-login";
 import { MIN_PASSWORD_LENGTH, PASSWORD_HELP } from "@/lib/password-policy";
 import { PasswordStrength } from "@/components/PasswordStrength";
 import { assertConnected, friendlyError } from "@/lib/supabase";
@@ -274,6 +276,13 @@ export function InviteSignupPage() {
         label={t("카카오로 시작하기")}
         disabled={pending}
       />
+      {lineLoginEnabled() && (
+        <LineLoginButton
+          next="/r"
+          label={t("라인으로 시작하기")}
+          disabled={pending}
+        />
+      )}
       <p className="auth-switch">
         {t("이미 가입했나요?")} <Link to="/login">{t("로그인")}</Link>
       </p>

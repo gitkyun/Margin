@@ -45,6 +45,8 @@ import { t } from "@/lib/i18n";
 import { joinPath, pendingJoin } from "@/lib/project-invites";
 import { safeNext, takeSocialProblem } from "@/lib/social-login";
 import { KakaoLoginButton } from "@/components/KakaoLoginButton";
+import { LineLoginButton } from "@/components/LineLoginButton";
+import { lineLoginEnabled } from "@/lib/social-login";
 import { useExperience } from "@/lib/experience";
 import { Segments } from "@/components/experience";
 import { unreadReviewNotifications } from "@/lib/notifications";
@@ -202,11 +204,20 @@ export function LoginPage({
             </form>
           )}
           {configured && !authenticated && (
-            <KakaoLoginButton
-              next={target}
-              label={t("카카오로 시작하기")}
-              disabled={pending}
-            />
+            <>
+              <KakaoLoginButton
+                next={target}
+                label={t("카카오로 시작하기")}
+                disabled={pending}
+              />
+              {lineLoginEnabled() && (
+                <LineLoginButton
+                  next={target}
+                  label={t("라인으로 시작하기")}
+                  disabled={pending}
+                />
+              )}
+            </>
           )}
           <p className="auth-switch">
             {t("계정이 없나요?")}{" "}
