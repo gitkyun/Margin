@@ -16,17 +16,17 @@
 | [ai-input-search](https://kokonutui.com/r/ai-input-search.json) | `ResearchAssistant.tsx` | 근거가 있거나 요청 종류를 고른 경우 원본 검색 입력창. 원본 두 입력창을 한 부품으로 재조립하지 않음. |
 | [ai-message-queue](https://kokonutui.com/r/ai-message-queue.json) | `ai/ComposerCommands.tsx` | 원본 QueueList를 분리해 실제 대기 질문 순서·편집·삭제·즉시 전송에 연결. |
 | [ai-context-meter](https://kokonutui.com/r/ai-context-meter.json) | `ai/ComposerCommands.tsx` | 후속 사용자 요청으로 실제 입력창에서는 제거하고 아래에 실제 사용량을 표시. 원본 고리는 로컬 시연에서만 비교 가능. |
-| [ai-attachment](https://kokonutui.com/r/ai-attachment.json) | `ai/ComposerCommands.tsx` | 실제 파일 정보·처리 상태. 없는 PDF 썸네일·쪽 번호는 만들지 않음. |
+| [ai-attachment](https://kokonutui.com/r/ai-attachment.json) | `assistant/MessageFileChips.tsx`, `ai/ComposerCommands.tsx` | 질문 위 파일은 원본 FileChip 클래스 그대로. 입력창 안 고른 기록은 ai-prompt AttachmentChip 모양(`tray`). 확인 안 된 쪽 수·읽기 진행 띠·페이지 썸네일은 만들지 않음(2026-11-16). |
 | [ai-voice](https://kokonutui.com/r/ai-voice.json) | `ResearchAssistant.tsx` | 실제 마이크 분석·받아쓰기. 데모 파형 제외, 저장하지 않는 음성의 재생 버튼 비활성. |
 | [ai-model-selector](https://kokonutui.com/r/ai-model-selector.json) | `ai/AIModelSelector.tsx` | 설정·작업대에서 원본 모델 목록과 답변 깊이 트랙을 실제 모델에 연결. |
-| [ai-tool-calls](https://kokonutui.com/r/ai-tool-calls.json) | `assistant/AssistantThinking.tsx` | 서버가 세부 도구 이벤트를 주지 않아 실제 요청 한 행으로 표시. 가상 단계 진행 제외. |
-| [ai-loading](https://kokonutui.com/r/ai-loading.json) | `assistant/AssistantThinking.tsx` | 첫 답변·작업대 대기의 실제 요청 상태를 원본에 전달. |
+| [ai-tool-calls](https://kokonutui.com/r/ai-tool-calls.json) | `assistant/AssistantThinking.tsx`, `ResearchAssistant.tsx` | 원본 데모 배치(질문 회색 말풍선 → 작업 줄 → 답변 15px/28px, gap-4)를 따름. 대기 중엔 같은 줄이 스피너, 답이 오면 “작업 N개”로 바뀜. 서버가 세부 도구 이벤트를 주지 않아 한 행으로 표시. |
+| [ai-loading](https://kokonutui.com/r/ai-loading.json) | (연구 도우미에서 안 씀) | 첫 답변 대기도 ai-tool-calls 한 줄로 통일(2026-11-16). 가운데 정렬·고정폭 글꼴 단계 목록이 대화 흐름과 어긋나서 제외. |
 | [ai-citations](https://kokonutui.com/r/ai-citations.json) | `assistant/AssistantMessageText.tsx` | 원본 인용 미리보기와 출처 목록. 안전한 마크다운 렌더러와 실제 근거 스냅샷 유지. |
 | [ai-autocomplete](https://kokonutui.com/r/ai-autocomplete.json) | `writing/WritingAutocomplete.tsx` | 원본 고스트/수락 바를 TipTap에 연결. 실제 제안·커서 검증·단어 수락 유지. |
 | [ai-inline-edit](https://kokonutui.com/r/ai-inline-edit.json) | `writing/WritingReview.tsx` | 원본 선택 도구막대·단어 비교를 TipTap에 연결. 중단·반영 전 원문 일치 검증 유지. |
 | [ai-send](https://kokonutui.com/r/ai-send.json) | `reviews/ReviewNotifyBar.tsx · settings/ProjectInvites.tsx` | 원본 5초 뒤 전송/되돌리기. 서버가 본문 편집을 지원하지 않아 본문은 읽기 전용. 대상 변경 시 예약 취소. |
 | [ai-schedule](https://kokonutui.com/r/ai-schedule.json) | `meeting/AvailabilityGrid.tsx` | 원본 시간 칸·카드. 실제 다중 시간 투표 때문에 단일 선택을 체크박스 다중 선택으로 변경. 캘린더 연동은 없음. |
-| [ai-handoff](https://kokonutui.com/r/ai-handoff.json) | `assistant/AnswerActions.tsx` | 원본 카드에 실제 검토 요청 만들기 연결. 상담원·대기열 대신 “검토 요청 전”과 공유 범위 표시. |
+| [ai-handoff](https://kokonutui.com/r/ai-handoff.json) | (연구 도우미에서 안 씀) | 2026-11-16 사용자 결정으로 답변 아래 “교수님 검토로 넘기기” 제거. 답변 아래는 복사·다시 답하기 아이콘만. |
 | [clip-trimmer](https://kokonutui.com/r/clip-trimmer.json) | `recording/SourceAudioClip.tsx` | 원본 트리머를 실제 음성에 연결. 영상 영역은 녹음 제목, 실제 음성 구간·반복·키보드 조절. |
 
 ## 의존성과 원본 증빙

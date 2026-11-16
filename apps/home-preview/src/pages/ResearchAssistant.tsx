@@ -67,6 +67,7 @@ import {
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
+import { MessageFileChips } from "./assistant/MessageFileChips";
 import { AssistantMessageText } from "./assistant/AssistantMessageText";
 import { AssistantMascot } from "@/components/brand/Brand";
 import { readAgentProfile } from "@/lib/research-agent";
@@ -89,19 +90,8 @@ import { LiveWaveform } from "@/components/recording/LiveWaveform";
 import { useDictation } from "@/lib/use-dictation";
 import { t } from "@/lib/i18n";
 import AIPrompt, { type PromptCommand } from "@/components/kokonut/ai-prompt";
-import AIInputSearch, {
-  type SearchTool,
-} from "@/components/kokonut/ai-input-search";
 import AIVoice from "@/components/kokonut/ai-voice";
-import {
-  CalendarDays,
-  Sparkles,
-  Pencil,
-  ListTodo,
-  FileText,
-  Mic,
-  FolderOpen,
-} from "lucide-react";
+import { Mic, FolderOpen } from "lucide-react";
 import { COMPOSER_COMMANDS } from "@/components/ai/ComposerCommands";
 
 /** md(992px) 미만에서는 패널이 본문을 덮으므로 처음에는 닫아 둡니다. */
@@ -112,13 +102,6 @@ function panelStartsOpen(): boolean {
 
 const clockLabel = (sec: number) =>
   `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
-
-function contextIconName(kind: AIContext["kind"]): string {
-  if (kind === "meetings") return "calendar";
-  if (kind === "feedback") return "chat";
-  if (kind === "tasks") return "check";
-  return "file";
-}
 
 export function ResearchAssistant() {
   const { researchId = "" } = useParams(),
@@ -224,7 +207,6 @@ export function ResearchAssistant() {
     messages = conversation?.messages ?? [];
   const activeRun = runs.find((r) => r.status === "running");
   const working = running || !!activeRun;
-  const readingFirst = running && !!waiting?.first;
 
   // `/` 명령 메뉴: 입력 맨 앞이 `/`이고 줄바꿈이 없을 때만 열어요.
   const slashQuery =
@@ -901,6 +883,8 @@ export function ResearchAssistant() {
   const messageFiles = (conversation?.contexts ?? contexts).filter(
     (c) => c.kind === "attachments" || c.kind === "versions",
   );
+  // 대화 전체에 붙은 파일이라 첫 질문 위에만 한 번 보여 줘요.
+  const firstUserIndex = messages.findIndex((m) => m.role === "user");
 
   return (
     <div className="assistant-experience">
@@ -964,7 +948,8 @@ export function ResearchAssistant() {
               el.scrollHeight - el.scrollTop - el.clientHeight < 64;
           }}
         >
-          {readingFirst ? null : !messages.length && !contexts.length ? (
+          {running && !messages.length ? null : !messages.length &&
+            !contexts.length ? (
             <div className="assistant-welcome">
               <EmptyState
                 icon="sparkles"
@@ -1017,17 +1002,34 @@ export function ResearchAssistant() {
             messages.map((m, i) => (
               <article className={`ai-message ${m.role}`} key={i}>
                 {m.role === "user" ? (
-                  <span className="sr-only">{t("나")}</span>
-                ) : (
-                  <span className="message-role">
-                    {t("연구 도우미")}
-                    {agent.name && (
-                      <span className="message-role-name">· {agent.name}</span>
-                    )}
-                  </span>
-                )}
-                {m.role === "assistant" ? (
                   <>
+                    <span className="sr-only">{t("나")}</span>
+                    {i === firstUserIndex && messageFiles.length > 0 && (
+                      <MessageFileChips
+                        files={messageFiles}
+                        attachments={data.attachments}
+                      />
+                    )}
+                    {/* Kokonut AI Tool Calls 질문 말풍선 원본 클래스 */}
+                    <p className="m-0 max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[var(--surface-muted)] px-3.5 py-2 text-[14px] text-[var(--text)] leading-snug [overflow-wrap:anywhere]">
+                      {m.text}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <span className="sr-only">
+                      {t("연구 도우미")}
+                      {agent.name ? ` · ${agent.name}` : ""}
+                    </span>
+                    {(m.steps?.length ||
+                      (answered?.at === m.createdAt &&
+                        i === messages.length - 1)) && (
+                      <AnswerSteps
+                        steps={
+                          m.steps?.length ? m.steps : (answered?.steps ?? [])
+                        }
+                      />
+                    )}
                     <AssistantMessageText
                       text={m.text}
                       contexts={
@@ -1035,57 +1037,13 @@ export function ResearchAssistant() {
                       }
                       onOpenSources={(index) => openPanel("sources", index)}
                     />
-                  </>
-                ) : (
-                  <>
-                    {!!messageFiles.length && (
-                      <div className="message-attachments">
-                        {messageFiles.map((f) => (
-                          <div
-                            key={`${f.kind}:${f.id}:${f.page ?? ""}`}
-                            className="message-attachment-card"
-                          >
-                            <span className="message-attachment-badge">
-                              {f.title.toLowerCase().endsWith(".pdf")
-                                ? "PDF"
-                                : "FILE"}
-                            </span>
-                            <div>
-                              <strong>{f.title}</strong>
-                              {f.page && (
-                                <small>{t("{page}쪽", { page: f.page })}</small>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div>{m.text}</div>
-                  </>
-                )}
-                {m.role === "assistant" &&
-                  (m.steps?.length ||
-                    (answered?.at === m.createdAt &&
-                      i === messages.length - 1)) && (
-                    <AnswerSteps
-                      steps={
-                        m.steps?.length ? m.steps : (answered?.steps ?? [])
-                      }
-                      elapsedMs={
-                        m.elapsedMs ??
-                        (answered?.at === m.createdAt
-                          ? answered.elapsedMs
-                          : undefined)
-                      }
+                    <AnswerActions
+                      text={m.text}
+                      question={questionBefore(messages, i)}
+                      disabled={working || unavailable || uploading}
+                      onRetry={(question) => void send(question)}
                     />
-                  )}
-                {m.role === "assistant" && (
-                  <AnswerActions
-                    text={m.text}
-                    question={questionBefore(messages, i)}
-                    disabled={working || unavailable || uploading}
-                    onRetry={(question) => void send(question)}
-                  />
+                  </>
                 )}
               </article>
             ))
@@ -1166,262 +1124,152 @@ export function ResearchAssistant() {
             }
             onClear={() => setQueue([])}
           />
-          <ComposerAttachmentCards
-            contexts={contexts}
-            data={data}
-            uploading={uploading}
-            uploadProgress={uploadProgress}
-            uploadError={error && pendingFile.current ? error : undefined}
-            disabled={working || uploading}
-            onRemove={(index) =>
-              setContexts((items) => items.filter((_, i) => i !== index))
-            }
-          />
-          {!unavailable && recommendedModel && (
-            <AIComposerBanner
-              usageHref="/account?tab=usage"
-              promo={{
-                label: researchModelLabel(recommendedModel),
-                note: recommendedModel.description
-                  ? t(recommendedModel.description)
-                  : undefined,
-                provider: recommendedModel.provider,
-              }}
-              onTryPromo={pickRecommended}
-            />
-          )}
           <fieldset
             disabled={unavailable || uploading}
             className="m-0 min-w-0 border-0 p-0"
           >
-            {contexts.length > 0 || task !== "ask_research" ? (
-              <AIInputSearch
-                className="max-w-none py-0"
-                modelControls={
-                  <ComposerModelSettings
-                    models={models}
-                    model={selection.model}
-                    thinking={selection.thinking}
-                    loading={caps.isPending}
-                    failed={caps.isError}
-                    disabled={unavailable || uploading || working}
-                    onChange={(next) => {
-                      setModel(next.model);
-                      setThinking(next.thinking);
+            <AIPrompt
+              className="max-w-none py-0"
+              modelControls={
+                <ComposerModelSettings
+                  models={models}
+                  model={selection.model}
+                  thinking={selection.thinking}
+                  loading={caps.isPending}
+                  failed={caps.isError}
+                  disabled={unavailable || uploading || working}
+                  onChange={(next) => {
+                    setModel(next.model);
+                    setThinking(next.thinking);
+                  }}
+                />
+              }
+              leadingControl={
+                dictation.supported && !unavailable ? (
+                  <button
+                    type="button"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] hover:bg-[var(--hover-fill)]"
+                    disabled={working || uploading}
+                    aria-label={t("음성으로 질문 입력")}
+                    aria-pressed={voiceOpen}
+                    onClick={() => {
+                      if (voiceOpen) dictation.stop();
+                      setVoiceOpen((open) => !open);
                     }}
-                  />
-                }
-                leadingControl={
-                  dictation.supported && !unavailable ? (
-                    <button
-                      type="button"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] hover:bg-[var(--hover-fill)]"
-                      disabled={working || uploading}
-                      aria-label={t("음성으로 질문 입력")}
-                      aria-pressed={voiceOpen}
-                      onClick={() => {
-                        if (voiceOpen) dictation.stop();
-                        setVoiceOpen((open) => !open);
-                      }}
-                    >
-                      <Mic className="size-4" />
-                    </button>
-                  ) : undefined
-                }
-                value={draft}
-                onValueChange={setDraft}
-                inputRef={composerRef}
-                disabled={unavailable || uploading}
-                busy={working}
-                placeholder={t(
-                  "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
-                )}
-                models={models
-                  .filter(isAIModelAvailable)
-                  .map((model) => researchModelLabel(model))}
-                selectedModel={
-                  models.find((model) => model.id === selection.model)
-                    ? researchModelLabel(
-                        models.find((model) => model.id === selection.model)!,
-                      )
-                    : ""
-                }
-                onModelChange={(label) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === label,
-                  );
-                  if (picked) setModel(picked.id);
-                }}
-                tools={COMPOSER_COMMANDS.map((command, index) => ({
-                  id: command.id,
-                  label: command.label,
-                  activity: command.description,
-                  placeholder: command.description,
-                  icon: [CalendarDays, Sparkles, Pencil, ListTodo, FileText][
-                    index
-                  ],
-                  readsSources: true,
-                  color: "var(--brand)",
-                }))}
-                selectedTool={task === "ask_research" ? null : task}
-                onToolChange={(id) =>
-                  setTask((id ?? "ask_research") as AIInput["mode"])
-                }
-                onAttach={(files) => {
-                  if (!working && !unavailable)
-                    void (async () => {
-                      for (const file of files) await attach(file);
-                    })();
-                }}
-                onStop={() => void cancel()}
-                onQueue={(text, tool) => {
-                  setQueue((prev) => [
-                    ...prev,
-                    {
-                      id: uid(),
-                      text: text.trim(),
-                      mode: (tool?.id ?? task) as AIInput["mode"],
-                    },
-                  ]);
-                }}
-                onSearch={async (query, options) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === options.model,
-                  );
-                  const success = await send(query, {
-                    mode: (options.tool?.id ??
-                      "ask_research") as AIInput["mode"],
-                    model: picked?.id,
-                    fromComposer: true,
-                  });
-                  if (!success) {
-                    setDraft((current) => current || query);
-                    throw new Error(t("답변을 완료하지 못했어요."));
-                  }
-                  for (const context of contexts)
-                    options.onSource({
-                      domain: `${context.kind}:${context.id}`,
-                      title: context.title,
-                      icon: (
-                        <Icon name={contextIconName(context.kind)} size={12} />
-                      ),
-                      color: "var(--brand)",
-                    });
-                }}
-              />
-            ) : (
-              <AIPrompt
-                className="max-w-none py-0"
-                modelControls={
-                  <ComposerModelSettings
-                    models={models}
-                    model={selection.model}
-                    thinking={selection.thinking}
-                    loading={caps.isPending}
-                    failed={caps.isError}
-                    disabled={unavailable || uploading || working}
-                    onChange={(next) => {
-                      setModel(next.model);
-                      setThinking(next.thinking);
+                  >
+                    <Mic className="size-4" />
+                  </button>
+                ) : undefined
+              }
+              value={draft}
+              onValueChange={setDraft}
+              inputRef={composerRef}
+              selectedCommand={
+                activeCommand
+                  ? {
+                      ...activeCommand,
+                      icon: <Icon name={activeCommand.icon} size={16} />,
+                    }
+                  : null
+              }
+              onCommandChange={(command) =>
+                setTask((command?.id ?? "ask_research") as AIInput["mode"])
+              }
+              commands={COMPOSER_COMMANDS.map((command) => ({
+                ...command,
+                icon: <Icon name={command.icon} size={16} />,
+              }))}
+              disabled={unavailable || uploading}
+              busy={working}
+              placeholder={t(
+                "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
+              )}
+              models={models.filter(isAIModelAvailable).map((model) => ({
+                name: researchModelLabel(model),
+                description: model.description
+                  ? t(model.description)
+                  : undefined,
+                efforts: model.thinking,
+                defaultEffort: selection.thinking,
+              }))}
+              selectedModel={
+                models.find((model) => model.id === selection.model)
+                  ? researchModelLabel(
+                      models.find((model) => model.id === selection.model)!,
+                    )
+                  : ""
+              }
+              selectedEffort={selection.thinking}
+              onModelChange={(label) => {
+                const picked = models.find(
+                  (model) => researchModelLabel(model) === label,
+                );
+                if (picked) setModel(picked.id);
+              }}
+              onEffortChange={setThinking}
+              headerText=""
+              header={
+                !unavailable && recommendedModel ? (
+                  <AIComposerBanner
+                    usageHref="/account?tab=usage"
+                    promo={{
+                      label: researchModelLabel(recommendedModel),
+                      note: recommendedModel.description
+                        ? t(recommendedModel.description)
+                        : undefined,
+                      provider: recommendedModel.provider,
                     }}
+                    onTryPromo={pickRecommended}
                   />
-                }
-                leadingControl={
-                  dictation.supported && !unavailable ? (
-                    <button
-                      type="button"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] hover:bg-[var(--hover-fill)]"
-                      disabled={working || uploading}
-                      aria-label={t("음성으로 질문 입력")}
-                      aria-pressed={voiceOpen}
-                      onClick={() => {
-                        if (voiceOpen) dictation.stop();
-                        setVoiceOpen((open) => !open);
-                      }}
-                    >
-                      <Mic className="size-4" />
-                    </button>
-                  ) : undefined
-                }
-                value={draft}
-                onValueChange={setDraft}
-                inputRef={composerRef}
-                selectedCommand={
-                  activeCommand
-                    ? {
-                        ...activeCommand,
-                        icon: <Icon name={activeCommand.icon} size={16} />,
-                      }
-                    : null
-                }
-                onCommandChange={(command) =>
-                  setTask((command?.id ?? "ask_research") as AIInput["mode"])
-                }
-                commands={COMPOSER_COMMANDS.map((command) => ({
-                  ...command,
-                  icon: <Icon name={command.icon} size={16} />,
-                }))}
-                disabled={unavailable || uploading}
-                busy={working}
-                placeholder={t(
-                  "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
-                )}
-                models={models.filter(isAIModelAvailable).map((model) => ({
-                  name: researchModelLabel(model),
-                  description: model.description
-                    ? t(model.description)
-                    : undefined,
-                  efforts: model.thinking,
-                  defaultEffort: selection.thinking,
-                }))}
-                selectedModel={
-                  models.find((model) => model.id === selection.model)
-                    ? researchModelLabel(
-                        models.find((model) => model.id === selection.model)!,
+                ) : null
+              }
+              tray={
+                (contexts.length > 0 || uploading) && (
+                  <ComposerAttachmentCards
+                    contexts={contexts}
+                    data={data}
+                    uploading={uploading}
+                    uploadProgress={uploadProgress}
+                    disabled={working || uploading}
+                    onRemove={(index) =>
+                      setContexts((items) =>
+                        items.filter((_, i) => i !== index),
                       )
-                    : ""
-                }
-                selectedEffort={selection.thinking}
-                onModelChange={(label) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === label,
-                  );
-                  if (picked) setModel(picked.id);
-                }}
-                onEffortChange={setThinking}
-                header={<span />}
-                onAttach={(files) => {
-                  if (!working && !unavailable)
-                    void (async () => {
-                      for (const file of Array.from(files)) await attach(file);
-                    })();
-                }}
-                onStop={() => void cancel()}
-                onQueue={(text, command) =>
-                  setQueue((prev) => [
-                    ...prev,
-                    {
-                      id: uid(),
-                      text: text.trim(),
-                      mode: (command?.id ?? task) as AIInput["mode"],
-                    },
-                  ])
-                }
-                onSubmit={async (text, label, options) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === label,
-                  );
-                  const success = await send(text, {
-                    mode: (options.command?.id ??
-                      "ask_research") as AIInput["mode"],
-                    model: picked?.id,
-                    thinking: options.effort ?? selection.thinking,
-                    fromComposer: true,
-                  });
-                  if (!success) setDraft((current) => current || text);
-                }}
-              />
-            )}
+                    }
+                  />
+                )
+              }
+              onAttach={(files) => {
+                if (!working && !unavailable)
+                  void (async () => {
+                    for (const file of Array.from(files)) await attach(file);
+                  })();
+              }}
+              onStop={() => void cancel()}
+              onQueue={(text, command) =>
+                setQueue((prev) => [
+                  ...prev,
+                  {
+                    id: uid(),
+                    text: text.trim(),
+                    mode: (command?.id ?? task) as AIInput["mode"],
+                  },
+                ])
+              }
+              onSubmit={async (text, label, options) => {
+                const picked = models.find(
+                  (model) => researchModelLabel(model) === label,
+                );
+                const success = await send(text, {
+                  mode: (options.command?.id ??
+                    "ask_research") as AIInput["mode"],
+                  model: picked?.id,
+                  thinking: options.effort ?? selection.thinking,
+                  fromComposer: true,
+                });
+                if (!success) setDraft((current) => current || text);
+              }}
+            />
           </fieldset>
           {!unavailable && (
             <AIComposerUsage

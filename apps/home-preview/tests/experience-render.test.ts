@@ -173,8 +173,8 @@ describe("writing selections keep the AI scope explicit", () => {
         ResearchAssistant,
         "/r/r1/assistant?document=d-selection&selection=1",
       );
-      const attached = await screen.findByRole("group", {
-        name: "첨부한 기록",
+      const attached = await screen.findByRole("list", {
+        name: "첨부 자료",
       });
       expect(within(attached).getByText("계획서 · 선택 문단")).toBeTruthy();
       fireEvent.click(
@@ -183,7 +183,7 @@ describe("writing selections keep the AI scope explicit", () => {
         }),
       );
       await waitFor(() =>
-        expect(screen.queryByRole("group", { name: "첨부한 기록" })).toBeNull(),
+        expect(screen.queryByRole("list", { name: "첨부 자료" })).toBeNull(),
       );
     } finally {
       state.workspace.data.documents = [];
