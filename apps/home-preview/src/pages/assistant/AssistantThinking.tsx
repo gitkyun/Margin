@@ -3,6 +3,11 @@ import AILoadingState from "@/components/kokonut/ai-loading";
 import AIToolCalls, {
   type ToolCallItem,
 } from "@/components/kokonut/ai-tool-calls";
+import {
+  AIWaitStatus,
+  useAIWaitElapsed,
+} from "@/components/assistant-wait/AIWaitStatus";
+import { aiWaitLevel, type AIWaitKind } from "@/lib/ai-wait";
 import type { AssistantStep } from "@/lib/assistant-steps";
 import { t } from "@/lib/i18n";
 
@@ -11,14 +16,22 @@ export function AssistantThinking({
   first,
   steps,
   question,
+  startedAt,
+  kind,
 }: {
   first: boolean;
   steps: AssistantStep[];
   mascot: MascotState;
   question?: string;
+  startedAt: number;
+  kind: AIWaitKind;
 }) {
-  if (!steps.length) return null;
+  const elapsed = useAIWaitElapsed(startedAt);
+  const level = aiWaitLevel(elapsed);
   const label = t("답변을 기다리고 있어요");
+  if (!steps.length || level === "none") return null;
+  if (level === "detailed")
+    return <AIWaitStatus startedAt={startedAt} kind={kind} label={label} />;
   return (
     <div role="status">
       {first ? (
@@ -54,20 +67,20 @@ export function AssistantThinking({
 export function WorkbenchLoading({
   label,
   detail,
+  startedAt,
+  kind,
 }: {
   label: string;
   detail?: string;
+  startedAt: number;
+  kind: AIWaitKind;
 }) {
   return (
-    <AILoadingState
-      steps={[
-        {
-          id: "workbench",
-          label,
-          status: "running",
-          detail: detail ? [detail] : undefined,
-        },
-      ]}
+    <AIWaitStatus
+      startedAt={startedAt}
+      kind={kind}
+      label={label}
+      detail={detail}
     />
   );
 }

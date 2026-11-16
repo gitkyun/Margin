@@ -1,0 +1,66 @@
+.ai-wait-detail {
+  display: grid;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-label, 13px);
+}
+.ai-wait-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ai-wait-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  word-break: var(--text-word-break, keep-all);
+  overflow-wrap: anywhere;
+}
+.ai-wait-steps li[data-state="current"] {
+  color: var(--text);
+  font-weight: 600;
+}
+.ai-wait-steps li[data-state="upcoming"] {
+  color: var(--text-tertiary);
+}
+.ai-wait-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  font-size: 10px;
+  line-height: 1;
+}
+li[data-state="done"] .ai-wait-mark {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+li[data-state="current"] .ai-wait-mark {
+  border-color: var(--brand);
+  background: var(--brand);
+  transition: opacity var(--motion-duration-micro);
+}
+.ai-wait-time {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.ai-wait-note {
+  margin: 0;
+  color: var(--text-tertiary);
+  word-break: var(--text-word-break, keep-all);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-wait,
+  .ai-wait * {
+    transition: none;
+    animation: none;
+  }
+}

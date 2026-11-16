@@ -48,6 +48,7 @@ import {
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import {
+  EmptyState,
   PageHeader,
   StatusBadge,
   useDisabledReason,
@@ -83,6 +84,7 @@ import {
 import { Icon } from "@/components/icons";
 import { assistantSteps, type AssistantStep } from "@/lib/assistant-steps";
 import { AnswerSteps, AssistantThinking } from "./assistant/AssistantThinking";
+import { aiWaitKindForMode } from "@/lib/ai-wait";
 import { LiveWaveform } from "@/components/recording/LiveWaveform";
 import { useDictation } from "@/lib/use-dictation";
 import { t } from "@/lib/i18n";
@@ -150,6 +152,8 @@ export function ResearchAssistant() {
     [waiting, setActiveRun] = useState<{
       first: boolean;
       steps: AssistantStep[];
+      startedAt: number;
+      mode: AIInput["mode"];
     } | null>(null),
     [answered, setAnswered] = useState<{
       at: string;
@@ -585,6 +589,8 @@ export function ResearchAssistant() {
     const run = {
       first: !baseConv?.messages.some((m) => m.role === "assistant"),
       steps: [] as AssistantStep[],
+      startedAt: Date.now(),
+      mode: activeMode,
     };
     run.steps = assistantSteps({
       first: run.first,
@@ -958,7 +964,31 @@ export function ResearchAssistant() {
               el.scrollHeight - el.scrollTop - el.clientHeight < 64;
           }}
         >
-          {readingFirst ? null : !messages.length ? (
+          {readingFirst ? null : !messages.length && !contexts.length ? (
+            <div className="assistant-welcome">
+              <EmptyState
+                icon="sparkles"
+                title={t("아직 대화와 고른 기록이 없어요")}
+                description={t(
+                  "연구 도우미는 고른 기록만 읽고 답해요. 답은 AI 제안이라 선택해야 기록에 남아요.",
+                )}
+                points={[
+                  t("미팅 메모·피드백·문서에서 읽을 기록을 골라요"),
+                  t("질문하면 고른 기록을 근거로 답해요"),
+                ]}
+                action={
+                  unavailable ? undefined : (
+                    <Button
+                      variant="secondary"
+                      onClick={() => openPanel("sources")}
+                    >
+                      {t("기록 고르기")}
+                    </Button>
+                  )
+                }
+              />
+            </div>
+          ) : !messages.length ? (
             <div className="assistant-welcome">
               <AssistantMascot state="ready" size={64} eager />
               <h2>{t("아직 대화가 없어요")}</h2>
@@ -1085,6 +1115,8 @@ export function ResearchAssistant() {
               steps={waiting.steps}
               mascot={workingMascot(task)}
               question={messages.at(-1)?.text}
+              startedAt={waiting.startedAt}
+              kind={aiWaitKindForMode(waiting.mode)}
             />
           )}
           <div ref={end} />
