@@ -225,6 +225,105 @@
     border-radius: var(--radius-4);
     background: var(--semantic-static-white);
   }
+  /* 열어 둔 탭 줄(05 §3.2): 높이 36, 탭 최소 96, 넘치면 가로 스크롤과 양 끝 흐림 */
+  .doc-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: var(--spacing-4);
+    min-height: 36px;
+    margin-bottom: var(--spacing-12);
+    border-bottom: 1px solid var(--line);
+  }
+  .doc-tabs-list,
+  .doc-tabs-new {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: 0 var(--spacing-8);
+    border-radius: var(--radius-8) var(--radius-8) 0 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+  }
+  .doc-tabs-list:hover,
+  .doc-tabs-new:hover {
+    background: var(--hover-fill);
+  }
+  .doc-tabs-row {
+    display: flex;
+    flex: 1;
+    gap: var(--spacing-2);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    list-style: none;
+    scrollbar-width: none;
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent
+    );
+  }
+  .doc-tab {
+    display: flex;
+    flex: none;
+    align-items: center;
+    min-width: 96px;
+    max-width: 220px;
+    border-radius: var(--radius-8) var(--radius-8) 0 0;
+    color: var(--text-secondary);
+  }
+  .doc-tab:hover {
+    background: var(--hover-fill);
+  }
+  .doc-tab[data-active] {
+    background: var(--selected-fill);
+    color: var(--text);
+  }
+  .doc-tab-link {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--spacing-6);
+    min-width: 0;
+    padding: 0 var(--spacing-4) 0 var(--spacing-10);
+    color: inherit;
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+  }
+  .doc-tab-link span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .doc-tab-button {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-4);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+  }
+  .doc-tab-button:hover {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  /* 휴대폰: 탭 줄 없음(뒤로 가면 목록) */
+  @media (max-width: 639px) {
+    .doc-tabs {
+      display: none;
+    }
+  }
   /* 폭 단계는 맨 끝에 두어 위 규칙을 덮습니다. */
   /* 1024px 미만: 미리보기 열 없음 */
   @container (max-width: 1023px) {

@@ -72,6 +72,7 @@ function DocsRoute() {
 }
 import { ResearchAssistant } from "@/pages/ResearchAssistant";
 import { DocsPage } from "@/pages/docs/DocsPage";
+import { DocTabsFrame } from "@/pages/docs/OpenTabs";
 import { isHomeEntry } from "@/lib/entry-route";
 import { isWorkspaceShellPath } from "@/lib/page-title";
 import { Button } from "@/components/ui/button";
@@ -220,11 +221,19 @@ function WorkspaceRoutes() {
           <Route path="/r/:researchId/docs" element={<DocsRoute />} />
           <Route
             path="/r/:researchId/docs/w/:documentId"
-            element={<WritingPage />}
+            element={
+              <DocTabsFrame kind="w">
+                <WritingPage />
+              </DocTabsFrame>
+            }
           />
           <Route
             path="/r/:researchId/docs/m/:materialId"
-            element={<MaterialsPage />}
+            element={
+              <DocTabsFrame kind="m">
+                <MaterialsPage />
+              </DocTabsFrame>
+            }
           />
           <Route path="/r/:researchId/flow" element={<PlanningPage />} />
           <Route
