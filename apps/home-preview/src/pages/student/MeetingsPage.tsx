@@ -1047,7 +1047,16 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     }
     await entryForm.perform(async () => {
       entryBase.current ??= recordBase(researchId);
-      const base = entryBase.current;
+      // 원문에서 만든 항목은 공개 범위를 직접 정합니다(04 §5.2): 전사는 늘 나만 보기,
+      // 메모는 그 기록을 따름. 고친 결정은 원래 값을 그대로 둡니다.
+      const visibility: { visibility?: "private" | "shared" } = editingDecision
+        ? {}
+        : entryFrom === "transcript"
+          ? { visibility: "private" }
+          : entryFrom === "memo"
+            ? { visibility: latest.current.visibility ?? "private" }
+            : {};
+      const base = { ...entryBase.current, ...visibility };
       if (entry === "feedback")
         await save("feedback", {
           ...base,
@@ -2206,7 +2215,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             {entryFrom === "transcript" && (
               <p className="transcript-notice">
                 {t(
-                  "전사문은 나만 보는 기록이에요. 여기에 저장하면 이 내용은 공동연구자도 볼 수 있어요.",
+                  "전사문은 나만 보는 기록이라 여기서 만든 항목도 나만 보기로 저장돼요.",
                 )}
                 {entry === "feedback" &&
                   (entrySource
