@@ -29,7 +29,13 @@ import {
   AINotConfiguredError,
   useAINotConfigured,
 } from "@/lib/ai-availability";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { readHandoff } from "@/lib/assistant-handoff";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, privateBlob } from "@/lib/experience";
 import { Hint } from "@/components/ui/hint";
@@ -120,6 +126,7 @@ export function ResearchAssistant() {
   const { researchId = "" } = useParams(),
     w = useExperience(),
     navigate = useNavigate(),
+    location = useLocation(),
     { data, user, save, runAI, mode, refresh } = w,
     [params, setParams] = useSearchParams(),
     // 예전 주소(?tab=overview)는 패널의 제안 탭으로 엽니다.
@@ -1020,6 +1027,31 @@ export function ResearchAssistant() {
     setError("");
   }
   const unavailable = mode === "preview" || aiNotConfigured;
+  // 사이드 창의 연구 도우미에서 넘겨받은 대화·질문(lib/assistant-handoff.ts). 한 번만 씁니다.
+  const handoff = useRef(readHandoff(location.state));
+  useEffect(() => {
+    const received = handoff.current;
+    if (!received || caps.isPending) return;
+    handoff.current = null;
+    // 새로고침·뒤로 가기로 같은 질문을 다시 보내지 않게 넘겨받은 값을 지웁니다.
+    navigate(
+      { pathname: location.pathname, search: location.search },
+      { replace: true },
+    );
+    const picked = received.conversationId
+      ? conversations.find((c) => c.id === received.conversationId)
+      : undefined;
+    if (picked) {
+      setConversation(picked);
+      setCalendar(picked.messages.at(-1)?.calendar ?? false);
+      setWebSearch(picked.messages.at(-1)?.webSearch ?? false);
+    }
+    if (!received.ask) return;
+    // 바로 보낼 수 없으면(미리보기·AI 미설정·모델 없음) 입력창에 넣어 두기만 합니다.
+    if (unavailable || !selection.model) setDraft(received.ask);
+    else void send(received.ask, { fromComposer: true });
+    // 넘겨받은 값은 처음 한 번만 씁니다(모델 목록을 다 받은 뒤).
+  }, [caps.isPending]);
   const {
     getRootProps: getComposerDropProps,
     getInputProps: getComposerInputProps,

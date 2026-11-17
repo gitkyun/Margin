@@ -21,6 +21,7 @@ import { SideRail } from "./shell/SideRail";
 import { ItemDetail } from "./item-detail/ItemDetail";
 import { TasksPanel } from "./tasks/TasksPanel";
 import { LogPanel } from "./log/LogPanel";
+import { AssistantSidePanel } from "./assistant/AssistantSidePanel";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
@@ -293,7 +294,8 @@ export function WorkspaceShell({
   const detailOpen = inResearch && !!detail;
   const tasksOpen = inResearch && railTab === "tasks";
   const logOpen = inResearch && railTab === "log";
-  const railOpen = tasksOpen || logOpen;
+  const assistantOpen = inResearch && railTab === "assistant";
+  const railOpen = tasksOpen || logOpen || assistantOpen;
   const panelShown = !!panel.active || detailOpen || railOpen;
   return (
     <div
@@ -382,6 +384,14 @@ export function WorkspaceShell({
             ref={panel.setSlot}
           />
           {/* 실제 탭은 상세가 덮여 있어도 살려 두고 숨깁니다(쓰던 글·스크롤 유지, 02 §4.2). */}
+          {assistantOpen && researchId && (
+            <div hidden={detailOpen}>
+              <AssistantSidePanel
+                researchId={researchId}
+                onClose={() => setRailTab(null, true)}
+              />
+            </div>
+          )}
           {tasksOpen && researchId && (
             <div hidden={detailOpen}>
               <TasksPanel
