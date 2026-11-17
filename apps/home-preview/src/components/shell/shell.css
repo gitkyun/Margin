@@ -388,25 +388,14 @@
       font-size: var(--typography-caption1-fontSize);
       font-weight: 500;
       letter-spacing: var(--typography-caption1-letterSpacing);
+      white-space: nowrap;
     }
-    /* 일본어 이름이 길면 두 줄까지(V14, 아이콘 줄과 같은 규칙) */
+    /* 이름은 한 줄(02 §6). 일본어가 길면 사전의 아래 탭 전용 짧은 이름을 씀(V14) */
     .ia-shell .ia-tab > span {
-      display: -webkit-box;
       max-width: 100%;
       overflow: hidden;
-      line-height: 1.2;
-      text-align: center;
-      word-break: keep-all;
-      overflow-wrap: anywhere;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-    }
-    /* 5칸이 좁은 폭(390px 이하)에서는 한 단계 작은 글자 */
-    @media (max-width: 390px) {
-      .ia-shell .ia-tab {
-        font-size: var(--typography-caption2-fontSize);
-        letter-spacing: var(--typography-caption2-letterSpacing);
-      }
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
     .ia-shell .ia-tab.active {
       color: var(--brand);
