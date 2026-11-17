@@ -9,11 +9,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useWorkspace } from "@/lib/workspace";
+import { toast } from "sonner";
+import { friendlyError } from "@/lib/supabase";
 import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { seoulToday, selectNextMeeting } from "@/lib/home-meeting";
 import { koreanScore } from "@/lib/hangul-search";
 import { formatClock } from "@/lib/time-format";
-import { formatDate } from "@/lib/domain";
+import { formatDate, type Meeting } from "@/lib/domain";
 import { unreadReviewNotifications } from "@/lib/notifications";
 import {
   recordGroups,
@@ -68,7 +70,7 @@ function groupLabel(group: RecordGroup, today: string): string {
  */
 export function RecordList() {
   const { researchId = "", meetingId } = useParams();
-  const { data, user } = useWorkspace();
+  const { data, user, save, remove } = useWorkspace();
   const recorder = useOptionalRecorder();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -77,6 +79,10 @@ export function RecordList() {
   const filter: RecordFilter = raw && FILTERS.includes(raw) ? raw : "all";
   const query = params.get("q") ?? "";
   const showCancelled = params.get("cancelled") === "1";
+  const showArchived = params.get("archived") === "1";
+  const archived = data.meetings
+    .filter((item) => item.researchId === researchId && item.archivedAt)
+    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
   const base = `/r/${researchId}`;
   const research = data.researches.find((item) => item.id === researchId);
   const next = selectNextMeeting(
@@ -109,6 +115,32 @@ export function RecordList() {
     showCancelled,
     matches: (text, q) => koreanScore(text, q) > 0,
   });
+
+  async function archive(meeting: Meeting) {
+    try {
+      await remove("meetings", meeting.id);
+      if (meeting.id === meetingId) navigate(`${base}/meetings`);
+      toast.success(t("보관했어요."), {
+        duration: 6000,
+        action: {
+          label: t("되돌리기"),
+          onClick: () => void restore(meeting),
+        },
+      });
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+  async function restore(meeting: Meeting) {
+    try {
+      const current =
+        data.meetings.find((item) => item.id === meeting.id) ?? meeting;
+      await save("meetings", { ...current, archivedAt: undefined });
+      toast.success(t("복원했어요."));
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
 
   function set(key: string, value: string | null) {
     const rest = new URLSearchParams(params);
@@ -199,34 +231,103 @@ export function RecordList() {
           )}
         </div>
       </div>
-      <div className="record-list-groups">
-        {groups.map((group) => (
-          <section key={group.key} aria-label={groupLabel(group, today)}>
-            <h3>{groupLabel(group, today)}</h3>
+      {showArchived ? (
+        <div className="record-list-groups">
+          <section aria-label={t("보관한 기록")}>
+            <div className="record-list-archived-head">
+              <h3>{t("보관한 기록")}</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => set("archived", null)}
+              >
+                {t("목록으로")}
+              </Button>
+            </div>
             <ul>
-              {group.rows.map((row) => (
-                <li key={`${row.kind}:${row.id}`}>
-                  <RecordLine
-                    row={row}
-                    base={base}
-                    selected={row.kind === "meeting" && row.id === meetingId}
-                    isNext={row.kind === "meeting" && row.id === next?.id}
-                    unread={row.kind === "review" && unread.has(row.id)}
-                    data={data}
-                  />
+              {archived.map((meeting) => (
+                <li key={meeting.id} className="record-line-row">
+                  <span className="record-line">
+                    <Icon
+                      name={
+                        meeting.recordType === "written" ? "file" : "calendar"
+                      }
+                      size={16}
+                    />
+                    <span className="record-line-copy">
+                      <strong>{meeting.title}</strong>
+                      <small>{formatDate(meeting.date)}</small>
+                    </span>
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void restore(meeting)}
+                  >
+                    {t("복원")}
+                  </Button>
                 </li>
               ))}
             </ul>
+            {!archived.length && (
+              <p className="record-list-empty">{t("보관한 기록이 없어요.")}</p>
+            )}
           </section>
-        ))}
-        {!groups.length && (
-          <p className="record-list-empty">
-            {query || filter !== "all"
-              ? t("조건에 맞는 기록이 없어요.")
-              : t("아직 기록이 없어요.")}
-          </p>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="record-list-groups">
+          {groups.map((group) => (
+            <section key={group.key} aria-label={groupLabel(group, today)}>
+              <h3>{groupLabel(group, today)}</h3>
+              <ul>
+                {group.rows.map((row) => (
+                  <li key={`${row.kind}:${row.id}`} className="record-line-row">
+                    <RecordLine
+                      row={row}
+                      base={base}
+                      selected={row.kind === "meeting" && row.id === meetingId}
+                      isNext={row.kind === "meeting" && row.id === next?.id}
+                      unread={row.kind === "review" && unread.has(row.id)}
+                      data={data}
+                    />
+                    {row.kind === "meeting" && (
+                      <RowMenu
+                        meeting={row.meeting}
+                        href={`${base}/meetings/${row.meeting.id}`}
+                        onOpen={() =>
+                          navigate(`${base}/meetings/${row.meeting.id}`)
+                        }
+                        onEdit={() =>
+                          navigate(
+                            `${base}/meetings/${row.meeting.id}?edit=info`,
+                          )
+                        }
+                        onArchive={() => void archive(row.meeting)}
+                      />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+          {!groups.length && (
+            <p className="record-list-empty">
+              {query || filter !== "all"
+                ? t("조건에 맞는 기록이 없어요.")
+                : t("아직 기록이 없어요.")}
+            </p>
+          )}
+        </div>
+      )}
+      {!showArchived && archived.length > 0 && (
+        <button
+          type="button"
+          className="record-list-archived"
+          onClick={() => set("archived", "1")}
+        >
+          {t("보관한 기록 {count}개", { count: archived.length })}
+        </button>
+      )}
       <label className="record-list-cancelled">
         <input
           type="checkbox"
@@ -378,5 +479,48 @@ function RecordLine({
         </span>
       )}
     </Link>
+  );
+}
+
+/** 줄 메뉴(04 §2.2): 열기 / 새 탭에서 열기 / 기록 정보 편집 / 보관 */
+function RowMenu({
+  meeting,
+  href,
+  onOpen,
+  onEdit,
+  onArchive,
+}: {
+  meeting: Meeting;
+  href: string;
+  onOpen(): void;
+  onEdit(): void;
+  onArchive(): void;
+}) {
+  return (
+    <span className="record-line-menu">
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={t("{title} 메뉴", { title: meeting.title })}
+          >
+            <Icon name="more" size={16} />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={onOpen}>{t("열기")}</DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => window.open(href, "_blank", "noopener")}
+          >
+            {t("새 탭에서 열기")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onEdit}>
+            {t("기록 정보 편집")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onArchive}>{t("보관")}</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </span>
   );
 }
