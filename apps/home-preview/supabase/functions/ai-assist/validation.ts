@@ -9,6 +9,8 @@ export type Mode =
   | "continue_writing"
   | "inline_edit";
 export interface AIInput {
+  webSearch?: boolean;
+  calendar?: boolean;
   mode: Mode;
   model?: string;
   thinking?: string;
@@ -74,6 +76,30 @@ function text(value: unknown, max: number, required = false): string {
 }
 export function validateInput(value: unknown): AIInput {
   const input = object(value);
+  if (
+    (input.webSearch !== undefined && typeof input.webSearch !== "boolean") ||
+    (input.calendar !== undefined && typeof input.calendar !== "boolean")
+  )
+    throw new AIError("INVALID_INPUT", "검색과 일정 옵션을 확인해 주세요.");
+  if (
+    (input.webSearch || input.calendar) &&
+    (input.mode !== "ask_research" ||
+      (input.webSearch && input.calendar) ||
+      input.meetingId ||
+      input.feedbackId)
+  )
+    throw new AIError(
+      "INVALID_INPUT",
+      "웹 검색과 일정 확인은 질문하기에서 따로 실행해 주세요.",
+    );
+  if (
+    input.webSearch &&
+    ((Array.isArray(input.contexts) && input.contexts.length) ||
+      (Array.isArray(input.history) && input.history.length) ||
+      (typeof input.sourceText === "string" && input.sourceText.trim()))
+  )
+    throw new AIError("INVALID_INPUT", "웹 검색에는 질문만 보낼 수 있어요.");
+
   const contexts = Array.isArray(input.contexts) ? input.contexts : [];
   if (contexts.length) {
     if (
@@ -179,6 +205,28 @@ export function validateInput(value: unknown): AIInput {
     return { ...input, sourceText: "", contexts: [] } as unknown as AIInput;
   }
 
+  // 대상을 고르지 않은 요청: 서버가 이 연구의 기록에서 직접 찾아 읽습니다.
+  if (
+    [
+      "organize_meeting",
+      "suggest_revisions",
+      "review_writing",
+      "plan_research",
+      "read_material",
+    ].includes(String(input.mode)) &&
+    !input.meetingId &&
+    !input.feedbackId &&
+    !(typeof input.sourceText === "string" && input.sourceText.trim())
+  ) {
+    if (
+      !uuid.test(String(input.researchId)) ||
+      !uuid.test(String(input.clientRunId)) ||
+      (input.question !== undefined &&
+        (typeof input.question !== "string" || input.question.length > 2000))
+    )
+      throw new AIError("INVALID_INPUT", "질문과 실행 정보를 확인해 주세요.");
+    return { ...input, sourceText: "", contexts: [] } as unknown as AIInput;
+  }
   if (
     !["organize_meeting", "suggest_revisions", "ask_research"].includes(
       String(input.mode),

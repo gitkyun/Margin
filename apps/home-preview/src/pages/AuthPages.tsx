@@ -312,7 +312,7 @@ export function ResearchSelectPage() {
     if (id === "open") navigate(`/r/${research.id}`);
     else if (id === "open-tab")
       window.open(`/r/${research.id}`, "_blank", "noopener");
-    else if (id === "settings") navigate(`/r/${research.id}/settings`);
+    else if (id === "settings") navigate(`/r/${research.id}?settings=research`);
     else if (id === "trash") {
       setTrashTarget(research);
       setTrashName("");
@@ -587,7 +587,7 @@ export function ResearchSelectPage() {
                       </Button>
                     ) : (
                       <Button asChild variant="outline">
-                        <Link to={`/r/${research.id}/settings`}>
+                        <Link to={`/r/${research.id}?settings=research`}>
                           {t("연구 설정")}
                         </Link>
                       </Button>

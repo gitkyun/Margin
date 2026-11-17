@@ -1,0 +1,103 @@
+@layer margin {
+  /* 결정·질문 창(IA v2 P3, 06 §4) */
+  .log-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .log-list > li {
+    border-bottom: 1px solid var(--line);
+  }
+  .log-list > li:last-child {
+    border-bottom: 0;
+  }
+  .log-row {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    min-width: 0;
+    padding: var(--spacing-8) 0;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .log-row strong {
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .log-row strong.is-done {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+  }
+  .log-row small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .log-list > li.is-replaced .log-row strong {
+    color: var(--text-tertiary);
+  }
+  .log-question {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-8);
+  }
+  .log-circle {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin-top: var(--spacing-10);
+    padding: 0;
+    border: 2px solid var(--line-strong);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--semantic-static-white);
+    cursor: pointer;
+  }
+  .log-circle[aria-pressed="true"] {
+    border-color: var(--brand);
+    background: var(--brand);
+  }
+  .log-question > :last-child {
+    margin-top: var(--spacing-6);
+  }
+  .log-archived {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    padding: var(--spacing-8) 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .log-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+  }
+  .log-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .log-field textarea,
+  .log-field select {
+    padding: var(--spacing-6) var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+  }
+}

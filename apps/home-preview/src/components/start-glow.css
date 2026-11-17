@@ -19,7 +19,9 @@
     position: absolute;
     inset: -4px;
     padding: 1.5px;
-    border-radius: calc(var(--start-glow-radius, var(--radius-12)) + 4px);
+    border-radius: calc(
+      var(--start-glow-radius, var(--radius-12)) + var(--radius-4)
+    );
     background: conic-gradient(
       from var(--start-glow-angle),
       transparent 0 75%,

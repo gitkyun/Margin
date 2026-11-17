@@ -1,0 +1,302 @@
+@layer margin {
+  /* 연구 홈(IA v2 H1, 03). 판 폭 864px 이상은 목록 + 오른쪽 열 320, 그 아래는 한 열. */
+  .hm-home {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-20);
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  .hm-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--spacing-12) var(--spacing-24);
+  }
+  .hm-head-copy {
+    min-width: 0;
+    flex: 1 1 320px;
+  }
+  .hm-head h1 {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: var(--typography-heading2-fontSize, 24px);
+    font-weight: 700;
+    line-height: 1.35;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .hm-head-copy p {
+    margin: var(--spacing-4) 0 0;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hm-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+  }
+  .hm-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    min-height: 32px;
+    padding: 0 var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .hm-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+    gap: var(--spacing-20);
+  }
+  .hm-main,
+  .hm-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-16);
+    min-width: 0;
+  }
+  @container (max-width: 863px) {
+    .hm-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .hm-main,
+    .hm-side {
+      display: contents;
+    }
+    /* 한 열 순서: 알림 줄 → 다음 미팅 → 시작하기 → 목록 → 연구 흐름 → 연구 방향(03 §1) */
+    .hm-notice {
+      order: 1;
+    }
+    .hm-meeting {
+      order: 2;
+    }
+    .hm-start {
+      order: 3;
+    }
+    .hm-lists {
+      order: 4;
+    }
+    .hm-flow {
+      order: 5;
+    }
+    .hm-direction {
+      order: 6;
+    }
+  }
+  .hm-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    min-width: 0;
+    padding: var(--spacing-16) var(--spacing-20);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-16);
+    background: var(--surface);
+  }
+  .hm-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .hm-card-head h2,
+  .hm-label {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .hm-notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-12);
+    padding: var(--spacing-12) var(--spacing-16);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .hm-notice p {
+    flex: 1 1 240px;
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    word-break: keep-all;
+  }
+  .hm-when {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .hm-meeting-title {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-headline2-fontSize);
+    font-weight: 700;
+    word-break: keep-all;
+  }
+  .hm-meeting-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .hm-summary {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .hm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-4);
+  }
+  .hm-text-links {
+    display: inline-flex;
+    gap: var(--spacing-6);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .hm-text-links a,
+  .hm-more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--brand);
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+  }
+  .hm-more-end {
+    align-self: flex-end;
+    margin-top: var(--spacing-4);
+  }
+  .hm-poll {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding-top: var(--spacing-8);
+    border-top: 1px solid var(--line);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+  }
+  /* 탭 넷이 좁은 판에 다 들어가지 않으면 탭 줄만 가로로 넘깁니다(페이지는 넘치지 않게). */
+  .hm-lists-head > :first-child {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .hm-lists-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .hm-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .hm-subhead {
+    margin: var(--spacing-8) 0 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .hm-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-height: 44px;
+    padding: var(--spacing-6) var(--spacing-4);
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .hm-row-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+  }
+  .hm-row-main strong {
+    overflow: hidden;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hm-row-main small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .hm-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .hm-row.is-unread .hm-dot {
+    background: var(--brand);
+  }
+  .hm-add {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    min-height: 44px;
+    padding: 0 var(--spacing-4);
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    cursor: pointer;
+  }
+  .hm-add:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .hm-empty {
+    margin: 0;
+    padding: var(--spacing-12) 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .hm-empty-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .hm-milestone {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .hm-phase-track {
+    margin: 0;
+  }
+}

@@ -1,6 +1,8 @@
+import { readGrounding, type WebGrounding } from "./grounding.ts";
 import type { ModelDefinition } from "./models.ts";
 import { generationUrl } from "./models.ts";
 export interface TokenUsage {
+  searchQueries?: number;
   input: number;
   output: number;
   cached: number;
@@ -9,11 +11,13 @@ export interface TokenUsage {
   known: boolean;
 }
 export interface ProviderResult {
+  grounding?: WebGrounding;
   response: Response;
   text: string;
   usage: TokenUsage;
 }
 interface RequestOptions {
+  webSearch?: boolean;
   model: ModelDefinition;
   system: string;
   prompt: string;
@@ -29,6 +33,7 @@ export async function generate(
   options: RequestOptions,
 ): Promise<ProviderResult> {
   const {
+    webSearch = false,
     model,
     system,
     prompt,
@@ -48,10 +53,12 @@ export async function generate(
   const body = {
     systemInstruction: { parts: [{ text: system }] },
     contents: [{ role: "user", parts: [{ text: prompt }] }],
+    ...(webSearch ? { tools: [{ googleSearch: {} }] } : {}),
     generationConfig: {
       ...(thinking ? { thinkingConfig: { thinkingLevel: thinking } } : {}),
-      responseMimeType: "application/json",
-      responseSchema: schema,
+      ...(!webSearch
+        ? { responseMimeType: "application/json", responseSchema: schema }
+        : {}),
       maxOutputTokens: maxOutput,
     },
   };
@@ -80,29 +87,35 @@ export async function generate(
       ? value
       : 0;
   const u = data.usageMetadata;
-  // 생성한 토큰 전체(답변+생각)는 총합에서 입력을 뺀 값입니다. 제공사 경로마다 답변 수에
+  // 생성한 토큰 전체(답변+생각)는 총합에서 요청 입력과 도구 결과 입력을 뺀 값입니다.
+  // Google 검색 결과 입력은 별도 토큰 청구 대상이 아니며 검색어 요금으로 정산합니다. 제공사 경로마다 답변 수에
   // 생각 토큰이 들어 있는지가 달라질 수 있어, 총합이 있으면 그 값을 쓰고 없을 때만 더합니다.
   const generated =
     typeof u?.totalTokenCount === "number" &&
     typeof u?.promptTokenCount === "number"
       ? Math.max(
           n(u.candidatesTokenCount),
-          n(u.totalTokenCount) - n(u.promptTokenCount),
+          n(u.totalTokenCount) -
+            n(u.promptTokenCount) -
+            n(u.toolUsePromptTokenCount),
         )
       : n(u?.candidatesTokenCount) + n(u?.thoughtsTokenCount);
+  const grounded = readGrounding(data.candidates?.[0]);
   return {
     response,
-    text: (data.candidates?.[0]?.content?.parts ?? [])
-      .filter((p: any) => !p.thought && typeof p.text === "string")
-      .map((p: any) => p.text)
-      .join(""),
+    text: grounded.text,
+    ...(webSearch ? { grounding: grounded.grounding } : {}),
     usage: {
+      ...(webSearch && grounded.searchQueries !== undefined
+        ? { searchQueries: grounded.searchQueries }
+        : {}),
       input: n(u?.promptTokenCount),
       cached: n(u?.cachedContentTokenCount),
       output: generated,
       reasoning: n(u?.thoughtsTokenCount),
       cacheWrite: 0,
       known:
+        (!webSearch || grounded.searchQueries !== undefined) &&
         !!u &&
         typeof u.promptTokenCount === "number" &&
         typeof u.candidatesTokenCount === "number",
@@ -128,7 +141,8 @@ export function usageCredits(
       fresh * model.inputPrice +
         usage.cached * (model.cachedInputPrice ?? model.inputPrice) +
         usage.cacheWrite * model.inputPrice * 1.25 +
-        usage.output * model.outputPrice,
+        usage.output * model.outputPrice +
+        (usage.searchQueries ?? 0) * GOOGLE_SEARCH_QUERY_CREDITS * 1000,
     ) / 1000
   );
 }
@@ -138,12 +152,21 @@ export function reserveCredits(
   prompt: string,
   schema: unknown,
   maxOutput: number,
+  webSearch = false,
 ): number {
   // UTF-8 bytes conservatively bound text tokens; include schema and request framing.
   const input =
     new TextEncoder().encode(system + prompt + JSON.stringify(schema)).length +
     2048;
   return (
-    Math.ceil(input * model.inputPrice! + maxOutput * model.outputPrice!) / 1000
+    Math.ceil(input * model.inputPrice! + maxOutput * model.outputPrice!) /
+      1000 +
+    (webSearch ? GOOGLE_SEARCH_QUERY_CREDITS * WEB_SEARCH_RESERVE_QUERIES : 0)
   );
 }
+
+// Published $14/1,000 queries, 1 credit = $0.001; project free quota/discounts excluded.
+// https://cloud.google.com/model-garden/pricing (checked 2026-11-16)
+export const GOOGLE_SEARCH_QUERY_CREDITS = 14;
+// Reservation headroom, not a provider-enforced query cap. Actual reported queries settle afterward.
+export const WEB_SEARCH_RESERVE_QUERIES = 16;

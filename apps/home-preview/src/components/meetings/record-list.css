@@ -1,0 +1,200 @@
+@layer margin {
+  /* 미팅 화면 기록 목록(IA v2 04 §2) */
+  .record-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-12);
+    min-width: 0;
+  }
+  .record-list-top {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+  }
+  .record-list-add {
+    align-self: flex-start;
+  }
+  .record-list-search,
+  .record-list-filter select {
+    width: 100%;
+    min-height: 36px;
+    padding: 0 var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+  }
+  .record-list-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  .record-list-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-12);
+  }
+  .record-list-groups h3 {
+    margin: 0 0 var(--spacing-4);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .record-list-groups ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .record-line {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-height: 56px;
+    padding: var(--spacing-6) var(--spacing-8);
+    border-radius: var(--radius-8);
+    color: var(--text);
+    text-decoration: none;
+  }
+  .record-line:hover {
+    background: var(--hover-fill);
+  }
+  .record-line[aria-current="page"] {
+    background: var(--selected-fill);
+  }
+  .record-line > svg {
+    flex: none;
+    color: var(--text-secondary);
+  }
+  .record-line-copy {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .record-line-copy strong {
+    overflow: hidden;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .record-line-copy small {
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .record-line.is-cancelled strong {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+  }
+  .record-line-live,
+  .record-line-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--danger);
+  }
+  .record-line-dot {
+    background: var(--brand);
+  }
+  .record-line-tag,
+  .record-line-count {
+    flex: none;
+    padding: 0 var(--spacing-6);
+    border-radius: var(--radius-8);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .record-line-tag {
+    border: 1px solid var(--line-strong);
+  }
+  .record-line-count {
+    background: var(--surface-muted);
+  }
+  .record-list-empty {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .record-list-cancelled {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  /* 미팅 화면 틀: 목록 220 + 기록. 판 864px 미만은 한 열(목록 또는 기록 하나). */
+  .meetings-frame {
+    container-type: inline-size;
+  }
+  .meetings-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: start;
+    gap: var(--spacing-24);
+  }
+  .meetings-layout > .record-list {
+    position: sticky;
+    top: var(--spacing-16);
+    max-height: calc(100dvh - var(--ia-topbar-height, 56px) - 48px);
+    overflow-y: auto;
+  }
+  .meetings-placeholder {
+    padding: var(--spacing-40) 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-label1-fontSize);
+    text-align: center;
+  }
+  @container (max-width: 863px) {
+    .meetings-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .meetings-layout > .record-list {
+      position: static;
+      max-height: none;
+    }
+    .meetings-layout[data-has-record] > .record-list,
+    .meetings-layout:not([data-has-record]) > .meetings-record {
+      display: none;
+    }
+  }
+  /* 판 864~1023: 목록 열을 접고 [기록 목록 ▾] 팝오버로(04 §1) */
+  .record-list-toggle {
+    position: relative;
+    display: none;
+    margin-bottom: var(--spacing-12);
+  }
+  .record-list-popover {
+    position: absolute;
+    top: calc(100% + var(--spacing-4));
+    left: 0;
+    z-index: var(--z-sheet);
+    width: 280px;
+    max-height: min(70dvh, 560px);
+    padding: var(--spacing-12);
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    box-shadow: var(--shadow-pop);
+  }
+  @container (min-width: 864px) and (max-width: 1023px) {
+    .meetings-layout[data-has-record] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .meetings-layout[data-has-record] > .record-list {
+      display: none;
+    }
+    .meetings-layout[data-has-record] .record-list-toggle {
+      display: block;
+    }
+  }
+}

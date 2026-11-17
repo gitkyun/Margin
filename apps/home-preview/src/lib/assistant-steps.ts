@@ -29,6 +29,11 @@ export function assistantSteps({
   hasDirection,
   contexts,
 }: AssistantStepInput): AssistantStep[] {
+  // 서버가 붙인 기록과 별개로 이 연구의 기록 전체를 읽어요.
+  const records: AssistantStep = {
+    doing: t("이 연구의 기록 읽는 중"),
+    done: t("연구 기록 확인"),
+  };
   const answer: AssistantStep = {
     doing: t("답변 정리하는 중"),
     done: t("답변 정리"),
@@ -39,13 +44,14 @@ export function assistantSteps({
       ...(contexts.length
         ? [
             {
-              doing: t("고른 기록 {count}건 확인하는 중", {
+              doing: t("붙인 기록 {count}건 확인하는 중", {
                 count: contexts.length,
               }),
-              done: t("기록 {count}건 확인", { count: contexts.length }),
+              done: t("붙인 기록 {count}건 확인", { count: contexts.length }),
             },
           ]
         : []),
+      records,
       answer,
     ];
   }
@@ -71,11 +77,12 @@ export function assistantSteps({
     ...(rest > 0
       ? [
           {
-            doing: t("그 밖의 기록 {count}건 읽는 중", { count: rest }),
-            done: t("그 밖의 기록 {count}건 확인", { count: rest }),
+            doing: t("그 밖에 붙인 기록 {count}건 읽는 중", { count: rest }),
+            done: t("그 밖에 붙인 기록 {count}건 확인", { count: rest }),
           },
         ]
       : []),
+    records,
     answer,
   ];
 }

@@ -69,6 +69,8 @@ interface AIPromptProps {
   modelControls?: React.ReactNode;
   leadingControl?: React.ReactNode;
   header?: ReactNode;
+  /** Extra chips drawn in the tray, e.g. records the page attached. */
+  tray?: ReactNode;
   value?: string;
   onValueChange?: (value: string) => void;
   selectedModel?: string;
@@ -766,6 +768,7 @@ export default function AI_Prompt({
   modelControls,
   leadingControl,
   header,
+  tray,
   value: controlledValue,
   onValueChange,
   selectedModel: controlledModel,
@@ -1012,7 +1015,7 @@ export default function AI_Prompt({
     Array.from(e.dataTransfer.types).includes("Files");
 
   const efforts = effortsOf(currentModel);
-  const hasTray = attachments.length > 0 || command !== null;
+  const hasTray = attachments.length > 0 || command !== null || !!tray;
 
   return (
     <div className={cn("w-full max-w-lg py-4", className)}>
@@ -1098,6 +1101,7 @@ export default function AI_Prompt({
                       />
                     ))}
                   </AnimatePresence>
+                  {tray}
                 </ul>
               </motion.div>
             )}

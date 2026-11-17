@@ -57,3 +57,28 @@ it("검색 입력의 첨부를 제품 상태에 맡기면 실자료와 분리된
     0,
   );
 });
+
+it("웹 검색용 입력은 파일 선택과 이미지 붙여넣기를 받지 않는다", () => {
+  const onAttach = vi.fn();
+  const { container, queryByRole } = render(
+    <AIInputSearch
+      models={[]}
+      tools={[]}
+      placeholder="웹 검색"
+      allowAttachments={false}
+      onAttach={onAttach}
+      onSearch={vi.fn()}
+    />,
+  );
+  expect(queryByRole("button", { name: "파일 첨부" })).toBeNull();
+  const picker = container.querySelector(
+    'input[type="file"]',
+  ) as HTMLInputElement;
+  expect(picker.disabled).toBe(true);
+  const file = new File(["개인 메모"], "개인.txt", { type: "text/plain" });
+  fireEvent.change(picker, { target: { files: [file] } });
+  fireEvent.paste(container.querySelector("textarea")!, {
+    clipboardData: { files: [file] },
+  });
+  expect(onAttach).not.toHaveBeenCalled();
+});

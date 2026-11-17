@@ -48,6 +48,8 @@ interface AIModelSelectorProps {
   defaultOpen?: boolean;
   disabled?: boolean;
   className?: string;
+  /** 마진 차이: 목록을 여는 방향. 원본은 위("top"). 창 위쪽에 놓일 때 "bottom"(kokonut-map.md). */
+  placement?: "top" | "bottom";
 }
 
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
@@ -271,7 +273,9 @@ export default function AIModelSelector({
   defaultOpen = false,
   disabled = false,
   className,
+  placement = "top",
 }: AIModelSelectorProps) {
+  const below = placement === "bottom";
   const first = models[0];
   const [inner, setInner] = useState<ModelSelection>(
     defaultValue ?? {
@@ -317,6 +321,8 @@ export default function AIModelSelector({
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        // 마진: 설정 창 같은 대화상자 안에서도 Esc는 이 메뉴만 닫습니다(대화상자까지 닫히지 않게).
+        event.stopPropagation();
         // Only pull focus back when it was in the panel; Escape pressed
         // elsewhere on the page just closes it.
         if (rootRef.current?.contains(document.activeElement)) {
@@ -326,10 +332,11 @@ export default function AIModelSelector({
       }
     };
     document.addEventListener("pointerdown", onPointer);
-    document.addEventListener("keydown", onKey);
+    // 마진: 대화상자의 Esc 처리보다 먼저 받도록 window 캡처 단계에서 듣습니다.
+    window.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("pointerdown", onPointer);
-      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", onKey, true);
     };
   }, [open]);
 
@@ -385,10 +392,10 @@ export default function AIModelSelector({
             {open && (
               <motion.div
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="absolute bottom-full left-0 z-10 mb-2 w-72 origin-bottom-left rounded-xl bg-[var(--surface-raised)] p-1 shadow-[0_8px_24px_-8px_rgb(var(--semantic-foreground-neutral-primary-rgb)/0.18)] ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)]  "
-                exit={{ opacity: 0, scale: 0.97, y: 4 }}
+                className={`absolute ${below ? "top-full mt-2 origin-top-left" : "bottom-full mb-2 origin-bottom-left"} left-0 z-10 w-72 rounded-xl bg-[var(--surface-raised)] p-1 shadow-[0_8px_24px_-8px_rgb(var(--semantic-foreground-neutral-primary-rgb)/0.18)] ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)]`}
+                exit={{ opacity: 0, scale: 0.97, y: below ? -4 : 4 }}
                 id={panelId}
-                initial={{ opacity: 0, scale: 0.97, y: 4 }}
+                initial={{ opacity: 0, scale: 0.97, y: below ? -4 : 4 }}
                 transition={{ duration: 0.16, ease: EASE_OUT }}
               >
                 <div aria-label={t("AI 모델")} role="radiogroup">

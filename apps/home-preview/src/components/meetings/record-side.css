@@ -1,0 +1,207 @@
+@layer margin {
+  /* 기록 화면 오른쪽 열(IA v2 04 §4.2, §5.4) */
+  .record-columns {
+    container-type: inline-size;
+  }
+  .record-with-side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: var(--spacing-24);
+  }
+  /* 본문 최소 400 + 오른쪽 열 340 + 간격 24(04 §1). 그보다 좁으면 한 열. */
+  @container (max-width: 763px) {
+    .record-with-side {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .record-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-12);
+    min-width: 0;
+  }
+  .record-side-title {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 700;
+  }
+  .record-side-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    padding: var(--spacing-12) var(--spacing-14);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .record-side-section h3,
+  .record-side-group h4 {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .record-side-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  .record-side-count {
+    margin-left: auto;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+  }
+  .record-side-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+  .record-side-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+  .record-side-feedback {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  .record-side-tasks {
+    padding-left: var(--spacing-16);
+  }
+  .record-side-tasks .task-line,
+  .record-side-group .task-line {
+    min-height: 40px;
+    padding-inline: 0;
+  }
+  .record-side-line {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    min-width: 0;
+    margin: 0;
+    padding: var(--spacing-4) 0;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .record-side-line strong {
+    display: flex;
+    gap: var(--spacing-6);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .record-side-line strong.is-done {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+  }
+  .record-side-line small,
+  .record-side-note {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .record-side-num {
+    flex: none;
+    color: var(--brand);
+  }
+  .record-side-badge {
+    flex: none;
+    padding: 0 var(--spacing-6);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-8);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .record-side-empty {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .record-side-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+  }
+  .record-side-row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .record-side-carry {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    border-bottom: 1px solid var(--line);
+  }
+  .record-side-carry:last-child {
+    border-bottom: 0;
+  }
+  .record-side-clamp {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    white-space: pre-wrap;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  /* 준비 쪽 본문이 좁으면(오른쪽 열이 붙은 판) 할 일·자료 두 칸을 한 칸으로 쌓습니다.
+     한국어 제목이 한 글자씩 줄바꿈되지 않게 컨테이너 폭으로 판단합니다. */
+  .record-with-side > .meeting-preparation {
+    container-type: inline-size;
+  }
+  @container (max-width: 639px) {
+    .preparation-columns {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  /* 메모 형광펜(04 §5.3): 글 칸 뒤에 같은 글을 같은 글꼴·간격으로 그려 칠합니다. */
+  .memo-marked {
+    position: relative;
+    /* 글 칸의 위 여백(12px)이 바깥으로 빠지지 않게 해서 뒤 그림과 자리를 맞춥니다. */
+    display: flow-root;
+  }
+  .memo-marked .meeting-memo {
+    position: relative;
+    z-index: 1;
+    scrollbar-gutter: stable;
+  }
+  .memo-backdrop {
+    position: absolute;
+    inset: 12px 0 0 0;
+    padding: 20px 0;
+    overflow: hidden;
+    color: transparent;
+    font-size: var(--typography-body1-fontSize);
+    line-height: var(--typography-body1Reading-lineHeight);
+    letter-spacing: var(--typography-body1-letterSpacing);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: normal;
+    scrollbar-gutter: stable;
+    pointer-events: none;
+  }
+  .memo-backdrop mark {
+    border-radius: var(--radius-4);
+    background: var(--brand-soft);
+    color: transparent;
+  }
+}

@@ -32,7 +32,7 @@ import {
   uid,
   type Research,
 } from "@/lib/domain";
-import { seoulToday } from "@/lib/home-meeting";
+import { seoulNowTime, seoulToday } from "@/lib/home-meeting";
 import { expandIntoHome } from "@/lib/expand-home";
 import {
   onboardingLeadLabel,
@@ -229,7 +229,7 @@ export function OnboardingPage() {
           saved.phases = index + 1;
         }
       }
-      const meeting = onboardingMeeting(answers.meeting, today);
+      const meeting = onboardingMeeting(answers.meeting, today, seoulNowTime());
       if (meeting && !saved.meeting) {
         await save("meetings", {
           ...recordBase(id),

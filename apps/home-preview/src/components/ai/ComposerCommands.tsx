@@ -1,5 +1,4 @@
 import AIContextMeter from "@/components/kokonut/ai-context-meter";
-import AIAttachment from "@/components/kokonut/ai-attachment";
 import { QueueList } from "@/components/kokonut/ai-message-queue";
 import { toast } from "sonner";
 import { Icon } from "@/components/icons";
@@ -23,31 +22,31 @@ export const COMPOSER_COMMANDS: ComposerCommand[] = [
   {
     id: "organize_meeting",
     label: String(modeLabels.organize_meeting),
-    description: t("미팅 메모에서 피드백·결정·질문을 뽑아요"),
+    description: t("가장 최근 미팅 메모에서 피드백·결정·질문을 뽑아요"),
     icon: "calendar",
   },
   {
     id: "suggest_revisions",
     label: String(modeLabels.suggest_revisions),
-    description: t("피드백이나 원고를 보고 고칠 방법을 제안해요"),
+    description: t("처리 전인 최근 피드백을 고칠 방법을 제안해요"),
     icon: "sparkles",
   },
   {
     id: "review_writing",
     label: String(modeLabels.review_writing),
-    description: t("고른 원고의 흐름·근거·문장을 점검해요"),
+    description: t("가장 최근 문서의 흐름·근거·문장을 점검해요"),
     icon: "edit",
   },
   {
     id: "plan_research",
     label: String(modeLabels.plan_research),
-    description: t("고른 기록에서 해야 할 일을 정리해요"),
+    description: t("이 연구의 기록에서 해야 할 일을 정리해요"),
     icon: "check",
   },
   {
     id: "read_material",
-    label: String(modeLabels.read_material),
-    description: t("첨부한 자료나 PDF 핵심 내용을 요약해요"),
+    label: t("논문·자료 요약"),
+    description: t("첨부한 파일이나 가장 최근 첨부 파일을 요약해요"),
     icon: "file",
   },
 ];
@@ -152,6 +151,9 @@ export interface QueuedQuestion {
   id: string;
   text: string;
   mode: AIInput["mode"];
+  webSearch?: boolean;
+  calendar?: boolean;
+  contexts?: AIContext[];
 }
 
 export function ComposerQueue({
@@ -279,12 +281,65 @@ function formatSize(bytes?: number): string | undefined {
     : `${Math.max(1, Math.round(bytes / 1024))}KB`;
 }
 
+const CHIP_CLASS =
+  "flex h-11 max-w-60 items-center gap-2 rounded-xl bg-[color-mix(in_srgb,var(--text)_3%,transparent)] py-1 pr-1.5 pl-1 ring-1 ring-[color-mix(in_srgb,var(--text)_5%,transparent)]";
+const CHIP_ICON_CLASS =
+  "flex size-9 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--text)_5%,transparent)] text-[var(--text-tertiary)]";
+
+function contextKindLabel(kind: AIContext["kind"]): string {
+  switch (kind) {
+    case "meetings":
+      return t("미팅");
+    case "feedback":
+      return t("피드백");
+    case "documents":
+      return t("문서");
+    case "versions":
+      return t("버전");
+    case "attachments":
+      return t("파일");
+    case "tasks":
+      return t("할 일");
+    case "phases":
+      return t("연구 단계");
+    case "milestones":
+      return t("일정");
+    case "questions":
+      return t("질문");
+    case "decisions":
+      return t("결정");
+    case "materials":
+      return t("자료");
+  }
+}
+
+function contextIcon(kind: AIContext["kind"]): string {
+  if (kind === "meetings") return "calendar";
+  if (kind === "feedback") return "chat";
+  if (kind === "tasks") return "check";
+  return "file";
+}
+
+/** 칩 아래 줄: 종류 · (쪽) · (크기). 확인되지 않은 쪽 수는 만들지 않아요. */
+function contextMeta(context: AIContext, size?: number): string {
+  return [
+    contextKindLabel(context.kind),
+    context.page ? t("{page}쪽", { page: context.page }) : undefined,
+    formatSize(size),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/**
+ * 입력창 안 칩 줄(AIPrompt `tray`)에 그리는 붙인 기록·첨부 파일.
+ * 라이브러리의 AttachmentChip과 같은 모양을 써서 입력창 밖에 따로 뜨지 않게 해요.
+ */
 export function ComposerAttachmentCards({
   contexts,
   data,
   uploading,
   uploadProgress,
-  uploadError,
   disabled,
   onRemove,
 }: {
@@ -292,62 +347,62 @@ export function ComposerAttachmentCards({
   data: WorkspaceData;
   uploading: boolean;
   uploadProgress: number | null;
-  uploadError?: string;
   disabled: boolean;
   onRemove: (index: number) => void;
 }) {
   if (!contexts.length && !uploading) return null;
   return (
-    <div
-      className="composer-attachment-list flex w-full flex-col gap-4"
-      role="group"
-      aria-label={t("첨부한 기록")}
-    >
-      {uploading && (
-        <AIAttachment
-          file={{ name: t("파일 준비 중"), size: 0, pages: 0 }}
-          status={uploadProgress === null ? "reading" : "uploading"}
-          uploaded={uploadProgress === null ? undefined : uploadProgress / 100}
-          pagesRead={0}
-          answer={[]}
-        />
-      )}
+    <>
       {contexts.map((context, index) => {
         const attachment =
           context.kind === "attachments"
             ? data.attachments.find((item) => item.id === context.id)
             : undefined;
         return (
-          <div
+          <li
             key={`${context.kind}:${context.id}:${context.page ?? ""}`}
-            className="flex items-start gap-2"
+            className={CHIP_CLASS}
           >
-            <AIAttachment
-              file={{
-                name: context.title,
-                size: attachment?.size ?? 0,
-                pages: context.page ? 1 : 0,
-              }}
-              status={uploadError ? "error" : "done"}
-              error={uploadError}
-              pagesRead={context.page ? 1 : 0}
-              answer={[]}
-              pageNumbers={context.page ? [context.page] : undefined}
-            />
-            {onRemove && (
-              <button
-                type="button"
-                className="mt-2 flex size-6 shrink-0 items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--hover-fill)]"
-                disabled={disabled}
-                aria-label={t("{title} 첨부 해제", { title: context.title })}
-                onClick={() => onRemove(index)}
-              >
-                <Icon name="close" size={13} />
-              </button>
-            )}
-          </div>
+            <span className={CHIP_ICON_CLASS}>
+              <Icon name={contextIcon(context.kind)} size={16} />
+            </span>
+            <span className="min-w-0 flex-1 leading-tight">
+              <span className="block truncate text-xs text-[var(--text)]">
+                {context.title}
+              </span>
+              <span className="block truncate text-[10px] text-[var(--text-tertiary)] tabular-nums">
+                {contextMeta(context, attachment?.size)}
+              </span>
+            </span>
+            <button
+              type="button"
+              className="flex size-6 shrink-0 items-center justify-center rounded-md text-[var(--text-tertiary)] transition-colors hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] hover:text-[var(--text)] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--brand)]"
+              disabled={disabled}
+              aria-label={t("{title} 첨부 해제", { title: context.title })}
+              onClick={() => onRemove(index)}
+            >
+              <Icon name="close" size={13} />
+            </button>
+          </li>
         );
       })}
-    </div>
+      {uploading && (
+        <li className={CHIP_CLASS} aria-live="polite">
+          <span className={CHIP_ICON_CLASS}>
+            <span className="size-4 animate-spin rounded-full border-2 border-[var(--line)] border-t-[var(--brand)] motion-reduce:animate-none" />
+          </span>
+          <span className="min-w-0 flex-1 pr-2 leading-tight">
+            <span className="block truncate text-xs text-[var(--text)]">
+              {t("파일 올리는 중")}
+            </span>
+            <span className="block text-[10px] text-[var(--text-tertiary)] tabular-nums">
+              {uploadProgress === null
+                ? t("내용 읽는 중")
+                : `${Math.round(uploadProgress)}%`}
+            </span>
+          </span>
+        </li>
+      )}
+    </>
   );
 }

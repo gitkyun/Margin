@@ -35,6 +35,7 @@ import { ResearchProfileFields } from "./settings/ResearchProfileFields";
 import { usePreferences } from "./settings/use-preferences";
 import { AgentSettings } from "./settings/AgentSettings";
 import { SoundSetting } from "./settings/SoundSetting";
+import { PanelSideSetting } from "./settings/PanelSideSetting";
 import { UsageMeters } from "./settings/UsageMeters";
 import "./settings/account-settings.css";
 import {
@@ -198,10 +199,16 @@ export function UsageDetails() {
     </section>
   );
 }
-export function AccountPage() {
+/** 설정 창(IA v2 07 §1) 안에 넣을 때 쓰는 값. 넣으면 제목·왼쪽 탭을 그리지 않고 구획은 밖에서 받습니다. */
+export interface EmbeddedSettingsProps {
+  embedded?: boolean;
+  /** 지금 화면의 `tab=` 값과 같은 이름 */
+  section?: string;
+}
+export function AccountPage({ embedded, section }: EmbeddedSettingsProps = {}) {
   const { user, mode } = useWorkspace();
   const [params, setParams] = useSearchParams();
-  const tab = params.get("tab") ?? "profile";
+  const tab = (embedded ? section : params.get("tab")) ?? "profile";
   const [name, setName] = useState(user.name),
     [busy, setBusy] = useState(false);
   useEffect(() => setName(user.name), [user.name]);
@@ -215,10 +222,10 @@ export function AccountPage() {
     !busy && name.trim() === user.name && t("바뀐 내용이 없어요."),
   );
   return (
-    <div className="settings-page">
-      <PageHeader title={t("계정 설정")} />
+    <div className={`settings-page ${embedded ? "settings-embedded" : ""}`}>
+      {!embedded && <PageHeader title={t("계정 설정")} />}
       <div className="settings-layout">
-        <nav aria-label={t("계정 설정 항목")}>
+        <nav aria-label={t("계정 설정 항목")} hidden={embedded}>
           {[
             ["profile", "user", t("프로필")],
             ["appearance", "sun", t("화면 설정")],
@@ -299,6 +306,7 @@ export function AccountPage() {
                 </p>
               </section>
               <SoundSetting />
+              <PanelSideSetting />
             </>
           ) : (
             <section className="settings-section">
@@ -439,6 +447,7 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
               <div className="field">
                 <span>{t("기본 모델")}</span>
                 <AIModelSelector
+                  placement="bottom"
                   models={caps.data?.models ?? []}
                   model={selection.model}
                   thinking={selection.thinking}
@@ -501,13 +510,18 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
     </>
   );
 }
-export function ResearchSettingsPage() {
-  const { researchId = "" } = useParams(),
+export function ResearchSettingsPage({
+  embedded,
+  section,
+  researchIdOverride,
+}: EmbeddedSettingsProps & { researchIdOverride?: string } = {}) {
+  const params0 = useParams(),
+    researchId = researchIdOverride ?? params0.researchId ?? "",
     navigate = useNavigate(),
     w = useExperience(),
     { data, user, saveResearch } = w,
     [params, setParams] = useSearchParams(),
-    tab = params.get("tab") ?? "basic",
+    tab = (embedded ? section : params.get("tab")) ?? "basic",
     research = data.researches.find((r) => r.id === researchId);
   const [name, setName] = useState(research?.name ?? ""),
     [description, setDescription] = useState(research?.description ?? ""),
@@ -590,38 +604,40 @@ export function ResearchSettingsPage() {
     }
   }
   return (
-    <div className="settings-page">
+    <div className={`settings-page ${embedded ? "settings-embedded" : ""}`}>
       {confirmDialog}
-      <PageHeader
-        title={t("연구 설정")}
-        description={research.name}
-        meta={
-          <>
-            <span className="settings-summary-chip">
-              {t("현재 단계 · {title}", {
-                title:
-                  data.phases.find((p) => p.id === research.currentPhaseId)
-                    ?.title ?? t("단계 미지정"),
-              })}
-            </span>
-            <span className="settings-summary-chip">
-              {t("지도교수 {count}명", {
-                count: (research.advisorEmails ?? []).length,
-              })}
-            </span>
-            <span className="settings-summary-chip">
-              {t("키워드 {count}개", { count: keywords.length })}
-            </span>
-            {research.submissionDate && (
+      {!embedded && (
+        <PageHeader
+          title={t("연구 설정")}
+          description={research.name}
+          meta={
+            <>
               <span className="settings-summary-chip">
-                {t("목표일 {date}", { date: research.submissionDate })}
+                {t("현재 단계 · {title}", {
+                  title:
+                    data.phases.find((p) => p.id === research.currentPhaseId)
+                      ?.title ?? t("단계 미지정"),
+                })}
               </span>
-            )}
-          </>
-        }
-      />
+              <span className="settings-summary-chip">
+                {t("지도교수 {count}명", {
+                  count: (research.advisorEmails ?? []).length,
+                })}
+              </span>
+              <span className="settings-summary-chip">
+                {t("키워드 {count}개", { count: keywords.length })}
+              </span>
+              {research.submissionDate && (
+                <span className="settings-summary-chip">
+                  {t("목표일 {date}", { date: research.submissionDate })}
+                </span>
+              )}
+            </>
+          }
+        />
+      )}
       <div className="settings-layout">
-        <nav aria-label={t("연구 설정 항목")}>
+        <nav aria-label={t("연구 설정 항목")} hidden={embedded}>
           {[
             ["basic", "file", t("기본 정보")],
             ["members", "users", t("공동연구자")],

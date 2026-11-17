@@ -59,7 +59,39 @@ export function buildDemo(ownerId = previewUser.id): WorkspaceData {
     status: "recorded" as const,
     notes: "",
   };
-  data.feedback = [firstFeedback, secondFeedback];
+  // 예외 화면 확인용: 보류·고치지 않음 상태와 아주 긴 제목.
+  const heldFeedback = {
+    ...base(),
+    title: "참고문헌 표기 형식 통일",
+    body: "참고문헌 형식은 다음 학기 투고 학술지가 정해지면 맞추기로 하고 지금은 보류해요.",
+    meetingId: previousId,
+    status: "held" as const,
+    notes: "투고 학술지 결정 뒤 다시 보기",
+  };
+  const unchangedFeedback = {
+    ...base(),
+    title: "연구 제목에 ‘경험’ 대신 ‘인식’ 쓰기",
+    body: "연구 목적이 경험을 살펴보는 것이라 제목은 그대로 두기로 했어요.",
+    meetingId: previousId,
+    status: "unchanged" as const,
+    notes: "다음 미팅에서 이유를 설명하기",
+  };
+  const longTitleFeedback = {
+    ...base(),
+    title:
+      "2장 이론적 배경에서 선행연구를 연구 대상·자료 수집 방법·분석 관점의 세 가지 기준으로 다시 묶고, 각 기준이 본 연구의 연구 질문과 어떻게 이어지는지 단락 끝마다 한 문장씩 덧붙여 주세요",
+    body: "선행연구를 나열하지 말고 기준별로 묶은 뒤, 기준과 연구 질문의 연결을 드러내 주세요.",
+    meetingId: previousId,
+    status: "unprocessed" as const,
+    notes: "",
+  };
+  data.feedback = [
+    firstFeedback,
+    secondFeedback,
+    heldFeedback,
+    unchangedFeedback,
+    longTitleFeedback,
+  ];
   data.tasks = [
     {
       ...base(),
@@ -86,6 +118,16 @@ export function buildDemo(ownerId = previewUser.id): WorkspaceData {
       status: "done",
       dueDate: dateAt(0),
       priority: "normal",
+      feedbackIds: [],
+    },
+    {
+      // 예외 화면 확인용: 마감이 지난 할 일.
+      ...base(),
+      title: "연구 동의서 초안 작성",
+      description: "인터뷰 참여자에게 드릴 연구 동의서 초안을 만들기",
+      status: "todo",
+      dueDate: dateAt(-5),
+      priority: "high",
       feedbackIds: [],
     },
   ];
@@ -149,10 +191,41 @@ export function buildDemo(ownerId = previewUser.id): WorkspaceData {
       time: "14:00",
       status: "recorded",
       goal: "선행연구와 연구 질문 검토",
-      memo: "연구 목적에 맞는 비교 기준이 표에 드러나야 합니다. 선행연구마다 연구 목적, 자료 수집, 분석 관점을 비교해 보세요. 연구 질문은 누구의 어떤 경험을 보는지 구체화하세요. 다음 미팅에는 비교표와 보완한 인터뷰 질문지를 가져오기로 했습니다.",
+      memo:
+        "연구 목적에 맞는 비교 기준이 표에 드러나야 합니다. 선행연구마다 연구 목적, 자료 수집, 분석 관점을 비교해 보세요. 연구 질문은 누구의 어떤 경험을 보는지 구체화하세요. 다음 미팅에는 비교표와 보완한 인터뷰 질문지를 가져오기로 했습니다. " +
+        // 의도한 예외: 피드백·결정·잡담 어느 쪽으로도 읽힐 수 있는 모호한 문장.
+        "참고문헌 형식은 일단 신경 쓰지 말고, 그건 다음 학기에 다시 보죠.",
       memoRevision: 1,
       taskIds: [],
       versionIds: [data.versions[0].id],
+      questionIds: [],
+    },
+    {
+      // 예외 화면 확인용: 지난 미팅인데 메모·녹음이 없음.
+      ...base(),
+      title: "제4차 논문 지도",
+      date: dateAt(-11),
+      time: "10:00",
+      status: "preparing",
+      goal: "연구 주제 범위 정하기",
+      memo: "",
+      memoRevision: 1,
+      taskIds: [],
+      versionIds: [],
+      questionIds: [],
+    },
+    {
+      // 예외 화면 확인용: 날짜를 아직 정하지 않은 미팅.
+      ...base(),
+      title: "제7차 논문 지도",
+      date: null,
+      time: null,
+      status: "preparing",
+      goal: "인터뷰 결과 초안 공유",
+      memo: "",
+      memoRevision: 1,
+      taskIds: [],
+      versionIds: [],
       questionIds: [],
     },
   ];

@@ -66,7 +66,10 @@ export function sessionFor(user: TestUser) {
 /** 페이지를 열기 전에 로그인된 상태로 만듭니다. */
 export async function signInAs(page: Page, user: TestUser): Promise<void> {
   await page.addInitScript(
-    ([key, session]) => localStorage.setItem(key, session),
+    ([key, session]) => {
+      // Authentication belongs to the app frame, never a sandboxed search suggestion.
+      if (window.self === window.top) localStorage.setItem(key, session);
+    },
     [SESSION_KEY, JSON.stringify(sessionFor(user))] as const,
   );
 }

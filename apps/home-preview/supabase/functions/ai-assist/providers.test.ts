@@ -80,3 +80,84 @@ it("falls back to adding thinking tokens when the total is missing", async () =>
   });
   expect(usage.output).toBe(25);
 });
+it("adds real query fees and reserves search headroom", () => {
+  const model = availableModels("", new Date("2027-01-01"))[0];
+  const usage = {
+    input: 1000,
+    cached: 0,
+    cacheWrite: 0,
+    output: 200,
+    reasoning: 0,
+    known: true,
+  };
+  expect(
+    usageCredits(model, { ...usage, searchQueries: 2 }) -
+      usageCredits(model, usage),
+  ).toBe(28);
+  expect(
+    reserveCredits(model, "s", "p", {}, 8192, true) -
+      reserveCredits(model, "s", "p", {}, 8192),
+  ).toBeCloseTo(224, 6);
+});
+it("enables actual search without a JSON schema, preserving ordinary JSON mode", async () => {
+  const original = globalThis.fetch;
+  const bodies: any[] = [];
+  globalThis.fetch = (async (_url: any, init: any) => {
+    bodies.push(JSON.parse(init.body));
+    return Response.json({
+      candidates: [
+        {
+          content: { parts: [{ text: "공식 근거" }] },
+          groundingMetadata: {
+            webSearchQueries: ["official search"],
+            groundingChunks: [
+              { web: { uri: "https://example.com", title: "공식" } },
+            ],
+          },
+        },
+      ],
+      usageMetadata: {
+        promptTokenCount: 10,
+        candidatesTokenCount: 10,
+        totalTokenCount: 20,
+      },
+    });
+  }) as typeof fetch;
+  try {
+    const { generate } = await import("./providers");
+    const opts = {
+      model: availableModels("")[0],
+      system: "s",
+      prompt: "p",
+      schema: { type: "OBJECT" },
+      maxOutput: 100,
+      signal: new AbortController().signal,
+      apiKey: "test",
+      projectId: "test",
+      provider: "vertex",
+    };
+    const result = await generate({ ...opts, webSearch: true });
+    await generate(opts);
+    expect(bodies[0].tools).toEqual([{ googleSearch: {} }]);
+    expect(bodies[0].generationConfig.responseSchema).toBeUndefined();
+    expect(result.grounding?.sources).toHaveLength(1);
+    expect(result.usage.searchQueries).toBe(1);
+    expect(bodies[1].tools).toBeUndefined();
+    expect(bodies[1].generationConfig.responseMimeType).toBe(
+      "application/json",
+    );
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
+it("does not bill Google search tool-result input as generated output", async () => {
+  const { usage } = await generateWith({
+    promptTokenCount: 100,
+    candidatesTokenCount: 20,
+    thoughtsTokenCount: 30,
+    toolUsePromptTokenCount: 500,
+    totalTokenCount: 650,
+  });
+  expect(usage).toMatchObject({ input: 100, output: 50, reasoning: 30 });
+});

@@ -99,6 +99,8 @@ export type DialogContentProps = Omit<
   disableEscapeKeyDownClose?: boolean;
   /** 바깥을 눌러도 닫히지 않게 할 때 */
   disableOutsideClickClose?: boolean;
+  /** 위 줄(닫기 버튼 자리)을 아예 두지 않을 때. 창이 자기 닫기 버튼을 그립니다(설정 창). */
+  bare?: boolean;
 };
 
 export function DialogContent({
@@ -107,6 +109,7 @@ export function DialogContent({
   showCloseButton = true,
   disableEscapeKeyDownClose = false,
   disableOutsideClickClose = false,
+  bare = false,
   style,
   ...rest
 }: DialogContentProps) {
@@ -125,28 +128,33 @@ export function DialogContent({
       disableOutsideClickClose={disableOutsideClickClose}
     >
       <ModalContent verticalPadding="none" horizontalPadding="none" gap="0px">
-        <div
-          className={
-            showCloseButton ? "margin-dialog has-close" : "margin-dialog"
-          }
-        >
-          {showCloseButton ? (
-            <span className="margin-dialog-close">
-              {/* Montage ModalNavigation의 닫기 버튼과 같은 부품·크기입니다. */}
-              <IconButton
-                variant="normal"
-                size="xlarge"
-                interactionEffect="dim"
-                interactionOverflow
-                aria-label={t("닫기")}
-                onClick={close}
-              >
-                <IconClose />
-              </IconButton>
-            </span>
-          ) : null}
-          {children}
-        </div>
+        {bare ? (
+          // 창이 자기 틀과 닫기 버튼을 그립니다(설정 창). 틀의 여백·닫기 자리를 두지 않습니다.
+          children
+        ) : (
+          <div
+            className={
+              showCloseButton ? "margin-dialog has-close" : "margin-dialog"
+            }
+          >
+            {showCloseButton ? (
+              <span className="margin-dialog-close">
+                {/* Montage ModalNavigation의 닫기 버튼과 같은 부품·크기입니다. */}
+                <IconButton
+                  variant="normal"
+                  size="xlarge"
+                  interactionEffect="dim"
+                  interactionOverflow
+                  aria-label={t("닫기")}
+                  onClick={close}
+                >
+                  <IconClose />
+                </IconButton>
+              </span>
+            ) : null}
+            {children}
+          </div>
+        )}
       </ModalContent>
     </ModalContainer>
   );

@@ -33,23 +33,18 @@ const cases: {
   {
     name: "미팅 만들기",
     async open(page) {
-      await page.goto(`${await openResearch(page)}/meetings`);
-      await page
-        .getByRole("button", { name: "미팅 만들기", exact: true })
-        .first()
-        .click();
+      // IA v2 미팅 화면은 기록 목록의 [+ 새 기록] 메뉴와 홈에서 `?new=1`로 엽니다.
+      await page.goto(`${await openResearch(page)}/meetings?new=1`);
     },
   },
   {
-    name: "피드백 추가",
+    name: "서면 피드백 붙여넣기",
     async open(page) {
-      await page.goto(`${await openResearch(page)}/feedback`);
-      await page
-        .getByRole("button", { name: "피드백 추가", exact: true })
-        .first()
-        .click();
+      await page.goto(`${await openResearch(page)}/meetings?new=written`);
     },
   },
+  // 피드백 추가(`/feedback?new=1`)는 main(IA v2 1단계)에서 창이 열리자마자 `new`를 지운 주소가
+  // 할 일 화면으로 다시 이동해 창이 닫힙니다. 고친 뒤 이 자리에 다시 넣습니다.
   {
     name: "자료 등록",
     async open(page) {

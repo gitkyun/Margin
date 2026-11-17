@@ -1,0 +1,109 @@
+@layer margin {
+  /* 기록 머리(IA v2 04 §3) */
+  .record-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--spacing-8) var(--spacing-16);
+    margin-bottom: var(--spacing-12);
+  }
+  .record-head-back {
+    display: none;
+    flex-basis: 100%;
+    align-items: center;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+  }
+  @container (max-width: 863px) {
+    .record-head-back {
+      display: inline-flex;
+    }
+  }
+  .record-head-main {
+    display: flex;
+    flex: 1 1 320px;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    min-width: 0;
+  }
+  .record-head-title {
+    margin: 0;
+    font-size: var(--typography-heading2-fontSize, 24px);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .record-head-title button {
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    cursor: text;
+  }
+  .record-head-title button:hover {
+    background: var(--hover-fill);
+  }
+  .record-head-title-input {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-bottom: 2px solid var(--brand);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-heading2-fontSize, 24px);
+    font-weight: 700;
+  }
+  .record-head-title-input:focus {
+    outline: none;
+  }
+  .record-head-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .record-head-when {
+    padding: var(--spacing-2) var(--spacing-6);
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    cursor: pointer;
+  }
+  .record-head-when:hover {
+    background: var(--hover-fill);
+  }
+  .record-head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .record-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-12);
+    padding: var(--spacing-10) var(--spacing-14);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--brand);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .record-banner p {
+    flex: 1 1 200px;
+    margin: 0;
+    font-size: var(--typography-label2-fontSize);
+  }
+}

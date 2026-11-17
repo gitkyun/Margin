@@ -29,7 +29,7 @@ export function MergeFlow({ className = "" }: { className?: string }) {
       ref={ref}
       className={`rms-merge-flow ${className}`}
       aria-label={t(
-        "미팅 메모, 피드백, 연구 자료 중 선택한 기록을 연구 도우미가 읽고 제안하는 예시",
+        "미팅 메모, 피드백, 연구 자료를 연구 도우미가 읽고 제안하는 예시",
       )}
     >
       <div className="rms-merge-sources">
@@ -84,7 +84,7 @@ export function MergeFlow({ className = "" }: { className?: string }) {
         <AssistantGlyph />
         <div>
           <strong>{t("연구 도우미")}</strong>
-          <span>{t("선택한 기록만 읽어요")}</span>
+          <span>{t("이 연구의 기록을 읽어요")}</span>
         </div>
         <Icon name="arrow-right" size={18} />
       </div>

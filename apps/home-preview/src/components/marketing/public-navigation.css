@@ -20,7 +20,7 @@
     gap: 7px;
     padding: var(--spacing-10) 0;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--radius-8);
     background: transparent;
     font-size: var(--typography-label1-fontSize);
     color: var(--text-secondary);

@@ -29,11 +29,17 @@ import {
   AINotConfiguredError,
   useAINotConfigured,
 } from "@/lib/ai-availability";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { readHandoff } from "@/lib/assistant-handoff";
 import { toast } from "sonner";
-import { useExperience, uploadPrivate } from "@/lib/experience";
+import { useExperience, uploadPrivate, privateBlob } from "@/lib/experience";
 import { Hint } from "@/components/ui/hint";
-import { readPDFPage } from "@/lib/pdf-text";
+import { readPDFText } from "@/lib/pdf-text";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useFileDrop, ASSISTANT_ACCEPT } from "@/lib/use-file-drop";
 import {
@@ -66,6 +72,11 @@ import {
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
+import {
+  messageFileContexts,
+  restorePendingContexts,
+} from "./assistant/conversation-contexts";
+import { MessageFileChips } from "./assistant/MessageFileChips";
 import { AssistantMessageText } from "./assistant/AssistantMessageText";
 import { AssistantMascot } from "@/components/brand/Brand";
 import { readAgentProfile } from "@/lib/research-agent";
@@ -85,22 +96,22 @@ import {
 import { Icon } from "@/components/icons";
 import { assistantSteps, type AssistantStep } from "@/lib/assistant-steps";
 import { AnswerSteps, AssistantThinking } from "./assistant/AssistantThinking";
+import { aiWaitKindForMode } from "@/lib/ai-wait";
 import { LiveWaveform } from "@/components/recording/LiveWaveform";
 import { useDictation } from "@/lib/use-dictation";
 import { t } from "@/lib/i18n";
 import AIPrompt, { type PromptCommand } from "@/components/kokonut/ai-prompt";
-import AIInputSearch, {
-  type SearchTool,
-} from "@/components/kokonut/ai-input-search";
+import AIInputSearch from "@/components/kokonut/ai-input-search";
 import AIVoice from "@/components/kokonut/ai-voice";
 import {
-  CalendarDays,
-  Sparkles,
-  Pencil,
-  ListTodo,
-  FileText,
   Mic,
   FolderOpen,
+  Globe,
+  CalendarDays,
+  FileText,
+  Pencil,
+  ListTodo,
+  Sparkles,
 } from "lucide-react";
 import { COMPOSER_COMMANDS } from "@/components/ai/ComposerCommands";
 
@@ -113,28 +124,26 @@ function panelStartsOpen(): boolean {
 const clockLabel = (sec: number) =>
   `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 
-function contextIconName(kind: AIContext["kind"]): string {
-  if (kind === "meetings") return "calendar";
-  if (kind === "feedback") return "chat";
-  if (kind === "tasks") return "check";
-  return "file";
-}
-
 export function ResearchAssistant() {
   const { researchId = "" } = useParams(),
     w = useExperience(),
     navigate = useNavigate(),
+    location = useLocation(),
     { data, user, save, runAI, mode, refresh } = w,
     [params, setParams] = useSearchParams(),
     // 예전 주소(?tab=overview)는 패널의 제안 탭으로 엽니다.
     wantsSuggestions = params.get("tab") === "overview";
   // 계정 설정에서 고른 나만의 연구 도우미 이름. 고르지 않았으면 기본 마스코트.
   const agent = readAgentProfile(user.preferences);
-  const [panelTab, setPanelTab] = useState<AssistantPanelTab>(
-      wantsSuggestions ? "suggestions" : "sources",
-    ),
+  const [panelTab, setPanelTab] = useState<AssistantPanelTab>("suggestions"),
     [panelOpen, setPanelOpen] = useState(
-      () => wantsSuggestions || panelStartsOpen(),
+      // 확인할 AI 제안이 있을 때만 처음부터 열어 둡니다. 기록을 고르는 탭은 없어요.
+      () =>
+        wantsSuggestions ||
+        (panelStartsOpen() &&
+          data.aiCandidates.some(
+            (c) => c.researchId === researchId && c.status === "pending",
+          )),
     );
   const [conversation, setConversation] = useState<AIConversation | null>(null),
     [draft, setDraft] = useState(""),
@@ -152,15 +161,19 @@ export function ResearchAssistant() {
     [waiting, setActiveRun] = useState<{
       first: boolean;
       steps: AssistantStep[];
+      startedAt: number;
+      mode: AIInput["mode"];
     } | null>(null),
     [answered, setAnswered] = useState<{
       at: string;
       steps: AssistantStep[];
       elapsedMs: number;
     } | null>(null),
-    [focusedSourceIndex, setFocusedSourceIndex] = useState<number | null>(null),
+    [viewingSources, setViewingSources] = useState<{
+      contexts: AIContext[];
+      index?: number;
+    } | null>(null),
     [error, setError] = useState(""),
-    [page, setPage] = useState(1),
     [uploading, setUploading] = useState(false),
     [uploadProgress, setUploadProgress] = useState<number | null>(null),
     [adopting, setAdopting] = useState<SavedAICandidate | null>(null),
@@ -171,6 +184,8 @@ export function ResearchAssistant() {
     [commandIndex, setCommandIndex] = useState(0),
     [queue, setQueue] = useState<QueuedQuestion[]>([]),
     [voiceOpen, setVoiceOpen] = useState(false),
+    [webSearch, setWebSearch] = useState(false),
+    [calendar, setCalendar] = useState(false),
     [voiceSeconds, setVoiceSeconds] = useState(0),
     [voiceReview, setVoiceReview] = useState<{
       before: string;
@@ -202,6 +217,7 @@ export function ResearchAssistant() {
     composerRef = useRef<HTMLTextAreaElement>(null),
     lastSentRef = useRef(""),
     restoreDraftRef = useRef<string | null>(null),
+    restoreContextsRef = useRef<AIContext[] | null>(null),
     skipRestoreOnCancel = useRef(false),
     queueRef = useRef<QueuedQuestion[]>([]),
     voiceBeforeRef = useRef(""),
@@ -220,9 +236,10 @@ export function ResearchAssistant() {
       (c) => c.researchId === researchId && c.status === "pending",
     ),
     messages = conversation?.messages ?? [];
+  const linkedContexts = conversation?.contexts ?? [];
+  const effectiveContexts = contexts.length ? contexts : linkedContexts;
   const activeRun = runs.find((r) => r.status === "running");
   const working = running || !!activeRun;
-  const readingFirst = running && !!waiting?.first;
 
   // `/` 명령 메뉴: 입력 맨 앞이 `/`이고 줄바꿈이 없을 때만 열어요.
   const slashQuery =
@@ -232,7 +249,38 @@ export function ResearchAssistant() {
     () => (slashQuery === null ? [] : filterComposerCommands(slashQuery)),
     [slashQuery],
   );
-  const activeCommand = findComposerCommand(task);
+  const activeCommand = calendar
+    ? {
+        id: "calendar",
+        label: t("일정 확인"),
+        description: t("이 연구의 미팅·할 일·주요 목표 일정을 확인해요"),
+        icon: "calendar",
+      }
+    : findComposerCommand(task);
+  const composerCommands = [
+    ...COMPOSER_COMMANDS,
+    {
+      id: "web_search",
+      label: t("웹 검색"),
+      description: t("Google에서 공개 웹 근거를 찾아요"),
+      icon: "globe",
+    },
+    {
+      id: "calendar",
+      label: t("일정 확인"),
+      description: t("이 연구의 미팅·할 일·주요 목표 일정을 확인해요"),
+      icon: "calendar",
+    },
+  ];
+  function selectComposerCommand(id?: string) {
+    setWebSearch(id === "web_search");
+    setCalendar(id === "calendar");
+    setTask(
+      id === "web_search" || id === "calendar" || !id
+        ? "ask_research"
+        : (id as AIInput["mode"]),
+    );
+  }
 
   useEffect(() => {
     setCommandIndex(0);
@@ -339,82 +387,69 @@ export function ResearchAssistant() {
       },
     ]);
   }, [params, data.documents, researchId, user.id, setParams]);
-  const sourceOptions: AIContext[] = [
-    ...data.meetings
-      .filter(
-        (m) => m.researchId === researchId && m.memo.trim() && !m.archivedAt,
-      )
-      .map((m) => ({
-        kind: "meetings" as const,
-        id: m.id,
-        title: m.title,
-        revision: m.memoRevision,
-      })),
-    ...data.feedback
-      .filter((f) => f.researchId === researchId && !f.archivedAt)
-      .map((f) => ({ kind: "feedback" as const, id: f.id, title: f.title })),
-    ...data.documents
-      .filter((d) => d.researchId === researchId && !d.archivedAt)
-      .map((d) => ({
-        kind: "documents" as const,
-        id: d.id,
-        title: d.title,
-        revision: d.revision,
-      })),
-    ...data.tasks
-      .filter((d) => d.researchId === researchId && !d.archivedAt)
-      .map((d) => ({ kind: "tasks" as const, id: d.id, title: d.title })),
-    ...data.phases
-      .filter((d) => d.researchId === researchId && !d.archivedAt)
-      .map((d) => ({ kind: "phases" as const, id: d.id, title: d.title })),
-    ...data.attachments
-      .filter((a) => a.researchId === researchId && !a.archivedAt)
-      .map((a) => ({ kind: "attachments" as const, id: a.id, title: a.title })),
-  ];
-  function openPanel(next: AssistantPanelTab, sourceIndex?: number) {
+  function openPanel(next: AssistantPanelTab) {
     setPanelTab(next);
     setPanelOpen(true);
-    if (sourceIndex !== undefined) setFocusedSourceIndex(sourceIndex);
+  }
+  async function prepareAttachmentContext(
+    context: AIContext,
+  ): Promise<AIContext> {
+    if (context.kind !== "attachments") return context;
+    const stored = data.attachments.find(
+      (attachment) => attachment.id === context.id,
+    );
+    if (
+      !stored ||
+      !(
+        stored.mimeType === "application/pdf" ||
+        stored.fileName.toLowerCase().endsWith(".pdf")
+      )
+    )
+      return context;
+    if (stored.textExtractionVersion === 2)
+      return { ...context, text: stored.text };
+    const extracted = await readPDFText(await privateBlob(stored, mode));
+    const updated = await save("attachments", {
+      ...stored,
+      text: extracted.text,
+      textExtractionVersion: 2 as const,
+    });
+    return { ...context, text: updated.text };
   }
   async function addContext(c: AIContext) {
-    if (task === "organize_meeting") {
-      setContexts([c]);
-      return;
-    }
-    if (contexts.some((x) => x.kind === c.kind && x.id === c.id)) {
-      setContexts((v) =>
-        v.filter((x) => !(x.kind === c.kind && x.id === c.id)),
-      );
-      return;
-    }
-    if (contexts.length >= MAX_SOURCES) {
-      toast.info(
-        t("한 번에 {max}개까지 선택할 수 있어요.", { max: MAX_SOURCES }),
-      );
-      return;
-    }
-    setContexts((v) =>
-      v.some((x) => x.kind === c.kind && x.id === c.id) ? v : [...v, c],
-    );
-  }
-  async function addPDF(id: string) {
+    let extracting = false;
     try {
-      setUploading(true);
-      const v = data.versions.find((v) => v.id === id);
-      if (!v) return;
-      const b = await w.openFile(v),
-        result = await readPDFPage(b, page);
-      await addContext({
-        kind: "versions",
-        id: v.id,
-        title: v.fileName,
-        page,
-        text: result.text,
-      });
-    } catch (e) {
-      setError((e as Error).message);
+      if (c.kind === "attachments") {
+        extracting = true;
+        setUploading(true);
+        setError("");
+        c = await prepareAttachmentContext(c);
+      }
+      if (task === "organize_meeting") {
+        setContexts([c]);
+        return;
+      }
+      if (contexts.length >= MAX_SOURCES) {
+        toast.info(
+          t("기록과 파일은 {max}개까지 붙일 수 있어요.", { max: MAX_SOURCES }),
+        );
+        return;
+      }
+      setContexts((current) =>
+        current.some((item) => item.kind === c.kind && item.id === c.id)
+          ? current
+          : [...current, c],
+      );
+    } catch (error) {
+      setError(
+        t(
+          "PDF 전체 본문을 준비하지 못했어요. 파일을 확인하거나 다시 첨부해 주세요.",
+        ) +
+          " " +
+          (error as Error).message,
+      );
     } finally {
-      setUploading(false);
+      if (extracting) setUploading(false);
     }
   }
   async function attach(file?: File) {
@@ -441,11 +476,17 @@ export function ResearchAssistant() {
             throw new Error(
               t("PDF 파일을 읽지 못했어요. 올바른 PDF 파일인지 확인해 주세요."),
             );
-          text = (await readPDFPage(file, page)).text;
+          text = (await readPDFText(file)).text;
         } else text = await file.text();
-        if (text.length > 80000)
+        if (text.length > 48000)
           throw new Error(
-            t("글자 수가 너무 많아요. 8만 자 이하로 나눠서 첨부해 주세요."),
+            t("글자 수가 너무 많아요. 4만 8천 자 이하로 나눠서 첨부해 주세요."),
+          );
+        if (!text.trim())
+          throw new Error(
+            t(
+              "읽을 수 있는 글자가 없어요. 스캔한 파일은 글자를 추출한 뒤 첨부해 주세요.",
+            ),
           );
         const base = recordBase(researchId);
         p = {
@@ -457,6 +498,7 @@ export function ResearchAssistant() {
             storagePath: `${user.id}/${researchId}/${base.id}.${ext}`,
             size: file.size,
             mimeType: type,
+            ...(ext === "pdf" ? { textExtractionVersion: 2 as const } : {}),
             text,
             visibility: "private",
           },
@@ -511,7 +553,17 @@ export function ResearchAssistant() {
   function enqueueCurrentDraft() {
     const text = draft.trim();
     if (!text) return;
-    setQueue((prev) => [...prev, { id: uid(), text, mode: task }]);
+    setQueue((prev) => [
+      ...prev,
+      {
+        id: uid(),
+        text,
+        mode: task,
+        webSearch,
+        calendar,
+        contexts: webSearch || calendar ? [] : [...effectiveContexts],
+      },
+    ]);
     setDraft("");
   }
 
@@ -527,11 +579,30 @@ export function ResearchAssistant() {
       model?: string;
       thinking?: string;
       fromComposer?: boolean;
+      webSearch?: boolean;
+      calendar?: boolean;
+      contexts?: AIContext[];
+      onWebSource?: (source: { url: string; title: string }) => void;
     },
   ) {
     if (dictation.listening) dictation.stop();
     setVoiceReview(null);
-    const activeMode = override?.mode ?? task;
+    const useWebSearch = override?.webSearch ?? webSearch;
+    const useCalendar = !useWebSearch && (override?.calendar ?? calendar);
+    const activeMode =
+      useWebSearch || useCalendar ? "ask_research" : (override?.mode ?? task);
+    const linked =
+      (override?.conversation !== undefined
+        ? override.conversation
+        : conversation
+      )?.contexts ?? [];
+    let requestContexts =
+      useWebSearch || useCalendar
+        ? []
+        : [
+            ...(override?.contexts ??
+              (contexts.length ? contexts : useCalendar ? [] : linked)),
+          ];
     const requestSelection = resolveAISelection(
       caps.isError ? [] : caps.data?.models,
       {
@@ -545,24 +616,65 @@ export function ResearchAssistant() {
       setError(t("사용 가능한 모델을 확인한 뒤 다시 보내 주세요."));
       return;
     }
-    if (!contexts.length && activeMode !== "ask_research") {
-      setError(
-        t("이 요청은 읽을 기록이 필요해요. 기록이나 파일을 첨부해 주세요."),
-      );
-      openPanel("sources");
-      return;
-    }
+    // 기록을 붙이지 않아도 서버가 이 연구의 기록에서 알맞은 것을 찾아 읽어요.
     if (
       activeMode === "organize_meeting" &&
-      (contexts.length !== 1 || contexts[0]?.kind !== "meetings")
+      requestContexts.length > 0 &&
+      (requestContexts.length !== 1 || requestContexts[0]?.kind !== "meetings")
     ) {
       setError(
         t(
           "미팅 정리는 미팅 메모 하나로만 할 수 있어요. 다른 자료는 새 대화에서 사용해 주세요.",
         ),
       );
-      openPanel("sources");
       return;
+    }
+    // 자료 요약은 붙인 파일이 없으면 이 연구에 가장 최근에 올린 파일을 읽어요.
+    if (
+      activeMode === "read_material" &&
+      !requestContexts.length &&
+      !override?.contexts
+    ) {
+      const latest = data.attachments
+        .filter((a) => a.researchId === researchId && !a.archivedAt)
+        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+      if (!latest) {
+        setError(t("요약할 파일이 없어요. PDF·TXT·MD 파일을 첨부해 주세요."));
+        return;
+      }
+      requestContexts = [
+        { kind: "attachments", id: latest.id, title: latest.title },
+      ];
+    }
+    // Keep the original composer entries for removal/restoration; prepared copies must
+    // never mutate the contexts preserved on earlier messages.
+    const composerRequestContexts = contexts.filter((context) =>
+      requestContexts.includes(context),
+    );
+    if (
+      !useWebSearch &&
+      !useCalendar &&
+      requestContexts.some((context) => context.kind === "attachments")
+    ) {
+      setUploading(true);
+      setError("");
+      try {
+        const prepared: AIContext[] = [];
+        for (const context of requestContexts)
+          prepared.push(await prepareAttachmentContext(context));
+        requestContexts = prepared;
+      } catch (error) {
+        setError(
+          t(
+            "PDF 전체 본문을 준비하지 못했어요. 파일을 확인하거나 다시 첨부해 주세요.",
+          ) +
+            " " +
+            (error as Error).message,
+        );
+        return false;
+      } finally {
+        setUploading(false);
+      }
     }
     const text = question.trim();
     if (retryQuestion === undefined || override?.fromComposer) {
@@ -572,6 +684,11 @@ export function ResearchAssistant() {
     } else {
       restoreDraftRef.current = null;
     }
+    restoreContextsRef.current = composerRequestContexts;
+    if (requestContexts.length)
+      setContexts((current) =>
+        current.filter((context) => !composerRequestContexts.includes(context)),
+      );
     const seq = ++sequence.current,
       id = uid(),
       controller = new AbortController();
@@ -587,15 +704,25 @@ export function ResearchAssistant() {
     const run = {
       first: !baseConv?.messages.some((m) => m.role === "assistant"),
       steps: [] as AssistantStep[],
+      startedAt: Date.now(),
+      mode: activeMode,
     };
-    run.steps = assistantSteps({
-      first: run.first,
-      researchName: research?.name ?? "",
-      hasDirection: !!(
-        research?.purpose?.trim() || research?.questions?.some((q) => q.trim())
-      ),
-      contexts,
-    });
+    run.steps = useWebSearch
+      ? [
+          {
+            doing: t("웹 검색 응답을 기다리고 있어요"),
+            done: t("웹 검색 모드 답변 받음"),
+          },
+        ]
+      : assistantSteps({
+          first: run.first,
+          researchName: research?.name ?? "",
+          hasDirection: !!(
+            research?.purpose?.trim() ||
+            research?.questions?.some((q) => q.trim())
+          ),
+          contexts: requestContexts,
+        });
     setActiveRun(run);
     stickToBottom.current = true;
     setRunning(true);
@@ -607,17 +734,32 @@ export function ResearchAssistant() {
         ...recordBase(researchId),
         title: text.slice(0, 100),
         messages: [],
-        contexts,
+        contexts: requestContexts,
         visibility: "private" as const,
       };
       const last = c.messages.at(-1);
       c = await save("conversations", {
         ...c,
-        contexts,
+        contexts: useWebSearch || useCalendar ? c.contexts : requestContexts,
         messages:
-          last?.role === "user" && last.text === text
+          last?.role === "user" &&
+          last.text === text &&
+          !!last.webSearch === useWebSearch &&
+          !!last.calendar === useCalendar &&
+          JSON.stringify(last.contexts ?? []) ===
+            JSON.stringify(requestContexts)
             ? c.messages
-            : [...c.messages, { role: "user", text, createdAt: now() }],
+            : [
+                ...c.messages,
+                {
+                  role: "user",
+                  text,
+                  createdAt: now(),
+                  webSearch: useWebSearch,
+                  calendar: useCalendar,
+                  contexts: requestContexts,
+                },
+              ],
       });
       setConversation(c);
       const runStartedAt = Date.now();
@@ -627,11 +769,16 @@ export function ResearchAssistant() {
           researchId,
           question: text,
           sourceText: "",
-          contexts,
+          contexts: requestContexts,
           ...requestSelection,
-          history: c.messages
-            .slice(-10, -1)
-            .map(({ role, text }) => ({ role, text })),
+          webSearch: useWebSearch,
+          calendar: useCalendar,
+          history:
+            useWebSearch || useCalendar
+              ? []
+              : c.messages
+                  .slice(-10, -1)
+                  .map(({ role, text }) => ({ role, text })),
           conversationId: c.id,
           clientRunId: id,
         },
@@ -639,6 +786,10 @@ export function ResearchAssistant() {
       );
       if (seq !== sequence.current || controller.signal.aborted) return;
       setLastUsedCredits(result.creditsUsed);
+      // 제안이 나오면 선택할 수 있게 제안 탭을 엽니다.
+      if (result.candidates.length) openPanel("suggestions");
+      for (const source of result.webGrounding?.sources ?? [])
+        override?.onWebSource?.(source);
       const answer =
         result.answer ??
         result.candidates
@@ -659,7 +810,10 @@ export function ResearchAssistant() {
             createdAt: answeredAt,
             steps: run.steps.map((s) => s.done),
             elapsedMs,
-            contexts,
+            webSearch: useWebSearch,
+            calendar: useCalendar,
+            webGrounding: result.webGrounding,
+            contexts: result.contexts ?? requestContexts,
           },
         ],
       });
@@ -667,9 +821,17 @@ export function ResearchAssistant() {
       setConversation(saved);
       setAnswered({ at: answeredAt, steps: run.steps, elapsedMs });
       restoreDraftRef.current = null;
+      restoreContextsRef.current = null;
       succeeded = true;
     } catch (e) {
       if (seq === sequence.current && !controller.signal.aborted) {
+        if (restoreContextsRef.current) {
+          const sentContexts = restoreContextsRef.current;
+          setContexts((current) =>
+            restorePendingContexts(current, sentContexts),
+          );
+          restoreContextsRef.current = null;
+        }
         if (restoreDraftRef.current !== null) {
           const toRestore = restoreDraftRef.current;
           setDraft((cur) => cur || toRestore);
@@ -688,6 +850,9 @@ export function ResearchAssistant() {
         setQueue(rest);
         void send(nextItem.text, {
           mode: nextItem.mode,
+          webSearch: nextItem.webSearch ?? false,
+          calendar: nextItem.calendar ?? false,
+          contexts: nextItem.contexts ?? [],
           conversation: savedConversation,
         });
       }
@@ -700,6 +865,11 @@ export function ResearchAssistant() {
     setRunning(false);
     const id = runId.current;
     runId.current = "";
+    if (!skipRestoreOnCancel.current && restoreContextsRef.current) {
+      const sentContexts = restoreContextsRef.current;
+      setContexts((current) => restorePendingContexts(current, sentContexts));
+    }
+    restoreContextsRef.current = null;
     if (!skipRestoreOnCancel.current && restoreDraftRef.current !== null) {
       const toRestore = restoreDraftRef.current;
       setDraft((cur) => cur || toRestore);
@@ -725,7 +895,12 @@ export function ResearchAssistant() {
     setQueue((prev) => prev.filter((item) => item.id !== itemId));
     skipRestoreOnCancel.current = true;
     await cancel(true);
-    void send(target.text, { mode: target.mode });
+    void send(target.text, {
+      mode: target.mode,
+      webSearch: target.webSearch ?? false,
+      calendar: target.calendar ?? false,
+      contexts: target.contexts ?? [],
+    });
   }
   function adopt(c: SavedAICandidate) {
     setAdopting(c);
@@ -846,12 +1021,39 @@ export function ResearchAssistant() {
   }
   function startNew() {
     setConversation(null);
+    setWebSearch(false);
+    setCalendar(false);
     setContexts([]);
     setDraft("");
     setQueue([]);
     setError("");
   }
   const unavailable = mode === "preview" || aiNotConfigured;
+  // 사이드 창의 연구 도우미에서 넘겨받은 대화·질문(lib/assistant-handoff.ts). 한 번만 씁니다.
+  const handoff = useRef(readHandoff(location.state));
+  useEffect(() => {
+    const received = handoff.current;
+    if (!received || caps.isPending) return;
+    handoff.current = null;
+    // 새로고침·뒤로 가기로 같은 질문을 다시 보내지 않게 넘겨받은 값을 지웁니다.
+    navigate(
+      { pathname: location.pathname, search: location.search },
+      { replace: true },
+    );
+    const picked = received.conversationId
+      ? conversations.find((c) => c.id === received.conversationId)
+      : undefined;
+    if (picked) {
+      setConversation(picked);
+      setCalendar(picked.messages.at(-1)?.calendar ?? false);
+      setWebSearch(picked.messages.at(-1)?.webSearch ?? false);
+    }
+    if (!received.ask) return;
+    // 바로 보낼 수 없으면(미리보기·AI 미설정·모델 없음) 입력창에 넣어 두기만 합니다.
+    if (unavailable || !selection.model) setDraft(received.ask);
+    else void send(received.ask, { fromComposer: true });
+    // 넘겨받은 값은 처음 한 번만 씁니다(모델 목록을 다 받은 뒤).
+  }, [caps.isPending]);
   const {
     getRootProps: getComposerDropProps,
     getInputProps: getComposerInputProps,
@@ -894,16 +1096,13 @@ export function ResearchAssistant() {
     setModel(next.model ?? "");
     setThinking(next.thinking ?? "");
   }
-  const messageFiles = (conversation?.contexts ?? contexts).filter(
-    (c) => c.kind === "attachments" || c.kind === "versions",
-  );
 
   return (
     <div className="assistant-experience">
       <PageHeader
         title={t("연구 도우미")}
         description={t(
-          "고른 기록과 연구 이름·목적·질문을 읽고 답하거나 수정 방법을 제안해요.",
+          "이 연구의 기록을 모두 읽고 답하거나 수정 방법을 제안해요.",
         )}
         status={
           <StatusBadge icon={<Icon name="lock" size={13} />}>
@@ -933,7 +1132,9 @@ export function ResearchAssistant() {
                     value={c.id}
                     onSelect={() => {
                       setConversation(c);
-                      setContexts(c.contexts);
+                      setContexts([]);
+                      setCalendar(c.messages.at(-1)?.calendar ?? false);
+                      setWebSearch(c.messages.at(-1)?.webSearch ?? false);
                       setError("");
                     }}
                   >
@@ -960,7 +1161,7 @@ export function ResearchAssistant() {
               el.scrollHeight - el.scrollTop - el.clientHeight < 64;
           }}
         >
-          {readingFirst ? null : !messages.length ? (
+          {running && !messages.length ? null : !messages.length ? (
             <div className="assistant-welcome">
               <AssistantMascot state="ready" size={64} eager />
               <h2>{t("아직 대화가 없어요")}</h2>
@@ -989,75 +1190,78 @@ export function ResearchAssistant() {
             messages.map((m, i) => (
               <article className={`ai-message ${m.role}`} key={i}>
                 {m.role === "user" ? (
-                  <span className="sr-only">{t("나")}</span>
-                ) : (
-                  <span className="message-role">
-                    {t("연구 도우미")}
-                    {agent.name && (
-                      <span className="message-role-name">· {agent.name}</span>
-                    )}
-                  </span>
-                )}
-                {m.role === "assistant" ? (
                   <>
+                    <span className="sr-only">{t("나")}</span>
+                    {(m.webSearch || m.calendar) && (
+                      <small className="assistant-question-mode">
+                        {m.webSearch ? t("웹 검색") : t("일정 확인")}
+                      </small>
+                    )}
+                    {messageFileContexts(
+                      messages,
+                      i,
+                      conversation?.contexts ?? [],
+                    ).length > 0 && (
+                      <MessageFileChips
+                        files={messageFileContexts(
+                          messages,
+                          i,
+                          conversation?.contexts ?? [],
+                        )}
+                        attachments={data.attachments}
+                      />
+                    )}
+                    {/* Kokonut AI Tool Calls 질문 말풍선 원본 클래스 */}
+                    <p className="m-0 max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[var(--surface-muted)] px-3.5 py-2 text-[14px] text-[var(--text)] leading-snug [overflow-wrap:anywhere]">
+                      {m.text}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <span className="sr-only">
+                      {t("연구 도우미")}
+                      {agent.name ? ` · ${agent.name}` : ""}
+                    </span>
+                    {(m.steps?.length ||
+                      (answered?.at === m.createdAt &&
+                        i === messages.length - 1)) && (
+                      <AnswerSteps
+                        steps={
+                          m.steps?.length ? m.steps : (answered?.steps ?? [])
+                        }
+                      />
+                    )}
                     <AssistantMessageText
                       text={m.text}
                       contexts={
                         m.contexts ?? conversation?.contexts ?? contexts
                       }
-                      onOpenSources={(index) => openPanel("sources", index)}
-                    />
-                  </>
-                ) : (
-                  <>
-                    {!!messageFiles.length && (
-                      <div className="message-attachments">
-                        {messageFiles.map((f) => (
-                          <div
-                            key={`${f.kind}:${f.id}:${f.page ?? ""}`}
-                            className="message-attachment-card"
-                          >
-                            <span className="message-attachment-badge">
-                              {f.title.toLowerCase().endsWith(".pdf")
-                                ? "PDF"
-                                : "FILE"}
-                            </span>
-                            <div>
-                              <strong title={f.title}>{f.title}</strong>
-                              {f.page && (
-                                <small>{t("{page}쪽", { page: f.page })}</small>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div>{m.text}</div>
-                  </>
-                )}
-                {m.role === "assistant" &&
-                  (m.steps?.length ||
-                    (answered?.at === m.createdAt &&
-                      i === messages.length - 1)) && (
-                    <AnswerSteps
-                      steps={
-                        m.steps?.length ? m.steps : (answered?.steps ?? [])
-                      }
-                      elapsedMs={
-                        m.elapsedMs ??
-                        (answered?.at === m.createdAt
-                          ? answered.elapsedMs
-                          : undefined)
+                      webGrounding={m.webGrounding}
+                      onOpenSources={(index) =>
+                        setViewingSources({
+                          contexts: m.contexts ?? conversation?.contexts ?? [],
+                          index,
+                        })
                       }
                     />
-                  )}
-                {m.role === "assistant" && (
-                  <AnswerActions
-                    text={m.text}
-                    question={questionBefore(messages, i)}
-                    disabled={working || unavailable || uploading}
-                    onRetry={(question) => void send(question)}
-                  />
+                    <AnswerActions
+                      text={m.text}
+                      question={questionBefore(messages, i)}
+                      disabled={working || unavailable || uploading}
+                      onRetry={(question) =>
+                        void send(question, {
+                          webSearch: m.webSearch ?? !!m.webGrounding,
+                          calendar: m.calendar ?? false,
+                          contexts:
+                            messages
+                              .slice(0, i)
+                              .reverse()
+                              .find((message) => message.role === "user")
+                              ?.contexts ?? [],
+                        })
+                      }
+                    />
+                  </>
                 )}
               </article>
             ))
@@ -1067,7 +1271,7 @@ export function ResearchAssistant() {
               <Icon name="info" size={17} />
               <span>
                 {t(
-                  "이 질문에는 아직 답변이 없어요. 고른 기록과 질문을 확인한 뒤 다시 보낼 수 있어요.",
+                  "이 질문에는 아직 답변이 없어요. 질문을 확인한 뒤 다시 보낼 수 있어요.",
                 )}
               </span>
               <Button
@@ -1087,6 +1291,8 @@ export function ResearchAssistant() {
               steps={waiting.steps}
               mascot={workingMascot(task)}
               question={messages.at(-1)?.text}
+              startedAt={waiting.startedAt}
+              kind={aiWaitKindForMode(waiting.mode)}
             />
           )}
           <div ref={end} />
@@ -1136,79 +1342,20 @@ export function ResearchAssistant() {
             }
             onClear={() => setQueue([])}
           />
-          <ComposerAttachmentCards
-            contexts={contexts}
-            data={data}
-            uploading={uploading}
-            uploadProgress={uploadProgress}
-            uploadError={error && pendingFile.current ? error : undefined}
-            disabled={working || uploading}
-            onRemove={(index) =>
-              setContexts((items) => items.filter((_, i) => i !== index))
-            }
-          />
-          {!unavailable && recommendedModel && (
-            <AIComposerBanner
-              usageHref="/account?tab=usage"
-              promo={{
-                label: researchModelLabel(recommendedModel),
-                note: recommendedModel.description
-                  ? t(recommendedModel.description)
-                  : undefined,
-                provider: recommendedModel.provider,
-              }}
-              onTryPromo={pickRecommended}
-            />
-          )}
           <fieldset
             disabled={unavailable || uploading}
             className="m-0 min-w-0 border-0 p-0"
           >
-            {contexts.length > 0 || task !== "ask_research" ? (
+            {webSearch ? (
               <AIInputSearch
+                allowAttachments={false}
                 className="max-w-none py-0"
-                modelControls={
-                  <ComposerModelSettings
-                    models={models}
-                    model={selection.model}
-                    thinking={selection.thinking}
-                    loading={caps.isPending}
-                    failed={caps.isError}
-                    disabled={unavailable || uploading || working}
-                    onChange={(next) => {
-                      setModel(next.model);
-                      setThinking(next.thinking);
-                    }}
-                  />
-                }
-                leadingControl={
-                  dictation.supported && !unavailable ? (
-                    <button
-                      type="button"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] hover:bg-[var(--hover-fill)]"
-                      disabled={working || uploading}
-                      aria-label={t("음성으로 질문 입력")}
-                      aria-pressed={voiceOpen}
-                      onClick={() => {
-                        if (voiceOpen) dictation.stop();
-                        setVoiceOpen((open) => !open);
-                      }}
-                    >
-                      <Mic className="size-4" />
-                    </button>
-                  ) : undefined
-                }
                 value={draft}
                 onValueChange={setDraft}
                 inputRef={composerRef}
-                disabled={unavailable || uploading}
-                busy={working}
-                placeholder={t(
-                  "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
-                )}
                 models={models
                   .filter(isAIModelAvailable)
-                  .map((model) => researchModelLabel(model))}
+                  .map(researchModelLabel)}
                 selectedModel={
                   models.find((model) => model.id === selection.model)
                     ? researchModelLabel(
@@ -1222,66 +1369,6 @@ export function ResearchAssistant() {
                   );
                   if (picked) setModel(picked.id);
                 }}
-                tools={COMPOSER_COMMANDS.map((command, index) => ({
-                  id: command.id,
-                  label: command.label,
-                  activity: command.description,
-                  placeholder: command.description,
-                  icon: [CalendarDays, Sparkles, Pencil, ListTodo, FileText][
-                    index
-                  ],
-                  readsSources: true,
-                  color: "var(--brand)",
-                }))}
-                selectedTool={task === "ask_research" ? null : task}
-                onToolChange={(id) =>
-                  setTask((id ?? "ask_research") as AIInput["mode"])
-                }
-                onAttach={(files) => {
-                  if (!working && !unavailable)
-                    void (async () => {
-                      for (const file of files) await attach(file);
-                    })();
-                }}
-                onStop={() => void cancel()}
-                onQueue={(text, tool) => {
-                  setQueue((prev) => [
-                    ...prev,
-                    {
-                      id: uid(),
-                      text: text.trim(),
-                      mode: (tool?.id ?? task) as AIInput["mode"],
-                    },
-                  ]);
-                }}
-                onSearch={async (query, options) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === options.model,
-                  );
-                  const success = await send(query, {
-                    mode: (options.tool?.id ??
-                      "ask_research") as AIInput["mode"],
-                    model: picked?.id,
-                    fromComposer: true,
-                  });
-                  if (!success) {
-                    setDraft((current) => current || query);
-                    throw new Error(t("답변을 완료하지 못했어요."));
-                  }
-                  for (const context of contexts)
-                    options.onSource({
-                      domain: `${context.kind}:${context.id}`,
-                      title: context.title,
-                      icon: (
-                        <Icon name={contextIconName(context.kind)} size={12} />
-                      ),
-                      color: "var(--brand)",
-                    });
-                }}
-              />
-            ) : (
-              <AIPrompt
-                className="max-w-none py-0"
                 modelControls={
                   <ComposerModelSettings
                     models={models}
@@ -1313,86 +1400,330 @@ export function ResearchAssistant() {
                     </button>
                   ) : undefined
                 }
-                value={draft}
-                onValueChange={setDraft}
-                inputRef={composerRef}
-                selectedCommand={
-                  activeCommand
-                    ? {
-                        ...activeCommand,
-                        icon: <Icon name={activeCommand.icon} size={16} />,
-                      }
-                    : null
-                }
-                onCommandChange={(command) =>
-                  setTask((command?.id ?? "ask_research") as AIInput["mode"])
-                }
-                commands={COMPOSER_COMMANDS.map((command) => ({
-                  ...command,
-                  icon: <Icon name={command.icon} size={16} />,
+                tools={composerCommands.map((command) => ({
+                  id: command.id,
+                  label: command.label,
+                  icon:
+                    command.id === "web_search"
+                      ? Globe
+                      : command.id === "calendar" ||
+                          command.id === "organize_meeting"
+                        ? CalendarDays
+                        : command.id === "read_material"
+                          ? FileText
+                          : command.id === "review_writing"
+                            ? Pencil
+                            : command.id === "plan_research"
+                              ? ListTodo
+                              : Sparkles,
+                  activity:
+                    command.id === "web_search"
+                      ? t("Google에서 웹 근거를 확인하고 있어요")
+                      : command.description,
+                  hint:
+                    command.id === "web_search"
+                      ? t("질문만 웹 검색에 사용해요")
+                      : command.description,
+                  placeholder:
+                    command.id === "web_search"
+                      ? t("웹에서 확인할 내용을 적어 주세요")
+                      : command.description,
+                  readsSources: command.id === "web_search",
+                  color: "var(--brand)",
                 }))}
+                selectedTool="web_search"
+                onToolChange={(id) => selectComposerCommand(id ?? undefined)}
                 disabled={unavailable || uploading}
                 busy={working}
-                placeholder={t(
-                  "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
-                )}
-                models={models.filter(isAIModelAvailable).map((model) => ({
-                  name: researchModelLabel(model),
-                  description: model.description
-                    ? t(model.description)
-                    : undefined,
-                  efforts: model.thinking,
-                  defaultEffort: selection.thinking,
-                }))}
-                selectedModel={
-                  models.find((model) => model.id === selection.model)
-                    ? researchModelLabel(
-                        models.find((model) => model.id === selection.model)!,
-                      )
-                    : ""
-                }
-                selectedEffort={selection.thinking}
-                onModelChange={(label) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === label,
-                  );
-                  if (picked) setModel(picked.id);
+                placeholder={t("웹에서 확인할 내용을 적어 주세요")}
+                onStop={() => {
+                  if (abort.current && !abort.current.signal.aborted)
+                    void cancel();
                 }}
-                onEffortChange={setThinking}
-                header={<span />}
-                onAttach={(files) => {
-                  if (!working && !unavailable)
-                    void (async () => {
-                      for (const file of Array.from(files)) await attach(file);
-                    })();
-                }}
-                onStop={() => void cancel()}
-                onQueue={(text, command) =>
+                onQueue={(text) =>
                   setQueue((prev) => [
                     ...prev,
                     {
                       id: uid(),
                       text: text.trim(),
-                      mode: (command?.id ?? task) as AIInput["mode"],
+                      mode: "ask_research",
+                      webSearch: true,
+                      calendar: false,
+                      contexts: [],
                     },
                   ])
                 }
-                onSubmit={async (text, label, options) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === label,
-                  );
-                  const success = await send(text, {
-                    mode: (options.command?.id ??
-                      "ask_research") as AIInput["mode"],
-                    model: picked?.id,
-                    thinking: options.effort ?? selection.thinking,
-                    fromComposer: true,
+                onSearch={async (query, options) => {
+                  const cancelSearch = () => {
+                    if (abort.current && !abort.current.signal.aborted)
+                      void cancel(true);
+                  };
+                  options.signal.addEventListener("abort", cancelSearch, {
+                    once: true,
                   });
-                  if (!success) setDraft((current) => current || text);
+                  try {
+                    const picked = models.find(
+                      (model) => researchModelLabel(model) === options.model,
+                    );
+                    const ok = await send(query, {
+                      mode: "ask_research",
+                      model: picked?.id,
+                      thinking: selection.thinking,
+                      webSearch: true,
+                      fromComposer: true,
+                      onWebSource: (source) => {
+                        try {
+                          const url = new URL(source.url);
+                          if (["https:", "http:"].includes(url.protocol))
+                            options.onSource({
+                              key: source.url,
+                              domain: url.hostname,
+                              title: source.title,
+                            });
+                        } catch {
+                          /* Invalid sources are not displayed. */
+                        }
+                      },
+                    });
+                    if (!ok) {
+                      setDraft((current) => current || query);
+                      throw new Error(
+                        t("웹 검색을 완료하지 못했어요. 질문은 그대로 있어요."),
+                      );
+                    }
+                  } finally {
+                    options.signal.removeEventListener("abort", cancelSearch);
+                  }
                 }}
               />
+            ) : (
+              <>
+                <AIPrompt
+                  className="max-w-none py-0"
+                  modelControls={
+                    <ComposerModelSettings
+                      models={models}
+                      model={selection.model}
+                      thinking={selection.thinking}
+                      loading={caps.isPending}
+                      failed={caps.isError}
+                      disabled={unavailable || uploading || working}
+                      onChange={(next) => {
+                        setModel(next.model);
+                        setThinking(next.thinking);
+                      }}
+                    />
+                  }
+                  leadingControl={
+                    <>
+                      {!unavailable && (
+                        <button
+                          type="button"
+                          className="composer-chip"
+                          disabled={working || uploading}
+                          onClick={() => {
+                            setTask("ask_research");
+                            setWebSearch(true);
+                          }}
+                          aria-label={t("웹 검색 켜기")}
+                        >
+                          <Globe className="size-4" />
+                          {t("웹 검색")}
+                        </button>
+                      )}
+                      {dictation.supported && !unavailable ? (
+                        <button
+                          type="button"
+                          className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] hover:bg-[var(--hover-fill)]"
+                          disabled={working || uploading}
+                          aria-label={t("음성으로 질문 입력")}
+                          aria-pressed={voiceOpen}
+                          onClick={() => {
+                            if (voiceOpen) dictation.stop();
+                            setVoiceOpen((open) => !open);
+                          }}
+                        >
+                          <Mic className="size-4" />
+                        </button>
+                      ) : undefined}
+                    </>
+                  }
+                  value={draft}
+                  onValueChange={setDraft}
+                  inputRef={composerRef}
+                  selectedCommand={
+                    activeCommand
+                      ? {
+                          ...activeCommand,
+                          icon: <Icon name={activeCommand.icon} size={16} />,
+                        }
+                      : null
+                  }
+                  onCommandChange={(command) =>
+                    selectComposerCommand(command?.id)
+                  }
+                  commands={composerCommands.map((command) => ({
+                    ...command,
+                    icon: <Icon name={command.icon} size={16} />,
+                  }))}
+                  disabled={unavailable || uploading}
+                  busy={working}
+                  placeholder={t(
+                    "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
+                  )}
+                  models={models.filter(isAIModelAvailable).map((model) => ({
+                    name: researchModelLabel(model),
+                    description: model.description
+                      ? t(model.description)
+                      : undefined,
+                    efforts: model.thinking,
+                    defaultEffort: selection.thinking,
+                  }))}
+                  selectedModel={
+                    models.find((model) => model.id === selection.model)
+                      ? researchModelLabel(
+                          models.find((model) => model.id === selection.model)!,
+                        )
+                      : ""
+                  }
+                  selectedEffort={selection.thinking}
+                  onModelChange={(label) => {
+                    const picked = models.find(
+                      (model) => researchModelLabel(model) === label,
+                    );
+                    if (picked) setModel(picked.id);
+                  }}
+                  onEffortChange={setThinking}
+                  headerText=""
+                  header={
+                    !unavailable && recommendedModel ? (
+                      <AIComposerBanner
+                        usageHref="?settings=usage"
+                        promo={{
+                          label: researchModelLabel(recommendedModel),
+                          note: recommendedModel.description
+                            ? t(recommendedModel.description)
+                            : undefined,
+                          provider: recommendedModel.provider,
+                        }}
+                        onTryPromo={pickRecommended}
+                      />
+                    ) : null
+                  }
+                  tray={
+                    !calendar &&
+                    (contexts.length > 0 || uploading) && (
+                      <ComposerAttachmentCards
+                        contexts={contexts}
+                        data={data}
+                        uploading={uploading}
+                        uploadProgress={uploadProgress}
+                        disabled={working || uploading}
+                        onRemove={(index) =>
+                          setContexts((items) =>
+                            items.filter((_, i) => i !== index),
+                          )
+                        }
+                      />
+                    )
+                  }
+                  onAttach={(files) => {
+                    if (!working && !unavailable)
+                      void (async () => {
+                        for (const file of Array.from(files))
+                          await attach(file);
+                      })();
+                  }}
+                  onStop={() => void cancel()}
+                  onQueue={(text, command) =>
+                    setQueue((prev) => [
+                      ...prev,
+                      {
+                        id: uid(),
+                        text: text.trim(),
+                        mode: (command?.id === "calendar"
+                          ? "ask_research"
+                          : (command?.id ?? task)) as AIInput["mode"],
+                        webSearch: false,
+                        calendar: command?.id === "calendar" || calendar,
+                        contexts:
+                          command?.id === "calendar" || calendar
+                            ? []
+                            : [...effectiveContexts],
+                      },
+                    ])
+                  }
+                  onSubmit={async (text, label, options) => {
+                    const picked = models.find(
+                      (model) => researchModelLabel(model) === label,
+                    );
+                    const success = await send(text, {
+                      mode: (options.command?.id === "calendar"
+                        ? "ask_research"
+                        : (options.command?.id ??
+                          "ask_research")) as AIInput["mode"],
+                      model: picked?.id,
+                      thinking: options.effort ?? selection.thinking,
+                      fromComposer: true,
+                      webSearch: false,
+                      calendar: options.command?.id === "calendar" || calendar,
+                    });
+                    if (!success) setDraft((current) => current || text);
+                  }}
+                />
+              </>
             )}
           </fieldset>
+          {!webSearch &&
+            !calendar &&
+            !contexts.length &&
+            linkedContexts.length > 0 && (
+              <div className="assistant-linked-sources">
+                <span>
+                  {t("이 대화에서 참고하는 기록 {count}개", {
+                    count: linkedContexts.length,
+                  })}
+                </span>
+                <button
+                  type="button"
+                  disabled={working || uploading}
+                  onClick={async () => {
+                    if (!conversation) return;
+                    try {
+                      setConversation(
+                        await save("conversations", {
+                          ...conversation,
+                          contexts: [],
+                        }),
+                      );
+                    } catch (error) {
+                      setError((error as Error).message);
+                    }
+                  }}
+                >
+                  {t("기록 연결 해제")}
+                </button>
+              </div>
+            )}
+          {webSearch && (
+            <p className="assistant-web-scope">
+              {t(
+                "웹 검색에는 질문만 보내요. 선택한 연구 기록과 이전 대화는 보내지 않아요.",
+              )}
+            </p>
+          )}
+          {calendar && (
+            <p className="assistant-web-scope">
+              {t(
+                "일정 확인에는 이 연구의 일정만 사용해요. 선택한 파일은 보내지 않아요.",
+              )}
+            </p>
+          )}
+          {webSearch && (
+            <p className="assistant-web-scope">
+              {t("웹 검색은 실제 검색어마다 14크레딧이 추가돼요.")}
+            </p>
+          )}
           {!unavailable && (
             <AIComposerUsage
               runId={lastRunId || undefined}
@@ -1456,7 +1787,7 @@ export function ResearchAssistant() {
         )}
       </section>
       <MarginPanel
-        label={t("근거와 제안")}
+        label={t("제안과 실행 내역")}
         open={panelOpen}
         onOpen={() => setPanelOpen(true)}
         onClose={() => setPanelOpen(false)}
@@ -1465,25 +1796,11 @@ export function ResearchAssistant() {
           tab={panelTab}
           onTab={setPanelTab}
           onClose={() => setPanelOpen(false)}
-          busy={running || uploading}
-          single={task === "organize_meeting"}
-          contexts={contexts}
-          sourceOptions={sourceOptions}
-          onToggleSource={(c) => void addContext(c)}
-          onRemoveSource={(index) =>
-            setContexts(contexts.filter((_, i) => i !== index))
-          }
-          onAttach={() => openComposerFileDialog()}
-          versions={data.versions.filter((v) => v.researchId === researchId)}
-          page={page}
-          onPage={setPage}
-          onAddPdf={(id) => void addPDF(id)}
           pending={pending}
           onAdopt={adopt}
           onDismiss={(c) => void dismiss(c)}
           runs={runs}
           onCancelRun={(id) => void w.cancelRun(id)}
-          focusedSourceIndex={focusedSourceIndex}
         />
       </MarginPanel>
       <input
@@ -1499,6 +1816,42 @@ export function ResearchAssistant() {
           fileInput.current = node;
         }}
       />
+      <Dialog
+        open={!!viewingSources}
+        onOpenChange={(open) => {
+          if (!open) setViewingSources(null);
+        }}
+      >
+        <DialogContent className="rms-dialog assistant-source-snapshot">
+          <DialogHeader>
+            <DialogTitle>{t("이 답변에 보낸 근거")}</DialogTitle>
+            <DialogDescription>
+              {t(
+                "답변을 만들 때 사용한 기록이에요. 다음 질문의 첨부는 바뀌지 않아요.",
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody className="assistant-source-snapshot-list">
+            {viewingSources?.contexts.map((context, index) => (
+              <section
+                key={`${context.kind}:${context.id}:${index}`}
+                data-focused={viewingSources.index === index}
+              >
+                <h3>
+                  {context.title}
+                  {context.page
+                    ? ` · ${t("{page}쪽", { page: context.page })}`
+                    : ""}
+                </h3>
+                <p>
+                  {context.text?.trim() ||
+                    t("이 근거의 본문은 대화에 보존되지 않았어요.")}
+                </p>
+              </section>
+            ))}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={!!adopting}
         onOpenChange={(v) => {

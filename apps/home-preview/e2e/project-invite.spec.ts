@@ -192,7 +192,8 @@ test.describe("초대받은 사람", () => {
     await expect(
       page.getByRole("heading", { name: "초대를 확인하지 못했어요" }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "다시 시도" }).click();
+    // 불러오기 실패의 버튼 이름은 ‘다시 불러오기’예요(docs/product/user-flow.md 예외 상황).
+    await page.getByRole("button", { name: "다시 불러오기" }).click();
     await expect(
       page.getByRole("heading", { name: "연구에 초대받았어요" }),
     ).toBeVisible();
@@ -273,7 +274,9 @@ test.describe("초대한 사람: 연구 설정의 초대 관리", () => {
     await page.getByLabel("초대할 이메일").fill(GUEST.email);
     await page.getByRole("button", { name: "초대 메일 보내기" }).click();
     // 원본 AI Send의 5초 되돌리기 창이 끝나야 실제 요청이 나갑니다.
-    await expect.poll(() => server.count("project-invite"), { timeout: 10000 }).toBe(1);
+    await expect
+      .poll(() => server.count("project-invite"), { timeout: 10000 })
+      .toBe(1);
     const result = page.locator(".project-invite-result");
     await expect(result).toContainText(
       "초대는 만들었지만 메일을 보내지 못했어요",
@@ -341,7 +344,9 @@ test.describe("초대한 사람: 연구 설정의 초대 관리", () => {
     await page.getByLabel("초대할 이메일").fill(GUEST.email);
     await page.getByRole("button", { name: "초대 메일 보내기" }).click();
     // 원본 AI Send의 5초 되돌리기 창이 끝나야 실제 요청이 나갑니다.
-    await expect.poll(() => server.count("project-invite"), { timeout: 10000 }).toBe(1);
+    await expect
+      .poll(() => server.count("project-invite"), { timeout: 10000 })
+      .toBe(1);
     await expect(page.locator("#project-invite-error")).toHaveText(
       "이미 초대한 이메일이에요. 아래 초대 목록에서 다시 보낼 수 있어요.",
     );
@@ -390,7 +395,9 @@ test.describe("초대한 사람: 연구 설정의 초대 관리", () => {
     await page.getByLabel("초대할 이메일").fill(GUEST.email);
     await page.getByRole("button", { name: "초대 메일 보내기" }).click();
     // 원본 AI Send의 5초 되돌리기 창이 끝나야 실제 요청이 나갑니다.
-    await expect.poll(() => server.count("project-invite"), { timeout: 10000 }).toBe(1);
+    await expect
+      .poll(() => server.count("project-invite"), { timeout: 10000 })
+      .toBe(1);
     await expect(page.locator(".project-invite-row")).toContainText("지도교수");
     expect(
       server.calls.find((call) => call.name === "project-invite")?.body,

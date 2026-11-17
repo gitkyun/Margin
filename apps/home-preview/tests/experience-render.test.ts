@@ -93,13 +93,14 @@ describe("experience pages render with an empty research", () => {
     const { HomePage } = await import("../src/pages/HomePage");
     await page(HomePage);
     expect(screen.getByRole("heading", { name: "테스트 연구" })).toBeTruthy();
-    expect(screen.getByText("다음 미팅이 아직 없어요")).toBeTruthy();
-    // 빈 연구에는 시작 체크리스트가 0/4로 보이고 주 행동은 미팅 만들기 하나입니다.
+    // 기록이 하나도 없는 연구(IA v2 03 §9)
+    expect(screen.getByText("아직 기록이 없어요.")).toBeTruthy();
+    // 빈 연구에는 시작 체크리스트가 0/4로 보이고 주 행동은 다음 미팅 잡기 하나입니다(IA v2 03 §3의 7번).
     expect(screen.getByRole("heading", { name: /시작하기/ })).toBeTruthy();
     expect(screen.getByText("0 / 4")).toBeTruthy();
     expect(
       screen
-        .getAllByRole("link", { name: /미팅 만들기/ })
+        .getAllByRole("link", { name: /다음 미팅 잡기/ })
         .some((link) => link.getAttribute("data-action") === "create_meeting"),
     ).toBe(true);
   });
@@ -111,15 +112,17 @@ describe("experience pages render with an empty research", () => {
       screen.getAllByRole("button", { name: "계획서 만들기" }).length,
     ).toBeGreaterThan(0);
   });
-  it("assistant keeps sources, suggestions and run history in the margin panel", async () => {
+  it("assistant keeps suggestions and run history in the margin panel", async () => {
     const { ResearchAssistant } =
       await import("../src/pages/ResearchAssistant");
-    await page(ResearchAssistant, "/r/r1/assistant");
+    // 확인할 제안이 없으면 패널은 닫혀 있어요. 제안 주소로 열어서 확인해요.
+    await page(ResearchAssistant, "/r/r1/assistant?tab=overview");
     // 대화 목록 열과 화면 탭(대화·AI 제안·사용량)은 없어요.
     expect(screen.queryByRole("tab", { name: "대화" })).toBeNull();
     expect(screen.queryByRole("tab", { name: "사용량" })).toBeNull();
     expect(screen.getByRole("button", { name: /대화 기록/ })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: /근거/ })).toBeTruthy();
+    // 연구 기록을 항상 전부 읽으므로 기록을 고르는 근거 탭은 없어요.
+    expect(screen.queryByRole("tab", { name: /근거/ })).toBeNull();
     fireEvent.click(screen.getByRole("tab", { name: /제안/ }));
     await waitFor(() =>
       expect(
@@ -173,8 +176,8 @@ describe("writing selections keep the AI scope explicit", () => {
         ResearchAssistant,
         "/r/r1/assistant?document=d-selection&selection=1",
       );
-      const attached = await screen.findByRole("group", {
-        name: "첨부한 기록",
+      const attached = await screen.findByRole("list", {
+        name: "첨부 자료",
       });
       expect(within(attached).getByText("계획서 · 선택 문단")).toBeTruthy();
       fireEvent.click(
@@ -183,7 +186,7 @@ describe("writing selections keep the AI scope explicit", () => {
         }),
       );
       await waitFor(() =>
-        expect(screen.queryByRole("group", { name: "첨부한 기록" })).toBeNull(),
+        expect(screen.queryByRole("list", { name: "첨부 자료" })).toBeNull(),
       );
     } finally {
       state.workspace.data.documents = [];

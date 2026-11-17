@@ -70,6 +70,8 @@ export interface SearchTool {
 }
 
 export interface SearchSource {
+  /** Stable identity when several grounding links share a redirect host. */
+  key?: string;
   /** e.g. "developer.mozilla.org" */
   domain: string;
   title: string;
@@ -80,6 +82,7 @@ export interface SearchSource {
 }
 
 export interface AIInputSearchProps {
+  allowAttachments?: boolean;
   modelControls?: React.ReactNode;
   leadingControl?: React.ReactNode;
   value?: string;
@@ -95,18 +98,17 @@ export interface AIInputSearchProps {
   onQueue?: (text: string, tool: SearchTool | null) => void;
   inputRef?: React.RefObject<HTMLTextAreaElement | null>;
 
-  placeholder?: string;
-  tools?: SearchTool[];
+  placeholder: string;
+  tools: SearchTool[];
   /** Tool picked at first. Pass null to start with none. */
   defaultTool?: string | null;
-  models?: string[];
+  models: string[];
   defaultModel?: string;
   /**
    * Runs the request. Call `onSource` for each source as it is read, and
-   * resolve when the answer is ready; `signal` aborts on Stop. Without it,
-   * the component plays a pretend run so the demo feels alive.
+   * resolve when the answer is ready; `signal` aborts on Stop.
    */
-  onSearch?: (
+  onSearch: (
     query: string,
     options: {
       tool: SearchTool | null;
@@ -121,152 +123,13 @@ export interface AIInputSearchProps {
 
 type Phase = "idle" | "working" | "done" | "stopped";
 
-const DEFAULT_TOOLS: SearchTool[] = [
-  {
-    id: "browse",
-    label: "Browse sources",
-    hint: "Answers with links you can check",
-    icon: Globe,
-    color: "#0ea5e9",
-    activity: "Searching the web",
-    placeholder: "Look something up",
-    readsSources: true,
-  },
-  {
-    id: "investigate",
-    label: "Investigate",
-    hint: "Reads widely, takes a few minutes",
-    icon: Telescope,
-    color: "#8b5cf6",
-    activity: "Investigating",
-    placeholder: "What should I dig into?",
-    readsSources: true,
-    limit: 3,
-  },
-  {
-    id: "visual",
-    label: "Draft a visual",
-    hint: "Diagrams, mockups and covers",
-    icon: ImageIcon,
-    color: "#f97316",
-    activity: "Sketching the visual",
-    placeholder: "Describe what to draw",
-  },
-  {
-    id: "code",
-    label: "Run some code",
-    hint: "Works the numbers in a sandbox",
-    icon: Braces,
-    color: "#10b981",
-    activity: "Running the code",
-    placeholder: "What should the code work out?",
-  },
-  {
-    id: "reason",
-    label: "Reason it through",
-    hint: "Slower, more careful answers",
-    icon: Lightbulb,
-    color: "#f43f5e",
-    activity: "Thinking it over",
-    placeholder: "Ask something hard",
-  },
-];
-
-const DEFAULT_MODELS = ["Opus 5.5", "Sonnet 5.5", "Haiku 5.5"];
-
-const DEMO_SOURCES: SearchSource[] = [
-  {
-    domain: "developer.mozilla.org",
-    title: "429 Too Many Requests",
-    color: "#18181b",
-  },
-  {
-    domain: "cloudflare.com",
-    title: "What is rate limiting?",
-    color: "#f38020",
-  },
-  {
-    domain: "github.com",
-    title: "upstash/ratelimit: serverless rate limiting",
-    color: "#24292f",
-  },
-  { domain: "vercel.com", title: "Rate limiting at the edge", color: "#000" },
-  {
-    domain: "stripe.com",
-    title: "Scaling your API with rate limiters",
-    color: "#635bff",
-  },
-  {
-    domain: "redis.io",
-    title: "Rate limiting with sorted sets",
-    color: "#dc382d",
-  },
-  {
-    domain: "ietf.org",
-    title: "RateLimit header fields for HTTP",
-    color: "#4b5563",
-  },
-  {
-    domain: "stackoverflow.com",
-    title: "Token bucket vs sliding window",
-    color: "#f48024",
-  },
-  {
-    domain: "aws.amazon.com",
-    title: "Throttling requests in API Gateway",
-    color: "#232f3e",
-  },
-  {
-    domain: "nginx.org",
-    title: "Module ngx_http_limit_req_module",
-    color: "#009639",
-  },
-  {
-    domain: "arxiv.org",
-    title: "Fair queuing for multi-tenant APIs",
-    color: "#b31b1b",
-  },
-  { domain: "martinfowler.com", title: "Circuit breaker", color: "#2d7fb8" },
-];
-
 const STACK_MAX = 5;
-
-const wait = (ms: number, signal: AbortSignal) =>
-  new Promise<void>((resolve, reject) => {
-    const id = setTimeout(resolve, ms);
-    signal.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(id);
-        reject(new DOMException("Stopped", "AbortError"));
-      },
-      { once: true },
-    );
-  });
-
-async function demoRun(
-  tool: SearchTool | null,
-  signal: AbortSignal,
-  onSource: (source: SearchSource) => void,
-) {
-  await wait(500, signal);
-  if (!tool?.readsSources) {
-    await wait(1600, signal);
-    return;
-  }
-  // Investigating reads more and faster than a quick browse.
-  const deep = (tool.limit ?? 0) > 0;
-  for (const source of DEMO_SOURCES.slice(0, deep ? 12 : 5)) {
-    await wait(deep ? 200 : 260, signal);
-    onSource(source);
-  }
-  await wait(700, signal);
-}
 
 const fileKey = (file: File) =>
   `${file.name}-${file.size}-${file.lastModified}`;
 
-const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
+const seconds = (ms: number) =>
+  t("{seconds}초", { seconds: Math.floor(ms / 1000) });
 
 /** A steady hue per domain, so an unbranded site still gets its own colour. */
 const hueOf = (domain: string) => {
@@ -329,7 +192,7 @@ function SourceStack({ sources }: { sources: SearchSource[] }) {
             className={cn(i > 0 && "-ml-1")}
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
             initial={{ opacity: 0, x: -6, filter: "blur(2px)" }}
-            key={source.domain}
+            key={source.key ?? source.domain}
             layout="position"
             transition={{ duration: 0.2, ease: EASE_OUT }}
           >
@@ -375,7 +238,7 @@ function SourceList({ id, sources }: { id: string; sources: SearchSource[] }) {
               "hover:bg-[color-mix(in_srgb,var(--text)_3%,transparent)] ",
             )}
             initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-            key={source.domain}
+            key={source.key ?? source.domain}
             // A short cascade, capped so a long list doesn't drag.
             transition={{
               duration: 0.2,
@@ -405,17 +268,31 @@ const traceLabel = (
   tool: SearchTool | null,
   count: number,
 ): string => {
-  const noun = count === 1 ? "source" : "sources";
+  if (tool?.id === "web_search") {
+    if (phase === "working")
+      return count > 0
+        ? t("웹 출처를 확인하고 있어요")
+        : (tool.activity ?? t("웹 검색 응답을 기다리고 있어요"));
+    if (phase === "stopped")
+      return count > 0
+        ? t("웹 출처 {count}개를 확인하고 멈췄어요", { count })
+        : t("멈췄어요");
+    return count > 0
+      ? t("웹 출처 {count}개를 확인했어요", { count })
+      : t("웹 출처가 반환되지 않았어요");
+  }
   if (phase === "working") {
     if (count > 0) {
-      return "Reading sources";
+      return t("연구 기록을 읽고 있어요");
     }
-    return tool?.activity ?? "Writing the answer";
+    return tool?.activity ?? t("답변을 만들고 있어요");
   }
   if (phase === "stopped") {
-    return count > 0 ? `Stopped after ${count} ${noun}` : "Stopped";
+    return count > 0
+      ? t("기록 {count}개를 읽고 멈췄어요", { count })
+      : t("멈췄어요");
   }
-  return count > 0 ? `Read ${count} ${noun}` : "Done";
+  return count > 0 ? t("기록 {count}개를 읽었어요", { count }) : t("끝났어요");
 };
 
 /** Under the box: what the run is doing now, then what it read. */
@@ -497,7 +374,7 @@ function Trace({
               transition={{ duration: 0.2, ease: EASE_OUT }}
               type="button"
             >
-              {expanded ? "Hide" : "Sources"}
+              {expanded ? t("근거 접기") : t("근거 보기")}
               <ChevronDown
                 aria-hidden="true"
                 className={cn(
@@ -556,7 +433,11 @@ function RunsLeft({ left, limit }: { left: number; limit: number }) {
   return (
     <span
       className="flex shrink-0 items-center gap-0.5"
-      title={left > 0 ? `${left} left today` : "None left today"}
+      title={
+        left > 0
+          ? t("오늘 {count}번 남았어요", { count: left })
+          : t("오늘은 다 썼어요")
+      }
     >
       {Array.from({ length: limit }, (_, i) => (
         <span
@@ -695,7 +576,9 @@ function ToolPill({
           >
             <div className="flex items-center justify-between px-2 pt-1.5 pb-1 text-[11px] text-[var(--text-tertiary)] ">
               <span>{t("요청 종류")}</span>
-              <span>Press 1–{tools.length}</span>
+              <span>
+                {t("숫자 1~{count}로 골라요", { count: tools.length })}
+              </span>
             </div>
             {tools.map((item, i) => {
               const ItemIcon = item.icon;
@@ -742,7 +625,7 @@ function ToolPill({
                     </span>
                     {item.hint && (
                       <span className="block truncate text-[11px] text-[var(--text-tertiary)] ">
-                        {spent ? "None left today" : item.hint}
+                        {spent ? t("오늘은 다 썼어요") : item.hint}
                       </span>
                     )}
                   </span>
@@ -1039,6 +922,7 @@ function SendStopButton({
 }
 
 export default function AI_Input_Search({
+  allowAttachments = true,
   modelControls,
   leadingControl,
   value: controlledValue,
@@ -1053,11 +937,11 @@ export default function AI_Input_Search({
   busy = false,
   onQueue,
   inputRef,
-  placeholder = "Ask anything, or type / for tools",
-  tools = DEFAULT_TOOLS,
-  defaultTool = "browse",
-  models = DEFAULT_MODELS,
-  defaultModel = "Sonnet 5.5",
+  placeholder,
+  tools,
+  defaultTool = null,
+  models,
+  defaultModel = "",
   onSearch,
   className,
 }: AIInputSearchProps) {
@@ -1164,20 +1048,20 @@ export default function AI_Input_Search({
         return;
       }
       setSources((current) => [
-        ...current.filter((s) => s.domain !== source.domain),
+        ...current.filter(
+          (s) => (s.key ?? s.domain) !== (source.key ?? source.domain),
+        ),
         source,
       ]);
     };
     try {
-      await (onSearch
-        ? onSearch(query, {
-            tool,
-            model,
-            files: attached,
-            signal: controller.signal,
-            onSource,
-          })
-        : demoRun(tool, controller.signal, onSource));
+      await onSearch(query, {
+        tool,
+        model,
+        files: attached,
+        signal: controller.signal,
+        onSource,
+      });
       if (!controller.signal.aborted) {
         setPhase("done");
       }
@@ -1273,16 +1157,20 @@ export default function AI_Input_Search({
               disabled={disabled}
               maxLength={2000}
               onPaste={(e) => {
+                if (!allowAttachments && e.clipboardData.files.length) {
+                  e.preventDefault();
+                  return;
+                }
                 if (e.clipboardData.files.length && !disabled && !running) {
                   e.preventDefault();
                   const picked = Array.from(e.clipboardData.files);
-                  setFiles((current) => [...current, ...picked]);
                   if (onAttach) {
                     onAttach(picked);
                     if (e.currentTarget instanceof HTMLInputElement)
                       e.currentTarget.value = "";
                     return;
                   }
+                  setFiles((current) => [...current, ...picked]);
                 }
               }}
               // shadow-none and md:text-[15px] beat the shadow-xs and
@@ -1325,26 +1213,29 @@ export default function AI_Input_Search({
 
             <div className="flex flex-wrap items-center gap-1 px-2.5 pt-1 pb-2.5">
               {leadingControl}
-              <button
-                aria-label={t("파일 첨부")}
-                className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] outline-hidden ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)]  ",
-                  "transition-[background-color,color] duration-150",
-                  EASE_OUT_CSS,
-                  "hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] hover:text-[var(--text)]  ",
-                  "focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--text)_20%,transparent)] ",
-                )}
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-              >
-                <Plus aria-hidden="true" className="size-4" />
-              </button>
+              {allowAttachments && (
+                <button
+                  aria-label={t("파일 첨부")}
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] outline-hidden ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)]  ",
+                    "transition-[background-color,color] duration-150",
+                    EASE_OUT_CSS,
+                    "hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] hover:text-[var(--text)]  ",
+                    "focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--text)_20%,transparent)] ",
+                  )}
+                  onClick={() => fileInputRef.current?.click()}
+                  type="button"
+                >
+                  <Plus aria-hidden="true" className="size-4" />
+                </button>
+              )}
               <input
                 className="hidden"
                 multiple
-                disabled={disabled}
+                disabled={disabled || !allowAttachments}
                 accept=".pdf,.txt,.md"
                 onChange={(e) => {
+                  if (!allowAttachments) return;
                   const picked = Array.from(e.target.files ?? []);
                   if (onAttach) {
                     onAttach(picked);
@@ -1419,8 +1310,8 @@ export default function AI_Input_Search({
         </div>
 
         <output aria-live="polite" className="sr-only">
-          {phase === "done" && "Done."}
-          {phase === "stopped" && "Stopped."}
+          {phase === "done" && t("끝났어요")}
+          {phase === "stopped" && t("멈췄어요")}
           {phase === "working" && (runTool?.activity ?? t("처리 중"))}
         </output>
       </div>

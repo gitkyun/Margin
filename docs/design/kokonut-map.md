@@ -16,17 +16,17 @@
 | [ai-input-search](https://kokonutui.com/r/ai-input-search.json) | `ResearchAssistant.tsx` | 근거가 있거나 요청 종류를 고른 경우 원본 검색 입력창. 원본 두 입력창을 한 부품으로 재조립하지 않음. |
 | [ai-message-queue](https://kokonutui.com/r/ai-message-queue.json) | `ai/ComposerCommands.tsx` | 원본 QueueList를 분리해 실제 대기 질문 순서·편집·삭제·즉시 전송에 연결. |
 | [ai-context-meter](https://kokonutui.com/r/ai-context-meter.json) | `ai/ComposerCommands.tsx` | 후속 사용자 요청으로 실제 입력창에서는 제거하고 아래에 실제 사용량을 표시. 원본 고리는 로컬 시연에서만 비교 가능. |
-| [ai-attachment](https://kokonutui.com/r/ai-attachment.json) | `ai/ComposerCommands.tsx` | 실제 파일 정보·처리 상태. 없는 PDF 썸네일·쪽 번호는 만들지 않음. |
+| [ai-attachment](https://kokonutui.com/r/ai-attachment.json) | `assistant/MessageFileChips.tsx`, `ai/ComposerCommands.tsx` | 질문 위 파일은 원본 FileChip 클래스 그대로. 입력창 안 붙인 기록·파일은 ai-prompt AttachmentChip 모양(`tray`). 확인 안 된 쪽 수·읽기 진행 띠·페이지 썸네일은 만들지 않음(2026-11-16). |
 | [ai-voice](https://kokonutui.com/r/ai-voice.json) | `ResearchAssistant.tsx` | 실제 마이크 분석·받아쓰기. 데모 파형 제외, 저장하지 않는 음성의 재생 버튼 비활성. |
-| [ai-model-selector](https://kokonutui.com/r/ai-model-selector.json) | `ai/AIModelSelector.tsx` | 설정·작업대에서 원본 모델 목록과 답변 깊이 트랙을 실제 모델에 연결. |
-| [ai-tool-calls](https://kokonutui.com/r/ai-tool-calls.json) | `assistant/AssistantThinking.tsx` | 서버가 세부 도구 이벤트를 주지 않아 실제 요청 한 행으로 표시. 가상 단계 진행 제외. |
-| [ai-loading](https://kokonutui.com/r/ai-loading.json) | `assistant/AssistantThinking.tsx` | 첫 답변·작업대 대기의 실제 요청 상태를 원본에 전달. |
+| [ai-model-selector](https://kokonutui.com/r/ai-model-selector.json) | `ai/AIModelSelector.tsx` | 설정·작업대에서 원본 모델 목록과 답변 깊이 트랙을 실제 모델에 연결. [0단계 적용] 차이: `placement="bottom"`이면 목록을 아래로 엶(설정 창 위쪽에서 위로 열면 창 밖으로 잘림). 기본값은 원본처럼 위. 차이 둘째(2a): 열린 목록의 Esc를 window 캡처 단계에서 받아 전파를 멈춤 — 설정 창(대화상자) 안에서 Esc가 창까지 닫던 문제. 목록을 닫고 선택 버튼으로 초점을 돌리는 동작은 원본 그대로. |
+| [ai-tool-calls](https://kokonutui.com/r/ai-tool-calls.json) | `assistant/AssistantThinking.tsx`, `ResearchAssistant.tsx` | 원본 데모 배치(질문 회색 말풍선 → 작업 줄 → 답변 15px/28px, gap-4)를 따름. 대기 중엔 같은 줄이 스피너, 답이 오면 “작업 N개”로 바뀜. 서버가 세부 도구 이벤트를 주지 않아 한 행으로 표시. |
+| [ai-loading](https://kokonutui.com/r/ai-loading.json) | (연구 도우미에서 안 씀) | 첫 답변 대기도 ai-tool-calls 한 줄로 통일(2026-11-16). 가운데 정렬·고정폭 글꼴 단계 목록이 대화 흐름과 어긋나서 제외. |
 | [ai-citations](https://kokonutui.com/r/ai-citations.json) | `assistant/AssistantMessageText.tsx` | 원본 인용 미리보기와 출처 목록. 안전한 마크다운 렌더러와 실제 근거 스냅샷 유지. |
 | [ai-autocomplete](https://kokonutui.com/r/ai-autocomplete.json) | `writing/WritingAutocomplete.tsx` | 원본 고스트/수락 바를 TipTap에 연결. 실제 제안·커서 검증·단어 수락 유지. |
 | [ai-inline-edit](https://kokonutui.com/r/ai-inline-edit.json) | `writing/WritingReview.tsx` | 원본 선택 도구막대·단어 비교를 TipTap에 연결. 중단·반영 전 원문 일치 검증 유지. |
 | [ai-send](https://kokonutui.com/r/ai-send.json) | `reviews/ReviewNotifyBar.tsx · settings/ProjectInvites.tsx` | 원본 5초 뒤 전송/되돌리기. 서버가 본문 편집을 지원하지 않아 본문은 읽기 전용. 대상 변경 시 예약 취소. |
 | [ai-schedule](https://kokonutui.com/r/ai-schedule.json) | `meeting/AvailabilityGrid.tsx` | 원본 시간 칸·카드. 실제 다중 시간 투표 때문에 단일 선택을 체크박스 다중 선택으로 변경. 캘린더 연동은 없음. |
-| [ai-handoff](https://kokonutui.com/r/ai-handoff.json) | `assistant/AnswerActions.tsx` | 원본 카드에 실제 검토 요청 만들기 연결. 상담원·대기열 대신 “검토 요청 전”과 공유 범위 표시. |
+| [ai-handoff](https://kokonutui.com/r/ai-handoff.json) | (연구 도우미에서 안 씀) | 2026-11-16 사용자 결정으로 답변 아래 “교수님 검토로 넘기기” 제거. 답변 아래는 복사·다시 답하기 아이콘만. |
 | [clip-trimmer](https://kokonutui.com/r/clip-trimmer.json) | `recording/SourceAudioClip.tsx` | 원본 트리머를 실제 음성에 연결. 영상 영역은 녹음 제목, 실제 음성 구간·반복·키보드 조절. |
 
 ## 의존성과 원본 증빙
@@ -69,3 +69,22 @@
 - 첨부 UI는 부모의 실제 contexts를 단일 상태로 사용한다. 겉의 칩만 지우고 파일은 계속 보내는 상태 분리를 막았다. 확인되지 않은 전체 쪽 수와 가상 페이지는 표시하지 않는다.
 - 초기 검증 실패시 질문을 복원하고, 음성 패널을 닫을 때 실제 받아쓰기도 중단한다.
 - 로컬 시연은 앱의 dev/kokonut-review.html이다. 별도 개발 진입점으로 Vite 프로덕션 기본 빌드에 포함되지 않는다. 시연의 가상 내용은 실제 AI 결과/메일/일정 저장이 아님을 표시한다.
+
+
+## 실제 검색·첨부·일정 연결 (2026-11-16)
+
+- `AIInputSearch`의 실제 `onSearch`를 서버 Google Search 도구에 연결했다. 반환된 검색 출처만 trace와 인용에 표시한다. 원본의 가상 응답·검색 지연을 실제 화면에 쓰지 않는다. 한국어 UTF-8 인용 위치를 브라우저 문자 위치로 변환한다. Google 검색 추천 HTML은 격리한 iframe으로 표시한다.
+- 일반 입력은 `AIPrompt`, 웹 모드만 `AIInputSearch`를 사용한다. 사용자가 정한 최대 760px·왼쪽 음성·두 모델 칩·위 추천/아래 사용량 예외를 유지한다. 웹에는 질문만 보내며 첨부·연구 배경·개인 지침·이전 대화를 제외한다. 검색어당 표준 비용은 14크레딧이며 무료 할당·프로모션은 반영하지 않는다. 검색 예약분은 224크레딧이며 실제 반환 검색어와 토큰으로 정산한다.
+- 파일 칩은 전송한 질문의 근거 스냅샷을 표시한다. 전송 직후 composer에서는 비우며, 실패·중단 때만 복원한다. 대화의 기록 연결은 후속 질문에서 유지하며 명시적으로 해제할 수 있다.
+- PDF 첨부는 전체 본문을 추출한다. 기존 첨부도 추출 버전이 없으면 다시 읽는다. 문자 없는 스캔 PDF는 OCR 미지원이므로 읽은 척하지 않고 안내하며, 4만 8천 자를 넘으면 분할을 요청한다. 버전 기록의 특정 쪽 선택 기능은 별도 유지한다.
+- 슬래시에는 실제 지원하는 미팅 정리·수정 방법·글 점검·할 일 정리·논문/자료 요약·웹 검색·일정 확인만 둔다. 일정은 요청자 권한으로 읽은 최근 등록 500개 중 최대 80개를 사용하며 선택 파일과 대화 이력은 보내지 않는다. 일정 생성·변경이 자동 확정된 것처럼 표시하지 않는다.
+
+## IA v2 이후 놓일 자리 (2026-11-16 확정, 구현 전)
+
+[IA v2 설계서](ia-v2/00-README.md)대로 화면 틀이 바뀌면 위 표의 부품은 그대로 쓰고 놓이는 자리만 바뀝니다. 위 표는 지금 구현 기준이라 고치지 않았고, 아래는 예정입니다. 구현할 때 실제 파일 경로와 좁은 창에 맞추며 생긴 차이를 위 표에 기록합니다([10 구현 순서](ia-v2/10-build-plan.md) §6).
+
+| 부품 | 지금 | IA v2 이후(예정) |
+| --- | --- | --- |
+| 연구 도우미 부품(ai-prompt·ai-input-search·ai-message-queue·ai-attachment·ai-voice·ai-tool-calls·ai-citations, 모델·깊이 두 칩) | 전체 화면 `ResearchAssistant.tsx` | 오른쪽 사이드 창 P1 `components/shell/panels/assistant/*`(4단계, [06](ia-v2/06-assistant.md) §2·§7). 기본 폭 312px, 글 편집·자료 보기 440px. 312px에서 입력창이 넘치면 기본 폭을 360px로([10](ia-v2/10-build-plan.md) §7 V7) |
+| profile-dropdown(계정 메뉴) | 사이드바 아래에서 위로 열림 | **[0단계 적용]** 상단 줄 오른쪽 끝 아바타(32px)에서 아래로 열림([02](ia-v2/02-shell.md) §3.6). 원본과의 차이: `placement` 옵션 하나를 더해 `"bottom"`일 때 패널을 버튼의 오른쪽 위 모서리에 붙이고 `clip-path` 자라는 방향만 아래로 바꿈(구조·치수·모션 값은 원본 그대로). 여는 버튼의 이름·이메일·화살표는 `shell.css`에서 숨겨 아바타만 보임 |
+| ai-handoff · ai-loading · 입력창 안 ai-context-meter 고리 | 쓰지 않음 | 계속 쓰지 않음([06](ia-v2/06-assistant.md) §1) |

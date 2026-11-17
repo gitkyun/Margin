@@ -21,6 +21,7 @@ export function AIModelSelector({
   loading = false,
   failed = false,
   compact = false,
+  placement,
 }: {
   models: AIModelCapability[];
   model?: string;
@@ -30,6 +31,8 @@ export function AIModelSelector({
   loading?: boolean;
   failed?: boolean;
   compact?: boolean;
+  /** 목록을 여는 방향(Kokonut 원본은 위). 설정 창처럼 위쪽에 놓이면 "bottom" */
+  placement?: "top" | "bottom";
 }) {
   const status = loading
     ? t("모델 불러오는 중")
@@ -50,6 +53,7 @@ export function AIModelSelector({
   const selection = resolveAISelection(models, { model, thinking });
   return (
     <KokonutModelSelector
+      placement={placement}
       className={compact ? "kokonut-model-selector-compact" : undefined}
       models={models.map((item) => ({
         id: item.id,

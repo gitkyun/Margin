@@ -13,7 +13,7 @@
     height: 40px;
     padding: 4px;
     margin-inline: auto;
-    border-radius: 12px;
+    border-radius: var(--radius-12);
     gap: 0;
   }
   .kokonut-profile-panel {

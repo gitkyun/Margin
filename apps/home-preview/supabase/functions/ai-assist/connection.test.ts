@@ -74,6 +74,13 @@ beforeAll(async () => {
           Response.json(name === "rms_ai_begin_v2" ? crypto.randomUUID() : true)
         );
       }
+      if (url.includes("/rms_ai_credit_ledger?")) {
+        const amount =
+          rpcNamed("rms_ai_settle_credits").at(-1)?.body.p_amount ?? 0;
+        return Response.json([{ amount: -amount }]);
+      }
+      // 기록이 없는 연구: 연구 도우미가 전체 기록을 읽어도 빈 목록입니다.
+      if (url.includes("/rms_records?")) return Response.json([]);
       if (url.includes("/rms_researches?"))
         return Response.json([{ data: { name: "Synthetic test" } }]);
       if (url.startsWith("https://aiplatform.googleapis.com/")) {

@@ -1,5 +1,7 @@
 # 마진 UX 재설계 작업 기록
 
+> 2026-11-16 정보 구조 개편(IA v2) 설계가 확정됐습니다(구현 전). 화면 배치·메뉴·주소의 새 기준은 [docs/design/ia-v2](../ia-v2/00-README.md)이고, 이 문서의 해당 절은 구현 단계에 맞춰 바뀝니다. 이 폴더의 B안(사이드바 6메뉴 등)은 지금 구현의 근거로 남기고, 대체된 결정은 [design-b.md](design-b.md)와 [ui-upgrade-decisions-2026-11-15.md](ui-upgrade-decisions-2026-11-15.md)에 'IA v2로 대체'로 표시했습니다. 관찰·레퍼런스 원자료(observation-log, ref-log, audit, findings, upper-review)는 당시 기록이라 본문을 고치지 않습니다.
+
 2026-11-13 시작. 새 세션은 이 파일부터 읽는다. 이미 한 분석을 되풀이하지 않기 위한 색인이다.
 
 ## 문서

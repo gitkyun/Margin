@@ -1,0 +1,427 @@
+/*
+ * IA v2 틀(docs/design/ia-v2/02-shell.md).
+ * 화면 CSS가 기대는 .app-shell.floating-workspace는 그대로 두고, 그 위에 .ia-shell로 배치만 바꿉니다.
+ * 선택자를 .app-shell.floating-workspace.ia-shell로 시작해 예전 사이드바 규칙보다 앞서게 합니다.
+ */
+@layer margin {
+  .app-shell.floating-workspace.ia-shell {
+    --ia-topbar-height: 52px;
+    --ia-rail-width: 64px;
+    --ia-gap: var(--spacing-12);
+    --margin-panel-width: 312px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 100dvh;
+    padding: 0;
+    gap: 0;
+    background: var(--canvas);
+  }
+  .app-shell.floating-workspace.ia-shell.ia-panel-wide {
+    --margin-panel-width: 440px;
+  }
+
+  /* ── 상단 줄 52 ─────────────────────────────────────────── */
+  .ia-shell .ia-topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-topbar);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    height: var(--ia-topbar-height);
+    padding: 0 var(--spacing-12) 0 var(--spacing-16);
+    background: var(--canvas);
+  }
+  .ia-shell .ia-topbar .brand {
+    flex: none;
+    gap: var(--spacing-8);
+    margin-right: var(--spacing-4);
+  }
+  .ia-shell .ia-switch {
+    width: auto;
+    max-width: 200px;
+    min-height: 36px;
+    padding: 0 var(--spacing-8) 0 var(--spacing-10);
+    gap: var(--spacing-4);
+    border: 0;
+    border-radius: var(--radius-10);
+    background: transparent;
+    font-size: var(--typography-label1-fontSize);
+    letter-spacing: var(--typography-label1-letterSpacing);
+  }
+  .ia-shell .ia-switch strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .ia-shell .ia-switch:hover {
+    background: var(--hover-fill);
+  }
+  .ia-shell .ia-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-left: var(--spacing-4);
+  }
+  .ia-shell .ia-nav-item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    height: 36px;
+    padding: var(--spacing-8) var(--spacing-12);
+    border-radius: var(--radius-10);
+    color: var(--text-secondary);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-label1-letterSpacing);
+    white-space: nowrap;
+  }
+  .ia-shell .ia-nav-item:hover {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  /* 켜진 메뉴: 글자색과 밑줄(색만으로 구분하지 않기, 02 §3.1) */
+  .ia-shell .ia-nav-item.active {
+    color: var(--text);
+  }
+  .ia-shell .ia-nav-item.active::after {
+    content: "";
+    position: absolute;
+    left: var(--spacing-12);
+    right: var(--spacing-12);
+    bottom: 2px;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background: var(--text);
+  }
+  .ia-shell .ia-nav-item .nav-dot {
+    position: static;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--danger);
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+  .ia-shell .ia-search {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    flex: 0 1 360px;
+    min-width: 0;
+    height: 36px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .ia-shell .ia-search > span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ia-shell .ia-search kbd {
+    flex: none;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .ia-shell .ia-search:hover {
+    background: var(--hover-fill);
+  }
+  .ia-shell .ia-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    flex: none;
+  }
+  /* 계정 메뉴는 Kokonut 원본 그대로 두고, 여는 버튼만 아바타 32px로 줄입니다(02 §3.6). */
+  .ia-shell .ia-topbar-actions .kokonut-profile-trigger {
+    width: auto;
+    padding: var(--spacing-2);
+    border-color: transparent;
+    border-radius: var(--radius-full);
+    background: transparent;
+  }
+  .ia-shell
+    .ia-topbar-actions
+    .kokonut-profile-trigger
+    [data-kokonut-identity-text],
+  .ia-shell .ia-topbar-actions .kokonut-profile-trigger > svg {
+    display: none;
+  }
+
+  /* ── 본문 판 · 사이드 창 · 아이콘 줄 ────────────────────── */
+  .ia-shell .ia-body {
+    display: flex;
+    flex: 1;
+    align-items: flex-start;
+    gap: var(--ia-gap);
+    min-width: 0;
+    padding: 0 0 calc(var(--ia-gap) + var(--dock-height, 0px)) var(--ia-gap);
+  }
+  .ia-shell.ia-shell-outside .ia-body {
+    padding-right: var(--ia-gap);
+  }
+  .app-shell.floating-workspace.ia-shell .main-shell {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    min-height: calc(
+      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
+    );
+    border: 0;
+    border-radius: var(--radius-16);
+    background: var(--surface);
+    box-shadow: var(--panel-shadow);
+    overflow: clip;
+  }
+  .ia-shell .margin-panel {
+    position: sticky;
+    top: var(--ia-topbar-height);
+    width: min(var(--margin-panel-user-width, var(--margin-panel-width)), 50vw);
+    height: calc(
+      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
+    );
+    border: 0;
+    border-radius: var(--radius-16);
+    background: var(--surface);
+    box-shadow: var(--panel-shadow);
+  }
+  .ia-shell .margin-panel-resizer {
+    top: var(--ia-topbar-height);
+    height: calc(
+      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
+    );
+    margin-right: calc(-1 * var(--ia-gap) - 5px);
+    margin-left: -4px;
+  }
+
+  .ia-shell .ia-rail {
+    position: sticky;
+    top: var(--ia-topbar-height);
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-8);
+    width: var(--ia-rail-width);
+    height: calc(
+      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
+    );
+    margin-left: calc(-1 * var(--ia-gap));
+    padding-top: var(--spacing-4);
+  }
+  .ia-shell .ia-rail-spacer {
+    flex: 1;
+  }
+  .ia-shell .ia-rail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2);
+    width: 100%;
+    padding: 0 var(--spacing-2);
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    text-align: center;
+    cursor: pointer;
+  }
+  .ia-shell .ia-rail-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-10);
+  }
+  .ia-shell .ia-rail-item:hover .ia-rail-icon {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .ia-shell .ia-rail-item.on {
+    color: var(--brand);
+  }
+  .ia-shell .ia-rail-item.on .ia-rail-icon {
+    background: var(--surface);
+    box-shadow: var(--raise-shadow);
+  }
+  .ia-shell .ia-rail-item:focus-visible {
+    outline: none;
+  }
+  .ia-shell .ia-rail-item:focus-visible .ia-rail-icon {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+  .ia-shell .ia-rail-label {
+    display: -webkit-box;
+    max-width: 100%;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+    word-break: keep-all;
+  }
+
+  /* ── 아래 묶음: 녹음 줄 + 휴대폰 아래 탭(02 §5) ──────────── */
+  .ia-shell .ia-dock {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-topbar);
+    display: flex;
+    flex-direction: column;
+  }
+  .ia-shell .ia-tabbar {
+    display: none;
+  }
+
+  /* 992px 미만: 찾기 칸은 돋보기 버튼(02 §3.3) */
+  @media (max-width: 991px) {
+    .ia-shell .ia-search {
+      flex: none;
+      width: 36px;
+      margin-left: auto;
+      padding: 0;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+    }
+    .ia-shell .ia-search > span,
+    .ia-shell .ia-search kbd {
+      display: none;
+    }
+  }
+
+  /* 768~1199px: 사이드 창은 아이콘 줄 옆에 겹쳐 뜨고 뒤를 가리지 않음(D15) */
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .ia-shell .margin-panel {
+      position: fixed;
+      top: var(--ia-topbar-height);
+      right: var(--ia-rail-width);
+      bottom: calc(var(--ia-gap) + var(--dock-height, 0px));
+      left: auto;
+      z-index: var(--z-sheet);
+      width: min(
+        var(--margin-panel-user-width, var(--margin-panel-width)),
+        calc(100vw - var(--ia-rail-width) - 2 * var(--ia-gap))
+      );
+      height: auto;
+      /* 고정 위치에도 align-self가 걸려 위아래로 늘어나지 않으므로 되돌립니다. */
+      align-self: auto;
+      border-radius: var(--radius-16);
+      box-shadow: var(--shadow-pop);
+    }
+    .ia-shell .margin-panel-backdrop,
+    .ia-shell .margin-panel-resizer {
+      display: none;
+    }
+  }
+
+  /* 767px 이하: 메뉴는 아래 탭, 아이콘 줄 없음(02 §6) */
+  @media (max-width: 767px) {
+    .ia-shell .ia-topbar {
+      padding: 0 var(--spacing-8) 0 var(--spacing-12);
+      gap: var(--spacing-4);
+    }
+    .ia-shell .ia-topbar .brand,
+    .ia-shell .ia-nav,
+    .ia-shell .ia-rail {
+      display: none;
+    }
+    .ia-shell.ia-shell-outside .ia-topbar .brand {
+      display: inline-flex;
+    }
+    .ia-shell .ia-switch {
+      flex: 1;
+      max-width: none;
+      min-width: 0;
+    }
+    .ia-shell .ia-body {
+      padding: 0 0 var(--dock-height, 0px);
+    }
+    .app-shell.floating-workspace.ia-shell .main-shell {
+      border-radius: 0;
+      box-shadow: none;
+      min-height: calc(
+        100dvh - var(--ia-topbar-height) - var(--dock-height, 0px)
+      );
+    }
+    .ia-shell .margin-panel {
+      top: var(--ia-topbar-height);
+      bottom: var(--dock-height, 0px);
+      height: auto;
+      align-self: auto;
+      border-radius: 0;
+    }
+    .ia-shell .ia-tabbar {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      min-height: 56px;
+      padding-bottom: env(safe-area-inset-bottom);
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .ia-shell .ia-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2);
+      min-height: 48px;
+      padding: 0 var(--spacing-2);
+      color: var(--text-secondary);
+      font-size: var(--typography-caption1-fontSize);
+      font-weight: 500;
+      letter-spacing: var(--typography-caption1-letterSpacing);
+      white-space: nowrap;
+    }
+    /* 이름은 한 줄(02 §6). 일본어가 길면 사전의 아래 탭 전용 짧은 이름을 씀(V14) */
+    .ia-shell .ia-tab > span {
+      max-width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .ia-shell .ia-tab.active {
+      color: var(--brand);
+      font-weight: 700;
+    }
+  }
+
+  /* 사이드 창 왼쪽(설정 › 화면, 07 §1.2): 아이콘 줄·사이드 창·판 순서를 거울처럼 뒤집음 */
+  @media (min-width: 768px) {
+    .ia-shell[data-panel-side="left"] .ia-body {
+      flex-direction: row-reverse;
+      padding: 0 var(--ia-gap) calc(var(--ia-gap) + var(--dock-height, 0px)) 0;
+    }
+    .ia-shell[data-panel-side="left"] .ia-rail {
+      margin-right: calc(-1 * var(--ia-gap));
+      margin-left: 0;
+    }
+    .ia-shell[data-panel-side="left"] .margin-panel-resizer {
+      margin-right: -4px;
+      margin-left: calc(-1 * var(--ia-gap) - 5px);
+    }
+  }
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .ia-shell[data-panel-side="left"] .margin-panel {
+      right: auto;
+      left: var(--ia-rail-width);
+    }
+  }
+}
