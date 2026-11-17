@@ -35,10 +35,28 @@ function detailSearch(value: string): string {
   return `?${params.toString()}`;
 }
 
+/** 저장된 접힘 값을 읽어요. 깨진 값(null·숫자·배열·잘못된 JSON)이면 빈 값으로 시작해요. */
+export function parseFolded(raw: string | null): Record<string, boolean> {
+  let value: unknown;
+  try {
+    value = JSON.parse(raw ?? "{}");
+  } catch {
+    return {};
+  }
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    return {};
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+    ),
+  );
+}
+
 function readFolded(): Record<string, boolean> {
   try {
-    return JSON.parse(localStorage.getItem(FOLD_KEY) ?? "{}");
+    return parseFolded(localStorage.getItem(FOLD_KEY));
   } catch {
+    // 저장소를 못 쓰는 브라우저(비공개 모드 등)는 기본값으로 둬요.
     return {};
   }
 }

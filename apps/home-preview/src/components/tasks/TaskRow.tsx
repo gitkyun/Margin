@@ -109,6 +109,7 @@ export function QuickTaskInput({
   onAdd,
   onClose,
 }: {
+  /** 실패하면 스스로 안내(toast)를 띄운 뒤 던지세요. 던지면 적은 글이 남아요. */
   onAdd(title: string): Promise<void>;
   onClose(): void;
 }) {
@@ -130,6 +131,9 @@ export function QuickTaskInput({
     try {
       await onAdd(title);
       setText("");
+    } catch {
+      // 실패 안내는 onAdd가 이미 띄웠어요(세 호출처 모두 toast 뒤 다시 던짐).
+      // 여기서는 적은 글을 그대로 두어 다시 Enter로 저장할 수 있게만 합니다.
     } finally {
       setBusy(false);
     }
