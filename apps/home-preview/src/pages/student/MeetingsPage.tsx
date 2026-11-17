@@ -253,7 +253,7 @@ export function MeetingsPage() {
 function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const back = useBackState();
   const navigate = useNavigate();
-  const { data, save, savePreparation, saveResearch, refresh, mode } =
+  const { data, save, remove, savePreparation, saveResearch, refresh, mode } =
     useWorkspace();
   const [params, setParams] = useSearchParams();
   const researchId = meeting.researchId;
@@ -557,6 +557,128 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       const stored = await save("meetings", { ...base, memoMarks: marks });
       latest.current = stored;
       memoSelection.clear();
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+  /**
+   * 고른 메모 글로 피드백·결정·질문·할 일을 창 없이 바로 만듭니다(04 §5.2).
+   * 메모에서 만든 것은 이 기록의 공개 범위를 따르고, 6초 안에 되돌리면 보관합니다.
+   */
+  async function quickCreate(
+    kind: "feedback" | "decision" | "question" | "task",
+  ) {
+    const field = memoField.current;
+    if (!field) return;
+    const selected = field.value.slice(
+      field.selectionStart,
+      field.selectionEnd,
+    );
+    const text = selected.trim();
+    if (text.length < 2 || text.length > 2000) {
+      toast.error(t("2자 이상 2,000자 이하로 골라 주세요."));
+      return;
+    }
+    let base = latest.current;
+    if (draftMemo.current !== savedMemo.current) {
+      const saved = await commitMemo();
+      if (!saved) return;
+      base = saved;
+    }
+    const draft = entryFromSelection(text);
+    const visibility = base.visibility ?? "private";
+    const record = recordBase(researchId);
+    const quoted = base.memo.includes(text)
+      ? { sourceQuote: text, sourceMemoRevision: base.memoRevision }
+      : {};
+    memoSelection.clear();
+    try {
+      let created: {
+        kind: "feedback" | "decision" | "question" | "task";
+        id: string;
+      };
+      if (kind === "feedback") {
+        const stored = await save("feedback", {
+          ...record,
+          origin: "manual",
+          meetingId: meeting.id,
+          title: draft?.title ?? text.slice(0, 40),
+          body: text,
+          notes: "",
+          status: "unprocessed",
+          visibility,
+          ...quoted,
+        });
+        created = { kind, id: stored.id };
+      } else if (kind === "decision") {
+        const stored = await save("decisions", {
+          ...record,
+          origin: "manual",
+          meetingId: meeting.id,
+          text,
+          visibility,
+        });
+        created = { kind, id: stored.id };
+      } else if (kind === "question") {
+        const stored = await save("questions", {
+          ...record,
+          origin: "manual",
+          meetingId: meeting.id,
+          text,
+          status: "open",
+          visibility,
+        } as Question);
+        created = { kind, id: stored.id };
+      } else {
+        const stored = await save("tasks", {
+          ...record,
+          origin: "manual",
+          title: text.split(/\r?\n/)[0]!.slice(0, 80),
+          description: text.length > 80 ? text : "",
+          status: "todo",
+          dueDate: null,
+          priority: "normal",
+          visibility,
+          feedbackIds: [],
+          sourceRecordId: meeting.id,
+        } as Task);
+        created = { kind, id: stored.id };
+      }
+      const collection = {
+        feedback: "feedback",
+        decision: "decisions",
+        question: "questions",
+        task: "tasks",
+      } as const;
+      toast.success(
+        {
+          feedback: t("피드백을 만들었어요."),
+          decision: t("결정을 만들었어요."),
+          question: t("질문을 만들었어요."),
+          task: t("할 일을 만들었어요."),
+        }[kind],
+        {
+          duration: 6000,
+          action: {
+            label: t("보기"),
+            onClick: () => {
+              const next = new URLSearchParams(window.location.search);
+              next.set("detail", `${created.kind}:${created.id}`);
+              navigate(
+                { search: `?${next.toString()}` },
+                { state: { layer: "detail", depth: 1 } },
+              );
+            },
+          },
+          cancel: {
+            label: t("되돌리기"),
+            onClick: () =>
+              void remove(collection[created.kind], created.id).catch((error) =>
+                toast.error(friendlyError(error)),
+              ),
+          },
+        },
+      );
     } catch (error) {
       toast.error(friendlyError(error));
     }
@@ -1237,19 +1359,25 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       key: "feedback",
                       icon: "plus",
                       label: t("피드백"),
-                      onSelect: () => openEntry("feedback"),
+                      onSelect: () => void quickCreate("feedback"),
+                    },
+                    {
+                      key: "task",
+                      icon: "plus",
+                      label: t("할 일"),
+                      onSelect: () => void quickCreate("task"),
                     },
                     {
                       key: "decision",
                       icon: "plus",
                       label: t("결정"),
-                      onSelect: () => openEntry("decision"),
+                      onSelect: () => void quickCreate("decision"),
                     },
                     {
                       key: "question",
                       icon: "plus",
                       label: t("질문"),
-                      onSelect: () => openEntry("question"),
+                      onSelect: () => void quickCreate("question"),
                     },
                   ]}
                 />
