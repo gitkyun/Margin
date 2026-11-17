@@ -54,10 +54,13 @@ export function MaterialFolders({
   researchId,
   value,
   onChange,
+  embedded = false,
 }: {
   researchId: string;
   value: string;
   onChange: (v: string) => void;
+  /** 글·자료 목록(IA v2 05 §2.2)의 분류 열 안: '모든 자료'·'보관한 자료'는 그 열이 맡아요. */
+  embedded?: boolean;
 }) {
   const move = useMoveMaterial();
   // 접은 폴더(처음에는 모두 펼쳐 둬요)와 지금 자료를 끌어 올려 둔 폴더
@@ -153,11 +156,14 @@ export function MaterialFolders({
             <Icon name="folder" size={16} />
             <span>{f.title}</span>
             <small>
-              {
-                data.materials.filter(
-                  (m) => m.folderId === f.id && !m.archivedAt,
-                ).length
-              }
+              {data.materials.filter(
+                (m) => m.folderId === f.id && !m.archivedAt,
+              ).length +
+                (embedded
+                  ? data.documents.filter(
+                      (d) => d.folderId === f.id && !d.archivedAt,
+                    ).length
+                  : 0)}
             </small>
           </button>
           <Button
@@ -200,15 +206,17 @@ export function MaterialFolders({
           <Icon name="plus" size={17} />
         </Button>
       </div>
-      <button
-        className="folder-all"
-        aria-pressed={!value}
-        onClick={() => onChange("")}
-        {...dropProps("all", undefined)}
-      >
-        <Icon name="folder" size={17} />
-        {t("모든 자료")}
-      </button>
+      {!embedded && (
+        <button
+          className="folder-all"
+          aria-pressed={!value}
+          onClick={() => onChange("")}
+          {...dropProps("all", undefined)}
+        >
+          <Icon name="folder" size={17} />
+          {t("모든 자료")}
+        </button>
+      )}
       {folders.length > 0 && (
         <ul className="folder-tree-list" aria-label={t("폴더 목록")}>
           {rootFolders(folders).map((f) => node(f))}
@@ -221,14 +229,16 @@ export function MaterialFolders({
           )}
         </p>
       )}
-      <button
-        className="folder-all"
-        aria-pressed={value === "archived"}
-        onClick={() => onChange("archived")}
-      >
-        <Icon name="archive" size={17} />
-        {t("보관한 자료")}
-      </button>
+      {!embedded && (
+        <button
+          className="folder-all"
+          aria-pressed={value === "archived"}
+          onClick={() => onChange("archived")}
+        >
+          <Icon name="archive" size={17} />
+          {t("보관한 자료")}
+        </button>
+      )}
       {data.folders.some(
         (f) => f.researchId === researchId && f.archivedAt,
       ) && (
