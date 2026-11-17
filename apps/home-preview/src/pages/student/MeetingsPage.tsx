@@ -1,5 +1,6 @@
 import { RecordList } from "@/components/meetings/RecordList";
 import { RecordHeader } from "@/components/meetings/RecordHeader";
+import { PrepareSide, RecordSide } from "@/components/meetings/RecordSide";
 import { WrittenFeedbackDialog } from "@/components/meetings/WrittenFeedbackDialog";
 import { recordMode } from "@/lib/record-view";
 import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
@@ -389,9 +390,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const replaceable = replaceableDecisions(
     allDecisions,
     editingDecision ?? undefined,
-  );
-  const feedback = data.feedback.filter(
-    (item) => item.meetingId === meeting.id,
   );
   async function commitMemo(overwrite = false): Promise<Meeting | null> {
     if (memoPending.current || composingMemo.current) return null;
@@ -867,498 +865,495 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         ]}
       />
       {tab === "prepare" && (
-        <div className="meeting-preparation">
-          <section className="surface preparation-goal">
-            <div className="section-heading">
-              <span className="section-kicker">
-                {t("이번 미팅에서 보여줄 결과")}
-              </span>
-              <Button variant="ghost" onClick={beginPreparation}>
-                <Icon name="edit" size={16} />
-                {t("준비 편집")}
-              </Button>
-            </div>
-            <h2>{meeting.goal || t("아직 정하지 않았어요")}</h2>
-            <div className="preparation-summary">
-              <span>
-                <Icon name="check" size={15} />
-                {t("할 일 {count}개", { count: linkedTasks.length })}
-              </span>
-              <span>
-                <Icon name="file" size={15} />
-                {t("자료 {count}개", { count: linkedVersions.length })}
-              </span>
-              <span>
-                <Icon name="message" size={15} />
-                {t("질문 {count}개", {
-                  count: preparedQuestions.filter((q) => q.status === "open")
-                    .length,
-                })}
-              </span>
-            </div>
-            {research &&
-              research.nextMeetingId !== meeting.id &&
-              meeting.status !== "cancelled" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    void saveResearch({
-                      ...research,
-                      nextMeetingId: meeting.id,
-                    })
-                      .then(() =>
-                        toast.success(t("홈의 다음 미팅으로 지정했어요")),
-                      )
-                      .catch((e) => toast.error(e.message));
-                  }}
-                >
-                  {t("홈의 다음 미팅으로 지정")}
-                </Button>
-              )}
-          </section>
-          <div className="preparation-columns">
-            <section className="surface">
-              <div className="section-heading">
-                <h2>{t("할 일")}</h2>
-                <Button variant="ghost" size="sm" onClick={beginPreparation}>
-                  {t("할 일 고르기")}
-                </Button>
-              </div>
-              {linkedTasks.length ? (
-                <SortableList
-                  items={linkedTasks}
-                  getKey={(task) => task.id}
-                  label={t("이번 미팅 할 일 순서")}
-                  itemName={(task) => task.title}
-                  onCommit={(ids) => reorderPrepared("taskIds", ids)}
-                  renderItem={(task) => (
-                    <Link
-                      className="student-simple-row"
-                      to={`/r/${researchId}/tasks/${task.id}`}
-                      state={back(meeting.title)}
-                    >
-                      <span
-                        className={`student-check-indicator ${task.status === "done" ? "checked" : ""}`}
-                      >
-                        {task.status === "done" && (
-                          <Icon name="check" size={13} />
-                        )}
-                      </span>
-                      <span className="grow">
-                        <strong>{task.title}</strong>
-                        <small>
-                          {task.dueDate
-                            ? t("기한 {date}", {
-                                date: formatDate(task.dueDate),
-                              })
-                            : t("기한 미정")}
-                        </small>
-                      </span>
-                      <StatusBadge
-                        tone={
-                          task.status === "done"
-                            ? "green"
-                            : task.status === "doing"
-                              ? "blue"
-                              : "neutral"
-                        }
-                      >
-                        {taskLabels[task.status]}
-                      </StatusBadge>
-                    </Link>
-                  )}
-                />
-              ) : (
-                <EmptyState
-                  title={t("이번 미팅에 고른 할 일이 없어요")}
-                  action={
-                    <Button variant="outline" onClick={beginPreparation}>
-                      {t("할 일 고르기")}
-                    </Button>
-                  }
-                />
-              )}
-            </section>
-            <section className="surface">
-              <div className="section-heading">
-                <h2>{t("보여줄 자료")}</h2>
-                <Button variant="ghost" size="sm" onClick={beginPreparation}>
-                  {t("자료 고르기")}
-                </Button>
-              </div>
-              {linkedVersions.length ? (
-                linkedVersions.map((version) => (
-                  <Link
-                    className="student-simple-row"
-                    key={version.id}
-                    to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
-                    state={back(meeting.title)}
-                  >
-                    <span className="student-file-symbol">
-                      <Icon name="file" size={18} />
-                    </span>
-                    <span className="grow">
-                      <strong>{version.fileName}</strong>
-                      <small>
-                        {t("파일 v{number}", { number: version.number })}
-                      </small>
-                    </span>
-                    <Icon name="arrow-up-right" size={15} />
-                  </Link>
-                ))
-              ) : (
-                <InlineEmpty>
-                  {t(
-                    "고른 자료가 없어요. 자료를 고르면 그 버전 그대로 준비에 추가돼요.",
-                  )}
-                </InlineEmpty>
-              )}
-              <div className="student-subsection">
+        <div className="record-columns">
+          <div className="record-with-side">
+            <div className="meeting-preparation">
+              <section className="surface preparation-goal">
                 <div className="section-heading">
-                  <h3>{t("물어볼 질문")}</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openEntry("question")}
-                    aria-label={t("질문 추가")}
-                  >
-                    <Icon name="plus" size={16} />
+                  <span className="section-kicker">
+                    {t("이번 미팅에서 보여줄 결과")}
+                  </span>
+                  <Button variant="ghost" onClick={beginPreparation}>
+                    <Icon name="edit" size={16} />
+                    {t("준비 편집")}
                   </Button>
                 </div>
-                {preparedQuestions.filter((q) => q.status === "open").length ? (
-                  <SortableList
-                    items={preparedQuestions.filter((q) => q.status === "open")}
-                    getKey={(question) => question.id}
-                    label={t("물어볼 질문 순서")}
-                    itemName={(question) => question.text.slice(0, 40)}
-                    onCommit={(ids) => reorderPrepared("questionIds", ids)}
-                    renderItem={(question) => (
-                      <div className="student-question-row">
-                        <Icon name="message" size={16} />
-                        <p>{question.text}</p>
-                      </div>
+                <h2>{meeting.goal || t("아직 정하지 않았어요")}</h2>
+                <div className="preparation-summary">
+                  <span>
+                    <Icon name="check" size={15} />
+                    {t("할 일 {count}개", { count: linkedTasks.length })}
+                  </span>
+                  <span>
+                    <Icon name="file" size={15} />
+                    {t("자료 {count}개", { count: linkedVersions.length })}
+                  </span>
+                  <span>
+                    <Icon name="message" size={15} />
+                    {t("질문 {count}개", {
+                      count: preparedQuestions.filter(
+                        (q) => q.status === "open",
+                      ).length,
+                    })}
+                  </span>
+                </div>
+                {research &&
+                  research.nextMeetingId !== meeting.id &&
+                  meeting.status !== "cancelled" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        void saveResearch({
+                          ...research,
+                          nextMeetingId: meeting.id,
+                        })
+                          .then(() =>
+                            toast.success(t("홈의 다음 미팅으로 지정했어요")),
+                          )
+                          .catch((e) => toast.error(e.message));
+                      }}
+                    >
+                      {t("홈의 다음 미팅으로 지정")}
+                    </Button>
+                  )}
+              </section>
+              <div className="preparation-columns">
+                <section className="surface">
+                  <div className="section-heading">
+                    <h2>{t("할 일")}</h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={beginPreparation}
+                    >
+                      {t("할 일 고르기")}
+                    </Button>
+                  </div>
+                  {linkedTasks.length ? (
+                    <SortableList
+                      items={linkedTasks}
+                      getKey={(task) => task.id}
+                      label={t("이번 미팅 할 일 순서")}
+                      itemName={(task) => task.title}
+                      onCommit={(ids) => reorderPrepared("taskIds", ids)}
+                      renderItem={(task) => (
+                        <Link
+                          className="student-simple-row"
+                          to={`/r/${researchId}/tasks/${task.id}`}
+                          state={back(meeting.title)}
+                        >
+                          <span
+                            className={`student-check-indicator ${task.status === "done" ? "checked" : ""}`}
+                          >
+                            {task.status === "done" && (
+                              <Icon name="check" size={13} />
+                            )}
+                          </span>
+                          <span className="grow">
+                            <strong>{task.title}</strong>
+                            <small>
+                              {task.dueDate
+                                ? t("기한 {date}", {
+                                    date: formatDate(task.dueDate),
+                                  })
+                                : t("기한 미정")}
+                            </small>
+                          </span>
+                          <StatusBadge
+                            tone={
+                              task.status === "done"
+                                ? "green"
+                                : task.status === "doing"
+                                  ? "blue"
+                                  : "neutral"
+                            }
+                          >
+                            {taskLabels[task.status]}
+                          </StatusBadge>
+                        </Link>
+                      )}
+                    />
+                  ) : (
+                    <EmptyState
+                      title={t("이번 미팅에 고른 할 일이 없어요")}
+                      action={
+                        <Button variant="outline" onClick={beginPreparation}>
+                          {t("할 일 고르기")}
+                        </Button>
+                      }
+                    />
+                  )}
+                </section>
+                <section className="surface">
+                  <div className="section-heading">
+                    <h2>{t("보여줄 자료")}</h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={beginPreparation}
+                    >
+                      {t("자료 고르기")}
+                    </Button>
+                  </div>
+                  {linkedVersions.length ? (
+                    linkedVersions.map((version) => (
+                      <Link
+                        className="student-simple-row"
+                        key={version.id}
+                        to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
+                        state={back(meeting.title)}
+                      >
+                        <span className="student-file-symbol">
+                          <Icon name="file" size={18} />
+                        </span>
+                        <span className="grow">
+                          <strong>{version.fileName}</strong>
+                          <small>
+                            {t("파일 v{number}", { number: version.number })}
+                          </small>
+                        </span>
+                        <Icon name="arrow-up-right" size={15} />
+                      </Link>
+                    ))
+                  ) : (
+                    <InlineEmpty>
+                      {t(
+                        "고른 자료가 없어요. 자료를 고르면 그 버전 그대로 준비에 추가돼요.",
+                      )}
+                    </InlineEmpty>
+                  )}
+                  <div className="student-subsection">
+                    <div className="section-heading">
+                      <h3>{t("물어볼 질문")}</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEntry("question")}
+                        aria-label={t("질문 추가")}
+                      >
+                        <Icon name="plus" size={16} />
+                      </Button>
+                    </div>
+                    {preparedQuestions.filter((q) => q.status === "open")
+                      .length ? (
+                      <SortableList
+                        items={preparedQuestions.filter(
+                          (q) => q.status === "open",
+                        )}
+                        getKey={(question) => question.id}
+                        label={t("물어볼 질문 순서")}
+                        itemName={(question) => question.text.slice(0, 40)}
+                        onCommit={(ids) => reorderPrepared("questionIds", ids)}
+                        renderItem={(question) => (
+                          <div className="student-question-row">
+                            <Icon name="message" size={16} />
+                            <p>{question.text}</p>
+                          </div>
+                        )}
+                      />
+                    ) : (
+                      <InlineEmpty>{t("물어볼 질문이 없어요.")}</InlineEmpty>
                     )}
-                  />
-                ) : (
-                  <InlineEmpty>{t("물어볼 질문이 없어요.")}</InlineEmpty>
-                )}
+                  </div>
+                </section>
               </div>
-            </section>
+            </div>
+            <PrepareSide meeting={meeting} />
           </div>
         </div>
       )}
       {
-        <div hidden={tab !== "record"} className="record-layout">
-          <section id="meeting-recording" className="surface memo-surface">
-            {/* 서면 피드백 기록에는 녹음·전사가 없습니다(04 §5.5). */}
-            {!written && (
-              <RecordingPanel
-                researchId={meeting.researchId}
-                meetingId={meeting.id}
-                onAppend={(text) => {
-                  if ((draftMemo.current + text).length > 50000)
-                    throw new Error(
-                      t(
-                        "미팅 메모가 50,000자를 넘게 돼서 전사문을 추가하지 않았어요. 필요한 부분만 복사해 붙여 넣어 주세요.",
-                      ),
-                    );
-                  setMemo(draftMemo.current + text);
-                }}
-                onPick={(pick: TranscriptPick) =>
-                  openEntry(pick.kind, undefined, {
-                    text: pick.text,
-                    source: pick.source,
-                  })
-                }
-              />
-            )}
-            <div className="section-heading">
-              <h2>{written ? t("받은 서면 피드백") : t("미팅 원문 메모")}</h2>
-              <span role="status" className={`save-state ${memoState}`}>
-                {(memoTouched || memoState === "error") && (
-                  <>
-                    <span />
-                    {memoState === "saved"
-                      ? mode === "preview"
-                        ? t("이 브라우저에 저장됨")
-                        : t("저장됨")
-                      : memoState === "saving"
-                        ? t("저장 중")
-                        : memoState === "error"
-                          ? t("저장 실패")
-                          : t("작성 중")}
-                  </>
-                )}
-              </span>
-            </div>
-            <p className="student-footnote">
-              {t(
-                "들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한 피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.",
-              )}{" "}
-              {t(
-                "메모에서 문장을 고르면 위에 뜨는 버튼이나 ‘직접 추가’로 그 문장을 채울 수 있어요.",
-              )}
-            </p>
-            <div className="selection-host" ref={memoHost}>
-              <textarea
-                ref={memoField}
-                className="meeting-memo"
-                aria-label={t("미팅 원문 메모")}
-                value={memo}
-                onCompositionStart={() => {
-                  composingMemo.current = true;
-                }}
-                onCompositionEnd={(e) => {
-                  composingMemo.current = false;
-                  draftMemo.current = e.currentTarget.value;
-                  setMemo(e.currentTarget.value);
-                  setMemoTick((v) => v + 1);
-                }}
-                onChange={(e) => {
-                  draftMemo.current = e.target.value;
-                  setMemo(e.target.value);
-                }}
-                onBlur={() => {
-                  void commitMemo();
-                }}
-                placeholder={t(
-                  "예: 교수님 피드백, 결정한 내용, 다시 확인할 질문",
-                )}
-              />
-              <SelectionToolbar
-                anchor={memoSelection.anchor}
-                onDismiss={memoSelection.clear}
-                label={t("고른 메모로 만들기")}
-                actions={[
-                  {
-                    key: "feedback",
-                    icon: "plus",
-                    label: t("피드백"),
-                    onSelect: () => openEntry("feedback"),
-                  },
-                  {
-                    key: "decision",
-                    icon: "plus",
-                    label: t("결정"),
-                    onSelect: () => openEntry("decision"),
-                  },
-                  {
-                    key: "question",
-                    icon: "plus",
-                    label: t("질문"),
-                    onSelect: () => openEntry("question"),
-                  },
-                ]}
-              />
-            </div>
-            <ErrorNotice error={memoError} />
-            {memoConflict ? (
-              <div className="stack">
-                <Disclosure
-                  className="student-details"
-                  summary={t("저장본과 비교하기 · 원문 v{revision}", {
-                    revision: meeting.memoRevision,
-                  })}
-                >
-                  <p className="student-body-text">
-                    {meeting.memo || t("저장된 메모가 없어요.")}
-                  </p>
-                </Disclosure>
-                <div className="button-row">
-                  <Button variant="outline" onClick={loadSavedMemo}>
-                    {t("저장본으로 바꾸기")}
-                  </Button>
-                  <Button
-                    disabled={memoState === "saving"}
-                    onClick={() => void commitMemo(true)}
-                  >
-                    {t("내 작성 내용으로 저장")}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              memoState === "error" && (
-                <div className="button-row">
-                  <Button variant="outline" onClick={() => void commitMemo()}>
-                    {t("다시 저장")}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() =>
-                      void refresh().catch((e) =>
-                        toast.error(
-                          e instanceof Error
-                            ? e.message
-                            : t(
-                                "저장본을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",
-                              ),
+        <div hidden={tab !== "record"} className="record-columns">
+          <div className="record-layout record-with-side">
+            <section id="meeting-recording" className="surface memo-surface">
+              {/* 서면 피드백 기록에는 녹음·전사가 없습니다(04 §5.5). */}
+              {!written && (
+                <RecordingPanel
+                  researchId={meeting.researchId}
+                  meetingId={meeting.id}
+                  onAppend={(text) => {
+                    if ((draftMemo.current + text).length > 50000)
+                      throw new Error(
+                        t(
+                          "미팅 메모가 50,000자를 넘게 돼서 전사문을 추가하지 않았어요. 필요한 부분만 복사해 붙여 넣어 주세요.",
                         ),
-                      )
-                    }
-                  >
-                    {t("최신 저장본 확인")}
-                  </Button>
-                </div>
-              )
-            )}
-            <div className="memo-actions">
-              <span className="meta">
-                {t("원문 v{revision} · {count}자", {
-                  revision: meeting.memoRevision,
-                  count: memo.length.toLocaleString(),
-                })}
-              </span>
-              <Button
-                variant="outline"
-                disabled={memoState === "saving" || !memo.trim()}
-                aria-describedby={memoAIReason.describedBy}
-                onClick={() => void openAI()}
-              >
-                <Icon name="sparkles" size={16} />
-                {aiInput && !aiOpen
-                  ? t("AI 정리 다시 열기")
-                  : t("AI로 메모 정리")}
-              </Button>
-            </div>
-            {memoAIReason.node}
-            <div className="student-subsection">
-              <div className="section-heading">
-                <h3>{t("저장한 피드백")}</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => openEntry("feedback")}
-                >
-                  <Icon name="plus" size={15} />
-                  {t("직접 추가")}
-                </Button>
-              </div>
-              {feedback.length ? (
-                feedback.map((item) => (
-                  <Link
-                    className="student-simple-row"
-                    key={item.id}
-                    to={`/r/${researchId}/feedback/${item.id}`}
-                    state={back(meeting.title)}
-                  >
-                    <span className="grow">
-                      <strong>{item.title}</strong>
-                      <small>
-                        {item.origin && <>{originLabels[item.origin]} · </>}
-                        {item.body}
-                      </small>
-                    </span>
-                    <Icon name="chevron-right" size={15} />
-                  </Link>
-                ))
-              ) : (
-                <InlineEmpty>
-                  {t(
-                    "저장한 피드백이 없어요. 직접 추가하거나 AI 제안에서 골라 저장할 수 있어요.",
-                  )}
-                </InlineEmpty>
-              )}
-            </div>
-          </section>
-          <MarginPanel
-            label={t("준비한 내용과 연구 도우미")}
-            open={panelOpen}
-            onOpen={() => setPanelOpen(true)}
-            onClose={() => setPanelOpen(false)}
-          >
-            <PanelFrame
-              title={t("이 미팅")}
-              onClose={() => setPanelOpen(false)}
-              tab={panelTab}
-              onTab={(value) =>
-                value === "assistant" ? void openAI() : setPanelTab("prepared")
-              }
-              tabs={[
-                // 서면 피드백에는 '준비한 것'이 없습니다(04 §5.5).
-                ...(written
-                  ? []
-                  : [
-                      {
-                        value: "prepared",
-                        label: t("준비"),
-                        count: preparedQuestions.length + linkedVersions.length,
-                      },
-                    ]),
-                { value: "assistant", label: t("연구 도우미") },
-              ]}
-            >
-              {panelTab === "prepared" && !written && (
-                <div className="panel-frame-body">
-                  <h3>{t("이번 미팅에서 보여줄 결과")}</h3>
-                  <p className="meeting-panel-goal">
-                    {meeting.goal || t("아직 정하지 않았어요.")}
-                  </p>
-                  <h3>
-                    {t("준비한 질문")}
-                    <span className="count-chip">
-                      {preparedQuestions.length}
-                    </span>
-                  </h3>
-                  {preparedQuestions.map((question) => (
-                    <div className="student-simple-row" key={question.id}>
-                      <span className="grow">
-                        <strong>{question.text}</strong>
-                      </span>
-                      <StatusBadge
-                        tone={
-                          question.status === "resolved" ? "green" : "neutral"
-                        }
-                      >
-                        {question.status === "resolved" ? t("해결") : t("열림")}
-                      </StatusBadge>
-                    </div>
-                  ))}
-                  {!preparedQuestions.length && (
-                    <InlineEmpty>{t("준비한 질문이 없어요.")}</InlineEmpty>
-                  )}
-                  <h3>
-                    {t("보여줄 자료")}
-                    <span className="count-chip">{linkedVersions.length}</span>
-                  </h3>
-                  {linkedVersions.map((version) => (
-                    <Link
-                      className="student-simple-row"
-                      key={version.id}
-                      to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
-                      state={back(meeting.title)}
-                    >
-                      <span className="grow">
-                        <strong>{version.fileName}</strong>
-                        <small>v{version.number}</small>
-                      </span>
-                      <Icon name="arrow-up-right" size={15} />
-                    </Link>
-                  ))}
-                  {!linkedVersions.length && (
-                    <InlineEmpty>
-                      {t("보여줄 자료를 고르지 않았어요.")}
-                    </InlineEmpty>
-                  )}
-                  <p className="panel-frame-note">
-                    {t("준비 탭에서 바꾼 내용이 여기에 보여요.")}
-                  </p>
-                </div>
-              )}
-              {panelTab === "assistant" && aiInput && (
-                <AIWorkbench
-                  key={aiInput.sourceRevision}
-                  embedded
-                  title={t("메모 정리")}
-                  input={aiInput}
-                  stale={aiStale}
-                  onClose={() => setPanelOpen(false)}
-                  onRefresh={() => void openAI()}
-                  onSave={saveCandidate}
+                      );
+                    setMemo(draftMemo.current + text);
+                  }}
+                  onPick={(pick: TranscriptPick) =>
+                    openEntry(pick.kind, undefined, {
+                      text: pick.text,
+                      source: pick.source,
+                    })
+                  }
                 />
               )}
-            </PanelFrame>
-          </MarginPanel>
+              <div className="section-heading">
+                <h2>{written ? t("받은 서면 피드백") : t("미팅 원문 메모")}</h2>
+                <span role="status" className={`save-state ${memoState}`}>
+                  {(memoTouched || memoState === "error") && (
+                    <>
+                      <span />
+                      {memoState === "saved"
+                        ? mode === "preview"
+                          ? t("이 브라우저에 저장됨")
+                          : t("저장됨")
+                        : memoState === "saving"
+                          ? t("저장 중")
+                          : memoState === "error"
+                            ? t("저장 실패")
+                            : t("작성 중")}
+                    </>
+                  )}
+                </span>
+              </div>
+              <p className="student-footnote">
+                {t(
+                  "들은 내용을 그대로 적거나 기존 메모를 붙여 넣어 주세요. 정리한 피드백, 결정 사항, 질문은 이 메모와 따로 저장돼요.",
+                )}{" "}
+                {t(
+                  "메모에서 문장을 고르면 위에 뜨는 버튼이나 ‘직접 추가’로 그 문장을 채울 수 있어요.",
+                )}
+              </p>
+              <div className="selection-host" ref={memoHost}>
+                <textarea
+                  ref={memoField}
+                  className="meeting-memo"
+                  aria-label={t("미팅 원문 메모")}
+                  value={memo}
+                  onCompositionStart={() => {
+                    composingMemo.current = true;
+                  }}
+                  onCompositionEnd={(e) => {
+                    composingMemo.current = false;
+                    draftMemo.current = e.currentTarget.value;
+                    setMemo(e.currentTarget.value);
+                    setMemoTick((v) => v + 1);
+                  }}
+                  onChange={(e) => {
+                    draftMemo.current = e.target.value;
+                    setMemo(e.target.value);
+                  }}
+                  onBlur={() => {
+                    void commitMemo();
+                  }}
+                  placeholder={t(
+                    "예: 교수님 피드백, 결정한 내용, 다시 확인할 질문",
+                  )}
+                />
+                <SelectionToolbar
+                  anchor={memoSelection.anchor}
+                  onDismiss={memoSelection.clear}
+                  label={t("고른 메모로 만들기")}
+                  actions={[
+                    {
+                      key: "feedback",
+                      icon: "plus",
+                      label: t("피드백"),
+                      onSelect: () => openEntry("feedback"),
+                    },
+                    {
+                      key: "decision",
+                      icon: "plus",
+                      label: t("결정"),
+                      onSelect: () => openEntry("decision"),
+                    },
+                    {
+                      key: "question",
+                      icon: "plus",
+                      label: t("질문"),
+                      onSelect: () => openEntry("question"),
+                    },
+                  ]}
+                />
+              </div>
+              <ErrorNotice error={memoError} />
+              {memoConflict ? (
+                <div className="stack">
+                  <Disclosure
+                    className="student-details"
+                    summary={t("저장본과 비교하기 · 원문 v{revision}", {
+                      revision: meeting.memoRevision,
+                    })}
+                  >
+                    <p className="student-body-text">
+                      {meeting.memo || t("저장된 메모가 없어요.")}
+                    </p>
+                  </Disclosure>
+                  <div className="button-row">
+                    <Button variant="outline" onClick={loadSavedMemo}>
+                      {t("저장본으로 바꾸기")}
+                    </Button>
+                    <Button
+                      disabled={memoState === "saving"}
+                      onClick={() => void commitMemo(true)}
+                    >
+                      {t("내 작성 내용으로 저장")}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                memoState === "error" && (
+                  <div className="button-row">
+                    <Button variant="outline" onClick={() => void commitMemo()}>
+                      {t("다시 저장")}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() =>
+                        void refresh().catch((e) =>
+                          toast.error(
+                            e instanceof Error
+                              ? e.message
+                              : t(
+                                  "저장본을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+                                ),
+                          ),
+                        )
+                      }
+                    >
+                      {t("최신 저장본 확인")}
+                    </Button>
+                  </div>
+                )
+              )}
+              <div className="memo-actions">
+                <span className="meta">
+                  {t("원문 v{revision} · {count}자", {
+                    revision: meeting.memoRevision,
+                    count: memo.length.toLocaleString(),
+                  })}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={memoState === "saving" || !memo.trim()}
+                  aria-describedby={memoAIReason.describedBy}
+                  onClick={() => void openAI()}
+                >
+                  <Icon name="sparkles" size={16} />
+                  {aiInput && !aiOpen
+                    ? t("AI 정리 다시 열기")
+                    : t("AI로 메모 정리")}
+                </Button>
+              </div>
+              {memoAIReason.node}
+            </section>
+            <RecordSide
+              meeting={meeting}
+              onOrganize={() => void openAI()}
+              organizeDisabled={memoState === "saving" || !memo.trim()}
+              onAddFeedback={() => openEntry("feedback")}
+              onAddDecision={() => openEntry("decision")}
+              onAddQuestion={() => openEntry("question")}
+              onShowPreparation={() => void changeTab("prepare")}
+            />
+            <MarginPanel
+              label={t("준비한 내용과 연구 도우미")}
+              open={panelOpen}
+              onOpen={() => setPanelOpen(true)}
+              onClose={() => setPanelOpen(false)}
+            >
+              <PanelFrame
+                title={t("이 미팅")}
+                onClose={() => setPanelOpen(false)}
+                tab={panelTab}
+                onTab={(value) =>
+                  value === "assistant"
+                    ? void openAI()
+                    : setPanelTab("prepared")
+                }
+                tabs={[
+                  // 서면 피드백에는 '준비한 것'이 없습니다(04 §5.5).
+                  ...(written
+                    ? []
+                    : [
+                        {
+                          value: "prepared",
+                          label: t("준비"),
+                          count:
+                            preparedQuestions.length + linkedVersions.length,
+                        },
+                      ]),
+                  { value: "assistant", label: t("연구 도우미") },
+                ]}
+              >
+                {panelTab === "prepared" && !written && (
+                  <div className="panel-frame-body">
+                    <h3>{t("이번 미팅에서 보여줄 결과")}</h3>
+                    <p className="meeting-panel-goal">
+                      {meeting.goal || t("아직 정하지 않았어요.")}
+                    </p>
+                    <h3>
+                      {t("준비한 질문")}
+                      <span className="count-chip">
+                        {preparedQuestions.length}
+                      </span>
+                    </h3>
+                    {preparedQuestions.map((question) => (
+                      <div className="student-simple-row" key={question.id}>
+                        <span className="grow">
+                          <strong>{question.text}</strong>
+                        </span>
+                        <StatusBadge
+                          tone={
+                            question.status === "resolved" ? "green" : "neutral"
+                          }
+                        >
+                          {question.status === "resolved"
+                            ? t("해결")
+                            : t("열림")}
+                        </StatusBadge>
+                      </div>
+                    ))}
+                    {!preparedQuestions.length && (
+                      <InlineEmpty>{t("준비한 질문이 없어요.")}</InlineEmpty>
+                    )}
+                    <h3>
+                      {t("보여줄 자료")}
+                      <span className="count-chip">
+                        {linkedVersions.length}
+                      </span>
+                    </h3>
+                    {linkedVersions.map((version) => (
+                      <Link
+                        className="student-simple-row"
+                        key={version.id}
+                        to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
+                        state={back(meeting.title)}
+                      >
+                        <span className="grow">
+                          <strong>{version.fileName}</strong>
+                          <small>v{version.number}</small>
+                        </span>
+                        <Icon name="arrow-up-right" size={15} />
+                      </Link>
+                    ))}
+                    {!linkedVersions.length && (
+                      <InlineEmpty>
+                        {t("보여줄 자료를 고르지 않았어요.")}
+                      </InlineEmpty>
+                    )}
+                    <p className="panel-frame-note">
+                      {t("준비 탭에서 바꾼 내용이 여기에 보여요.")}
+                    </p>
+                  </div>
+                )}
+                {panelTab === "assistant" && aiInput && (
+                  <AIWorkbench
+                    key={aiInput.sourceRevision}
+                    embedded
+                    title={t("메모 정리")}
+                    input={aiInput}
+                    stale={aiStale}
+                    onClose={() => setPanelOpen(false)}
+                    onRefresh={() => void openAI()}
+                    onSave={saveCandidate}
+                  />
+                )}
+              </PanelFrame>
+            </MarginPanel>
+          </div>
         </div>
       }
       {tab === "questions" && (
