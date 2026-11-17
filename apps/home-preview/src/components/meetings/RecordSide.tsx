@@ -25,6 +25,7 @@ import {
 import type { DetailHistoryState } from "@/lib/item-detail";
 import "@/components/log/log.css";
 import "./record-side.css";
+import { SuggestionRows, SummaryBody, useOrganize } from "./OrganizeParts";
 
 const DETAIL_STATE: DetailHistoryState = { layer: "detail", depth: 1 };
 const FOLD_KEY = "margin-record-side-folded";
@@ -162,8 +163,8 @@ export function RecordSide({
   meeting,
   numbers,
   onPoint,
-  onOrganize,
-  organizeDisabled,
+  prepareOrganize,
+  memoText,
   onAddFeedback,
   onAddDecision,
   onAddQuestion,
@@ -174,8 +175,10 @@ export function RecordSide({
   numbers?: ReadonlyMap<string, number>;
   /** 줄에 올리거나 초점이 가면 원문의 그 곳을 짚습니다. */
   onPoint?(id: string | null): void;
-  onOrganize(): void;
-  organizeDisabled: boolean;
+  /** 정리하기 전에 메모를 저장하고 저장본을 돌려줍니다. */
+  prepareOrganize(): Promise<Meeting | null>;
+  /** 지금 메모 칸의 글(저장 전 포함) */
+  memoText: string;
   onAddFeedback(): void;
   onAddDecision(): void;
   onAddQuestion(): void;
@@ -187,6 +190,7 @@ export function RecordSide({
   const today = seoulToday();
   const items = recordItems(meeting, data);
   const [addingFor, setAddingFor] = useState<string | null>(null);
+  const organize = useOrganize(meeting, prepareOrganize);
   const written = meeting.recordType === "written";
   const researchId = meeting.researchId;
   const grouped = new Set<string>();
@@ -239,17 +243,11 @@ export function RecordSide({
   return (
     <aside className="record-side" aria-label={t("요약·할 일")}>
       <Fold id="summary" title={t("요약")}>
-        <p className="record-side-empty">{t("요약이 아직 없어요.")}</p>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={organizeDisabled}
-          onClick={onOrganize}
-        >
-          <Icon name="sparkles" size={15} />
-          {t("정리하기")}
-        </Button>
-        <p className="record-side-note">{t("이 기록의 메모로 정리해요.")}</p>
+        <SummaryBody
+          meeting={meeting}
+          organize={organize}
+          canRun={!!memoText.trim() || organize.hasMyRecording}
+        />
       </Fold>
       <Fold
         id="work"
@@ -284,6 +282,7 @@ export function RecordSide({
             {tasks.map(row)}
           </FeedbackGroup>
         ))}
+        <SuggestionRows meeting={meeting} organize={organize} />
         {others.length > 0 && (
           <div className="record-side-group">
             <h4>{t("그 밖의 할 일")}</h4>

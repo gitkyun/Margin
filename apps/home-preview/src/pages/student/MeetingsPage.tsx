@@ -1671,8 +1671,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               meeting={meeting}
               numbers={anchorNumbers}
               onPoint={setPointed}
-              onOrganize={() => void openAI()}
-              organizeDisabled={memoState === "saving" || !memo.trim()}
+              prepareOrganize={() => commitMemo()}
+              memoText={memo}
               onAddFeedback={() => openEntry("feedback")}
               onAddDecision={() => openEntry("decision")}
               onAddQuestion={() => openEntry("question")}
