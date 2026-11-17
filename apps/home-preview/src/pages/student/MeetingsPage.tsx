@@ -4,6 +4,15 @@ import { RecordHeader } from "@/components/meetings/RecordHeader";
 import { PrepareSide, RecordSide } from "@/components/meetings/RecordSide";
 import { WrittenFeedbackDialog } from "@/components/meetings/WrittenFeedbackDialog";
 import { recordMode } from "@/lib/record-view";
+import { relocateMarks } from "@/lib/memo-marks";
+import {
+  MARK_LIMIT,
+  addMark,
+  markedPieces,
+  overlapsMark,
+  removeMarks,
+  validMarks,
+} from "@/lib/recording-marks";
 import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { t } from "@/lib/i18n";
 import { isImeComposing } from "@/lib/ime";
@@ -314,6 +323,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   // 메모에서 고른 문장으로 피드백·결정·질문을 채우려고 메모 칸을 기억합니다.
   const memoField = useRef<HTMLTextAreaElement>(null);
   const memoHost = useRef<HTMLDivElement>(null);
+  const memoBackdrop = useRef<HTMLDivElement>(null);
   const memoSelection = useTextareaSelection(memoField, memoHost);
   const savedMemo = useRef<string | null>(
     restoredDraft?.text === meeting.memo
@@ -417,6 +427,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         ...current,
         memo: text,
         memoRevision: current.memoRevision + 1,
+        // 형광펜은 같은 글자를 새 메모에서 찾아 자리를 옮겨 함께 저장합니다(08 §3.1).
+        ...(current.memoMarks?.length
+          ? {
+              memoMarks: relocateMarks(current.memoMarks, current.memo, text),
+            }
+          : {}),
       });
       savedMemo.current = text;
       savedRevision.current = stored.memoRevision;
@@ -506,6 +522,42 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     label: t("미팅 메모"),
     onDiscard: loadSavedMemo,
   });
+  /** 고른 메모 글에 형광펜을 칠하거나(겹치면) 지웁니다(04 §5.2). 누르는 즉시 저장합니다. */
+  async function toggleMemoMark() {
+    const field = memoField.current;
+    if (!field) return;
+    const start = field.selectionStart,
+      end = field.selectionEnd;
+    if (start === end) return;
+    let base = latest.current;
+    if (draftMemo.current !== savedMemo.current) {
+      const saved = await commitMemo();
+      if (!saved) return;
+      base = saved;
+    }
+    if (base.memo !== draftMemo.current) return;
+    const marked = overlapsMark(base.memoMarks, base.memo, start, end);
+    const marks = marked
+      ? removeMarks(base.memoMarks, base.memo, start, end)
+      : addMark(base.memoMarks, base.memo, start, end);
+    if (
+      !marked &&
+      marks.length >= MARK_LIMIT &&
+      validMarks(base.memoMarks, base.memo).length >= MARK_LIMIT
+    ) {
+      toast.error(
+        t("형광펜은 {count}개까지 칠할 수 있어요.", { count: MARK_LIMIT }),
+      );
+      return;
+    }
+    try {
+      const stored = await save("meetings", { ...base, memoMarks: marks });
+      latest.current = stored;
+      memoSelection.clear();
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
   async function changeTab(next: string) {
     if (tab === "record" && draftMemo.current !== savedMemo.current) {
       const result = await commitMemo();
@@ -1118,9 +1170,32 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   "메모에서 문장을 고르면 위에 뜨는 버튼이나 ‘직접 추가’로 그 문장을 채울 수 있어요.",
                 )}
               </p>
-              <div className="selection-host" ref={memoHost}>
+              <div className="selection-host memo-marked" ref={memoHost}>
+                {/* 형광펜은 글 칸 뒤에 같은 글을 그려 칠합니다(글 칸 안에는 표시를 넣을 수 없음). */}
+                <div
+                  className="memo-backdrop"
+                  aria-hidden="true"
+                  ref={memoBackdrop}
+                >
+                  {markedPieces(
+                    memo,
+                    relocateMarks(meeting.memoMarks, meeting.memo, memo),
+                  ).map((piece) =>
+                    piece.marked ? (
+                      <mark key={piece.start}>{piece.text}</mark>
+                    ) : (
+                      <span key={piece.start}>{piece.text}</span>
+                    ),
+                  )}
+                  {"\n"}
+                </div>
                 <textarea
                   ref={memoField}
+                  onScroll={(event) => {
+                    if (memoBackdrop.current)
+                      memoBackdrop.current.scrollTop =
+                        event.currentTarget.scrollTop;
+                  }}
                   className="meeting-memo"
                   aria-label={t("미팅 원문 메모")}
                   value={memo}
@@ -1149,6 +1224,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   onDismiss={memoSelection.clear}
                   label={t("고른 메모로 만들기")}
                   actions={[
+                    {
+                      key: "mark",
+                      icon: "edit",
+                      label: t("형광펜"),
+                      onSelect: () => void toggleMemoMark(),
+                    },
                     {
                       key: "feedback",
                       icon: "plus",
