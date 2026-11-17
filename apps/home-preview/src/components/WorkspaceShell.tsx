@@ -18,6 +18,15 @@ import {
 } from "./margin-panel/PanelResizer";
 import { TopBar } from "./shell/TopBar";
 import { SideRail } from "./shell/SideRail";
+import { ItemDetail } from "./item-detail/ItemDetail";
+import { TasksPanel } from "./tasks/TasksPanel";
+import { LogPanel } from "./log/LogPanel";
+import { useDetailRef } from "@/lib/item-detail";
+import {
+  initialPanelTab,
+  rememberPanel,
+  type SidePanelTab,
+} from "@/lib/side-panel";
 import { MobileTabBar } from "./shell/MobileTabBar";
 import { BottomDock } from "./shell/BottomDock";
 import { useMediaQuery } from "@/lib/use-media-query";
@@ -175,6 +184,17 @@ export function WorkspaceShell({
   const homeLabel = incomingOnly ? t("받은 검토 요청") : t("내 연구");
   useGoShortcuts(research ? researchId : undefined);
   const panel = useMarginPanelHost();
+  // ?detail= 항목 상세(06 §6)는 사이드 창 자리에 덮여 뜹니다. 창이 닫혀 있어도 엽니다.
+  const detail = useDetailRef();
+  // 아이콘 줄의 실제 탭(1단계: 할 일 창 P2). 화면이 보낸 임시 탭과는 한 번에 하나만 엽니다.
+  const [railTab, setRailTabState] = useState<SidePanelTab | null>(() =>
+    initialPanelTab(window.innerWidth),
+  );
+  // 사람이 여닫은 것만 기억합니다(화면 이동으로 닫힌 것은 남기지 않음, 02 §4.5).
+  const setRailTab = (tab: SidePanelTab | null, remember = false) => {
+    setRailTabState(tab);
+    if (remember) rememberPanel(window.innerWidth, tab);
+  };
   // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
   const panelRef = useRef(panel);
   panelRef.current = panel;
@@ -200,11 +220,17 @@ export function WorkspaceShell({
   }, []);
   // 겹쳐 뜬 사이드 창(1199px 이하)은 다른 화면으로 가면 닫힙니다(D15).
   useEffect(() => {
-    if (overlayPanel) panelRef.current.active?.onClose();
+    if (!overlayPanel) return;
+    panelRef.current.active?.onClose();
+    setRailTab(null);
   }, [location.pathname, overlayPanel]);
+  // 화면이 보낸 창을 열면 할 일 창은 닫습니다(한 번에 하나).
+  useEffect(() => {
+    if (panel.active) setRailTab(null);
+  }, [panel.active?.id]);
   // 겹쳐 뜬 사이드 창은 뒤를 가리지 않고, 바깥을 누르면 닫힙니다(D15).
   useEffect(() => {
-    if (!overlayPanel || !panel.active) return;
+    if (!overlayPanel || (!panel.active && !railTab)) return;
     const onPointer = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -215,10 +241,11 @@ export function WorkspaceShell({
       )
         return;
       panelRef.current.active?.onClose();
+      setRailTab(null);
     };
     document.addEventListener("pointerdown", onPointer);
     return () => document.removeEventListener("pointerdown", onPointer);
-  }, [overlayPanel, panel.active]);
+  }, [overlayPanel, panel.active, railTab]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -263,6 +290,11 @@ export function WorkspaceShell({
       </div>
     );
   const inResearch = !!research && !!researchId;
+  const detailOpen = inResearch && !!detail;
+  const tasksOpen = inResearch && railTab === "tasks";
+  const logOpen = inResearch && railTab === "log";
+  const railOpen = tasksOpen || logOpen;
+  const panelShown = !!panel.active || detailOpen || railOpen;
   return (
     <div
       style={
@@ -273,7 +305,7 @@ export function WorkspaceShell({
           : undefined
       }
       data-panel-side={panelSide}
-      className={`app-shell floating-workspace ia-shell ${inResearch ? "" : "ia-shell-outside"} ${widePanel ? "ia-panel-wide" : ""} ${panel.active ? "margin-panel-open" : ""}`}
+      className={`app-shell floating-workspace ia-shell ${inResearch ? "" : "ia-shell-outside"} ${widePanel ? "ia-panel-wide" : ""} ${panelShown ? "margin-panel-open" : ""}`}
     >
       <a className="skip-link" href="#main-content">
         {t("본문으로 이동")}
@@ -312,7 +344,7 @@ export function WorkspaceShell({
             </span>
           </footer>
         </div>
-        {panel.active && (
+        {panel.active && !detailOpen && (
           <button
             type="button"
             className="margin-panel-backdrop"
@@ -321,7 +353,7 @@ export function WorkspaceShell({
             onClick={panel.active.onClose}
           />
         )}
-        {panel.active && (
+        {panelShown && (
           <PanelResizer
             side={panelSide}
             width={panelWidth}
@@ -335,16 +367,55 @@ export function WorkspaceShell({
         <aside
           id="margin-panel"
           className="margin-panel"
-          aria-label={panel.active?.label ?? t("여백 패널")}
-          hidden={!panel.active}
+          aria-label={
+            detailOpen
+              ? t("항목 상세")
+              : (panel.active?.label ?? t("여백 패널"))
+          }
+          hidden={!panelShown}
           tabIndex={-1}
-          ref={panel.setSlot}
-        />
+        >
+          {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
+          <div
+            className="margin-panel-slot"
+            hidden={detailOpen || railOpen}
+            ref={panel.setSlot}
+          />
+          {/* 실제 탭은 상세가 덮여 있어도 살려 두고 숨깁니다(쓰던 글·스크롤 유지, 02 §4.2). */}
+          {tasksOpen && researchId && (
+            <div hidden={detailOpen}>
+              <TasksPanel
+                researchId={researchId}
+                onClose={() => setRailTab(null, true)}
+              />
+            </div>
+          )}
+          {logOpen && researchId && (
+            <div hidden={detailOpen}>
+              <LogPanel
+                researchId={researchId}
+                onClose={() => setRailTab(null, true)}
+              />
+            </div>
+          )}
+          {detailOpen && detail && researchId && (
+            <ItemDetail researchId={researchId} detail={detail} />
+          )}
+        </aside>
         {inResearch && (
           <SideRail
             researchId={researchId}
             offered={panel.offered}
-            active={panel.active}
+            active={railOpen ? null : panel.active}
+            openTab={railTab}
+            onTab={(tab) => {
+              if (railTab === tab) {
+                setRailTab(null, true);
+                return;
+              }
+              panel.active?.onClose();
+              setRailTab(tab, true);
+            }}
           />
         )}
       </div>

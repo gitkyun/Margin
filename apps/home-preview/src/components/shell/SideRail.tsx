@@ -13,11 +13,16 @@ import { useOpenSettings } from "../settings/SettingsDialog";
 
 const FEEDBACK_MAIL = "mailto:admin@margin.com";
 
+export type RailTab = "tasks" | "log";
+
 export interface SideRailProps {
   researchId?: string;
   /** 화면이 보낸 패널(0단계 임시 탭, 02 §4.6). 열 수 있는 것이 없으면 없음. */
   offered?: MarginPanelEntry | null;
   active?: MarginPanelEntry | null;
+  /** 열린 실제 탭(1단계부터: 할 일 P2, 결정·질문 P3)과 여닫기 */
+  openTab?: RailTab | null;
+  onTab?(tab: RailTab): void;
 }
 
 /**
@@ -25,7 +30,13 @@ export interface SideRailProps {
  * 0단계에는 사이드 창 탭 내용이 아직 없어 연구 도우미는 지금 화면으로 가는 링크이고,
  * 화면이 패널을 보내면 '이 화면' 임시 탭을 둡니다.
  */
-export function SideRail({ researchId, offered, active }: SideRailProps) {
+export function SideRail({
+  researchId,
+  offered,
+  active,
+  openTab = null,
+  onTab,
+}: SideRailProps) {
   const location = useLocation();
   const openSettings = useOpenSettings();
   const ref = useRef<HTMLDivElement>(null);
@@ -78,6 +89,22 @@ export function SideRail({ researchId, offered, active }: SideRailProps) {
           label={t("연구 도우미")}
           pressed={location.pathname.startsWith(assistantPath)}
         />
+      )}
+      {onTab && (
+        <>
+          <RailButton
+            icon="tasks"
+            label={t("할 일")}
+            pressed={openTab === "tasks"}
+            onClick={() => onTab("tasks")}
+          />
+          <RailButton
+            icon="flag"
+            label={t("결정·질문")}
+            pressed={openTab === "log"}
+            onClick={() => onTab("log")}
+          />
+        </>
       )}
       {offered && (
         <RailButton

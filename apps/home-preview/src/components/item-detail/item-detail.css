@@ -1,0 +1,256 @@
+@layer margin {
+  /* 항목 상세(IA v2 06 §6). 사이드 창 폭 그대로 덮여 뜹니다. */
+  .item-detail {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  .item-detail-head {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-raised);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-8) var(--spacing-12);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .item-detail-head h2 {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .item-detail-head h2:focus {
+    outline: none;
+  }
+  .item-detail-head h2:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  .item-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-16);
+    padding: var(--spacing-16);
+  }
+  .item-detail-title {
+    width: 100%;
+    padding: var(--spacing-4) 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-headline2-fontSize);
+    font-weight: 700;
+    word-break: keep-all;
+  }
+  .item-detail-title:hover,
+  .item-detail-title:focus {
+    border-bottom-color: var(--line);
+    outline: none;
+  }
+  .item-detail-headline {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .item-detail-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-12);
+  }
+  .item-detail-fields label {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .item-detail-fields select,
+  .item-detail-fields input {
+    min-height: 32px;
+    padding: 0 var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+  }
+  .item-detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+  }
+  .item-detail-section h3 {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .item-detail-text,
+  .item-detail-lead,
+  .item-detail-empty,
+  .item-detail-badge {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .item-detail-lead {
+    font-size: var(--typography-body2-fontSize);
+    font-weight: 600;
+  }
+  .item-detail-empty {
+    color: var(--text-tertiary);
+  }
+  .item-detail-badge {
+    font-weight: 600;
+  }
+  .item-detail-quote {
+    margin: 0;
+    padding-left: var(--spacing-12);
+    border-left: 2px solid var(--line);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: 1.6;
+  }
+  .item-detail-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    width: 100%;
+    min-height: 40px;
+    padding: var(--spacing-4) var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .item-detail-row:hover {
+    background: var(--surface-muted);
+  }
+  .item-detail-row span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .item-detail-row small {
+    flex: none;
+    color: var(--text-tertiary);
+  }
+  .item-detail-row .is-done {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+  }
+  .item-detail-task {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  .item-detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--brand);
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+  }
+  .item-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+  }
+  .item-detail-plan p {
+    margin: var(--spacing-4) 0 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .item-detail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .item-detail-archived,
+  .item-detail-missing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12);
+    border-radius: var(--radius-12);
+    background: var(--surface-muted);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .item-detail-missing p {
+    margin: 0;
+  }
+  /* 진행 다섯 칸: 280px에서는 점과 지금 칸 글자만, 400px 이상이면 이름을 모두 보입니다(06 §6.2). */
+  .item-detail {
+    container-type: inline-size;
+  }
+  .item-detail-progress {
+    display: flex;
+    gap: var(--spacing-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .item-detail-progress li {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    min-width: 0;
+  }
+  .item-detail-dot {
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+  }
+  .item-detail-progress li[data-filled] .item-detail-dot {
+    border-color: var(--brand);
+    background: var(--brand);
+  }
+  .item-detail-step {
+    display: none;
+    flex-direction: column;
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .item-detail-step small {
+    color: var(--text-tertiary);
+  }
+  @container (min-width: 400px) {
+    .item-detail-step {
+      display: flex;
+    }
+  }
+  .item-detail-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+  }
+  .item-detail-skeleton span {
+    height: 16px;
+    border-radius: var(--radius-8);
+    background: var(--line);
+  }
+}

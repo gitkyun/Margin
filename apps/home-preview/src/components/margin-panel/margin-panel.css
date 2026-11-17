@@ -33,6 +33,13 @@
   .margin-panel[hidden] {
     display: none;
   }
+  /* 화면이 보낸 창 내용이 들어가는 자리. 상세(?detail=)가 덮이면 숨깁니다(IA v2 02 §4.3). */
+  .margin-panel-slot {
+    min-height: 100%;
+  }
+  .margin-panel-slot[hidden] {
+    display: none;
+  }
   .margin-panel:focus {
     outline: none;
   }

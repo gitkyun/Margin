@@ -20,10 +20,12 @@ const MEETING_TITLE = t("지도 미팅");
 export function onboardingMeeting(
   answer: MeetingAnswer | null,
   today: string,
+  /** 지금 시각(HH:MM). '방금 마친' 미팅은 이 시각으로 남겨 홈에서 '지난 미팅 기록 남기기'가 되게 합니다(IA v2 03 §3). */
+  now?: string,
 ): OnboardingMeeting | null {
   if (!answer || answer.kind === "skip") return null;
   if (answer.kind === "just_finished")
-    return { title: MEETING_TITLE, date: today, time: null };
+    return { title: MEETING_TITLE, date: today, time: now ?? null };
   if (answer.kind === "dated" && answer.date)
     return {
       title: MEETING_TITLE,
@@ -39,8 +41,9 @@ export function onboardingLeadLabel(
   today: string,
 ): string {
   const meeting = onboardingMeeting(answer, today);
-  if (!meeting) return t("미팅 만들기");
-  return meeting.date === today ? t("기록 시작") : t("미팅 준비하기");
+  if (!meeting) return t("다음 미팅 잡기");
+  if (answer?.kind === "just_finished") return t("지난 미팅 기록 남기기");
+  return meeting.date === today ? t("녹음 시작") : t("미팅 준비하기");
 }
 
 export type ChecklistKey = "record" | "feedback" | "task" | "material";

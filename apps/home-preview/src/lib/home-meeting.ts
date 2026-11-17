@@ -10,6 +10,16 @@ export function seoulToday(now = new Date()): string {
   }).format(now);
 }
 
+/** 지금 시각(HH:MM, 서울 기준). 미팅 시각 문자열과 그대로 비교합니다. */
+export function seoulNowTime(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(now);
+}
+
 /** Finished records must never become the home recording/preparation target. */
 export function selectNextMeeting(
   meetings: Meeting[],
