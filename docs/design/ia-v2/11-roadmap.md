@@ -64,6 +64,13 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 
 상태 표시: `[ ]` 시작 전, `[~]` 진행 중(브랜치 이름 적기), `[x]` 병합(PR 링크 적기). 단계를 끝낸 사람이 이 표를 같은 PR에서 고칩니다.
 
+### 0단계에서 설계와 다르게 둔 것 (뒤 단계에서 맞춤)
+
+- 설정 창은 지금 설정 화면을 그대로 담았습니다(`SettingsPage`의 `embedded`). 구획 파일 나누기, 테마 셋 고르기, 사이드 창 위치는 1단계 이후.
+- 미팅 주기(`settings=schedule`)는 Q7 확인 전이라 목록에 없고, 그 값은 틀린 값처럼 지웁니다.
+- 예전 주소 이동은 지금 있는 화면으로 갈 수 있는 것만 했습니다(`lib/legacy-routes.ts`): writing·materials·planning·folders·questions·decisions·settings·account. `new=1`은 바꾸지 않고 넘기며, `planning?tab=schedule`은 미팅 화면 단계 전까지 `/flow?tab=schedule`에 둡니다. results·reviews·feedback·tasks/:id·assistant·plans·recordings는 각 화면 단계에서 더합니다.
+- 검토 화면(`/reviews/:requestId`)의 '화면 설정'은 틀 밖이라 아직 `/account?tab=appearance` → `/r?settings=display`로 이동합니다(그 자리에서 열기는 뒤 단계).
+
 ### 동시에 할 수 있는 것
 
 - 0 → 1은 순서대로 합니다(모든 화면이 틀과 공통 줄 부품을 씀).
