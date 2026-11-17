@@ -127,7 +127,7 @@ describe("buildCommands", () => {
       searching: false,
     });
     expect(sections.map((s) => s.id)).toEqual(["create", "go", "researches"]);
-    expect(ids(sections, "go")).not.toContain("go:planning");
+    expect(ids(sections, "go")).not.toContain("go:flow");
   });
 });
 

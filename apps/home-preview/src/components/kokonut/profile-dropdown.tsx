@@ -94,6 +94,11 @@ interface ProfileDropdownProps extends Omit<
   /** Called once Sign out has been held for `holdDuration` ms. */
   onSignOut?: () => void;
   holdDuration?: number;
+  /**
+   * 마진 추가(IA v2 02 §3.6): 패널이 여는 버튼의 어느 쪽으로 자라는지.
+   * 원본은 사이드바 아래 버튼에서 위로 자라는 "top"이고, 상단 줄 아바타에서는 "bottom".
+   */
+  placement?: "top" | "bottom";
 }
 
 const STATUSES: {
@@ -633,6 +638,7 @@ export default function ProfileDropdown({
   onStatusChange,
   onSignOut,
   holdDuration = 1200,
+  placement = "top",
   className,
   ...props
 }: ProfileDropdownProps) {
@@ -658,7 +664,12 @@ export default function ProfileDropdown({
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
-  const [anchor, setAnchor] = useState({ left: 8, bottom: 8, maxHeight: 700 });
+  const [anchor, setAnchor] = useState<{
+    left: number;
+    top?: number;
+    bottom?: number;
+    maxHeight: number;
+  }>({ left: 8, bottom: 8, maxHeight: 700 });
   const triggerRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const accountsRef = useRef<HTMLDivElement>(null);
@@ -679,8 +690,13 @@ export default function ProfileDropdown({
   const h = useMotionValue(0);
   const pageX = useMotionValue(0);
   const bodyOpacity = useMotionValue(1);
-  const outerClip = useMotionTemplate`inset(calc(100% - ${h}px) calc(100% - ${w}px) 0px 0px round ${RADIUS}px)`;
-  const innerClip = useMotionTemplate`inset(calc(100% - ${h}px + 1px) calc(100% - ${w}px + 1px) 1px 1px round ${RADIUS - 1}px)`;
+  // 원본: 왼쪽 아래 모서리에 붙어 위로 자람. placement="bottom"이면 오른쪽 위 모서리에 붙어 아래로 자람.
+  const outerClipUp = useMotionTemplate`inset(calc(100% - ${h}px) calc(100% - ${w}px) 0px 0px round ${RADIUS}px)`;
+  const innerClipUp = useMotionTemplate`inset(calc(100% - ${h}px + 1px) calc(100% - ${w}px + 1px) 1px 1px round ${RADIUS - 1}px)`;
+  const outerClipDown = useMotionTemplate`inset(0px 0px calc(100% - ${h}px) calc(100% - ${w}px) round ${RADIUS}px)`;
+  const innerClipDown = useMotionTemplate`inset(1px 1px calc(100% - ${h}px + 1px) calc(100% - ${w}px + 1px) round ${RADIUS - 1}px)`;
+  const outerClip = placement === "bottom" ? outerClipDown : outerClipUp;
+  const innerClip = placement === "bottom" ? innerClipDown : innerClipUp;
   const pageTransform = useMotionTemplate`translate3d(${pageX}px, 0, 0)`;
 
   const account = accounts.find((entry) => entry.id === accountId) ??
@@ -700,11 +716,26 @@ export default function ProfileDropdown({
     }
     const rect = triggerRef.current?.getBoundingClientRect();
     if (rect)
-      setAnchor({
-        left: Math.max(8, Math.min(rect.left, window.innerWidth - PANEL_W - 8)),
-        bottom: window.innerHeight - rect.bottom,
-        maxHeight: rect.bottom - 8,
-      });
+      setAnchor(
+        placement === "bottom"
+          ? {
+              // 버튼의 오른쪽 위 모서리에서 아래로 자랍니다.
+              left: Math.max(
+                8,
+                Math.min(rect.right - PANEL_W, window.innerWidth - PANEL_W - 8),
+              ),
+              top: rect.top,
+              maxHeight: window.innerHeight - rect.top - 8,
+            }
+          : {
+              left: Math.max(
+                8,
+                Math.min(rect.left, window.innerWidth - PANEL_W - 8),
+              ),
+              bottom: window.innerHeight - rect.bottom,
+              maxHeight: rect.bottom - 8,
+            },
+      );
     openIntent.current = { focus, resume: phaseRef.current === "closing" };
     closeSeq.current += 1;
     setInstant(via === "keyboard" || reduced);
@@ -961,6 +992,7 @@ export default function ProfileDropdown({
               style={{
                 width: PANEL_W,
                 left: anchor.left,
+                top: anchor.top,
                 bottom: anchor.bottom,
                 maxHeight: anchor.maxHeight,
               }}

@@ -12,21 +12,23 @@ test("내 연구에서 연구 홈으로 들어가 주요 메뉴를 오간다", a
     .first()
     .click();
   await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/);
-  const menu = page.getByRole("navigation").first();
+  const menu = page.getByRole("navigation", { name: "주요 메뉴" }).first();
   for (const [name, path, title] of [
-    // 사이드바 메뉴 여섯(감사 F1). 검토 요청·자료는 피드백·문서 메뉴 안의 탭이에요.
-    ["할 일", "tasks", "할 일"],
-    ["피드백", "feedback", "피드백"],
-    ["미팅", "meetings", "미팅"],
-    ["문서", "writing", "글쓰기"],
-    ["일정", "planning", "일정"],
+    // IA v2 상단 메뉴 넷(docs/design/ia-v2/02-shell.md §3.1). 0단계에는 지금 화면을 그대로 띄워요.
+    ["할 일", "/tasks", "할 일"],
+    ["미팅", "/meetings", "미팅"],
+    ["글·자료", "/docs", "글·자료"],
+    ["홈", "", "홈"],
   ] as const) {
-    // 피드백 메뉴는 새 응답이 있으면 이름 뒤에 '새 응답 있음'이 붙어요(사이드바 점의 화면 낭독 문구).
+    // 미팅 메뉴는 새 교수 응답이 있으면 이름 뒤에 '새 응답 있음'이 붙어요(점의 화면 낭독 문구).
     await menu
       .getByRole("link", { name: new RegExp(`^${name}( 새 응답 있음)?$`) })
       .click();
-    await expect(page).toHaveURL(new RegExp(`/${path}$`));
+    await expect(page).toHaveURL(new RegExp(`/r/[0-9a-f-]{36}${path}$`));
     await expect(page).toHaveTitle(new RegExp(title));
+    await expect(
+      menu.getByRole("link", { name: new RegExp(`^${name}`) }),
+    ).toHaveAttribute("aria-current", "page");
   }
   expect(errors).toEqual([]);
 });
@@ -38,7 +40,7 @@ test("할 일 목록에 가상 연구의 할 일이 보인다", async ({ page })
     .first()
     .click();
   await page
-    .getByRole("navigation")
+    .getByRole("navigation", { name: "주요 메뉴" })
     .first()
     .getByRole("link", { name: "할 일", exact: true })
     .click();
@@ -58,10 +60,22 @@ test("미리보기에서는 공동연구자 설정이 열리고, 메일 초대 �
 }) => {
   await page.goto("/r");
   await page.getByRole("link", { name: "연구 설정" }).first().click();
-  await expect(page).toHaveURL(/\/settings/);
-  await page.goto(`${page.url().split("?")[0]}?tab=members`);
-  await expect(page.getByLabel("공동연구자 이메일")).toBeVisible();
+  // IA v2: 연구 설정은 그 연구 홈 위의 설정 창(`?settings=`)으로 열립니다.
+  await expect(page).toHaveURL(/\/r\/[^/?]+\?settings=research$/);
+  const dialog = page.getByRole("dialog", { name: "설정" });
+  await dialog.getByRole("button", { name: "함께하는 사람" }).click();
+  await expect(page).toHaveURL(/\?settings=people$/);
+  await expect(dialog.getByLabel("공동연구자 이메일")).toBeVisible();
   await expect(page.getByText("이메일로 초대")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(page).not.toHaveURL(/settings=/);
+  // 예전 주소는 새 주소로 넘어갑니다(01 §3.3).
+  const base = new URL(page.url()).pathname;
+  await page.goto(`${base}/settings?tab=lifecycle`);
+  await expect(page).toHaveURL(new RegExp(`${base}\\?settings=danger$`));
+  await page.goto(`${base}/settings?tab=아무값`);
+  await expect(page).toHaveURL(new RegExp(`${base}\\?settings=research$`));
 });
 
 test("없는 주소는 404 안내를, 초대 수락 주소는 미리보기에서 가입 안내로 보낸다", async ({
@@ -149,4 +163,23 @@ test("일정 단계는 키보드로 순서를 저장하고 편집·현재 단계
     ).toBeLessThanOrEqual(1);
   }
   expect(errors).toEqual([]);
+});
+
+test("연결이 끊기면 상단 띠 하나만 연결 끊김으로 바뀐다", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/r");
+  await page.getByRole("link", { name: "연구 설정" }).first().click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".preview-banner")).toHaveCount(1);
+  await context.setOffline(true);
+  await expect(
+    page.getByText("인터넷 연결이 끊겼어요. 연결되면 다시 저장해 주세요."),
+  ).toBeVisible();
+  await expect(page.locator(".preview-banner")).toHaveCount(1);
+  await context.setOffline(false);
+  await expect(
+    page.getByText("인터넷 연결이 끊겼어요.", { exact: false }),
+  ).toHaveCount(0);
 });

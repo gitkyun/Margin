@@ -15,7 +15,12 @@ function useGoShortcut(
   useHotkeys(
     `g>${key}`,
     () => {
-      if (researchId) navigate(researchPath(researchId, path));
+      if (!researchId) return;
+      // 설정 창처럼 지금 화면 위에 여는 곳은 닫을 때 뒤로 가기로 닫히게 표시합니다.
+      navigate(
+        researchPath(researchId, path),
+        path.startsWith("?") ? { state: { settingsOpened: true } } : undefined,
+      );
     },
     {
       enabled: !!researchId,
@@ -33,7 +38,7 @@ function useGoShortcut(
  * GO_SHORTCUTS는 고정 목록이라 훅 호출 순서가 바뀌지 않습니다.
  */
 export function useGoShortcuts(researchId: string | undefined) {
-  for (const [path, key] of GO_SHORTCUTS) {
+  for (const { to: path, key } of GO_SHORTCUTS) {
     // eslint-disable-next-line react-hooks/rules-of-hooks -- 고정 길이 목록
     useGoShortcut(researchId, path, key);
   }

@@ -2,7 +2,6 @@ import { t } from "@/lib/i18n";
 import { MiniRecorder } from "@/components/recording/MiniRecorder";
 import ProfileDropdown from "@/components/kokonut/profile-dropdown";
 import { useTheme } from "@/lib/theme";
-import { BrandMark, BrandWordmark } from "./brand/Brand";
 import { formatDateTime } from "@/lib/domain";
 import {
   useEffect,
@@ -11,38 +10,41 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { PanelResizer, usePanelWidth } from "./margin-panel/PanelResizer";
+import {
+  DOCS_PANEL_WIDTH_KEY,
+  PANEL_WIDTH_KEY,
+  PanelResizer,
+  usePanelWidth,
+} from "./margin-panel/PanelResizer";
+import { TopBar } from "./shell/TopBar";
+import { SideRail } from "./shell/SideRail";
+import { MobileTabBar } from "./shell/MobileTabBar";
+import { BottomDock } from "./shell/BottomDock";
+import { useMediaQuery } from "@/lib/use-media-query";
+import { usePanelSide } from "@/lib/panel-side";
+import "./shell/shell.css";
 import {
   Link,
-  NavLink,
   Outlet,
   useLocation,
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { Suspense } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { Icon } from "./icons";
-import { Hint } from "./ui/hint";
-import { navPreview } from "@/lib/nav-preview";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutHelp } from "./ShortcutHelp";
+import { SettingsDialog, useOpenSettings } from "./settings/SettingsDialog";
 
-import {
-  RESEARCH_NAVIGATION,
-  createEntries,
-  incomingReviews,
-  isIncomingOnly,
-} from "@/lib/command-items";
-import { goShortcutLabel } from "@/lib/go-shortcuts";
+import { RESEARCH_NAVIGATION, isIncomingOnly } from "@/lib/command-items";
 import { useGoShortcuts } from "@/lib/use-go-shortcuts";
 import { Button } from "./ui/button";
 import { EmptyState, LoadingState } from "./common";
 import { useWorkspace } from "@/lib/workspace";
-import { useAIUsage } from "@/lib/ai-usage";
 import { friendlyError } from "@/lib/supabase";
 import { useExperience } from "@/lib/experience";
-import { queryDown, queryUp } from "@/design/responsive";
+import { queryDown } from "@/design/responsive";
 import {
   MarginPanelProvider,
   useMarginPanelHost,
@@ -54,27 +56,12 @@ import {
   activityEnabled,
 } from "@/lib/notifications";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "./ui/dialog";
-import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
 } from "./ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 const navigation = RESEARCH_NAVIGATION;
 const activityTitles: Record<string, string> = {
   // i18n-ignore: 서버에 저장된 알림 제목(자료)
@@ -95,11 +82,13 @@ const activityTitles: Record<string, string> = {
 function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
   const { user, mode, signOut } = useWorkspace();
   const navigate = useNavigate();
+  const openSettings = useOpenSettings();
   const { theme, setTheme } = useTheme();
   const [attempt, setAttempt] = useState(0);
   return (
     <ProfileDropdown
       key={attempt}
+      placement="bottom"
       accounts={[
         {
           id: user.id,
@@ -115,18 +104,18 @@ function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
         {
           label: t("프로필 설정"),
           icon: <Icon name="user" size={16} />,
-          onSelect: () => navigate("/account?tab=profile"),
+          onSelect: () => openSettings("profile"),
         },
         {
           label: t("AI 기본 설정"),
           icon: <Icon name="sparkles" size={16} />,
-          onSelect: () => navigate("/account?tab=ai"),
+          onSelect: () => openSettings("assistant"),
         },
         {
           label: t("사용량·플랜"),
           icon: <Icon name="chart" size={16} />,
           value: "Free",
-          onSelect: () => navigate("/account?tab=usage"),
+          onSelect: () => openSettings("usage"),
         },
         {
           label: t("사용 안내"),
@@ -148,25 +137,11 @@ function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
     />
   );
 }
-/** sm 이상 lg 미만(768~1199px). 이 구간에서는 메뉴를 좁은 레일로 두고, 펼치면 본문 위에 뜹니다. */
-const COMPACT_QUERY = `${queryUp("sm")} and ${queryDown("lg")}`;
-/** 집중 모드에서 메뉴를 직접 펼쳤는지는 둘러보기 모드의 설정과 따로 기억합니다. */
-const FOCUS_EXPANDED_KEY = "rms-sidebar-focus-expanded";
-/** 작업대처럼 본문을 넓게 써야 하는 화면: 연구 도우미, 글쓰기 문서 편집 */
-const FOCUS_ROUTE = /^\/r\/[^/]+\/(assistant(\/|$)|writing\/[^/]+)/;
-/**
- * 사이드바 메뉴 여섯(감사 F1, design-b 2.1). 묶음 이름 없이 지도 순서대로 둡니다.
- * 수정 결과·검토 요청은 '피드백', 자료는 '문서' 메뉴 안의 보기라 그 메뉴를 켭니다.
- */
-const NAV_PATHS = ["", "meetings", "feedback", "tasks", "writing", "planning"];
-const NAV_ALSO_ACTIVE: Record<string, string[]> = {
-  feedback: ["/results", "/reviews"],
-  writing: ["/materials"],
-};
-/** AI 사용량은 한도의 이 비율을 넘었을 때만 사이드바 아래 자리에 냅니다. */
-const USAGE_WARNING_RATIO = 0.8;
-/** 교수 계정 사이드바에 바로 보이는 받은 검토 요청 수. 나머지는 목록 화면에서 봅니다. */
-const INCOMING_NAV_LIMIT = 6;
+/** 사이드 창이 본문을 미는 최소 폭. 이보다 좁으면 본문 위에 겹쳐 뜹니다(IA v2 02 §1.2). */
+const OVERLAY_PANEL_QUERY = queryDown("lg");
+/** 사이드 창이 넓게(440) 열리는 화면: 글 편집, 자료 보기(02 §1.1) */
+const WIDE_PANEL_ROUTE =
+  /^\/r\/[^/]+\/(writing\/[^/]+|materials\/[^/]+|docs\/[wm]\/[^/]+)/;
 
 export function WorkspaceShell({
   children,
@@ -175,28 +150,18 @@ export function WorkspaceShell({
   const params = useParams();
   const researchId = researchOverride ?? params.researchId;
   const { data, user, mode, markEvent } = useExperience(),
-    navigate = useNavigate(),
     location = useLocation();
   const research = data.researches.find((r) => r.id === researchId);
-  const [collapsed, setCollapsed] = useState(
-      () => localStorage.getItem("rms-sidebar-collapsed") === "true",
-    ),
-    [narrow, setNarrow] = useState(
-      () =>
-        typeof window.matchMedia === "function" &&
-        window.matchMedia(COMPACT_QUERY).matches,
-    ),
-    [narrowOpen, setNarrowOpen] = useState(false),
-    [focusExpanded, setFocusExpanded] = useState(
-      () => localStorage.getItem(FOCUS_EXPANDED_KEY) === "true",
-    ),
-    [mobile, setMobile] = useState(false),
-    [search, setSearch] = useState(false),
+  const [search, setSearch] = useState(false),
     [shortcutsOpen, setShortcutsOpen] = useState(false),
     [notifications, setNotifications] = useState(false);
-  const usage = useAIUsage();
+  const overlayPanel = useMediaQuery(OVERLAY_PANEL_QUERY);
+  const panelSide = usePanelSide();
   const updates = unreadReviewNotifications(data, user, researchId);
-  const [panelWidth, setPanelWidth] = usePanelWidth();
+  const widePanel = WIDE_PANEL_ROUTE.test(location.pathname);
+  const [panelWidth, setPanelWidth] = usePanelWidth(
+    widePanel ? DOCS_PANEL_WIDTH_KEY : PANEL_WIDTH_KEY,
+  );
   const [notificationFilter, setNotificationFilter] = useState("unread");
   const events = data.events.filter(
     (e) =>
@@ -205,13 +170,12 @@ export function WorkspaceShell({
   );
   const newEvents = events.filter((e) => !e.readAt);
   const totalUnread = updates.length + newEvents.length;
-  // 교수 계정(내 연구 없이 받은 검토 요청만 있음)은 사이드바·⌘K를 받은 검토 요청 기준으로 둡니다(감사 F5).
+  // 교수 계정(내 연구 없이 받은 검토 요청만 있음)은 메뉴·⌘K를 받은 검토 요청 기준으로 둡니다(감사 F5).
   const incomingOnly = isIncomingOnly(data, user.id);
-  const incoming = incomingOnly ? incomingReviews(data, user.id) : [];
   const homeLabel = incomingOnly ? t("받은 검토 요청") : t("내 연구");
   useGoShortcuts(research ? researchId : undefined);
   const panel = useMarginPanelHost();
-  // ] 키로 여백 패널을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
+  // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
   const panelRef = useRef(panel);
   panelRef.current = panel;
   useEffect(() => {
@@ -234,32 +198,27 @@ export function WorkspaceShell({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-  // 768~1199px에서는 메뉴가 본문을 누르지 않게 좁은 레일로 시작합니다. 펼치면 본문 위에 뜨고,
-  // 펼친 것은 저장하지 않으며 화면을 옮기면 다시 접습니다.
-  // 그보다 넓은 화면에서도 집중 모드(작업대 화면, 여백 패널이 열린 동안)에는 레일로 접습니다.
-  const focusMode = FOCUS_ROUTE.test(location.pathname) || !!panel.active;
-  const railed = narrow ? !narrowOpen : focusMode ? !focusExpanded : collapsed;
-  const floating = narrow && narrowOpen;
+  // 겹쳐 뜬 사이드 창(1199px 이하)은 다른 화면으로 가면 닫힙니다(D15).
   useEffect(() => {
-    if (!floating) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setNarrowOpen(false);
+    if (overlayPanel) panelRef.current.active?.onClose();
+  }, [location.pathname, overlayPanel]);
+  // 겹쳐 뜬 사이드 창은 뒤를 가리지 않고, 바깥을 누르면 닫힙니다(D15).
+  useEffect(() => {
+    if (!overlayPanel || !panel.active) return;
+    const onPointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (
+        target.closest(
+          ".margin-panel, .ia-rail, .margin-panel-resizer, [data-radix-popper-content-wrapper], [role='dialog'], [role='menu']",
+        )
+      )
+        return;
+      panelRef.current.active?.onClose();
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [floating]);
-  useEffect(() => {
-    if (typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia(COMPACT_QUERY);
-    const sync = () => setNarrow(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-  useEffect(() => {
-    setMobile(false);
-    setNarrowOpen(false);
-  }, [location.pathname]);
+    document.addEventListener("pointerdown", onPointer);
+    return () => document.removeEventListener("pointerdown", onPointer);
+  }, [overlayPanel, panel.active]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -270,25 +229,23 @@ export function WorkspaceShell({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const current =
-    location.pathname === "/account"
-      ? t("계정 설정")
-      : location.pathname.endsWith("/settings")
-        ? t("연구 설정")
-        : location.pathname.endsWith("/assistant")
-          ? t("연구 도우미")
-          : location.pathname.includes("/tasks")
-            ? t("할 일")
-            : location.pathname.includes("/results")
-              ? t("수정 결과")
-              : location.pathname.includes("/feedback")
-                ? t("피드백")
-                : location.pathname.includes("/writing")
-                  ? t("글쓰기")
-                  : (navigation.find(
-                      ([path]) =>
-                        path && location.pathname.includes("/" + path),
-                    )?.[2] ?? (research ? t("연구 홈") : homeLabel));
+  const current = location.pathname.endsWith("/assistant")
+    ? t("연구 도우미")
+    : location.pathname.includes("/tasks")
+      ? t("할 일")
+      : location.pathname.includes("/results")
+        ? t("수정 결과")
+        : location.pathname.includes("/feedback")
+          ? t("피드백")
+          : location.pathname.includes("/reviews")
+            ? t("검토 요청")
+            : /\/(writing|docs|materials)(\/|$)/.test(location.pathname)
+              ? t("글·자료")
+              : /\/(flow|planning)(\/|$)/.test(location.pathname)
+                ? t("연구 흐름")
+                : (navigation.find(
+                    ([path]) => path && location.pathname.includes("/" + path),
+                  )?.[2] ?? (research ? t("홈") : homeLabel));
   useEffect(() => {
     document.title = t("{name} · 마진", {
       name: `${current}${research ? ` · ${research.name}` : ""}`,
@@ -305,241 +262,7 @@ export function WorkspaceShell({
         </Button>
       </div>
     );
-  // 사이드바 아래 자리는 AI 사용량이 한도에 가까울 때만 씁니다.
-  // 시작 체크리스트는 연구 홈 한 곳에만 둡니다(감사 F3: 같은 안내를 두 번 보이지 않게).
-  const usageHigh =
-    !!usage.data &&
-    usage.data.limit > 0 &&
-    usage.data.total / usage.data.limit >= USAGE_WARNING_RATIO;
-  const menu = (
-    <>
-      <div className="sidebar-brand">
-        <Link
-          to="/r"
-          className="brand"
-          aria-label={
-            incomingOnly
-              ? t("마진(Margin) 받은 검토 요청")
-              : t("마진(Margin) 내 연구")
-          }
-        >
-          <BrandMark />
-          <BrandWordmark />
-        </Link>
-        <span className="icon-button sidebar-toggle">
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label={railed ? t("메뉴 펼치기") : t("메뉴 접기")}
-            onClick={() => {
-              if (narrow) {
-                setNarrowOpen(!narrowOpen);
-                return;
-              }
-              if (focusMode) {
-                setFocusExpanded(!focusExpanded);
-                localStorage.setItem(
-                  FOCUS_EXPANDED_KEY,
-                  String(!focusExpanded),
-                );
-                return;
-              }
-              setCollapsed(!collapsed);
-              localStorage.setItem("rms-sidebar-collapsed", String(!collapsed));
-            }}
-          >
-            <Icon name={railed ? "menu" : "chevron-left"} size={16} />
-          </Button>
-        </span>
-      </div>
-      {research && (
-        <DropdownMenu value={researchId}>
-          <DropdownMenuTrigger>
-            <button className="workspace-switch" title={research.name}>
-              <span className="workspace-symbol">
-                <Icon name="book" size={17} />
-              </span>
-              <strong>{research.name}</strong>
-              <Icon name="chevron-down" size={15} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="workspace-menu" align="start">
-            <DropdownMenuLabel>{t("연구 전환")}</DropdownMenuLabel>
-            {data.researches
-              .filter(
-                (r) => !r.deletedAt && (!r.archivedAt || r.id === researchId),
-              )
-              .map((r) => (
-                <DropdownMenuItem
-                  key={r.id}
-                  value={r.id}
-                  onSelect={() => navigate(`/r/${r.id}`)}
-                >
-                  <Icon name="book" size={17} />
-                  {r.name}
-                </DropdownMenuItem>
-              ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => navigate("/r")}>
-              <Icon name="grid" size={17} />
-              {t("모든 연구 보기")}
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => navigate("/r/new")}>
-              <Icon name="plus" size={17} />
-              {t("새 연구 만들기")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-      <button
-        className="sidebar-search"
-        onClick={() => setSearch(true)}
-        title={
-          research
-            ? t("이 연구에서 제목 찾기")
-            : incomingOnly
-              ? t("받은 검토 요청 찾기")
-              : t("연구 이름 찾기")
-        }
-      >
-        <Icon name="search" size={18} />
-        <span>
-          {research
-            ? t("이 연구에서 찾기")
-            : incomingOnly
-              ? t("검토 요청 찾기")
-              : t("연구 찾기")}
-        </span>
-        <kbd>⌘ K</kbd>
-      </button>
-      <nav className="nav-list" aria-label={t("주요 메뉴")}>
-        {research ? (
-          [NAV_PATHS].map((paths) => (
-            <div className="nav-group" key="research" data-tour="flow">
-              {navigation
-                .filter(([path]) => paths.includes(path))
-                .sort((a, b) => paths.indexOf(a[0]) - paths.indexOf(b[0]))
-                .map(([path, icon, label]) => {
-                  const preview = navPreview(
-                    path,
-                    label,
-                    data,
-                    researchId ?? "",
-                  );
-                  return (
-                    <Hint
-                      key={path}
-                      label={label}
-                      detail={preview?.detail}
-                      shortcut={goShortcutLabel(path)}
-                      position="right-center"
-                      display="block"
-                    >
-                      <NavLink
-                        end={!path}
-                        to={`/r/${researchId}${path ? "/" + path : ""}`}
-                        className={({ isActive }) =>
-                          `nav-item ${isActive || (NAV_ALSO_ACTIVE[path] ?? []).some((p) => location.pathname.includes(p)) ? "active" : ""}`
-                        }
-                      >
-                        <Icon name={icon} size={20} />
-                        <span>{label}</span>
-                        {path === "feedback" && updates.length > 0 && (
-                          // 아직 안 본 교수 응답·댓글이 있으면 점을 찍어요(읽음 처리는 하지 않음).
-                          <span className="nav-dot">
-                            <span className="sr-only">{t("새 응답 있음")}</span>
-                          </span>
-                        )}
-                      </NavLink>
-                    </Hint>
-                  );
-                })}
-            </div>
-          ))
-        ) : incomingOnly ? (
-          <div className="nav-group" key="incoming">
-            <NavLink to="/r" end className="nav-item">
-              <Icon name="send" size={20} />
-              <span>{homeLabel}</span>
-            </NavLink>
-            {incoming.slice(0, INCOMING_NAV_LIMIT).map((request) => (
-              <NavLink
-                key={request.id}
-                to={`/reviews/${request.id}`}
-                className="nav-item"
-                title={request.title}
-              >
-                <Icon name="file" size={18} />
-                <span>{request.title || t("제목 없음")}</span>
-              </NavLink>
-            ))}
-          </div>
-        ) : (
-          <NavLink to="/r" className="nav-item">
-            <Icon name="grid" size={20} />
-            <span>{homeLabel}</span>
-          </NavLink>
-        )}
-        {research && (
-          <Hint
-            label={t("연구 도우미")}
-            detail={t("이 연구의 기록을 모두 읽고 도와요.")}
-            position="right-center"
-            display="block"
-          >
-            <NavLink
-              to={`/r/${researchId}/assistant`}
-              className={({ isActive }) =>
-                `nav-item assistant-nav ${isActive ? "active" : ""}`
-              }
-            >
-              <Icon name="sparkles" size={20} />
-              <span>{t("연구 도우미")}</span>
-            </NavLink>
-          </Hint>
-        )}
-      </nav>
-      <div className="sidebar-bottom">
-        {research && (
-          <Link
-            className="nav-item"
-            title={t("연구 설정")}
-            to={`/r/${researchId}/settings`}
-          >
-            <Icon name="settings" size={20} />
-            <span>{t("연구 설정")}</span>
-          </Link>
-        )}
-        {usageHigh ? (
-          <Link
-            className="sidebar-usage"
-            title={t("AI 사용량 보기")}
-            to="/account?tab=usage"
-          >
-            <div>
-              <Icon name="sparkles" size={15} />
-              <span>{t("AI 사용량")}</span>
-              <strong>
-                {usage.data
-                  ? `${usage.data.total} / ${usage.data.limit}`
-                  : t("보기")}
-              </strong>
-            </div>
-            {usage.data ? (
-              <progress
-                max={usage.data.limit}
-                value={usage.data.total}
-                aria-label={t("최근 24시간 AI 사용량")}
-              />
-            ) : (
-              <small>{t("이 연구의 기록을 모두 읽어요.")}</small>
-            )}
-          </Link>
-        ) : null}
-        <AccountMenu incomingOnly={incomingOnly} />
-      </div>
-    </>
-  );
+  const inResearch = !!research && !!researchId;
   return (
     <div
       style={
@@ -549,196 +272,30 @@ export function WorkspaceShell({
             } as CSSProperties)
           : undefined
       }
-      className={`app-shell floating-workspace ${railed ? "sidebar-collapsed" : ""} ${floating ? "sidebar-floating" : ""} ${panel.active ? "margin-panel-open" : ""}`}
+      data-panel-side={panelSide}
+      className={`app-shell floating-workspace ia-shell ${inResearch ? "" : "ia-shell-outside"} ${widePanel ? "ia-panel-wide" : ""} ${panel.active ? "margin-panel-open" : ""}`}
     >
       <a className="skip-link" href="#main-content">
         {t("본문으로 이동")}
       </a>
-      <aside className="sidebar">{menu}</aside>
-      {floating && (
-        <button
-          type="button"
-          className="sidebar-backdrop"
-          aria-label={t("메뉴 접기")}
-          tabIndex={-1}
-          onClick={() => setNarrowOpen(false)}
-        />
-      )}
-      <Sheet open={mobile} onOpenChange={setMobile}>
-        <SheetContent side="left" className="mobile-sidebar rms-mobile-sheet">
-          <SheetHeader className="sr-only">
-            <SheetTitle>{t("연구 메뉴")}</SheetTitle>
-            <SheetDescription>
-              {t("다른 연구로 바꾸거나 화면을 이동해요.")}
-            </SheetDescription>
-          </SheetHeader>
-          {/* Close the sheet on any link tap, including the current page's
-              link (a same-path tap does not change location.pathname). */}
-          <div
-            style={{ display: "contents" }}
-            onClick={(e) => {
-              if ((e.target as HTMLElement).closest("a[href]"))
-                setMobile(false);
-            }}
-          >
-            {menu}
-          </div>
-        </SheetContent>
-      </Sheet>
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="breadcrumbs">
-            <span className="mobile-menu icon-button">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t("메뉴 열기")}
-                onClick={() => setMobile(true)}
-              >
-                <Icon name="menu" />
-              </Button>
-            </span>
-            <Link
-              to={research ? `/r/${researchId}` : "/r"}
-              title={research?.name}
-            >
-              {research?.name ?? homeLabel}
-            </Link>
-            {research && (
-              <>
-                <Icon name="chevron-right" size={13} />
-                <strong>{current}</strong>
-              </>
-            )}
-          </div>
-          <MiniRecorder />
-          <div className="topbar-right">
-            {panel.offered && (
-              <Hint
-                label={panel.offered.label}
-                detail={t("오른쪽 여백 패널을 열거나 닫아요. 단축키 ]")}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="margin-panel-toggle"
-                  aria-pressed={!!panel.active}
-                  aria-label={
-                    panel.active
-                      ? t("{label} 닫기", { label: panel.offered.label })
-                      : t("{label} 열기", { label: panel.offered.label })
-                  }
-                  onClick={() =>
-                    panel.active
-                      ? panel.active.onClose()
-                      : panel.offered?.onOpen?.()
-                  }
-                >
-                  <Icon name="panel" size={19} />
-                </Button>
-              </Hint>
-            )}
-            {researchId && !incomingOnly && (
-              <DropdownMenu>
-                <Hint
-                  label={t("만들기")}
-                  detail={t("미팅·할 일·문서 등을 새로 만들어요.")}
-                >
-                  <DropdownMenuTrigger>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="create-menu-trigger"
-                      aria-label={t("새로 만들기")}
-                    >
-                      <Icon name="plus" size={19} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                </Hint>
-                <DropdownMenuContent align="end" className="create-menu">
-                  <DropdownMenuLabel>{t("새로 만들기")}</DropdownMenuLabel>
-                  {createEntries(researchId).map((entry) => (
-                    <DropdownMenuItem
-                      key={entry.id}
-                      onSelect={() => navigate(entry.action.to)}
-                    >
-                      <Icon name={entry.icon} size={16} />
-                      {entry.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            <Hint
-              label={t("사용 안내")}
-              detail={t("키보드 단축키는 ? 키로 볼 수 있어요.")}
-            >
-              <Button asChild variant="ghost" size="icon-sm">
-                <Link aria-label={t("사용 안내")} to="/guide">
-                  <Icon name="help" size={19} />
-                </Link>
-              </Button>
-            </Hint>
-            <Hint
-              label={t("단축키 보기")}
-              detail={t("키보드 단축키는 ? 키로도 볼 수 있어요.")}
-            >
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t("단축키 보기")}
-                aria-keyshortcuts="?"
-                onClick={() => setShortcutsOpen(true)}
-              >
-                <span aria-hidden="true" style={{ fontWeight: 700 }}>
-                  ?
-                </span>
-              </Button>
-            </Hint>
-            <Hint
-              label={t("알림")}
-              detail={
-                totalUnread
-                  ? t("새 알림 {count}개", { count: totalUnread })
-                  : t("새 알림이 없어요.")
-              }
-              position="bottom-end"
-            >
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="notification-trigger"
-                aria-label={t("새 알림 {count}개 보기", { count: totalUnread })}
-                onClick={() => setNotifications(true)}
-              >
-                <Icon name="bell" size={20} />
-                {totalUnread > 0 && <i />}
-              </Button>
-            </Hint>
-          </div>
-        </header>
-        {mode === "preview" && (
-          <div className="preview-banner">
-            <Icon name="info" size={15} />
-            <span>{t("미리보기 · 가상 기록은 이 브라우저에만 저장돼요.")}</span>
-            <Link to="/login">
-              {t("로그인 화면으로")}
-              <Icon name="arrow-up-right" size={14} />
-            </Link>
-          </div>
-        )}
-        {research?.archivedAt && (
-          <div className="archived-banner" role="status">
-            <Icon name="folder" size={17} />
-            <span>
-              {t("보관한 연구예요. 기록과 공유 중인 검토 요청은 그대로예요.")}
-            </span>
-            <Link to={`/r/${researchId}/settings?tab=lifecycle`}>
-              {t("연구 복원하기")}
-            </Link>
-          </div>
-        )}
-        <div className="workspace-body">
+      <TopBar
+        data={data}
+        researchId={inResearch ? researchId : undefined}
+        researchName={research?.name}
+        incomingOnly={incomingOnly}
+        hasReviewUpdates={updates.length > 0}
+        totalUnread={totalUnread}
+        onSearch={() => setSearch(true)}
+        onNotifications={() => setNotifications(true)}
+        account={<AccountMenu incomingOnly={incomingOnly} />}
+      />
+      <div className="ia-body workspace-body">
+        <div className="main-shell">
+          <ShellBanners
+            preview={mode === "preview"}
+            archived={!!research?.archivedAt}
+            researchId={researchId}
+          />
           <main id="main-content" className="workspace-content">
             <MarginPanelProvider value={panel.context}>
               <Suspense fallback={<LoadingState />}>
@@ -746,42 +303,57 @@ export function WorkspaceShell({
               </Suspense>
             </MarginPanelProvider>
           </main>
-          {panel.active && (
-            <button
-              type="button"
-              className="margin-panel-backdrop"
-              aria-label={t("{label} 닫기", { label: panel.active.label })}
-              tabIndex={-1}
-              onClick={panel.active.onClose}
-            />
-          )}
-          {panel.active && (
-            <PanelResizer
-              width={panelWidth}
-              onChange={setPanelWidth}
-              currentWidth={() =>
-                document.querySelector<HTMLElement>(".margin-panel")
-                  ?.offsetWidth ?? 360
-              }
-            />
-          )}
-          <aside
-            className="margin-panel"
-            aria-label={panel.active?.label ?? t("여백 패널")}
-            hidden={!panel.active}
-            tabIndex={-1}
-            ref={panel.setSlot}
-          />
+          <footer className="workspace-footer">
+            {/* 슬로건은 소개 화면에만 둡니다(ux-writing). 작업 화면은 이름만. */}
+            <span>{t("마진")}</span>
+            <span className="workspace-footer-links">
+              <a href="mailto:admin@margin.com">{t("문의 admin@margin.com")}</a>
+              <Link to="/privacy">{t("자료·개인정보 안내")}</Link>
+            </span>
+          </footer>
         </div>
-        <footer className="workspace-footer">
-          {/* 슬로건은 소개 화면에만 둡니다(ux-writing). 작업 화면은 이름만. */}
-          <span>{t("마진")}</span>
-          <span className="workspace-footer-links">
-            <a href="mailto:admin@margin.com">{t("문의 admin@margin.com")}</a>
-            <Link to="/privacy">{t("자료·개인정보 안내")}</Link>
-          </span>
-        </footer>
+        {panel.active && (
+          <button
+            type="button"
+            className="margin-panel-backdrop"
+            aria-label={t("{label} 닫기", { label: panel.active.label })}
+            tabIndex={-1}
+            onClick={panel.active.onClose}
+          />
+        )}
+        {panel.active && (
+          <PanelResizer
+            side={panelSide}
+            width={panelWidth}
+            onChange={setPanelWidth}
+            currentWidth={() =>
+              document.querySelector<HTMLElement>(".margin-panel")
+                ?.offsetWidth ?? 312
+            }
+          />
+        )}
+        <aside
+          id="margin-panel"
+          className="margin-panel"
+          aria-label={panel.active?.label ?? t("여백 패널")}
+          hidden={!panel.active}
+          tabIndex={-1}
+          ref={panel.setSlot}
+        />
+        {inResearch && (
+          <SideRail
+            researchId={researchId}
+            offered={panel.offered}
+            active={panel.active}
+          />
+        )}
       </div>
+      <BottomDock>
+        <MiniRecorder />
+        {inResearch && !incomingOnly && (
+          <MobileTabBar researchId={researchId} />
+        )}
+      </BottomDock>
       <Sheet open={notifications} onOpenChange={setNotifications}>
         <SheetContent className="notifications-sheet">
           <SheetHeader>
@@ -903,6 +475,72 @@ export function WorkspaceShell({
         researchId={research ? researchId : undefined}
       />
       <ShortcutHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <SettingsDialog researchId={research ? researchId : undefined} />
     </div>
+  );
+}
+
+/** 브라우저가 알려 주는 연결 상태(`navigator.onLine`) */
+function useOnline(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      window.addEventListener("online", notify);
+      window.addEventListener("offline", notify);
+      return () => {
+        window.removeEventListener("online", notify);
+        window.removeEventListener("offline", notify);
+      };
+    },
+    () => navigator.onLine,
+    () => true,
+  );
+}
+
+/** 상단 줄 아래 띠: 연결 끊김, 보관한 연구, 미리보기 모드(02 §7). */
+function ShellBanners({
+  preview,
+  archived,
+  researchId,
+}: {
+  preview: boolean;
+  archived: boolean;
+  researchId?: string;
+}) {
+  const online = useOnline();
+  // 한 번에 띠 하나만(02 §7): 연결 끊김 → 보관한 연구 → 미리보기
+  if (!online)
+    return (
+      <div className="preview-banner offline-banner" role="status">
+        <Icon name="warning" size={15} />
+        <span>{t("인터넷 연결이 끊겼어요. 연결되면 다시 저장해 주세요.")}</span>
+      </div>
+    );
+  return (
+    <>
+      {preview && !archived && (
+        <div className="preview-banner">
+          <Icon name="info" size={15} />
+          <span>{t("미리보기 · 가상 기록은 이 브라우저에만 저장돼요.")}</span>
+          <Link to="/login">
+            {t("로그인 화면으로")}
+            <Icon name="arrow-up-right" size={14} />
+          </Link>
+        </div>
+      )}
+      {archived && (
+        <div className="archived-banner" role="status">
+          <Icon name="folder" size={17} />
+          <span>
+            {t("보관한 연구예요. 기록과 공유 중인 검토 요청은 그대로예요.")}
+          </span>
+          <Link
+            to={{ search: "?settings=danger" }}
+            state={{ settingsOpened: true }}
+          >
+            {t("연구 복원하기")}
+          </Link>
+        </div>
+      )}
+    </>
   );
 }

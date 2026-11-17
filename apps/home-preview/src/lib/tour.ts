@@ -59,9 +59,9 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     key: "menu",
-    selector: `button[aria-label="${t("메뉴 열기")}"]`,
-    title: t("메뉴는 여기서 열어요"),
-    text: t("미팅, 피드백, 할 일, 검토 요청으로 가는 메뉴가 들어 있어요."),
+    selector: ".ia-rail",
+    title: t("옆 창과 설정은 오른쪽 줄에 있어요"),
+    text: t("연구 도우미, 이 화면의 옆 창, 의견 보내기, 설정을 여기서 열어요."),
   },
   {
     key: "flow",
@@ -73,7 +73,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     key: "search",
-    selector: ".sidebar-search",
+    selector: ".ia-search",
     title: t("기록은 ⌘K로 찾아요"),
     text: t(
       "제목이나 초성으로 미팅, 할 일, 화면을 바로 열 수 있어요. Windows에서는 Ctrl+K예요.",
@@ -89,8 +89,8 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     key: "guide",
-    selector: `a[aria-label="${t("사용 안내")}"]`,
-    title: t("더 알고 싶으면 사용 안내를 열어요"),
+    selector: ".kokonut-profile-trigger",
+    title: t("사용 안내는 계정 메뉴에 있어요"),
     text: t("키보드 단축키는 ? 키로 볼 수 있어요."),
   },
 ];

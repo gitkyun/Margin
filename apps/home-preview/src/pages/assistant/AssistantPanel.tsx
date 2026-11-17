@@ -174,7 +174,7 @@ function RunsTab({
       )}
       <p className="panel-frame-note">
         {t("이번 달 사용량은")}{" "}
-        <Link to="/account?tab=usage">{t("계정 설정")}</Link>
+        <Link to="?settings=usage">{t("설정")}</Link>
         {t("에서 볼 수 있어요.")}
       </p>
     </div>

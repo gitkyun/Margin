@@ -34,8 +34,8 @@ interface MarginPanelContextValue {
 
 const MarginPanelContext = createContext<MarginPanelContextValue | null>(null);
 
-/** md(992px) 미만에서는 패널이 본문 옆이 아니라 본문 위를 덮습니다. */
-const OVERLAY_QUERY = queryDown("md");
+/** lg(1200px) 미만에서는 패널이 본문 옆이 아니라 본문 위에 겹쳐 뜹니다(IA v2 02 §1.2). */
+const OVERLAY_QUERY = queryDown("lg");
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

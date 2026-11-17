@@ -9,39 +9,47 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { RESEARCH_NAVIGATION } from "@/lib/command-items";
 import { GO_SHORTCUTS } from "@/lib/go-shortcuts";
 import "./shortcut-help.css";
 
-const EXTRA_DESTINATIONS: Record<string, string> = {
-  tasks: t("할 일"),
-  assistant: t("연구 도우미"),
-  settings: t("연구 설정"),
-};
-
 /** 단축키 목록은 GO_SHORTCUTS 한 곳에서 읽어, 실제 동작과 어긋나지 않게 합니다. */
 function shortcutRows(): [keys: string[], label: string][] {
-  const labelOf = (path: string) =>
-    RESEARCH_NAVIGATION.find(([p]) => p === path)?.[2] ??
-    EXTRA_DESTINATIONS[path] ??
-    path;
   return [
     [["⌘", "K"], t("찾기와 바로 하기")],
     ...GO_SHORTCUTS.map(
-      ([path, key]) =>
+      ({ key, label }) =>
         [
           ["G", key.toUpperCase()],
           t("{destination} 이동", {
             destination:
               currentLang() === "ko"
-                ? josa(labelOf(path), "으로/로") // i18n-ignore
-                : labelOf(path),
+                ? josa(label, "으로/로") // i18n-ignore
+                : label,
           }),
         ] as [string[], string],
     ),
+    [["]"], t("사이드 창 열기·닫기")],
     [["⌘", "Z"], t("방금 완료한 할 일 되돌리기")],
     [["?"], t("이 목록 보기")],
   ];
+}
+
+/** 단축키 표. 도움말 창과 설정 창 '단축키' 칸이 함께 씁니다(IA v2 07 §1). */
+export function ShortcutList() {
+  return (
+    <dl className="shortcut-help">
+      {shortcutRows().map(([keys, label]) => (
+        <div key={keys.join("+")}>
+          <dt>
+            {keys.map((key) => (
+              <kbd key={key}>{key}</kbd>
+            ))}
+          </dt>
+          <dd>{label}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 /**
@@ -71,18 +79,7 @@ export function ShortcutHelp({
             )}
           </DialogDescription>
         </DialogHeader>
-        <dl className="shortcut-help">
-          {shortcutRows().map(([keys, label]) => (
-            <div key={keys.join("+")}>
-              <dt>
-                {keys.map((key) => (
-                  <kbd key={key}>{key}</kbd>
-                ))}
-              </dt>
-              <dd>{label}</dd>
-            </div>
-          ))}
-        </dl>
+        <ShortcutList />
         <Button onClick={() => onOpenChange(false)}>{t("닫기")}</Button>
       </DialogContent>
     </Dialog>

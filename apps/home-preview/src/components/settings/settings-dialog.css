@@ -1,0 +1,153 @@
+@layer margin {
+  /* IA v2 설정 창(07 §1.1): 920×680, 왼쪽 목록 220px. 휴대폰은 화면 전체 시트. */
+  .settings-dialog {
+    --settings-list-width: 220px;
+    --settings-dialog-width: min(920px, calc(100vw - 48px));
+    --settings-dialog-height: min(680px, calc(100vh - 48px));
+    --settings-dialog-radius: var(--radius-16);
+    box-shadow: var(--shadow-pop);
+  }
+  .settings-dialog-content {
+    position: relative;
+  }
+  .settings-dialog-close {
+    position: sticky;
+    top: 0;
+    float: right;
+    z-index: 1;
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin: calc(var(--spacing-8) * -1) calc(var(--spacing-8) * -1) 0
+      var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .settings-dialog-close:hover {
+    background: var(--brand-soft);
+    color: var(--text-primary);
+  }
+  .settings-dialog-frame {
+    display: grid;
+    grid-template-columns: var(--settings-list-width) minmax(0, 1fr);
+    height: var(--settings-dialog-height);
+  }
+  .settings-dialog-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-16);
+    min-height: 0;
+    padding: var(--spacing-20) var(--spacing-12);
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+  }
+  .settings-dialog-title {
+    padding: 0 var(--spacing-8);
+  }
+  .settings-dialog-group {
+    display: grid;
+    gap: var(--spacing-2);
+  }
+  .settings-dialog-group > p {
+    margin: 0 0 var(--spacing-4);
+    padding: 0 var(--spacing-8);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .settings-dialog-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-height: 36px;
+    padding: 0 var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-label1-fontSize);
+    text-align: left;
+    cursor: pointer;
+  }
+  .settings-dialog-item:hover {
+    background: var(--surface-muted, var(--brand-soft));
+    color: var(--text-primary);
+  }
+  .settings-dialog-item[aria-current="page"] {
+    background: var(--brand-soft);
+    color: var(--brand);
+    font-weight: 600;
+  }
+  .settings-dialog-item:focus-visible {
+    outline: 2px solid var(--focus-ring, var(--brand));
+    outline-offset: -2px;
+  }
+  .settings-dialog-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+    margin-top: auto;
+    padding: var(--spacing-12) var(--spacing-8) 0;
+    border-top: 1px solid var(--line);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .settings-dialog-foot a {
+    color: inherit;
+  }
+  .settings-dialog-content {
+    min-width: 0;
+    min-height: 0;
+    padding: var(--spacing-20) var(--spacing-24);
+    overflow-y: auto;
+  }
+  .settings-dialog-back {
+    display: none;
+  }
+  /* 담긴 설정 화면: 쪽 머리·자체 목록은 숨기고 내용만 */
+  .settings-dialog .settings-page.settings-embedded,
+  .settings-dialog .settings-embedded .settings-layout {
+    display: block;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (max-width: 767px) {
+    .settings-dialog {
+      --settings-dialog-width: 100vw;
+      --settings-dialog-height: 100dvh;
+      --settings-dialog-radius: 0px;
+    }
+    .settings-dialog-frame {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .settings-dialog-nav {
+      border-right: 0;
+    }
+    .settings-dialog-frame[data-view="content"] .settings-dialog-nav,
+    .settings-dialog-frame[data-view="list"] .settings-dialog-content {
+      display: none;
+    }
+    .settings-dialog-content {
+      padding: var(--spacing-12) var(--spacing-16) var(--spacing-24);
+    }
+    .settings-dialog-back {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-4);
+      margin-bottom: var(--spacing-12);
+      padding: var(--spacing-6) 0;
+      border: 0;
+      background: none;
+      color: var(--text-secondary);
+      font: inherit;
+      cursor: pointer;
+    }
+  }
+}

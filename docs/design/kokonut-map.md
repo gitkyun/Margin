@@ -18,7 +18,7 @@
 | [ai-context-meter](https://kokonutui.com/r/ai-context-meter.json) | `ai/ComposerCommands.tsx` | 후속 사용자 요청으로 실제 입력창에서는 제거하고 아래에 실제 사용량을 표시. 원본 고리는 로컬 시연에서만 비교 가능. |
 | [ai-attachment](https://kokonutui.com/r/ai-attachment.json) | `assistant/MessageFileChips.tsx`, `ai/ComposerCommands.tsx` | 질문 위 파일은 원본 FileChip 클래스 그대로. 입력창 안 붙인 기록·파일은 ai-prompt AttachmentChip 모양(`tray`). 확인 안 된 쪽 수·읽기 진행 띠·페이지 썸네일은 만들지 않음(2026-11-16). |
 | [ai-voice](https://kokonutui.com/r/ai-voice.json) | `ResearchAssistant.tsx` | 실제 마이크 분석·받아쓰기. 데모 파형 제외, 저장하지 않는 음성의 재생 버튼 비활성. |
-| [ai-model-selector](https://kokonutui.com/r/ai-model-selector.json) | `ai/AIModelSelector.tsx` | 설정·작업대에서 원본 모델 목록과 답변 깊이 트랙을 실제 모델에 연결. |
+| [ai-model-selector](https://kokonutui.com/r/ai-model-selector.json) | `ai/AIModelSelector.tsx` | 설정·작업대에서 원본 모델 목록과 답변 깊이 트랙을 실제 모델에 연결. [0단계 적용] 차이: `placement="bottom"`이면 목록을 아래로 엶(설정 창 위쪽에서 위로 열면 창 밖으로 잘림). 기본값은 원본처럼 위. |
 | [ai-tool-calls](https://kokonutui.com/r/ai-tool-calls.json) | `assistant/AssistantThinking.tsx`, `ResearchAssistant.tsx` | 원본 데모 배치(질문 회색 말풍선 → 작업 줄 → 답변 15px/28px, gap-4)를 따름. 대기 중엔 같은 줄이 스피너, 답이 오면 “작업 N개”로 바뀜. 서버가 세부 도구 이벤트를 주지 않아 한 행으로 표시. |
 | [ai-loading](https://kokonutui.com/r/ai-loading.json) | (연구 도우미에서 안 씀) | 첫 답변 대기도 ai-tool-calls 한 줄로 통일(2026-11-16). 가운데 정렬·고정폭 글꼴 단계 목록이 대화 흐름과 어긋나서 제외. |
 | [ai-citations](https://kokonutui.com/r/ai-citations.json) | `assistant/AssistantMessageText.tsx` | 원본 인용 미리보기와 출처 목록. 안전한 마크다운 렌더러와 실제 근거 스냅샷 유지. |
@@ -86,5 +86,5 @@
 | 부품 | 지금 | IA v2 이후(예정) |
 | --- | --- | --- |
 | 연구 도우미 부품(ai-prompt·ai-input-search·ai-message-queue·ai-attachment·ai-voice·ai-tool-calls·ai-citations, 모델·깊이 두 칩) | 전체 화면 `ResearchAssistant.tsx` | 오른쪽 사이드 창 P1 `components/shell/panels/assistant/*`(4단계, [06](ia-v2/06-assistant.md) §2·§7). 기본 폭 312px, 글 편집·자료 보기 440px. 312px에서 입력창이 넘치면 기본 폭을 360px로([10](ia-v2/10-build-plan.md) §7 V7) |
-| profile-dropdown(계정 메뉴) | 사이드바 아래에서 위로 열림 | 상단 줄 오른쪽 끝 아바타(32px)에서 아래로 열림([02](ia-v2/02-shell.md) §3.6) |
+| profile-dropdown(계정 메뉴) | 사이드바 아래에서 위로 열림 | **[0단계 적용]** 상단 줄 오른쪽 끝 아바타(32px)에서 아래로 열림([02](ia-v2/02-shell.md) §3.6). 원본과의 차이: `placement` 옵션 하나를 더해 `"bottom"`일 때 패널을 버튼의 오른쪽 위 모서리에 붙이고 `clip-path` 자라는 방향만 아래로 바꿈(구조·치수·모션 값은 원본 그대로). 여는 버튼의 이름·이메일·화살표는 `shell.css`에서 숨겨 아바타만 보임 |
 | ai-handoff · ai-loading · 입력창 안 ai-context-meter 고리 | 쓰지 않음 | 계속 쓰지 않음([06](ia-v2/06-assistant.md) §1) |
