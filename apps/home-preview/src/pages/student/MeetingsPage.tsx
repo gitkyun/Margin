@@ -1,9 +1,9 @@
 import { RecordList } from "@/components/meetings/RecordList";
+import { RecordHeader } from "@/components/meetings/RecordHeader";
+import { recordMode } from "@/lib/record-view";
+import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { t } from "@/lib/i18n";
-import { formatClock } from "@/lib/time-format";
-import { seoulToday } from "@/lib/home-meeting";
 import { isImeComposing } from "@/lib/ime";
-import { VisibilityField } from "@/components/experience";
 import {
   RecordingPanel,
   type TranscriptPick,
@@ -28,7 +28,6 @@ import { Disclosure } from "@/components/ui/disclosure";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  PageHeader,
   EmptyState,
   StatusBadge,
   InlineEmpty,
@@ -224,15 +223,24 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [params, setParams] = useSearchParams();
   const researchId = meeting.researchId;
   const research = data.researches.find((item) => item.id === researchId);
-  // 기록했거나 날짜가 지난 미팅은 '기록' 탭으로 엽니다(감사 A10).
+  // 기록 화면의 모드(IA v2 08 §4.3). 주소의 mode(예전 tab=prepare|record)가 있으면 그쪽을 먼저 봅니다.
+  const recorder = useOptionalRecorder();
+  const recordingHere =
+    recorder?.session?.meetingId === meeting.id &&
+    recorder.state !== "idle" &&
+    recorder.state !== "review";
+  const urlMode =
+    params.get("mode") ??
+    (params.get("tab") === "prepare" || params.get("tab") === "record"
+      ? params.get("tab")
+      : null);
+  const viewMode = recordMode(meeting, recordingHere, urlMode);
   const tab =
-    params.get("tab") ??
-    (meeting.status === "recorded" ||
-    (meeting.status === "preparing" &&
-      !!meeting.date &&
-      meeting.date < seoulToday())
-      ? "record"
-      : "prepare");
+    params.get("tab") === "questions"
+      ? "questions"
+      : viewMode === "prepare"
+        ? "prepare"
+        : "record";
   const [editingMeta, setEditingMeta] = useState(false);
   const [meta, setMeta] = useState({
     title: meeting.title,
@@ -482,7 +490,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       const result = await commitMemo();
       if (!result) return;
     }
-    setParams({ tab: next });
+    // 준비·기록은 mode, 결정·질문은 tab으로 남깁니다(04 §3 예전 주소 옮기기).
+    setParams(next === "questions" ? { tab: next } : { mode: next });
   }
   function beginPreparation() {
     prepBase.current = meeting;
@@ -793,51 +802,33 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   ];
   return (
     <div className="student-page">
-      <PageHeader
-        back={
-          <BackLink to={`/r/${researchId}/meetings`}>{t("미팅 목록")}</BackLink>
-        }
-        title={meeting.title}
-        description={`${formatDate(meeting.date)}${meeting.time ? ` · ${formatClock(meeting.time)}` : ""}`}
-        status={
-          <>
-            <StatusBadge
-              tone={meeting.status === "recorded" ? "green" : "blue"}
-            >
-              {meetingLabels[meeting.status]}
-            </StatusBadge>
-            <VisibilityField
-              compact
-              value={meeting.visibility ?? "private"}
-              onChange={(visibility) => {
-                void save("meetings", { ...meeting, visibility }).catch((e) =>
-                  toast.error((e as Error).message),
-                );
-              }}
-            />
-          </>
-        }
-        actions={
-          <div className="button-row">
-            <Button
-              variant="outline"
-              onClick={() => {
-                metaBase.current = meeting;
-                setMeta({
-                  title: meeting.title,
-                  date: meeting.date ?? "",
-                  time: meeting.time ?? "",
-                  status: meeting.status,
-                });
-                metaForm.setError(null);
-                setEditingMeta(true);
-              }}
-            >
-              <Icon name="edit" size={16} />
-              {t("미팅 정보 편집")}
-            </Button>
-          </div>
-        }
+      <RecordHeader
+        meeting={meeting}
+        mode={viewMode}
+        view={tab === "prepare" ? "prepare" : "record"}
+        onView={(next) => void changeTab(next)}
+        onEditInfo={() => {
+          metaBase.current = meeting;
+          setMeta({
+            title: meeting.title,
+            date: meeting.date ?? "",
+            time: meeting.time ?? "",
+            status: meeting.status,
+          });
+          metaForm.setError(null);
+          setEditingMeta(true);
+        }}
+        onStartRecording={() => {
+          void changeTab("record").then(() =>
+            window.setTimeout(
+              () =>
+                document
+                  .getElementById("meeting-recording")
+                  ?.scrollIntoView({ block: "start" }),
+              50,
+            ),
+          );
+        }}
       />
       <Tabs
         className="tabs-line"
