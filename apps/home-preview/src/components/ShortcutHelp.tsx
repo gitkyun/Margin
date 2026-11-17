@@ -8,6 +8,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogBody,
+  DialogFooter,
 } from "./ui/dialog";
 import { GO_SHORTCUTS } from "@/lib/go-shortcuts";
 import "./shortcut-help.css";
@@ -79,8 +81,12 @@ export function ShortcutHelp({
             )}
           </DialogDescription>
         </DialogHeader>
-        <ShortcutList />
-        <Button onClick={() => onOpenChange(false)}>{t("닫기")}</Button>
+        <DialogBody>
+          <ShortcutList />
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)}>{t("닫기")}</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

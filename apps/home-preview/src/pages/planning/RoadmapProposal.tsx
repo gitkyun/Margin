@@ -36,6 +36,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { RoadmapTimeline } from "./RoadmapTimeline";
 
@@ -335,64 +337,66 @@ export function RoadmapProposalDialog({
         </DialogHeader>
         {!proposal ? (
           <form
-            className="rms-modal-stack"
             onSubmit={(e) => {
               e.preventDefault();
               void request();
             }}
           >
-            <label className="field">
-              {t("투고일")}
-              <DateField
-                value={submissionDate}
-                disabled={running}
-                onChange={setSubmissionDate}
-              />
-            </label>
-            {even ? (
-              <div className="roadmap-proposal-scope">
-                <strong>{t("이렇게 나눠요")}</strong>
-                <ul>
-                  <li>
-                    {unfinished.length
-                      ? t("끝나지 않은 단계 {count}개를 지금 순서대로", {
-                          count: unfinished.length,
-                        })
-                      : t("끝나지 않은 단계가 없어요")}
-                  </li>
-                  <li>{t("오늘부터 투고일까지 같은 길이로, 겹치지 않게")}</li>
-                </ul>
-                <p>{t("서버나 AI에 아무것도 보내지 않아요.")}</p>
-              </div>
-            ) : (
-              <div className="roadmap-proposal-scope">
-                <strong>{t("연구 도우미에 보내는 내용")}</strong>
-                <ul>
-                  <li>
-                    {research.purpose?.trim() || research.questions?.length
-                      ? t("연구 이름과 연구 설정에 적은 목적·연구 질문")
-                      : t(
-                          "연구 이름(목적과 연구 질문이 비어 있어 일반적인 논문 순서로 제안해요)",
-                        )}
-                  </li>
-                  <li>
-                    {unfinished.length
-                      ? t("끝나지 않은 단계 {count}개의 이름·상태·목표일", {
-                          count: unfinished.length,
-                        })
-                      : t("단계가 없어 새 단계를 제안받아요")}
-                  </li>
-                  <li>{t("오늘 날짜와 투고일")}</li>
-                </ul>
-                <p>{t("미팅, 피드백, 원고 내용은 보내지 않아요.")}</p>
-              </div>
-            )}
-            {error && (
-              <p className="rms-error" role="alert">
-                {error}
-              </p>
-            )}
-            <div className="bottom-actions">
+            <DialogBody>
+              <label className="field">
+                {t("투고일")}
+                <DateField
+                  value={submissionDate}
+                  disabled={running}
+                  onChange={setSubmissionDate}
+                />
+              </label>
+              {even ? (
+                <div className="roadmap-proposal-scope">
+                  <strong>{t("이렇게 나눠요")}</strong>
+                  <ul>
+                    <li>
+                      {unfinished.length
+                        ? t("끝나지 않은 단계 {count}개를 지금 순서대로", {
+                            count: unfinished.length,
+                          })
+                        : t("끝나지 않은 단계가 없어요")}
+                    </li>
+                    <li>{t("오늘부터 투고일까지 같은 길이로, 겹치지 않게")}</li>
+                  </ul>
+                  <p>{t("서버나 AI에 아무것도 보내지 않아요.")}</p>
+                </div>
+              ) : (
+                <div className="roadmap-proposal-scope">
+                  <strong>{t("연구 도우미에 보내는 내용")}</strong>
+                  <ul>
+                    <li>
+                      {research.purpose?.trim() || research.questions?.length
+                        ? t("연구 이름과 연구 설정에 적은 목적·연구 질문")
+                        : t(
+                            "연구 이름(목적과 연구 질문이 비어 있어 일반적인 논문 순서로 제안해요)",
+                          )}
+                    </li>
+                    <li>
+                      {unfinished.length
+                        ? t("끝나지 않은 단계 {count}개의 이름·상태·목표일", {
+                            count: unfinished.length,
+                          })
+                        : t("단계가 없어 새 단계를 제안받아요")}
+                    </li>
+                    <li>{t("오늘 날짜와 투고일")}</li>
+                  </ul>
+                  <p>{t("미팅, 피드백, 원고 내용은 보내지 않아요.")}</p>
+                </div>
+              )}
+              {error && (
+                <p className="rms-error" role="alert">
+                  {error}
+                </p>
+              )}
+              {requestHint.node}
+            </DialogBody>
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -412,145 +416,151 @@ export function RoadmapProposalDialog({
                     ? t("계획을 만드는 중")
                     : t("계획 제안받기")}
               </Button>
-            </div>
-            {requestHint.node}
+            </DialogFooter>
           </form>
         ) : (
-          <div className="rms-modal-stack">
-            <div className="roadmap-proposal-heading">
-              {proposal.kind === "even" ? (
-                <StatusBadge tone="neutral">{t("자동 계산 초안")}</StatusBadge>
-              ) : (
-                <StatusBadge tone="blue">{t("AI 제안")}</StatusBadge>
-              )}
-              <span>
-                {t("투고일 {date} 기준", {
-                  date: formatDate(proposal.submissionDate),
-                })}
-              </span>
-            </div>
-            <RoadmapTimeline
-              label={
-                proposal.kind === "even"
-                  ? t("자동 계산 초안 미리보기")
-                  : t("AI가 제안한 로드맵 미리보기")
-              }
-              bars={proposal.stages.map((stage) => ({
-                id: stage.key,
-                title: stage.title.trim() || t("이름 없는 단계"),
-                startDate: stage.startDate,
-                endDate: stage.endDate,
-                tone: "proposal" as const,
-              }))}
-              markers={[
-                {
-                  id: "submission",
-                  label: t("투고일"),
-                  date: proposal.submissionDate,
-                },
-              ]}
-            />
-            <ol className="roadmap-proposal-stages">
-              {proposal.stages.map((stage, i) => (
-                <li key={stage.key}>
-                  <div className="roadmap-proposal-stage-title">
-                    <label className="field">
-                      {t("단계 이름")}
-                      <Input
-                        maxLength={200}
-                        value={stage.title}
-                        disabled={applying}
-                        onChange={(e) =>
-                          updateStage(stage.key, { title: e.target.value })
-                        }
-                      />
-                    </label>
-                    <StatusBadge tone="neutral">
-                      {stage.sourceIndex > 0 ? t("기존 단계") : t("새 단계")}
-                    </StatusBadge>
-                  </div>
-                  <div className="roadmap-proposal-dates">
-                    <label className="field">
-                      {t("시작일")}
-                      <DateField
-                        value={stage.startDate}
-                        disabled={applying}
-                        onChange={(startDate) =>
-                          updateStage(stage.key, { startDate })
-                        }
-                      />
-                    </label>
-                    <label className="field">
-                      {t("끝나는 날")}
-                      <DateField
-                        value={stage.endDate}
-                        disabled={applying}
-                        onChange={(endDate) =>
-                          updateStage(stage.key, { endDate })
-                        }
-                      />
-                    </label>
-                  </div>
-                  {stageProblems[i] && (
-                    <p className="rms-error" role="alert">
-                      {stageProblems[i]}
-                    </p>
-                  )}
-                  {stage.reason && (
-                    <p className="roadmap-proposal-reason">
-                      {t("AI가 적은 이유: {reason}", { reason: stage.reason })}
-                    </p>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={applying}
-                    aria-label={t("{title} 제안에서 빼기", {
-                      title: stage.title.trim() || t("이름 없는 단계"),
-                    })}
-                    onClick={() =>
-                      setProposal({
-                        ...proposal,
-                        stages: proposal.stages.filter(
-                          (item) => item.key !== stage.key,
-                        ),
-                      })
-                    }
-                  >
-                    {t("제안에서 빼기")}
-                  </Button>
-                </li>
-              ))}
-            </ol>
-            {proposal.assumptions && (
-              <div className="roadmap-proposal-scope">
-                <strong>{t("확인할 가정")}</strong>
-                <p>{proposal.assumptions}</p>
+          <>
+            <DialogBody>
+              <div className="roadmap-proposal-heading">
+                {proposal.kind === "even" ? (
+                  <StatusBadge tone="neutral">
+                    {t("자동 계산 초안")}
+                  </StatusBadge>
+                ) : (
+                  <StatusBadge tone="blue">{t("AI 제안")}</StatusBadge>
+                )}
+                <span>
+                  {t("투고일 {date} 기준", {
+                    date: formatDate(proposal.submissionDate),
+                  })}
+                </span>
               </div>
-            )}
-            <label className="roadmap-proposal-goal">
-              <Checkbox
-                checked={addGoal}
-                disabled={applying}
-                onCheckedChange={(next) => setAddGoal(!!next)}
+              <RoadmapTimeline
+                label={
+                  proposal.kind === "even"
+                    ? t("자동 계산 초안 미리보기")
+                    : t("AI가 제안한 로드맵 미리보기")
+                }
+                bars={proposal.stages.map((stage) => ({
+                  id: stage.key,
+                  title: stage.title.trim() || t("이름 없는 단계"),
+                  startDate: stage.startDate,
+                  endDate: stage.endDate,
+                  tone: "proposal" as const,
+                }))}
+                markers={[
+                  {
+                    id: "submission",
+                    label: t("투고일"),
+                    date: proposal.submissionDate,
+                  },
+                ]}
               />
-              {t("투고일을 주요 목표 ‘논문 투고’로 추가")}
-            </label>
-            <p className="roadmap-proposal-note">
-              {t(
-                "적용하면 기존 단계의 시작일·목표일이 바뀌고 새 단계가 ‘예정’으로 추가돼요. 끝난 단계와 할 일 기한은 바뀌지 않아요.",
+              <ol className="roadmap-proposal-stages">
+                {proposal.stages.map((stage, i) => (
+                  <li key={stage.key}>
+                    <div className="roadmap-proposal-stage-title">
+                      <label className="field">
+                        {t("단계 이름")}
+                        <Input
+                          maxLength={200}
+                          value={stage.title}
+                          disabled={applying}
+                          onChange={(e) =>
+                            updateStage(stage.key, { title: e.target.value })
+                          }
+                        />
+                      </label>
+                      <StatusBadge tone="neutral">
+                        {stage.sourceIndex > 0 ? t("기존 단계") : t("새 단계")}
+                      </StatusBadge>
+                    </div>
+                    <div className="roadmap-proposal-dates">
+                      <label className="field">
+                        {t("시작일")}
+                        <DateField
+                          value={stage.startDate}
+                          disabled={applying}
+                          onChange={(startDate) =>
+                            updateStage(stage.key, { startDate })
+                          }
+                        />
+                      </label>
+                      <label className="field">
+                        {t("끝나는 날")}
+                        <DateField
+                          value={stage.endDate}
+                          disabled={applying}
+                          onChange={(endDate) =>
+                            updateStage(stage.key, { endDate })
+                          }
+                        />
+                      </label>
+                    </div>
+                    {stageProblems[i] && (
+                      <p className="rms-error" role="alert">
+                        {stageProblems[i]}
+                      </p>
+                    )}
+                    {stage.reason && (
+                      <p className="roadmap-proposal-reason">
+                        {t("AI가 적은 이유: {reason}", {
+                          reason: stage.reason,
+                        })}
+                      </p>
+                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={applying}
+                      aria-label={t("{title} 제안에서 빼기", {
+                        title: stage.title.trim() || t("이름 없는 단계"),
+                      })}
+                      onClick={() =>
+                        setProposal({
+                          ...proposal,
+                          stages: proposal.stages.filter(
+                            (item) => item.key !== stage.key,
+                          ),
+                        })
+                      }
+                    >
+                      {t("제안에서 빼기")}
+                    </Button>
+                  </li>
+                ))}
+              </ol>
+              {proposal.assumptions && (
+                <div className="roadmap-proposal-scope">
+                  <strong>{t("확인할 가정")}</strong>
+                  <p>{proposal.assumptions}</p>
+                </div>
               )}
-              {proposal.model
-                ? ` ${t("응답한 AI 모델 · {model}", { model: proposal.model })}`
-                : ""}
-            </p>
-            {error && (
-              <p className="rms-error" role="alert">
-                {error}
+              <label className="roadmap-proposal-goal">
+                <Checkbox
+                  checked={addGoal}
+                  disabled={applying}
+                  onCheckedChange={(next) => setAddGoal(!!next)}
+                />
+                {t("투고일을 주요 목표 ‘논문 투고’로 추가")}
+              </label>
+              <p className="roadmap-proposal-note">
+                {t(
+                  "적용하면 기존 단계의 시작일·목표일이 바뀌고 새 단계가 ‘예정’으로 추가돼요. 끝난 단계와 할 일 기한은 바뀌지 않아요.",
+                )}
+                {proposal.model
+                  ? ` ${t("응답한 AI 모델 · {model}", { model: proposal.model })}`
+                  : ""}
               </p>
-            )}
-            <div className="bottom-actions">
+              {error && (
+                <p className="rms-error" role="alert">
+                  {error}
+                </p>
+              )}
+              {applyHint.node}
+            </DialogBody>
+            <DialogFooter>
               <Button
                 type="button"
                 variant="ghost"
@@ -581,9 +591,8 @@ export function RoadmapProposalDialog({
               >
                 {t("이 계획 적용")}
               </Button>
-            </div>
-            {applyHint.node}
-          </div>
+            </DialogFooter>
+          </>
         )}
       </DialogContent>
     </Dialog>

@@ -1,3 +1,4 @@
+import { DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { AnimatedList } from "@/components/AnimatedList";
 import { SourceAudioClip } from "@/components/recording/SourceAudioClip";
 import { WorkTabs, useBackState } from "./shared";
@@ -48,6 +49,7 @@ import {
   LabeledInput,
   LabeledText,
   LinkChip,
+  FilterSegments,
   SaveActions,
   SearchInput,
   useSaving,
@@ -136,7 +138,9 @@ export function FeedbackPage() {
       .map((meeting) => ({ value: meeting.id, label: meeting.title })),
     { value: NO_MEETING, label: t("미팅 없이 추가") },
   ];
-  const statuses = readMultiParam(params, "status", STATUS_VALUES);
+  // 상태는 한 번에 하나만 고릅니다(도구 줄의 SegmentedControl). 예전 주소의 여러 값은 첫 값만 씁니다.
+  const statuses = readMultiParam(params, "status", STATUS_VALUES).slice(0, 1);
+  const status = statuses[0] ?? "all";
   const meetings = readMultiParam(
     params,
     "meeting",
@@ -183,19 +187,22 @@ export function FeedbackPage() {
       />
 
       <div className="page-toolbar">
+        <FilterSegments
+          label={t("피드백 상태")}
+          options={[["all", t("전체")], ...statusFilters]}
+          value={status}
+          onChange={(value) =>
+            setFilter("status", value === "all" ? [] : [value])
+          }
+          counts={{
+            ...statusCounts,
+            all: searched.filter((item) =>
+              matchesAny(meetings, meetingKey(item)),
+            ).length,
+          }}
+        />
         <FilterMenu
           groups={[
-            {
-              key: "status",
-              label: t("피드백 상태"),
-              options: statusFilters.map(([value, label]) => ({
-                value,
-                label,
-                count: statusCounts[value],
-              })),
-              selected: statuses,
-              onChange: (values) => setFilter("status", values),
-            },
             {
               key: "meeting",
               label: t("미팅"),
@@ -221,15 +228,19 @@ export function FeedbackPage() {
             <Link
               key={item.id}
               to={`/r/${researchId}/feedback/${item.id}`}
-              className="feedback-list-row"
+              className="feedback-list-row list-row"
             >
-              <span className="student-feedback-symbol">
+              <span className="student-feedback-symbol list-row-lead">
                 <Icon name="message" size={19} />
               </span>
-              <span className="grow">
-                <strong>{item.title}</strong>
-                <p>{item.body}</p>
-                <small>
+              <span className="list-row-body">
+                <strong className="list-row-title" title={item.title}>
+                  {item.title}
+                </strong>
+                <span className="list-row-desc" title={item.body}>
+                  {item.body}
+                </span>
+                <small className="list-row-meta">
                   {item.origin && <>{originLabels[item.origin]} · </>}
                   {item.meetingId
                     ? (data.meetings.find((m) => m.id === item.meetingId)
@@ -293,7 +304,6 @@ export function FeedbackPage() {
         description={t("직접 작성한 피드백으로 저장돼요.")}
       >
         <form
-          className="stack"
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
@@ -317,19 +327,21 @@ export function FeedbackPage() {
             });
           }}
         >
-          <LabeledInput
-            label={t("제목")}
-            required
-            value={title}
-            onChange={setTitle}
-          />
-          <LabeledText
-            label={t("피드백 내용")}
-            required
-            value={body}
-            onChange={setBody}
-          />
-          <ErrorNotice error={form.error} />
+          <DialogBody>
+            <LabeledInput
+              label={t("제목")}
+              required
+              value={title}
+              onChange={setTitle}
+            />
+            <LabeledText
+              label={t("피드백 내용")}
+              required
+              value={body}
+              onChange={setBody}
+            />
+            <ErrorNotice error={form.error} />
+          </DialogBody>
           <SaveActions
             saving={form.saving}
             onCancel={() => setCreating(false)}
@@ -892,7 +904,6 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         title={t("피드백 편집")}
       >
         <form
-          className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!draft.title.trim() || !draft.body.trim()) {
@@ -910,44 +921,46 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             });
           }}
         >
-          <LabeledInput
-            label={t("제목")}
-            required
-            value={draft.title}
-            onChange={(title) => setDraft((v) => ({ ...v, title }))}
-          />
-          <LabeledText
-            label={t("피드백 내용")}
-            required
-            value={draft.body}
-            onChange={(body) => setDraft((v) => ({ ...v, body }))}
-          />
-          <label className="field">
-            <span className="field-name">{t("피드백 상태")}</span>
-            <SelectField
-              className="native-select"
-              value={draft.status}
-              onChange={(e) =>
-                setDraft((v) => ({
-                  ...v,
-                  status: e.target.value as Feedback["status"],
-                }))
-              }
-            >
-              {Object.entries(feedbackLabels).map(([value, label]) => (
-                <option value={value} key={value}>
-                  {label}
-                </option>
-              ))}
-            </SelectField>
-          </label>
-          <LabeledText
-            label={t("내 메모")}
-            hint={t("나만 볼 수 있어요.")}
-            value={draft.notes}
-            onChange={(notes) => setDraft((v) => ({ ...v, notes }))}
-          />
-          <ErrorNotice error={editForm.error} />
+          <DialogBody>
+            <LabeledInput
+              label={t("제목")}
+              required
+              value={draft.title}
+              onChange={(title) => setDraft((v) => ({ ...v, title }))}
+            />
+            <LabeledText
+              label={t("피드백 내용")}
+              required
+              value={draft.body}
+              onChange={(body) => setDraft((v) => ({ ...v, body }))}
+            />
+            <label className="field">
+              <span className="field-name">{t("피드백 상태")}</span>
+              <SelectField
+                className="native-select"
+                value={draft.status}
+                onChange={(e) =>
+                  setDraft((v) => ({
+                    ...v,
+                    status: e.target.value as Feedback["status"],
+                  }))
+                }
+              >
+                {Object.entries(feedbackLabels).map(([value, label]) => (
+                  <option value={value} key={value}>
+                    {label}
+                  </option>
+                ))}
+              </SelectField>
+            </label>
+            <LabeledText
+              label={t("내 메모")}
+              hint={t("나만 볼 수 있어요.")}
+              value={draft.notes}
+              onChange={(notes) => setDraft((v) => ({ ...v, notes }))}
+            />
+            <ErrorNotice error={editForm.error} />
+          </DialogBody>
           <SaveActions
             saving={editForm.saving}
             onCancel={() => setEditing(false)}
@@ -975,7 +988,6 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         }
       >
         <form
-          className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (
@@ -997,51 +1009,53 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             });
           }}
         >
-          {planDraft && (
-            <>
-              <LabeledInput
-                label={t("제목")}
-                required
-                value={planDraft.title}
-                onChange={(title) =>
-                  setPlanDraft((v) => (v ? { ...v, title } : v))
-                }
-              />
-              <LabeledText
-                label={t("어떻게 고칠지")}
-                required
-                value={planDraft.method}
-                onChange={(method) =>
-                  setPlanDraft((v) => (v ? { ...v, method } : v))
-                }
-              />
-              <LabeledText
-                label={t("예상 결과")}
-                value={planDraft.expectedResult}
-                onChange={(expectedResult) =>
-                  setPlanDraft((v) => (v ? { ...v, expectedResult } : v))
-                }
-                rows={2}
-              />
-              <LabeledText
-                label={t("필요한 자료·준비할 것")}
-                value={planDraft.requiredMaterials}
-                onChange={(requiredMaterials) =>
-                  setPlanDraft((v) => (v ? { ...v, requiredMaterials } : v))
-                }
-                rows={2}
-              />
-              <LabeledText
-                label={t("확인이 필요한 가정")}
-                value={planDraft.assumptions}
-                onChange={(assumptions) =>
-                  setPlanDraft((v) => (v ? { ...v, assumptions } : v))
-                }
-                rows={2}
-              />
-            </>
-          )}
-          <ErrorNotice error={planForm.error} />
+          <DialogBody>
+            {planDraft && (
+              <>
+                <LabeledInput
+                  label={t("제목")}
+                  required
+                  value={planDraft.title}
+                  onChange={(title) =>
+                    setPlanDraft((v) => (v ? { ...v, title } : v))
+                  }
+                />
+                <LabeledText
+                  label={t("어떻게 고칠지")}
+                  required
+                  value={planDraft.method}
+                  onChange={(method) =>
+                    setPlanDraft((v) => (v ? { ...v, method } : v))
+                  }
+                />
+                <LabeledText
+                  label={t("예상 결과")}
+                  value={planDraft.expectedResult}
+                  onChange={(expectedResult) =>
+                    setPlanDraft((v) => (v ? { ...v, expectedResult } : v))
+                  }
+                  rows={2}
+                />
+                <LabeledText
+                  label={t("필요한 자료·준비할 것")}
+                  value={planDraft.requiredMaterials}
+                  onChange={(requiredMaterials) =>
+                    setPlanDraft((v) => (v ? { ...v, requiredMaterials } : v))
+                  }
+                  rows={2}
+                />
+                <LabeledText
+                  label={t("확인이 필요한 가정")}
+                  value={planDraft.assumptions}
+                  onChange={(assumptions) =>
+                    setPlanDraft((v) => (v ? { ...v, assumptions } : v))
+                  }
+                  rows={2}
+                />
+              </>
+            )}
+            <ErrorNotice error={planForm.error} />
+          </DialogBody>
           <SaveActions
             saving={planForm.saving}
             onCancel={() => setPlanDraft(null)}
@@ -1058,7 +1072,6 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
         description={t("이 피드백과 선택한 방법에 연결된 새 할 일을 만들어요.")}
       >
         <form
-          className="stack"
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
@@ -1088,23 +1101,25 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
             });
           }}
         >
-          <LabeledInput
-            label={t("제목")}
-            required
-            value={taskTitle}
-            onChange={(value) => {
-              setTaskTitle(value);
-              setTaskTitleError("");
-            }}
-            error={taskTitleError || undefined}
-            inputRef={taskTitleInput}
-          />
-          <LabeledText
-            label={t("설명")}
-            value={taskDescription}
-            onChange={setTaskDescription}
-          />
-          <ErrorNotice error={taskForm.error} />
+          <DialogBody>
+            <LabeledInput
+              label={t("제목")}
+              required
+              value={taskTitle}
+              onChange={(value) => {
+                setTaskTitle(value);
+                setTaskTitleError("");
+              }}
+              error={taskTitleError || undefined}
+              inputRef={taskTitleInput}
+            />
+            <LabeledText
+              label={t("설명")}
+              value={taskDescription}
+              onChange={setTaskDescription}
+            />
+            <ErrorNotice error={taskForm.error} />
+          </DialogBody>
           <SaveActions
             saving={taskForm.saving}
             onCancel={() => setTaskPlan(null)}
@@ -1123,34 +1138,34 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
           "‘선택 취소한 방법’으로 옮겨요. 나중에 다시 선택할 수 있어요.",
         )}
       >
-        <div className="stack">
+        <DialogBody>
           <p className="student-inline-note">
             {t(
               "이미 만든 할 일은 그대로 남아요. 이 방법과의 연결은 할 일을 편집할 때 해제할 수 있어요.",
             )}
           </p>
           <ErrorNotice error={cancelForm.error} />
-          <div className="form-actions">
-            <Button variant="outline" onClick={() => setCancelPlan(null)}>
-              {t("닫기")}
-            </Button>
-            <Button
-              disabled={cancelForm.saving}
-              onClick={() => {
-                if (cancelPlan)
-                  void cancelForm.perform(async () => {
-                    await save("plans", { ...cancelPlan, status: "cancelled" });
-                    setCancelPlan(null);
-                    toast.success(
-                      t("선택을 취소했어요. 만든 할 일은 그대로 있어요."),
-                    );
-                  });
-              }}
-            >
-              {t("선택 취소")}
-            </Button>
-          </div>
-        </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setCancelPlan(null)}>
+            {t("닫기")}
+          </Button>
+          <Button
+            disabled={cancelForm.saving}
+            onClick={() => {
+              if (cancelPlan)
+                void cancelForm.perform(async () => {
+                  await save("plans", { ...cancelPlan, status: "cancelled" });
+                  setCancelPlan(null);
+                  toast.success(
+                    t("선택을 취소했어요. 만든 할 일은 그대로 있어요."),
+                  );
+                });
+            }}
+          >
+            {t("선택 취소")}
+          </Button>
+        </DialogFooter>
       </FormDialog>
     </div>
   );

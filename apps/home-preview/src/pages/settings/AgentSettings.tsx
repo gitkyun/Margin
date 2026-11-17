@@ -83,8 +83,10 @@ export function AgentSettings({
         }}
       >
         <label className="field" htmlFor={nameId}>
-          {t("이름")}{" "}
-          <small>{t("선택 · {max}자까지", { max: AGENT_NAME_MAX })}</small>
+          <span className="field-label">
+            {t("이름")}{" "}
+            <small>{t("선택 · {max}자까지", { max: AGENT_NAME_MAX })}</small>
+          </span>
           <Input
             id={nameId}
             value={draft.name}
@@ -103,7 +105,9 @@ export function AgentSettings({
           />
         </div>
         <label className="field" htmlFor={guideId}>
-          {t("개인 지침")} <small>{t("선택")}</small>
+          <span className="field-label">
+            {t("개인 지침")} <small>{t("선택")}</small>
+          </span>
           <Textarea
             id={guideId}
             rows={5}
@@ -115,7 +119,7 @@ export function AgentSettings({
               "예: 질적 연구 용어로 설명해 주세요. 고칠 문장은 예시를 하나씩 보여 주세요.",
             )}
           />
-          <small id={guideCountId}>
+          <small id={guideCountId} className="field-hint">
             {t("{count} / {max}자 · 제품 규칙보다 우선하지 않아요.", {
               count: draft.instructions.length,
               max: AGENT_INSTRUCTIONS_MAX,

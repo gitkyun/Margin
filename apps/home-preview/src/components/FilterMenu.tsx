@@ -46,9 +46,9 @@ export function FilterMenu({ groups, onClear }: FilterMenuProps) {
     <div className="filter-menu">
       <Popover.Root>
         <Popover.Trigger asChild>
+          {/* 도구 줄의 SegmentedControl·찾기 칸과 같은 높이(40)로 둡니다. */}
           <Button
             variant="outline"
-            size="sm"
             aria-label={
               total ? t("필터, {count}개 선택함", { count: total }) : t("필터")
             }

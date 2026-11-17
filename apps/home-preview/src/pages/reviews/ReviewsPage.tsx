@@ -27,6 +27,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   EmptyState,
@@ -56,7 +58,7 @@ import { isUnregisteredReviewer } from "@/lib/invites";
 import { InviteLinkButton } from "@/components/InviteLinkButton";
 import { localizeServerMessage } from "@/lib/server-messages";
 import { RequestDirection } from "./RequestDirection";
-import { WorkTabs } from "@/pages/student/shared";
+import { SearchInput, WorkTabs } from "@/pages/student/shared";
 
 export function ReviewsPage() {
   const { researchId = "" } = useParams();
@@ -278,33 +280,26 @@ export function ReviewsPage() {
             {t("검토 요청 만들기")}
           </Button>
         }
+        toolbar={
+          <>
+            <Segments
+              label={t("공유 상태")}
+              value={filter}
+              onChange={(value) => setFilter(value as typeof filter)}
+              options={[
+                { value: "all", label: t("전체") },
+                { value: "shared", label: t("공유 중") },
+                { value: "stopped", label: t("공유 중지") },
+              ]}
+            />
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder={t("제목이나 교수 이메일로 찾기")}
+            />
+          </>
+        }
       />
-      <div className="page-toolbar review-list-toolbar">
-        <Segments
-          label={t("공유 상태")}
-          value={filter}
-          onChange={(value) => setFilter(value as typeof filter)}
-          options={[
-            { value: "all", label: t("전체") },
-            { value: "shared", label: t("공유 중") },
-            { value: "stopped", label: t("공유 중지") },
-          ]}
-        />
-        <div className="review-search">
-          <Input
-            fieldSize="medium"
-            width="100%"
-            aria-label={t("검토 요청 찾기")}
-            placeholder={t("제목이나 교수 이메일로 찾기")}
-            value={search}
-            onChange={(
-              e: ChangeEvent<
-                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-              >,
-            ) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
       {!requests.length ? (
         <EmptyState
           title={
@@ -365,18 +360,18 @@ export function ReviewsPage() {
                 </span>
                 <div className="review-list-main">
                   <div className="review-list-title">
-                    <strong>{request.title}</strong>
+                    <strong title={request.title}>{request.title}</strong>
                     {hasUnread && (
                       <span
                         className="review-new-dot"
                         aria-label={t("새 응답·댓글 있음")}
                       />
                     )}
-                    <StatusBadge tone={sharingTone[request.status]}>
-                      {sharingLabels[request.status]}
-                    </StatusBadge>
                   </div>
-                  <span className="muted">
+                  <span
+                    className="muted"
+                    title={`${request.professorEmail} · ${timeText(request.createdAt)}`}
+                  >
                     {request.professorEmail} · {timeText(request.createdAt)}
                   </span>
                   <div className="review-counts">
@@ -398,6 +393,9 @@ export function ReviewsPage() {
                     )}
                   </div>
                 </div>
+                <StatusBadge tone={sharingTone[request.status]}>
+                  {sharingLabels[request.status]}
+                </StatusBadge>
                 <Icon name="chevron-right" size={18} />
               </Link>
             );
@@ -433,121 +431,125 @@ export function ReviewsPage() {
             </DialogDescription>
           </DialogHeader>
           {step === "compose" ? (
-            <form onSubmit={showPreview} className="review-compose-form">
-              <Field label={t("검토 요청 제목")} required>
-                <Input
-                  aria-label={t("검토 요청 제목")}
-                  value={title}
-                  maxLength={180}
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-                    >,
-                  ) => setTitle(e.target.value)}
-                  placeholder={t("예: 선행연구 표와 연구 질문 수정 결과")}
-                />
-              </Field>
-              <Field
-                label={t("검토할 교수")}
-                required
-                hint={
-                  professors.length > 0
-                    ? t("지도교수는 연구 설정에서 추가하거나 뺄 수 있어요.")
-                    : t(
-                        "이 이메일로 등록된 마진 계정만 검토를 열 수 있어요. 보내면 이 연구의 지도교수로 등록돼요.",
-                      )
-                }
-              >
-                {professors.length > 0 && (
-                  <Choice
-                    label={t("검토할 교수")}
-                    value={email}
-                    onChange={setEmail}
-                    options={professors.map((p) => ({ value: p, label: p }))}
-                  />
-                )}
-                {professors.length === 0 && (
+            <form onSubmit={showPreview}>
+              <DialogBody>
+                <Field label={t("검토 요청 제목")} required>
                   <Input
-                    aria-label={t("교수 계정 이메일")}
-                    type="email"
-                    autoComplete="email"
-                    value={email}
+                    aria-label={t("검토 요청 제목")}
+                    value={title}
+                    maxLength={180}
                     onChange={(
                       e: ChangeEvent<
                         | HTMLInputElement
                         | HTMLTextAreaElement
                         | HTMLSelectElement
                       >,
-                    ) => setEmail(e.target.value)}
-                    placeholder="professor@example.com"
+                    ) => setTitle(e.target.value)}
+                    placeholder={t("예: 선행연구 표와 연구 질문 수정 결과")}
                   />
-                )}
-              </Field>
-              <fieldset className="review-result-selection">
-                <legend>
-                  {t("검토받을 수정 결과")}{" "}
-                  <span className="review-required">{t("필수")}</span>
-                </legend>
-                {!results.length ? (
-                  <p className="muted">
-                    {t("아직 수정 결과가 없어요.")}{" "}
-                    <Link to={`/r/${researchId}/results?new=1`}>
-                      {t("수정 결과 작성")}
-                    </Link>
-                  </p>
-                ) : (
-                  results.map((result) => {
-                    const issue = evidenceIssue(result, data);
-                    return (
-                      <label className="review-pick-row" key={result.id}>
-                        <Checkbox
-                          checked={selected.includes(result.id)}
-                          onCheckedChange={(checked: boolean) =>
-                            setSelected((current) =>
-                              checked
-                                ? [...current, result.id]
-                                : current.filter((id) => id !== result.id),
-                            )
-                          }
-                        />
-                        <span>
-                          <strong>{result.title}</strong>
-                          <small>{issue || result.description}</small>
-                          {issue && (
-                            <span className="review-evidence-warning">
-                              {t("보완 필요")}
-                            </span>
-                          )}
-                        </span>
-                      </label>
-                    );
-                  })
-                )}
-              </fieldset>
-              <div className="review-inline-note">
-                <Icon name="lock" size={17} />
-                <p>
-                  {t(
-                    "개인 메모, 할 일 목록, AI 대화, 선택하지 않은 AI 제안은 포함되지 않아요.",
+                </Field>
+                <Field
+                  label={t("검토할 교수")}
+                  required
+                  hint={
+                    professors.length > 0
+                      ? t("지도교수는 연구 설정에서 추가하거나 뺄 수 있어요.")
+                      : t(
+                          "이 이메일로 등록된 마진 계정만 검토를 열 수 있어요. 보내면 이 연구의 지도교수로 등록돼요.",
+                        )
+                  }
+                >
+                  {professors.length > 0 && (
+                    <Choice
+                      label={t("검토할 교수")}
+                      value={email}
+                      onChange={setEmail}
+                      options={professors.map((p) => ({ value: p, label: p }))}
+                    />
                   )}
-                </p>
-              </div>
-              {error && (
-                <p className="review-form-error" role="alert">
-                  {error}
-                </p>
-              )}
-              {isUnregisteredReviewer(error) && (
-                <div className="invite-hint">
-                  <InviteLinkButton />
-                  <span>
+                  {professors.length === 0 && (
+                    <Input
+                      aria-label={t("교수 계정 이메일")}
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(
+                        e: ChangeEvent<
+                          | HTMLInputElement
+                          | HTMLTextAreaElement
+                          | HTMLSelectElement
+                        >,
+                      ) => setEmail(e.target.value)}
+                      placeholder="professor@example.com"
+                    />
+                  )}
+                </Field>
+                <fieldset className="review-result-selection">
+                  <legend>
+                    {t("검토받을 수정 결과")}{" "}
+                    <span className="review-required">{t("필수")}</span>
+                  </legend>
+                  {!results.length ? (
+                    <p className="muted">
+                      {t("아직 수정 결과가 없어요.")}{" "}
+                      <Link to={`/r/${researchId}/results?new=1`}>
+                        {t("수정 결과 작성")}
+                      </Link>
+                    </p>
+                  ) : (
+                    results.map((result) => {
+                      const issue = evidenceIssue(result, data);
+                      return (
+                        <label className="review-pick-row" key={result.id}>
+                          <Checkbox
+                            checked={selected.includes(result.id)}
+                            onCheckedChange={(checked: boolean) =>
+                              setSelected((current) =>
+                                checked
+                                  ? [...current, result.id]
+                                  : current.filter((id) => id !== result.id),
+                              )
+                            }
+                          />
+                          <span>
+                            <strong>{result.title}</strong>
+                            <small>{issue || result.description}</small>
+                            {issue && (
+                              <span className="review-evidence-warning">
+                                {t("보완 필요")}
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })
+                  )}
+                </fieldset>
+                <div className="review-inline-note">
+                  <Icon name="lock" size={17} />
+                  <p>
                     {t(
-                      "복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토 요청을 보낼 수 있어요.",
+                      "개인 메모, 할 일 목록, AI 대화, 선택하지 않은 AI 제안은 포함되지 않아요.",
                     )}
-                  </span>
+                  </p>
                 </div>
-              )}
-              <div className="form-actions">
+                {error && (
+                  <p className="review-form-error" role="alert">
+                    {error}
+                  </p>
+                )}
+                {isUnregisteredReviewer(error) && (
+                  <div className="invite-hint">
+                    <InviteLinkButton />
+                    <span>
+                      {t(
+                        "복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토 요청을 보낼 수 있어요.",
+                      )}
+                    </span>
+                  </div>
+                )}
+              </DialogBody>
+              <DialogFooter>
                 <Button
                   type="button"
                   variant="outline"
@@ -560,102 +562,106 @@ export function ReviewsPage() {
                   {busy ? t("교수 계정 확인 중") : t("공유할 내용 확인")}
                   <Icon name="arrow-right" size={16} />
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
           ) : (
-            <div className="review-public-preview">
-              <div className="review-preview-heading">
-                <StatusBadge tone="blue">
-                  {t("교수에게 공개될 내용")}
-                </StatusBadge>
-                <h3>{title}</h3>
-                <p className="muted">
-                  {t("열 수 있는 계정 · {email}", { email })}
-                </p>
-              </div>
-              <RequestDirection
-                name={research?.name}
-                purpose={research?.purpose}
-                questions={research?.questions}
-                showEmpty
-              />
-              {picks.map((result, index) => {
-                const version = data.versions.find(
-                    (r) => r.id === result.versionId,
-                  ),
-                  excerpt = sourceExcerpt(result, data);
-                return (
-                  <article className="review-preview-item" key={result.id}>
-                    <span className="meta">
-                      {t("검토 항목 {index} · 1차 검토", { index: index + 1 })}
-                    </span>
-                    <h4>{result.title}</h4>
-                    {excerpt && (
-                      <div className="review-source-block">
-                        <span>{t("연결된 피드백")}</span>
-                        <p>{excerpt}</p>
+            <>
+              <DialogBody className="review-public-preview">
+                <div className="review-preview-heading">
+                  <StatusBadge tone="blue">
+                    {t("교수에게 공개될 내용")}
+                  </StatusBadge>
+                  <h3>{title}</h3>
+                  <p className="muted">
+                    {t("열 수 있는 계정 · {email}", { email })}
+                  </p>
+                </div>
+                <RequestDirection
+                  name={research?.name}
+                  purpose={research?.purpose}
+                  questions={research?.questions}
+                  showEmpty
+                />
+                {picks.map((result, index) => {
+                  const version = data.versions.find(
+                      (r) => r.id === result.versionId,
+                    ),
+                    excerpt = sourceExcerpt(result, data);
+                  return (
+                    <article className="review-preview-item" key={result.id}>
+                      <span className="meta">
+                        {t("검토 항목 {index} · 1차 검토", {
+                          index: index + 1,
+                        })}
+                      </span>
+                      <h4>{result.title}</h4>
+                      {excerpt && (
+                        <div className="review-source-block">
+                          <span>{t("연결된 피드백")}</span>
+                          <p>{excerpt}</p>
+                        </div>
+                      )}
+                      <div className="review-preserved-copy">
+                        <span className="meta">{t("수정한 내용")}</span>
+                        <p>{result.description}</p>
                       </div>
-                    )}
-                    <div className="review-preserved-copy">
-                      <span className="meta">{t("수정한 내용")}</span>
-                      <p>{result.description}</p>
-                    </div>
-                    {version ? (
-                      <button
-                        className="review-file-chip"
-                        type="button"
-                        onClick={() =>
-                          setPreviewFile(
-                            previewFile?.id === version.id ? null : version,
-                          )
-                        }
-                      >
-                        <Icon name="file" size={19} />
-                        <span>
-                          <strong>{version.fileName}</strong>
-                          <small>
-                            v{version.number} · {result.location}
-                          </small>
-                        </span>
-                        <Icon name="chevron-down" size={16} />
-                      </button>
-                    ) : (
-                      <p className="meta">{t("파일 없음 · 설명으로 검토")}</p>
-                    )}
-                  </article>
-                );
-              })}
-              {previewFile && (
-                <div className="review-compose-pdf">
-                  <SectionBoundary resetKeys={[previewFile.id]}>
-                    <PdfViewer version={previewFile} />
-                  </SectionBoundary>
-                </div>
-              )}
-              <p className="review-inline-note">
-                <Icon name="info" size={17} />
-                {picks.some((result) => !!result.versionId)
-                  ? t(
-                      "볼 위치는 먼저 볼 곳을 알려 줄 뿐이에요. 교수님은 첨부한 PDF 전체를 보고 내려받을 수 있어요.",
-                    )
-                  : t("첨부 파일 없이 위의 설명이 공개돼요.")}
-              </p>
-              {error && (
-                <p className="review-form-error" role="alert">
-                  {error}
+                      {version ? (
+                        <button
+                          className="review-file-chip"
+                          type="button"
+                          onClick={() =>
+                            setPreviewFile(
+                              previewFile?.id === version.id ? null : version,
+                            )
+                          }
+                        >
+                          <Icon name="file" size={19} />
+                          <span>
+                            <strong>{version.fileName}</strong>
+                            <small>
+                              v{version.number} · {result.location}
+                            </small>
+                          </span>
+                          <Icon name="chevron-down" size={16} />
+                        </button>
+                      ) : (
+                        <p className="meta">{t("파일 없음 · 설명으로 검토")}</p>
+                      )}
+                    </article>
+                  );
+                })}
+                {previewFile && (
+                  <div className="review-compose-pdf">
+                    <SectionBoundary resetKeys={[previewFile.id]}>
+                      <PdfViewer version={previewFile} />
+                    </SectionBoundary>
+                  </div>
+                )}
+                <p className="review-inline-note">
+                  <Icon name="info" size={17} />
+                  {picks.some((result) => !!result.versionId)
+                    ? t(
+                        "볼 위치는 먼저 볼 곳을 알려 줄 뿐이에요. 교수님은 첨부한 PDF 전체를 보고 내려받을 수 있어요.",
+                      )
+                    : t("첨부 파일 없이 위의 설명이 공개돼요.")}
                 </p>
-              )}
-              {isUnregisteredReviewer(error) && (
-                <div className="invite-hint">
-                  <InviteLinkButton />
-                  <span>
-                    {t(
-                      "복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토 요청을 보낼 수 있어요.",
-                    )}
-                  </span>
-                </div>
-              )}
-              <div className="form-actions">
+                {error && (
+                  <p className="review-form-error" role="alert">
+                    {error}
+                  </p>
+                )}
+                {isUnregisteredReviewer(error) && (
+                  <div className="invite-hint">
+                    <InviteLinkButton />
+                    <span>
+                      {t(
+                        "복사한 링크를 교수님께 직접 보내 주세요. 가입한 뒤에 검토 요청을 보낼 수 있어요.",
+                      )}
+                    </span>
+                  </div>
+                )}
+              </DialogBody>
+              <DialogFooter>
                 <Button
                   variant="outline"
                   disabled={busy}
@@ -671,8 +677,8 @@ export function ReviewsPage() {
                   {busy ? t("링크 만드는 중") : t("검토 링크 만들기")}
                   <Icon name="link" size={16} />
                 </Button>
-              </div>
-            </div>
+              </DialogFooter>
+            </>
           )}
         </DialogContent>
       </Dialog>
@@ -686,14 +692,14 @@ export function ReviewsPage() {
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="form-actions">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setDiscardOpen(false)}>
               {t("계속 작성")}
             </Button>
             <Button variant="destructive" onClick={close}>
               {t("버리고 닫기")}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

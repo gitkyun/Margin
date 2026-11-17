@@ -6,26 +6,6 @@
  */
 
   /* ── 로드맵 ────────────────────────────────────────────── */
-  .roadmap-summary {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px 14px;
-    margin: 18px 0 14px;
-  }
-  .roadmap-summary > p {
-    margin: 0;
-    font-size: var(--typography-label2-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .roadmap-propose {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    margin-left: auto;
-  }
 
   /* ── 월별 로드맵(단계 막대) ──────────────────────────────
    * 좁은 화면에서는 이 상자 안에서만 가로로 넘겨 봅니다. 색은 Montage 토큰이라

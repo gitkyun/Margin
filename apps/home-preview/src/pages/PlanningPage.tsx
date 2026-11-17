@@ -53,6 +53,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@montage-ui/core";
 import { DateField, DateTimeField } from "@/components/ui/date-field";
@@ -207,23 +209,57 @@ export function PlanningPage() {
         }
         toolbar={
           tab === "roadmap" ? (
-            <Segments
-              label={t("로드맵 보기")}
-              value={view}
-              onChange={setView}
-              options={[
-                { value: "timeline", label: t("시간순") },
-                { value: "months", label: t("월별") },
-                { value: "diagram", label: t("관계도") },
-              ]}
-            />
+            // 왼쪽: 보기 전환, 오른쪽: 계획 초안 버튼과 꺼진 이유(버튼 아래 6).
+            <>
+              <div className="planning-view-switch">
+                <Segments
+                  label={t("로드맵 보기")}
+                  value={view}
+                  onChange={setView}
+                  options={[
+                    { value: "timeline", label: t("시간순") },
+                    { value: "months", label: t("월별") },
+                    { value: "diagram", label: t("관계도") },
+                  ]}
+                />
+              </div>
+              <div className="planning-propose">
+                {proposalHint.describedBy ? (
+                  // 연구 도우미를 쓸 수 없을 때는 꺼진 버튼 대신, 화면에서 계산하는 초안을 내요.
+                  <Button
+                    variant="outline"
+                    disabled={!phases.length}
+                    aria-describedby={proposalHint.describedBy}
+                    onClick={() => {
+                      setProposalKind("even");
+                      setProposalOpen(true);
+                    }}
+                  >
+                    <Icon name="calendar" size={16} />
+                    {t("균등 배분 초안")}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setProposalKind("ai");
+                      setProposalOpen(true);
+                    }}
+                  >
+                    <Icon name="sparkles" size={16} />
+                    {t("투고일로 계획 제안받기")}
+                  </Button>
+                )}
+                {proposalHint.node}
+              </div>
+            </>
           ) : undefined
         }
       />
       {error && <p className="rms-error">{error}</p>}
       {tab === "roadmap" ? (
         <>
-          <div className="roadmap-summary">
+          <div className="planning-summary">
             <StatusBadge tone="blue" icon={<Icon name="flag" size={14} />}>
               {phases.find((p) => p.id === research.currentPhaseId)?.title ??
                 phases.find((p) => p.status === "active")?.title ??
@@ -232,35 +268,6 @@ export function PlanningPage() {
             <p>
               {t("단계와 목표의 날짜를 바꿔도 할 일 기한은 바뀌지 않아요.")}
             </p>
-            <div className="roadmap-propose">
-              {proposalHint.describedBy ? (
-                // 연구 도우미를 쓸 수 없을 때는 꺼진 버튼 대신, 화면에서 계산하는 초안을 내요.
-                <Button
-                  variant="outline"
-                  disabled={!phases.length}
-                  aria-describedby={proposalHint.describedBy}
-                  onClick={() => {
-                    setProposalKind("even");
-                    setProposalOpen(true);
-                  }}
-                >
-                  <Icon name="calendar" size={16} />
-                  {t("균등 배분 초안")}
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setProposalKind("ai");
-                    setProposalOpen(true);
-                  }}
-                >
-                  <Icon name="sparkles" size={16} />
-                  {t("투고일로 계획 제안받기")}
-                </Button>
-              )}
-              {proposalHint.node}
-            </div>
           </div>
           {!phases.length ? (
             <EmptyState
@@ -674,7 +681,6 @@ export function PlanningPage() {
           </DialogHeader>
           {phase && (
             <form
-              className="rms-modal-stack"
               onSubmit={(e) => {
                 e.preventDefault();
                 void run(async () => {
@@ -689,52 +695,57 @@ export function PlanningPage() {
                 });
               }}
             >
-              <label className="field">
-                {t("단계 이름")}
-                <Input
-                  required
+              <DialogBody>
+                <label className="field">
+                  {t("단계 이름")}
+                  <Input
+                    required
 
-                  maxLength={200}
-                  value={phase.title}
-                  onChange={(e) =>
-                    setPhase({ ...phase, title: e.target.value })
-                  }
-                />
-              </label>
-              <label className="field">
-                {t("시작일")}
-                <DateField
-                  value={phase.startDate ?? ""}
-                  onChange={(startDate) =>
-                    setPhase({ ...phase, startDate: startDate || null })
-                  }
-                />
-              </label>
-              <label className="field">
-                {t("목표일")}
-                <DateField
-                  value={phase.dueDate ?? ""}
-                  onChange={(dueDate) =>
-                    setPhase({ ...phase, dueDate: dueDate || null })
-                  }
-                />
-              </label>
-              <label className="field">
-                <span>{t("진행 상태")}</span>
-                <Choice
-                  label={t("진행 상태")}
-                  value={phase.status}
-                  onChange={(v) =>
-                    setPhase({ ...phase, status: v as ResearchPhase["status"] })
-                  }
-                  options={[
-                    { value: "planned", label: t("예정") },
-                    { value: "active", label: t("진행 중") },
-                    { value: "done", label: t("완료") },
-                  ]}
-                />
-              </label>
-              <div className="bottom-actions">
+                    maxLength={200}
+                    value={phase.title}
+                    onChange={(e) =>
+                      setPhase({ ...phase, title: e.target.value })
+                    }
+                  />
+                </label>
+                <label className="field">
+                  {t("시작일")}
+                  <DateField
+                    value={phase.startDate ?? ""}
+                    onChange={(startDate) =>
+                      setPhase({ ...phase, startDate: startDate || null })
+                    }
+                  />
+                </label>
+                <label className="field">
+                  {t("목표일")}
+                  <DateField
+                    value={phase.dueDate ?? ""}
+                    onChange={(dueDate) =>
+                      setPhase({ ...phase, dueDate: dueDate || null })
+                    }
+                  />
+                </label>
+                <label className="field">
+                  <span>{t("진행 상태")}</span>
+                  <Choice
+                    label={t("진행 상태")}
+                    value={phase.status}
+                    onChange={(v) =>
+                      setPhase({
+                        ...phase,
+                        status: v as ResearchPhase["status"],
+                      })
+                    }
+                    options={[
+                      { value: "planned", label: t("예정") },
+                      { value: "active", label: t("진행 중") },
+                      { value: "done", label: t("완료") },
+                    ]}
+                  />
+                </label>
+              </DialogBody>
+              <DialogFooter>
                 {data.phases.some((p) => p.id === phase.id) && (
                   <Button
                     type="button"
@@ -763,7 +774,7 @@ export function PlanningPage() {
                 <Button type="submit" disabled={busy}>
                   {t("단계 저장")}
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
           )}
         </DialogContent>
@@ -790,7 +801,6 @@ export function PlanningPage() {
           </DialogHeader>
           {milestone && (
             <form
-              className="rms-modal-stack"
               onSubmit={(e) => {
                 e.preventDefault();
                 void run(async () => {
@@ -799,92 +809,94 @@ export function PlanningPage() {
                 });
               }}
             >
-              <label className="field">
-                {t("목표 이름")}
-                <Input
-                  required
-                  maxLength={200}
-                  value={milestone.title}
-                  onChange={(e) =>
-                    setMilestone({ ...milestone, title: e.target.value })
-                  }
-                />
-              </label>
-              <label className="field">
-                {t("기한")}
-                <DateField
-                  value={milestone.dueDate ?? ""}
-                  onChange={(dueDate) =>
-                    setMilestone({ ...milestone, dueDate: dueDate || null })
-                  }
-                />
-              </label>
-              <label className="field">
-                <span>{t("단계")}</span>
-                <Choice
-                  label={t("단계")}
-                  value={milestone.phaseId ?? ""}
-                  onChange={(v) =>
-                    setMilestone({ ...milestone, phaseId: v || undefined })
-                  }
-                  options={[
-                    { value: "", label: t("단계 미지정") },
-                    ...phases.map((p) => ({ value: p.id, label: p.title })),
-                  ]}
-                />
-              </label>
-              <label className="field">
-                <span>{t("목표 상태")}</span>
-                <Choice
-                  label={t("목표 상태")}
-                  value={milestone.status}
-                  onChange={(v) =>
-                    setMilestone({
-                      ...milestone,
-                      status: v as Milestone["status"],
-                    })
-                  }
-                  options={[
-                    { value: "planned", label: t("예정") },
-                    { value: "done", label: t("완료") },
-                  ]}
-                />
-              </label>
-              {(["tasks", "documents"] as const).map((kind) => (
-                <fieldset className="connection-picker" key={kind}>
-                  <legend>
-                    {kind === "tasks" ? t("관련 할 일") : t("관련 문서")}
-                  </legend>
-                  {data[kind]
-                    .filter(
-                      (item) =>
-                        item.researchId === researchId && !item.archivedAt,
-                    )
-                    .map((item) => {
-                      const field =
-                        kind === "tasks" ? "taskIds" : "documentIds";
-                      return (
-                        <label key={item.id}>
-                          <Checkbox
-                            checked={milestone[field].includes(item.id)}
-                            onCheckedChange={(next) =>
-                              setMilestone({
-                                ...milestone,
-                                [field]: next
-                                  ? [...milestone[field], item.id]
-                                  : milestone[field].filter(
-                                      (id) => id !== item.id,
-                                    ),
-                              })
-                            }
-                          />
-                          {item.title}
-                        </label>
-                      );
-                    })}
-                </fieldset>
-              ))}
-              <div className="bottom-actions">
+              <DialogBody>
+                <label className="field">
+                  {t("목표 이름")}
+                  <Input
+                    required
+                    maxLength={200}
+                    value={milestone.title}
+                    onChange={(e) =>
+                      setMilestone({ ...milestone, title: e.target.value })
+                    }
+                  />
+                </label>
+                <label className="field">
+                  {t("기한")}
+                  <DateField
+                    value={milestone.dueDate ?? ""}
+                    onChange={(dueDate) =>
+                      setMilestone({ ...milestone, dueDate: dueDate || null })
+                    }
+                  />
+                </label>
+                <label className="field">
+                  <span>{t("단계")}</span>
+                  <Choice
+                    label={t("단계")}
+                    value={milestone.phaseId ?? ""}
+                    onChange={(v) =>
+                      setMilestone({ ...milestone, phaseId: v || undefined })
+                    }
+                    options={[
+                      { value: "", label: t("단계 미지정") },
+                      ...phases.map((p) => ({ value: p.id, label: p.title })),
+                    ]}
+                  />
+                </label>
+                <label className="field">
+                  <span>{t("목표 상태")}</span>
+                  <Choice
+                    label={t("목표 상태")}
+                    value={milestone.status}
+                    onChange={(v) =>
+                      setMilestone({
+                        ...milestone,
+                        status: v as Milestone["status"],
+                      })
+                    }
+                    options={[
+                      { value: "planned", label: t("예정") },
+                      { value: "done", label: t("완료") },
+                    ]}
+                  />
+                </label>
+                {(["tasks", "documents"] as const).map((kind) => (
+                  <fieldset className="connection-picker" key={kind}>
+                    <legend>
+                      {kind === "tasks" ? t("관련 할 일") : t("관련 문서")}
+                    </legend>
+                    {data[kind]
+                      .filter(
+                        (item) =>
+                          item.researchId === researchId && !item.archivedAt,
+                      )
+                      .map((item) => {
+                        const field =
+                          kind === "tasks" ? "taskIds" : "documentIds";
+                        return (
+                          <label key={item.id}>
+                            <Checkbox
+                              checked={milestone[field].includes(item.id)}
+                              onCheckedChange={(next) =>
+                                setMilestone({
+                                  ...milestone,
+                                  [field]: next
+                                    ? [...milestone[field], item.id]
+                                    : milestone[field].filter(
+                                        (id) => id !== item.id,
+                                      ),
+                                })
+                              }
+                            />
+                            {item.title}
+                          </label>
+                        );
+                      })}
+                  </fieldset>
+                ))}
+              </DialogBody>
+              <DialogFooter>
                 {data.milestones.some((m) => m.id === milestone.id) && (
                   <Button
                     type="button"
@@ -914,7 +926,7 @@ export function PlanningPage() {
                 <Button type="submit" disabled={busy}>
                   {t("목표 저장")}
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
           )}
         </DialogContent>
@@ -966,7 +978,6 @@ function PollCreate({
           </DialogDescription>
         </DialogHeader>
         <form
-          className="rms-modal-stack"
           onSubmit={async (e) => {
             e.preventDefault();
             setBusy(true);
@@ -992,91 +1003,93 @@ function PollCreate({
             }
           }}
         >
-          <label className="field">
-            {t("미팅 제목")}
-            <Input
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={200}
-            />
-          </label>
-          <label className="field">
-            {t("참석자 이메일")}
-            <Input
-              required
-              value={emails}
-              onChange={(e) => setEmails(e.target.value)}
-              placeholder={t("쉼표로 구분해 입력")}
-            />
-            <small>
-              {t(
-                "마진 계정이 있는 사람만 초대할 수 있어요. 이메일은 최대 20개예요.",
-              )}
-            </small>
-          </label>
-          {options.map((o, i) => (
-            <div className="schedule-option-input" key={o.id}>
-              <strong>{t("후보 {n}", { n: i + 1 })}</strong>
-              <div className="schedule-option-field">
-                <span>{t("시작")}</span>
-                <DateTimeField
-                  label={t("후보 {n} 시작", { n: i + 1 })}
-                  required
-                  value={o.start}
-                  onChange={(startValue) =>
-                    setOptions(
-                      options.map((v) =>
-                        v.id === o.id ? { ...v, start: startValue } : v,
-                      ),
-                    )
-                  }
-                />
+          <DialogBody>
+            <label className="field">
+              {t("미팅 제목")}
+              <Input
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={200}
+              />
+            </label>
+            <label className="field">
+              {t("참석자 이메일")}
+              <Input
+                required
+                value={emails}
+                onChange={(e) => setEmails(e.target.value)}
+                placeholder={t("쉼표로 구분해 입력")}
+              />
+              <small>
+                {t(
+                  "마진 계정이 있는 사람만 초대할 수 있어요. 이메일은 최대 20개예요.",
+                )}
+              </small>
+            </label>
+            {options.map((o, i) => (
+              <div className="schedule-option-input" key={o.id}>
+                <strong>{t("후보 {n}", { n: i + 1 })}</strong>
+                <div className="schedule-option-field">
+                  <span>{t("시작")}</span>
+                  <DateTimeField
+                    label={t("후보 {n} 시작", { n: i + 1 })}
+                    required
+                    value={o.start}
+                    onChange={(startValue) =>
+                      setOptions(
+                        options.map((v) =>
+                          v.id === o.id ? { ...v, start: startValue } : v,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+                <div className="schedule-option-field">
+                  <span>{t("종료")}</span>
+                  <DateTimeField
+                    label={t("후보 {n} 종료", { n: i + 1 })}
+                    required
+                    value={o.end}
+                    onChange={(endValue) =>
+                      setOptions(
+                        options.map((v) =>
+                          v.id === o.id ? { ...v, end: endValue } : v,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+                {options.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setOptions(options.filter((v) => v.id !== o.id))
+                    }
+                  >
+                    {t("후보 제거")}
+                  </Button>
+                )}
               </div>
-              <div className="schedule-option-field">
-                <span>{t("종료")}</span>
-                <DateTimeField
-                  label={t("후보 {n} 종료", { n: i + 1 })}
-                  required
-                  value={o.end}
-                  onChange={(endValue) =>
-                    setOptions(
-                      options.map((v) =>
-                        v.id === o.id ? { ...v, end: endValue } : v,
-                      ),
-                    )
-                  }
-                />
-              </div>
-              {options.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setOptions(options.filter((v) => v.id !== o.id))
-                  }
-                >
-                  {t("후보 제거")}
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            disabled={options.length >= POLL_OPTION_LIMIT}
-            aria-describedby={optionLimitReason.describedBy}
-            onClick={() =>
-              setOptions([...options, { id: uid(), start: "", end: "" }])
-            }
-          >
-            <Icon name="plus" size={16} />
-            {t("후보 추가")}
-          </Button>
-          {optionLimitReason.node}
-          {error && <p className="rms-error">{error}</p>}
-          <div className="bottom-actions">
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              disabled={options.length >= POLL_OPTION_LIMIT}
+              aria-describedby={optionLimitReason.describedBy}
+              onClick={() =>
+                setOptions([...options, { id: uid(), start: "", end: "" }])
+              }
+            >
+              <Icon name="plus" size={16} />
+              {t("후보 추가")}
+            </Button>
+            {optionLimitReason.node}
+            {error && <p className="rms-error">{error}</p>}
+          </DialogBody>
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -1088,7 +1101,7 @@ function PollCreate({
             <Button type="submit" disabled={busy}>
               {busy ? t("보내는 중") : t("응답 요청 보내기")}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

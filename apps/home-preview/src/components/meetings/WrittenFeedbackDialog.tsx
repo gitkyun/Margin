@@ -11,6 +11,7 @@ import {
   useSaving,
 } from "@/pages/student/shared";
 import { VisibilityField } from "@/components/experience";
+import { DialogBody } from "@/components/ui/dialog";
 import { useWorkspace } from "@/lib/workspace";
 import { seoulToday } from "@/lib/home-meeting";
 import { recordBase, type BaseRecord, type Meeting } from "@/lib/domain";
@@ -134,76 +135,79 @@ export function WrittenFeedbackDialog({
         "카톡·메일·문서 댓글로 받은 의견을 붙여 넣으면 기록 한 건으로 남아요.",
       )}
     >
-      <form className="stack written-form" onSubmit={submit}>
-        <LabeledInput
-          label={t("제목")}
-          required
-          value={title}
-          onChange={(value) => {
-            setTitle(value);
-            setTitleTouched(true);
-          }}
-        />
-        <div className="form-grid">
+      <form className="written-form" onSubmit={submit}>
+        <DialogBody>
           <LabeledInput
-            label={t("받은 날")}
-            type="date"
-            value={date}
+            label={t("제목")}
+            required
+            value={title}
             onChange={(value) => {
-              setDate(value);
-              if (!titleTouched && value) setTitle(writtenTitle(value));
+              setTitle(value);
+              setTitleTouched(true);
             }}
           />
-          <label className="field">
-            <span>{t("어디서 받았나요")}</span>
-            <select
-              className="native-select"
-              value={source}
-              onChange={(event) => setSource(event.target.value as Source)}
-            >
-              {SOURCES.map((value) => (
-                <option key={value} value={value}>
-                  {sourceLabel(value)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <div
-          onPasteCapture={(event) => {
-            const hasImage = Array.from(event.clipboardData.items).some(
-              (item) => item.kind === "file" && item.type.startsWith("image/"),
-            );
-            if (hasImage)
-              toast.info(
-                t("사진은 아직 넣을 수 없어요. 글자만 붙여 넣어 주세요."),
+          <div className="form-grid">
+            <LabeledInput
+              label={t("받은 날")}
+              type="date"
+              value={date}
+              onChange={(value) => {
+                setDate(value);
+                if (!titleTouched && value) setTitle(writtenTitle(value));
+              }}
+            />
+            <label className="field">
+              <span>{t("어디서 받았나요")}</span>
+              <select
+                className="native-select"
+                value={source}
+                onChange={(event) => setSource(event.target.value as Source)}
+              >
+                {SOURCES.map((value) => (
+                  <option key={value} value={value}>
+                    {sourceLabel(value)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div
+            onPasteCapture={(event) => {
+              const hasImage = Array.from(event.clipboardData.items).some(
+                (item) =>
+                  item.kind === "file" && item.type.startsWith("image/"),
               );
-          }}
-        >
-          <LabeledText
-            label={t("내용")}
-            required
-            rows={10}
-            value={body}
-            onChange={setBody}
-            placeholder={t("받은 내용을 그대로 붙여 넣어 주세요.")}
-            error={
-              tooLong
-                ? t("50,000자까지 넣을 수 있어요. 나눠서 넣어 주세요.")
-                : undefined
-            }
-          />
-          <p className="written-count" aria-live="polite">
-            {t("{count} / {max}자", {
-              count: body.length.toLocaleString(),
-              max: WRITTEN_MAX.toLocaleString(),
-            })}
-          </p>
-        </div>
-        {collaborative && (
-          <VisibilityField value={visibility} onChange={setVisibility} />
-        )}
-        <ErrorNotice error={form.error} />
+              if (hasImage)
+                toast.info(
+                  t("사진은 아직 넣을 수 없어요. 글자만 붙여 넣어 주세요."),
+                );
+            }}
+          >
+            <LabeledText
+              label={t("내용")}
+              required
+              rows={10}
+              value={body}
+              onChange={setBody}
+              placeholder={t("받은 내용을 그대로 붙여 넣어 주세요.")}
+              error={
+                tooLong
+                  ? t("50,000자까지 넣을 수 있어요. 나눠서 넣어 주세요.")
+                  : undefined
+              }
+            />
+            <p className="written-count" aria-live="polite">
+              {t("{count} / {max}자", {
+                count: body.length.toLocaleString(),
+                max: WRITTEN_MAX.toLocaleString(),
+              })}
+            </p>
+          </div>
+          {collaborative && (
+            <VisibilityField value={visibility} onChange={setVisibility} />
+          )}
+          <ErrorNotice error={form.error} />
+        </DialogBody>
         <SaveActions
           saving={form.saving}
           onCancel={() => onOpenChange(false)}

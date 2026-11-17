@@ -25,6 +25,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   aiReviewKey,
@@ -466,50 +468,52 @@ export function useWritingReview({
           </DialogDescription>
         </DialogHeader>
         {pending && (
-          <div className="rms-modal-stack">
-            <blockquote className="source-excerpt">
-              <small>{t("원문")}</small>
-              {pending.original}
-            </blockquote>
-            <label className="field">
-              <span className="field-name">
-                {pending.fromAI
-                  ? t("넣을 문장 (AI 제안)")
-                  : t("넣을 문장 (원문에서 시작)")}
-              </span>
-              <Textarea
-                value={pending.draft}
-                rows={4}
-                onChange={(e) => {
-                  setApplyError("");
-                  setPending({ ...pending, draft: e.target.value });
-                }}
-              />
-              <small>
-                {pending.fromAI
-                  ? t(
-                      "AI가 ‘어떻게 고칠지’에 적은 예시 문장이에요. 원문의 주장·수치가 그대로인지 확인해 주세요.",
-                    )
-                  : t(
-                      "AI 제안에서 바로 넣을 문장을 찾지 못해 원문을 넣어 두었어요. 아래 방법을 보고 직접 고쳐 주세요.",
-                    )}
-              </small>
-            </label>
-            <WordDiff before={pending.original} after={pending.draft} />
-            {pending.method && (
-              <Disclosure
-                className="writing-apply-method"
-                summary={t("AI가 적은 고칠 방법")}
-              >
-                <p>{pending.method}</p>
-              </Disclosure>
-            )}
-            {applyError && (
-              <p className="rms-error" role="alert">
-                {applyError}
-              </p>
-            )}
-            <div className="bottom-actions">
+          <>
+            <DialogBody>
+              <blockquote className="source-excerpt">
+                <small>{t("원문")}</small>
+                {pending.original}
+              </blockquote>
+              <label className="field">
+                <span className="field-name">
+                  {pending.fromAI
+                    ? t("넣을 문장 (AI 제안)")
+                    : t("넣을 문장 (원문에서 시작)")}
+                </span>
+                <Textarea
+                  value={pending.draft}
+                  rows={4}
+                  onChange={(e) => {
+                    setApplyError("");
+                    setPending({ ...pending, draft: e.target.value });
+                  }}
+                />
+                <small>
+                  {pending.fromAI
+                    ? t(
+                        "AI가 ‘어떻게 고칠지’에 적은 예시 문장이에요. 원문의 주장·수치가 그대로인지 확인해 주세요.",
+                      )
+                    : t(
+                        "AI 제안에서 바로 넣을 문장을 찾지 못해 원문을 넣어 두었어요. 아래 방법을 보고 직접 고쳐 주세요.",
+                      )}
+                </small>
+              </label>
+              <WordDiff before={pending.original} after={pending.draft} />
+              {pending.method && (
+                <Disclosure
+                  className="writing-apply-method"
+                  summary={t("AI가 적은 고칠 방법")}
+                >
+                  <p>{pending.method}</p>
+                </Disclosure>
+              )}
+              {applyError && (
+                <p className="rms-error" role="alert">
+                  {applyError}
+                </p>
+              )}
+            </DialogBody>
+            <DialogFooter>
               <Button variant="outline" onClick={cancelApply}>
                 {t("취소")}
               </Button>
@@ -522,8 +526,8 @@ export function useWritingReview({
               >
                 {t("반영")}
               </Button>
-            </div>
-          </div>
+            </DialogFooter>
+          </>
         )}
       </DialogContent>
     </Dialog>

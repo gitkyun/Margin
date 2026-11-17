@@ -125,6 +125,17 @@
     list-style: none;
     padding: 0;
   }
+  .settings-body .subscription-plans {
+    margin-block: 0;
+  }
+  /* 설정 안에서는 다른 구역 제목과 같은 크기, 제목 ↔ 내용 12 */
+  .settings-body .subscription-heading h2 {
+    margin: 0 0 var(--spacing-12);
+    font-size: var(--typography-headline1-fontSize);
+    line-height: var(--typography-headline1-lineHeight);
+    font-weight: 600;
+    letter-spacing: var(--typography-headline1-letterSpacing);
+  }
   .settings-body .subscription-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

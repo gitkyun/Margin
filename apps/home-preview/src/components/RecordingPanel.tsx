@@ -26,6 +26,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "./ui/dialog";
 import { Checkbox } from "@montage-ui/core";
 
@@ -482,39 +484,42 @@ function RecordingPanelView({
               )}
             </DialogDescription>
           </DialogHeader>
-          <label className="student-choice-row">
-            <Checkbox
-              checked={liveText && speechSupported}
-              disabled={!speechSupported}
-              aria-describedby={speechSupported ? undefined : speechNoticeId}
-              onCheckedChange={(next) => setLiveText(next)}
-            />
-            {t("실시간 한국어 전사 켜기")}
-          </label>
-          {!speechSupported && (
-            <p id={speechNoticeId} className="transcript-notice">
-              {t(
-                "이 브라우저는 실시간 전사를 지원하지 않아요. 음성만 녹음하거나 지원하는 브라우저에서 열어 주세요.",
-              )}
-            </p>
-          )}
-          <label className="student-choice-row">
-            <Checkbox
-              checked={agree}
-              onCheckedChange={(next) => setAgree(next)}
-            />
-            {liveText && speechSupported
-              ? t("참석자에게 녹음과 음성 인식을 알리고 동의를 받았어요.")
-              : t("참석자에게 녹음을 알리고 동의를 받았어요.")}
-          </label>
-          {recorder.scope === "app" && (
-            <p className="student-footnote">
-              {t(
-                "녹음하는 동안 다른 화면으로 가도 녹음은 이어지고, 위쪽의 작은 녹음 막대에서 멈추거나 이 미팅으로 돌아올 수 있어요.",
-              )}
-            </p>
-          )}
-          <div className="bottom-actions">
+          <DialogBody>
+            <label className="student-choice-row">
+              <Checkbox
+                checked={liveText && speechSupported}
+                disabled={!speechSupported}
+                aria-describedby={speechSupported ? undefined : speechNoticeId}
+                onCheckedChange={(next) => setLiveText(next)}
+              />
+              {t("실시간 한국어 전사 켜기")}
+            </label>
+            {!speechSupported && (
+              <p id={speechNoticeId} className="transcript-notice">
+                {t(
+                  "이 브라우저는 실시간 전사를 지원하지 않아요. 음성만 녹음하거나 지원하는 브라우저에서 열어 주세요.",
+                )}
+              </p>
+            )}
+            <label className="student-choice-row">
+              <Checkbox
+                checked={agree}
+                onCheckedChange={(next) => setAgree(next)}
+              />
+              {liveText && speechSupported
+                ? t("참석자에게 녹음과 음성 인식을 알리고 동의를 받았어요.")
+                : t("참석자에게 녹음을 알리고 동의를 받았어요.")}
+            </label>
+            {agreeReason.node}
+            {recorder.scope === "app" && (
+              <p className="student-footnote">
+                {t(
+                  "녹음하는 동안 다른 화면으로 가도 녹음은 이어지고, 위쪽의 작은 녹음 막대에서 멈추거나 이 미팅으로 돌아올 수 있어요.",
+                )}
+              </p>
+            )}
+          </DialogBody>
+          <DialogFooter>
             <Button variant="outline" onClick={() => setConsent(false)}>
               {t("취소")}
             </Button>
@@ -527,8 +532,7 @@ function RecordingPanelView({
                 ? t("녹음·전사 시작")
                 : t("음성 녹음 시작")}
             </Button>
-          </div>
-          {agreeReason.node}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </section>

@@ -210,7 +210,7 @@ export function WeekStrip({
                 <li key={item.kind + item.id}>
                   <Link className="rh-week-item" to={item.href}>
                     <i className={`is-${item.kind}`} aria-hidden="true" />
-                    <strong>{item.title}</strong>
+                    <strong title={item.title}>{item.title}</strong>
                     <small>
                       {item.kind === "meeting"
                         ? item.time

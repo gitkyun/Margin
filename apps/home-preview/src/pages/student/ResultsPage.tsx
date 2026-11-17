@@ -125,7 +125,7 @@ export function ResultsPage() {
             title={current.title}
             description={t("실제로 고친 내용과 교수님이 볼 파일을 남겨요.")}
             actions={
-              <div className="button-row">
+              <>
                 <Button
                   variant="outline"
                   onClick={() => setDraft({ ...current })}
@@ -143,7 +143,7 @@ export function ResultsPage() {
                 ) : (
                   <Button disabled>{t("검토 요청 만들기")}</Button>
                 )}
-              </div>
+              </>
             }
           />
           <div className="stack result-detail">
@@ -306,17 +306,26 @@ export function ResultsPage() {
                 ).length;
                 return (
                   <Link
-                    className="result-list-row"
+                    className="result-list-row list-row"
                     key={result.id}
                     to={`/r/${researchId}/results/${result.id}`}
                   >
-                    <span className="student-result-symbol">
+                    <span className="student-result-symbol list-row-lead">
                       <Icon name="check" size={20} />
                     </span>
-                    <span className="grow">
-                      <strong>{result.title}</strong>
-                      <p>{result.description}</p>
-                      <small>
+                    <span className="list-row-body">
+                      <strong className="list-row-title" title={result.title}>
+                        {result.title}
+                      </strong>
+                      {result.description && (
+                        <span
+                          className="list-row-desc"
+                          title={result.description}
+                        >
+                          {result.description}
+                        </span>
+                      )}
+                      <small className="list-row-meta">
                         {file
                           ? `${file.fileName} · v${file.number}`
                           : result.kind === "document"

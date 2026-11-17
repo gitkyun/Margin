@@ -12,23 +12,20 @@ export const ROUTES = [
   { name: "signup", path: "/signup" },
   { name: "research-list", path: "/r" },
   { name: "onboarding", path: "/r/new" },
-  { name: "account", path: "/account" },
+  // IA v2: 계정·연구 설정은 화면이 아니라 설정 창(?settings=)입니다(07 §1).
+  { name: "account", path: "/r?settings=profile" },
   { name: "home", path: ":research" },
-  { name: "planning", path: ":research/planning" },
-  { name: "calendar", path: ":research/planning?tab=calendar" },
+  // IA v2 예전 주소 이동(lib/legacy-routes.ts): planning → flow, writing·materials → docs
+  { name: "planning", path: ":research/flow" },
+  { name: "calendar", path: ":research/flow?tab=calendar" },
   { name: "meetings", path: ":research/meetings" },
   {
     name: "meeting-detail",
     detailOf: "meetings",
     detailPattern: "^/r/[^/]+/meetings/[^/?#]+$",
   },
-  { name: "writing", path: ":research/writing" },
-  { name: "feedback", path: ":research/feedback" },
-  {
-    name: "feedback-detail",
-    detailOf: "feedback",
-    detailPattern: "^/r/[^/]+/feedback/[^/?#]+$",
-  },
+  { name: "writing", path: ":research/docs?kind=writing" },
+  { name: "feedback", path: ":research/tasks?view=feedback" },
   { name: "results", path: ":research/results" },
   {
     name: "result-detail",
@@ -36,11 +33,11 @@ export const ROUTES = [
     detailPattern: "^/r/[^/]+/results/[^/?#]+$",
   },
   { name: "tasks", path: ":research/tasks" },
-  { name: "materials", path: ":research/materials" },
+  { name: "materials", path: ":research/docs?kind=material" },
   {
     name: "material-detail",
-    detailOf: "materials",
-    detailPattern: "^/r/[^/]+/materials/[^/?#]+$",
+    detailOf: "docs?kind=material",
+    detailPattern: "^/r/[^/]+/(docs/m|materials)/[^/?#]+$",
   },
   { name: "reviews", path: ":research/reviews" },
   {
@@ -49,7 +46,7 @@ export const ROUTES = [
     detailPattern: "^/reviews/[^/?#]+$",
   },
   { name: "assistant", path: ":research/assistant" },
-  { name: "settings", path: ":research/settings" },
+  { name: "settings", path: ":research?settings=research" },
 ];
 
 /** 계산된 스타일을 비교할 요소. 역할이 같은 요소가 화면·테마마다 같게 보이는지 봅니다. */

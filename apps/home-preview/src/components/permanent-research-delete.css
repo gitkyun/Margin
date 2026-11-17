@@ -1,8 +1,0 @@
-@layer margin {
-  /* 연구 완전 삭제 대화상자: 슬라이드 확인, 오류, 취소를 세로로 */
-  .permanent-delete-confirm {
-    display: grid;
-    gap: var(--spacing-16);
-    margin-top: var(--spacing-16);
-  }
-}

@@ -597,83 +597,113 @@
   .sidebar-collapsed .workspace-switch:hover {
     outline: 1px solid var(--brand);
   }
-  /* Settings and contextual conversation */
-  .settings-page {
-    max-width: 1040px;
-    margin: auto;
-  }
-  .settings-heading h1 {
-    font-size: var(--typography-title2-fontSize);
-    letter-spacing: var(--typography-title2-letterSpacing);
-    font-weight: 700;
-  }
-  .settings-heading > p {
-    color: var(--text-secondary);
-    font-size: var(--typography-label1-fontSize);
-    margin-top: var(--spacing-8);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
+  /* 설정·계정 설정
+     틀: 화면 루트는 main 안쪽 폭을 그대로 쓰고(최대 폭·가운데 정렬 없음), 머리는 PageHeader.
+     992 이상은 왼쪽 메뉴 200 + 내용, 991 이하는 메뉴가 위(한 줄 가로 스크롤).
+     읽는 열(.settings-body)만 최대 720px 왼쪽 정렬입니다.
+     다른 CSS 파일의 같은 이름 규칙보다 우선하도록 .settings-page를 앞에 붙여 씁니다. */
   .settings-layout {
     display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: var(--spacing-48);
-    margin-top: var(--spacing-32);
-    border-top: 1px solid var(--line);
-    padding-top: var(--spacing-24);
+    grid-template-columns: 200px minmax(0, 1fr);
+    align-items: start;
+    gap: var(--spacing-40);
   }
   .settings-layout > nav {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: var(--spacing-4);
+    min-width: 0;
   }
   .settings-layout > nav button {
     display: flex;
-    gap: 10px;
+    flex: none;
+    gap: var(--spacing-8);
     align-items: center;
     text-align: left;
     border: 0;
     border-radius: var(--radius-10);
     background: none;
-    min-height: 42px;
-    padding: 10px 13px;
+    min-height: 40px;
+    padding: var(--spacing-8) var(--spacing-12);
     font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
+    overflow-wrap: anywhere;
+  }
+  .settings-layout > nav button > svg {
+    flex: none;
   }
   .settings-layout > nav button[aria-current] {
     background: var(--selected-fill);
     color: var(--semantic-foreground-brand-primary);
   }
   .settings-body {
-    max-width: 650px;
+    max-width: 720px;
     min-width: 0;
   }
-  /* 한 탭에 묶음이 둘 이상이면 사이를 띄웁니다(화면 설정 ↔ 시각 표기). */
-  .settings-section + .settings-section {
-    margin-top: var(--spacing-40);
+  /* 구역 ↔ 구역 24 */
+  .settings-page .settings-body > * + * {
+    margin-top: var(--spacing-24);
+  }
+  /* 구역 안: 제목 ↔ 설명 8, 제목 ↔ 내용 12, 그 밖의 묶음 사이 16 */
+  .settings-page .settings-section > * {
+    margin-block: 0;
+  }
+  .settings-page .settings-section > * + * {
+    margin-top: var(--spacing-16);
+  }
+  .settings-page .settings-section > h2 + * {
+    margin-top: var(--spacing-12);
+  }
+  .settings-page .settings-section > h2 + p {
+    margin-top: var(--spacing-8);
   }
   .settings-section h2 {
     font-size: var(--typography-headline1-fontSize);
     line-height: var(--typography-headline1-lineHeight);
-    margin: 0 0 var(--spacing-8);
     font-weight: 600;
     letter-spacing: var(--typography-headline1-letterSpacing);
   }
   .settings-section > p {
-    margin: 0;
     font-size: var(--typography-label1-fontSize);
     color: var(--text-secondary);
     line-height: var(--typography-label1Reading-lineHeight);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
+  /* 입력 묶음 ↔ 입력 묶음 20. 폼 안 자식의 위아래 여백은 간격 하나로만 정합니다. */
   .settings-section form {
-    margin-top: var(--spacing-24);
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--spacing-20);
   }
-  /* 기본 정보 폼 아래에 이어지는 지도교수 구역: 위 구역과 40px 띄웁니다. */
-  .advisor-section {
-    margin-top: var(--spacing-40);
+  .settings-page .settings-section form > * {
+    margin-block: 0;
+  }
+  /* 입력 ↔ 그 아래 도움말 6 (묶음 간격 20에서 줄입니다) */
+  .settings-page .settings-section form > .field + .settings-note {
+    margin-top: calc(var(--spacing-6) - var(--spacing-20));
+  }
+  /* 저장 버튼 줄: 마지막 입력 아래 24(간격 20 + 4), 왼쪽 정렬, 선 없음 */
+  .settings-page .settings-section form > .bottom-actions,
+  .settings-page .settings-section form > .settings-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-4);
+    padding-top: 0;
+    border-top: 0;
+  }
+  .settings-page .settings-section > .bottom-actions {
+    justify-content: flex-start;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-24);
+    padding-top: 0;
+    border-top: 0;
+  }
+  /* 꺼진 버튼의 이유 한 줄은 버튼 줄 바로 아래(8)에 붙입니다. */
+  .settings-page .settings-section form > .disabled-reason {
+    margin-top: calc(var(--spacing-8) - var(--spacing-20));
   }
   /* 지도교수 추가 줄: 입력 칸과 버튼을 한 줄에 둡니다. */
   .settings-section form.advisor-add {
@@ -681,7 +711,6 @@
     align-items: center;
     gap: var(--spacing-8);
     max-width: 480px;
-    margin-top: var(--spacing-16);
   }
   .settings-section form.advisor-add > :first-child {
     flex: 1;
@@ -699,24 +728,28 @@
     line-height: var(--typography-label2-lineHeight);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
+  .invite-hint > [data-slot="button"] {
+    flex: none;
+  }
   .invite-hint > span {
     flex: 1 1 240px;
     min-width: 0;
   }
   .settings-form-actions {
     display: flex;
-    justify-content: end;
-    gap: 8px;
-    border-top: 1px solid var(--line);
-    padding-top: 22px;
+    justify-content: flex-start;
+    gap: var(--spacing-8);
   }
   .profile-heading {
     display: flex;
-    gap: 16px;
+    gap: var(--spacing-16);
     align-items: center;
-    margin: 0 0 32px;
+  }
+  .profile-heading > div {
+    min-width: 0;
   }
   .profile-avatar {
+    flex: none;
     height: 58px;
     width: 58px;
     font-size: var(--typography-heading1-fontSize);
@@ -726,13 +759,25 @@
     font-size: var(--typography-label2-fontSize);
     color: var(--text-secondary);
     letter-spacing: var(--typography-label2-letterSpacing);
+    overflow-wrap: anywhere;
+  }
+  /* 프로필 아래 작은 구역(비밀번호 변경, 안내): 선 위아래 24 */
+  .settings-page .settings-section > .password-settings,
+  .settings-page .settings-section > .settings-security {
+    margin-top: var(--spacing-24);
+    padding-top: var(--spacing-24);
+    border-top: 1px solid var(--line);
+  }
+  .settings-page .password-settings > p {
+    margin: 0 0 var(--spacing-16);
+  }
+  .settings-page .password-settings form {
+    gap: var(--spacing-20);
+    max-width: none;
   }
   .settings-security {
-    border-top: 1px solid var(--line);
-    margin-top: 32px;
-    padding-top: 23px;
     display: flex;
-    gap: 13px;
+    gap: var(--spacing-12);
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
@@ -740,24 +785,20 @@
   }
   .settings-security svg {
     flex-shrink: 0;
-    margin-top: 3px;
+    margin-top: var(--spacing-2);
   }
   .settings-security strong {
     color: var(--text);
     font-weight: 600;
   }
   .settings-security p {
-    margin-bottom: 10px;
-  }
-  .settings-list {
-    margin-top: var(--spacing-24);
+    margin: 0;
+    min-width: 0;
   }
   .settings-list > div {
     display: flex;
     justify-content: space-between;
     gap: var(--spacing-20);
-    padding: var(--spacing-16) 0;
-    border-bottom: 1px solid var(--line);
     font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
@@ -767,6 +808,48 @@
   .settings-list strong {
     font-weight: 500;
   }
+  /* 묶음 행(요약 목록·스위치 목록·구성원): 목록 행 위아래 16 */
+  .settings-page .settings-list > div,
+  .settings-page .preferences-list > label,
+  .settings-page .member-row {
+    gap: var(--spacing-12);
+    padding: var(--spacing-16);
+  }
+  .settings-page .settings-list > div > span,
+  .settings-page .preferences-list > label > span {
+    min-width: 0;
+  }
+  .settings-page .settings-list > div > strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  /* 구성원 행: 이름·이메일은 줄바꿈, 배지·버튼은 줄어들지 않습니다. */
+  .settings-page .member-row strong,
+  .settings-page .member-row small {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .settings-page .member-row small {
+    margin-top: var(--spacing-4);
+  }
+  .settings-page .member-row > :not(div) {
+    flex: none;
+  }
+  /* 앞 아바타는 위 정렬(이름이 여러 줄이 되어도 첫 줄 옆에 둡니다). */
+  .settings-page .member-row > .avatar {
+    align-self: flex-start;
+  }
+  /* 보관·삭제 카드: 카드 ↔ 카드 24 */
+  .settings-page .lifecycle-block + .lifecycle-block {
+    margin-top: var(--spacing-24);
+  }
+  .settings-page .project-invite-row {
+    padding: var(--spacing-16) 0;
+  }
+  .settings-page .project-invite-actions {
+    flex: none;
+    gap: var(--spacing-8);
+  }
   .settings-note {
     margin-top: var(--spacing-16);
     font-size: var(--typography-caption1-fontSize);
@@ -774,10 +857,18 @@
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
+  /* 도움말 안에 뜨는 오류는 한 줄을 차지하고 도움말과 8 띄웁니다. */
+  .settings-page .settings-note > .form-error {
+    display: block;
+    margin: 0 0 var(--spacing-8);
+  }
+  .settings-page .inline-notice {
+    padding: var(--spacing-12) var(--spacing-16);
+  }
   .usage-summary {
     display: flex;
-    gap: var(--spacing-40);
-    margin: var(--spacing-24) 0 var(--spacing-20);
+    flex-wrap: wrap;
+    gap: var(--spacing-16) var(--spacing-40);
   }
   .usage-summary span {
     font-size: var(--typography-caption1-fontSize);
@@ -789,7 +880,7 @@
     font-size: var(--typography-title1-fontSize);
     font-weight: 700;
     letter-spacing: var(--typography-title1-letterSpacing);
-    margin-top: 8px;
+    margin-top: var(--spacing-8);
   }
   .usage-summary strong small {
     font-size: var(--typography-label1-fontSize);
@@ -799,14 +890,14 @@
   }
   .appearance-preview {
     width: 250px;
+    max-width: 100%;
     height: 145px;
     border: 1px solid var(--line);
     border-radius: var(--radius-14);
     background: var(--canvas);
-    padding: 10px;
+    padding: var(--spacing-12);
     display: flex;
-    gap: 10px;
-    margin: 27px 0;
+    gap: var(--spacing-8);
   }
   .appearance-preview > div:first-child {
     width: 45px;
@@ -818,7 +909,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: var(--spacing-8);
   }
   .appearance-preview span {
     height: 27px;
@@ -894,9 +985,25 @@
       font-size: var(--typography-title1-fontSize);
       letter-spacing: var(--typography-title1-letterSpacing);
     }
+    /* 설정 메뉴가 내용 위로 올라갑니다: 한 줄, 넘치면 그 줄만 가로 스크롤.
+       위아래 안쪽 여백은 초점 테두리가 잘리지 않게 두고 같은 만큼 바깥에서 뺍니다. */
     .settings-layout {
-      grid-template-columns: 145px 1fr;
-      gap: 25px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--spacing-24);
+    }
+    .settings-page .settings-layout > nav {
+      flex-direction: row;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin: calc(var(--spacing-6) * -1) calc(var(--spacing-4) * -1);
+      padding: var(--spacing-6) var(--spacing-4);
+      scroll-padding-inline: var(--spacing-4);
+    }
+    .settings-page .settings-layout > nav button {
+      white-space: nowrap;
+    }
+    .settings-page .settings-layout > nav::-webkit-scrollbar {
+      display: none;
     }
     .floating-workspace .breadcrumbs > a {
       max-width: 180px;
@@ -1026,41 +1133,23 @@
       font-size: var(--typography-caption1-fontSize);
       letter-spacing: var(--typography-caption1-letterSpacing);
     }
-    .settings-layout {
-      display: block;
-      margin-top: 29px;
-      padding-top: 17px;
-    }
-    .settings-layout > nav {
-      flex-direction: row;
-      gap: 5px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 17px;
-      margin-bottom: 27px;
-    }
-    .settings-layout > nav button {
-      font-size: var(--typography-caption1-fontSize);
-      gap: 6px;
-      letter-spacing: var(--typography-caption1-letterSpacing);
-    }
-    .settings-layout > nav button svg {
-      width: 15px;
-    }
-    .settings-list > div {
-      font-size: var(--typography-caption1-fontSize);
-      letter-spacing: var(--typography-caption1-letterSpacing);
-    }
-    .usage-summary {
-      gap: 28px;
-    }
     .usage-summary strong {
       font-size: var(--typography-title2-fontSize);
       letter-spacing: var(--typography-title2-letterSpacing);
     }
-
-    .settings-heading h1 {
-      font-size: var(--typography-title2-fontSize);
-      letter-spacing: var(--typography-title2-letterSpacing);
+    /* 구성원 행: 버튼은 이름 아랫줄로 내려갑니다. */
+    .settings-page .member-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+    }
+    .settings-page .member-row > [data-slot="button"] {
+      grid-column: 2 / -1;
+      justify-self: start;
+    }
+    /* 설명 아래로 내려간 버튼: 글과 16(줄 간격 8 + 8) 띄웁니다. */
+    .settings-page .lifecycle-block > [data-slot="button"] {
+      margin-top: var(--spacing-8);
     }
     .public-article {
       margin: 45px auto 70px;
@@ -1149,11 +1238,6 @@
     .floating-workspace.sidebar-collapsed .main-shell {
       margin-left: 0;
     }
-  }
-  .research-view-switch {
-    display: flex;
-    gap: 6px;
-    margin: -8px 0 25px;
   }
   .login-layout {
     min-height: 540px;
