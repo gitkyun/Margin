@@ -135,6 +135,14 @@ export function MaterialsPage() {
     },
     [],
   );
+  // 글·자료 목록의 [올리기](IA v2 05 §2.5)는 ?register=1로 와서 올리기 창을 엽니다.
+  useEffect(() => {
+    if (materialId || params.get("register") !== "1") return;
+    startRegistration();
+    const rest = new URLSearchParams(params);
+    rest.delete("register");
+    setParams(rest, { replace: true });
+  }, []);
   function startRegistration(material?: Material) {
     if (pending) {
       setError(

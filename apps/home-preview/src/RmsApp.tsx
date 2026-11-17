@@ -65,10 +65,13 @@ function LegacyOr({ children }: { children: ReactNode }) {
 /** 0단계 '글·자료'(`/docs`): 자료 보기(`kind=material`·`folder=`)면 자료 화면, 아니면 글 화면 */
 function DocsRoute() {
   const [params] = useSearchParams();
+  // IA v2 3a: 글·자료 한 목록(W1). 올리기·새 글 창은 아직 예전 화면에 있어 ?full=1로 엽니다.
+  if (params.get("full") !== "1") return <DocsPage />;
   const materials = params.get("kind") === "material" || params.has("folder");
   return materials ? <MaterialsPage /> : <WritingPage />;
 }
 import { ResearchAssistant } from "@/pages/ResearchAssistant";
+import { DocsPage } from "@/pages/docs/DocsPage";
 import { isHomeEntry } from "@/lib/entry-route";
 import { isWorkspaceShellPath } from "@/lib/page-title";
 import { Button } from "@/components/ui/button";
