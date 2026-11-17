@@ -90,6 +90,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Icon } from "@/components/icons";
 import { assistantSteps, type AssistantStep } from "@/lib/assistant-steps";
@@ -1829,7 +1831,7 @@ export function ResearchAssistant() {
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="assistant-source-snapshot-list">
+          <DialogBody className="assistant-source-snapshot-list">
             {viewingSources?.contexts.map((context, index) => (
               <section
                 key={`${context.kind}:${context.id}:${index}`}
@@ -1847,7 +1849,7 @@ export function ResearchAssistant() {
                 </p>
               </section>
             ))}
-          </div>
+          </DialogBody>
         </DialogContent>
       </Dialog>
       <Dialog
@@ -1869,23 +1871,26 @@ export function ResearchAssistant() {
                     )}
             </DialogDescription>
           </DialogHeader>
-          <label className="field">
-            {t("제목")}
-            <Input
-              value={candidateTitle}
-              onChange={(e) => setCandidateTitle(e.target.value)}
-              maxLength={200}
-            />
-          </label>
-          <label className="field">
-            {t("기록할 내용")}
-            <Textarea
-              rows={7}
-              value={candidateBody}
-              onChange={(e) => setCandidateBody(e.target.value)}
-            />
-          </label>
-          <div className="bottom-actions">
+          <DialogBody>
+            <label className="field">
+              {t("제목")}
+              <Input
+                value={candidateTitle}
+                onChange={(e) => setCandidateTitle(e.target.value)}
+                maxLength={200}
+              />
+            </label>
+            <label className="field">
+              {t("기록할 내용")}
+              <Textarea
+                rows={7}
+                value={candidateBody}
+                onChange={(e) => setCandidateBody(e.target.value)}
+              />
+            </label>
+            {candidateReason.node}
+          </DialogBody>
+          <DialogFooter>
             <Button
               variant="outline"
               disabled={saveBusy}
@@ -1902,8 +1907,7 @@ export function ResearchAssistant() {
             >
               {t("선택하고 저장")}
             </Button>
-          </div>
-          {candidateReason.node}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

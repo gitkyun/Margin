@@ -64,7 +64,7 @@ export function ResearchProfileFields({
             aria-describedby={keywordHintId}
           />
         </fieldset>
-        <small id={keywordHintId}>
+        <small id={keywordHintId} className="field-hint">
           {t(
             "Enter나 쉼표로 하나씩 넣어요. {count}개까지, 하나에 {length}자까지 적을 수 있어요.",
             { count: MAX_KEYWORDS, length: KEYWORD_MAX_LENGTH },
@@ -83,7 +83,7 @@ export function ResearchProfileFields({
           onChange={onCitationChange}
           disabled={disabled}
         />
-        <small>
+        <small className="field-hint">
           {t(
             "투고할 곳이 쓰는 양식을 골라 두면 연구 정보에 함께 기록돼요. 원고의 인용을 자동으로 바꾸지는 않아요.",
           )}

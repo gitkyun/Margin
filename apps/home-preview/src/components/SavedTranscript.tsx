@@ -38,6 +38,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "./ui/dialog";
 
 /** 전사문에서 고른 글로 만들 항목과 그 글의 녹음 위치 */
@@ -493,7 +494,7 @@ export function SavedTranscript({
                   )}
             </DialogDescription>
           </DialogHeader>
-          <div className="bottom-actions">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setAppend(false)}>
               {t("취소")}
             </Button>
@@ -516,7 +517,7 @@ export function SavedTranscript({
             >
               {memoShared ? t("공동 메모에 추가") : t("메모에 추가")}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </Disclosure>

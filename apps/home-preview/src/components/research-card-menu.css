@@ -51,6 +51,40 @@
     }
   }
 
+  /* 내 연구 목록: 카드 격자와 카드 안 긴 글 (배치 규칙 2-4·2-6) */
+  .research-list-page .research-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-24);
+  }
+  .research-list-page .research-card-wrap h2,
+  .research-list-page .research-card-wrap .research-card p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .research-list-page .research-card-wrap .research-card p {
+    margin: var(--spacing-8) 0 var(--spacing-24);
+  }
+  .research-list-page .research-card-meta-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* 아래 버튼 줄의 왼쪽 가장자리를 카드 안 글자와 맞춥니다. */
+  .research-list-page .research-card-actions {
+    padding: var(--spacing-12) var(--spacing-24);
+  }
+  @media (max-width: 767px) {
+    .research-list-page .research-card-wrap > .research-card {
+      padding: var(--spacing-16);
+    }
+    .research-list-page .research-card-actions {
+      padding: var(--spacing-12) var(--spacing-16);
+    }
+  }
+
   /* 카드 상태 배지: 목록을 바꿀 때 살짝 떠오르며 나타나요. */
   .research-card-top {
     display: flex;

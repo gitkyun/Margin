@@ -67,6 +67,7 @@ VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npm run dev -- --port 5174
 |---|---|
 | 브라우저 직접 확인 | 모든 변경. 스크롤·입력·클릭·키보드 |
 | `apps/home-preview/scripts/qa/screens.mjs` | 미리보기 모드에서 25개 화면 × 너비 × 테마 캡처, 아래 자동 검사, 역할별 계산된 스타일 비교(`capture` → `compare`). 설치된 Chrome만 쓰고 결과는 임시 폴더에 둡니다(커밋하지 않음). 화면 목록은 `scripts/qa/routes.mjs` |
+| `apps/home-preview/scripts/qa/layout-probe.mjs` | 배치 규칙([화면 규칙](patterns.md) §2-2) 숫자 검사. 로그인 후 화면 × 너비(390·768·1024·1440)마다 본문 루트와 main 안쪽 가장자리, h1 자리·크기, 머리 버튼 높이, 탭·도구 줄·첫 내용 블록 위치, 가로 스크롤을 JSON 한 줄로 냅니다. `--check`는 화면별 PASS/FAIL(실패 시 종료 코드 1), `--stress`는 글자를 3배로 늘려 화면 밖·말줄임 없는 넘침·겹친 글자를 찾고, `--shots 폴더`는 잰 상태 그대로 전체 페이지를 캡처합니다. `--only home,meetings`로 화면을 고릅니다. Playwright와 설치된 Chrome을 씁니다. |
 | axe-core | WCAG 2.2 AA 자동 검사(대비·이름·구조) |
 | Stageshow `scripts/layout.mjs` | 컨트롤·여백 맞춤 검사. `film.mjs --gate`는 Stageshow 키트로 만든 무대(`.ss-stage`)에서만 동작하므로 일반 화면에는 쓰지 않습니다. |
 

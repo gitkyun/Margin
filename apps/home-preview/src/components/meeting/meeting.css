@@ -203,7 +203,7 @@
   .availability-vote-card {
     display: grid;
     gap: var(--spacing-6);
-    padding: var(--spacing-8) var(--spacing-10);
+    padding: var(--spacing-8) var(--spacing-12);
     border: 1px solid var(--line);
     border-radius: var(--radius-10);
     background: var(--surface);

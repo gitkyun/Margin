@@ -26,7 +26,7 @@ export default defineConfig({
   projects: [
     {
       name: "preview",
-      testMatch: /preview\.spec\.ts/,
+      testMatch: /(preview|dialog-layout)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         baseURL: `http://127.0.0.1:${PREVIEW_PORT}`,

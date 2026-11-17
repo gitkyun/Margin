@@ -1,3 +1,4 @@
+import { DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { dateLocale, t } from "@/lib/i18n";
 import { useBackState } from "./shared";
 import {
@@ -419,46 +420,44 @@ export function TasksPage() {
               onChange={setSearch}
               placeholder={t("할 일에서 찾기")}
             />
-          </div>
-          <div className="student-filter-row">
-            <label>
-              {t("미팅")}
-              <SelectField
-                className="native-select"
-                value={scope}
-                onChange={(e) => setScope(e.target.value)}
-              >
-                <option value="all">{t("전체 할 일")}</option>
-                {data.meetings
-                  .filter(
-                    (m) =>
-                      m.researchId === researchId && m.status !== "cancelled",
-                  )
-                  .map((m) => (
-                    <option value={m.id} key={m.id}>
-                      {m.title}
+            <div className="toolbar-filters">
+              <label>
+                {t("미팅")}
+                <SelectField
+                  value={scope}
+                  onChange={(e) => setScope(e.target.value)}
+                >
+                  <option value="all">{t("전체 할 일")}</option>
+                  {data.meetings
+                    .filter(
+                      (m) =>
+                        m.researchId === researchId && m.status !== "cancelled",
+                    )
+                    .map((m) => (
+                      <option value={m.id} key={m.id}>
+                        {m.title}
+                      </option>
+                    ))}
+                </SelectField>
+              </label>
+              <label>
+                {t("우선순위")}
+                <SelectField
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                >
+                  <option value="all">{t("전체")}</option>
+                  {Object.entries(priorityLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
                     </option>
                   ))}
-              </SelectField>
-            </label>
-            <label>
-              {t("우선순위")}
-              <SelectField
-                className="native-select"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-              >
-                <option value="all">{t("전체")}</option>
-                {Object.entries(priorityLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </SelectField>
-            </label>
-            <span className="meta">
-              {t("할 일 {count}개", { count: tasks.length })}
-            </span>
+                </SelectField>
+              </label>
+              <span className="meta">
+                {t("할 일 {count}개", { count: tasks.length })}
+              </span>
+            </div>
           </div>
           <section className="surface task-table">
             <div className="task-table-head">
@@ -500,7 +499,7 @@ export function TasksPage() {
                       className="task-row-text"
                       to={`/r/${researchId}/tasks/${task.id}`}
                     >
-                      <strong>
+                      <strong title={task.title}>
                         {task.priority === "high" && (
                           <span
                             className="priority-dot"
@@ -510,7 +509,7 @@ export function TasksPage() {
                         )}
                         {task.title}
                       </strong>
-                      <small>
+                      <small title={task.description || undefined}>
                         {task.origin && <>{originLabels[task.origin]} · </>}
                         {task.description ||
                           (task.feedbackIds.length
@@ -613,7 +612,6 @@ export function TasksPage() {
         }
       >
         <form
-          className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!draft || !draft.title.trim()) {
@@ -632,188 +630,196 @@ export function TasksPage() {
             });
           }}
         >
-          {draft && (
-            <>
-              <LabeledInput
-                label={t("제목")}
-                required
-                value={draft.title}
-                onChange={(title) => setDraft((v) => (v ? { ...v, title } : v))}
-              />
-              <LabeledText
-                label={t("설명")}
-                value={draft.description}
-                onChange={(description) =>
-                  setDraft((v) => (v ? { ...v, description } : v))
-                }
-                rows={3}
-              />
-              <div className="form-grid">
+          <DialogBody>
+            {draft && (
+              <>
+                <LabeledInput
+                  label={t("제목")}
+                  required
+                  value={draft.title}
+                  onChange={(title) =>
+                    setDraft((v) => (v ? { ...v, title } : v))
+                  }
+                />
+                <LabeledText
+                  label={t("설명")}
+                  value={draft.description}
+                  onChange={(description) =>
+                    setDraft((v) => (v ? { ...v, description } : v))
+                  }
+                  rows={3}
+                />
+                <div className="form-grid">
+                  <label className="field">
+                    <span className="field-name">{t("진행 상태")}</span>
+                    <SelectField
+                      className="native-select"
+                      value={draft.status}
+                      onChange={(e) =>
+                        setDraft((v) =>
+                          v
+                            ? { ...v, status: e.target.value as Task["status"] }
+                            : v,
+                        )
+                      }
+                    >
+                      {Object.entries(taskLabels).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </label>
+                  <LabeledInput
+                    label={t("기한")}
+                    type="date"
+                    value={draft.dueDate ?? ""}
+                    onChange={(dueDate) =>
+                      setDraft((v) =>
+                        v ? { ...v, dueDate: dueDate || null } : v,
+                      )
+                    }
+                  />
+                </div>
                 <label className="field">
-                  <span className="field-name">{t("진행 상태")}</span>
+                  <span className="field-name">{t("우선순위")}</span>
                   <SelectField
                     className="native-select"
-                    value={draft.status}
+                    value={draft.priority}
                     onChange={(e) =>
                       setDraft((v) =>
                         v
-                          ? { ...v, status: e.target.value as Task["status"] }
+                          ? {
+                              ...v,
+                              priority: e.target.value as Task["priority"],
+                            }
                           : v,
                       )
                     }
                   >
-                    {Object.entries(taskLabels).map(([value, label]) => (
+                    {Object.entries(priorityLabels).map(([value, label]) => (
                       <option key={value} value={value}>
                         {label}
                       </option>
                     ))}
                   </SelectField>
                 </label>
-                <LabeledInput
-                  label={t("기한")}
-                  type="date"
-                  value={draft.dueDate ?? ""}
-                  onChange={(dueDate) =>
-                    setDraft((v) =>
-                      v ? { ...v, dueDate: dueDate || null } : v,
-                    )
-                  }
+                <div className="form-grid">
+                  <label className="field">
+                    {t("담당자")}
+                    <SelectField
+                      aria-label={t("담당자")}
+                      value={draft.assigneeId ?? ""}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          assigneeId: e.target.value || undefined,
+                        })
+                      }
+                    >
+                      <option value="">{t("담당 미지정")}</option>
+                      {data.members
+                        .filter(
+                          (m) =>
+                            m.researchId === researchId &&
+                            m.status === "active",
+                        )
+                        .map((m) => (
+                          <option key={m.userId} value={m.userId}>
+                            {m.name}
+                          </option>
+                        ))}
+                    </SelectField>
+                  </label>
+                  <label className="field">
+                    {t("연구 단계")}
+                    <SelectField
+                      aria-label={t("연구 단계")}
+                      value={draft.phaseId ?? ""}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          phaseId: e.target.value || undefined,
+                        })
+                      }
+                    >
+                      <option value="">{t("단계 미지정")}</option>
+                      {data.phases
+                        .filter(
+                          (p) => p.researchId === researchId && !p.archivedAt,
+                        )
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.title}
+                          </option>
+                        ))}
+                    </SelectField>
+                  </label>
+                </div>
+                <VisibilityField
+                  value={draft.visibility ?? "shared"}
+                  onChange={(visibility) => setDraft({ ...draft, visibility })}
                 />
-              </div>
-              <label className="field">
-                <span className="field-name">{t("우선순위")}</span>
-                <SelectField
-                  className="native-select"
-                  value={draft.priority}
-                  onChange={(e) =>
-                    setDraft((v) =>
-                      v
-                        ? { ...v, priority: e.target.value as Task["priority"] }
-                        : v,
-                    )
-                  }
-                >
-                  {Object.entries(priorityLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </SelectField>
-              </label>
-              <div className="form-grid">
-                <label className="field">
-                  {t("담당자")}
-                  <SelectField
-                    aria-label={t("담당자")}
-                    value={draft.assigneeId ?? ""}
-                    onChange={(e) =>
-                      setDraft({
-                        ...draft,
-                        assigneeId: e.target.value || undefined,
-                      })
-                    }
-                  >
-                    <option value="">{t("담당 미지정")}</option>
-                    {data.members
-                      .filter(
-                        (m) =>
-                          m.researchId === researchId && m.status === "active",
-                      )
-                      .map((m) => (
-                        <option key={m.userId} value={m.userId}>
-                          {m.name}
-                        </option>
-                      ))}
-                  </SelectField>
-                </label>
-                <label className="field">
-                  {t("연구 단계")}
-                  <SelectField
-                    aria-label={t("연구 단계")}
-                    value={draft.phaseId ?? ""}
-                    onChange={(e) =>
-                      setDraft({
-                        ...draft,
-                        phaseId: e.target.value || undefined,
-                      })
-                    }
-                  >
-                    <option value="">{t("단계 미지정")}</option>
-                    {data.phases
-                      .filter(
-                        (p) => p.researchId === researchId && !p.archivedAt,
-                      )
-                      .map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.title}
-                        </option>
-                      ))}
-                  </SelectField>
-                </label>
-              </div>
-              <VisibilityField
-                value={draft.visibility ?? "shared"}
-                onChange={(visibility) => setDraft({ ...draft, visibility })}
-              />
-              <div className="student-picker">
-                <h3>{t("관련 피드백")}</h3>
-                {data.feedback
-                  .filter((f) => f.researchId === researchId)
-                  .map((feedback) => (
-                    <label className="student-choice-row" key={feedback.id}>
-                      <Checkbox
-                        checked={draft.feedbackIds.includes(feedback.id)}
-                        onCheckedChange={(next) =>
-                          setDraft((v) =>
-                            v
-                              ? {
-                                  ...v,
-                                  feedbackIds: next
-                                    ? [...v.feedbackIds, feedback.id]
-                                    : v.feedbackIds.filter(
-                                        (id) => id !== feedback.id,
-                                      ),
-                                }
-                              : v,
-                          )
-                        }
-                      />
-                      <span>{feedback.title}</span>
-                    </label>
-                  ))}
-                {!data.feedback.some((f) => f.researchId === researchId) && (
-                  <InlineEmpty>
-                    {t("피드백 없이도 저장할 수 있어요.")}
-                  </InlineEmpty>
+                <div className="student-picker">
+                  <h3>{t("관련 피드백")}</h3>
+                  {data.feedback
+                    .filter((f) => f.researchId === researchId)
+                    .map((feedback) => (
+                      <label className="student-choice-row" key={feedback.id}>
+                        <Checkbox
+                          checked={draft.feedbackIds.includes(feedback.id)}
+                          onCheckedChange={(next) =>
+                            setDraft((v) =>
+                              v
+                                ? {
+                                    ...v,
+                                    feedbackIds: next
+                                      ? [...v.feedbackIds, feedback.id]
+                                      : v.feedbackIds.filter(
+                                          (id) => id !== feedback.id,
+                                        ),
+                                  }
+                                : v,
+                            )
+                          }
+                        />
+                        <span>{feedback.title}</span>
+                      </label>
+                    ))}
+                  {!data.feedback.some((f) => f.researchId === researchId) && (
+                    <InlineEmpty>
+                      {t("피드백 없이도 저장할 수 있어요.")}
+                    </InlineEmpty>
+                  )}
+                </div>
+                {(draft.planId || current?.planId) && (
+                  <label className="student-choice-row">
+                    <Checkbox
+                      checked={!!draft.planId}
+                      onCheckedChange={(next) => {
+                        const checked = next;
+                        setDraft((v) =>
+                          v
+                            ? {
+                                ...v,
+                                planId: checked ? current?.planId : undefined,
+                              }
+                            : v,
+                        );
+                      }}
+                    />
+                    <span>
+                      {t("수정 방법 연결 유지")}
+                      <small>
+                        {t("해제해도 수정 방법과 이 할 일은 지워지지 않아요.")}
+                      </small>
+                    </span>
+                  </label>
                 )}
-              </div>
-              {(draft.planId || current?.planId) && (
-                <label className="student-choice-row">
-                  <Checkbox
-                    checked={!!draft.planId}
-                    onCheckedChange={(next) => {
-                      const checked = next;
-                      setDraft((v) =>
-                        v
-                          ? {
-                              ...v,
-                              planId: checked ? current?.planId : undefined,
-                            }
-                          : v,
-                      );
-                    }}
-                  />
-                  <span>
-                    {t("수정 방법 연결 유지")}
-                    <small>
-                      {t("해제해도 수정 방법과 이 할 일은 지워지지 않아요.")}
-                    </small>
-                  </span>
-                </label>
-              )}
-            </>
-          )}
-          <ErrorNotice error={form.error} />
+              </>
+            )}
+            <ErrorNotice error={form.error} />
+          </DialogBody>
           <SaveActions saving={form.saving} onCancel={() => setDraft(null)} />
         </form>
       </FormDialog>
@@ -829,7 +835,6 @@ export function TasksPage() {
         )}
       >
         <form
-          className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             void linkForm.perform(async () => {
@@ -845,39 +850,41 @@ export function TasksPage() {
             });
           }}
         >
-          <p className="student-body-text">
-            <strong>{linkTask?.title}</strong>
-          </p>
-          <label className="field">
-            <span className="field-name">{t("준비할 미팅")}</span>
-            <SelectField
-              className="native-select"
-              value={meetingId}
-              onChange={(e) => setMeetingId(e.target.value)}
-              required
-            >
-              <option value="">{t("미팅 선택")}</option>
-              {data.meetings
-                .filter(
-                  (m) =>
-                    m.researchId === researchId && m.status !== "cancelled",
-                )
-                .map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.title} · {formatDate(m.date)}
-                  </option>
-                ))}
-            </SelectField>
-          </label>
-          {!data.meetings.some(
-            (m) => m.researchId === researchId && m.status !== "cancelled",
-          ) && (
-            <TextLink to={`/r/${researchId}/meetings`}>
-              {t("먼저 미팅 만들기")}
-              <Icon name="arrow-right" size={14} />
-            </TextLink>
-          )}
-          <ErrorNotice error={linkForm.error} />
+          <DialogBody>
+            <p className="student-body-text">
+              <strong>{linkTask?.title}</strong>
+            </p>
+            <label className="field">
+              <span className="field-name">{t("준비할 미팅")}</span>
+              <SelectField
+                className="native-select"
+                value={meetingId}
+                onChange={(e) => setMeetingId(e.target.value)}
+                required
+              >
+                <option value="">{t("미팅 선택")}</option>
+                {data.meetings
+                  .filter(
+                    (m) =>
+                      m.researchId === researchId && m.status !== "cancelled",
+                  )
+                  .map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.title} · {formatDate(m.date)}
+                    </option>
+                  ))}
+              </SelectField>
+            </label>
+            {!data.meetings.some(
+              (m) => m.researchId === researchId && m.status !== "cancelled",
+            ) && (
+              <TextLink to={`/r/${researchId}/meetings`}>
+                {t("먼저 미팅 만들기")}
+                <Icon name="arrow-right" size={14} />
+              </TextLink>
+            )}
+            <ErrorNotice error={linkForm.error} />
+          </DialogBody>
           <SaveActions
             saving={linkForm.saving}
             onCancel={() => setLinkTask(null)}
@@ -894,30 +901,30 @@ export function TasksPage() {
           "보관함으로 옮겨요. 연결된 미팅과 수정 결과는 그대로 있고, 보관함에서 복원할 수 있어요.",
         )}
       >
-        <div className="stack">
+        <DialogBody>
           <p className="student-body-text">‘{current?.title}’</p>
           <ErrorNotice error={deleteForm.error} />
-          <div className="form-actions">
-            <Button variant="outline" onClick={() => setDeleting(false)}>
-              {t("취소")}
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={deleteForm.saving}
-              onClick={() => {
-                if (current)
-                  void deleteForm.perform(async () => {
-                    await remove("tasks", current.id);
-                    setDeleting(false);
-                    navigate(`/r/${researchId}/tasks`);
-                    toast.success(t("할 일을 보관했어요"));
-                  });
-              }}
-            >
-              {t("보관")}
-            </Button>
-          </div>
-        </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setDeleting(false)}>
+            {t("취소")}
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={deleteForm.saving}
+            onClick={() => {
+              if (current)
+                void deleteForm.perform(async () => {
+                  await remove("tasks", current.id);
+                  setDeleting(false);
+                  navigate(`/r/${researchId}/tasks`);
+                  toast.success(t("할 일을 보관했어요"));
+                });
+            }}
+          >
+            {t("보관")}
+          </Button>
+        </DialogFooter>
       </FormDialog>
     </div>
   );

@@ -93,6 +93,10 @@
   }
 
   /* ── 폴더 트리 ─────────────────────────────────── */
+  /* 도구 줄 아래, 목록 위. 구역 사이 24. */
+  .student-page .folder-tree {
+    margin-bottom: var(--spacing-24);
+  }
   .folder-tree-list,
   .folder-children {
     margin: 0;
@@ -124,10 +128,10 @@
     display: flex;
     flex: 1;
     align-items: center;
-    gap: 9px;
+    gap: var(--spacing-8);
     min-width: 0;
     min-height: 40px;
-    padding: 8px 10px;
+    padding: var(--spacing-8) var(--spacing-12);
     border: 0;
     border-radius: var(--radius-8);
     background: transparent;
@@ -159,7 +163,7 @@
   }
   .folder-drop-hint {
     margin: var(--spacing-8) 0 0;
-    padding: 0 var(--spacing-10);
+    padding: 0 var(--spacing-12);
     color: var(--text-tertiary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);

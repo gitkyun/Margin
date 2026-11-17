@@ -8,6 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "./ui/dialog";
 import "./subscription-plans.css";
 import { Button } from "@/components/ui/button";
@@ -149,20 +151,24 @@ export function SubscriptionPlans({
             </DialogTitle>
             <DialogDescription>{selected?.line}</DialogDescription>
           </DialogHeader>
-          <p>
-            {t(
-              "지금은 플랜 구성만 미리 볼 수 있어요. 가격과 자세한 제공 범위는 출시할 때 안내할게요.",
-            )}
-          </p>
-          <ul className="subscription-detail-list">
-            {selected?.features.map((f) => (
-              <li key={f}>
-                <Icon name="check" size={16} />
-                {f}
-              </li>
-            ))}
-          </ul>
-          <Button onClick={() => setDetail(null)}>{t("닫기")}</Button>
+          <DialogBody>
+            <p>
+              {t(
+                "지금은 플랜 구성만 미리 볼 수 있어요. 가격과 자세한 제공 범위는 출시할 때 안내할게요.",
+              )}
+            </p>
+            <ul className="subscription-detail-list">
+              {selected?.features.map((f) => (
+                <li key={f}>
+                  <Icon name="check" size={16} />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </DialogBody>
+          <DialogFooter>
+            <Button onClick={() => setDetail(null)}>{t("닫기")}</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </section>

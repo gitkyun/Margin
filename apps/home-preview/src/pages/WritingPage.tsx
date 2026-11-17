@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -44,6 +44,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Choice, VisibilityField, Segments } from "@/components/experience";
 import { EditorToolbar } from "./writing/EditorToolbar";
@@ -54,7 +56,7 @@ import {
   AIAutocompleteGhost,
   WritingAutocomplete,
 } from "./writing/WritingAutocomplete";
-import { DocumentTabs } from "./student/shared";
+import { BackLink, DocumentTabs } from "./student/shared";
 import {
   VersionCompareSlider,
   VersionSheet,
@@ -168,17 +170,20 @@ export function WritingPage() {
               if (createType) void create(createType);
             }}
           >
-            <label className="field">
-              <span>{t("문서 제목 (필수)")}</span>
-              <Input
-                autoFocus
-                maxLength={160}
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                placeholder={t("예: 연구 방법 초안")}
-              />
-            </label>
-            <div className="form-actions">
+            <DialogBody>
+              <label className="field">
+                <span>{t("문서 제목 (필수)")}</span>
+                <Input
+                  autoFocus
+                  maxLength={160}
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder={t("예: 연구 방법 초안")}
+                />
+              </label>
+              {titleReason.node}
+            </DialogBody>
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -197,8 +202,7 @@ export function WritingPage() {
               >
                 {creating ? t("만드는 중") : t("문서 만들기")}
               </Button>
-            </div>
-            {titleReason.node}
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
@@ -221,7 +225,7 @@ export function WritingPage() {
               <p>{d.text.slice(0, 180) || t("아직 내용이 없어요.")}</p>
             </div>
             <div>
-              <strong>{d.title}</strong>
+              <strong title={d.title}>{d.title}</strong>
               <small>
                 {t("{date} · 버전 {count}개 · {visibility}", {
                   date: formatDateTime(d.updatedAt, { time: false }),
@@ -295,6 +299,20 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       url: string;
     } | null>(null),
     [outline, setOutline] = useState(false);
+  // 제목 칸 높이를 글 줄 수에 맞춥니다(폭이 바뀌어도 다시 잽니다).
+  const titleField = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const field = titleField.current;
+    if (!field) return;
+    const fit = () => {
+      field.style.height = "auto";
+      field.style.height = `${field.scrollHeight}px`;
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(field.parentElement ?? field);
+    return () => observer.disconnect();
+  }, [title]);
   const pendingPDF = useRef<{
     material?: Material;
     version?: MaterialVersion;
@@ -585,21 +603,24 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         : (versionList.find((v) => v.id === to)?.text ?? "");
   return (
     <div className="writing-page">
+      <BackLink to={`/r/${initial.researchId}/writing`}>{t("글쓰기")}</BackLink>
       <header className="writing-heading">
         <div>
-          <Button variant="link" size="sm" asChild>
-            <Link to={`/r/${initial.researchId}/writing`}>
-              <Icon name="arrow-left" size={15} />
-              {t("글쓰기")}
-            </Link>
-          </Button>
-          <input
+          {/* 긴 제목은 줄을 바꿔 다 보이게 자동 높이 textarea로 둡니다.
+              제목은 한 줄 값이라 Enter는 줄바꿈을 넣지 않고, 붙여넣은 줄바꿈은 공백으로 바꿔요. */}
+          <textarea
+            ref={titleField}
+            rows={1}
             aria-label={t("문서 제목")}
             className="document-title-input"
             value={title}
             maxLength={300}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.nativeEvent.isComposing)
+                e.preventDefault();
+            }}
             onChange={(e) => {
-              setTitle(e.target.value);
+              setTitle(e.target.value.replace(/\r\n|\r|\n/g, " "));
               setDirty(true);
               setEditTick((value) => value + 1);
             }}
@@ -847,11 +868,13 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               )}
             </DialogDescription>
           </DialogHeader>
-          <TextComparison
-            before={conflict?.text ?? ""}
-            after={editor?.getText() ?? ""}
-          />
-          <div className="bottom-actions">
+          <DialogBody>
+            <TextComparison
+              before={conflict?.text ?? ""}
+              after={editor?.getText() ?? ""}
+            />
+          </DialogBody>
+          <DialogFooter>
             <Button
               variant="outline"
               onClick={() => {
@@ -884,7 +907,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             >
               {t("내가 쓴 내용 유지")}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       <Dialog open={versionsOpen} onOpenChange={setVersionsOpen}>
@@ -897,96 +920,101 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="comparison-selects">
-            <Choice
-              label={t("이전 버전")}
-              value={from}
-              onChange={setFrom}
-              options={[
-                { value: "", label: t("비교할 버전 선택") },
-                ...versionList.map((v) => ({
-                  value: v.id,
-                  label: `v${v.number} · ${formatDateTime(v.createdAt)}`,
-                })),
-              ]}
-            />
-            <Icon name="arrow-right" size={18} />
-            <Choice
-              label={t("이후 버전")}
-              value={to}
-              onChange={setTo}
-              options={[
-                { value: "draft", label: t("지금 쓰는 내용") },
-                ...versionList.map((v) => ({
-                  value: v.id,
-                  label: `v${v.number}`,
-                })),
-              ]}
-            />
-          </div>
-          {from ? (
-            <>
-              <Segments
-                label={t("비교 방식")}
-                size="small"
-                value={compareView}
-                onChange={(next) => setCompareView(next as typeof compareView)}
+          <DialogBody>
+            <div className="comparison-selects">
+              <Choice
+                label={t("이전 버전")}
+                value={from}
+                onChange={setFrom}
                 options={[
-                  { value: "changes", label: t("바뀐 부분") },
-                  { value: "slide", label: t("밀어서 비교") },
+                  { value: "", label: t("비교할 버전 선택") },
+                  ...versionList.map((v) => ({
+                    value: v.id,
+                    label: `v${v.number} · ${formatDateTime(v.createdAt)}`,
+                  })),
                 ]}
               />
-              {compareView === "changes" ? (
-                <TextComparison before={before} after={after} />
-              ) : (
-                <div>
-                  <div className="version-compare-scroll">
-                    <VersionCompareSlider
-                      label={t("{before} · {after} 비교", {
-                        before: beforeLabel,
-                        after: afterLabel,
-                      })}
-                      sideLabels={{
-                        before: t("이전 버전 · {label}", {
-                          label: beforeLabel,
-                        }),
-                        after:
-                          to === "draft"
-                            ? t("현재 버전")
-                            : t("이후 버전 · {label}", { label: afterLabel }),
-                      }}
-                      before={
-                        <VersionSheet
-                          tone="before"
-                          label={beforeLabel}
-                          text={before}
-                        />
-                      }
-                      after={
-                        <VersionSheet
-                          tone="after"
-                          label={afterLabel}
-                          text={after}
-                        />
-                      }
-                    />
+              <Icon name="arrow-right" size={18} />
+              <Choice
+                label={t("이후 버전")}
+                value={to}
+                onChange={setTo}
+                options={[
+                  { value: "draft", label: t("지금 쓰는 내용") },
+                  ...versionList.map((v) => ({
+                    value: v.id,
+                    label: `v${v.number}`,
+                  })),
+                ]}
+              />
+            </div>
+            {from ? (
+              <>
+                <Segments
+                  label={t("비교 방식")}
+                  size="small"
+                  value={compareView}
+                  onChange={(next) =>
+                    setCompareView(next as typeof compareView)
+                  }
+                  options={[
+                    { value: "changes", label: t("바뀐 부분") },
+                    { value: "slide", label: t("밀어서 비교") },
+                  ]}
+                />
+                {compareView === "changes" ? (
+                  <TextComparison before={before} after={after} />
+                ) : (
+                  <div>
+                    <div className="version-compare-scroll">
+                      <VersionCompareSlider
+                        label={t("{before} · {after} 비교", {
+                          before: beforeLabel,
+                          after: afterLabel,
+                        })}
+                        sideLabels={{
+                          before: t("이전 버전 · {label}", {
+                            label: beforeLabel,
+                          }),
+                          after:
+                            to === "draft"
+                              ? t("현재 버전")
+                              : t("이후 버전 · {label}", { label: afterLabel }),
+                        }}
+                        before={
+                          <VersionSheet
+                            tone="before"
+                            label={beforeLabel}
+                            text={before}
+                          />
+                        }
+                        after={
+                          <VersionSheet
+                            tone="after"
+                            label={afterLabel}
+                            text={after}
+                          />
+                        }
+                      />
+                    </div>
+                    <p className="version-compare-hint">
+                      {t(
+                        "가운데 손잡이를 끌거나, 손잡이에 포커스를 두고 좌우 방향키로 5%씩 옮겨요.",
+                      )}
+                    </p>
                   </div>
-                  <p className="version-compare-hint">
-                    {t(
-                      "가운데 손잡이를 끌거나, 손잡이에 포커스를 두고 좌우 방향키로 5%씩 옮겨요.",
-                    )}
-                  </p>
-                </div>
-              )}
-            </>
-          ) : (
-            <InlineEmpty variant="panel">
-              {t(
-                "저장만 해서는 버전이 생기지 않아요. ‘지금 버전 남기기’로 버전을 남기면 이후에 고친 내용과 비교할 수 있어요.",
-              )}
-            </InlineEmpty>
-          )}
-          <div className="bottom-actions">
+                )}
+              </>
+            ) : (
+              <InlineEmpty variant="panel">
+                {t(
+                  "저장만 해서는 버전이 생기지 않아요. ‘지금 버전 남기기’로 버전을 남기면 이후에 고친 내용과 비교할 수 있어요.",
+                )}
+              </InlineEmpty>
+            )}
+            {restoreReason.node}
+          </DialogBody>
+          <DialogFooter>
             <Button
               variant="outline"
               disabled={!from || !!busy}
@@ -1043,8 +1071,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             >
               {t("지금 버전 남기기")}
             </Button>
-          </div>
-          {restoreReason.node}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       <Dialog
@@ -1062,14 +1089,16 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               )}
             </DialogDescription>
           </DialogHeader>
-          {preview && (
-            <iframe
-              title={t("검토용 PDF 미리보기")}
-              src={preview.url}
-              className="pdf-export-preview"
-            />
-          )}
-          <div className="bottom-actions">
+          <DialogBody>
+            {preview && (
+              <iframe
+                title={t("검토용 PDF 미리보기")}
+                src={preview.url}
+                className="pdf-export-preview"
+              />
+            )}
+          </DialogBody>
+          <DialogFooter>
             <Button
               variant="outline"
               disabled={!!busy}
@@ -1092,7 +1121,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                 ? t("등록 중")
                 : t("등록하고 수정 결과 쓰기")}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

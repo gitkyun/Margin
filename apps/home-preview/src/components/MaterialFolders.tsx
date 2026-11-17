@@ -21,6 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "./ui/dialog";
 
 /**
@@ -301,41 +303,44 @@ export function MaterialFolders({
                 }
               }}
             >
-              <label className="field">
-                {t("폴더 이름")}
-                <Input
-                  value={draft.title}
-                  maxLength={120}
-                  required
-                  onChange={(e) =>
-                    setDraft({ ...draft, title: e.target.value })
-                  }
-                />
-              </label>
-              <label className="field">
-                {t("상위 폴더")}
-                <Choice
-                  label={t("상위 폴더")}
-                  value={draft.parentId ?? ""}
-                  onChange={(v) =>
-                    setDraft({ ...draft, parentId: v || undefined })
-                  }
-                  options={[
-                    { value: "", label: t("없음") },
-                    // 자기 자신과 하위 폴더는 상위 폴더로 고를 수 없어요(순환 방지).
-                    ...parentFolderOptions(folders, draft.id).map((f) => ({
-                      value: f.id,
-                      label: f.title,
-                    })),
-                  ]}
-                />
-              </label>
-              {error && (
-                <p className="rms-error" role="alert">
-                  {error}
-                </p>
-              )}
-              <div className="bottom-actions">
+              <DialogBody>
+                <label className="field">
+                  {t("폴더 이름")}
+                  <Input
+                    value={draft.title}
+                    maxLength={120}
+                    required
+                    onChange={(e) =>
+                      setDraft({ ...draft, title: e.target.value })
+                    }
+                  />
+                </label>
+                {titleReason.node}
+                <label className="field">
+                  {t("상위 폴더")}
+                  <Choice
+                    label={t("상위 폴더")}
+                    value={draft.parentId ?? ""}
+                    onChange={(v) =>
+                      setDraft({ ...draft, parentId: v || undefined })
+                    }
+                    options={[
+                      { value: "", label: t("없음") },
+                      // 자기 자신과 하위 폴더는 상위 폴더로 고를 수 없어요(순환 방지).
+                      ...parentFolderOptions(folders, draft.id).map((f) => ({
+                        value: f.id,
+                        label: f.title,
+                      })),
+                    ]}
+                  />
+                </label>
+                {error && (
+                  <p className="rms-error" role="alert">
+                    {error}
+                  </p>
+                )}
+              </DialogBody>
+              <DialogFooter>
                 {folders.some((f) => f.id === draft.id) && (
                   <Button
                     type="button"
@@ -375,8 +380,7 @@ export function MaterialFolders({
                 >
                   {busy ? t("저장 중") : t("저장")}
                 </Button>
-              </div>
-              {titleReason.node}
+              </DialogFooter>
             </form>
           )}
         </DialogContent>

@@ -169,8 +169,10 @@ export function HomePage() {
       )}
       <header className="hm-head">
         <div className="hm-head-copy">
-          <h1>{research.name}</h1>
-          {research.description && <p>{research.description}</p>}
+          <h1 title={research.name}>{research.name}</h1>
+          {research.description && (
+            <p title={research.description}>{research.description}</p>
+          )}
         </div>
         <div className="hm-chips">
           <Link
@@ -439,7 +441,9 @@ function NextMeetingCard({
       </h2>
       <p className="hm-when">{meetingWhen(next)}</p>
       <p className="hm-meeting-title">
-        <Link to={`${base}/meetings/${next.id}?tab=prepare`}>{next.title}</Link>
+        <Link to={`${base}/meetings/${next.id}?tab=prepare`} title={next.title}>
+          {next.title}
+        </Link>
       </p>
       <p className="hm-summary">
         {summary.length ? summary.join(" · ") : t("아직 준비한 내용이 없어요.")}
@@ -748,7 +752,7 @@ function HomeLists({
               <div key={event.id} className="hm-row is-unread">
                 <span className="hm-dot" aria-hidden="true" />
                 <Link className="hm-row-main" to={notificationHref(event)}>
-                  <strong>{event.title}</strong>
+                  <strong title={event.title}>{event.title}</strong>
                   <small>{event.message}</small>
                 </Link>
                 {decision.canMakeTask && (
@@ -811,7 +815,7 @@ function HomeLists({
               >
                 <Icon name="calendar" size={16} />
                 <span className="hm-row-main">
-                  <strong>{meeting.title}</strong>
+                  <strong title={meeting.title}>{meeting.title}</strong>
                   <small>
                     {formatDate(meeting.date)}
                     {left > 0 &&
@@ -845,7 +849,7 @@ function HomeLists({
               <Link key={doc.id} className="hm-row" to={doc.href}>
                 <Icon name="file" size={16} />
                 <span className="hm-row-main">
-                  <strong>{doc.title}</strong>
+                  <strong title={doc.title}>{doc.title}</strong>
                   <small>
                     {doc.kind} ·{" "}
                     {t("{when} 저장", {

@@ -72,6 +72,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "./ui/sheet";
+import { DialogBody } from "./ui/dialog";
 const navigation = RESEARCH_NAVIGATION;
 const activityTitles: Record<string, string> = {
   // i18n-ignore: 서버에 저장된 알림 제목(자료)
@@ -447,7 +448,7 @@ export function WorkspaceShell({
                   )}
             </SheetDescription>
           </SheetHeader>
-          <div className="notification-content">
+          <DialogBody className="notification-content">
             <div className="button-row">
               <Segments
                 value={notificationFilter}
@@ -547,7 +548,7 @@ export function WorkspaceShell({
                 : newEvents.length) ? (
               <EmptyState icon="bell" title={t("확인할 새 알림이 없어요.")} />
             ) : null}
-          </div>
+          </DialogBody>
         </SheetContent>
       </Sheet>
       <CommandPalette

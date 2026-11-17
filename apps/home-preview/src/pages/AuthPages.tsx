@@ -33,6 +33,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   PageHeader,
@@ -463,7 +465,7 @@ export function ResearchSelectPage() {
           </Link>
         ))}
       {!incomingOnly && (
-        <div className="research-view-switch">
+        <div className="page-toolbar">
           <Segments
             value={view}
             onChange={(v) =>
@@ -535,31 +537,40 @@ export function ResearchSelectPage() {
                         </StatusBadge>
                       </span>
                     </span>
-                    <h2>{research.name}</h2>
-                    <p>{research.description || t("설명이 없어요.")}</p>
+                    <h2 title={research.name}>{research.name}</h2>
+                    <p title={research.description || undefined}>
+                      {research.description || t("설명이 없어요.")}
+                    </p>
                     <span className="meta">
                       {trashView ? (
-                        t("복원하면 기록을 다시 볼 수 있어요.")
+                        <span className="research-card-meta-text">
+                          {t("복원하면 기록을 다시 볼 수 있어요.")}
+                        </span>
                       ) : (
                         <>
-                          {t("미팅 {meetings}개 · 남은 할 일 {tasks}개", {
-                            meetings: data.meetings.filter(
-                              (m) => m.researchId === research.id,
-                            ).length,
-                            tasks: data.tasks.filter(
-                              (task) =>
-                                task.researchId === research.id &&
-                                task.status !== "done",
-                            ).length,
-                          })}
-                          {research.submissionDate &&
-                            daysUntil(todayKey(), research.submissionDate) !==
-                              null &&
-                            ` · ${t("투고 {label}", {
-                              label: dDayLabel(
-                                daysUntil(todayKey(), research.submissionDate)!,
-                              ),
-                            })}`}
+                          <span className="research-card-meta-text">
+                            {t("미팅 {meetings}개 · 남은 할 일 {tasks}개", {
+                              meetings: data.meetings.filter(
+                                (m) => m.researchId === research.id,
+                              ).length,
+                              tasks: data.tasks.filter(
+                                (task) =>
+                                  task.researchId === research.id &&
+                                  task.status !== "done",
+                              ).length,
+                            })}
+                            {research.submissionDate &&
+                              daysUntil(todayKey(), research.submissionDate) !==
+                                null &&
+                              ` · ${t("투고 {label}", {
+                                label: dDayLabel(
+                                  daysUntil(
+                                    todayKey(),
+                                    research.submissionDate,
+                                  )!,
+                                ),
+                              })}`}
+                          </span>
                           <Icon name="arrow-up-right" size={16} />
                         </>
                       )}
@@ -659,7 +670,6 @@ export function ResearchSelectPage() {
             </DialogDescription>
           </DialogHeader>
           <form
-            className="rms-modal-stack"
             onSubmit={async (e) => {
               e.preventDefault();
               if (!trashTarget || pending || trashName !== trashTarget.name)
@@ -681,15 +691,18 @@ export function ResearchSelectPage() {
               }
             }}
           >
-            <label className="field">
-              {trashTarget?.name}
-              <Input
-                value={trashName}
-                onChange={(e) => setTrashName(e.target.value)}
-                autoComplete="off"
-              />
-            </label>
-            <div className="button-row">
+            <DialogBody>
+              <label className="field">
+                {trashTarget?.name}
+                <Input
+                  value={trashName}
+                  onChange={(e) => setTrashName(e.target.value)}
+                  autoComplete="off"
+                />
+              </label>
+              {trashReason.node}
+            </DialogBody>
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
@@ -706,8 +719,7 @@ export function ResearchSelectPage() {
               >
                 {t("휴지통으로 옮기기")}
               </Button>
-            </div>
-            {trashReason.node}
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

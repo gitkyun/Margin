@@ -70,13 +70,17 @@
     font-size: var(--typography-headline2-fontSize);
     font-weight: 700;
   }
-  .panel-frame > [role="tablist"],
-  .panel-frame > .tabs-line {
+  /* 탭 줄: 선은 패널 끝에서 끝까지, 첫 탭은 패널 안쪽 여백(20)에서 시작합니다.
+     탭 아래 24는 탭 줄이 갖고 있어서 탭 내용은 위 여백을 더하지 않습니다. */
+  .panel-frame > .margin-tabs > .margin-tabs-list {
     padding-inline: var(--spacing-20);
-    border-bottom: 1px solid var(--line);
+  }
+  .panel-frame > .margin-tabs + .panel-frame-body {
+    padding-top: 0;
   }
   .panel-frame-body {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-content: start;
     gap: var(--spacing-12);
     padding: var(--spacing-16) var(--spacing-20) var(--spacing-24);

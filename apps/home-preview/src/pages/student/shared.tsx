@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { Segments } from "@/components/experience";
+import { Segments, SelectField } from "@/components/experience";
 import {
   useCallback,
   useEffect,
@@ -22,6 +22,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -123,6 +124,8 @@ function FormNavigationGuard({
   }, [active]);
   return (
     <div
+      // 배치에 끼지 않는 감싸개입니다(styles.css "대화상자 틀"). 폼이 틀의 세로 배치를 그대로 받습니다.
+      className="margin-dialog-guard"
       ref={bind}
       onInputCapture={check}
       onChangeCapture={check}
@@ -210,7 +213,7 @@ export function FormDialog({
               {t("입력한 내용은 사라져요.")}
             </DialogDescription>
           </DialogHeader>
-          <div className="form-actions">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setDiscardOpen(false)}>
               {t("계속 작성")}
             </Button>
@@ -224,7 +227,7 @@ export function FormDialog({
             >
               {t("버리고 닫기")}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -361,7 +364,7 @@ export function FilterSegments({
   counts?: Record<string, number>;
   label: string;
 }) {
-  return (
+  const segments = (
     <Segments
       value={value}
       onChange={onChange}
@@ -372,6 +375,28 @@ export function FilterSegments({
         count: counts?.[value],
       }))}
     />
+  );
+  // 항목이 5개 이상이면 767px 이하에서는 선택 상자로 보여 줍니다(배치 규칙 2-3).
+  if (options.length < 5) return segments;
+  return (
+    <>
+      <div className="filter-wide">{segments}</div>
+      <div className="filter-narrow">
+        <SelectField
+          aria-label={label}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        >
+          {options.map(([value, label]) => (
+            <option key={value} value={value}>
+              {counts?.[value] === undefined
+                ? label
+                : `${label} ${counts[value]}`}
+            </option>
+          ))}
+        </SelectField>
+      </div>
+    </>
   );
 }
 
@@ -386,11 +411,10 @@ export function SearchInput({
 }) {
   return (
     <TextField
-      className="student-search"
-      // 좁은 화면에서는 줄 전체, 768px 이상에서는 내용 너비(Montage 반응형 속성)
+      // 너비는 도구 줄 틀(.page-search)이 정합니다: 768px 이상 240, 767px 이하 줄 전체.
+      className="page-search"
       size="medium"
       width="100%"
-      sm={{ width: "auto" }}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
@@ -481,7 +505,7 @@ export function SaveActions({
   label?: string;
 }) {
   return (
-    <div className="form-actions">
+    <DialogFooter>
       <Button
         type="button"
         variant="outline"
@@ -493,7 +517,7 @@ export function SaveActions({
       <Button type="submit" disabled={saving}>
         {saving ? t("저장 중") : label}
       </Button>
-    </div>
+    </DialogFooter>
   );
 }
 export function LinkChip({
