@@ -282,6 +282,14 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         ? "prepare"
         : "record";
   const [editingMeta, setEditingMeta] = useState(false);
+  // 목록 줄 메뉴의 '기록 정보 편집'(04 §2.2)은 ?edit=info로 와서 정보 창을 엽니다.
+  useEffect(() => {
+    if (params.get("edit") !== "info") return;
+    setEditingMeta(true);
+    const rest = new URLSearchParams(params);
+    rest.delete("edit");
+    setParams(rest, { replace: true });
+  }, [params, setParams]);
   const [meta, setMeta] = useState({
     title: meeting.title,
     date: meeting.date ?? "",

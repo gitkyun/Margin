@@ -124,6 +124,47 @@
     color: var(--text-tertiary);
     font-size: var(--typography-label2-fontSize);
   }
+  /* 줄 메뉴는 올리거나 초점이 갈 때 보입니다(04 §2.2). 터치 기기는 늘 보입니다. */
+  .record-line-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  .record-line-row > .record-line {
+    flex: 1;
+    min-width: 0;
+  }
+  .record-line-menu {
+    flex: none;
+    opacity: 0;
+  }
+  .record-line-row:hover .record-line-menu,
+  .record-line-row:focus-within .record-line-menu,
+  .record-line-menu:has([aria-expanded="true"]) {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .record-line-menu {
+      opacity: 1;
+    }
+  }
+  .record-list-archived-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .record-list-archived {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    text-decoration: underline;
+    cursor: pointer;
+  }
   .record-list-cancelled {
     display: inline-flex;
     align-items: center;
