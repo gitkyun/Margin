@@ -254,4 +254,76 @@
   .memo-overlay .memo-anchor {
     text-decoration: none;
   }
+  /* 정리하기(04 §5.4 ①, ②의 AI 제안 줄) */
+  .organize-running {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-6);
+  }
+  .organize-proposal,
+  .organize-suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-8);
+  }
+  .organize-tag {
+    align-self: flex-start;
+    color: var(--brand);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .organize-text {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-body1Reading-lineHeight);
+    white-space: pre-wrap;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .organize-text[data-clamped] {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+  }
+  .organize-more {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .organize-saved,
+  .organize-edit,
+  .organize-suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+  .organize-suggestion strong {
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .organize-quote {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  .organize-error {
+    color: var(--danger);
+  }
 }

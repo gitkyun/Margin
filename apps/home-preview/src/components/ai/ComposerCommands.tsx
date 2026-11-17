@@ -298,6 +298,8 @@ function contextKindLabel(kind: AIContext["kind"]): string {
       return t("버전");
     case "attachments":
       return t("파일");
+    case "recordings":
+      return t("녹음");
     case "tasks":
       return t("할 일");
     case "phases":

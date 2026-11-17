@@ -62,8 +62,19 @@ export interface Meeting extends BaseRecord {
   sourceLabel?: "kakao" | "email" | "doc_comment" | "note" | "file" | "other";
   sourceFileName?: string;
   memoMarks?: TextMark[];
+  /** 연구 도우미가 쓴 요약(IA v2 04 §5.4 ①). [요약 저장]을 눌러야 생깁니다. */
+  summary?: MeetingSummary;
   /** 준비: 보여 줄 글 */
   documentIds?: ID[];
+}
+export interface MeetingSummary {
+  text: string;
+  createdAt: string;
+  /** 사람이 고친 때 */
+  editedAt?: string;
+  /** 요약할 때의 메모 판. 지금 판과 다르면 "원문이 바뀌었어요." */
+  memoRevision: number;
+  runId?: ID;
 }
 export interface Feedback extends BaseRecord {
   origin?: RecordOrigin;
@@ -303,7 +314,9 @@ export interface AIContext {
     // 연구 도우미가 이 연구에서 직접 읽어 온 기록(서버가 붙임)
     | "questions"
     | "decisions"
-    | "materials";
+    | "materials"
+    // 미팅 정리에서 서버가 붙인 내 전사문(제목만, 글자는 남기지 않음)
+    | "recordings";
   id: ID;
   title: string;
   revision?: number;
@@ -492,6 +505,8 @@ export interface AIResult {
   answer?: string;
   runId?: ID;
   candidates: AICandidate[];
+  /** 원문에서 발췌를 찾지 못해 뺀 제안 수(미팅 정리) */
+  droppedQuotes?: number;
   model: string;
   sourceRevision?: number;
   createdAt: string;
