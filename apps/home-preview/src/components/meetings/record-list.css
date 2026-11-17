@@ -166,4 +166,35 @@
       display: none;
     }
   }
+  /* 판 864~1023: 목록 열을 접고 [기록 목록 ▾] 팝오버로(04 §1) */
+  .record-list-toggle {
+    position: relative;
+    display: none;
+    margin-bottom: var(--spacing-12);
+  }
+  .record-list-popover {
+    position: absolute;
+    top: calc(100% + var(--spacing-4));
+    left: 0;
+    z-index: var(--z-sheet);
+    width: 280px;
+    max-height: min(70dvh, 560px);
+    padding: var(--spacing-12);
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    box-shadow: var(--shadow-pop);
+  }
+  @container (min-width: 864px) and (max-width: 1023px) {
+    .meetings-layout[data-has-record] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .meetings-layout[data-has-record] > .record-list {
+      display: none;
+    }
+    .meetings-layout[data-has-record] .record-list-toggle {
+      display: block;
+    }
+  }
 }
