@@ -49,6 +49,12 @@ function LegacyRedirect() {
   return <Navigate to={target ?? "/r"} replace />;
 }
 
+/** 할 일 화면(T1). 한 건 주소(`?full=1`로만 남음)는 예전 상세 화면을 띄웁니다. */
+function TasksRoute() {
+  const { taskId } = useParams();
+  return taskId ? <TasksPage /> : <TasksHome />;
+}
+
 /** 예전 주소면 새 주소로 옮기고, 아니면 지금 화면을 그대로 띄웁니다(할 일·피드백 한 건 → 항목 상세). */
 function LegacyOr({ children }: { children: ReactNode }) {
   const location = useLocation();
@@ -114,6 +120,9 @@ const FeedbackPage = lazy(() =>
 );
 const TasksPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.TasksPage })),
+);
+const TasksHome = lazy(() =>
+  import("@/pages/tasks/TasksHome").then((m) => ({ default: m.TasksHome })),
 );
 const MaterialsPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.MaterialsPage })),
@@ -231,7 +240,7 @@ function WorkspaceRoutes() {
             path="/r/:researchId/tasks/:taskId?"
             element={
               <LegacyOr>
-                <TasksPage />
+                <TasksRoute />
               </LegacyOr>
             }
           />

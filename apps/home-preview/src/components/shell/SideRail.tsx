@@ -18,6 +18,9 @@ export interface SideRailProps {
   /** 화면이 보낸 패널(0단계 임시 탭, 02 §4.6). 열 수 있는 것이 없으면 없음. */
   offered?: MarginPanelEntry | null;
   active?: MarginPanelEntry | null;
+  /** 할 일 창(P2)이 열려 있는지와 여닫기(1단계부터 실제 탭) */
+  tasksOpen?: boolean;
+  onTasks?(): void;
 }
 
 /**
@@ -25,7 +28,13 @@ export interface SideRailProps {
  * 0단계에는 사이드 창 탭 내용이 아직 없어 연구 도우미는 지금 화면으로 가는 링크이고,
  * 화면이 패널을 보내면 '이 화면' 임시 탭을 둡니다.
  */
-export function SideRail({ researchId, offered, active }: SideRailProps) {
+export function SideRail({
+  researchId,
+  offered,
+  active,
+  tasksOpen = false,
+  onTasks,
+}: SideRailProps) {
   const location = useLocation();
   const openSettings = useOpenSettings();
   const ref = useRef<HTMLDivElement>(null);
@@ -77,6 +86,14 @@ export function SideRail({ researchId, offered, active }: SideRailProps) {
           icon="sparkles"
           label={t("연구 도우미")}
           pressed={location.pathname.startsWith(assistantPath)}
+        />
+      )}
+      {onTasks && (
+        <RailButton
+          icon="tasks"
+          label={t("할 일")}
+          pressed={tasksOpen}
+          onClick={onTasks}
         />
       )}
       {offered && (

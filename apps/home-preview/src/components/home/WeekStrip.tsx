@@ -94,6 +94,12 @@ function keyDelta(key: string, index: number): number | null {
 interface WeekStripProps {
   data: Pick<WorkspaceData, "meetings" | "tasks">;
   researchId: string;
+  /**
+   * 할 일 화면(T1)에서 쓰는 거르기 모드. 주면 아래 일정 목록 대신 날짜를 눌러 그날로 거르고,
+   * 같은 날을 다시 누르면 풉니다(IA v2 06 §3.1).
+   */
+  filterDay?: string | null;
+  onFilterDay?(key: string | null): void;
 }
 
 /**
@@ -101,7 +107,12 @@ interface WeekStripProps {
  * 최대 3개. 날짜를 누르거나 방향키로 옮기면 아래에 그날 일정이 보입니다.
  * 색은 계획·일정 큰 캘린더와 같은 규칙입니다.
  */
-export function WeekStrip({ data, researchId }: WeekStripProps) {
+export function WeekStrip({
+  data,
+  researchId,
+  filterDay,
+  onFilterDay,
+}: WeekStripProps) {
   const today = seoulTodayKey();
   const [selected, setSelected] = useState(today);
   const moved = useRef(false);
@@ -162,10 +173,15 @@ export function WeekStrip({ data, researchId }: WeekStripProps) {
             }}
             className="rh-week-day"
             tabIndex={d.key === selected ? 0 : -1}
-            aria-pressed={d.key === selected}
+            aria-pressed={
+              onFilterDay ? d.key === filterDay : d.key === selected
+            }
             aria-current={d.isToday ? "date" : undefined}
             aria-label={`${t("{month}월 {day}일 {weekday}", { month: d.month, day: d.day, weekday: WEEKDAY_NAMES[d.weekday] })}${d.isToday ? `, ${t("오늘")}` : ""}, ${countLabel(d.items)}`}
-            onClick={() => setSelected(d.key)}
+            onClick={() => {
+              setSelected(d.key);
+              onFilterDay?.(filterDay === d.key ? null : d.key);
+            }}
             onKeyDown={(event) => onKeyDown(event, index)}
           >
             <span className="rh-week-weekday">{WEEKDAY_SHORT[d.weekday]}</span>
@@ -178,37 +194,39 @@ export function WeekStrip({ data, researchId }: WeekStripProps) {
           </button>
         ))}
       </div>
-      <div className="rh-week-agenda" aria-live="polite">
-        <p className="rh-week-agenda-date">
-          {t("{month}월 {day}일 {weekday}", {
-            month: day.month,
-            day: day.day,
-            weekday: WEEKDAY_NAMES[day.weekday],
-          })}
-          {day.isToday && <span>{t("오늘")}</span>}
-        </p>
-        {day.items.length ? (
-          <ul>
-            {day.items.map((item) => (
-              <li key={item.kind + item.id}>
-                <Link className="rh-week-item" to={item.href}>
-                  <i className={`is-${item.kind}`} aria-hidden="true" />
-                  <strong>{item.title}</strong>
-                  <small>
-                    {item.kind === "meeting"
-                      ? item.time
-                        ? timeLabel(item.time)
-                        : t("미팅")
-                      : t("마감")}
-                  </small>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="rh-week-empty">{t("이날은 미팅도 마감도 없어요.")}</p>
-        )}
-      </div>
+      {!onFilterDay && (
+        <div className="rh-week-agenda" aria-live="polite">
+          <p className="rh-week-agenda-date">
+            {t("{month}월 {day}일 {weekday}", {
+              month: day.month,
+              day: day.day,
+              weekday: WEEKDAY_NAMES[day.weekday],
+            })}
+            {day.isToday && <span>{t("오늘")}</span>}
+          </p>
+          {day.items.length ? (
+            <ul>
+              {day.items.map((item) => (
+                <li key={item.kind + item.id}>
+                  <Link className="rh-week-item" to={item.href}>
+                    <i className={`is-${item.kind}`} aria-hidden="true" />
+                    <strong>{item.title}</strong>
+                    <small>
+                      {item.kind === "meeting"
+                        ? item.time
+                          ? timeLabel(item.time)
+                          : t("미팅")
+                        : t("마감")}
+                    </small>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rh-week-empty">{t("이날은 미팅도 마감도 없어요.")}</p>
+          )}
+        </div>
+      )}
     </section>
   );
 }

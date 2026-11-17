@@ -45,11 +45,13 @@ const RULES: Record<string, Rule> = {
     params.set("detail", `task:${id}`);
     return build(`${base}/tasks`, params);
   },
-  // 미팅 화면(2단계)·할 일 화면(T1) 전까지는 기록을 찾아가지 않고 지금 피드백 목록 위에 엽니다.
+  // 피드백 목록은 할 일 화면의 피드백 탭(T1)으로, 한 건은 그 위의 항목 상세로 엽니다.
+  // 미팅 화면(2단계) 전까지는 기록을 찾아가지 않습니다. `new=1`(피드백 입력 창)은 지금 화면에 둡니다.
   feedback: (base, [id], params) => {
-    if (!id || params.get("full") === "1") return null;
-    params.set("detail", `feedback:${id}`);
-    return build(`${base}/feedback`, params);
+    if (params.get("full") === "1" || params.get("new") === "1") return null;
+    params.set("view", "feedback");
+    if (id) params.set("detail", `feedback:${id}`);
+    return build(`${base}/tasks`, params);
   },
   decisions: (base, [id], params) => {
     if (!id) return null;
@@ -86,6 +88,7 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/r/a/decisions/d", ""],
   ["/r/a/tasks/t", ""],
   ["/r/a/feedback/f", ""],
+  ["/r/a/feedback", ""],
   ["/r/a/settings", "?tab=lifecycle"],
   ["/r/a/settings", "?tab=phases"],
   ["/account", ""],

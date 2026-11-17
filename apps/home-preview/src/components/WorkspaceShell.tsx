@@ -19,6 +19,7 @@ import {
 import { TopBar } from "./shell/TopBar";
 import { SideRail } from "./shell/SideRail";
 import { ItemDetail } from "./item-detail/ItemDetail";
+import { TasksPanel } from "./tasks/TasksPanel";
 import { useDetailRef } from "@/lib/item-detail";
 import { MobileTabBar } from "./shell/MobileTabBar";
 import { BottomDock } from "./shell/BottomDock";
@@ -179,6 +180,8 @@ export function WorkspaceShell({
   const panel = useMarginPanelHost();
   // ?detail= 항목 상세(06 §6)는 사이드 창 자리에 덮여 뜹니다. 창이 닫혀 있어도 엽니다.
   const detail = useDetailRef();
+  // 아이콘 줄의 실제 탭(1단계: 할 일 창 P2). 화면이 보낸 임시 탭과는 한 번에 하나만 엽니다.
+  const [railTab, setRailTab] = useState<"tasks" | null>(null);
   // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
   const panelRef = useRef(panel);
   panelRef.current = panel;
@@ -204,11 +207,17 @@ export function WorkspaceShell({
   }, []);
   // 겹쳐 뜬 사이드 창(1199px 이하)은 다른 화면으로 가면 닫힙니다(D15).
   useEffect(() => {
-    if (overlayPanel) panelRef.current.active?.onClose();
+    if (!overlayPanel) return;
+    panelRef.current.active?.onClose();
+    setRailTab(null);
   }, [location.pathname, overlayPanel]);
+  // 화면이 보낸 창을 열면 할 일 창은 닫습니다(한 번에 하나).
+  useEffect(() => {
+    if (panel.active) setRailTab(null);
+  }, [panel.active?.id]);
   // 겹쳐 뜬 사이드 창은 뒤를 가리지 않고, 바깥을 누르면 닫힙니다(D15).
   useEffect(() => {
-    if (!overlayPanel || !panel.active) return;
+    if (!overlayPanel || (!panel.active && !railTab)) return;
     const onPointer = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -219,10 +228,11 @@ export function WorkspaceShell({
       )
         return;
       panelRef.current.active?.onClose();
+      setRailTab(null);
     };
     document.addEventListener("pointerdown", onPointer);
     return () => document.removeEventListener("pointerdown", onPointer);
-  }, [overlayPanel, panel.active]);
+  }, [overlayPanel, panel.active, railTab]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -268,7 +278,8 @@ export function WorkspaceShell({
     );
   const inResearch = !!research && !!researchId;
   const detailOpen = inResearch && !!detail;
-  const panelShown = !!panel.active || detailOpen;
+  const tasksOpen = inResearch && railTab === "tasks";
+  const panelShown = !!panel.active || detailOpen || tasksOpen;
   return (
     <div
       style={
@@ -352,9 +363,15 @@ export function WorkspaceShell({
           {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
           <div
             className="margin-panel-slot"
-            hidden={detailOpen}
+            hidden={detailOpen || tasksOpen}
             ref={panel.setSlot}
           />
+          {tasksOpen && !detailOpen && researchId && (
+            <TasksPanel
+              researchId={researchId}
+              onClose={() => setRailTab(null)}
+            />
+          )}
           {detailOpen && detail && researchId && (
             <ItemDetail researchId={researchId} detail={detail} />
           )}
@@ -363,7 +380,16 @@ export function WorkspaceShell({
           <SideRail
             researchId={researchId}
             offered={panel.offered}
-            active={panel.active}
+            active={tasksOpen ? null : panel.active}
+            tasksOpen={tasksOpen}
+            onTasks={() => {
+              if (tasksOpen) {
+                setRailTab(null);
+                return;
+              }
+              panel.active?.onClose();
+              setRailTab("tasks");
+            }}
           />
         )}
       </div>
