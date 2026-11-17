@@ -34,7 +34,10 @@ export interface AIInput {
 export interface Candidate {
   title: string;
   body?: string;
-  category?: "feedback" | "decision" | "question";
+  category?: "feedback" | "decision" | "question" | "task" | "summary";
+  /** organize_meeting: 발췌가 나온 원문(메모·내 전사문). 위치는 그 원문 기준 */
+  sourceKind?: "memo" | "transcript";
+  recordingId?: string;
   sourceQuote?: string;
   sourceStart?: number;
   sourceEnd?: number;
@@ -233,7 +236,8 @@ export function validateInput(value: unknown): AIInput {
     ) ||
     !uuid.test(String(input.researchId)) ||
     typeof input.sourceText !== "string" ||
-    !input.sourceText.trim() ||
+    // 미팅 정리는 메모가 비어 있어도 됩니다. 서버가 요청한 사람의 전사문을 읽어 붙입니다(IA v2 08 §5.1).
+    (!input.sourceText.trim() && input.mode !== "organize_meeting") ||
     input.sourceText.length > 50000
   )
     throw new AIError(
@@ -409,4 +413,97 @@ export function verifySource(
 export function normalizeAnswer(value: unknown): string {
   const output = object(value);
   return text(output.answer, 12000, true).trim();
+}
+
+/** 미팅 정리의 근거 원문 하나(메모 또는 요청한 사람의 전사문) */
+export interface OrganizeSource {
+  kind: "memo" | "transcript";
+  id: string;
+  text: string;
+}
+
+const ORGANIZE_LIMIT = 8;
+/** 있으면 글자, 없거나 형식이 다르면 빈 글자(넘치면 자름) */
+const loose = (value: unknown, max: number) =>
+  typeof value === "string" ? value.slice(0, max) : "";
+
+/**
+ * organize_meeting 결과(IA v2 08 §5.2). 피드백·결정·질문·할 일은 원문 발췌를 확인하고,
+ * 찾지 못한 제안만 빼서 그 수를 droppedQuotes로 돌려줍니다. 요약은 한 개만, 인용 검사를 하지 않습니다.
+ */
+export function normalizeOrganize(
+  value: unknown,
+  sources: readonly OrganizeSource[],
+): { candidates: Candidate[]; droppedQuotes: number } {
+  const output = object(value);
+  if (Array.isArray(output.candidates) && output.candidates.length === 0)
+    throw new AIError(
+      "NOTHING_FOUND",
+      "이 원문에서 정리할 내용을 찾지 못했어요. 직접 추가할 수 있어요.",
+      422,
+    );
+  if (
+    !Array.isArray(output.candidates) ||
+    output.candidates.length > ORGANIZE_LIMIT * 2
+  )
+    throw new AIError(
+      "INVALID_OUTPUT",
+      "AI가 사용할 수 있는 후보를 반환하지 않았습니다. 직접 작성하거나 다시 시도해 주세요.",
+      502,
+    );
+  let droppedQuotes = 0;
+  let summary: Candidate | null = null;
+  const items: Candidate[] = [];
+  for (const item of output.candidates) {
+    const c = object(item);
+    const category = String(c.category);
+    if (category === "summary") {
+      const body = loose(c.body, 10000).trim();
+      if (!summary && body)
+        summary = {
+          title: loose(c.title, 200).trim() || "요약",
+          category: "summary",
+          body,
+        };
+      continue;
+    }
+    if (!["feedback", "decision", "question", "task"].includes(category))
+      throw new AIError(
+        "INVALID_OUTPUT",
+        "AI 응답 형식을 확인할 수 없습니다. 입력은 유지됩니다.",
+        502,
+      );
+    const title = loose(c.title, 200).trim(),
+      quote = typeof c.sourceQuote === "string" ? c.sourceQuote : "";
+    const found = quote
+      ? sources
+          .map((source) => ({ source, at: source.text.indexOf(quote) }))
+          .find((hit) => hit.at >= 0)
+      : undefined;
+    if (!found || !title || quote.length > 20000) {
+      droppedQuotes++;
+      continue;
+    }
+    if (items.length >= ORGANIZE_LIMIT) continue;
+    items.push({
+      title,
+      category: category as Candidate["category"],
+      body: loose(c.body, 10000).trim() || title,
+      sourceQuote: quote,
+      sourceStart: found.at,
+      sourceEnd: found.at + quote.length,
+      sourceKind: found.source.kind,
+      ...(found.source.kind === "transcript"
+        ? { recordingId: found.source.id }
+        : {}),
+    });
+  }
+  const candidates = summary ? [summary, ...items] : items;
+  if (!candidates.length)
+    throw new AIError(
+      "UNVERIFIED_QUOTE",
+      "정리 후보의 원문 근거를 확인할 수 없습니다. 직접 작성하거나 다시 시도해 주세요.",
+      502,
+    );
+  return { candidates, droppedQuotes };
 }

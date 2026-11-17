@@ -25,6 +25,7 @@ import {
   type AICandidate,
   type AIInput,
   type BaseRecord,
+  isLegacyOrganizeCandidate,
 } from "@/lib/domain";
 import { t } from "@/lib/i18n";
 import { aiWaitKindForMode } from "@/lib/ai-wait";
@@ -140,10 +141,9 @@ export function AIWorkbench({
         abort.signal,
       );
       if (current !== sequence.current) return;
-      candidateBases.current = result.candidates.map(() =>
-        recordBase(input.researchId),
-      );
-      setCandidates(result.candidates);
+      const usable = result.candidates.filter(isLegacyOrganizeCandidate);
+      candidateBases.current = usable.map(() => recordBase(input.researchId));
+      setCandidates(usable);
       setSaved([]);
       setModel(result.model);
     } catch (e) {

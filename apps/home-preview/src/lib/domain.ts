@@ -469,7 +469,10 @@ export interface AppUser {
 export interface AICandidate {
   title: string;
   body?: string;
-  category?: "feedback" | "decision" | "question";
+  category?: "feedback" | "decision" | "question" | "task" | "summary";
+  /** 미팅 정리: 발췌가 나온 원문. 위치(sourceStart~End)는 그 원문 기준(IA v2 08 §5.2) */
+  sourceKind?: "memo" | "transcript";
+  recordingId?: string;
   sourceQuote?: string;
   sourceStart?: number;
   sourceEnd?: number;
@@ -631,4 +634,16 @@ export function safeUrl(value: string): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * 지금 화면(연구 도우미 제안 탭·미팅 AI 정리)이 다룰 수 있는 미팅 정리 제안.
+ * 요약·할 일 제안과 전사문에서 나온 제안은 기록 화면의 오른쪽 열(IA v2 2b)에서 다룹니다.
+ */
+export function isLegacyOrganizeCandidate(candidate: AICandidate): boolean {
+  return (
+    candidate.category !== "summary" &&
+    candidate.category !== "task" &&
+    candidate.sourceKind !== "transcript"
+  );
 }

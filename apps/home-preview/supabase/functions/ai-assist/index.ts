@@ -35,6 +35,8 @@ import {
   AIError,
   type AIInput,
   normalizeCandidates,
+  normalizeOrganize,
+  type OrganizeSource,
   normalizeAnswer,
   validateInput,
   verifySource,
@@ -70,11 +72,11 @@ const organizeSchema = {
           body: { type: "STRING" },
           category: {
             type: "STRING",
-            enum: ["feedback", "decision", "question"],
+            enum: ["summary", "feedback", "decision", "question", "task"],
           },
           sourceQuote: { type: "STRING" },
         },
-        required: ["title", "body", "category", "sourceQuote"],
+        required: ["title", "body", "category"],
       },
     },
   },
@@ -320,6 +322,8 @@ Deno.serve(async (request) => {
     )
       throw new AIError("FORBIDDEN", "이 연구에 접근할 수 없습니다.", 403);
     let source: Record<string, unknown> = {};
+    // organize_meeting의 발췌를 확인할 원문들(메모·내 전사문). 없으면 sourceText 하나로 봅니다.
+    let organizeSources: OrganizeSource[] | null = null;
     const isMeeting =
       input.mode === "organize_meeting" ||
       (input.mode === "ask_research" && !!input.meetingId);
@@ -552,6 +556,79 @@ Deno.serve(async (request) => {
           text: input.sourceText,
         },
       ];
+      if (input.mode === "organize_meeting") {
+        // 이 미팅의 녹음 중 요청한 사람이 쓴 전사문만 붙입니다(IA v2 08 §5.1).
+        // 전사문 표는 본인만 읽는 RLS라 요청한 사람의 토큰으로 읽고, user_id로 한 번 더 거릅니다.
+        const memo = input.sourceText;
+        const recordings = (await rest(
+          `rms_records?${new URLSearchParams({ research_id: `eq.${input.researchId}`, kind: "eq.recordings", "data->>meetingId": `eq.${id}`, select: "id,data" })}`,
+        )) as { id: string; data: Record<string, unknown> }[];
+        const live = recordings.filter((r) => !r.data?.archivedAt);
+        const transcripts: { recording_id: string; edited_text: string }[] = [];
+        if (live.length) {
+          const response = await fetch(
+            `${url}/rest/v1/rms_live_transcripts?${new URLSearchParams({
+              recording_id: `in.(${live.map((r) => r.id).join(",")})`,
+              user_id: `eq.${user.id}`,
+              select: "recording_id,edited_text",
+            })}`,
+            { headers: { apikey: publishableKey, Authorization: token! } },
+          );
+          const rows = response.ok ? await response.json() : null;
+          if (!Array.isArray(rows))
+            throw new AIError(
+              "SOURCE_UNAVAILABLE",
+              "연구 기록을 불러오지 못했어요. 다시 시도해 주세요.",
+              502,
+            );
+          transcripts.push(
+            ...rows.filter(
+              (row) =>
+                typeof row?.edited_text === "string" && row.edited_text.trim(),
+            ),
+          );
+        }
+        organizeSources = [
+          ...(memo.trim()
+            ? [{ kind: "memo" as const, id: id!, text: memo }]
+            : []),
+          ...transcripts.map((row) => ({
+            kind: "transcript" as const,
+            id: row.recording_id,
+            text: row.edited_text,
+          })),
+        ];
+        if (!organizeSources.length)
+          throw new AIError(
+            "SOURCE_MISSING",
+            "정리할 메모나 내 전사문이 아직 없어요.",
+            409,
+          );
+        const titleOf = (recordingId: string) =>
+          String(live.find((r) => r.id === recordingId)?.data?.title ?? "녹음");
+        input.sourceText = organizeSources
+          .map(
+            (item, index) =>
+              `[근거 ${index + 1}] ${item.kind === "memo" ? "미팅 메모" : `내 전사문 · ${titleOf(item.id)}`}\n${item.text}`,
+          )
+          .join("\n\n");
+        if (input.sourceText.length > 50000)
+          throw new AIError(
+            "INPUT_TOO_LARGE",
+            "메모와 전사문을 합쳐 50,000자를 넘어요. 형광펜 친 부분만 정리해 주세요.",
+            413,
+          );
+        contexts = [
+          ...(memo.trim() ? contexts : []),
+          ...transcripts.map((row) => ({
+            id: row.recording_id,
+            kind: "recordings",
+            title: titleOf(row.recording_id),
+          })),
+        ];
+        // 전사 글자는 실행 기록에 다시 저장하지 않습니다(제목만).
+        for (const row of transcripts) workspaceIds.add(row.recording_id);
+      }
     }
     if (!apiKey)
       throw new AIError(
@@ -770,10 +847,20 @@ Deno.serve(async (request) => {
       );
     }
     const roadmap = plan ? normalizeRoadmap(candidateData, plan) : undefined;
-    const candidates =
-      ["ask_research", "continue_writing", "inline_edit"].includes(
-        input.mode,
-      ) || plan
+    const organized =
+      input.mode === "organize_meeting" && !plan
+        ? normalizeOrganize(
+            candidateData,
+            organizeSources ?? [
+              { kind: "memo", id: "", text: input.sourceText },
+            ],
+          )
+        : null;
+    const candidates = organized
+      ? organized.candidates
+      : ["ask_research", "continue_writing", "inline_edit"].includes(
+            input.mode,
+          ) || plan
         ? []
         : normalizeCandidates(
             candidateData,
@@ -781,8 +868,10 @@ Deno.serve(async (request) => {
             input.sourceText,
             originalQuote,
           );
+    const droppedQuotes = organized?.droppedQuotes ?? 0;
     const output = {
       candidates,
+      ...(droppedQuotes ? { droppedQuotes } : {}),
       ...(input.webSearch ? { webGrounding } : {}),
       ...(["ask_research", "continue_writing", "inline_edit"].includes(
         input.mode,
@@ -814,6 +903,7 @@ Deno.serve(async (request) => {
           ? { contexts: storedContexts }
           : {}),
       candidates,
+      ...(droppedQuotes ? { droppedQuotes } : {}),
       creditsUsed: chargedCredits > 0 ? chargedCredits : undefined,
       creditStatus: settled ? "settled" : "pending",
       ...(["ask_research", "continue_writing", "inline_edit"].includes(

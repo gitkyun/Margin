@@ -37,11 +37,7 @@ export interface RoadmapProposal {
   assumptions: string;
 }
 export type StageDateProblem =
-  | "missing"
-  | "invalid"
-  | "reversed"
-  | "before_today"
-  | "after_submission";
+  "missing" | "invalid" | "reversed" | "before_today" | "after_submission";
 
 export class RoadmapError extends Error {
   constructor(
@@ -154,7 +150,11 @@ export function validateRoadmapPlan(
     };
   });
   const completedStages = plan.completedStages.map((title) => {
-    if (typeof title !== "string" || !title.trim() || title.length > TITLE_LIMIT)
+    if (
+      typeof title !== "string" ||
+      !title.trim() ||
+      title.length > TITLE_LIMIT
+    )
       throw error;
     return title.trim();
   });

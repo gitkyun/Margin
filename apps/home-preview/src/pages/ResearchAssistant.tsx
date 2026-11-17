@@ -51,6 +51,7 @@ import {
   type AIConversation,
   type Attachment,
   type SavedAICandidate,
+  isLegacyOrganizeCandidate,
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import {
@@ -233,7 +234,11 @@ export function ResearchAssistant() {
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     runs = data.aiRuns.filter((r) => r.researchId === researchId),
     pending = data.aiCandidates.filter(
-      (c) => c.researchId === researchId && c.status === "pending",
+      (c) =>
+        c.researchId === researchId &&
+        c.status === "pending" &&
+        (c.mode !== "organize_meeting" ||
+          isLegacyOrganizeCandidate(c.candidate)),
     ),
     messages = conversation?.messages ?? [];
   const linkedContexts = conversation?.contexts ?? [];
