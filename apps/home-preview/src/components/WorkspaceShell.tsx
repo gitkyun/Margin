@@ -22,6 +22,11 @@ import { ItemDetail } from "./item-detail/ItemDetail";
 import { TasksPanel } from "./tasks/TasksPanel";
 import { LogPanel } from "./log/LogPanel";
 import { useDetailRef } from "@/lib/item-detail";
+import {
+  initialPanelTab,
+  rememberPanel,
+  type SidePanelTab,
+} from "@/lib/side-panel";
 import { MobileTabBar } from "./shell/MobileTabBar";
 import { BottomDock } from "./shell/BottomDock";
 import { useMediaQuery } from "@/lib/use-media-query";
@@ -182,7 +187,14 @@ export function WorkspaceShell({
   // ?detail= 항목 상세(06 §6)는 사이드 창 자리에 덮여 뜹니다. 창이 닫혀 있어도 엽니다.
   const detail = useDetailRef();
   // 아이콘 줄의 실제 탭(1단계: 할 일 창 P2). 화면이 보낸 임시 탭과는 한 번에 하나만 엽니다.
-  const [railTab, setRailTab] = useState<"tasks" | "log" | null>(null);
+  const [railTab, setRailTabState] = useState<SidePanelTab | null>(() =>
+    initialPanelTab(window.innerWidth),
+  );
+  // 사람이 여닫은 것만 기억합니다(화면 이동으로 닫힌 것은 남기지 않음, 02 §4.5).
+  const setRailTab = (tab: SidePanelTab | null, remember = false) => {
+    setRailTabState(tab);
+    if (remember) rememberPanel(window.innerWidth, tab);
+  };
   // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
   const panelRef = useRef(panel);
   panelRef.current = panel;
@@ -374,7 +386,7 @@ export function WorkspaceShell({
             <div hidden={detailOpen}>
               <TasksPanel
                 researchId={researchId}
-                onClose={() => setRailTab(null)}
+                onClose={() => setRailTab(null, true)}
               />
             </div>
           )}
@@ -382,7 +394,7 @@ export function WorkspaceShell({
             <div hidden={detailOpen}>
               <LogPanel
                 researchId={researchId}
-                onClose={() => setRailTab(null)}
+                onClose={() => setRailTab(null, true)}
               />
             </div>
           )}
@@ -398,11 +410,11 @@ export function WorkspaceShell({
             openTab={railTab}
             onTab={(tab) => {
               if (railTab === tab) {
-                setRailTab(null);
+                setRailTab(null, true);
                 return;
               }
               panel.active?.onClose();
-              setRailTab(tab);
+              setRailTab(tab, true);
             }}
           />
         )}
