@@ -110,7 +110,7 @@ export function AIComposerUsage({
       <button
         type="button"
         onClick={() =>
-          usage.isError ? void usage.refetch() : navigate("/account?tab=usage")
+          usage.isError ? void usage.refetch() : navigate("?settings=usage")
         }
       >
         {usage.isError ? t("다시 불러오기") : t("사용 내역")}

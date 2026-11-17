@@ -60,10 +60,22 @@ test("미리보기에서는 공동연구자 설정이 열리고, 메일 초대 �
 }) => {
   await page.goto("/r");
   await page.getByRole("link", { name: "연구 설정" }).first().click();
-  await expect(page).toHaveURL(/\/settings/);
-  await page.goto(`${page.url().split("?")[0]}?tab=members`);
-  await expect(page.getByLabel("공동연구자 이메일")).toBeVisible();
+  // IA v2: 연구 설정은 그 연구 홈 위의 설정 창(`?settings=`)으로 열립니다.
+  await expect(page).toHaveURL(/\/r\/[^/?]+\?settings=research$/);
+  const dialog = page.getByRole("dialog", { name: "설정" });
+  await dialog.getByRole("button", { name: "함께하는 사람" }).click();
+  await expect(page).toHaveURL(/\?settings=people$/);
+  await expect(dialog.getByLabel("공동연구자 이메일")).toBeVisible();
   await expect(page.getByText("이메일로 초대")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(page).not.toHaveURL(/settings=/);
+  // 예전 주소는 새 주소로 넘어갑니다(01 §3.3).
+  const base = new URL(page.url()).pathname;
+  await page.goto(`${base}/settings?tab=lifecycle`);
+  await expect(page).toHaveURL(new RegExp(`${base}\\?settings=danger$`));
+  await page.goto(`${base}/settings?tab=아무값`);
+  await expect(page).toHaveURL(new RegExp(`${base}\\?settings=research$`));
 });
 
 test("없는 주소는 404 안내를, 초대 수락 주소는 미리보기에서 가입 안내로 보낸다", async ({

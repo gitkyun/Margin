@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { Icon } from "./icons";
 import { CommandPalette } from "./CommandPalette";
 import { ShortcutHelp } from "./ShortcutHelp";
+import { SettingsDialog, useOpenSettings } from "./settings/SettingsDialog";
 
 import { RESEARCH_NAVIGATION, isIncomingOnly } from "@/lib/command-items";
 import { useGoShortcuts } from "@/lib/use-go-shortcuts";
@@ -75,6 +76,7 @@ const activityTitles: Record<string, string> = {
 function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
   const { user, mode, signOut } = useWorkspace();
   const navigate = useNavigate();
+  const openSettings = useOpenSettings();
   const { theme, setTheme } = useTheme();
   const [attempt, setAttempt] = useState(0);
   return (
@@ -96,18 +98,18 @@ function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
         {
           label: t("프로필 설정"),
           icon: <Icon name="user" size={16} />,
-          onSelect: () => navigate("/account?tab=profile"),
+          onSelect: () => openSettings("profile"),
         },
         {
           label: t("AI 기본 설정"),
           icon: <Icon name="sparkles" size={16} />,
-          onSelect: () => navigate("/account?tab=ai"),
+          onSelect: () => openSettings("assistant"),
         },
         {
           label: t("사용량·플랜"),
           icon: <Icon name="chart" size={16} />,
           value: "Free",
-          onSelect: () => navigate("/account?tab=usage"),
+          onSelect: () => openSettings("usage"),
         },
         {
           label: t("사용 안내"),
@@ -216,25 +218,21 @@ export function WorkspaceShell({
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const current =
-    location.pathname === "/account"
-      ? t("계정 설정")
-      : location.pathname.endsWith("/settings")
-        ? t("연구 설정")
-        : location.pathname.endsWith("/assistant")
-          ? t("연구 도우미")
-          : location.pathname.includes("/tasks")
-            ? t("할 일")
-            : location.pathname.includes("/results")
-              ? t("수정 결과")
-              : location.pathname.includes("/feedback")
-                ? t("피드백")
-                : /\/(writing|docs|materials)(\/|$)/.test(location.pathname)
-                  ? t("글·자료")
-                  : (navigation.find(
-                      ([path]) =>
-                        path && location.pathname.includes("/" + path),
-                    )?.[2] ?? (research ? t("홈") : homeLabel));
+  const current = location.pathname.endsWith("/assistant")
+    ? t("연구 도우미")
+    : location.pathname.includes("/tasks")
+      ? t("할 일")
+      : location.pathname.includes("/results")
+        ? t("수정 결과")
+        : location.pathname.includes("/feedback")
+          ? t("피드백")
+          : /\/(writing|docs|materials)(\/|$)/.test(location.pathname)
+            ? t("글·자료")
+            : /\/(flow|planning)(\/|$)/.test(location.pathname)
+              ? t("연구 흐름")
+              : (navigation.find(
+                  ([path]) => path && location.pathname.includes("/" + path),
+                )?.[2] ?? (research ? t("홈") : homeLabel));
   useEffect(() => {
     document.title = t("{name} · 마진", {
       name: `${current}${research ? ` · ${research.name}` : ""}`,
@@ -463,6 +461,7 @@ export function WorkspaceShell({
         researchId={research ? researchId : undefined}
       />
       <ShortcutHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <SettingsDialog researchId={research ? researchId : undefined} />
     </div>
   );
 }
@@ -495,7 +494,10 @@ function ShellBanners({
           <span>
             {t("보관한 연구예요. 기록과 공유 중인 검토 요청은 그대로예요.")}
           </span>
-          <Link to={`/r/${researchId}/settings?tab=lifecycle`}>
+          <Link
+            to={{ search: "?settings=danger" }}
+            state={{ settingsOpened: true }}
+          >
             {t("연구 복원하기")}
           </Link>
         </div>

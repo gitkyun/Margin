@@ -62,6 +62,8 @@ export type DialogContentProps = Omit<ComponentProps<"div">, "color"> & {
   disableEscapeKeyDownClose?: boolean;
   /** 바깥을 눌러도 닫히지 않게 할 때 */
   disableOutsideClickClose?: boolean;
+  /** 위 줄(닫기 버튼 자리)을 아예 두지 않을 때. 창이 자기 닫기 버튼을 그립니다(설정 창). */
+  bare?: boolean;
 };
 
 export function DialogContent({
@@ -70,6 +72,7 @@ export function DialogContent({
   showCloseButton = true,
   disableEscapeKeyDownClose = false,
   disableOutsideClickClose = false,
+  bare = false,
   ...props
 }: DialogContentProps) {
   return (
@@ -83,16 +86,18 @@ export function DialogContent({
       disableEscapeKeyDownClose={disableEscapeKeyDownClose}
       disableOutsideClickClose={disableOutsideClickClose}
     >
-      <ModalNavigation
-        trailingContent={
-          showCloseButton ? (
-            <ModalNavigationButton
-              variant="close-button"
-              aria-label={t("닫기")}
-            />
-          ) : null
-        }
-      />
+      {!bare && (
+        <ModalNavigation
+          trailingContent={
+            showCloseButton ? (
+              <ModalNavigationButton
+                variant="close-button"
+                aria-label={t("닫기")}
+              />
+            ) : null
+          }
+        />
+      )}
       <ModalContent verticalPadding="bottom-only" gap="20px">
         {children}
       </ModalContent>

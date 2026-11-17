@@ -1564,7 +1564,7 @@ export function ResearchAssistant() {
                   header={
                     !unavailable && recommendedModel ? (
                       <AIComposerBanner
-                        usageHref="/account?tab=usage"
+                        usageHref="?settings=usage"
                         promo={{
                           label: researchModelLabel(recommendedModel),
                           note: recommendedModel.description

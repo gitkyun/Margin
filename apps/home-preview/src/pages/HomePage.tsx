@@ -239,7 +239,7 @@ export function HomePage() {
           <p>{research.description || t("아직 연구 설명이 없어요.")}</p>
           <ResearchDirection
             research={research}
-            settingsHref={`${base}/settings`}
+            settingsHref={`${base}?settings=research`}
             planExcerpt={planExcerpt(data.documents, researchId)}
             busy={importing}
             onImport={(purpose) => {
@@ -267,7 +267,7 @@ export function HomePage() {
               </span>
               <Icon name="chevron-right" size={14} />
             </Link>
-            <Link className="rh-people" to={`${base}/settings?tab=members`}>
+            <Link className="rh-people" to={`${base}?settings=people`}>
               {isCollaborative ? (
                 <>
                   <span className="rh-avatars" aria-hidden="true">

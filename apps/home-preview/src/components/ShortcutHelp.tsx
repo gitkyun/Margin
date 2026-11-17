@@ -44,6 +44,24 @@ function shortcutRows(): [keys: string[], label: string][] {
   ];
 }
 
+/** 단축키 표. 도움말 창과 설정 창 '단축키' 칸이 함께 씁니다(IA v2 07 §1). */
+export function ShortcutList() {
+  return (
+    <dl className="shortcut-help">
+      {shortcutRows().map(([keys, label]) => (
+        <div key={keys.join("+")}>
+          <dt>
+            {keys.map((key) => (
+              <kbd key={key}>{key}</kbd>
+            ))}
+          </dt>
+          <dd>{label}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /**
  * ? 키로 여는 단축키 도움말. 입력 칸·편집기 안이나 한글 조합 중에는 열리지 않습니다.
  * G 단축키는 연구 안에서만 동작한다는 점을 함께 알립니다.
@@ -71,18 +89,7 @@ export function ShortcutHelp({
             )}
           </DialogDescription>
         </DialogHeader>
-        <dl className="shortcut-help">
-          {shortcutRows().map(([keys, label]) => (
-            <div key={keys.join("+")}>
-              <dt>
-                {keys.map((key) => (
-                  <kbd key={key}>{key}</kbd>
-                ))}
-              </dt>
-              <dd>{label}</dd>
-            </div>
-          ))}
-        </dl>
+        <ShortcutList />
         <Button onClick={() => onOpenChange(false)}>{t("닫기")}</Button>
       </DialogContent>
     </Dialog>

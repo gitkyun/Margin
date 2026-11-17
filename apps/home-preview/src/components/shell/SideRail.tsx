@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { t } from "@/lib/i18n";
 import { Icon } from "../icons";
 import type { MarginPanelEntry } from "../margin-panel/MarginPanel";
+import { useOpenSettings } from "../settings/SettingsDialog";
 
 const FEEDBACK_MAIL = "mailto:admin@margin.com";
 
@@ -20,6 +21,7 @@ export interface SideRailProps {
  */
 export function SideRail({ researchId, offered, active }: SideRailProps) {
   const location = useLocation();
+  const openSettings = useOpenSettings();
   const ref = useRef<HTMLDivElement>(null);
   const assistantPath = researchId ? `/r/${researchId}/assistant` : undefined;
 
@@ -66,11 +68,12 @@ export function SideRail({ researchId, offered, active }: SideRailProps) {
         <RailFace icon="message" label={t("의견 보내기")} />
       </a>
       {researchId && (
-        <RailLink
-          to={`/r/${researchId}/settings`}
+        <RailButton
           icon="settings"
           label={t("설정")}
-          pressed={location.pathname.endsWith("/settings")}
+          pressed={new URLSearchParams(location.search).has("settings")}
+          onClick={() => openSettings("research")}
+          controls={null}
         />
       )}
     </div>
@@ -115,18 +118,21 @@ function RailButton({
   label,
   pressed,
   onClick,
+  controls = "margin-panel",
 }: {
   icon: string;
   label: string;
   pressed: boolean;
   onClick: () => void;
+  /** 누르면 여는 영역 id. 창(대화상자)을 여는 버튼이면 null */
+  controls?: string | null;
 }) {
   return (
     <button
       type="button"
       className={`ia-rail-item ${pressed ? "on" : ""}`}
       aria-pressed={pressed}
-      aria-controls="margin-panel"
+      aria-controls={controls ?? undefined}
       onClick={onClick}
     >
       <RailFace icon={icon} label={label} />

@@ -11,6 +11,7 @@ import {
   Routes,
   useLocation,
   useParams,
+  useSearchParams,
 } from "react-router-dom";
 import type { Session } from "@supabase/supabase-js";
 import { supabase, configured } from "@/lib/supabase";
@@ -28,7 +29,31 @@ import {
   PricingPage,
   PublicFrame,
 } from "@/pages/PublicPages";
-import { AccountPage, ResearchSettingsPage } from "@/pages/SettingsPage";
+import { legacyRedirect } from "@/lib/legacy-routes";
+
+/** 예전 주소를 받는 라우트 조각(`/r/:researchId/` 뒤). 이동 규칙은 lib/legacy-routes.ts */
+const LEGACY_RESEARCH_PATHS = [
+  "settings",
+  "writing/:documentId?",
+  "materials/:materialId?",
+  "planning",
+  "folders/:folderId",
+  "questions/:itemId",
+  "decisions/:itemId",
+] as const;
+
+function LegacyRedirect() {
+  const location = useLocation();
+  const target = legacyRedirect(location.pathname, location.search);
+  return <Navigate to={target ?? "/r"} replace />;
+}
+
+/** 0단계 '글·자료'(`/docs`): 자료 보기(`kind=material`·`folder=`)면 자료 화면, 아니면 글 화면 */
+function DocsRoute() {
+  const [params] = useSearchParams();
+  const materials = params.get("kind") === "material" || params.has("folder");
+  return materials ? <MaterialsPage /> : <WritingPage />;
+}
 import { ResearchAssistant } from "@/pages/ResearchAssistant";
 import { isHomeEntry } from "@/lib/entry-route";
 import { isWorkspaceShellPath } from "@/lib/page-title";
@@ -157,23 +182,30 @@ function WorkspaceRoutes() {
         />
         <Route element={<Shell />}>
           <Route path="/r" element={<ResearchSelectPage />} />
-          <Route path="/account" element={<AccountPage />} />
-          <Route
-            path="/r/:researchId/settings"
-            element={<ResearchSettingsPage />}
-          />
+          {/* IA v2 예전 주소(01 §3.3): 설정은 창(`?settings=`)으로, 나머지는 새 주소로 넘깁니다. */}
+          <Route path="/account" element={<LegacyRedirect />} />
+          {LEGACY_RESEARCH_PATHS.map((path) => (
+            <Route
+              key={path}
+              path={`/r/:researchId/${path}`}
+              element={<LegacyRedirect />}
+            />
+          ))}
           <Route
             path="/r/:researchId/assistant"
             element={<ResearchAssistant />}
           />
           <Route path="/r/:researchId" element={<HomePage />} />
+          {/* IA v2 0단계: 새 메뉴 주소는 지금 화면을 그대로 띄웁니다(10-build-plan §2). */}
+          <Route path="/r/:researchId/docs" element={<DocsRoute />} />
           <Route
-            path="/r/:researchId/writing/:documentId?"
+            path="/r/:researchId/docs/w/:documentId"
             element={<WritingPage />}
           />
-          <Route path="/r/:researchId/planning" element={<PlanningPage />} />
-          {/* IA v2 0단계: 새 메뉴 주소는 지금 화면을 그대로 띄웁니다(10-build-plan §2). */}
-          <Route path="/r/:researchId/docs" element={<WritingPage />} />
+          <Route
+            path="/r/:researchId/docs/m/:materialId"
+            element={<MaterialsPage />}
+          />
           <Route path="/r/:researchId/flow" element={<PlanningPage />} />
           <Route
             path="/r/:researchId/meetings/:meetingId?"
@@ -184,10 +216,6 @@ function WorkspaceRoutes() {
             element={<FeedbackPage />}
           />
           <Route path="/r/:researchId/tasks/:taskId?" element={<TasksPage />} />
-          <Route
-            path="/r/:researchId/materials/:materialId?"
-            element={<MaterialsPage />}
-          />
           <Route
             path="/r/:researchId/results/:resultId?"
             element={<ResultsPage />}
@@ -365,7 +393,7 @@ export function App() {
       />
     );
   if (
-    !/^\/(login|account|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|docs|flow|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
+    !/^\/(login|account|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|docs|flow|planning|meetings|feedback|tasks|materials|results|reviews|folders|questions|decisions)(?:\/[^/]+){0,2})?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
       location.pathname,
     )
   )
