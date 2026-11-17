@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { t } from "@/lib/i18n";
+import { t, tc } from "@/lib/i18n";
 import { Icon } from "../icons";
 import { SHELL_MENUS, isMenuActive } from "./shell-menus";
 
@@ -11,6 +11,8 @@ export function MobileTabBar({ researchId }: { researchId: string }) {
   const { pathname } = useLocation();
   const assistantPath = `/r/${researchId}/assistant`;
   const assistantOn = pathname.startsWith(assistantPath);
+  const assistantName = t("연구 도우미");
+  const assistantShort = tc("tabbar", "연구 도우미");
   return (
     <nav className="ia-tabbar" aria-label={t("주요 메뉴")}>
       {SHELL_MENUS.map((menu) => {
@@ -21,9 +23,10 @@ export function MobileTabBar({ researchId }: { researchId: string }) {
             to={`/r/${researchId}${menu.path ? "/" + menu.path : ""}`}
             className={`ia-tab ${active ? "active" : ""}`}
             aria-current={active ? "page" : undefined}
+            aria-label={menu.tabLabel === menu.label ? undefined : menu.label}
           >
             <Icon name={menu.icon} size={20} />
-            <span>{menu.label}</span>
+            <span>{menu.tabLabel}</span>
           </Link>
         );
       })}
@@ -31,9 +34,12 @@ export function MobileTabBar({ researchId }: { researchId: string }) {
         to={assistantPath}
         className={`ia-tab ${assistantOn ? "active" : ""}`}
         aria-current={assistantOn ? "page" : undefined}
+        aria-label={
+          assistantShort === assistantName ? undefined : assistantName
+        }
       >
         <Icon name="sparkles" size={20} />
-        <span>{t("연구 도우미")}</span>
+        <span>{assistantShort}</span>
       </Link>
     </nav>
   );
