@@ -238,6 +238,20 @@ function RecordingPanelView({
                   />
                   {state === "paused" ? t("계속 녹음") : t("일시정지")}
                 </Button>
+                <Button
+                  variant="outline"
+                  disabled={busy}
+                  onClick={recorder.markNow}
+                  title="⌘/Ctrl+Shift+Enter"
+                >
+                  <Icon name="flag" size={16} />
+                  {t("지금 표시")}
+                  {recorder.moments > 0 && (
+                    <span className="record-moments" aria-live="polite">
+                      {t("표시 {count}개", { count: recorder.moments })}
+                    </span>
+                  )}
+                </Button>
                 <Button disabled={busy} onClick={recorder.stop}>
                   {state === "starting"
                     ? t("마이크 연결 중")

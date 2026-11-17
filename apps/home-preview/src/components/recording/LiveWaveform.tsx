@@ -66,11 +66,7 @@ export function LiveWaveform({
     return () => cancelAnimationFrame(frame);
   }, [count]);
   return (
-    <div
-      className={`live-waveform ${className}`}
-      role="img"
-      aria-label={label}
-    >
+    <div className={`live-waveform ${className}`} role="img" aria-label={label}>
       {Array.from({ length: count }, (_, i) => (
         <span
           key={i}

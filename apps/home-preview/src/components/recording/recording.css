@@ -450,4 +450,14 @@
     border-radius: var(--radius-4);
     background: var(--brand);
   }
+  /* [지금 표시] 개수(04 §6.2) */
+  .record-moments,
+  .mini-recorder-count {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-variant-numeric: tabular-nums;
+  }
+  .mini-recorder-count {
+    margin-left: 2px;
+  }
 }

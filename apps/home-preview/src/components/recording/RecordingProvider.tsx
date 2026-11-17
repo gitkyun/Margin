@@ -21,6 +21,7 @@ import {
 } from "@/lib/live-speech";
 import { saveLiveTranscript } from "@/lib/live-transcript";
 import { plainSegments, segmentTimesFrom } from "@/lib/recording-timeline";
+import { momentMarks } from "@/lib/moment-marks";
 import {
   nextSilence,
   rmsLevel,
@@ -83,6 +84,10 @@ export interface RecorderValue {
   discard(): void;
   store(): Promise<void>;
   reconnectSpeech(): void;
+  /** [지금 표시](04 §6.2)로 기억한 시각 수 */
+  moments: number;
+  /** 지금 시각을 기억합니다. 저장할 때 그 시각의 전사 문장에 형광펜을 칠해요. */
+  markNow(): void;
   /** 앱 전체(app)인지, 녹음 패널 하나에 묶인 것(panel)인지 */
   scope: "app" | "panel";
 }
@@ -163,6 +168,7 @@ export function RecordingProvider({
     recordingConsent = useRef(""),
     linked = useRef(false),
     captured = useRef<SpeechSnapshot>(emptySpeech()),
+    momentList = useRef<number[]>([]),
     sessionRef = useRef<RecorderSession | null>(null),
     clock = useRef({ elapsed: 0, started: 0 }),
     silence = useRef<SilenceState>(silenceStart(0));
@@ -175,6 +181,35 @@ export function RecordingProvider({
     );
   }
   const elapsed = () => Math.floor(elapsedMs() / 1000);
+  const [moments, setMoments] = useState(0);
+  function clearMoments() {
+    momentList.current = [];
+    setMoments(0);
+  }
+  function markNow() {
+    if (state !== "recording" && state !== "paused") return;
+    momentList.current.push(Math.round(elapsedMs()));
+    setMoments(momentList.current.length);
+  }
+  // ⌘/Ctrl+Shift+Enter: 메모 칸 안에서도 동작하는 유일한 단축키(04 §6.2)
+  const markNowRef = useRef(markNow);
+  markNowRef.current = markNow;
+  useEffect(() => {
+    if (state !== "recording" && state !== "paused") return;
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        event.key === "Enter" &&
+        event.shiftKey &&
+        (event.metaKey || event.ctrlKey) &&
+        !event.isComposing
+      ) {
+        event.preventDefault();
+        markNowRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [state]);
 
   function releaseDevices() {
     stream.current?.getTracks().forEach((track) => {
@@ -202,6 +237,7 @@ export function RecordingProvider({
     setAlert(null);
     setError("");
     setSession(null);
+    clearMoments();
     record.current = null;
     uploaded.current = false;
     linked.current = false;
@@ -360,6 +396,7 @@ export function RecordingProvider({
       setSpeech(emptySpeech());
       setTranscript("");
       captured.current = emptySpeech();
+      clearMoments();
       recognition.current?.dispose();
       recognition.current = null;
       recordingConsent.current = new Date().toISOString();
@@ -498,7 +535,19 @@ export function RecordingProvider({
         );
         uploaded.current = true;
       }
-      const saved = await save("recordings", { ...r, visibility });
+      const marks = momentList.current.length
+        ? momentMarks(
+            transcript,
+            captured.current.segments,
+            momentList.current,
+            r.transcriptMarks,
+          )
+        : [];
+      const saved = await save("recordings", {
+        ...r,
+        visibility,
+        ...(marks.length ? { transcriptMarks: marks } : {}),
+      });
       record.current = saved;
       linked.current = true;
       if (recognitionConsent.current || transcript.trim()) {
@@ -530,6 +579,7 @@ export function RecordingProvider({
       setTranscript("");
       setAlert(null);
       setSession(null);
+      clearMoments();
       toast.success(
         hadText ? t("녹음과 전사문을 저장했어요") : t("녹음을 저장했어요"),
       );
@@ -567,6 +617,8 @@ export function RecordingProvider({
     discard,
     store,
     reconnectSpeech: () => recognition.current?.start(),
+    moments,
+    markNow,
     scope,
   };
   return (
