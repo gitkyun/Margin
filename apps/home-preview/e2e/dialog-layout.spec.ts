@@ -48,9 +48,10 @@ const cases: {
   {
     name: "자료 등록",
     async open(page) {
-      await page.goto(`${await openResearch(page)}/materials`);
+      // IA v2 3a: 글·자료 목록의 [올리기]가 예전 자료 화면의 등록 창을 엽니다.
+      await page.goto(`${await openResearch(page)}/docs`);
       await page
-        .getByRole("button", { name: "자료 등록", exact: true })
+        .getByRole("button", { name: "올리기", exact: true })
         .first()
         .click();
     },
@@ -58,7 +59,7 @@ const cases: {
   {
     name: "폴더 만들기",
     async open(page) {
-      await page.goto(`${await openResearch(page)}/materials`);
+      await page.goto(`${await openResearch(page)}/docs`);
       await page
         .getByRole("button", { name: "폴더 만들기", exact: true })
         .first()

@@ -232,6 +232,8 @@ export interface DocumentRecord extends BaseRecord {
   content: Record<string, unknown>;
   text: string;
   revision: number;
+  /** 글도 폴더에 넣을 수 있어요(IA v2 08 §3.5). */
+  folderId?: ID;
 }
 export interface DocumentVersion extends BaseRecord {
   documentId: ID;
