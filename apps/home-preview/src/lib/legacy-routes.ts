@@ -1,7 +1,7 @@
 import { legacySettingsTarget } from "@/components/settings/settings-sections";
 
 // IA v2 예전 주소 이동(01 §3.3) 가운데 0단계에 옮길 수 있는 것만 둡니다.
-// 새 화면이 아직 없는 것(results·reviews·feedback·tasks/:id·assistant, `new=` 값 바꾸기,
+// 새 화면이 아직 없는 것(results·reviews·assistant, `new=` 값 바꾸기,
 // planning?tab=schedule → meetings?type=poll, plans·recordings 찾아가기)은 그 단계에서 더합니다.
 
 type Rule = (
@@ -38,6 +38,21 @@ const RULES: Record<string, Rule> = {
     params.set("detail", `question:${id}`);
     return build(base, params);
   },
+  // 1단계: 할 일·피드백 한 건은 항목 상세(?detail=)로 엽니다(01 §3.3, 06 §6).
+  // `full=1`은 상세에서 아직 못 하는 일(수정 방법 쓰기·AI 제안)을 하러 예전 화면을 여는 통로입니다.
+  tasks: (base, [id], params) => {
+    if (!id || params.get("full") === "1") return null;
+    params.set("detail", `task:${id}`);
+    return build(`${base}/tasks`, params);
+  },
+  // 피드백 목록은 할 일 화면의 피드백 탭(T1)으로, 한 건은 그 위의 항목 상세로 엽니다.
+  // 미팅 화면(2단계) 전까지는 기록을 찾아가지 않습니다. `new=1`(피드백 입력 창)은 지금 화면에 둡니다.
+  feedback: (base, [id], params) => {
+    if (params.get("full") === "1" || params.get("new") === "1") return null;
+    params.set("view", "feedback");
+    if (id) params.set("detail", `feedback:${id}`);
+    return build(`${base}/tasks`, params);
+  },
   decisions: (base, [id], params) => {
     if (!id) return null;
     params.set("detail", `decision:${id}`);
@@ -71,6 +86,9 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/r/a/folders/f", ""],
   ["/r/a/questions/q", ""],
   ["/r/a/decisions/d", ""],
+  ["/r/a/tasks/t", ""],
+  ["/r/a/feedback/f", ""],
+  ["/r/a/feedback", ""],
   ["/r/a/settings", "?tab=lifecycle"],
   ["/r/a/settings", "?tab=phases"],
   ["/account", ""],

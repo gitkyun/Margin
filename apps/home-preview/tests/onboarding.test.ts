@@ -37,12 +37,16 @@ describe("onboardingMeeting", () => {
       time: null,
     });
   });
-  it("uses today for a meeting that just finished", () => {
+  it("uses today and the current time for a meeting that just finished", () => {
     expect(onboardingMeeting({ kind: "just_finished" }, TODAY)).toEqual({
       title: "지도 미팅",
       date: TODAY,
       time: null,
     });
+    // 지금 시각으로 남겨 홈에서 '지난 미팅 기록 남기기'가 되게 합니다(IA v2 03 §3).
+    expect(
+      onboardingMeeting({ kind: "just_finished" }, TODAY, "15:20"),
+    ).toEqual({ title: "지도 미팅", date: TODAY, time: "15:20" });
   });
   it("creates nothing when the question is skipped or unanswered", () => {
     expect(onboardingMeeting({ kind: "skip" }, TODAY)).toBeNull();
@@ -60,14 +64,14 @@ describe("onboardingLeadLabel", () => {
     ).toBe("미팅 준비하기");
     expect(
       onboardingLeadLabel({ kind: "dated", date: TODAY, time: "" }, TODAY),
-    ).toBe("기록 시작");
+    ).toBe("녹음 시작");
     expect(onboardingLeadLabel({ kind: "just_finished" }, TODAY)).toBe(
-      "기록 시작",
+      "지난 미팅 기록 남기기",
     );
     expect(onboardingLeadLabel({ kind: "undated" }, TODAY)).toBe(
       "미팅 준비하기",
     );
-    expect(onboardingLeadLabel({ kind: "skip" }, TODAY)).toBe("미팅 만들기");
+    expect(onboardingLeadLabel({ kind: "skip" }, TODAY)).toBe("다음 미팅 잡기");
   });
 });
 
