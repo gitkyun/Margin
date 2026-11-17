@@ -18,6 +18,8 @@ import {
 } from "./margin-panel/PanelResizer";
 import { TopBar } from "./shell/TopBar";
 import { SideRail } from "./shell/SideRail";
+import { ItemDetail } from "./item-detail/ItemDetail";
+import { useDetailRef } from "@/lib/item-detail";
 import { MobileTabBar } from "./shell/MobileTabBar";
 import { BottomDock } from "./shell/BottomDock";
 import { useMediaQuery } from "@/lib/use-media-query";
@@ -175,6 +177,8 @@ export function WorkspaceShell({
   const homeLabel = incomingOnly ? t("받은 검토 요청") : t("내 연구");
   useGoShortcuts(research ? researchId : undefined);
   const panel = useMarginPanelHost();
+  // ?detail= 항목 상세(06 §6)는 사이드 창 자리에 덮여 뜹니다. 창이 닫혀 있어도 엽니다.
+  const detail = useDetailRef();
   // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
   const panelRef = useRef(panel);
   panelRef.current = panel;
@@ -263,6 +267,8 @@ export function WorkspaceShell({
       </div>
     );
   const inResearch = !!research && !!researchId;
+  const detailOpen = inResearch && !!detail;
+  const panelShown = !!panel.active || detailOpen;
   return (
     <div
       style={
@@ -273,7 +279,7 @@ export function WorkspaceShell({
           : undefined
       }
       data-panel-side={panelSide}
-      className={`app-shell floating-workspace ia-shell ${inResearch ? "" : "ia-shell-outside"} ${widePanel ? "ia-panel-wide" : ""} ${panel.active ? "margin-panel-open" : ""}`}
+      className={`app-shell floating-workspace ia-shell ${inResearch ? "" : "ia-shell-outside"} ${widePanel ? "ia-panel-wide" : ""} ${panelShown ? "margin-panel-open" : ""}`}
     >
       <a className="skip-link" href="#main-content">
         {t("본문으로 이동")}
@@ -312,7 +318,7 @@ export function WorkspaceShell({
             </span>
           </footer>
         </div>
-        {panel.active && (
+        {panel.active && !detailOpen && (
           <button
             type="button"
             className="margin-panel-backdrop"
@@ -321,7 +327,7 @@ export function WorkspaceShell({
             onClick={panel.active.onClose}
           />
         )}
-        {panel.active && (
+        {panelShown && (
           <PanelResizer
             side={panelSide}
             width={panelWidth}
@@ -335,11 +341,24 @@ export function WorkspaceShell({
         <aside
           id="margin-panel"
           className="margin-panel"
-          aria-label={panel.active?.label ?? t("여백 패널")}
-          hidden={!panel.active}
+          aria-label={
+            detailOpen
+              ? t("항목 상세")
+              : (panel.active?.label ?? t("여백 패널"))
+          }
+          hidden={!panelShown}
           tabIndex={-1}
-          ref={panel.setSlot}
-        />
+        >
+          {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
+          <div
+            className="margin-panel-slot"
+            hidden={detailOpen}
+            ref={panel.setSlot}
+          />
+          {detailOpen && detail && researchId && (
+            <ItemDetail researchId={researchId} detail={detail} />
+          )}
+        </aside>
         {inResearch && (
           <SideRail
             researchId={researchId}

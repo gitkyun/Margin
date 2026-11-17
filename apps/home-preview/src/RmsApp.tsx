@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { t } from "@/lib/i18n";
 import { InviteGate, InviteSignupPage } from "./pages/InvitePages";
 import { admit, finishSocialLogin } from "@/lib/social-login";
@@ -46,6 +47,13 @@ function LegacyRedirect() {
   const location = useLocation();
   const target = legacyRedirect(location.pathname, location.search);
   return <Navigate to={target ?? "/r"} replace />;
+}
+
+/** 예전 주소면 새 주소로 옮기고, 아니면 지금 화면을 그대로 띄웁니다(할 일·피드백 한 건 → 항목 상세). */
+function LegacyOr({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const target = legacyRedirect(location.pathname, location.search);
+  return target ? <Navigate to={target} replace /> : children;
 }
 
 /** 0단계 '글·자료'(`/docs`): 자료 보기(`kind=material`·`folder=`)면 자료 화면, 아니면 글 화면 */
@@ -213,9 +221,20 @@ function WorkspaceRoutes() {
           />
           <Route
             path="/r/:researchId/feedback/:feedbackId?"
-            element={<FeedbackPage />}
+            element={
+              <LegacyOr>
+                <FeedbackPage />
+              </LegacyOr>
+            }
           />
-          <Route path="/r/:researchId/tasks/:taskId?" element={<TasksPage />} />
+          <Route
+            path="/r/:researchId/tasks/:taskId?"
+            element={
+              <LegacyOr>
+                <TasksPage />
+              </LegacyOr>
+            }
+          />
           <Route
             path="/r/:researchId/results/:resultId?"
             element={<ResultsPage />}

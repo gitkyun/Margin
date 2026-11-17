@@ -34,6 +34,10 @@ import {
   seoulToday,
 } from "@/lib/home-meeting";
 import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
+import type { DetailHistoryState } from "@/lib/item-detail";
+
+/** 홈에서 줄을 눌러 연 항목 상세(앱 안에서 연 첫 단계, 02 §4.3) */
+const DETAIL_STATE: DetailHistoryState = { layer: "detail", depth: 1 };
 import { selectHomeAction } from "@/lib/home-action";
 import { startChecklist } from "@/lib/onboarding";
 import {
@@ -472,7 +476,8 @@ export function HomePage() {
                     <Link
                       className={`rh-preparation-item ${task.status === "done" ? "rh-is-complete" : ""}`}
                       key={task.id}
-                      to={`${base}/tasks/${task.id}`}
+                      to={{ search: `?detail=task:${task.id}` }}
+                      state={DETAIL_STATE}
                     >
                       <span className="rh-preparation-check">
                         <Icon
@@ -584,7 +589,8 @@ export function HomePage() {
                     />
                     <Link
                       className="rh-task-copy"
-                      to={`${base}/tasks/${task.id}`}
+                      to={{ search: `?detail=task:${task.id}` }}
+                      state={DETAIL_STATE}
                     >
                       <strong>{task.title}</strong>
                       <span>
