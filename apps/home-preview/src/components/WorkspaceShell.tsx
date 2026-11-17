@@ -10,7 +10,12 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { PanelResizer, usePanelWidth } from "./margin-panel/PanelResizer";
+import {
+  DOCS_PANEL_WIDTH_KEY,
+  PANEL_WIDTH_KEY,
+  PanelResizer,
+  usePanelWidth,
+} from "./margin-panel/PanelResizer";
 import { TopBar } from "./shell/TopBar";
 import { SideRail } from "./shell/SideRail";
 import { MobileTabBar } from "./shell/MobileTabBar";
@@ -135,7 +140,8 @@ function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
 /** 사이드 창이 본문을 미는 최소 폭. 이보다 좁으면 본문 위에 겹쳐 뜹니다(IA v2 02 §1.2). */
 const OVERLAY_PANEL_QUERY = queryDown("lg");
 /** 사이드 창이 넓게(440) 열리는 화면: 글 편집, 자료 보기(02 §1.1) */
-const WIDE_PANEL_ROUTE = /^\/r\/[^/]+\/(writing|materials)\/[^/]+/;
+const WIDE_PANEL_ROUTE =
+  /^\/r\/[^/]+\/(writing\/[^/]+|materials\/[^/]+|docs\/[wm]\/[^/]+)/;
 
 export function WorkspaceShell({
   children,
@@ -152,7 +158,10 @@ export function WorkspaceShell({
   const overlayPanel = useMediaQuery(OVERLAY_PANEL_QUERY);
   const panelSide = usePanelSide();
   const updates = unreadReviewNotifications(data, user, researchId);
-  const [panelWidth, setPanelWidth] = usePanelWidth();
+  const widePanel = WIDE_PANEL_ROUTE.test(location.pathname);
+  const [panelWidth, setPanelWidth] = usePanelWidth(
+    widePanel ? DOCS_PANEL_WIDTH_KEY : PANEL_WIDTH_KEY,
+  );
   const [notificationFilter, setNotificationFilter] = useState("unread");
   const events = data.events.filter(
     (e) =>
@@ -254,7 +263,6 @@ export function WorkspaceShell({
       </div>
     );
   const inResearch = !!research && !!researchId;
-  const widePanel = WIDE_PANEL_ROUTE.test(location.pathname);
   return (
     <div
       style={
