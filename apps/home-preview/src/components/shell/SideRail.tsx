@@ -1,4 +1,10 @@
-import { useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  type FocusEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { Link, useLocation } from "react-router-dom";
 import { t } from "@/lib/i18n";
 import { Icon } from "../icons";
@@ -25,17 +31,34 @@ export function SideRail({ researchId, offered, active }: SideRailProps) {
   const ref = useRef<HTMLDivElement>(null);
   const assistantPath = researchId ? `/r/${researchId}/assistant` : undefined;
 
+  // 초점 하나만 Tab 순서에 둡니다(02 §4.1). 마지막으로 초점을 받은 버튼을 기억하고,
+  // 그 버튼이 사라지면 첫 버튼으로 돌아갑니다.
+  const current = useRef<HTMLElement | null>(null);
+  const items = () =>
+    Array.from(
+      ref.current?.querySelectorAll<HTMLElement>(".ia-rail-item") ?? [],
+    );
+  const rove = (target: HTMLElement | null) => {
+    const list = items();
+    const keep = target && list.includes(target) ? target : (list[0] ?? null);
+    current.current = keep;
+    for (const item of list) item.tabIndex = item === keep ? 0 : -1;
+  };
+  useLayoutEffect(() => rove(current.current));
+  const onFocus = (event: FocusEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).classList.contains("ia-rail-item"))
+      rove(event.target as HTMLElement);
+  };
+
   // 세로 툴바: 위·아래 화살표로 버튼 사이를 옮깁니다(02 §4.1).
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
-    const items = Array.from(
-      ref.current?.querySelectorAll<HTMLElement>(".ia-rail-item") ?? [],
-    );
-    const index = items.indexOf(document.activeElement as HTMLElement);
+    const list = items();
+    const index = list.indexOf(document.activeElement as HTMLElement);
     if (index < 0) return;
     event.preventDefault();
     const step = event.key === "ArrowDown" ? 1 : -1;
-    items[(index + step + items.length) % items.length]?.focus();
+    list[(index + step + list.length) % list.length]?.focus();
   };
 
   return (
@@ -46,6 +69,7 @@ export function SideRail({ researchId, offered, active }: SideRailProps) {
       aria-orientation="vertical"
       aria-label={t("옆 창 열기")}
       onKeyDown={onKeyDown}
+      onFocus={onFocus}
     >
       {assistantPath && (
         <RailLink
