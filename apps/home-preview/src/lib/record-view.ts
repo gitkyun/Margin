@@ -106,15 +106,14 @@ export function recordMode(
   urlMode?: string | null,
 ): RecordMode {
   if (recordingHere) return "recording";
+  // 서면 피드백에는 준비 내용과 녹음이 없습니다(04 §5.5).
+  if (meeting.recordType === "written") return "recorded";
   const finished =
-    meeting.recordType === "written" ||
-    meeting.status === "recorded" ||
-    meeting.status === "cancelled";
+    meeting.status === "recorded" || meeting.status === "cancelled";
   if (urlMode === "prepare") return "prepare";
   if (urlMode === "record" && !finished) return "drafting";
   if (meeting.status === "recording") return "unfinished";
-  if (meeting.recordType === "written" || meeting.status === "recorded")
-    return "recorded";
+  if (meeting.status === "recorded") return "recorded";
   if (meeting.status === "cancelled") return "cancelled";
   if (meeting.memo.trim()) return "drafting";
   return "prepare";
