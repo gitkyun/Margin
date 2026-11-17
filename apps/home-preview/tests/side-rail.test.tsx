@@ -36,4 +36,24 @@ describe("아이콘 줄 키보드(02 §4.1)", () => {
     expect(document.activeElement).toBe(list[2]);
     expect(list.map((item) => item.tabIndex)).toEqual([-1, -1, 0]);
   });
+
+  it("실제 탭(할 일·결정·질문)은 눌린 상태를 알리고 같은 탭을 다시 누르면 닫는다", () => {
+    const opened: string[] = [];
+    render(
+      <MemoryRouter initialEntries={["/r/a"]}>
+        <SideRail
+          researchId="a"
+          openTab="log"
+          onTab={(tab) => opened.push(tab)}
+        />
+      </MemoryRouter>,
+    );
+    const tasks = screen.getByRole("button", { name: "할 일" });
+    const log = screen.getByRole("button", { name: "결정·질문" });
+    expect(tasks.getAttribute("aria-pressed")).toBe("false");
+    expect(log.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(tasks);
+    fireEvent.click(log);
+    expect(opened).toEqual(["tasks", "log"]);
+  });
 });

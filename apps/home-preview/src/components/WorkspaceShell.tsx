@@ -20,6 +20,7 @@ import { TopBar } from "./shell/TopBar";
 import { SideRail } from "./shell/SideRail";
 import { ItemDetail } from "./item-detail/ItemDetail";
 import { TasksPanel } from "./tasks/TasksPanel";
+import { LogPanel } from "./log/LogPanel";
 import { useDetailRef } from "@/lib/item-detail";
 import { MobileTabBar } from "./shell/MobileTabBar";
 import { BottomDock } from "./shell/BottomDock";
@@ -181,7 +182,7 @@ export function WorkspaceShell({
   // ?detail= 항목 상세(06 §6)는 사이드 창 자리에 덮여 뜹니다. 창이 닫혀 있어도 엽니다.
   const detail = useDetailRef();
   // 아이콘 줄의 실제 탭(1단계: 할 일 창 P2). 화면이 보낸 임시 탭과는 한 번에 하나만 엽니다.
-  const [railTab, setRailTab] = useState<"tasks" | null>(null);
+  const [railTab, setRailTab] = useState<"tasks" | "log" | null>(null);
   // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
   const panelRef = useRef(panel);
   panelRef.current = panel;
@@ -279,7 +280,9 @@ export function WorkspaceShell({
   const inResearch = !!research && !!researchId;
   const detailOpen = inResearch && !!detail;
   const tasksOpen = inResearch && railTab === "tasks";
-  const panelShown = !!panel.active || detailOpen || tasksOpen;
+  const logOpen = inResearch && railTab === "log";
+  const railOpen = tasksOpen || logOpen;
+  const panelShown = !!panel.active || detailOpen || railOpen;
   return (
     <div
       style={
@@ -363,14 +366,25 @@ export function WorkspaceShell({
           {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
           <div
             className="margin-panel-slot"
-            hidden={detailOpen || tasksOpen}
+            hidden={detailOpen || railOpen}
             ref={panel.setSlot}
           />
-          {tasksOpen && !detailOpen && researchId && (
-            <TasksPanel
-              researchId={researchId}
-              onClose={() => setRailTab(null)}
-            />
+          {/* 실제 탭은 상세가 덮여 있어도 살려 두고 숨깁니다(쓰던 글·스크롤 유지, 02 §4.2). */}
+          {tasksOpen && researchId && (
+            <div hidden={detailOpen}>
+              <TasksPanel
+                researchId={researchId}
+                onClose={() => setRailTab(null)}
+              />
+            </div>
+          )}
+          {logOpen && researchId && (
+            <div hidden={detailOpen}>
+              <LogPanel
+                researchId={researchId}
+                onClose={() => setRailTab(null)}
+              />
+            </div>
           )}
           {detailOpen && detail && researchId && (
             <ItemDetail researchId={researchId} detail={detail} />
@@ -380,15 +394,15 @@ export function WorkspaceShell({
           <SideRail
             researchId={researchId}
             offered={panel.offered}
-            active={tasksOpen ? null : panel.active}
-            tasksOpen={tasksOpen}
-            onTasks={() => {
-              if (tasksOpen) {
+            active={railOpen ? null : panel.active}
+            openTab={railTab}
+            onTab={(tab) => {
+              if (railTab === tab) {
                 setRailTab(null);
                 return;
               }
               panel.active?.onClose();
-              setRailTab("tasks");
+              setRailTab(tab);
             }}
           />
         )}
