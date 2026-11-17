@@ -33,6 +33,8 @@ const dictionary: Record<string, string> = {
   "질문을 만들었어요.": "質問を作成しました。",
   "할 일을 만들었어요.": "タスクを作成しました。",
   "형광펜은 {count}개까지 칠할 수 있어요.": "マーカーは{count}個まで引けます。",
+  "원문 {number}번": "原文{number}番",
+  "원문 {number}번 항목 열기": "原文{number}番の項目を開く",
 };
 
 export default dictionary;
