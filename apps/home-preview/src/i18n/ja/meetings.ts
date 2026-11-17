@@ -420,6 +420,10 @@ const dictionary: Record<string, string> = {
   많음: "多い",
   "결정 기록 타임라인": "決定記録のタイムライン",
   "이후 바뀐 결정": "その後変更された決定",
+  "지금 표시": "今をマーク",
+  "표시 {count}개": "マーク{count}件",
+  "지금 표시 · 표시 {count}개": "今をマーク・マーク{count}件",
+  "지금 표시 (⌘/Ctrl+Shift+Enter)": "今をマーク（⌘/Ctrl+Shift+Enter）",
 };
 
 export default dictionary;

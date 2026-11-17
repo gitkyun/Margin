@@ -83,6 +83,25 @@ export function MiniRecorder() {
           </button>
           <button
             type="button"
+            className="mini-recorder-button"
+            disabled={state === "starting"}
+            aria-label={
+              recorder.moments
+                ? t("지금 표시 · 표시 {count}개", { count: recorder.moments })
+                : t("지금 표시")
+            }
+            title={t("지금 표시 (⌘/Ctrl+Shift+Enter)")}
+            onClick={recorder.markNow}
+          >
+            <Icon name="flag" size={16} />
+            {recorder.moments > 0 && (
+              <span className="mini-recorder-count" aria-hidden>
+                {recorder.moments}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
             className="mini-recorder-button mini-recorder-stop"
             disabled={state === "starting"}
             aria-label={t("녹음 마치기")}
