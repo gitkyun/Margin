@@ -16,8 +16,8 @@ import { useWorkspace } from "@/lib/workspace";
 import { seoulToday } from "@/lib/home-meeting";
 import { recordBase, type BaseRecord, type Meeting } from "@/lib/domain";
 
-/** 서면 피드백 내용 한도(IA v2 04 §7.2) */
-export const WRITTEN_MAX = 50_000;
+import { WRITTEN_MAX } from "@/lib/written-limits";
+export { WRITTEN_MAX };
 
 type Source = NonNullable<Meeting["sourceLabel"]>;
 const SOURCES: Source[] = ["kakao", "email", "doc_comment", "note", "other"];
@@ -49,10 +49,13 @@ export function WrittenFeedbackDialog({
   researchId,
   open,
   onOpenChange,
+  imported,
 }: {
   researchId: string;
   open: boolean;
   onOpenChange(open: boolean): void;
+  /** 파일에서 가져온 글(04 §7.3). 있으면 내용과 '파일'을 채워 엽니다. */
+  imported?: { text: string; fileName: string } | null;
 }) {
   const { data, save } = useWorkspace();
   const navigate = useNavigate();
@@ -79,11 +82,11 @@ export function WrittenFeedbackDialog({
     setDate(today);
     setTitle(writtenTitle(today));
     setTitleTouched(false);
-    setSource("kakao");
-    setBody("");
+    setSource(imported ? "file" : "kakao");
+    setBody(imported?.text ?? "");
     setVisibility("private");
     form.setError(null);
-  }, [open, researchId]);
+  }, [open, researchId, imported]);
 
   const tooLong = body.length > WRITTEN_MAX;
 
@@ -107,6 +110,9 @@ export function WrittenFeedbackDialog({
         ...base.current,
         recordType: "written",
         sourceLabel: source,
+        ...(source === "file" && imported
+          ? { sourceFileName: imported.fileName.slice(0, 200) }
+          : {}),
         title: title.trim().slice(0, 200),
         date: date || seoulToday(),
         time: null,
@@ -163,11 +169,13 @@ export function WrittenFeedbackDialog({
                 value={source}
                 onChange={(event) => setSource(event.target.value as Source)}
               >
-                {SOURCES.map((value) => (
-                  <option key={value} value={value}>
-                    {sourceLabel(value)}
-                  </option>
-                ))}
+                {(imported ? [...SOURCES, "file" as const] : SOURCES).map(
+                  (value) => (
+                    <option key={value} value={value}>
+                      {sourceLabel(value)}
+                    </option>
+                  ),
+                )}
               </select>
             </label>
           </div>

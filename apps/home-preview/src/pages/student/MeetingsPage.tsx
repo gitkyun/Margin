@@ -5,6 +5,7 @@ import { RecordHeader } from "@/components/meetings/RecordHeader";
 import { PrepareSide, RecordSide } from "@/components/meetings/RecordSide";
 import { WrittenFeedbackDialog } from "@/components/meetings/WrittenFeedbackDialog";
 import { recordItems, recordMode } from "@/lib/record-view";
+import { readImportFile } from "@/lib/import-file";
 import {
   memoPieces,
   sourceAnchors,
@@ -100,12 +101,46 @@ export function MeetingsPage() {
   const [time, setTime] = useState("");
   const form = useSaving();
   const [writing, setWriting] = useState(false);
+  const [imported, setImported] = useState<{
+    text: string;
+    fileName: string;
+  } | null>(null);
+  /** 파일에서 가져오기(04 §7.3): 읽으면 서면 피드백 창을 채워 엽니다. */
+  async function importFile(file: File) {
+    const result = await readImportFile(file);
+    if (result.ok) {
+      setImported({ text: result.text, fileName: result.fileName });
+      setWriting(true);
+      return;
+    }
+    if (result.reason === "pdf")
+      toast.info(
+        t("PDF는 글·자료에 올린 뒤 연구 도우미에게 읽게 할 수 있어요."),
+        {
+          action: {
+            label: t("자료로 올리기"),
+            onClick: () => navigate(`/r/${researchId}/docs?kind=material`),
+          },
+        },
+      );
+    else
+      toast.error(
+        {
+          type: t("TXT, MD 파일만 가져올 수 있어요."),
+          unreadable: t(
+            "파일을 읽지 못했어요. UTF-8로 저장한 TXT·MD 파일인지 확인해 주세요.",
+          ),
+          too_long: t("파일이 50,000자를 넘어요. 나눠서 넣어 주세요."),
+        }[result.reason],
+      );
+  }
   // 서면 피드백 붙여넣기(04 §7.2): `?new=written`, 홈의 `?new=1&intent=written`
   useEffect(() => {
     const written =
       pageParams.get("new") === "written" ||
       (pageParams.get("new") === "1" && pageParams.get("intent") === "written");
     if (!written) return;
+    setImported(null);
     setWriting(true);
     const nextParams = new URLSearchParams(pageParams);
     nextParams.delete("new");
@@ -164,17 +199,29 @@ export function MeetingsPage() {
     });
   }
   return (
-    <div className="meetings-frame">
+    <div
+      className="meetings-frame"
+      onDragOver={(event) => {
+        if (event.dataTransfer.types.includes("Files")) event.preventDefault();
+      }}
+      onDrop={(event) => {
+        const file = event.dataTransfer.files[0];
+        if (!file) return;
+        event.preventDefault();
+        void importFile(file);
+      }}
+    >
       <WrittenFeedbackDialog
         researchId={researchId}
         open={writing}
         onOpenChange={setWriting}
+        imported={imported}
       />
       <div
         className="meetings-layout"
         data-has-record={meetingId ? "" : undefined}
       >
-        <RecordList />
+        <RecordList onImport={(file) => void importFile(file)} />
         <div className="meetings-record">
           {meetingId && <RecordListToggle />}
           {meetingId ? (

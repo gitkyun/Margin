@@ -1,4 +1,5 @@
 import { t } from "@/lib/i18n";
+import { useRef } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
@@ -68,7 +69,13 @@ function groupLabel(group: RecordGroup, today: string): string {
  * 미팅 화면의 기록 목록(IA v2 04 §2). 미팅·서면 피드백·검토 요청·시간 조율이 한 목록에 모입니다.
  * 묶음과 순서는 `lib/record-view.ts`(08 §4.2).
  */
-export function RecordList() {
+export function RecordList({
+  onImport,
+}: {
+  /** 파일에서 가져오기(04 §7.3). 고른 파일을 미팅 화면에 넘깁니다. */
+  onImport?(file: File): void;
+} = {}) {
+  const fileInput = useRef<HTMLInputElement>(null);
   const { researchId = "", meetingId } = useParams();
   const { data, user, save, remove } = useWorkspace();
   const recorder = useOptionalRecorder();
@@ -173,6 +180,12 @@ export function RecordList() {
               <Icon name="file" size={16} />
               {t("서면 피드백 붙여넣기")}
             </DropdownMenuItem>
+            {onImport && (
+              <DropdownMenuItem onSelect={() => fileInput.current?.click()}>
+                <Icon name="upload" size={16} />
+                {t("파일에서 가져오기")}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onSelect={() => navigate(`${base}/meetings?new=1`)}
             >
@@ -193,6 +206,17 @@ export function RecordList() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <input
+          ref={fileInput}
+          type="file"
+          accept=".txt,.md,text/plain,text/markdown"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) onImport?.(file);
+          }}
+        />
         <input
           className="record-list-search"
           type="search"
