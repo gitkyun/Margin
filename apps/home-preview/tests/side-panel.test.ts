@@ -14,6 +14,8 @@ describe("사이드 창 기억(IA v2 02 §4.5)", () => {
   it("1200 이상에서 고른 열림·탭을 기억한다", () => {
     rememberPanel(1280, "log");
     expect(initialPanelTab(1280)).toBe("log");
+    rememberPanel(1280, "assistant");
+    expect(initialPanelTab(1280)).toBe("assistant");
     rememberPanel(1440, null);
     expect(initialPanelTab(1440)).toBeNull();
   });

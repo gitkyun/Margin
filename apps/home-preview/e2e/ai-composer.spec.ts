@@ -53,7 +53,13 @@ const credits = {
   },
 };
 
-async function open(page: Page, width = 1440, height = 900, delayMs = 0) {
+async function open(
+  page: Page,
+  width = 1440,
+  height = 900,
+  delayMs = 0,
+  path = `/r/${RESEARCH_ID}/assistant`,
+) {
   await page.setViewportSize({ width, height });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message.slice(0, 160)));
@@ -81,8 +87,9 @@ async function open(page: Page, width = 1440, height = 900, delayMs = 0) {
       model: (body as { model?: string }).model,
     };
   });
-  await page.goto(`/r/${RESEARCH_ID}/assistant`);
-  await expect(page.locator("[data-kokonut-composer]")).toBeVisible();
+  await page.goto(path);
+  if (path.endsWith("/assistant"))
+    await expect(page.locator("[data-kokonut-composer]")).toBeVisible();
   return { errors, server };
 }
 const shot = async (page: Page, name: string) => {
@@ -144,6 +151,32 @@ test("Enter로 보내면 비고 중단하면 질문이 복원된다", async ({ p
     .getByRole("button", { name: "답변 중단", exact: true })
     .click();
   await expect(input(page)).toHaveValue("이 연구의 핵심만 알려 줘");
+  expect(errors).toEqual([]);
+});
+
+test("아이콘 줄의 연구 도우미는 사이드 창으로 열고, 보내기를 눌러야 화면으로 간다", async ({
+  page,
+}) => {
+  const { errors } = await open(page, 1440, 900, 0, `/r/${RESEARCH_ID}`);
+  const rail = page.getByRole("toolbar", { name: "옆 창 열기" });
+  const button = rail.getByRole("button", { name: "연구 도우미" });
+  await button.click();
+  await expect(button).toHaveAttribute("aria-pressed", "true");
+  const panel = page.locator(".assistant-side-panel");
+  await expect(panel).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}$`));
+  await shot(page, "rail-assistant-panel");
+
+  await panel
+    .getByRole("textbox", { name: "연구 도우미에게 물어보기" })
+    .fill("이 연구의 핵심만 알려 줘");
+  await panel.getByRole("button", { name: "보내기" }).click();
+  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}/assistant$`));
+  await expect(panel).toBeHidden();
+  await expect(page.getByText("핵심만").first()).toBeVisible();
+  await expect(
+    page.getByText("이 연구의 핵심만 알려 줘").first(),
+  ).toBeVisible();
   expect(errors).toEqual([]);
 });
 

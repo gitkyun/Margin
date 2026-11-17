@@ -5,7 +5,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { t } from "@/lib/i18n";
 import { Icon } from "../icons";
 import type { MarginPanelEntry } from "../margin-panel/MarginPanel";
@@ -13,21 +13,21 @@ import { useOpenSettings } from "../settings/SettingsDialog";
 
 const FEEDBACK_MAIL = "mailto:admin@margin.com";
 
-export type RailTab = "tasks" | "log";
+export type RailTab = "assistant" | "tasks" | "log";
 
 export interface SideRailProps {
   researchId?: string;
   /** 화면이 보낸 패널(0단계 임시 탭, 02 §4.6). 열 수 있는 것이 없으면 없음. */
   offered?: MarginPanelEntry | null;
   active?: MarginPanelEntry | null;
-  /** 열린 실제 탭(1단계부터: 할 일 P2, 결정·질문 P3)과 여닫기 */
+  /** 열린 실제 탭(연구 도우미, 할 일 P2, 결정·질문 P3)과 여닫기 */
   openTab?: RailTab | null;
   onTab?(tab: RailTab): void;
 }
 
 /**
  * IA v2 아이콘 줄(02 §4.1, D14). 아이콘 아래에 이름을 글자로 둡니다.
- * 0단계에는 사이드 창 탭 내용이 아직 없어 연구 도우미는 지금 화면으로 가는 링크이고,
+ * 연구 도우미도 다른 탭처럼 사이드 창을 엽니다(화면 이동 없음). 전체 화면은 창 안에서 엽니다.
  * 화면이 패널을 보내면 '이 화면' 임시 탭을 둡니다.
  */
 export function SideRail({
@@ -40,7 +40,6 @@ export function SideRail({
   const location = useLocation();
   const openSettings = useOpenSettings();
   const ref = useRef<HTMLDivElement>(null);
-  const assistantPath = researchId ? `/r/${researchId}/assistant` : undefined;
 
   // 초점 하나만 Tab 순서에 둡니다(02 §4.1). 마지막으로 초점을 받은 버튼을 기억하고,
   // 그 버튼이 사라지면 첫 버튼으로 돌아갑니다.
@@ -82,16 +81,14 @@ export function SideRail({
       onKeyDown={onKeyDown}
       onFocus={onFocus}
     >
-      {assistantPath && (
-        <RailLink
-          to={assistantPath}
-          icon="sparkles"
-          label={t("연구 도우미")}
-          pressed={location.pathname.startsWith(assistantPath)}
-        />
-      )}
       {onTab && (
         <>
+          <RailButton
+            icon="sparkles"
+            label={t("연구 도우미")}
+            pressed={openTab === "assistant"}
+            onClick={() => onTab("assistant")}
+          />
           <RailButton
             icon="tasks"
             label={t("할 일")}
@@ -139,28 +136,6 @@ function RailFace({ icon, label }: { icon: string; label: string }): ReactNode {
       </span>
       <span className="ia-rail-label">{label}</span>
     </>
-  );
-}
-
-function RailLink({
-  to,
-  icon,
-  label,
-  pressed,
-}: {
-  to: string;
-  icon: string;
-  label: string;
-  pressed: boolean;
-}) {
-  return (
-    <Link
-      to={to}
-      className={`ia-rail-item ${pressed ? "on" : ""}`}
-      aria-current={pressed ? "page" : undefined}
-    >
-      <RailFace icon={icon} label={label} />
-    </Link>
   );
 }
 

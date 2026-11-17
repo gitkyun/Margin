@@ -1,9 +1,9 @@
 /** 사이드 창 열림·마지막 탭 기억(IA v2 02 §4.5). 이 브라우저에만 둡니다. */
-export type SidePanelTab = "tasks" | "log";
+export type SidePanelTab = "assistant" | "tasks" | "log";
 
 const OPEN_KEY = "margin-panel-open";
 const TAB_KEY = "margin-panel-tab";
-const TABS: readonly SidePanelTab[] = ["tasks", "log"];
+const TABS: readonly SidePanelTab[] = ["assistant", "tasks", "log"];
 
 /** 창이 본문을 미는 폭. 그보다 좁으면 열림을 읽지도 쓰지도 않습니다(D15). */
 export const PUSH_MIN_WIDTH = 1200;
@@ -28,7 +28,7 @@ function write(key: string, value: string): void {
 
 /**
  * 처음 열 탭. 1200px 미만이면 늘 닫힘. 그 이상이면 기억한 열림, 기억이 없으면 1440px 이상일 때 열림.
- * 탭은 마지막 탭, 없으면 할 일(연구 도우미 탭은 4단계에 생김).
+ * 탭은 마지막 탭, 없으면 할 일.
  */
 export function initialPanelTab(width: number): SidePanelTab | null {
   if (width < PUSH_MIN_WIDTH) return null;
