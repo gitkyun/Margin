@@ -9,7 +9,8 @@
     align-items: start;
     gap: var(--spacing-24);
   }
-  @container (max-width: 863px) {
+  /* 본문 최소 400 + 오른쪽 열 340 + 간격 24(04 §1). 그보다 좁으면 한 열. */
+  @container (max-width: 763px) {
     .record-with-side {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -161,5 +162,15 @@
     white-space: pre-wrap;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+  }
+  /* 준비 쪽 본문이 좁으면(오른쪽 열이 붙은 판) 할 일·자료 두 칸을 한 칸으로 쌓습니다.
+     한국어 제목이 한 글자씩 줄바꿈되지 않게 컨테이너 폭으로 판단합니다. */
+  .record-with-side > .meeting-preparation {
+    container-type: inline-size;
+  }
+  @container (max-width: 639px) {
+    .preparation-columns {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 }

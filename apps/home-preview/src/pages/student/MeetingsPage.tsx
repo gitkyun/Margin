@@ -1,4 +1,5 @@
 import { RecordList } from "@/components/meetings/RecordList";
+import { RecordListToggle } from "@/components/meetings/RecordListToggle";
 import { RecordHeader } from "@/components/meetings/RecordHeader";
 import { PrepareSide, RecordSide } from "@/components/meetings/RecordSide";
 import { WrittenFeedbackDialog } from "@/components/meetings/WrittenFeedbackDialog";
@@ -161,6 +162,7 @@ export function MeetingsPage() {
       >
         <RecordList />
         <div className="meetings-record">
+          {meetingId && <RecordListToggle />}
           {meetingId ? (
             current ? (
               <MeetingDetail key={current.id} meeting={current} />
