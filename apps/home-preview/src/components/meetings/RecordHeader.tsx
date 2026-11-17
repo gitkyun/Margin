@@ -97,9 +97,12 @@ export function RecordHeader({
     if (ok) await update({ status: "cancelled" }, t("미팅을 취소했어요."));
   }
 
-  const when = meeting.date
-    ? `${formatDate(meeting.date)}${meeting.time ? ` ${formatClock(meeting.time)}` : ""}`
-    : t("날짜 미정");
+  const when =
+    written && meeting.date
+      ? t("{date} 받음", { date: formatDate(meeting.date) })
+      : meeting.date
+        ? `${formatDate(meeting.date)}${meeting.time ? ` ${formatClock(meeting.time)}` : ""}`
+        : t("날짜 미정");
   const badge = written
     ? t("서면 피드백 · {source}", {
         source: SOURCE_LABELS[meeting.sourceLabel ?? "other"] ?? "",

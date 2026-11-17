@@ -105,6 +105,9 @@ describe("기록 계산(IA v2 08 §4)", () => {
       "recorded",
     );
     expect(recordMode(m({}), false, "record")).toBe("drafting");
+    expect(recordMode(m({ recordType: "written" }), false, "prepare")).toBe(
+      "recorded",
+    );
   });
 
   it("§4.2 지금 → 예정(가까운 순) → 지난 기록(월별 최신순), 취소는 켤 때만", () => {

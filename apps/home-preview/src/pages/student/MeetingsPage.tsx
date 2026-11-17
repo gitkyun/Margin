@@ -1,5 +1,6 @@
 import { RecordList } from "@/components/meetings/RecordList";
 import { RecordHeader } from "@/components/meetings/RecordHeader";
+import { WrittenFeedbackDialog } from "@/components/meetings/WrittenFeedbackDialog";
 import { recordMode } from "@/lib/record-view";
 import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { t } from "@/lib/i18n";
@@ -82,8 +83,22 @@ export function MeetingsPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const form = useSaving();
+  const [writing, setWriting] = useState(false);
+  // 서면 피드백 붙여넣기(04 §7.2): `?new=written`, 홈의 `?new=1&intent=written`
+  useEffect(() => {
+    const written =
+      pageParams.get("new") === "written" ||
+      (pageParams.get("new") === "1" && pageParams.get("intent") === "written");
+    if (!written) return;
+    setWriting(true);
+    const nextParams = new URLSearchParams(pageParams);
+    nextParams.delete("new");
+    nextParams.delete("intent");
+    setPageParams(nextParams, { replace: true });
+  }, [pageParams]);
   useEffect(() => {
     if (meetingId || pageParams.get("new") !== "1") return;
+    if (pageParams.get("intent") === "written") return;
     openCreate();
     if (pageParams.get("date")) setDate(pageParams.get("date")!);
     const nextParams = new URLSearchParams(pageParams);
@@ -134,6 +149,11 @@ export function MeetingsPage() {
   }
   return (
     <div className="meetings-frame">
+      <WrittenFeedbackDialog
+        researchId={researchId}
+        open={writing}
+        onOpenChange={setWriting}
+      />
       <div
         className="meetings-layout"
         data-has-record={meetingId ? "" : undefined}
@@ -235,6 +255,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       ? params.get("tab")
       : null);
   const viewMode = recordMode(meeting, recordingHere, urlMode);
+  const written = meeting.recordType === "written";
   const tab =
     params.get("tab") === "questions"
       ? "questions"
@@ -836,7 +857,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         value={tab}
         onChange={(value) => void changeTab(value)}
         options={[
-          { value: "prepare", label: t("준비") },
+          ...(written ? [] : [{ value: "prepare", label: t("준비") }]),
           { value: "record", label: t("기록") },
           {
             value: "questions",
@@ -1030,27 +1051,30 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       {
         <div hidden={tab !== "record"} className="record-layout">
           <section id="meeting-recording" className="surface memo-surface">
-            <RecordingPanel
-              researchId={meeting.researchId}
-              meetingId={meeting.id}
-              onAppend={(text) => {
-                if ((draftMemo.current + text).length > 50000)
-                  throw new Error(
-                    t(
-                      "미팅 메모가 50,000자를 넘게 돼서 전사문을 추가하지 않았어요. 필요한 부분만 복사해 붙여 넣어 주세요.",
-                    ),
-                  );
-                setMemo(draftMemo.current + text);
-              }}
-              onPick={(pick: TranscriptPick) =>
-                openEntry(pick.kind, undefined, {
-                  text: pick.text,
-                  source: pick.source,
-                })
-              }
-            />
+            {/* 서면 피드백 기록에는 녹음·전사가 없습니다(04 §5.5). */}
+            {!written && (
+              <RecordingPanel
+                researchId={meeting.researchId}
+                meetingId={meeting.id}
+                onAppend={(text) => {
+                  if ((draftMemo.current + text).length > 50000)
+                    throw new Error(
+                      t(
+                        "미팅 메모가 50,000자를 넘게 돼서 전사문을 추가하지 않았어요. 필요한 부분만 복사해 붙여 넣어 주세요.",
+                      ),
+                    );
+                  setMemo(draftMemo.current + text);
+                }}
+                onPick={(pick: TranscriptPick) =>
+                  openEntry(pick.kind, undefined, {
+                    text: pick.text,
+                    source: pick.source,
+                  })
+                }
+              />
+            )}
             <div className="section-heading">
-              <h2>{t("미팅 원문 메모")}</h2>
+              <h2>{written ? t("받은 서면 피드백") : t("미팅 원문 메모")}</h2>
               <span role="status" className={`save-state ${memoState}`}>
                 {(memoTouched || memoState === "error") && (
                   <>
@@ -1251,15 +1275,20 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                 value === "assistant" ? void openAI() : setPanelTab("prepared")
               }
               tabs={[
-                {
-                  value: "prepared",
-                  label: t("준비"),
-                  count: preparedQuestions.length + linkedVersions.length,
-                },
+                // 서면 피드백에는 '준비한 것'이 없습니다(04 §5.5).
+                ...(written
+                  ? []
+                  : [
+                      {
+                        value: "prepared",
+                        label: t("준비"),
+                        count: preparedQuestions.length + linkedVersions.length,
+                      },
+                    ]),
                 { value: "assistant", label: t("연구 도우미") },
               ]}
             >
-              {panelTab === "prepared" && (
+              {panelTab === "prepared" && !written && (
                 <div className="panel-frame-body">
                   <h3>{t("이번 미팅에서 보여줄 결과")}</h3>
                   <p className="meeting-panel-goal">

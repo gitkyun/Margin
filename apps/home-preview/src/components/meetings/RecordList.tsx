@@ -136,6 +136,12 @@ export function RecordList() {
               {t("녹음 시작")}
             </DropdownMenuItem>
             <DropdownMenuItem
+              onSelect={() => navigate(`${base}/meetings?new=written`)}
+            >
+              <Icon name="file" size={16} />
+              {t("서면 피드백 붙여넣기")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
               onSelect={() => navigate(`${base}/meetings?new=1`)}
             >
               <Icon name="calendar" size={16} />
