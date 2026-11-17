@@ -164,3 +164,22 @@ test("일정 단계는 키보드로 순서를 저장하고 편집·현재 단계
   }
   expect(errors).toEqual([]);
 });
+
+test("연결이 끊기면 상단 띠 하나만 연결 끊김으로 바뀐다", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/r");
+  await page.getByRole("link", { name: "연구 설정" }).first().click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".preview-banner")).toHaveCount(1);
+  await context.setOffline(true);
+  await expect(
+    page.getByText("인터넷 연결이 끊겼어요. 연결되면 다시 저장해 주세요."),
+  ).toBeVisible();
+  await expect(page.locator(".preview-banner")).toHaveCount(1);
+  await context.setOffline(false);
+  await expect(
+    page.getByText("인터넷 연결이 끊겼어요.", { exact: false }),
+  ).toHaveCount(0);
+});

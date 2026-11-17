@@ -16,6 +16,7 @@ import { SideRail } from "./shell/SideRail";
 import { MobileTabBar } from "./shell/MobileTabBar";
 import { BottomDock } from "./shell/BottomDock";
 import { useMediaQuery } from "@/lib/use-media-query";
+import { usePanelSide } from "@/lib/panel-side";
 import "./shell/shell.css";
 import {
   Link,
@@ -24,7 +25,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { Suspense } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { Icon } from "./icons";
 import { CommandPalette } from "./CommandPalette";
@@ -149,6 +150,7 @@ export function WorkspaceShell({
     [shortcutsOpen, setShortcutsOpen] = useState(false),
     [notifications, setNotifications] = useState(false);
   const overlayPanel = useMediaQuery(OVERLAY_PANEL_QUERY);
+  const panelSide = usePanelSide();
   const updates = unreadReviewNotifications(data, user, researchId);
   const [panelWidth, setPanelWidth] = usePanelWidth();
   const [notificationFilter, setNotificationFilter] = useState("unread");
@@ -262,6 +264,7 @@ export function WorkspaceShell({
             } as CSSProperties)
           : undefined
       }
+      data-panel-side={panelSide}
       className={`app-shell floating-workspace ia-shell ${inResearch ? "" : "ia-shell-outside"} ${widePanel ? "ia-panel-wide" : ""} ${panel.active ? "margin-panel-open" : ""}`}
     >
       <a className="skip-link" href="#main-content">
@@ -312,6 +315,7 @@ export function WorkspaceShell({
         )}
         {panel.active && (
           <PanelResizer
+            side={panelSide}
             width={panelWidth}
             onChange={setPanelWidth}
             currentWidth={() =>
@@ -468,7 +472,23 @@ export function WorkspaceShell({
   );
 }
 
-/** 상단 줄 아래 띠: 미리보기 모드, 보관한 연구(02 §7). */
+/** 브라우저가 알려 주는 연결 상태(`navigator.onLine`) */
+function useOnline(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      window.addEventListener("online", notify);
+      window.addEventListener("offline", notify);
+      return () => {
+        window.removeEventListener("online", notify);
+        window.removeEventListener("offline", notify);
+      };
+    },
+    () => navigator.onLine,
+    () => true,
+  );
+}
+
+/** 상단 줄 아래 띠: 연결 끊김, 보관한 연구, 미리보기 모드(02 §7). */
 function ShellBanners({
   preview,
   archived,
@@ -478,9 +498,18 @@ function ShellBanners({
   archived: boolean;
   researchId?: string;
 }) {
+  const online = useOnline();
+  // 한 번에 띠 하나만(02 §7): 연결 끊김 → 보관한 연구 → 미리보기
+  if (!online)
+    return (
+      <div className="preview-banner offline-banner" role="status">
+        <Icon name="warning" size={15} />
+        <span>{t("인터넷 연결이 끊겼어요. 연결되면 다시 저장해 주세요.")}</span>
+      </div>
+    );
   return (
     <>
-      {preview && (
+      {preview && !archived && (
         <div className="preview-banner">
           <Icon name="info" size={15} />
           <span>{t("미리보기 · 가상 기록은 이 브라우저에만 저장돼요.")}</span>

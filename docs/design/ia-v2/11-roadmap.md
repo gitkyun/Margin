@@ -69,6 +69,9 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 - 설정 창은 지금 설정 화면을 그대로 담았습니다(`SettingsPage`의 `embedded`). 구획 파일 나누기, 테마 셋 고르기, 사이드 창 위치는 1단계 이후.
 - 미팅 주기(`settings=schedule`)는 Q7 확인 전이라 목록에 없고, 그 값은 틀린 값처럼 지웁니다.
 - 예전 주소 이동은 지금 있는 화면으로 갈 수 있는 것만 했습니다(`lib/legacy-routes.ts`): writing·materials·planning·folders·questions·decisions·settings·account. `new=1`은 바꾸지 않고 넘기며, `planning?tab=schedule`은 미팅 화면 단계 전까지 `/flow?tab=schedule`에 둡니다. results·reviews·feedback·tasks/:id·assistant·plans·recordings는 각 화면 단계에서 더합니다.
+- 녹음 줄은 아래 묶음으로만 옮겼습니다. [지금 표시]·'표시 n개'는 표시를 저장할 곳(04 §6.2)이 생기는 2a단계에서 넣습니다.
+- 단축키 G F·G R·G A는 새 화면(할 일 › 피드백, 미팅 › 검토 요청, 사이드 창 연구 도우미)이 생기기 전까지 지금 화면으로 갑니다. J/K/X/H, ⌘⇧Enter는 그 기능이 생기는 단계에서 더합니다. ⌘K의 '(예전)' 항목(피드백·수정 결과·검토 요청)은 5단계에서 지웁니다. 결정·질문 항목은 그 창이 생기면 넣습니다.
+- 띠는 한 번에 하나(연결 끊김 → 보관 → 미리보기)로 맞췄지만, '새로 불러오기 실패' 띠는 아직 틀 밖(`RmsApp`)에 따로 있습니다.
 - 검토 화면(`/reviews/:requestId`)의 '화면 설정'은 틀 밖이라 아직 `/account?tab=appearance` → `/r?settings=display`로 이동합니다(그 자리에서 열기는 뒤 단계).
 
 ### 동시에 할 수 있는 것

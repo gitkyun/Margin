@@ -400,4 +400,26 @@
       font-weight: 700;
     }
   }
+
+  /* 사이드 창 왼쪽(설정 › 화면, 07 §1.2): 아이콘 줄·사이드 창·판 순서를 거울처럼 뒤집음 */
+  @media (min-width: 768px) {
+    .ia-shell[data-panel-side="left"] .ia-body {
+      flex-direction: row-reverse;
+      padding: 0 var(--ia-gap) calc(var(--ia-gap) + var(--dock-height, 0px)) 0;
+    }
+    .ia-shell[data-panel-side="left"] .ia-rail {
+      margin-right: calc(-1 * var(--ia-gap));
+      margin-left: 0;
+    }
+    .ia-shell[data-panel-side="left"] .margin-panel-resizer {
+      margin-right: -4px;
+      margin-left: calc(-1 * var(--ia-gap) - 5px);
+    }
+  }
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .ia-shell[data-panel-side="left"] .margin-panel {
+      right: auto;
+      left: var(--ia-rail-width);
+    }
+  }
 }

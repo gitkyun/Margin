@@ -35,6 +35,7 @@ import { ResearchProfileFields } from "./settings/ResearchProfileFields";
 import { usePreferences } from "./settings/use-preferences";
 import { AgentSettings } from "./settings/AgentSettings";
 import { SoundSetting } from "./settings/SoundSetting";
+import { PanelSideSetting } from "./settings/PanelSideSetting";
 import { UsageMeters } from "./settings/UsageMeters";
 import "./settings/account-settings.css";
 import {
@@ -296,6 +297,7 @@ export function AccountPage({ embedded, section }: EmbeddedSettingsProps = {}) {
                 </p>
               </section>
               <SoundSetting />
+              <PanelSideSetting />
             </>
           ) : (
             <section className="settings-section">

@@ -52,6 +52,8 @@ interface PanelResizerProps {
   currentWidth: () => number;
   width: number | null;
   onChange: (width: number | null) => void;
+  /** 사이드 창이 왼쪽이면 끄는 방향과 ←/→ 키가 반대예요. */
+  side?: "right" | "left";
 }
 
 /**
@@ -62,7 +64,9 @@ export function PanelResizer({
   currentWidth,
   width,
   onChange,
+  side = "right",
 }: PanelResizerProps) {
+  const grow = side === "left" ? -1 : 1;
   const drag = useRef<{ x: number; width: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   function down(event: PointerEvent<HTMLDivElement>) {
@@ -74,7 +78,7 @@ export function PanelResizer({
   }
   function move(event: PointerEvent<HTMLDivElement>) {
     if (!drag.current) return;
-    onChange(drag.current.width + (drag.current.x - event.clientX));
+    onChange(drag.current.width + grow * (drag.current.x - event.clientX));
   }
   function up() {
     drag.current = null;
@@ -82,8 +86,8 @@ export function PanelResizer({
   }
   function key(event: KeyboardEvent<HTMLDivElement>) {
     const base = width ?? currentWidth();
-    if (event.key === "ArrowLeft") onChange(base + KEY_STEP);
-    else if (event.key === "ArrowRight") onChange(base - KEY_STEP);
+    if (event.key === "ArrowLeft") onChange(base + grow * KEY_STEP);
+    else if (event.key === "ArrowRight") onChange(base - grow * KEY_STEP);
     else if (event.key === "Home") onChange(null);
     else return;
     event.preventDefault();
