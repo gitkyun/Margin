@@ -26,9 +26,11 @@ export function selectNextMeeting(
   preferredId?: string | null,
   today = seoulToday(),
 ) {
+  // 서면 피드백은 다음 미팅이 되지 않습니다(IA v2 08 §4.0).
   const active = meetings.filter(
     (m) =>
       !m.archivedAt &&
+      (m.recordType ?? "meeting") === "meeting" &&
       (m.status === "recording" ||
         (m.status === "preparing" && (!m.date || m.date >= today))),
   );

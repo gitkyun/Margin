@@ -321,6 +321,8 @@ export default function AIModelSelector({
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        // 마진: 설정 창 같은 대화상자 안에서도 Esc는 이 메뉴만 닫습니다(대화상자까지 닫히지 않게).
+        event.stopPropagation();
         // Only pull focus back when it was in the panel; Escape pressed
         // elsewhere on the page just closes it.
         if (rootRef.current?.contains(document.activeElement)) {
@@ -330,10 +332,11 @@ export default function AIModelSelector({
       }
     };
     document.addEventListener("pointerdown", onPointer);
-    document.addEventListener("keydown", onKey);
+    // 마진: 대화상자의 Esc 처리보다 먼저 받도록 window 캡처 단계에서 듣습니다.
+    window.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("pointerdown", onPointer);
-      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", onKey, true);
     };
   }, [open]);
 

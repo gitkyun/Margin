@@ -39,6 +39,12 @@ export interface Research {
   /** 연구를 끝냈다고 표시한 시각. 내 연구의 ‘완료된 연구’에 모여요(보관·휴지통과 별개). */
   completedAt?: string;
 }
+/** 메모 형광펜 한 칸. 전사 형광펜(TranscriptMark)과 같은 모양입니다(IA v2 08 §3.1). */
+export interface TextMark {
+  start: number;
+  end: number;
+  hash: string;
+}
 export interface Meeting extends BaseRecord {
   title: string;
   date: string | null;
@@ -50,6 +56,14 @@ export interface Meeting extends BaseRecord {
   taskIds: ID[];
   versionIds: ID[];
   questionIds: ID[];
+  /** 기록 종류. 없으면 미팅. 서면 피드백도 미팅 표에 둡니다(마이그레이션 없음, 08 §3.1). */
+  recordType?: "meeting" | "written";
+  /** 서면 피드백을 받은 곳 */
+  sourceLabel?: "kakao" | "email" | "doc_comment" | "note" | "file" | "other";
+  sourceFileName?: string;
+  memoMarks?: TextMark[];
+  /** 준비: 보여 줄 글 */
+  documentIds?: ID[];
 }
 export interface Feedback extends BaseRecord {
   origin?: RecordOrigin;
@@ -95,6 +109,8 @@ export interface Task extends BaseRecord {
   planId?: ID;
   assigneeId?: ID;
   phaseId?: ID;
+  /** 이 할 일이 나온 기록(미팅·서면 피드백). 피드백 없이 기록에서 바로 만든 할 일에 씁니다(08 §3). */
+  sourceRecordId?: ID;
 }
 export interface Question extends BaseRecord {
   origin?: RecordOrigin;
