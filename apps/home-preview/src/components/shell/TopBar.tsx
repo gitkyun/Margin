@@ -87,7 +87,7 @@ export function TopBar({
                 key={menu.key}
                 label={menu.label}
                 detail={preview?.detail}
-                shortcut={goShortcutLabel(menu.previewPath)}
+                shortcut={goShortcutLabel(menu.path)}
               >
                 <NavLink
                   end={!menu.path}

@@ -44,7 +44,7 @@ describe("useGoShortcuts", () => {
     const path = setup("r1");
     press("g");
     press("p");
-    expect(path()).toBe("/r/r1/planning");
+    expect(path()).toBe("/r/r1/flow");
     press("g");
     press("h");
     expect(path()).toBe("/r/r1");
@@ -83,7 +83,8 @@ describe("useGoShortcuts", () => {
 
   it("labels shortcuts for display", () => {
     expect(goShortcutLabel("")).toBe("G H");
-    expect(goShortcutLabel("materials")).toBe("G D");
+    expect(goShortcutLabel("docs")).toBe("G D");
+    expect(goShortcutLabel("docs?kind=writing")).toBe("G W");
     expect(goShortcutLabel("results")).toBeUndefined();
   });
 });

@@ -226,13 +226,15 @@ export function WorkspaceShell({
         ? t("수정 결과")
         : location.pathname.includes("/feedback")
           ? t("피드백")
-          : /\/(writing|docs|materials)(\/|$)/.test(location.pathname)
-            ? t("글·자료")
-            : /\/(flow|planning)(\/|$)/.test(location.pathname)
-              ? t("연구 흐름")
-              : (navigation.find(
-                  ([path]) => path && location.pathname.includes("/" + path),
-                )?.[2] ?? (research ? t("홈") : homeLabel));
+          : location.pathname.includes("/reviews")
+            ? t("검토 요청")
+            : /\/(writing|docs|materials)(\/|$)/.test(location.pathname)
+              ? t("글·자료")
+              : /\/(flow|planning)(\/|$)/.test(location.pathname)
+                ? t("연구 흐름")
+                : (navigation.find(
+                    ([path]) => path && location.pathname.includes("/" + path),
+                  )?.[2] ?? (research ? t("홈") : homeLabel));
   useEffect(() => {
     document.title = t("{name} · 마진", {
       name: `${current}${research ? ` · ${research.name}` : ""}`,

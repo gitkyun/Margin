@@ -23,17 +23,26 @@ const KEYWORDS = {
   inbox: ["받은 검토", "교수", "受け取ったレビュー", "先生"], // i18n-ignore
 };
 
-/** 연구 안 사이드바 메뉴: [경로, 아이콘, 이름]. 사이드바와 ⌘K 팔레트가 같이 씁니다. */
-export const RESEARCH_NAVIGATION = [
-  ["", "home", t("홈")],
-  ["planning", "flag", t("일정")],
-  ["meetings", "calendar", t("미팅")],
-  ["writing", "file", t("문서")],
-  ["feedback", "feedback", t("피드백")],
-  ["tasks", "tasks", t("할 일")],
-  ["materials", "folder", t("자료")],
-  ["reviews", "send", t("검토 요청")],
-] as const;
+/**
+ * ⌘K '이동' 항목(IA v2 01 §4 순서): [경로, 아이콘, 이름, 예전 이름(검색어)].
+ * '(예전)' 항목은 새 화면으로 옮기기 전까지 쓰는 임시 통로이고 5단계에서 지웁니다.
+ * 결정·질문은 그 창이 생기는 단계에서 더합니다.
+ */
+export const RESEARCH_NAVIGATION: readonly (readonly [
+  path: string,
+  icon: string,
+  label: string,
+  keywords: readonly string[],
+])[] = [
+  ["", "home", t("홈"), []],
+  ["meetings", "calendar", t("미팅"), []],
+  ["docs", "file", t("글·자료"), ["문서", "자료", "글쓰기", "文書", "資料"]], // i18n-ignore
+  ["flow", "flag", t("연구 흐름"), ["일정", "계획", "단계", "予定", "計画"]], // i18n-ignore
+  ["tasks", "tasks", t("할 일"), []],
+  ["feedback", "feedback", t("(예전) 피드백"), ["피드백", "フィードバック"]], // i18n-ignore
+  ["results", "check", t("(예전) 수정 결과"), ["수정 결과", "修正結果"]], // i18n-ignore
+  ["reviews", "send", t("(예전) 검토 요청"), ["검토 요청", "レビュー依頼"]], // i18n-ignore
+];
 
 export type CommandAction = { kind: "navigate"; to: string };
 
@@ -359,18 +368,18 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
     shortcut: goShortcutLabel(path),
   });
   return [
-    ...RESEARCH_NAVIGATION.map(([path, icon, label]) =>
+    ...RESEARCH_NAVIGATION.map(([path, icon, label, keywords]) =>
       withShortcut(
         navigateEntry(
           `go:${path || "home"}`,
           label,
           icon,
           path ? `${base}/${path}` : base,
+          [...keywords],
         ),
         path,
       ),
     ),
-    navigateEntry("go:results", t("수정 결과"), "check", `${base}/results`),
     withShortcut(
       navigateEntry(
         "go:assistant",
@@ -384,11 +393,12 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
     withShortcut(
       navigateEntry(
         "go:settings",
-        t("연구 설정"),
+        t("설정"),
         "settings",
         "?settings=research",
+        [t("연구 설정")],
       ),
-      "settings",
+      "?settings=research",
     ),
     ...common,
   ];
