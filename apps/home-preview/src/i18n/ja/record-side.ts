@@ -35,6 +35,7 @@ const dictionary: Record<string, string> = {
   "형광펜은 {count}개까지 칠할 수 있어요.": "マーカーは{count}個まで引けます。",
   "원문 {number}번": "原文{number}番",
   "원문 {number}번 항목 열기": "原文{number}番の項目を開く",
+  "형광펜 지우기": "マーカーを消す",
 };
 
 export default dictionary;

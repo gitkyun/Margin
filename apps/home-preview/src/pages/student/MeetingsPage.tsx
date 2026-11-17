@@ -333,6 +333,13 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const memoBackdrop = useRef<HTMLDivElement>(null);
   const memoOverlay = useRef<HTMLDivElement>(null);
   const [pointed, setPointed] = useState<string | null>(null);
+  // 항목이 딸리지 않은 형광펜을 누르면 그 자리에 [형광펜 지우기](04 §5.3)
+  const [eraseAt, setEraseAt] = useState<{
+    x: number;
+    y: number;
+    start: number;
+    end: number;
+  } | null>(null);
   const sourceItems = recordItems(meeting, data);
   const anchors = sourceAnchors(memo, meeting.memoRevision, [
     ...sourceItems.feedback.map((item) => ({
@@ -594,6 +601,58 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     } catch (error) {
       toast.error(friendlyError(error));
     }
+  }
+  /** 누른 형광펜 하나를 지웁니다(04 §5.3). */
+  async function eraseMark(start: number, end: number) {
+    setEraseAt(null);
+    let base = latest.current;
+    if (draftMemo.current !== savedMemo.current) {
+      const saved = await commitMemo();
+      if (!saved) return;
+      base = saved;
+    }
+    if (base.memo !== draftMemo.current) return;
+    try {
+      const stored = await save("meetings", {
+        ...base,
+        memoMarks: removeMarks(base.memoMarks, base.memo, start, end),
+      });
+      latest.current = stored;
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+  /** 커서만 놓은 자리가 항목 없는 형광펜 안이면 지우기 메뉴를 띄웁니다. */
+  function pickMarkAt(event: React.MouseEvent<HTMLTextAreaElement>) {
+    const field = event.currentTarget;
+    const host = memoHost.current;
+    if (!host || field.selectionStart !== field.selectionEnd) {
+      setEraseAt(null);
+      return;
+    }
+    const at = field.selectionStart;
+    const mark = validMarks(
+      relocateMarks(meeting.memoMarks, meeting.memo, memo),
+      memo,
+    ).find(
+      (item) =>
+        item.start < at &&
+        at < item.end &&
+        !anchors.some(
+          (anchor) => anchor.start < item.end && anchor.end > item.start,
+        ),
+    );
+    if (!mark) {
+      setEraseAt(null);
+      return;
+    }
+    const rect = host.getBoundingClientRect();
+    setEraseAt({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      start: mark.start,
+      end: mark.end,
+    });
   }
   /**
    * 고른 메모 글로 피드백·결정·질문·할 일을 창 없이 바로 만듭니다(04 §5.2).
@@ -1411,9 +1470,29 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   onBlur={() => {
                     void commitMemo();
                   }}
+                  onMouseUp={pickMarkAt}
+                  onKeyDown={() => setEraseAt(null)}
                   placeholder={t(
                     "예: 교수님 피드백, 결정한 내용, 다시 확인할 질문",
                   )}
+                />
+                <SelectionToolbar
+                  anchor={eraseAt}
+                  onDismiss={() => setEraseAt(null)}
+                  label={t("형광펜")}
+                  actions={
+                    eraseAt
+                      ? [
+                          {
+                            key: "erase",
+                            icon: "close",
+                            label: t("형광펜 지우기"),
+                            onSelect: () =>
+                              void eraseMark(eraseAt.start, eraseAt.end),
+                          },
+                        ]
+                      : []
+                  }
                 />
                 <SelectionToolbar
                   anchor={memoSelection.anchor}
