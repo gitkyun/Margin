@@ -86,5 +86,5 @@
 | 부품 | 지금 | IA v2 이후(예정) |
 | --- | --- | --- |
 | 연구 도우미 부품(ai-prompt·ai-input-search·ai-message-queue·ai-attachment·ai-voice·ai-tool-calls·ai-citations, 모델·깊이 두 칩) | 전체 화면 `ResearchAssistant.tsx` | 오른쪽 사이드 창 P1 `components/shell/panels/assistant/*`(4단계, [06](ia-v2/06-assistant.md) §2·§7). 기본 폭 312px, 글 편집·자료 보기 440px. 312px에서 입력창이 넘치면 기본 폭을 360px로([10](ia-v2/10-build-plan.md) §7 V7) |
-| profile-dropdown(계정 메뉴) | 사이드바 아래에서 위로 열림 | 상단 줄 오른쪽 끝 아바타(32px)에서 아래로 열림([02](ia-v2/02-shell.md) §3.6) |
+| profile-dropdown(계정 메뉴) | 사이드바 아래에서 위로 열림 | **[0단계 적용]** 상단 줄 오른쪽 끝 아바타(32px)에서 아래로 열림([02](ia-v2/02-shell.md) §3.6). 원본과의 차이: `placement` 옵션 하나를 더해 `"bottom"`일 때 패널을 버튼의 오른쪽 위 모서리에 붙이고 `clip-path` 자라는 방향만 아래로 바꿈(구조·치수·모션 값은 원본 그대로). 여는 버튼의 이름·이메일·화살표는 `shell.css`에서 숨겨 아바타만 보임 |
 | ai-handoff · ai-loading · 입력창 안 ai-context-meter 고리 | 쓰지 않음 | 계속 쓰지 않음([06](ia-v2/06-assistant.md) §1) |

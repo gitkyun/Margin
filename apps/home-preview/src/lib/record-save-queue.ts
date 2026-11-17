@@ -45,6 +45,7 @@ export function isRecordConflict(error: unknown): boolean {
 
 function assertSaved<T extends SavedRecord>(saved: T): T {
   if (typeof saved?.updatedAt !== "string") {
+    // i18n-ignore: 개발자용 오류(화면 문구 아님). 화면은 friendlyError로 바꿔 보여 줍니다.
     throw new Error("저장 응답에 updatedAt이 없습니다.");
   }
   return saved;
@@ -73,7 +74,9 @@ export function createRecordSaveQueue<V>(options: {
     if (lane.pending.length === 0 && lanes.get(id) === lane) lanes.delete(id);
   }
 
-  function enqueue<T extends SavedRecord>(job: RecordSaveJob<V, T>): Promise<T> {
+  function enqueue<T extends SavedRecord>(
+    job: RecordSaveJob<V, T>,
+  ): Promise<T> {
     const lane = lanes.get(job.id) ?? {
       updatedAt: job.updatedAt,
       tail: Promise.resolve(),

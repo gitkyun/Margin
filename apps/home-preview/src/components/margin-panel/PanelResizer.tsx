@@ -8,7 +8,8 @@ import {
 } from "react";
 
 const STORAGE_KEY = "margin-panel-width";
-export const PANEL_MIN_WIDTH = 320;
+/** IA v2 사이드 창 기본 폭과 같게 둡니다(02 §1.1). */
+export const PANEL_MIN_WIDTH = 312;
 export const PANEL_MAX_WIDTH = 640;
 const KEY_STEP = 16;
 

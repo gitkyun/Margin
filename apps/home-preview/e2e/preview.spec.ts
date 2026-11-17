@@ -12,21 +12,23 @@ test("내 연구에서 연구 홈으로 들어가 주요 메뉴를 오간다", a
     .first()
     .click();
   await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/);
-  const menu = page.getByRole("navigation").first();
+  const menu = page.getByRole("navigation", { name: "주요 메뉴" }).first();
   for (const [name, path, title] of [
-    // 사이드바 메뉴 여섯(감사 F1). 검토 요청·자료는 피드백·문서 메뉴 안의 탭이에요.
-    ["할 일", "tasks", "할 일"],
-    ["피드백", "feedback", "피드백"],
-    ["미팅", "meetings", "미팅"],
-    ["문서", "writing", "글쓰기"],
-    ["일정", "planning", "일정"],
+    // IA v2 상단 메뉴 넷(docs/design/ia-v2/02-shell.md §3.1). 0단계에는 지금 화면을 그대로 띄워요.
+    ["할 일", "/tasks", "할 일"],
+    ["미팅", "/meetings", "미팅"],
+    ["글·자료", "/docs", "글·자료"],
+    ["홈", "", "홈"],
   ] as const) {
-    // 피드백 메뉴는 새 응답이 있으면 이름 뒤에 '새 응답 있음'이 붙어요(사이드바 점의 화면 낭독 문구).
+    // 미팅 메뉴는 새 교수 응답이 있으면 이름 뒤에 '새 응답 있음'이 붙어요(점의 화면 낭독 문구).
     await menu
       .getByRole("link", { name: new RegExp(`^${name}( 새 응답 있음)?$`) })
       .click();
-    await expect(page).toHaveURL(new RegExp(`/${path}$`));
+    await expect(page).toHaveURL(new RegExp(`/r/[0-9a-f-]{36}${path}$`));
     await expect(page).toHaveTitle(new RegExp(title));
+    await expect(
+      menu.getByRole("link", { name: new RegExp(`^${name}`) }),
+    ).toHaveAttribute("aria-current", "page");
   }
   expect(errors).toEqual([]);
 });
@@ -38,7 +40,7 @@ test("할 일 목록에 가상 연구의 할 일이 보인다", async ({ page })
     .first()
     .click();
   await page
-    .getByRole("navigation")
+    .getByRole("navigation", { name: "주요 메뉴" })
     .first()
     .getByRole("link", { name: "할 일", exact: true })
     .click();

@@ -100,7 +100,12 @@ describe("createRecordSaveQueue", () => {
       seen.push(updatedAt);
       return { id: "m1", updatedAt: "t1" };
     };
-    const a = queue.enqueue({ id: "m1", updatedAt: "t0", reload: noReload, save: ok });
+    const a = queue.enqueue({
+      id: "m1",
+      updatedAt: "t0",
+      reload: noReload,
+      save: ok,
+    });
     const b = queue.enqueue({
       id: "m1",
       updatedAt: "t0",
@@ -110,7 +115,12 @@ describe("createRecordSaveQueue", () => {
         throw new Error("network");
       },
     });
-    const c = queue.enqueue({ id: "m1", updatedAt: "t0", reload: noReload, save: ok });
+    const c = queue.enqueue({
+      id: "m1",
+      updatedAt: "t0",
+      reload: noReload,
+      save: ok,
+    });
     await expect(a).resolves.toEqual({ id: "m1", updatedAt: "t1" });
     await expect(b).rejects.toThrow("network");
     await expect(c).resolves.toEqual({ id: "m1", updatedAt: "t1" });
@@ -124,7 +134,12 @@ describe("createRecordSaveQueue", () => {
       if (updatedAt !== "server-t5") throw conflict();
       return { id: "m1", updatedAt: "t6" };
     });
-    const saved = await queue.enqueue({ id: "m1", updatedAt: "t0", reload, save });
+    const saved = await queue.enqueue({
+      id: "m1",
+      updatedAt: "t0",
+      reload,
+      save,
+    });
     expect(saved.updatedAt).toBe("t6");
     expect(reload).toHaveBeenCalledTimes(1);
     expect(save.mock.calls.map(([u]) => u)).toEqual(["t0", "server-t5"]);
@@ -182,7 +197,9 @@ describe("createRecordSaveQueue", () => {
     expect(queue.pendingValues("m2")).toEqual([]);
     first.resolve({ id: "m1", updatedAt: "t1" });
     await a;
-    await vi.waitFor(() => expect(queue.pendingValues("m1")).toEqual(["memo-b"]));
+    await vi.waitFor(() =>
+      expect(queue.pendingValues("m1")).toEqual(["memo-b"]),
+    );
     await b;
     await vi.waitFor(() => expect(queue.hasPending("m1")).toBe(false));
     expect(queue.pendingValues("m1")).toEqual([]);

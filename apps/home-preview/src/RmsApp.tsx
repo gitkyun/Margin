@@ -172,6 +172,9 @@ function WorkspaceRoutes() {
             element={<WritingPage />}
           />
           <Route path="/r/:researchId/planning" element={<PlanningPage />} />
+          {/* IA v2 0단계: 새 메뉴 주소는 지금 화면을 그대로 띄웁니다(10-build-plan §2). */}
+          <Route path="/r/:researchId/docs" element={<WritingPage />} />
+          <Route path="/r/:researchId/flow" element={<PlanningPage />} />
           <Route
             path="/r/:researchId/meetings/:meetingId?"
             element={<MeetingsPage />}
@@ -362,7 +365,7 @@ export function App() {
       />
     );
   if (
-    !/^\/(login|account|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
+    !/^\/(login|account|r(?:\/[^/]+(?:\/(?:settings|assistant|writing|docs|flow|planning|meetings|feedback|tasks|materials|results|reviews)(?:\/[^/]+)?)?)?|reviews\/[^/]+|schedule\/[^/]+)\/?$/.test(
       location.pathname,
     )
   )

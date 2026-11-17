@@ -272,11 +272,12 @@ test("입력창 너비·크기 조절과 접힌 프로필이 원본 스타일을
   await expect(input(page)).toHaveCSS("resize", "none");
   const size = await composer(page).boundingBox();
   expect(size!.width).toBeLessThanOrEqual(760);
-  const trigger = page.locator(".sidebar-collapsed .kokonut-profile-trigger");
+  // IA v2 상단 줄의 계정 버튼은 아바타만 보이는 작은 버튼이에요(02 §3.6).
+  const trigger = page.locator(".ia-topbar .kokonut-profile-trigger");
   if (await trigger.count()) {
     const box = await trigger.boundingBox();
-    expect(box!.width).toBe(40);
-    expect(box!.height).toBe(40);
+    expect(box!.width).toBeLessThanOrEqual(40);
+    expect(box!.height).toBeLessThanOrEqual(40);
   }
 });
 
