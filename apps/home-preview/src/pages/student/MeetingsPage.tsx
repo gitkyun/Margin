@@ -4,12 +4,16 @@ import { RecordListToggle } from "@/components/meetings/RecordListToggle";
 import { RecordHeader } from "@/components/meetings/RecordHeader";
 import { PrepareSide, RecordSide } from "@/components/meetings/RecordSide";
 import { WrittenFeedbackDialog } from "@/components/meetings/WrittenFeedbackDialog";
-import { recordMode } from "@/lib/record-view";
+import { recordItems, recordMode } from "@/lib/record-view";
+import {
+  memoPieces,
+  sourceAnchors,
+  type MemoPiece,
+} from "@/lib/source-anchors";
 import { relocateMarks } from "@/lib/memo-marks";
 import {
   MARK_LIMIT,
   addMark,
-  markedPieces,
   overlapsMark,
   removeMarks,
   validMarks,
@@ -327,6 +331,36 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const memoField = useRef<HTMLTextAreaElement>(null);
   const memoHost = useRef<HTMLDivElement>(null);
   const memoBackdrop = useRef<HTMLDivElement>(null);
+  const memoOverlay = useRef<HTMLDivElement>(null);
+  const [pointed, setPointed] = useState<string | null>(null);
+  const sourceItems = recordItems(meeting, data);
+  const anchors = sourceAnchors(memo, meeting.memoRevision, [
+    ...sourceItems.feedback.map((item) => ({
+      kind: "feedback" as const,
+      item,
+    })),
+    ...sourceItems.decisions.map((item) => ({
+      kind: "decision" as const,
+      item,
+    })),
+    ...sourceItems.questions.map((item) => ({
+      kind: "question" as const,
+      item,
+    })),
+    ...sourceItems.tasks.map((item) => ({ kind: "task" as const, item })),
+  ]);
+  const anchorNumbers = new Map(
+    anchors.map((anchor) => [anchor.id, anchor.number]),
+  );
+  function openAnchor(kind: string, id: string) {
+    const next = new URLSearchParams(window.location.search);
+    next.set("detail", `${kind}:${id}`);
+    navigate(
+      { search: `?${next.toString()}` },
+      { state: { layer: "detail", depth: 1 } },
+    );
+    setPointed(id);
+  }
   const memoSelection = useTextareaSelection(memoField, memoHost);
   const savedMemo = useRef<string | null>(
     restoredDraft?.text === meeting.memo
@@ -575,6 +609,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       field.selectionEnd,
     );
     const text = selected.trim();
+    const textStart =
+      field.selectionStart + (selected.length - selected.trimStart().length);
     if (text.length < 2 || text.length > 2000) {
       toast.error(t("2자 이상 2,000자 이하로 골라 주세요."));
       return;
@@ -588,9 +624,19 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     const draft = entryFromSelection(text);
     const visibility = base.visibility ?? "private";
     const record = recordBase(researchId);
-    const quoted = base.memo.includes(text)
-      ? { sourceQuote: text, sourceMemoRevision: base.memoRevision }
-      : {};
+    const at =
+      base.memo.slice(textStart, textStart + text.length) === text
+        ? textStart
+        : base.memo.indexOf(text);
+    const quoted =
+      at === -1
+        ? {}
+        : {
+            sourceQuote: text,
+            sourceMemoRevision: base.memoRevision,
+            sourceStart: at,
+            sourceEnd: at + text.length,
+          };
     memoSelection.clear();
     try {
       let created: {
@@ -617,6 +663,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           meetingId: meeting.id,
           text,
           visibility,
+          ...quoted,
         });
         created = { kind, id: stored.id };
       } else if (kind === "question") {
@@ -627,6 +674,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           text,
           status: "open",
           visibility,
+          ...quoted,
         } as Question);
         created = { kind, id: stored.id };
       } else {
@@ -641,6 +689,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           visibility,
           feedbackIds: [],
           sourceRecordId: meeting.id,
+          ...quoted,
         } as Task);
         created = { kind, id: stored.id };
       }
@@ -1302,23 +1351,45 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   aria-hidden="true"
                   ref={memoBackdrop}
                 >
-                  {markedPieces(
+                  {memoPieces(
                     memo,
                     relocateMarks(meeting.memoMarks, meeting.memo, memo),
-                  ).map((piece) =>
-                    piece.marked ? (
-                      <mark key={piece.start}>{piece.text}</mark>
-                    ) : (
-                      <span key={piece.start}>{piece.text}</span>
-                    ),
-                  )}
+                    anchors,
+                  ).map((piece) => (
+                    <MemoPieceView
+                      key={piece.start}
+                      piece={piece}
+                      pointed={pointed}
+                    />
+                  ))}
                   {"\n"}
                 </div>
+                {/* 번호만 글 칸 위에 올려 누를 수 있게 합니다(04 §5.3). */}
+                {anchors.length > 0 && (
+                  <div className="memo-backdrop memo-overlay" ref={memoOverlay}>
+                    {memoPieces(memo, undefined, anchors).map((piece) => (
+                      <MemoPieceView
+                        key={piece.start}
+                        piece={piece}
+                        onOpen={(number) => {
+                          const anchor = anchors.find(
+                            (item) => item.number === number,
+                          );
+                          if (anchor) openAnchor(anchor.kind, anchor.id);
+                        }}
+                      />
+                    ))}
+                    {"\n"}
+                  </div>
+                )}
                 <textarea
                   ref={memoField}
                   onScroll={(event) => {
                     if (memoBackdrop.current)
                       memoBackdrop.current.scrollTop =
+                        event.currentTarget.scrollTop;
+                    if (memoOverlay.current)
+                      memoOverlay.current.scrollTop =
                         event.currentTarget.scrollTop;
                   }}
                   className="meeting-memo"
@@ -1455,6 +1526,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             </section>
             <RecordSide
               meeting={meeting}
+              numbers={anchorNumbers}
+              onPoint={setPointed}
               onOrganize={() => void openAI()}
               organizeDisabled={memoState === "saving" || !memo.trim()}
               onAddFeedback={() => openEntry("feedback")}
@@ -2176,5 +2249,46 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         </form>
       </FormDialog>
     </div>
+  );
+}
+
+/** 원문 조각 하나: 형광펜·밑줄·짚기 바탕, 끝나는 항목의 번호(04 §5.3) */
+function MemoPieceView({
+  piece,
+  pointed,
+  onOpen,
+}: {
+  piece: MemoPiece;
+  pointed?: string | null;
+  onOpen?(number: number): void;
+}) {
+  const className = [
+    piece.anchors.length ? "memo-anchor" : "",
+    pointed && piece.anchors.includes(pointed) ? "is-pointed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const body = piece.marked ? (
+    <mark className={className || undefined}>{piece.text}</mark>
+  ) : (
+    <span className={className || undefined}>{piece.text}</span>
+  );
+  return (
+    <>
+      {body}
+      {piece.numbers.map((number) => (
+        <span key={number} className="memo-anchor-num">
+          {onOpen ? (
+            <button
+              type="button"
+              aria-label={t("원문 {number}번 항목 열기", { number })}
+              onClick={() => onOpen(number)}
+            >
+              {number}
+            </button>
+          ) : null}
+        </span>
+      ))}
+    </>
   );
 }

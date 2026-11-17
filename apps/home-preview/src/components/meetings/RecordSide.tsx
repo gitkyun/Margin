@@ -160,6 +160,8 @@ async function createTask(
  */
 export function RecordSide({
   meeting,
+  numbers,
+  onPoint,
   onOrganize,
   organizeDisabled,
   onAddFeedback,
@@ -168,6 +170,10 @@ export function RecordSide({
   onShowPreparation,
 }: {
   meeting: Meeting;
+  /** 원문 표시 번호(04 §5.3). 원문 위치를 찾은 항목만 */
+  numbers?: ReadonlyMap<string, number>;
+  /** 줄에 올리거나 초점이 가면 원문의 그 곳을 짚습니다. */
+  onPoint?(id: string | null): void;
   onOrganize(): void;
   organizeDisabled: boolean;
   onAddFeedback(): void;
@@ -192,15 +198,43 @@ export function RecordSide({
     return { feedback, tasks };
   });
   const others = items.tasks.filter((task) => !grouped.has(task.id));
-  const row = (task: Task) => (
-    <TaskRow
-      key={task.id}
-      task={task}
-      today={today}
-      completion={completion}
-      rowMotion={rowMotion}
-    />
-  );
+  const point = (id: string) => ({
+    onMouseEnter: () => onPoint?.(id),
+    onMouseLeave: () => onPoint?.(null),
+    onFocus: () => onPoint?.(id),
+    onBlur: () => onPoint?.(null),
+  });
+  const num = (id: string) => {
+    const number = numbers?.get(id);
+    return number ? (
+      <span
+        className="record-side-num"
+        aria-label={t("원문 {number}번", { number })}
+      >
+        {number}
+      </span>
+    ) : null;
+  };
+  const row = (task: Task) =>
+    numbers?.has(task.id) ? (
+      <div key={task.id} className="record-side-numbered" {...point(task.id)}>
+        {num(task.id)}
+        <TaskRow
+          task={task}
+          today={today}
+          completion={completion}
+          rowMotion={rowMotion}
+        />
+      </div>
+    ) : (
+      <TaskRow
+        key={task.id}
+        task={task}
+        today={today}
+        completion={completion}
+        rowMotion={rowMotion}
+      />
+    );
 
   return (
     <aside className="record-side" aria-label={t("요약·할 일")}>
@@ -231,10 +265,11 @@ export function RecordSide({
           </>
         }
       >
-        {byFeedback.map(({ feedback, tasks }, index) => (
+        {byFeedback.map(({ feedback, tasks }) => (
           <FeedbackGroup
             key={feedback.id}
-            index={index + 1}
+            number={num(feedback.id)}
+            pointProps={point(feedback.id)}
             feedback={feedback}
             response={latestResponse(data, feedback.id)}
             adding={addingFor === feedback.id}
@@ -296,8 +331,12 @@ export function RecordSide({
             className="record-side-line"
             to={{ search: detailSearch(`decision:${decision.id}`) }}
             state={DETAIL_STATE}
+            {...point(decision.id)}
           >
-            <strong>{decision.text}</strong>
+            <strong>
+              {num(decision.id)}
+              {decision.text}
+            </strong>
             {decision.reason && <small>{decision.reason}</small>}
             {decision.replacesId && <small>{t("이전 결정 바꿈")}</small>}
           </Link>
@@ -313,7 +352,12 @@ export function RecordSide({
         defaultOpen={items.questions.length <= 3}
       >
         {items.questions.map((question) => (
-          <QuestionLine key={question.id} question={question} />
+          <QuestionLine
+            key={question.id}
+            question={question}
+            number={num(question.id)}
+            pointProps={point(question.id)}
+          />
         ))}
         <Button size="sm" variant="ghost" onClick={onAddQuestion}>
           <Icon name="plus" size={15} />
@@ -346,8 +390,16 @@ export function RecordSide({
   );
 }
 
+type PointProps = {
+  onMouseEnter(): void;
+  onMouseLeave(): void;
+  onFocus(): void;
+  onBlur(): void;
+};
+
 function FeedbackGroup({
-  index,
+  number,
+  pointProps,
   feedback,
   response,
   adding,
@@ -356,7 +408,8 @@ function FeedbackGroup({
   onSubmit,
   children,
 }: {
-  index: number;
+  number: ReactNode;
+  pointProps: PointProps;
   feedback: Feedback;
   response?: { result: "confirmed" | "changes_requested" };
   adding: boolean;
@@ -372,9 +425,10 @@ function FeedbackGroup({
           className="record-side-line"
           to={{ search: detailSearch(`feedback:${feedback.id}`) }}
           state={DETAIL_STATE}
+          {...pointProps}
         >
           <strong>
-            <span className="record-side-num">{index}</span>
+            {number}
             {feedback.title}
           </strong>
           <small>{feedbackLabels[feedback.status]}</small>
@@ -401,7 +455,15 @@ function FeedbackGroup({
   );
 }
 
-function QuestionLine({ question }: { question: Question }) {
+function QuestionLine({
+  question,
+  number,
+  pointProps,
+}: {
+  question: Question;
+  number?: ReactNode;
+  pointProps?: PointProps;
+}) {
   const { save } = useWorkspace();
   const resolved = question.status === "resolved";
   return (
@@ -428,8 +490,10 @@ function QuestionLine({ question }: { question: Question }) {
         className="record-side-line"
         to={{ search: detailSearch(`question:${question.id}`) }}
         state={DETAIL_STATE}
+        {...pointProps}
       >
         <strong className={resolved ? "is-done" : undefined}>
+          {number}
           {question.text}
         </strong>
       </Link>

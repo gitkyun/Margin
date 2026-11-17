@@ -111,12 +111,22 @@ export interface Task extends BaseRecord {
   phaseId?: ID;
   /** 이 할 일이 나온 기록(미팅·서면 피드백). 피드백 없이 기록에서 바로 만든 할 일에 씁니다(08 §3). */
   sourceRecordId?: ID;
+  /** 메모에서 고른 글로 만들었을 때의 인용과 위치(IA v2 08 §4.6) */
+  sourceQuote?: string;
+  sourceMemoRevision?: number;
+  sourceStart?: number;
+  sourceEnd?: number;
 }
 export interface Question extends BaseRecord {
   origin?: RecordOrigin;
   meetingId?: ID;
   text: string;
   status: "open" | "resolved";
+  /** 메모에서 고른 글로 만들었을 때의 인용과 위치(IA v2 08 §4.6) */
+  sourceQuote?: string;
+  sourceMemoRevision?: number;
+  sourceStart?: number;
+  sourceEnd?: number;
 }
 export interface Decision extends BaseRecord {
   origin?: RecordOrigin;
@@ -126,6 +136,11 @@ export interface Decision extends BaseRecord {
   reason?: string;
   /** 이 결정이 바꾸는 이전 결정. 방향이 바뀌었을 때 고릅니다. */
   replacesId?: ID;
+  /** 메모에서 고른 글로 만들었을 때의 인용과 위치(IA v2 08 §4.6) */
+  sourceQuote?: string;
+  sourceMemoRevision?: number;
+  sourceStart?: number;
+  sourceEnd?: number;
 }
 export interface Material extends BaseRecord {
   title: string;
