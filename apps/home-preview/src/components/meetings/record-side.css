@@ -173,4 +173,35 @@
       grid-template-columns: minmax(0, 1fr);
     }
   }
+  /* 메모 형광펜(04 §5.3): 글 칸 뒤에 같은 글을 같은 글꼴·간격으로 그려 칠합니다. */
+  .memo-marked {
+    position: relative;
+    /* 글 칸의 위 여백(12px)이 바깥으로 빠지지 않게 해서 뒤 그림과 자리를 맞춥니다. */
+    display: flow-root;
+  }
+  .memo-marked .meeting-memo {
+    position: relative;
+    z-index: 1;
+    scrollbar-gutter: stable;
+  }
+  .memo-backdrop {
+    position: absolute;
+    inset: 12px 0 0 0;
+    padding: 20px 0;
+    overflow: hidden;
+    color: transparent;
+    font-size: var(--typography-body1-fontSize);
+    line-height: var(--typography-body1Reading-lineHeight);
+    letter-spacing: var(--typography-body1-letterSpacing);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: normal;
+    scrollbar-gutter: stable;
+    pointer-events: none;
+  }
+  .memo-backdrop mark {
+    border-radius: var(--radius-4);
+    background: var(--brand-soft);
+    color: transparent;
+  }
 }

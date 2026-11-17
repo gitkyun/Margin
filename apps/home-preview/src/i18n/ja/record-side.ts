@@ -26,6 +26,7 @@ const dictionary: Record<string, string> = {
   가져가기: "持っていく",
   "열린 질문 {count}개": "未解決の質問 {count}件",
   "직전 기록": "直前の記録",
+  "형광펜은 {count}개까지 칠할 수 있어요.": "マーカーは{count}個まで引けます。",
 };
 
 export default dictionary;
