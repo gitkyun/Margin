@@ -1,7 +1,7 @@
+import { RecordList } from "@/components/meetings/RecordList";
 import { t } from "@/lib/i18n";
 import { formatClock } from "@/lib/time-format";
 import { seoulToday } from "@/lib/home-meeting";
-import { AnimatedList } from "@/components/AnimatedList";
 import { isImeComposing } from "@/lib/ime";
 import { VisibilityField } from "@/components/experience";
 import {
@@ -55,69 +55,29 @@ import {
 import { AIWorkbench } from "./AIWorkbench";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { REASON_MAX, decisionLog, replaceableDecisions } from "@/lib/decisions";
-import { DecisionLog } from "./DecisionLog";
 import { isAISourceStale } from "./ai-source";
 import { QuickPdfUpload } from "./QuickPdfUpload";
 import { hasMemoConflict, restoreMemoDraft } from "./memo-draft";
 import {
   BackLink,
   ErrorNotice,
-  FilterSegments,
   FormDialog,
   LabeledInput,
-  SearchInput,
   SaveActions,
   useSaving,
   useBackState,
 } from "./shared";
-import { filterCounts } from "@/lib/filter-counts";
 import { Checkbox } from "@montage-ui/core";
 import { Tabs } from "@/components/ui/tabs";
 import { entryFromSelection } from "@/lib/memo-selection";
 import type { AudioSource } from "@/lib/domain";
-
-const meetingFilters = [
-  ["all", t("전체")],
-  ["upcoming", t("예정")],
-  ["past", t("지난 미팅")],
-  ["undated", t("날짜 미정")],
-  ["cancelled", t("취소됨")],
-] as const;
-
-function meetingMatches(item: Meeting, filter: string): boolean {
-  if (filter === "all") return true;
-  if (filter === "undated") return !item.date;
-  const elapsed =
-    !!item.date &&
-    item.date <
-      new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Seoul",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).format(new Date()) &&
-    item.status !== "recording";
-  if (filter === "past") return item.status === "recorded" || elapsed;
-  if (filter === "cancelled") return item.status === "cancelled";
-  return (
-    !elapsed && (item.status === "preparing" || item.status === "recording")
-  );
-}
 
 export function MeetingsPage() {
   const { researchId = "", meetingId } = useParams();
   const { data, save } = useWorkspace();
   const navigate = useNavigate();
   const createBase = useRef<BaseRecord | null>(null);
-  const [logOpen, setLogOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const [pageParams, setPageParams] = useSearchParams();
-  const filter = pageParams.get("status") ?? "all",
-    setFilter = (v: string) => {
-      const n = new URLSearchParams(pageParams);
-      n.set("status", v);
-      setPageParams(n);
-    };
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -131,41 +91,11 @@ export function MeetingsPage() {
     nextParams.delete("new");
     setPageParams(nextParams, { replace: true });
   }, [meetingId, researchId, pageParams]);
-  if (meetingId) {
-    const meeting = data.meetings.find(
-      (item) => item.id === meetingId && item.researchId === researchId,
-    );
-    return meeting ? (
-      <MeetingDetail key={meeting.id} meeting={meeting} />
-    ) : (
-      <>
-        <BackLink to={`/r/${researchId}/meetings`}>{t("미팅 목록")}</BackLink>
-        <EmptyState
-          title={t("미팅을 열 수 없어요")}
-          description={t(
-            "이 연구에서 미팅을 찾을 수 없어요. 미팅 목록에서 다시 선택해 주세요.",
-          )}
-        />
-      </>
-    );
-  }
-  const hasMeetings = data.meetings.some(
-    (item) => item.researchId === researchId,
-  );
-  const searched = data.meetings
-    .filter((item) => item.researchId === researchId && !item.archivedAt)
-    .filter(
-      (item) =>
-        !search || item.title.toLowerCase().includes(search.toLowerCase()),
-    );
-  const counts = filterCounts(
-    meetingFilters.map(([value]) => value),
-    searched,
-    meetingMatches,
-  );
-  const meetings = searched
-    .filter((item) => meetingMatches(item, filter))
-    .sort((a, b) => (b.date ?? "9999").localeCompare(a.date ?? "9999"));
+  const current = meetingId
+    ? data.meetings.find(
+        (item) => item.id === meetingId && item.researchId === researchId,
+      )
+    : undefined;
   function openCreate() {
     createBase.current = recordBase(researchId);
     setTitle("");
@@ -204,125 +134,36 @@ export function MeetingsPage() {
     });
   }
   return (
-    <div className="student-page">
-      <PageHeader
-        title={t("미팅")}
-        actions={
-          <>
-            <Button variant="outline" onClick={() => setLogOpen(true)}>
-              <Icon name="history" size={16} />
-              {t("결정 기록")}
-            </Button>
-            {/* 미팅이 없을 때는 빈 상태의 '미팅 만들기'가 주 행동이라 여기는 보조로 낮춥니다. */}
-            <Button
-              variant={hasMeetings ? undefined : "outline"}
-              onClick={openCreate}
-            >
-              <Icon name="plus" size={17} />
-              {t("미팅 만들기")}
-            </Button>
-          </>
-        }
-      />
-      <div className="page-toolbar">
-        <FilterSegments
-          label={t("미팅 범위")}
-          options={meetingFilters}
-          value={filter}
-          onChange={setFilter}
-          counts={counts}
-        />
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder={t("미팅 이름으로 찾기")}
-        />
+    <div className="meetings-frame">
+      <div
+        className="meetings-layout"
+        data-has-record={meetingId ? "" : undefined}
+      >
+        <RecordList />
+        <div className="meetings-record">
+          {meetingId ? (
+            current ? (
+              <MeetingDetail key={current.id} meeting={current} />
+            ) : (
+              <>
+                <BackLink to={`/r/${researchId}/meetings`}>
+                  {t("미팅 목록")}
+                </BackLink>
+                <EmptyState
+                  title={t("미팅을 열 수 없어요")}
+                  description={t(
+                    "이 연구에서 미팅을 찾을 수 없어요. 미팅 목록에서 다시 선택해 주세요.",
+                  )}
+                />
+              </>
+            )
+          ) : (
+            <p className="meetings-placeholder">
+              {t("왼쪽 목록에서 기록을 고르거나 새 기록을 추가해 주세요.")}
+            </p>
+          )}
+        </div>
       </div>
-      <AnimatedList className="surface meeting-list">
-        {meetings.length ? (
-          meetings.map((meeting) => (
-            <Link
-              key={meeting.id}
-              to={`/r/${researchId}/meetings/${meeting.id}`}
-              className="meeting-list-row"
-            >
-              <span
-                className={`meeting-date-tile ${!meeting.date ? "is-undated" : ""}`}
-              >
-                {meeting.date ? (
-                  <>
-                    <small>
-                      {t("{month}월", {
-                        month:
-                          new Date(`${meeting.date}T12:00:00`).getMonth() + 1,
-                      })}
-                    </small>
-                    <strong>
-                      {new Date(`${meeting.date}T12:00:00`).getDate()}
-                    </strong>
-                  </>
-                ) : (
-                  <Icon name="calendar" size={20} />
-                )}
-              </span>
-              <span className="meeting-row-copy">
-                <strong>{meeting.title}</strong>
-                <span>
-                  {meeting.goal ||
-                    meeting.memo ||
-                    t("보여줄 결과를 아직 정하지 않았어요.")}
-                </span>
-                <small>
-                  {formatDate(meeting.date)}
-                  {meeting.time ? ` · ${formatClock(meeting.time)}` : ""}
-                  {" · "}
-                  {t("할 일 {count}개", { count: meeting.taskIds.length })}
-                </small>
-              </span>
-              <StatusBadge
-                tone={
-                  meeting.status === "recorded"
-                    ? "green"
-                    : meeting.status === "cancelled"
-                      ? "neutral"
-                      : "blue"
-                }
-              >
-                {meetingLabels[meeting.status]}
-              </StatusBadge>
-              <Icon name="chevron-right" size={17} />
-            </Link>
-          ))
-        ) : (
-          <EmptyState
-            title={
-              hasMeetings
-                ? t("조건에 맞는 미팅이 없어요")
-                : t("아직 미팅이 없어요")
-            }
-            description={
-              hasMeetings
-                ? undefined
-                : t("날짜를 정하지 않아도 미팅을 만들 수 있어요.")
-            }
-            action={
-              hasMeetings ? (
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setFilter("all");
-                    setSearch("");
-                  }}
-                >
-                  {t("조건 초기화")}
-                </Button>
-              ) : (
-                <Button onClick={openCreate}>{t("미팅 만들기")}</Button>
-              )
-            }
-          />
-        )}
-      </AnimatedList>
       <FormDialog
         busy={form.saving}
         open={creating}
@@ -371,21 +212,6 @@ export function MeetingsPage() {
           />
         </form>
       </FormDialog>
-      <MarginPanel
-        label={t("결정 기록")}
-        open={logOpen}
-        onOpen={() => setLogOpen(true)}
-        onClose={() => setLogOpen(false)}
-      >
-        <PanelFrame title={t("결정 기록")} onClose={() => setLogOpen(false)}>
-          <div className="panel-frame-body">
-            <DecisionLog
-              entries={decisionLog(data.decisions, data.meetings, researchId)}
-              researchId={researchId}
-            />
-          </div>
-        </PanelFrame>
-      </MarginPanel>
     </div>
   );
 }
