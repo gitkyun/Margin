@@ -30,7 +30,7 @@ jobs:
         working-directory: apps/home-preview
       # 배포되는 의존성에 알려진 높은 위험도 취약점이 있으면 실패합니다.
       - name: Dependency vulnerability audit
-        run: npm audit --audit-level=high
+        run: node ../../scripts/audit-check.mjs
         working-directory: apps/home-preview
       - run: npm run typecheck && npm test && npm run test:backend
         working-directory: apps/home-preview
