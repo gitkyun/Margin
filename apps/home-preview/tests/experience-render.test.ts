@@ -94,12 +94,12 @@ describe("experience pages render with an empty research", () => {
     await page(HomePage);
     expect(screen.getByRole("heading", { name: "테스트 연구" })).toBeTruthy();
     expect(screen.getByText("다음 미팅이 아직 없어요")).toBeTruthy();
-    // 빈 연구에는 시작 체크리스트가 0/4로 보이고 주 행동은 미팅 만들기 하나입니다.
+    // 빈 연구에는 시작 체크리스트가 0/4로 보이고 주 행동은 다음 미팅 잡기 하나입니다(IA v2 03 §3의 7번).
     expect(screen.getByRole("heading", { name: /시작하기/ })).toBeTruthy();
     expect(screen.getByText("0 / 4")).toBeTruthy();
     expect(
       screen
-        .getAllByRole("link", { name: /미팅 만들기/ })
+        .getAllByRole("link", { name: /다음 미팅 잡기/ })
         .some((link) => link.getAttribute("data-action") === "create_meeting"),
     ).toBe(true);
   });

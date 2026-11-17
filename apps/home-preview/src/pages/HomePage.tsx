@@ -28,7 +28,12 @@ import { reviewDecision } from "@/lib/home-inbox";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { EmptyState, TextLink, StatusBadge } from "@/components/common";
-import { selectNextMeeting, seoulToday } from "@/lib/home-meeting";
+import {
+  selectNextMeeting,
+  seoulNowTime,
+  seoulToday,
+} from "@/lib/home-meeting";
+import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { selectHomeAction } from "@/lib/home-action";
 import { startChecklist } from "@/lib/onboarding";
 import {
@@ -138,6 +143,7 @@ export function HomePage() {
     )
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   const updates = unreadReviewNotifications(data, user, researchId);
+  const recorder = useOptionalRecorder();
   const pending = data.aiCandidates.filter(
     (candidate) =>
       candidate.researchId === researchId && candidate.status === "pending",
@@ -209,9 +215,22 @@ export function HomePage() {
   const action = selectHomeAction({
     base,
     today: seoulToday(),
+    now: seoulNowTime(),
+    recordingMeetingId:
+      recorder?.session?.researchId === researchId &&
+      (recorder.state === "recording" || recorder.state === "paused")
+        ? recorder.session.meetingId
+        : null,
     next,
     meetings,
     feedback: data.feedback.filter((item) => item.researchId === researchId),
+    unreadChangesRequested: updates
+      .filter((event) => event.kind === "response" && event.tone === "amber")
+      .map((event) => ({
+        title: event.title,
+        href: notificationHref(event),
+        createdAt: event.createdAt,
+      })),
   });
   // ‘바로 시작’은 할 일도 미팅도 없어 홈이 비어 보일 때만 냅니다.
   // 시작 체크리스트: 다 끝냈거나 닫았으면 내지 않습니다.
@@ -289,6 +308,11 @@ export function HomePage() {
             </Link>
           </div>
         </div>
+        {action.notice && (
+          <p className="rh-lead-notice" role="status">
+            {action.notice}
+          </p>
+        )}
         <Button className="rh-lead-action" size="lg" fullWidth="mobile" asChild>
           <Link to={action.href} data-action={action.kind}>
             {action.label}
