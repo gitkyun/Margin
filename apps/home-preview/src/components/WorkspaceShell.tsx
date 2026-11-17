@@ -59,6 +59,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
 } from "./ui/dialog";
 import {
   Sheet,
@@ -443,7 +444,7 @@ export function WorkspaceShell({
                         }
                       >
                         <Icon name={icon} size={20} />
-                        <span>{label}</span>
+                        <span className="nav-label">{label}</span>
                         {path === "feedback" && updates.length > 0 && (
                           // 아직 안 본 교수 응답·댓글이 있으면 점을 찍어요(읽음 처리는 하지 않음).
                           <span className="nav-dot">
@@ -458,9 +459,9 @@ export function WorkspaceShell({
           ))
         ) : incomingOnly ? (
           <div className="nav-group" key="incoming">
-            <NavLink to="/r" end className="nav-item">
+            <NavLink to="/r" end className="nav-item" title={homeLabel}>
               <Icon name="send" size={20} />
-              <span>{homeLabel}</span>
+              <span className="nav-label">{homeLabel}</span>
             </NavLink>
             {incoming.slice(0, INCOMING_NAV_LIMIT).map((request) => (
               <NavLink
@@ -470,14 +471,16 @@ export function WorkspaceShell({
                 title={request.title}
               >
                 <Icon name="file" size={18} />
-                <span>{request.title || t("제목 없음")}</span>
+                <span className="nav-label">
+                  {request.title || t("제목 없음")}
+                </span>
               </NavLink>
             ))}
           </div>
         ) : (
-          <NavLink to="/r" className="nav-item">
+          <NavLink to="/r" className="nav-item" title={homeLabel}>
             <Icon name="grid" size={20} />
-            <span>{homeLabel}</span>
+            <span className="nav-label">{homeLabel}</span>
           </NavLink>
         )}
         {research && (
@@ -494,7 +497,7 @@ export function WorkspaceShell({
               }
             >
               <Icon name="sparkles" size={20} />
-              <span>{t("연구 도우미")}</span>
+              <span className="nav-label">{t("연구 도우미")}</span>
             </NavLink>
           </Hint>
         )}
@@ -507,7 +510,7 @@ export function WorkspaceShell({
             to={`/r/${researchId}/settings`}
           >
             <Icon name="settings" size={20} />
-            <span>{t("연구 설정")}</span>
+            <span className="nav-label">{t("연구 설정")}</span>
           </Link>
         )}
         {usageHigh ? (
@@ -794,7 +797,7 @@ export function WorkspaceShell({
                   )}
             </SheetDescription>
           </SheetHeader>
-          <div className="notification-content">
+          <DialogBody className="notification-content">
             <div className="button-row">
               <Segments
                 value={notificationFilter}
@@ -894,7 +897,7 @@ export function WorkspaceShell({
                 : newEvents.length) ? (
               <EmptyState icon="bell" title={t("확인할 새 알림이 없어요.")} />
             ) : null}
-          </div>
+          </DialogBody>
         </SheetContent>
       </Sheet>
       <CommandPalette

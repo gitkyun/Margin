@@ -1,10 +1,6 @@
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
   .rh-home {
-    max-width: 1180px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 4px 0 36px;
     color: var(--text);
     font-size: var(--typography-label1-fontSize);
     line-height: var(--typography-label1Reading-lineHeight);
@@ -40,58 +36,11 @@
     outline: 3px solid color-mix(in srgb, var(--brand) 55%, transparent);
     outline-offset: 4px;
   }
-  .rh-intro {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-24);
-    min-height: 136px;
-    margin: 0 0 28px;
-    overflow: hidden;
-  }
-  /* 머리 오른쪽: 지금 상황의 주 행동 하나(lib/home-action.ts). */
-  .rh-lead-action {
-    flex: none;
-  }
-  .rh-intro-meta {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: var(--spacing-20);
-  }
-  .rh-intro-copy {
-    position: relative;
-    z-index: var(--z-raised);
-    flex: 1;
-    min-width: 0;
-    padding: 14px 0 20px;
-  }
-  .rh-intro h1 {
-    max-width: 830px;
-    font-size: clamp(
-      var(--typography-title3-fontSize),
-      2.2vw,
-      var(--typography-title1-fontSize)
-    );
-    font-weight: 600;
-    letter-spacing: -0.045em;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
-  }
-  .rh-intro-copy > p {
-    max-width: 66ch;
-    margin-top: 12px;
-    color: var(--text-secondary);
-    font-size: var(--typography-body2-fontSize);
-    line-height: var(--typography-body2Reading-lineHeight);
-    word-break: var(--text-word-break, keep-all);
-    overflow-wrap: anywhere;
-    letter-spacing: var(--typography-body2-letterSpacing);
-  }
-  /* 연구 방향: 설명 아래에 목적 한두 문장과 질문 목록. 면 없이 왼쪽 선으로만 구분합니다. */
+  /* 연구 방향: 머리 메타 줄(.page-meta)의 첫 줄을 통째로 씁니다. 목적 한두 문장과 질문 목록, 면 없이 왼쪽 선으로만 구분합니다. */
   .rh-direction {
-    max-width: 66ch;
-    margin-top: var(--spacing-16);
-    padding-left: var(--spacing-14);
+    flex: 0 0 100%;
+    min-width: 0;
+    padding-left: var(--spacing-16);
     border-left: 2px solid var(--line-strong);
     color: var(--text);
     font-size: var(--typography-label1-fontSize);
@@ -111,6 +60,10 @@
     font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
     letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  /* 줄은 통째로 쓰되 읽는 폭은 66자까지. */
+  .rh-direction > :is(p, ol) {
+    max-width: 66ch;
   }
   .rh-direction > p {
     margin: var(--spacing-4) 0 0;
@@ -133,11 +86,11 @@
   }
   .rh-people {
     display: inline-flex;
-    width: fit-content;
+    min-width: 0;
+    max-width: 100%;
     align-items: center;
-    gap: 7px;
+    gap: var(--spacing-8);
     min-height: 36px;
-    margin-top: 14px;
     border-radius: var(--radius-8);
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
@@ -148,7 +101,6 @@
   }
   .rh-avatars {
     display: flex;
-    padding-right: 3px;
   }
   .rh-avatars > span {
     display: grid;
@@ -170,14 +122,14 @@
   .rh-section-heading {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--spacing-8);
     min-height: 29px;
-    margin-bottom: 18px;
+    margin-bottom: var(--spacing-12);
   }
   .rh-section-heading h2 {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: var(--spacing-8);
     font-size: var(--typography-headline2-fontSize);
     line-height: var(--typography-headline2-lineHeight);
     letter-spacing: var(--typography-headline2-letterSpacing);
@@ -198,7 +150,7 @@
   /* ── 시작하기(새 연구 체크리스트) ─────────────────────── */
   .rh-start {
     margin-bottom: var(--spacing-24);
-    padding: var(--spacing-16) var(--spacing-20) var(--spacing-20);
+    padding: var(--spacing-24);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
     background: var(--surface);
@@ -217,7 +169,6 @@
     line-height: var(--typography-headline2-lineHeight);
     letter-spacing: var(--typography-headline2-letterSpacing);
     font-weight: 600;
-    white-space: nowrap;
   }
   .rh-start-count {
     color: var(--brand);
@@ -315,6 +266,9 @@
     }
   }
   @media (max-width: 767px) {
+    .rh-start {
+      padding: var(--spacing-16);
+    }
     .rh-start-list {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -327,14 +281,11 @@
   }
   /* 연구 흐름: 계획·일정의 단계를 홈에서 한 줄로 보여 줍니다. */
   .rh-phases {
-    margin-bottom: 30px;
-    padding: 21px 24px;
+    margin-bottom: var(--spacing-24);
+    padding: var(--spacing-24);
     border: 1px solid var(--line);
     border-radius: var(--radius-16);
     background: var(--surface);
-  }
-  .rh-phases .rh-section-heading {
-    margin-bottom: 17px;
   }
   .rh-phases .rh-section-heading h2 {
     font-size: var(--typography-body2-fontSize);
@@ -349,8 +300,8 @@
     display: flex;
     overflow-x: auto;
     scrollbar-width: thin;
-    gap: 16px;
-    padding: 1px 0 5px;
+    gap: var(--spacing-16);
+    padding: 0 0 var(--spacing-6);
   }
   .rh-phase-track li {
     position: relative;
@@ -370,11 +321,11 @@
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: var(--spacing-8);
     width: max-content;
     max-width: 190px;
     min-height: 34px;
-    padding-right: 12px;
+    padding-right: var(--spacing-12);
     background: var(--surface);
     color: var(--text-tertiary);
     font-size: var(--typography-label2-fontSize);
@@ -414,7 +365,7 @@
   .rh-phase-start {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--spacing-12);
     min-height: 42px;
     color: var(--text-secondary);
   }
@@ -427,7 +378,7 @@
   .rh-columns {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 32px;
+    gap: var(--spacing-24);
     align-items: start;
   }
   .rh-main-column,
@@ -435,10 +386,10 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 31px;
+    gap: var(--spacing-24);
   }
   .rh-meeting {
-    padding: 25px 26px 24px;
+    padding: var(--spacing-24);
     /* 강조 카드: 브랜드 선 하나. 채움과 그림자는 함께 쓰지 않습니다. */
     border: 1px solid var(--selected-line);
     border-radius: var(--radius-12);
@@ -449,9 +400,8 @@
   }
   .rh-meeting-title {
     display: flex;
-    align-items: center;
-    gap: 17px;
-    margin-top: 22px;
+    align-items: flex-start;
+    gap: var(--spacing-16);
   }
   /* 탁상 달력 한 장: 브랜드 띠(월) · 날짜 · 요일. */
   .rh-date-tile {
@@ -504,13 +454,17 @@
     min-width: 0;
   }
   .rh-meeting-title-copy > p {
-    margin-bottom: 4px;
+    margin-bottom: var(--spacing-4);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-meeting-title h3 {
-    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-bottom: var(--spacing-8);
     font-size: var(--typography-heading2-fontSize);
     letter-spacing: var(--typography-heading2-letterSpacing);
     font-weight: 600;
@@ -524,8 +478,8 @@
     color: var(--brand);
   }
   .rh-meeting-goal {
-    margin-top: 21px;
-    padding-bottom: 23px;
+    margin-top: var(--spacing-16);
+    padding-bottom: var(--spacing-24);
     border-bottom: 1px solid var(--line);
     color: var(--text-secondary);
     font-size: var(--typography-body2-fontSize);
@@ -538,8 +492,8 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 12px;
-    margin: 21px 0 12px;
+    gap: var(--spacing-12);
+    margin: var(--spacing-24) 0 var(--spacing-12);
   }
   .rh-preparation-heading h4 {
     font-size: var(--typography-label2-fontSize);
@@ -570,19 +524,22 @@
   .rh-preparation-list {
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    margin-top: 10px;
+    margin-top: var(--spacing-12);
   }
   .rh-preparation-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--spacing-8);
     min-height: 41px;
-    padding: 8px 2px;
+    padding: var(--spacing-8) 0;
     border-radius: var(--radius-8);
     line-height: 1.5;
   }
   .rh-preparation-item > span:nth-child(2) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     flex: 1;
     min-width: 0;
     overflow-wrap: anywhere;
@@ -622,26 +579,28 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .rh-preparation-list > .rh-inline-empty {
-    padding: 4px 0 12px;
+    padding: var(--spacing-4) 0 var(--spacing-12);
   }
   .rh-meeting-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
-    margin-top: 21px;
-    padding-top: 19px;
+    flex-wrap: wrap;
+    gap: var(--spacing-8) var(--spacing-16);
+    margin-top: var(--spacing-24);
+    padding-top: var(--spacing-16);
     border-top: 1px solid var(--line);
   }
   .rh-preparation-links {
     display: flex;
     align-items: center;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 0 var(--spacing-16);
   }
   .rh-preparation-links a {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: var(--spacing-8);
     min-height: 32px;
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
@@ -652,14 +611,14 @@
     color: var(--brand);
   }
   .rh-meeting-empty {
-    padding: 18px 0 8px;
+    padding: 0;
   }
   .rh-empty-calendar {
     display: grid;
     place-items: center;
     width: 50px;
     height: 50px;
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-16);
     border: 1px solid var(--selected-line);
     border-radius: var(--radius-14);
     background: var(--brand-soft);
@@ -671,7 +630,7 @@
     font-weight: 600;
   }
   .rh-meeting-empty p {
-    margin: 9px 0 23px;
+    margin: var(--spacing-8) 0 var(--spacing-24);
     color: var(--text-secondary);
     font-size: var(--typography-label1-fontSize);
     letter-spacing: var(--typography-label1-letterSpacing);
@@ -680,13 +639,10 @@
   .rh-writing {
     min-width: 0;
   }
-  .rh-work .rh-section-heading {
-    margin-bottom: 13px;
-  }
   .rh-section-description {
     display: flex;
-    gap: 7px;
-    margin-top: 5px;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-4);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -700,9 +656,9 @@
   .rh-task {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: var(--spacing-12);
     min-height: 80px;
-    padding: 15px 5px 15px 2px;
+    padding: var(--spacing-16) 0;
     border-bottom: 1px solid var(--line);
   }
   .rh-task input {
@@ -723,9 +679,13 @@
     min-width: 0;
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
+    gap: var(--spacing-4);
   }
   .rh-task-copy strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     font-size: var(--typography-label1-fontSize);
     font-weight: 600;
     line-height: var(--typography-label1-lineHeight);
@@ -735,7 +695,7 @@
   .rh-task-copy > span {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: var(--spacing-8);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -750,15 +710,12 @@
     color: var(--text-tertiary);
     text-decoration: line-through;
   }
-  .rh-task > .status-badge {
-    margin-left: 3px;
-  }
   .rh-list-empty {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--spacing-8);
     min-height: 96px;
-    padding: 19px 0;
+    padding: var(--spacing-16) 0;
     color: var(--text-secondary);
   }
   .rh-list-empty p {
@@ -769,10 +726,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: var(--spacing-8);
     width: 100%;
     min-height: 42px;
-    margin-top: 10px;
+    margin-top: var(--spacing-12);
     border-radius: var(--radius-8);
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
@@ -782,16 +739,13 @@
     color: var(--brand);
     background: var(--surface-sunken);
   }
-  .rh-writing .rh-section-heading {
-    margin-bottom: 6px;
-  }
   .rh-document {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: var(--spacing-12);
     min-height: 82px;
     border-bottom: 1px solid var(--line);
-    padding: 15px 3px;
+    padding: var(--spacing-16) 0;
   }
   .rh-document-icon {
     display: grid;
@@ -799,6 +753,7 @@
     width: 42px;
     height: 48px;
     flex: 0 0 42px;
+    align-self: flex-start;
     border: 1px solid var(--line);
     border-radius: var(--radius-10);
     background: var(--surface-muted);
@@ -809,9 +764,13 @@
     flex: 1;
     min-width: 0;
     flex-direction: column;
-    gap: 5px;
+    gap: var(--spacing-4);
   }
   .rh-document-copy strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     font-weight: 600;
     font-size: var(--typography-label1-fontSize);
     overflow-wrap: anywhere;
@@ -831,16 +790,16 @@
   .rh-writing-empty {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: var(--spacing-12);
     min-height: 107px;
-    padding: 15px 0;
+    padding: var(--spacing-16) 0;
     border-bottom: 1px solid var(--line);
   }
   .rh-writing-empty > span:nth-child(2) {
     display: flex;
     flex-direction: column;
     flex: 1;
-    gap: 4px;
+    gap: var(--spacing-4);
   }
   .rh-writing-empty strong {
     font-size: var(--typography-label1-fontSize);
@@ -858,19 +817,13 @@
   .rh-writing-empty:hover strong {
     color: var(--brand);
   }
-  .rh-attention {
-    padding: 1px 0 0;
-  }
-  .rh-attention .rh-section-heading {
-    margin-bottom: 16px;
-  }
   .rh-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 22px;
     height: 22px;
-    padding: 0 6px;
+    padding: 0 var(--spacing-6);
     border-radius: var(--radius-8);
     color: var(--brand);
     background: var(--brand-soft);
@@ -881,9 +834,15 @@
   .rh-attention-row {
     display: flex;
     align-items: flex-start;
-    gap: 11px;
-    padding: 15px 0;
+    gap: var(--spacing-12);
+    padding: var(--spacing-16) 0;
     border-bottom: 1px solid var(--line);
+  }
+  /* 카드 맨 아래 줄은 선과 아래 여백을 두지 않습니다(카드 안쪽 여백과 겹치지 않게). */
+  .rh-inbox > .rh-attention-row:last-child,
+  .rh-writing > :is(.rh-document, .rh-writing-empty):last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
   }
   .rh-attention-icon {
     display: grid;
@@ -891,7 +850,6 @@
     flex: 0 0 33px;
     width: 33px;
     height: 33px;
-    margin-top: 1px;
     border: 1px solid var(--selected-line);
     border-radius: var(--radius-10);
     background: var(--brand-soft);
@@ -907,7 +865,7 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .rh-attention-row p {
-    margin-top: 4px;
+    margin-top: var(--spacing-4);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
@@ -915,7 +873,7 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .rh-attention-row > svg:last-child {
-    margin-top: 9px;
+    margin-top: var(--spacing-8);
     color: var(--text-tertiary);
   }
   .rh-attention-row:hover strong {
@@ -924,8 +882,8 @@
   .rh-attention-empty {
     display: flex;
     align-items: flex-start;
-    gap: 11px;
-    padding: 14px 0 21px;
+    gap: var(--spacing-12);
+    padding: var(--spacing-16) 0;
   }
   .rh-attention-empty > span {
     display: grid;
@@ -943,7 +901,7 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .rh-attention-empty p {
-    margin-top: 5px;
+    margin-top: var(--spacing-4);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
@@ -953,9 +911,9 @@
   .rh-deadline {
     display: flex;
     align-items: center;
-    gap: 11px;
-    margin-top: 17px;
-    padding: 16px;
+    gap: var(--spacing-12);
+    margin-top: var(--spacing-16);
+    padding: var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
   }
@@ -967,7 +925,7 @@
     flex-direction: column;
     flex: 1;
     min-width: 0;
-    gap: 3px;
+    gap: var(--spacing-4);
   }
   .rh-deadline small {
     color: var(--text-secondary);
@@ -987,9 +945,6 @@
     border-color: var(--hover-line);
     background: var(--hover-fill);
   }
-  .rh-activity .rh-section-heading {
-    margin-bottom: 12px;
-  }
   .rh-activity-list li {
     position: relative;
   }
@@ -1005,8 +960,8 @@
   .rh-activity-list a {
     display: flex;
     align-items: flex-start;
-    gap: 14px;
-    padding: 10px 0 16px;
+    gap: var(--spacing-12);
+    padding: var(--spacing-8) 0 var(--spacing-16);
   }
   .rh-activity-dot {
     position: relative;
@@ -1014,7 +969,7 @@
     width: 9px;
     height: 9px;
     flex: 0 0 9px;
-    margin-top: 7px;
+    margin-top: var(--spacing-8);
     border: 2px solid var(--surface);
     border-radius: 50%;
     background: var(--tone-gray);
@@ -1034,7 +989,7 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
-    margin-top: 3px;
+    margin-top: var(--spacing-4);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
@@ -1043,7 +998,7 @@
   }
   .rh-activity-list small {
     display: block;
-    margin-top: 7px;
+    margin-top: var(--spacing-8);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -1065,15 +1020,7 @@
 
   @media (max-width: 1199px) {
     .rh-columns {
-      gap: 25px;
       grid-template-columns: minmax(0, 1fr) 300px;
-    }
-    .rh-meeting {
-      padding: 22px;
-    }
-    .rh-meeting-footer {
-      align-items: flex-start;
-      flex-wrap: wrap;
     }
   }
   @media (min-width: 1600px) {
@@ -1083,16 +1030,11 @@
   }
   /* md(992px) 미만: 두 열이 서로를 누르므로 한 열로 내립니다. */
   @media (max-width: 991px) {
-    .rh-phases {
-      margin-bottom: 25px;
-      padding: 18px 20px;
-    }
     .rh-current-label {
       display: none;
     }
     .rh-columns {
       grid-template-columns: minmax(0, 1fr);
-      gap: 28px;
     }
     .rh-main-column,
     .rh-side-column {
@@ -1123,37 +1065,15 @@
   }
   @media (max-width: 767px) {
     .rh-phases {
-      padding: 17px;
+      padding: var(--spacing-16);
       border-radius: var(--radius-12);
     }
     .rh-phase-track {
-      gap: 13px;
+      gap: var(--spacing-12);
     }
     .rh-phase-track a {
       font-size: var(--typography-caption1-fontSize);
       letter-spacing: var(--typography-caption1-letterSpacing);
-    }
-    .rh-home {
-      padding-top: 0;
-      padding-bottom: 20px;
-    }
-    .rh-intro {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0;
-      min-height: 166px;
-      margin-bottom: 17px;
-    }
-    .rh-intro h1 {
-      max-width: 95%;
-      font-size: var(--typography-title3-fontSize);
-      letter-spacing: var(--typography-title3-letterSpacing);
-    }
-    .rh-intro-copy > p {
-      max-width: 93%;
-      font-size: var(--typography-label1-fontSize);
-      line-height: var(--typography-label1Reading-lineHeight);
-      letter-spacing: var(--typography-label1-letterSpacing);
     }
     .rh-people {
       font-size: var(--typography-caption1-fontSize);
@@ -1165,12 +1085,10 @@
       letter-spacing: var(--typography-headline2-letterSpacing);
     }
     .rh-meeting {
-      padding: 20px 18px;
-      border-radius: var(--radius-12);
+      padding: var(--spacing-16);
     }
     .rh-meeting-title {
-      gap: 12px;
-      margin-top: 16px;
+      gap: var(--spacing-12);
     }
     .rh-meeting-title h3 {
       font-size: var(--typography-headline1-fontSize);
@@ -1181,20 +1099,12 @@
       letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .rh-meeting-goal {
-      margin-top: 18px;
       font-size: var(--typography-label1-fontSize);
       letter-spacing: var(--typography-label1-letterSpacing);
-    }
-    .rh-meeting-footer {
-      margin-top: 17px;
-      gap: 11px;
     }
     .rh-preparation-links {
       justify-content: flex-start;
       width: 100%;
-    }
-    .rh-task {
-      gap: 10px;
     }
     .rh-task-copy strong {
       font-size: var(--typography-label2-fontSize);
@@ -1216,27 +1126,21 @@
   }
 
   /* Action-led home: predictable targets, roomy controls, no decorative sky. */
-  .rh-quick-start {
-    margin-bottom: 32px;
-  }
   /* 홈은 다음 미팅·확인할 내용이 먼저, 바로 시작·연구 단계는 그 아래(검수 Q6). */
   .rh-columns + .rh-quick-start {
-    margin-top: var(--spacing-40);
-  }
-  .rh-quick-start .rh-section-heading {
-    margin-bottom: 12px;
+    margin-top: var(--spacing-24);
   }
   .rh-quick-actions {
     display: grid;
-    grid-template-columns: 1.15fr 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--spacing-24);
   }
   .rh-quick-action {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: var(--spacing-12);
     min-height: 108px;
-    padding: 20px;
+    padding: var(--spacing-24);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
     background: var(--surface);
@@ -1246,7 +1150,7 @@
     flex: 1;
     min-width: 0;
     flex-direction: column;
-    gap: 5px;
+    gap: var(--spacing-6);
   }
   .rh-quick-action strong {
     font-size: var(--typography-body2-fontSize);
@@ -1292,12 +1196,10 @@
   }
   @media (max-width: 1199px) {
     .rh-quick-actions {
-      grid-template-columns: 1fr;
-      gap: 8px;
+      grid-template-columns: minmax(0, 1fr);
     }
     .rh-quick-action {
       min-height: 80px;
-      padding: 16px 18px;
     }
   }
   /* 휴대폰: 바로 시작 세 항목을 카드 셋이 아닌 한 묶음 목록으로. */
@@ -1330,15 +1232,6 @@
     .rh-quick-action strong {
       font-size: var(--typography-body2-fontSize);
     }
-    .rh-quick-start {
-      margin-bottom: var(--spacing-24);
-    }
-  }
-  @media (max-width: 767px) {
-    .rh-intro-copy {
-      padding-top: 8px;
-      width: 100%;
-    }
   }
   @media (prefers-reduced-motion: reduce) {
     .rh-quick-action:hover {
@@ -1361,7 +1254,7 @@
   .rh-home .rh-work,
   .rh-home .rh-writing,
   .rh-home .rh-attention {
-    padding: 24px;
+    padding: var(--spacing-24);
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
@@ -1375,35 +1268,23 @@
     overflow-wrap: anywhere;
     line-height: 1.5;
   }
-  .rh-home .rh-quick-actions {
-    gap: 16px;
-  }
   @media (max-width: 767px) {
     .rh-home .rh-work,
     .rh-home .rh-writing,
     .rh-home .rh-attention {
-      padding: 18px;
+      padding: var(--spacing-16);
     }
   }
 }
 
 @layer margin {
-  /* 연구 이름 + 투고 D-Day 칩. 좁은 폭에서는 칩이 이름 아래로 내려가요. */
-  .rh-title-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--spacing-8) var(--spacing-12);
-  }
-  .rh-title-row h1 {
-    min-width: 0;
-  }
+  /* 연구 이름 옆 투고 D-Day 칩. 제목 줄(.page-title-row)이 감기면 이름 아래로 내려가요. */
   .rh-countdown {
     display: inline-flex;
     flex: none;
     align-items: baseline;
     gap: var(--spacing-6);
-    padding: var(--spacing-4) var(--spacing-10);
+    padding: var(--spacing-4) var(--spacing-12);
     border: 1px solid var(--selected-line);
     border-radius: var(--radius-full);
     background: var(--brand-soft);
@@ -1447,22 +1328,33 @@
     word-break: var(--text-word-break, keep-all);
   }
   .rh-inbox-body strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     overflow-wrap: anywhere;
     word-break: var(--text-word-break, keep-all);
   }
-  /* 응답·댓글 원문은 한 줄만 보여 주고, 전체는 원래 화면에서 읽어요. */
+  /* 응답·댓글 원문과 안내는 두 줄까지 보여 주고(넘치면 말줄임 + title), 전체는 원래 화면에서 읽어요. */
   .rh-inbox-excerpt {
-    display: block;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     overflow: hidden;
     padding-left: var(--spacing-8);
     border-left: 2px solid var(--line);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    word-break: var(--text-word-break, keep-all);
+    overflow-wrap: anywhere;
   }
   .rh-attention-row .rh-inbox-ask {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     margin-top: var(--spacing-2);
     color: var(--text);
     font-size: var(--typography-label2-fontSize);
@@ -1473,8 +1365,8 @@
   .rh-inbox-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-6);
-    margin-top: var(--spacing-6);
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-12);
   }
   /* ‘추가 수정 필요’는 경고색 아이콘으로 구분해요. */
   .rh-inbox-item.tone-amber .rh-attention-icon {

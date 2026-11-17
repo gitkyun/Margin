@@ -55,13 +55,25 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@montage-ui/core";
 import {
   DisabledReason,
+  PageHeader,
   StatusBadge,
   useDisabledReason,
 } from "@/components/common";
+/** 좁은 화면에서 설정 메뉴가 가로로 넘칠 때, 지금 항목이 가려져 있으면 보이는 곳으로 옮깁니다. */
+function showCurrentItem(item: HTMLButtonElement | null) {
+  const nav = item?.parentElement;
+  if (!item || !nav) return;
+  const box = nav.getBoundingClientRect();
+  const own = item.getBoundingClientRect();
+  // 페이지 세로 위치는 건드리지 않고 메뉴 줄만 가로로 옮겨요.
+  if (own.right > box.right) nav.scrollLeft += own.right - box.right;
+  else if (own.left < box.left) nav.scrollLeft -= box.left - own.left;
+}
 export function UsageDetails() {
   const { mode } = useWorkspace();
   const usage = useAIUsage();
@@ -204,9 +216,7 @@ export function AccountPage() {
   );
   return (
     <div className="settings-page">
-      <div className="settings-heading">
-        <h1>{t("계정 설정")}</h1>
-      </div>
+      <PageHeader title={t("계정 설정")} />
       <div className="settings-layout">
         <nav aria-label={t("계정 설정 항목")}>
           {[
@@ -219,6 +229,7 @@ export function AccountPage() {
             <button
               key={id}
               aria-current={tab === id ? "page" : undefined}
+              ref={tab === id ? showCurrentItem : undefined}
               onClick={() => setParams({ tab: id })}
             >
               <Icon name={icon} size={18} />
@@ -340,7 +351,9 @@ export function AccountPage() {
                 <label className="field">
                   {t("로그인 이메일")}
                   <Input value={user.email} readOnly />
-                  <small>{t("로그인 이메일은 여기서 바꿀 수 없어요.")}</small>
+                  <small className="field-hint">
+                    {t("로그인 이메일은 여기서 바꿀 수 없어요.")}
+                  </small>
                 </label>
                 <div className="settings-form-actions">
                   <Button
@@ -579,28 +592,34 @@ export function ResearchSettingsPage() {
   return (
     <div className="settings-page">
       {confirmDialog}
-      <div className="settings-heading">
-        <h1>{t("연구 설정")}</h1>
-        <p>{research.name}</p>
-        <div className="research-settings-summary">
-          <span>
-            {t("현재 단계 · {title}", {
-              title:
-                data.phases.find((p) => p.id === research.currentPhaseId)
-                  ?.title ?? t("단계 미지정"),
-            })}
-          </span>
-          <span>
-            {t("지도교수 {count}명", {
-              count: (research.advisorEmails ?? []).length,
-            })}
-          </span>
-          <span>{t("키워드 {count}개", { count: keywords.length })}</span>
-          {research.submissionDate && (
-            <span>{t("목표일 {date}", { date: research.submissionDate })}</span>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={t("연구 설정")}
+        description={research.name}
+        meta={
+          <>
+            <span className="settings-summary-chip">
+              {t("현재 단계 · {title}", {
+                title:
+                  data.phases.find((p) => p.id === research.currentPhaseId)
+                    ?.title ?? t("단계 미지정"),
+              })}
+            </span>
+            <span className="settings-summary-chip">
+              {t("지도교수 {count}명", {
+                count: (research.advisorEmails ?? []).length,
+              })}
+            </span>
+            <span className="settings-summary-chip">
+              {t("키워드 {count}개", { count: keywords.length })}
+            </span>
+            {research.submissionDate && (
+              <span className="settings-summary-chip">
+                {t("목표일 {date}", { date: research.submissionDate })}
+              </span>
+            )}
+          </>
+        }
+      />
       <div className="settings-layout">
         <nav aria-label={t("연구 설정 항목")}>
           {[
@@ -612,6 +631,7 @@ export function ResearchSettingsPage() {
             <button
               key={id}
               aria-current={tab === id ? "page" : undefined}
+              ref={tab === id ? showCurrentItem : undefined}
               onClick={() => {
                 if (dirty) {
                   toast.info(t("바꾼 내용을 먼저 저장하거나 취소해 주세요."));
@@ -685,7 +705,9 @@ export function ResearchSettingsPage() {
                     )}
                   </label>
                   <label className="field">
-                    {t("설명")} <small>{tc("optional", "선택")}</small>
+                    <span className="field-label">
+                      {t("설명")} <small>{tc("optional", "선택")}</small>
+                    </span>
                     <Textarea
                       rows={5}
                       value={description}
@@ -694,7 +716,9 @@ export function ResearchSettingsPage() {
                     />
                   </label>
                   <label className="field">
-                    {t("연구 목적")} <small>{tc("optional", "선택")}</small>
+                    <span className="field-label">
+                      {t("연구 목적")} <small>{tc("optional", "선택")}</small>
+                    </span>
                     <Textarea
                       rows={3}
                       value={purpose}
@@ -706,8 +730,10 @@ export function ResearchSettingsPage() {
                     />
                   </label>
                   <label className="field">
-                    {t("연구 질문")}{" "}
-                    <small>{t("선택 · 한 줄에 하나씩, 5개까지")}</small>
+                    <span className="field-label">
+                      {t("연구 질문")}{" "}
+                      <small>{t("선택 · 한 줄에 하나씩, 5개까지")}</small>
+                    </span>
                     <Textarea
                       rows={4}
                       value={questions}
@@ -715,11 +741,15 @@ export function ResearchSettingsPage() {
                     />
                   </label>
                   <label className="field">
-                    {t("투고·제출 목표일")}{" "}
-                    <small>{tc("optional", "선택")}</small>
+                    <span className="field-label">
+                      {t("투고·제출 목표일")}{" "}
+                      <small>{tc("optional", "선택")}</small>
+                    </span>
                     <DateField value={submission} onChange={setSubmission} />
                     <small
-                      className={submissionProblem ? "field-error" : undefined}
+                      className={
+                        submissionProblem ? "field-error" : "field-hint"
+                      }
                     >
                       {submissionProblem
                         ? t("오늘 뒤 5년 안의 날짜만 저장해요.")
@@ -1045,7 +1075,7 @@ export function ResearchSettingsPage() {
                   : t("진행 중인 연구 목록에 다시 보여요.")}
             </DialogDescription>
           </DialogHeader>
-          <div className="bottom-actions">
+          <DialogFooter>
             <Button
               variant="outline"
               disabled={busy}
@@ -1092,7 +1122,7 @@ export function ResearchSettingsPage() {
                     ? t("복원하는 중")
                     : t("복원")}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -1175,7 +1205,7 @@ function PasswordSettings() {
           {next ? (
             <PasswordStrength value={next} />
           ) : (
-            <small>{PASSWORD_HELP}</small>
+            <small className="field-hint">{PASSWORD_HELP}</small>
           )}
         </label>
         <label className="field">

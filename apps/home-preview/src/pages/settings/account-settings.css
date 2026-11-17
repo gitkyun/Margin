@@ -22,9 +22,9 @@
   .hour-preview-card {
     display: flex;
     align-items: center;
-    gap: var(--spacing-10);
+    gap: var(--spacing-12);
     min-width: 220px;
-    padding: var(--spacing-10) var(--spacing-14);
+    padding: var(--spacing-12) var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
     background: var(--surface);
@@ -76,12 +76,13 @@
   /* 사용량 › 저장 공간 게이지(500MB 눈금) */
   .storage-meter {
     margin: var(--spacing-20) 0 var(--spacing-12);
+    min-width: 0;
   }
   .storage-meter-value {
     display: flex;
     align-items: baseline;
     gap: var(--spacing-8);
-    margin-bottom: var(--spacing-10);
+    margin-bottom: var(--spacing-12);
   }
   .storage-meter-value strong {
     font-size: var(--typography-title2-fontSize);
@@ -152,14 +153,9 @@
     gap: var(--spacing-8);
     flex-wrap: wrap;
   }
-  .research-settings-summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-8);
-    margin-top: var(--spacing-8);
-  }
-  .research-settings-summary > span {
-    padding: var(--spacing-4) var(--spacing-10);
+  /* 연구 설정 머리의 요약 칩(PageHeader meta 자리) */
+  .settings-summary-chip {
+    padding: var(--spacing-4) var(--spacing-12);
     border: 1px solid var(--line);
     border-radius: var(--radius-full);
     background: var(--surface);

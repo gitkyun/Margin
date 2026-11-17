@@ -18,24 +18,18 @@
   .reviews-page {
     min-width: 0;
   }
-  .review-list-toolbar {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .review-search {
-    width: min(320px, 100%);
-  }
+  /* 도구 줄과 찾기 칸은 공통 틀(.page-toolbar, .page-search)을 씁니다. */
+  /* 목록 행: 앞 칸 ↔ 내용 16, 내용 ↔ 배지 12, 위아래 16, 카드 안쪽 좌우 24(767 이하 16). */
   .review-list {
-    padding: 0 22px;
+    padding: 0 var(--spacing-24);
   }
   .review-list-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: 18px;
-    padding: 24px 0;
+    column-gap: var(--spacing-12);
+    row-gap: var(--spacing-8);
+    padding: var(--spacing-16) 0;
     text-decoration: none;
     color: var(--text);
     border-bottom: 1px solid var(--line);
@@ -46,39 +40,51 @@
   .review-list-row:hover .review-list-title > strong {
     color: var(--brand);
   }
+  /* 앞 아이콘 칸은 위 정렬, 뒤 배지·화살표는 세로 가운데. */
   .review-list-icon {
-    width: 43px;
-    height: 47px;
+    align-self: start;
+    width: 44px;
+    height: 44px;
+    margin-right: var(--spacing-4);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
     display: grid;
     place-items: center;
     color: var(--text-secondary);
-    flex-shrink: 0;
     background: var(--surface-muted);
   }
   .review-list-main {
-    flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: var(--spacing-8);
   }
   .review-list-title {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 9px;
+    gap: var(--spacing-8);
+    min-width: 0;
   }
+  /* 목록 제목은 2줄까지(전체 글은 title). */
   .review-list-title > strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    min-width: 0;
     font-size: var(--typography-body2-fontSize);
     font-weight: 600;
     line-height: var(--typography-body2-lineHeight);
     letter-spacing: var(--typography-body2-letterSpacing);
-  }
-  .review-list-main > .muted {
-    font-size: var(--typography-label2-fontSize);
+    word-break: var(--text-word-break, keep-all);
     overflow-wrap: anywhere;
+  }
+  /* 메타(이메일 · 날짜)는 1줄 말줄임. */
+  .review-list-main > .muted {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--typography-label2-fontSize);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-new-dot {
@@ -90,7 +96,7 @@
   }
   .review-counts {
     display: flex;
-    gap: 13px;
+    gap: var(--spacing-2) var(--spacing-12);
     flex-wrap: wrap;
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
@@ -102,18 +108,10 @@
   .review-count-changes {
     color: var(--warning);
   }
-  .review-compose-dialog {
-    max-width: min(760px, calc(100vw - 32px)) !important;
-    max-height: calc(100dvh - 48px);
-    overflow: auto;
-    border-radius: var(--radius-20);
-    gap: 24px;
-    background: var(--surface);
-    color: var(--text);
-  }
-  .review-compose-form {
-    display: grid;
-    gap: 23px;
+  /* 검토 요청 만들기: 공개 미리보기(PDF 포함)가 있어 넓은 대화상자 폭(560)을 씁니다.
+     안쪽 여백·버튼 줄·본문 스크롤은 styles.css "대화상자 틀"이 맡습니다. */
+  [data-slot="dialog-content"].review-compose-dialog {
+    --margin-dialog-max-width: 560px;
   }
   .review-result-selection {
     padding: 0;
@@ -124,35 +122,35 @@
   .review-result-selection legend {
     font-size: var(--typography-label1-fontSize);
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: var(--spacing-12);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .review-required {
     font-weight: 500;
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    margin-left: 5px;
+    margin-left: var(--spacing-6);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-pick-row {
     display: flex;
-    gap: 12px;
+    gap: var(--spacing-12);
     align-items: flex-start;
-    padding: 16px;
+    padding: var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
-    margin-top: 8px;
+    margin-top: var(--spacing-8);
     cursor: pointer;
   }
   .review-pick-row > [role="checkbox"] {
-    margin-top: 3px;
+    margin-top: var(--spacing-4);
     flex-shrink: 0;
   }
   .review-pick-row > span {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    gap: 6px;
+    gap: var(--spacing-6);
   }
   .review-pick-row strong {
     font-size: var(--typography-label1-fontSize);
@@ -174,12 +172,12 @@
     font-size: var(--typography-caption1-fontSize);
     color: var(--warning);
     line-height: var(--typography-caption1-lineHeight);
-    margin-top: 3px;
+    margin-top: var(--spacing-4);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-inline-note {
     display: flex;
-    gap: 9px;
+    gap: var(--spacing-8);
     align-items: flex-start;
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
@@ -187,7 +185,7 @@
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-inline-note > svg {
-    margin-top: 3px;
+    margin-top: var(--spacing-4);
     flex-shrink: 0;
   }
   .review-inline-note p {
@@ -197,7 +195,7 @@
     color: var(--danger);
     background: var(--danger-soft);
     border: 1px solid var(--danger-line);
-    padding: 12px 14px;
+    padding: var(--spacing-12) var(--spacing-16);
     border-radius: var(--radius-10);
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
@@ -205,17 +203,13 @@
     margin: 0;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
-  .review-public-preview {
-    display: grid;
-    gap: 18px;
-  }
   .review-preview-heading {
-    padding-bottom: 5px;
+    padding-bottom: var(--spacing-6);
   }
   .review-preview-heading h3 {
     font-size: var(--typography-heading1-fontSize);
     line-height: var(--typography-heading1-lineHeight);
-    margin: 14px 0 6px;
+    margin: var(--spacing-16) 0 var(--spacing-6);
     font-weight: 600;
     letter-spacing: var(--typography-heading1-letterSpacing);
   }
@@ -226,9 +220,9 @@
   .review-preview-item {
     border: 1px solid var(--line);
     border-radius: var(--radius-14);
-    padding: 20px;
+    padding: var(--spacing-20);
     display: grid;
-    gap: 14px;
+    gap: var(--spacing-16);
     background: var(--surface);
   }
   .review-preview-item h4,
@@ -242,7 +236,7 @@
   .review-source-block {
     background: var(--surface-muted);
     border-radius: var(--radius-10);
-    padding: 14px 16px;
+    padding: var(--spacing-16) var(--spacing-16);
     border-left: 1px solid var(--line);
   }
   .review-source-block > span {
@@ -254,7 +248,7 @@
     white-space: pre-wrap;
     font-size: var(--typography-label1-fontSize);
     line-height: var(--typography-label1Reading-lineHeight);
-    margin: 7px 0 0;
+    margin: var(--spacing-8) 0 0;
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-label1-letterSpacing);
   }
@@ -264,15 +258,15 @@
     line-height: var(--typography-body2Reading-lineHeight);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    margin: 7px 0 0;
+    margin: var(--spacing-8) 0 0;
     letter-spacing: var(--typography-body2-letterSpacing);
   }
   .review-file-chip {
     display: flex;
-    gap: 11px;
+    gap: var(--spacing-12);
     align-items: center;
     width: 100%;
-    padding: 14px;
+    padding: var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-10);
     background: var(--surface-muted);
@@ -294,7 +288,7 @@
   .review-file-chip small {
     display: block;
     font-size: var(--typography-caption1-fontSize);
-    margin-top: 5px;
+    margin-top: var(--spacing-6);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -315,8 +309,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 28px;
-    gap: 24px;
+    padding: var(--spacing-16) var(--spacing-32);
+    gap: var(--spacing-24);
     border-bottom: 1px solid var(--line);
     background: var(--surface);
     position: relative;
@@ -326,7 +320,7 @@
   .review-header-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: var(--spacing-16);
     min-width: 0;
   }
   .review-header-left {
@@ -343,12 +337,12 @@
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-headline2-letterSpacing);
   }
-  /* 학생이 셸 안에서 열 때는 다른 상세 화면의 제목과 같은 크기로 둡니다(검수 P1-4). */
-  .review-workspace.is-embedded .review-header-left h1 {
-    font-size: var(--typography-title2-fontSize);
-    line-height: var(--typography-title2-lineHeight);
-    letter-spacing: var(--typography-title2-letterSpacing);
-    font-weight: 700;
+  /* 학생이 셸 안에서 열 때는 머리를 공통 PageHeader가 그립니다. 그 아래 작업 영역은 위쪽 선으로 구분합니다. */
+  .review-embedded {
+    min-width: 0;
+  }
+  .review-workspace.is-embedded {
+    border-top: 1px solid var(--line);
   }
   /* 머리 버튼은 줄어들거나 아이콘·글자가 두 줄로 쌓이지 않게 합니다(1024px '새로고침'). */
   .review-header-actions > button,
@@ -359,21 +353,21 @@
   /* 교수 화면의 '← 받은 검토 요청'(감사 F5·F6). */
   /* 색·간격은 공통 .text-link(styles.css). 검토 머리에서는 한 단계 작은 글자를 씁니다. */
   .review-back-link {
-    margin-bottom: 2px;
+    margin-bottom: var(--spacing-2);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-header-left p {
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    margin: 3px 0 0;
+    margin: var(--spacing-4) 0 0;
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-brand {
     display: inline-flex;
     align-items: center;
-    gap: 9px;
+    gap: var(--spacing-8);
     color: var(--text);
     font-size: var(--typography-heading2-fontSize);
     font-weight: 700;
@@ -393,10 +387,10 @@
   .review-preview-banner,
   .review-stopped-banner {
     display: flex;
-    gap: 8px;
+    gap: var(--spacing-8);
     align-items: center;
     justify-content: center;
-    padding: 9px 20px;
+    padding: var(--spacing-8) var(--spacing-20);
     color: var(--text-secondary);
     background: var(--surface-muted);
     font-size: var(--typography-caption1-fontSize);
@@ -409,7 +403,7 @@
   }
   /* 교수 화면: 머리 아래에 학생이 적은 연구 이름과 방향(목적·질문)을 한 줄 띠로 둡니다. */
   .review-direction-bar {
-    padding: 12px 20px;
+    padding: var(--spacing-12) var(--spacing-20);
     border-bottom: 1px solid var(--line);
   }
   .review-direction-block {
@@ -418,8 +412,8 @@
   }
   .review-direction-block > ol {
     display: grid;
-    gap: 2px;
-    margin: 6px 0 0;
+    gap: var(--spacing-2);
+    margin: var(--spacing-6) 0 0;
     padding-left: 1.4em;
     color: var(--text-secondary);
     font-size: var(--typography-label1-fontSize);
@@ -434,10 +428,11 @@
     align-items: stretch;
     min-height: calc(100dvh - 85px);
   }
+  /* 작업 영역의 바깥 좌우 여백은 같게: 왼쪽 목록 안쪽 = 오른쪽 작업 칸 안쪽(1200 이상 24, 그 아래 16). */
   .review-item-sidebar {
     width: 240px;
     flex-shrink: 0;
-    padding: 25px 16px;
+    padding: var(--spacing-24);
     border-right: 1px solid var(--line);
     background: var(--surface);
   }
@@ -445,7 +440,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 9px 18px;
+    padding: 0 var(--spacing-8) var(--spacing-20);
   }
   .review-sidebar-title h2 {
     font-size: var(--typography-label1-fontSize);
@@ -463,11 +458,11 @@
     display: flex;
     align-items: flex-start;
     flex-direction: column;
-    gap: 11px;
+    gap: var(--spacing-12);
     border: 1px solid transparent;
     border-radius: var(--radius-12);
-    padding: 17px 14px;
-    margin-bottom: 8px;
+    padding: var(--spacing-16) var(--spacing-16);
+    margin-bottom: var(--spacing-8);
     text-align: left;
     color: var(--text-secondary);
     background: transparent;
@@ -482,7 +477,17 @@
   .review-item-nav.selected .review-item-number {
     color: var(--brand);
   }
+  /* 긴 배지는 칸 안에서 잘리고 옆 칸으로 넘치지 않습니다(배지 부품은 그대로, 감싸는 칸에서 처리). */
+  .review-badge-fit {
+    display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radius-8);
+  }
   .review-item-nav strong {
+    max-width: 100%;
+    overflow-wrap: anywhere;
     color: var(--text);
     font-size: var(--typography-label1-fontSize);
     font-weight: 600;
@@ -502,15 +507,15 @@
   }
   .review-sidebar-note {
     display: flex;
-    gap: 8px;
+    gap: var(--spacing-8);
     border-top: 1px solid var(--line);
-    padding: 20px 9px 0;
-    margin-top: 24px;
+    padding: var(--spacing-20) var(--spacing-8) 0;
+    margin-top: var(--spacing-24);
     color: var(--text-secondary);
   }
   .review-sidebar-note svg {
     flex-shrink: 0;
-    margin-top: 3px;
+    margin-top: var(--spacing-4);
   }
   .review-sidebar-note p {
     font-size: var(--typography-caption1-fontSize);
@@ -521,32 +526,46 @@
   .review-selected-workspace {
     flex: 1;
     min-width: 0;
-    padding: 27px 28px 40px;
+    padding: var(--spacing-24) var(--spacing-24) var(--spacing-40);
   }
+  /* 항목 제목 | 차수 선택·다시 확인 요청. 제목 칸이 찌그러지지 않게 좁으면 행동 묶음이 아래 줄로 감깁니다. */
   .review-item-heading {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 23px;
+    align-items: flex-end;
+    gap: var(--spacing-16) var(--spacing-20);
+    margin-bottom: var(--spacing-24);
+  }
+  .review-item-heading > div:first-child {
+    flex: 1 1 280px;
+    min-width: 0;
   }
   .review-item-heading h2 {
-    margin: 6px 0 0;
+    overflow-wrap: anywhere;
+    margin: var(--spacing-6) 0 0;
     font-size: var(--typography-title3-fontSize);
     font-weight: 700;
     letter-spacing: var(--typography-title3-letterSpacing);
     line-height: var(--typography-title3-lineHeight);
   }
+  /* 선택 상자와 버튼은 둘 다 높이 40, 아래쪽을 맞춥니다. */
   .review-round-actions {
     display: flex;
-    align-items: center;
-    gap: 13px;
-    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--spacing-8) var(--spacing-12);
+    min-width: 0;
+    max-width: 100%;
+  }
+  .review-round-actions > * {
+    min-width: 0;
+    max-width: 100%;
   }
   .review-round-picker {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: var(--spacing-6);
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
@@ -558,20 +577,20 @@
     font-size: var(--typography-caption1-fontSize);
     color: var(--text);
     background: var(--surface);
-    padding: 0 28px 0 11px;
+    padding: 0 var(--spacing-32) 0 var(--spacing-12);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-earlier-note {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 12px 14px;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12) var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-10);
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
     background: var(--surface);
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-20);
     line-height: var(--typography-caption1-lineHeight);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -582,7 +601,7 @@
   .review-reading-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 22px;
+    gap: var(--spacing-24);
     align-items: start;
   }
   .review-document-column,
@@ -590,7 +609,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--spacing-20);
   }
   .review-description-card,
   .review-response-card,
@@ -598,14 +617,15 @@
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius-16);
-    padding: 22px;
+    padding: var(--spacing-24);
   }
   .review-description-meta {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 12px;
+    gap: var(--spacing-12);
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-20);
   }
   .review-description-meta > time {
     color: var(--text-secondary);
@@ -615,24 +635,24 @@
   .review-description-card > h3 {
     font-size: var(--typography-label1-fontSize);
     font-weight: 600;
-    margin: 23px 0 0;
+    margin: var(--spacing-24) 0 0;
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .review-preserved-description {
-    margin-top: 10px;
+    margin-top: var(--spacing-12);
   }
   .review-location {
     display: flex;
-    gap: 9px;
+    gap: var(--spacing-8);
     border-top: 1px solid var(--line);
-    padding-top: 17px;
-    margin-top: 22px;
+    padding-top: var(--spacing-16);
+    margin-top: var(--spacing-24);
     color: var(--text-secondary);
   }
   .review-location > span {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--spacing-6);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -652,8 +672,8 @@
   .review-file-heading {
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 16px 18px;
+    gap: var(--spacing-8);
+    padding: var(--spacing-16) var(--spacing-20);
     border-bottom: 1px solid var(--line);
     color: var(--text-secondary);
   }
@@ -676,7 +696,7 @@
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
-    padding: 12px 18px;
+    padding: var(--spacing-12) var(--spacing-20);
     border-top: 1px solid var(--line);
     margin: 0;
     letter-spacing: var(--typography-label2-letterSpacing);
@@ -687,11 +707,11 @@
     border-radius: var(--radius-14);
     background: var(--surface);
     color: var(--text-secondary);
-    padding: 25px;
+    padding: var(--spacing-24);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 13px;
+    gap: var(--spacing-12);
     text-align: center;
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
@@ -700,16 +720,16 @@
   .review-nondocument {
     flex-direction: row;
     text-align: left;
-    padding: 20px;
+    padding: var(--spacing-20);
   }
   .review-nondocument p {
     margin: 0;
   }
   .review-response-card .section-heading,
   .review-comments-card .section-heading {
-    gap: 9px;
+    gap: var(--spacing-8);
     flex-wrap: wrap;
-    margin-bottom: 18px;
+    margin-bottom: var(--spacing-20);
   }
   .review-response-card h3,
   .review-comments-card h3 {
@@ -719,11 +739,11 @@
     letter-spacing: var(--typography-body2-letterSpacing);
   }
   .review-saved-response {
-    padding: 15px;
+    padding: var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-10);
     background: var(--surface-muted);
-    margin-bottom: 18px;
+    margin-bottom: var(--spacing-20);
   }
   .review-saved-response > .meta {
     font-size: var(--typography-caption1-fontSize);
@@ -732,7 +752,7 @@
   .review-saved-response p {
     font-size: var(--typography-label1-fontSize);
     line-height: var(--typography-label1Reading-lineHeight);
-    margin: 11px 0 0;
+    margin: var(--spacing-12) 0 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-label1-letterSpacing);
@@ -741,12 +761,12 @@
     display: block;
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    margin-top: 10px;
+    margin-top: var(--spacing-12);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-response-form {
     display: grid;
-    gap: 18px;
+    gap: var(--spacing-20);
   }
   .review-response-form fieldset {
     border: 0;
@@ -757,20 +777,20 @@
   .review-response-form legend {
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    margin-bottom: 10px;
+    margin-bottom: var(--spacing-12);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-response-option {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-8);
     border: 1px solid var(--line);
     border-radius: var(--radius-10);
-    padding: 12px 11px;
+    padding: var(--spacing-12) var(--spacing-12);
     font-size: var(--typography-label2-fontSize);
     color: var(--text);
     cursor: pointer;
-    margin-top: 8px;
+    margin-top: var(--spacing-8);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-response-option.selected {
@@ -779,7 +799,7 @@
   }
   .review-response-option input {
     accent-color: var(--brand);
-    margin: 0 2px 0 0;
+    margin: 0 var(--spacing-2) 0 0;
     width: 14px;
     height: 14px;
   }
@@ -821,8 +841,8 @@
   .review-history-button {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin: 17px 0 0;
+    gap: var(--spacing-6);
+    margin: var(--spacing-16) 0 0;
     padding: 0;
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
@@ -835,31 +855,31 @@
   }
   .review-response-history {
     border-top: 1px solid var(--line);
-    padding-top: 14px;
-    margin-top: 15px;
+    padding-top: var(--spacing-16);
+    margin-top: var(--spacing-16);
   }
   .review-response-history > div {
-    padding: 12px 0;
+    padding: var(--spacing-12) 0;
     border-bottom: 1px solid var(--line);
   }
   .review-response-history time {
     display: block;
     font-size: var(--typography-caption1-fontSize);
     color: var(--text-secondary);
-    margin-top: 7px;
+    margin-top: var(--spacing-8);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-response-history p {
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
-    margin: 10px 0 0;
+    margin: var(--spacing-12) 0 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-comment-thread {
     border-top: 1px solid var(--line);
-    padding: 17px 0;
+    padding: var(--spacing-16) 0;
   }
   .review-comment-thread.is-resolved {
     opacity: 0.82;
@@ -867,7 +887,7 @@
   .review-comment-author {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: var(--spacing-8);
     flex-wrap: wrap;
   }
   .review-comment-avatar {
@@ -898,13 +918,13 @@
     line-height: var(--typography-label2-lineHeight);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    margin: 10px 0;
+    margin: var(--spacing-12) 0;
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-comment-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--spacing-12);
   }
   .review-comment-actions > button {
     color: var(--text-secondary);
@@ -931,7 +951,7 @@
   .review-resolved-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-6);
     min-height: 32px;
     padding: 0;
     border: 0;
@@ -947,15 +967,30 @@
     color: var(--brand);
   }
   .review-comment-reply {
-    margin: 17px 0 0 14px;
-    padding-left: 13px;
+    margin: var(--spacing-16) 0 0 var(--spacing-16);
+    padding-left: var(--spacing-12);
     border-left: 1px solid var(--line);
   }
   .review-comment-form {
     display: grid;
-    gap: 10px;
-    padding-top: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--spacing-12);
+    padding-top: var(--spacing-16);
     border-top: 1px solid var(--line);
+  }
+  /* 응답·댓글 카드 안 버튼은 카드 폭을 넘지 않습니다(아주 긴 글자는 버튼 안에서 잘림). */
+  .review-pin-bar,
+  .review-fit-button {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-8);
+  }
+  .review-comment-form > button,
+  .review-fit-button > a {
+    max-width: 100%;
+    overflow: hidden;
   }
   .review-comment-form > button {
     justify-self: end;
@@ -970,35 +1005,26 @@
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
   .review-comments-help {
-    margin: 18px 0 0;
+    margin: var(--spacing-20) 0 0;
   }
   .review-reply-target {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: var(--spacing-8);
+    padding: var(--spacing-8) var(--spacing-12);
     background: var(--surface-muted);
     border-radius: var(--radius-8);
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
-  .review-settings-dialog,
-  .review-recheck-dialog {
-    max-width: min(540px, calc(100vw - 32px)) !important;
-    max-height: calc(100dvh - 48px);
-    overflow: auto;
-    border-radius: var(--radius-20);
-    background: var(--surface);
-    color: var(--text);
-  }
   .review-sharing-current {
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: var(--typography-label2-fontSize);
-    padding: 6px 0 14px;
+    padding: var(--spacing-6) 0 var(--spacing-16);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-settings-note {
@@ -1008,19 +1034,22 @@
     margin: 0;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
+  /* 공유 중지(위험 구역): 안내 한 줄 위, 밀어서 중지(전체 너비) 아래. */
   .review-sharing-stop {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 20px;
+    gap: var(--spacing-12) var(--spacing-20);
     border-top: 1px solid var(--line);
-    padding-top: 20px;
-    margin-top: 4px;
+    padding-top: var(--spacing-20);
+    margin-top: var(--spacing-4);
   }
   .review-sharing-stop > p {
     font-size: var(--typography-caption1-fontSize);
     line-height: var(--typography-caption1-lineHeight);
     color: var(--text-secondary);
-    flex: 1;
+    flex: 1 1 100%;
+    min-width: 0;
     margin: 0;
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
@@ -1030,13 +1059,13 @@
   .review-recheck-confirmation {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: var(--spacing-12);
     font-size: var(--typography-label2-fontSize);
     line-height: var(--typography-label2-lineHeight);
     letter-spacing: var(--typography-label2-letterSpacing);
   }
   .review-recheck-confirmation > [role="checkbox"] {
-    margin-top: 4px;
+    margin-top: var(--spacing-4);
     flex-shrink: 0;
   }
   .review-loading {
@@ -1047,7 +1076,7 @@
   .review-access-page {
     max-width: 650px;
     margin: 0 auto;
-    padding: 44px 24px;
+    padding: var(--spacing-40) var(--spacing-24);
     min-height: 100dvh;
     text-align: center;
     color: var(--text);
@@ -1056,7 +1085,7 @@
     margin-bottom: 54px;
   }
   .review-access-page > .meta {
-    margin: 30px 0 20px;
+    margin: var(--spacing-32) 0 var(--spacing-20);
   }
   .review-return {
     color: var(--brand);
@@ -1066,42 +1095,38 @@
   }
   .review-no-item {
     flex: 1;
-    padding: 60px 20px;
+    padding: 60px var(--spacing-20);
   }
   @media (min-width: 1600px) {
     .review-reading-grid {
       grid-template-columns: minmax(0, 1fr) 380px;
-      gap: 28px;
-    }
-    .review-selected-workspace {
-      padding-left: 36px;
-      padding-right: 36px;
+      gap: var(--spacing-32);
     }
   }
   @media (max-width: 1199px) {
     .review-item-sidebar {
       width: 206px;
-      padding-left: 12px;
-      padding-right: 12px;
+      padding-left: var(--spacing-16);
+      padding-right: var(--spacing-16);
     }
     .review-reading-grid {
       grid-template-columns: minmax(0, 1fr) 310px;
-      gap: 17px;
+      gap: var(--spacing-16);
     }
     .review-selected-workspace {
-      padding: 23px 20px 32px;
+      padding: var(--spacing-24) var(--spacing-16) var(--spacing-32);
     }
     .review-header-actions {
-      gap: 8px;
+      gap: var(--spacing-8);
     }
     .review-workspace-header {
-      padding-left: 22px;
-      padding-right: 22px;
+      padding-left: var(--spacing-24);
+      padding-right: var(--spacing-24);
     }
     .review-description-card,
     .review-response-card,
     .review-comments-card {
-      padding: 18px;
+      padding: var(--spacing-20);
     }
     .review-item-heading h2 {
       font-size: var(--typography-heading1-fontSize);
@@ -1112,7 +1137,7 @@
     .review-workspace-header {
       align-items: flex-start;
       flex-wrap: wrap;
-      gap: 14px;
+      gap: var(--spacing-16);
     }
     .review-header-left {
       flex-basis: 100%;
@@ -1128,8 +1153,8 @@
       border-right: 0;
       border-bottom: 1px solid var(--line);
       display: flex;
-      gap: 8px;
-      padding: 12px 20px;
+      gap: var(--spacing-8);
+      padding: var(--spacing-12) var(--spacing-16);
       overflow: auto;
     }
     .review-sidebar-title,
@@ -1140,8 +1165,8 @@
       width: 220px;
       min-width: 220px;
       margin: 0;
-      padding: 12px 14px;
-      gap: 6px;
+      padding: var(--spacing-12) var(--spacing-16);
+      gap: var(--spacing-6);
     }
     .review-item-number {
       display: none;
@@ -1155,7 +1180,7 @@
       letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .review-round-actions {
-      gap: 10px;
+      gap: var(--spacing-12);
     }
   }
   /* Montage md(992) 미만: 사이드바가 보이는 태블릿 폭에서는 응답 열을 아래로 내립니다. */
@@ -1165,47 +1190,31 @@
     }
   }
   @media (max-width: 767px) {
-    .review-list-toolbar {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 13px;
-    }
-    .review-search {
-      width: 100%;
-    }
     .review-list {
-      padding: 0 17px;
+      padding: 0 var(--spacing-16);
     }
+    /* 좁은 화면: 배지는 내용 아래 줄로 내려가고 화살표는 첫 줄에 남습니다. */
     .review-list-row {
-      align-items: flex-start;
-      gap: 12px;
-      padding: 20px 0;
+      grid-template-columns: auto minmax(0, 1fr) auto;
     }
-    .review-list-icon {
-      width: 34px;
-      height: 38px;
-      border-radius: var(--radius-10);
-    }
-    .review-list-title > strong {
-      font-size: var(--typography-label1-fontSize);
-      letter-spacing: var(--typography-label1-letterSpacing);
+    .review-list-row > .status-badge {
+      grid-column: 2;
+      grid-row: 2;
+      justify-self: start;
     }
     .review-list-row > svg {
-      margin-top: 9px;
+      grid-column: 3;
+      grid-row: 1;
     }
-    .review-counts {
-      gap: 9px;
-      line-height: 1.7;
-    }
-    .review-list-main > .muted {
-      font-size: var(--typography-caption1-fontSize);
-      letter-spacing: var(--typography-caption1-letterSpacing);
+    .review-list-icon {
+      width: 40px;
+      height: 40px;
     }
     .review-workspace-header {
-      padding: 16px;
+      padding: var(--spacing-16);
     }
     .review-header-left {
-      gap: 10px;
+      gap: var(--spacing-12);
       flex-wrap: wrap;
     }
     .review-header-left > div {
@@ -1214,7 +1223,7 @@
     }
     .review-brand {
       font-size: var(--typography-headline2-fontSize);
-      gap: 6px;
+      gap: var(--spacing-6);
       letter-spacing: var(--typography-headline2-letterSpacing);
     }
     .review-header-left h1 {
@@ -1229,7 +1238,7 @@
       height: 30px;
     }
     .review-header-actions {
-      gap: 7px;
+      gap: var(--spacing-8);
       width: 100%;
       justify-content: flex-end;
     }
@@ -1241,20 +1250,24 @@
       display: none;
     }
     .review-selected-workspace {
-      padding: 20px 16px 30px;
+      padding: var(--spacing-20) var(--spacing-16) var(--spacing-32);
     }
     .review-item-sidebar {
-      padding: 10px 16px;
+      padding: var(--spacing-12) var(--spacing-16);
     }
     .review-item-nav {
       width: 195px;
       min-width: 195px;
     }
+    /* 세로로 쌓일 때 제목 칸의 기본 폭(280)이 높이로 바뀌지 않게 합니다. */
+    .review-item-heading > div:first-child {
+      flex: none;
+    }
     .review-item-heading {
       flex-direction: column;
       align-items: stretch;
-      gap: 17px;
-      margin-bottom: 18px;
+      gap: var(--spacing-16);
+      margin-bottom: var(--spacing-20);
     }
     .review-item-heading h2 {
       font-size: var(--typography-heading1-fontSize);
@@ -1269,7 +1282,7 @@
     .review-round-picker {
       flex-direction: row;
       align-items: center;
-      gap: 9px;
+      gap: var(--spacing-8);
     }
     .review-reading-grid {
       display: block;
@@ -1280,50 +1293,35 @@
     }
     .review-earlier-note {
       flex-wrap: wrap;
-      gap: 6px;
+      gap: var(--spacing-6);
     }
     .review-earlier-note > button {
-      margin-left: 25px;
+      margin-left: var(--spacing-24);
     }
     .review-document-column,
     .review-response-column {
-      gap: 16px;
+      gap: var(--spacing-16);
     }
     .review-description-meta {
       flex-wrap: wrap;
-      gap: 8px;
+      gap: var(--spacing-8);
     }
     .review-preserved-description {
       font-size: var(--typography-body2-fontSize);
       letter-spacing: var(--typography-body2-letterSpacing);
-    }
-    .review-compose-dialog,
-    .review-settings-dialog,
-    .review-recheck-dialog {
-      padding: 22px;
-      max-height: calc(100dvh - 24px);
-    }
-    .review-compose-dialog .form-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-    .review-compose-dialog .form-actions > button {
-      font-size: var(--typography-caption1-fontSize);
-      letter-spacing: var(--typography-caption1-letterSpacing);
     }
     .review-preview-heading h3 {
       font-size: var(--typography-heading2-fontSize);
       letter-spacing: var(--typography-heading2-letterSpacing);
     }
     .review-preview-item {
-      padding: 16px;
+      padding: var(--spacing-16);
     }
     .review-source-block {
-      padding: 12px 13px;
+      padding: var(--spacing-12) var(--spacing-12);
     }
     .review-sharing-stop {
-      gap: 14px;
+      gap: var(--spacing-16);
     }
     .review-preview-banner,
     .review-stopped-banner {
@@ -1335,7 +1333,7 @@
     .review-preview-banner > svg,
     .review-stopped-banner > svg {
       flex-shrink: 0;
-      margin-top: 2px;
+      margin-top: var(--spacing-2);
     }
   }
 
@@ -1389,7 +1387,7 @@
   .review-notify-bar {
     display: flex;
     align-items: center;
-    gap: var(--spacing-10);
+    gap: var(--spacing-12);
     padding: var(--spacing-8) var(--spacing-20);
     border-bottom: 1px solid var(--line);
     background: var(--surface);
@@ -1413,9 +1411,11 @@
     color: var(--text);
     font-weight: 600;
   }
+  /* 세 줄(상태 · 설명 · 꺼진 이유)은 같은 글자 크기입니다. */
   .review-notify-text small {
     display: block;
     color: var(--text-secondary);
+    font-size: inherit;
   }
   .review-notify-text .disabled-reason {
     margin-top: var(--spacing-2);
@@ -1428,13 +1428,15 @@
       flex-wrap: wrap;
       padding-inline: var(--spacing-16);
     }
+    /* 버튼은 글 아래 줄, 글 시작선(아이콘 16 + 사이 12)에 맞춥니다. */
     .review-notify-bar > button {
-      width: 100%;
+      flex: 1 0 calc(100% - var(--spacing-16) - var(--spacing-12));
+      margin-left: calc(var(--spacing-16) + var(--spacing-12));
     }
   }
   .review-email-draft {
     display: grid;
-    gap: var(--spacing-10);
+    gap: var(--spacing-12);
     padding: var(--spacing-16);
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
@@ -1460,7 +1462,7 @@
   .review-email-draft-body {
     display: grid;
     gap: var(--spacing-6);
-    padding-top: var(--spacing-10);
+    padding-top: var(--spacing-12);
     border-top: 1px solid var(--line);
   }
   .review-email-draft-body p {
@@ -1516,11 +1518,11 @@
   .review-comment-thread > .review-comment-body,
   .review-comment-thread > .review-comment-edit,
   .review-comment-thread > .review-comment-actions {
-    margin-inline-start: 32px;
+    margin-inline-start: var(--spacing-32);
   }
   .review-comment-reply > .review-comment-body,
   .review-comment-reply > .review-comment-edit {
-    margin-inline-start: 27px;
+    margin-inline-start: var(--spacing-24);
   }
   .review-comment-edit-actions {
     align-items: center;

@@ -20,9 +20,10 @@ import { Link } from "react-router-dom";
 import { Icon } from "./icons";
 import { Button } from "@/components/ui/button";
 /**
- * 화면 머리. 순서는 docs/design/patterns.md §2로 고정합니다:
- * 뒤로 → 제목·상태 배지·행동 → 설명 → 탭 → 도구 줄.
- * 화면에서 머리 요소를 따로 쌓지 말고 이 자리(back·status·tabs·toolbar)를 씁니다.
+ * 화면 머리. 순서와 간격은 docs/design/patterns.md §2 · §2-2(배치 규칙)로 고정합니다:
+ * 뒤로 → 제목·상태 배지 | 행동 → 설명 → 메타 → 탭 → 도구 줄.
+ * 화면에서 머리 요소를 따로 쌓지 말고 이 자리(back·status·meta·tabs·toolbar)를 씁니다.
+ * 배치는 reference.css의 "화면 틀" 구역이 맡고, 화면 CSS에서 다시 덮지 않습니다.
  */
 export function PageHeader({
   title,
@@ -31,25 +32,32 @@ export function PageHeader({
   eyebrow,
   back,
   status,
+  meta,
   tabs,
   toolbar,
 }: {
   title: string;
   description?: ReactNode;
+  /** 오른쪽 행동 버튼(높이 40). solid primary는 하나까지. 767px 이하에서는 설명 아래로 내려갑니다. */
   actions?: ReactNode;
   eyebrow?: string;
   /** 상세 화면의 BackLink. */
   back?: ReactNode;
-  /** 제목 옆 상태 배지. */
+  /** 제목 옆 상태 배지(여러 개면 조각으로 묶어 넘깁니다). */
   status?: ReactNode;
+  /**
+   * 설명 아래 메타 줄(현재 단계 · 다음 미팅, 날짜 · 개수, 요약 칩 등).
+   * 항목 사이 8px로 감기는 한 줄 묶음입니다. 글자는 보조색 label2입니다.
+   */
+  meta?: ReactNode;
   /** 다른 내용 묶음으로 가는 탭(Montage Tab). */
   tabs?: ReactNode;
-  /** 보기 전환·찾기·거르기 줄. */
+  /** 보기 전환·찾기·거르기 줄. 찾기 칸에는 `page-search` 클래스를 붙입니다. */
   toolbar?: ReactNode;
 }) {
   const header = (
     <header className={tabs ? "page-header has-tabs" : "page-header"}>
-      <div>
+      <div className="page-heading">
         {eyebrow && <div className="page-eyebrow">{eyebrow}</div>}
         {status ? (
           <div className="page-title-row">
@@ -60,6 +68,7 @@ export function PageHeader({
           <h1 className="page-title">{title}</h1>
         )}
         {description && <p className="page-description">{description}</p>}
+        {meta && <div className="page-meta">{meta}</div>}
       </div>
       {actions && <div className="page-actions">{actions}</div>}
     </header>
@@ -356,7 +365,7 @@ export function HomeSkeleton() {
         </div>
         <div className="workspace-content">
           <div className="page-header">
-            <div>
+            <div className="page-heading">
               <Skeleton
                 variant="rectangle"
                 width={210}

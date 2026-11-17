@@ -65,10 +65,20 @@ class Cdp {
       this.ws.onerror = fail;
     });
   }
-  call(method, params = {}) {
+  /** 응답이 오지 않으면 영원히 기다리지 않게 호출마다 제한 시간을 둡니다. */
+  call(method, params = {}, timeoutMs = 30000) {
     const id = ++this.id;
     this.ws.send(JSON.stringify({ id, method, params }));
-    return new Promise((ok, fail) => this.pending.set(id, { ok, fail }));
+    return new Promise((ok, fail) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        fail(new Error(`${method} 응답 없음(${timeoutMs}ms)`));
+      }, timeoutMs);
+      this.pending.set(id, {
+        ok: (v) => (clearTimeout(timer), ok(v)),
+        fail: (e) => (clearTimeout(timer), fail(e)),
+      });
+    });
   }
   async evaluate(expression) {
     const r = await this.call("Runtime.evaluate", {
@@ -116,7 +126,17 @@ async function launchChrome() {
   await cdp.call("Network.enable");
   const close = () => {
     proc.kill();
-    rmSync(profile, { recursive: true, force: true });
+    // Chrome이 꺼지는 동안 프로필에 파일을 더 쓸 수 있어 몇 번 다시 지워 봅니다.
+    try {
+      rmSync(profile, {
+        recursive: true,
+        force: true,
+        maxRetries: 5,
+        retryDelay: 200,
+      });
+    } catch {
+      /* 임시 프로필이 남아도 결과에는 영향이 없습니다. */
+    }
   };
   return { cdp, close };
 }
@@ -126,9 +146,12 @@ const LAYOUT_CHECK = `(() => {
   const W = innerWidth, d = document, de = d.documentElement;
   const off = [], clip = [], wrap = [], orph = [];
   const label = (el) => (typeof el.className === "string" && el.className.trim() ? "." + el.className.trim().split(/\\s+/)[0] : el.tagName.toLowerCase());
-  const textLines = (el) => { const tw = d.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; const s = new Set();
-    while ((n = tw.nextNode())) { if (!n.textContent.trim()) continue; const rg = d.createRange(); rg.selectNodeContents(n); [...rg.getClientRects()].forEach((x) => x.width > 1 && s.add(Math.round(x.top))); }
-    return s.size; };
+  // 글자 줄 수. 같은 요소 안에서 top 차이가 줄 높이의 절반 이하이면 같은 줄로 봅니다(글자 옆 개수 배지처럼 크기가 다른 글자).
+  const textLines = (el) => { const tw = d.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; const rs = [];
+    while ((n = tw.nextNode())) { if (!n.textContent.trim()) continue; const rg = d.createRange(); rg.selectNodeContents(n); [...rg.getClientRects()].forEach((x) => x.width > 1 && rs.push([x.top, x.height])); }
+    rs.sort((a, b) => a[0] - b[0]); let lines = 0, top = -1e9, h = 0;
+    for (const [t, hh] of rs) { if (t - top > Math.max(h, hh) / 2) { lines++; top = t; h = hh; } else h = Math.max(h, hh); }
+    return lines; };
   for (const el of d.querySelectorAll("body *")) {
     const cs = getComputedStyle(el);
     if (cs.display === "none" || cs.visibility === "hidden" || el.closest("[aria-hidden=true],.sr-only")) continue;
@@ -224,52 +247,62 @@ async function capture() {
           mobile: width < 768,
         });
         for (const route of routes) {
-          cdp.events.length = 0;
-          await cdp.call("Page.navigate", { url: base + route.path });
-          await sleep(2400);
-          const layout = await cdp.evaluate(LAYOUT_CHECK);
-          const styles = await cdp.evaluate(styleDump(STYLE_PROBES));
-          const errors = cdp.events
-            .filter(
-              (e) =>
-                e.method === "Runtime.exceptionThrown" ||
-                (e.method === "Runtime.consoleAPICalled" &&
-                  e.params.type === "error"),
-            )
-            .map((e) =>
-              (
-                e.params.exceptionDetails?.exception?.description ??
-                e.params.args?.[0]?.value ??
-                ""
-              )
-                .toString()
-                .slice(0, 200),
-            );
-          const shot = `${route.name}-${width}-${theme}.png`;
-          const png = await cdp.call("Page.captureScreenshot", {
-            format: "png",
-          });
-          writeFileSync(join(out, shot), Buffer.from(png.data, "base64"));
-          const row = {
-            route: route.name,
-            width,
-            theme,
-            ...layout,
-            errors,
-            styles,
-            shot,
-          };
-          results.push(row);
-          const flags = [
-            row.hscroll > 0 && `가로 넘침 ${row.hscroll}px`,
-            row.offscreen.length && "화면 밖",
-            row.clipped.length && "말줄임",
-            row.errors.length && "콘솔 오류",
-            row.theme !== theme && "테마 불일치",
-          ].filter(Boolean);
-          console.log(
-            `${route.name.padEnd(18)} ${String(width).padStart(4)} ${theme.padEnd(5)} ${flags.join(", ") || "ok"}`,
-          );
+          // 한 화면이 멈춰도 전체가 서지 않게: 한 번 더 해 보고, 그래도 안 되면 건너뜁니다.
+          for (let attempt = 1; attempt <= 2; attempt++) {
+            try {
+              cdp.events.length = 0;
+              await cdp.call("Page.navigate", { url: base + route.path });
+              await sleep(2400);
+              const layout = await cdp.evaluate(LAYOUT_CHECK);
+              const styles = await cdp.evaluate(styleDump(STYLE_PROBES));
+              const errors = cdp.events
+                .filter(
+                  (e) =>
+                    e.method === "Runtime.exceptionThrown" ||
+                    (e.method === "Runtime.consoleAPICalled" &&
+                      e.params.type === "error"),
+                )
+                .map((e) =>
+                  (
+                    e.params.exceptionDetails?.exception?.description ??
+                    e.params.args?.[0]?.value ??
+                    ""
+                  )
+                    .toString()
+                    .slice(0, 200),
+                );
+              const shot = `${route.name}-${width}-${theme}.png`;
+              const png = await cdp.call("Page.captureScreenshot", {
+                format: "png",
+              });
+              writeFileSync(join(out, shot), Buffer.from(png.data, "base64"));
+              const row = {
+                route: route.name,
+                width,
+                theme,
+                ...layout,
+                errors,
+                styles,
+                shot,
+              };
+              results.push(row);
+              const flags = [
+                row.hscroll > 0 && `가로 넘침 ${row.hscroll}px`,
+                row.offscreen.length && "화면 밖",
+                row.clipped.length && "말줄임",
+                row.errors.length && "콘솔 오류",
+                row.theme !== theme && "테마 불일치",
+              ].filter(Boolean);
+              console.log(
+                `${route.name.padEnd(18)} ${String(width).padStart(4)} ${theme.padEnd(5)} ${flags.join(", ") || "ok"}`,
+              );
+              break;
+            } catch (error) {
+              console.log(
+                `${route.name.padEnd(18)} ${String(width).padStart(4)} ${theme.padEnd(5)} 실패(${attempt}/2): ${error.message}`,
+              );
+            }
+          }
         }
       }
     }

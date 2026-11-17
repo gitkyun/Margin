@@ -148,10 +148,12 @@ function SourcesTab({
             >
               <Icon name="file" size={15} />
               <span>
-                {context.title}
-                {context.page
-                  ? ` · ${t("{page}쪽", { page: context.page })}`
-                  : ""}
+                <span className="source-title" title={context.title}>
+                  {context.title}
+                  {context.page
+                    ? ` · ${t("{page}쪽", { page: context.page })}`
+                    : ""}
+                </span>
                 <small>{KIND_LABELS[context.kind] ?? t("기록")}</small>
               </span>
               <Button
@@ -195,7 +197,9 @@ function SourcesTab({
             >
               <Icon name="file" size={17} />
               <span>
-                {option.title}
+                <span className="source-title" title={option.title}>
+                  {option.title}
+                </span>
                 <small>{KIND_LABELS[option.kind]}</small>
               </span>
               <Icon name={selected ? "check" : "plus"} size={16} />
@@ -229,7 +233,9 @@ function SourcesTab({
               >
                 <Icon name="file" size={17} />
                 <span>
-                  {version.fileName}
+                  <span className="source-title" title={version.fileName}>
+                    {version.fileName}
+                  </span>
                   <small>
                     v{version.number} · {t("{page}쪽", { page })}
                   </small>

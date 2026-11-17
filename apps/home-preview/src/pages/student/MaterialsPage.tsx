@@ -1,3 +1,4 @@
+import { DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { dateLocale, t } from "@/lib/i18n";
 import { AnimatedList } from "@/components/AnimatedList";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
@@ -342,10 +343,10 @@ export function MaterialsPage() {
             title={current.title}
             description={`${materialTypes[current.type]} · ${current.externalUrl ? t("링크") : t("PDF 파일")}`}
             actions={
-              <div className="button-row">
-                {/* 자주 쓰지 않는 보관은 머리의 보조 동작으로 둡니다(검수 P2). */}
+              <>
+                {/* 자주 쓰지 않는 보관은 머리의 보조 동작으로 둡니다(검수 P2). 머리 버튼은 모두 높이 40. */}
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={async () => {
                     try {
                       await save("materials", {
@@ -382,7 +383,7 @@ export function MaterialsPage() {
                   <Icon name="upload" size={16} />
                   {t("새 버전 추가")}
                 </Button>
-              </div>
+              </>
             }
           />
           <div className="material-location">
@@ -609,15 +610,6 @@ export function MaterialsPage() {
               </Button>
             }
           />
-          <MaterialFolders
-            researchId={researchId}
-            value={folder}
-            onChange={(v) => {
-              const n = new URLSearchParams(params);
-              v ? n.set("folder", v) : n.delete("folder");
-              setParams(n);
-            }}
-          />
           <div className="page-toolbar">
             <FilterSegments
               label={t("자료 종류")}
@@ -632,6 +624,15 @@ export function MaterialsPage() {
               placeholder={t("자료 이름으로 찾기")}
             />
           </div>
+          <MaterialFolders
+            researchId={researchId}
+            value={folder}
+            onChange={(v) => {
+              const n = new URLSearchParams(params);
+              v ? n.set("folder", v) : n.delete("folder");
+              setParams(n);
+            }}
+          />
           <AnimatedList className="surface material-list">
             {materials.length ? (
               materials.map((material) => {
@@ -646,7 +647,7 @@ export function MaterialsPage() {
                 return (
                   <div key={material.id} className="material-list-item">
                     <Link
-                      className="material-list-row"
+                      className="material-list-row list-row"
                       to={`/r/${researchId}/materials/${material.id}`}
                       aria-current={
                         previewId === material.id ? "true" : undefined
@@ -689,9 +690,14 @@ export function MaterialsPage() {
                           {!material.externalUrl && <small>PDF</small>}
                         </span>
                       )}
-                      <span className="grow">
-                        <strong>{material.title}</strong>
-                        <small>
+                      <span className="list-row-body">
+                        <strong
+                          className="list-row-title"
+                          title={material.title}
+                        >
+                          {material.title}
+                        </strong>
+                        <small className="list-row-meta">
                           {materialTypes[material.type]} ·{" "}
                           {material.externalUrl
                             ? t("링크")
@@ -703,7 +709,7 @@ export function MaterialsPage() {
                               : t("파일 없음")}
                         </small>
                       </span>
-                      <span className="material-row-date">
+                      <span className="list-row-aside">
                         {new Intl.DateTimeFormat(dateLocale(), {
                           month: "long",
                           day: "numeric",
@@ -832,88 +838,95 @@ export function MaterialsPage() {
               )
         }
       >
-        <form className="stack material-registration-form" onSubmit={register}>
-          {!target && (
-            <Segments
-              fill
-              label={t("자료 종류")}
-              value={registerMode}
-              onChange={(value) =>
-                setRegisterMode(value as typeof registerMode)
-              }
-              options={[
-                { value: "file", label: t("PDF 파일") },
-                { value: "link", label: t("링크") },
-              ]}
-            />
-          )}
-          {draft && (
-            <>
-              <LabeledInput
-                label={t("자료 이름")}
-                required
-                value={draft.title}
-                onChange={(title) => setDraft((v) => (v ? { ...v, title } : v))}
-                disabled={saving}
+        <form className="material-registration-form" onSubmit={register}>
+          <DialogBody>
+            {!target && (
+              <Segments
+                fill
+                label={t("자료 종류")}
+                value={registerMode}
+                onChange={(value) =>
+                  setRegisterMode(value as typeof registerMode)
+                }
+                options={[
+                  { value: "file", label: t("PDF 파일") },
+                  { value: "link", label: t("링크") },
+                ]}
               />
-              <label className="field">
-                <span className="field-name">{t("자료 유형")}</span>
-                <SelectField
-                  className="native-select"
-                  value={draft.type}
-                  onChange={(event) =>
-                    setDraft((v) =>
-                      v
-                        ? { ...v, type: event.target.value as Material["type"] }
-                        : v,
-                    )
-                  }
-                  disabled={saving}
-                >
-                  {Object.entries(materialTypes).map(([value, label]) => (
-                    <option value={value} key={value}>
-                      {label}
-                    </option>
-                  ))}
-                </SelectField>
-              </label>
-              {registerMode === "link" ? (
+            )}
+            {draft && (
+              <>
                 <LabeledInput
-                  label={t("링크")}
+                  label={t("자료 이름")}
                   required
-                  type="url"
-                  value={draft.externalUrl ?? ""}
-                  onChange={(externalUrl) =>
-                    setDraft((v) => (v ? { ...v, externalUrl } : v))
+                  value={draft.title}
+                  onChange={(title) =>
+                    setDraft((v) => (v ? { ...v, title } : v))
                   }
-                  placeholder="https://"
-                  hint={t(
-                    "링크한 문서를 누가 볼 수 있는지는 원래 서비스의 공유 설정을 따라요.",
-                  )}
                   disabled={saving}
                 />
-              ) : (
-                <MaterialUploadField
-                  file={file}
-                  busy={saving}
-                  progress={progress}
-                  pending={!!pending}
-                  onSelect={selectFile}
-                  onClear={() => {
-                    setFile(null);
-                    setProgress(null);
-                    setError(null);
-                  }}
-                  onAbort={() => abort.current?.abort()}
-                />
-              )}
-            </>
-          )}
-          <ErrorNotice error={error} />
-          <div className="form-actions">
+                <label className="field">
+                  <span className="field-name">{t("자료 유형")}</span>
+                  <SelectField
+                    className="native-select"
+                    value={draft.type}
+                    onChange={(event) =>
+                      setDraft((v) =>
+                        v
+                          ? {
+                              ...v,
+                              type: event.target.value as Material["type"],
+                            }
+                          : v,
+                      )
+                    }
+                    disabled={saving}
+                  >
+                    {Object.entries(materialTypes).map(([value, label]) => (
+                      <option value={value} key={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </SelectField>
+                </label>
+                {registerMode === "link" ? (
+                  <LabeledInput
+                    label={t("링크")}
+                    required
+                    type="url"
+                    value={draft.externalUrl ?? ""}
+                    onChange={(externalUrl) =>
+                      setDraft((v) => (v ? { ...v, externalUrl } : v))
+                    }
+                    placeholder="https://"
+                    hint={t(
+                      "링크한 문서를 누가 볼 수 있는지는 원래 서비스의 공유 설정을 따라요.",
+                    )}
+                    disabled={saving}
+                  />
+                ) : (
+                  <MaterialUploadField
+                    file={file}
+                    busy={saving}
+                    progress={progress}
+                    pending={!!pending}
+                    onSelect={selectFile}
+                    onClear={() => {
+                      setFile(null);
+                      setProgress(null);
+                      setError(null);
+                    }}
+                    onAbort={() => abort.current?.abort()}
+                  />
+                )}
+              </>
+            )}
+            <ErrorNotice error={error} />
+          </DialogBody>
+          <DialogFooter>
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               disabled={saving}
               onClick={() => setRegistering(false)}
             >
@@ -933,7 +946,7 @@ export function MaterialsPage() {
                 }
               />
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </FormDialog>
       <FormDialog
@@ -945,7 +958,6 @@ export function MaterialsPage() {
         title={t("자료 정보 편집")}
       >
         <form
-          className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             if (!editing || !editing.title.trim()) return;
@@ -963,50 +975,55 @@ export function MaterialsPage() {
             });
           }}
         >
-          {editing && (
-            <>
-              <LabeledInput
-                label={t("자료 이름")}
-                required
-                value={editing.title}
-                onChange={(title) =>
-                  setEditing((v) => (v ? { ...v, title } : v))
-                }
-              />
-              <label className="field">
-                <span className="field-name">{t("자료 유형")}</span>
-                <SelectField
-                  className="native-select"
-                  value={editing.type}
-                  onChange={(event) =>
-                    setEditing((v) =>
-                      v
-                        ? { ...v, type: event.target.value as Material["type"] }
-                        : v,
-                    )
-                  }
-                >
-                  {Object.entries(materialTypes).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </SelectField>
-              </label>
-              {editing.externalUrl !== undefined && (
+          <DialogBody>
+            {editing && (
+              <>
                 <LabeledInput
-                  label={t("링크")}
-                  type="url"
+                  label={t("자료 이름")}
                   required
-                  value={editing.externalUrl}
-                  onChange={(externalUrl) =>
-                    setEditing((v) => (v ? { ...v, externalUrl } : v))
+                  value={editing.title}
+                  onChange={(title) =>
+                    setEditing((v) => (v ? { ...v, title } : v))
                   }
                 />
-              )}
-            </>
-          )}
-          <ErrorNotice error={editForm.error} />
+                <label className="field">
+                  <span className="field-name">{t("자료 유형")}</span>
+                  <SelectField
+                    className="native-select"
+                    value={editing.type}
+                    onChange={(event) =>
+                      setEditing((v) =>
+                        v
+                          ? {
+                              ...v,
+                              type: event.target.value as Material["type"],
+                            }
+                          : v,
+                      )
+                    }
+                  >
+                    {Object.entries(materialTypes).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </SelectField>
+                </label>
+                {editing.externalUrl !== undefined && (
+                  <LabeledInput
+                    label={t("링크")}
+                    type="url"
+                    required
+                    value={editing.externalUrl}
+                    onChange={(externalUrl) =>
+                      setEditing((v) => (v ? { ...v, externalUrl } : v))
+                    }
+                  />
+                )}
+              </>
+            )}
+            <ErrorNotice error={editForm.error} />
+          </DialogBody>
           <SaveActions
             saving={editForm.saving}
             onCancel={() => setEditing(null)}

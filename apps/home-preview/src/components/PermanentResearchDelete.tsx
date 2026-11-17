@@ -1,7 +1,6 @@
 import { t } from "@/lib/i18n";
 import { useState } from "react";
 import { SlideToConfirm } from "./SlideToConfirm";
-import "./permanent-research-delete.css";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/lib/workspace";
 import { assertConnected, friendlyError } from "@/lib/supabase";
@@ -12,6 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogBody,
+  DialogFooter,
 } from "./ui/dialog";
 import { Icon } from "./icons";
 import { toast } from "sonner";
@@ -109,7 +110,7 @@ export function PermanentResearchDelete({
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="permanent-delete-confirm">
+          <DialogBody>
             <SlideToConfirm
               tone="danger"
               label={t("밀어서 완전히 삭제")}
@@ -122,17 +123,17 @@ export function PermanentResearchDelete({
                 {error}
               </p>
             )}
-            <div className="settings-form-actions">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy}
-                onClick={() => setOpen(false)}
-              >
-                {t("취소")}
-              </Button>
-            </div>
-          </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setOpen(false)}
+            >
+              {t("취소")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

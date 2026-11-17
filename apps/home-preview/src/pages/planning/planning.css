@@ -34,7 +34,7 @@
     place-items: center;
     width: 24px;
     height: 24px;
-    margin-top: var(--spacing-14);
+    margin-top: var(--spacing-16);
     border: 2px solid var(--line-strong);
     border-radius: var(--radius-full);
     background: var(--surface);
@@ -125,7 +125,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-8);
-    padding-left: 32px;
+    padding-left: var(--spacing-32);
     color: var(--brand);
     font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
@@ -161,7 +161,7 @@
     gap: var(--spacing-6);
     justify-items: start;
     width: 220px;
-    padding: var(--spacing-14) var(--spacing-16);
+    padding: var(--spacing-16) var(--spacing-16);
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-12);
     background: var(--surface);
@@ -207,7 +207,7 @@
   .roadmap-node-beam {
     position: absolute;
     inset: -2px;
-    padding: 2px;
+    padding: var(--spacing-2);
     border-radius: inherit;
     overflow: hidden;
     pointer-events: none;
@@ -264,5 +264,49 @@
 }
 
 @layer margin {
-  /* 로드맵 계획 제안: AI가 생각하는 동안 도우미 봇이 깡충 뛰어요. */
+  /* ── 로드맵 도구 줄(.page-toolbar 안) ──────────────────
+     왼쪽 보기 전환, 오른쪽 계획 초안 버튼. 꺼진 이유는 버튼 아래 6.
+     이유 글이 있어도 두 칸의 위쪽이 맞도록 위 정렬합니다. */
+  .planning-view-switch {
+    display: flex;
+    align-self: flex-start;
+  }
+  .planning-propose {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    align-self: flex-start;
+    gap: var(--spacing-6);
+    margin-left: auto;
+  }
+  .planning-propose > .disabled-reason {
+    margin: 0;
+    text-align: right;
+  }
+  /* 현재 단계 배지와 안내 한 줄: 왼쪽 정렬, 배지 ↔ 글 12, 아래 16. */
+  .planning-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8) var(--spacing-12);
+    min-width: 0;
+    margin: 0 0 var(--spacing-16);
+  }
+  .planning-summary > p {
+    min-width: 0;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  @media (max-width: 767px) {
+    .planning-propose {
+      align-items: flex-start;
+      margin-left: 0;
+    }
+    .planning-propose > .disabled-reason {
+      text-align: left;
+    }
+  }
 }

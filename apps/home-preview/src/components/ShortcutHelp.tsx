@@ -8,6 +8,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogBody,
+  DialogFooter,
 } from "./ui/dialog";
 import { RESEARCH_NAVIGATION } from "@/lib/command-items";
 import { GO_SHORTCUTS } from "@/lib/go-shortcuts";
@@ -71,19 +73,23 @@ export function ShortcutHelp({
             )}
           </DialogDescription>
         </DialogHeader>
-        <dl className="shortcut-help">
-          {shortcutRows().map(([keys, label]) => (
-            <div key={keys.join("+")}>
-              <dt>
-                {keys.map((key) => (
-                  <kbd key={key}>{key}</kbd>
-                ))}
-              </dt>
-              <dd>{label}</dd>
-            </div>
-          ))}
-        </dl>
-        <Button onClick={() => onOpenChange(false)}>{t("닫기")}</Button>
+        <DialogBody>
+          <dl className="shortcut-help">
+            {shortcutRows().map(([keys, label]) => (
+              <div key={keys.join("+")}>
+                <dt>
+                  {keys.map((key) => (
+                    <kbd key={key}>{key}</kbd>
+                  ))}
+                </dt>
+                <dd>{label}</dd>
+              </div>
+            ))}
+          </dl>
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)}>{t("닫기")}</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

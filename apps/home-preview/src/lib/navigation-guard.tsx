@@ -17,6 +17,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 export interface NavigationGuardState {
@@ -137,13 +139,17 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
                 : t("저장하지 않은 내용은 사라져요.")}
             </DialogDescription>
           </DialogHeader>
-          {summary.labels.length > 0 && <p>{summary.labels.join(" · ")}</p>}
-          {discardError && (
-            <p role="alert" className="form-error">
-              {discardError}
-            </p>
+          {(summary.labels.length > 0 || discardError) && (
+            <DialogBody>
+              {summary.labels.length > 0 && <p>{summary.labels.join(" · ")}</p>}
+              {discardError && (
+                <p role="alert" className="form-error">
+                  {discardError}
+                </p>
+              )}
+            </DialogBody>
           )}
-          <div className="form-actions">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -162,7 +168,7 @@ export function NavigationGuardProvider({ children }: { children: ReactNode }) {
                 {t("버리고 이동")}
               </Button>
             )}
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </GuardContext.Provider>

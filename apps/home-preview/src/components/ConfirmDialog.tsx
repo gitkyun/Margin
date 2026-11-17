@@ -7,6 +7,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 export interface ConfirmOptions {
@@ -55,7 +56,7 @@ export function useConfirm(): [
             <DialogDescription>{options.description}</DialogDescription>
           )}
         </DialogHeader>
-        <div className="form-actions">
+        <DialogFooter>
           <Button variant="outline" onClick={() => close(false)}>
             {t("닫기")}
           </Button>
@@ -65,7 +66,7 @@ export function useConfirm(): [
           >
             {options?.confirmLabel}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

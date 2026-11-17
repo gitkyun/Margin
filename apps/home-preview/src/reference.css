@@ -86,12 +86,18 @@
     color: var(--text-secondary);
     background: var(--surface);
   }
+  /* 휴대폰 연구 메뉴(시트): 연구 전환 버튼과 찾기 칸이 맞닿지 않게 띄웁니다. */
+  .rms-mobile-sheet .workspace-switch {
+    margin-bottom: var(--spacing-8);
+  }
   .floating-workspace .nav-list {
     gap: 1px;
   }
   .floating-workspace .nav-item {
     min-height: 34px;
-    padding: 7px var(--spacing-10);
+    /* 위아래 여백 + 한 줄(22px) = 최소 높이 40px. 한 줄일 때 가운데, 두 줄이면 행이 커집니다. */
+    padding: calc((40px - var(--typography-label1Reading-lineHeight)) / 2)
+      var(--spacing-10);
     gap: var(--spacing-10);
     border-radius: var(--radius-8);
     font-size: var(--typography-label1-fontSize);
@@ -102,7 +108,6 @@
   }
   .floating-workspace .nav-item > svg {
     width: 18px;
-    height: 18px;
     flex-shrink: 0;
   }
   .floating-workspace .nav-item:hover {
@@ -118,7 +123,9 @@
   }
   .floating-workspace .assistant-nav {
     margin-top: var(--spacing-10) !important;
-    padding-top: 7px !important;
+    padding-top: calc(
+      (40px - var(--typography-label1Reading-lineHeight)) / 2
+    ) !important;
     border-top: 0 !important;
     border-radius: var(--radius-8) !important;
     position: relative;
@@ -209,8 +216,8 @@
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
   }
+  /* 본문 여백은 맨 아래 "화면 틀"에서 정합니다. */
   .floating-workspace .workspace-content {
-    padding: 28px var(--spacing-32) var(--spacing-40);
     max-width: 1320px;
   }
   .floating-workspace .workspace-footer {
@@ -231,20 +238,6 @@
     right: 6px;
   }
 
-  /* ── Page heading ──────────────────────────────────────── */
-
-  .page-header h1 {
-    font-size: var(--typography-title2-fontSize);
-    line-height: var(--typography-title2-lineHeight);
-    letter-spacing: var(--typography-title2-letterSpacing);
-    font-weight: 700;
-  }
-
-  .page-header p {
-    color: var(--text-secondary);
-    font-size: var(--typography-label1-fontSize);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
   .count-chip {
     font-size: var(--typography-caption1-fontSize);
     min-width: 22px;
@@ -334,9 +327,6 @@
       border: 0;
       min-height: 100dvh;
     }
-    .floating-workspace .workspace-content {
-      padding: var(--spacing-20) var(--spacing-16) var(--spacing-32);
-    }
     .floating-workspace .topbar {
       padding: 0 var(--spacing-12);
     }
@@ -421,6 +411,10 @@
     box-shadow: none;
     border-radius: var(--radius-10);
     min-height: 40px;
+    /* 위아래 여백 + 한 줄(22px) = 40px. 펼친 메뉴·접힌 레일·아래 설정 줄 모두 같습니다. */
+    padding-block: calc(
+      (40px - var(--typography-label1Reading-lineHeight)) / 2
+    );
     transition:
       background var(--motion-duration-micro) ease,
       color var(--motion-duration-micro) ease;
@@ -445,13 +439,9 @@
   .app-shell.floating-workspace .nav-item::after {
     display: none;
   }
-  .research-view-switch {
-    margin: var(--spacing-24) 0;
-    padding: 0;
-  }
+  /* 위 여백·안쪽 여백 값은 experience.css의 .settings-page .settings-section > .password-settings가 정합니다. */
   .password-settings {
     margin-top: var(--spacing-32);
-    padding-top: 28px;
     border-top: 1px solid var(--line);
   }
   .password-settings h3 {
@@ -465,10 +455,9 @@
     font-size: var(--typography-label1-fontSize);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
+  /* 간격·폭은 experience.css의 .settings-page .password-settings form이 정합니다. */
   .password-settings form {
     display: grid;
-    gap: 18px;
-    max-width: 520px;
   }
   .password-settings .field {
     margin: 0;
@@ -512,26 +501,6 @@
     display: block;
     margin-inline: auto;
   }
-  @media (max-width: 767px) {
-    .settings-layout > nav {
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin-inline: -4px;
-      padding-inline: var(--spacing-4);
-      scroll-padding-inline: 4px;
-    }
-  }
-  @media (max-width: 767px) {
-    .settings-layout > nav::-webkit-scrollbar {
-      display: none;
-    }
-  }
-  @media (max-width: 767px) {
-    .settings-layout > nav button {
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
-  }
   /* On phones the preview-banner link is icon-only: keep a 24px square target. */
   .preview-banner > a {
     min-width: 24px;
@@ -549,56 +518,187 @@
     white-space: nowrap;
   }
   /* Long content (interaction QA, 2026-11-09) ------------------------------ */
-  /* Page titles: a long unbroken title used to push the header actions (편집)
-   past the panel edge, where overflow:clip hid them. Let the title column
-   shrink and break only tokens that cannot fit (keep-all still keeps words). */
-  .page-header > div:first-child {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-  .page-title {
-    overflow-wrap: anywhere;
-  }
   /* Dialogs: one shrinkable column so a long name or file name wraps inside
    instead of widening the dialog past the screen (WCAG 1.4.10). */
-  [data-slot="dialog-content"] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  [data-slot="dialog-content"] > *,
+  .margin-dialog > *,
   .student-choice-row > span,
   .field {
     min-width: 0;
     overflow-wrap: anywhere;
   }
+
+  /* ── 화면 틀 (docs/design/patterns.md §2-2 배치 규칙) ─────────────────────
+     로그인 후 모든 화면이 함께 쓰는 틀입니다. 화면 CSS는 이 구역의 값을 다시 덮지 않습니다.
+     규칙 값이 어색하면 화면에서 고치지 말고 이 구역과 문서를 함께 고칩니다. */
+
+  /* 2-1 본문 여백: 좌우·위 여백은 main 하나만. 화면 루트에는 max-width·margin·padding을 두지 않습니다.
+     992 이상 위 28 / 좌우 32 · 768~991 위 20 / 좌우 16 · 767 이하 16 / 16 */
+  .workspace-content,
+  .floating-workspace .workspace-content {
+    padding: calc(var(--spacing-24) + var(--spacing-4)) var(--spacing-32)
+      var(--spacing-40);
+  }
+  @media (max-width: 991px) {
+    .workspace-content,
+    .floating-workspace .workspace-content {
+      padding: var(--spacing-20) var(--spacing-16) var(--spacing-32);
+    }
+  }
   @media (max-width: 767px) {
+    .workspace-content,
     .floating-workspace .workspace-content {
       padding: var(--spacing-16) var(--spacing-16) var(--spacing-32);
     }
   }
-  @media (max-width: 767px) {
-    .page-header {
-      gap: var(--spacing-12);
-      margin-bottom: var(--spacing-16);
-    }
-    /* 휴대폰에서는 주 버튼을 늘 제목·설명 아래 줄에 둡니다. 설명 길이에 따라
-       오른쪽에 붙거나 아래로 내려가던 것을 한 가지로 맞춥니다(검수 P2). */
-    .page-header > div:first-child {
-      flex-basis: 100%;
-    }
+
+  /* 뒤로 가기 줄(BackLink, pages/student/shared.tsx). 머리 위에 놓이고 머리까지 24. */
+  .student-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-24);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+    text-decoration: none;
+  }
+  .student-back:hover {
+    color: var(--brand);
+  }
+
+  /* 2-2 화면 머리(PageHeader): [뒤로] → 제목+상태 배지 | 행동 → 설명 → 메타 → 탭 → 도구 줄 */
+  .page-header {
+    display: flex;
+    /* 행동 칸이 제목 칸의 최소 폭을 침범할 만큼 넓어지면 제목 아래 줄로 내려갑니다. */
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-16);
+    min-width: 0;
+    margin: 0 0 var(--spacing-24);
+  }
+  /* 탭이 바로 아래에 붙으면 머리 아래 16, 없으면 24. */
+  .page-header.has-tabs {
+    margin-bottom: var(--spacing-16);
+  }
+  /* 제목 칸은 줄어들 수 있지만(긴 제목은 줄바꿈) 최소 240px(좁으면 줄 전체)를 지킵니다.
+     행동 칸은 줄어들지 않고, 그 자리가 모자라면 다음 줄로 내려가 오른쪽에 붙습니다. */
+  .page-heading {
+    flex: 1 1 0;
+    min-width: min(100%, 240px);
+  }
+  .page-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-width: 0;
+  }
+  .page-title-row > .page-title {
+    min-width: 0;
+  }
+  .page-title {
+    margin: 0;
+    font-size: var(--typography-title2-fontSize);
+    line-height: var(--typography-title2-lineHeight);
+    letter-spacing: var(--typography-title2-letterSpacing);
+    font-weight: 700;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  .page-eyebrow {
+    margin-bottom: var(--spacing-12);
+    font-size: var(--typography-caption1-fontSize);
+    color: var(--brand);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .page-description {
+    margin: var(--spacing-8) 0 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label1Reading-fontSize);
+    line-height: var(--typography-label1Reading-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
+  }
+  .page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    /* 줄 사이 8, 항목 사이 16(글자 링크가 나란히 놓여도 붙어 보이지 않게). */
+    gap: var(--spacing-8) var(--spacing-16);
+    min-width: 0;
+    margin-top: var(--spacing-8);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  /* 행동 버튼(높이 40)은 제목 줄의 위쪽에 맞춥니다. 버튼 사이 8.
+     버튼 글자가 길어 한 줄을 넘으면 행동 칸 안에서 감기고(줄 사이 8) 오른쪽 정렬을 지킵니다. */
+  .page-actions {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-8);
+    max-width: 100%;
+    margin-left: auto;
   }
   @media (max-width: 767px) {
-    .page-header h1,
+    .page-header {
+      flex-wrap: wrap;
+    }
+    .page-heading {
+      flex-basis: 100%;
+    }
     .page-title {
       font-size: var(--typography-heading1-fontSize);
       line-height: 1.3;
+      letter-spacing: var(--typography-heading1-letterSpacing);
+    }
+    /* 행동은 늘 설명 아래 줄로 내려가고, 주 행동이 남은 너비를 채웁니다. */
+    .page-actions {
+      flex: 1 1 100%;
+      justify-content: flex-start;
+      min-width: 0;
+      margin-left: 0;
+    }
+    .page-actions > [data-slot="button"][data-variant="default"],
+    .page-actions:not(:has(> [data-variant="default"]))
+      > [data-slot="button"]:not([data-size^="icon"]):last-child {
+      flex: 1 1 auto;
     }
   }
+
+  /* 2-3 도구 줄: 왼쪽 거르기, 오른쪽 찾기. 사이 12, 줄바꿈되면 줄 사이 8, 아래 16.
+     화면 CSS(.student-page .page-toolbar 등)가 같은 속성을 덮지 못하게 main을 붙여 씁니다. */
+  main.workspace-content .page-toolbar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8) var(--spacing-12);
+    min-width: 0;
+    margin: 0 0 var(--spacing-16);
+  }
+  main.workspace-content .page-toolbar > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* 찾기 칸: 높이 40(Montage medium), 768 이상 너비 240 고정, 767 이하 둘째 줄 전체 너비. */
+  main.workspace-content .page-toolbar > .page-search {
+    flex: 0 0 240px;
+    width: 240px;
+    min-width: 0;
+    margin-left: auto;
+  }
   @media (max-width: 767px) {
-    .page-header p,
-    .page-description {
-      margin-top: var(--spacing-4);
-      font-size: var(--typography-label2-fontSize);
-      line-height: 1.55;
+    main.workspace-content .page-toolbar > .page-search {
+      flex: 1 0 100%;
+      width: 100%;
+      margin-left: 0;
     }
   }
 }

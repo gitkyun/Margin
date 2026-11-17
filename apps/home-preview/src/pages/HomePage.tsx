@@ -27,7 +27,12 @@ import {
 import { reviewDecision } from "@/lib/home-inbox";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
-import { EmptyState, TextLink, StatusBadge } from "@/components/common";
+import {
+  EmptyState,
+  PageHeader,
+  TextLink,
+  StatusBadge,
+} from "@/components/common";
 import { selectNextMeeting, seoulToday } from "@/lib/home-meeting";
 import { selectHomeAction } from "@/lib/home-action";
 import { startChecklist } from "@/lib/onboarding";
@@ -227,34 +232,34 @@ export function HomePage() {
       {tour && (
         <HomeTour onDone={endTour} onUnavailable={() => setTour(false)} />
       )}
-      <header className="rh-intro">
-        <div className="rh-intro-copy">
-          <div className="rh-title-row">
-            <h1>{research.name}</h1>
-            <SubmissionCountdown
-              date={research.submissionDate}
-              href={`${base}/planning`}
-            />
-          </div>
-          <p>{research.description || t("아직 연구 설명이 없어요.")}</p>
-          <ResearchDirection
-            research={research}
-            settingsHref={`${base}/settings`}
-            planExcerpt={planExcerpt(data.documents, researchId)}
-            busy={importing}
-            onImport={(purpose) => {
-              setImporting(true);
-              saveResearch({ ...research, purpose })
-                .then(() =>
-                  toast.success(
-                    t("계획서 첫 문단을 연구 목적으로 가져왔어요."),
-                  ),
-                )
-                .catch((error) => toast.error(friendlyError(error)))
-                .finally(() => setImporting(false));
-            }}
+      <PageHeader
+        title={research.name}
+        status={
+          <SubmissionCountdown
+            date={research.submissionDate}
+            href={`${base}/planning`}
           />
-          <div className="rh-intro-meta">
+        }
+        description={research.description || t("아직 연구 설명이 없어요.")}
+        meta={
+          <>
+            <ResearchDirection
+              research={research}
+              settingsHref={`${base}/settings`}
+              planExcerpt={planExcerpt(data.documents, researchId)}
+              busy={importing}
+              onImport={(purpose) => {
+                setImporting(true);
+                saveResearch({ ...research, purpose })
+                  .then(() =>
+                    toast.success(
+                      t("계획서 첫 문단을 연구 목적으로 가져왔어요."),
+                    ),
+                  )
+                  .catch((error) => toast.error(friendlyError(error)))
+                  .finally(() => setImporting(false));
+              }}
+            />
             <Link
               className="rh-people"
               to={`${base}/planning${current ? `?phase=${current.id}` : ""}`}
@@ -287,15 +292,17 @@ export function HomePage() {
               )}
               <Icon name="chevron-right" size={14} />
             </Link>
-          </div>
-        </div>
-        <Button className="rh-lead-action" size="lg" fullWidth="mobile" asChild>
-          <Link to={action.href} data-action={action.kind}>
-            {action.label}
-            <Icon name={action.icon} size={18} />
-          </Link>
-        </Button>
-      </header>
+          </>
+        }
+        actions={
+          <Button className="rh-lead-action" asChild>
+            <Link to={action.href} data-action={action.kind}>
+              {action.label}
+              <Icon name={action.icon} size={18} />
+            </Link>
+          </Button>
+        }
+      />
       {showChecklist && (
         <StartChecklist
           researchId={researchId}
@@ -404,7 +411,7 @@ export function HomePage() {
                         </span>
                       )}
                     </p>
-                    <h3>
+                    <h3 title={next.title}>
                       <Link to={`${base}/meetings/${next.id}?tab=prepare`}>
                         {next.title}
                       </Link>
@@ -456,7 +463,7 @@ export function HomePage() {
                           size={13}
                         />
                       </span>
-                      <span>{task.title}</span>
+                      <span title={task.title}>{task.title}</span>
                       <Icon name="chevron-right" size={14} />
                     </Link>
                   ))}
@@ -562,7 +569,7 @@ export function HomePage() {
                       className="rh-task-copy"
                       to={`${base}/tasks/${task.id}`}
                     >
-                      <strong>{task.title}</strong>
+                      <strong title={task.title}>{task.title}</strong>
                       <span>
                         {isCollaborative && (
                           <>
@@ -646,11 +653,18 @@ export function HomePage() {
                     </span>
                     <div className="rh-inbox-body">
                       <small className="rh-inbox-event">{event.message}</small>
-                      <strong>{event.title}</strong>
+                      <strong title={event.title}>{event.title}</strong>
                       {event.excerpt && (
-                        <q className="rh-inbox-excerpt">{event.excerpt}</q>
+                        <span
+                          className="rh-inbox-excerpt"
+                          title={event.excerpt}
+                        >
+                          <q>{event.excerpt}</q>
+                        </span>
                       )}
-                      <p className="rh-inbox-ask">{decision.ask}</p>
+                      <p className="rh-inbox-ask" title={decision.ask}>
+                        {decision.ask}
+                      </p>
                       <div className="rh-inbox-actions">
                         <Button size="sm" asChild>
                           <Link to={notificationHref(event)}>
@@ -766,7 +780,7 @@ export function HomePage() {
                     <Icon name="file" size={22} />
                   </span>
                   <span className="rh-document-copy">
-                    <strong>{document.title}</strong>
+                    <strong title={document.title}>{document.title}</strong>
                     <small>
                       {formatDateTime(document.updatedAt, { time: false })}
                       {isCollaborative && author && ` · ${author}`}

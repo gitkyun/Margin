@@ -1,3 +1,4 @@
+import { DialogBody } from "@/components/ui/dialog";
 import { t } from "@/lib/i18n";
 import { formatClock } from "@/lib/time-format";
 import { seoulToday } from "@/lib/home-meeting";
@@ -244,10 +245,10 @@ export function MeetingsPage() {
             <Link
               key={meeting.id}
               to={`/r/${researchId}/meetings/${meeting.id}`}
-              className="meeting-list-row"
+              className="meeting-list-row list-row"
             >
               <span
-                className={`meeting-date-tile ${!meeting.date ? "is-undated" : ""}`}
+                className={`meeting-date-tile list-row-lead ${!meeting.date ? "is-undated" : ""}`}
               >
                 {meeting.date ? (
                   <>
@@ -265,14 +266,19 @@ export function MeetingsPage() {
                   <Icon name="calendar" size={20} />
                 )}
               </span>
-              <span className="meeting-row-copy">
-                <strong>{meeting.title}</strong>
-                <span>
+              <span className="meeting-row-copy list-row-body">
+                <strong className="list-row-title" title={meeting.title}>
+                  {meeting.title}
+                </strong>
+                <span
+                  className="list-row-desc"
+                  title={meeting.goal || meeting.memo || undefined}
+                >
                   {meeting.goal ||
                     meeting.memo ||
                     t("보여줄 결과를 아직 정하지 않았어요.")}
                 </span>
-                <small>
+                <small className="list-row-meta">
                   {formatDate(meeting.date)}
                   {meeting.time ? ` · ${formatClock(meeting.time)}` : ""}
                   {" · "}
@@ -340,30 +346,32 @@ export function MeetingsPage() {
             : t("날짜는 나중에 정해도 돼요.")
         }
       >
-        <form onSubmit={create} className="stack">
-          <LabeledInput
-            label={t("미팅 이름")}
-            required
-            value={title}
-            onChange={setTitle}
-            placeholder={t("예: 제6차 논문 지도")}
-          />
-          <div className="form-grid">
+        <form onSubmit={create}>
+          <DialogBody>
             <LabeledInput
-              label={t("날짜")}
-              type="date"
-              value={date}
-              onChange={setDate}
+              label={t("미팅 이름")}
+              required
+              value={title}
+              onChange={setTitle}
+              placeholder={t("예: 제6차 논문 지도")}
             />
-            <LabeledInput
-              label={t("시각")}
-              type="time"
-              value={time}
-              onChange={setTime}
-              disabled={!date}
-            />
-          </div>
-          <ErrorNotice error={form.error} />
+            <div className="form-grid">
+              <LabeledInput
+                label={t("날짜")}
+                type="date"
+                value={date}
+                onChange={setDate}
+              />
+              <LabeledInput
+                label={t("시각")}
+                type="time"
+                value={time}
+                onChange={setTime}
+                disabled={!date}
+              />
+            </div>
+            <ErrorNotice error={form.error} />
+          </DialogBody>
           <SaveActions
             saving={form.saving}
             onCancel={() => setCreating(false)}
@@ -992,41 +1000,42 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           </>
         }
         actions={
-          <div className="button-row">
-            <Button
-              variant="outline"
-              onClick={() => {
-                metaBase.current = meeting;
-                setMeta({
-                  title: meeting.title,
-                  date: meeting.date ?? "",
-                  time: meeting.time ?? "",
-                  status: meeting.status,
-                });
-                metaForm.setError(null);
-                setEditingMeta(true);
-              }}
-            >
-              <Icon name="edit" size={16} />
-              {t("미팅 정보 편집")}
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              metaBase.current = meeting;
+              setMeta({
+                title: meeting.title,
+                date: meeting.date ?? "",
+                time: meeting.time ?? "",
+                status: meeting.status,
+              });
+              metaForm.setError(null);
+              setEditingMeta(true);
+            }}
+          >
+            <Icon name="edit" size={16} />
+            {t("미팅 정보 편집")}
+          </Button>
         }
-      />
-      <Tabs
-        className="tabs-line"
-        label={t("미팅 내용")}
-        value={tab}
-        onChange={(value) => void changeTab(value)}
-        options={[
-          { value: "prepare", label: t("준비") },
-          { value: "record", label: t("기록") },
-          {
-            value: "questions",
-            label: t("결정·질문"),
-            count: linkedQuestions.filter((q) => q.status === "open").length,
-          },
-        ]}
+        tabs={
+          <Tabs
+            className="work-tabs"
+            label={t("미팅 내용")}
+            value={tab}
+            onChange={(value) => void changeTab(value)}
+            options={[
+              { value: "prepare", label: t("준비") },
+              { value: "record", label: t("기록") },
+              {
+                value: "questions",
+                label: t("결정·질문"),
+                count: linkedQuestions.filter((q) => q.status === "open")
+                  .length,
+              },
+            ]}
+          />
+        }
       />
       {tab === "prepare" && (
         <div className="meeting-preparation">
@@ -1666,23 +1675,47 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           "여기서 고르거나 빼도 기존 할 일과 자료는 바뀌지 않아요. 새로 적은 할 일은 저장할 때 만들어져요.",
         )}
       >
-        <form onSubmit={storePreparation} className="stack">
-          <label className="field">
-            <span className="field-name">
-              {t("보여줄 결과")} <span className="required-mark">*</span>
-            </span>
-            <Textarea
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-              placeholder={t("예: 비교 기준 3가지를 정리한 선행연구 표")}
-              required
-            />
-          </label>
-          <div className="student-picker">
-            <h3>{t("할 일")}</h3>
-            {data.tasks
-              .filter((item) => item.researchId === researchId)
-              .map((task) => (
+        <form onSubmit={storePreparation}>
+          <DialogBody>
+            <label className="field">
+              <span className="field-name">
+                {t("보여줄 결과")} <span className="required-mark">*</span>
+              </span>
+              <Textarea
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder={t("예: 비교 기준 3가지를 정리한 선행연구 표")}
+                required
+              />
+            </label>
+            <div className="student-picker">
+              <h3>{t("할 일")}</h3>
+              {data.tasks
+                .filter((item) => item.researchId === researchId)
+                .map((task) => (
+                  <label className="student-choice-row" key={task.id}>
+                    <Checkbox
+                      checked={taskIds.includes(task.id)}
+                      onCheckedChange={(next) =>
+                        setTaskIds((ids) =>
+                          next
+                            ? [...ids, task.id]
+                            : ids.filter((id) => id !== task.id),
+                        )
+                      }
+                    />
+                    <span>
+                      {task.title}
+                      <small>
+                        {taskLabels[task.status]} ·{" "}
+                        {task.dueDate
+                          ? formatDate(task.dueDate)
+                          : t("기한 미정")}
+                      </small>
+                    </span>
+                  </label>
+                ))}
+              {draftTasks.map((task) => (
                 <label className="student-choice-row" key={task.id}>
                   <Checkbox
                     checked={taskIds.includes(task.id)}
@@ -1696,140 +1729,122 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   />
                   <span>
                     {task.title}
-                    <small>
-                      {taskLabels[task.status]} ·{" "}
-                      {task.dueDate ? formatDate(task.dueDate) : t("기한 미정")}
-                    </small>
+                    <small>{t("새 할 일 · 저장하면 만들어져요")}</small>
                   </span>
                 </label>
               ))}
-            {draftTasks.map((task) => (
-              <label className="student-choice-row" key={task.id}>
-                <Checkbox
-                  checked={taskIds.includes(task.id)}
-                  onCheckedChange={(next) =>
-                    setTaskIds((ids) =>
-                      next
-                        ? [...ids, task.id]
-                        : ids.filter((id) => id !== task.id),
-                    )
-                  }
+              <div className="inline-form">
+                <Input
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  placeholder={t("예: 비교 기준 표에 근거 문헌 추가")}
+                  aria-label={t("준비에 추가할 새 할 일")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (!isImeComposing(e)) addDraftTask();
+                    }
+                  }}
                 />
-                <span>
-                  {task.title}
-                  <small>{t("새 할 일 · 저장하면 만들어져요")}</small>
-                </span>
-              </label>
-            ))}
-            <div className="inline-form">
-              <Input
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                placeholder={t("예: 비교 기준 표에 근거 문헌 추가")}
-                aria-label={t("준비에 추가할 새 할 일")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    if (!isImeComposing(e)) addDraftTask();
-                  }
-                }}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                aria-label={t("새 할 일 추가")}
-                onClick={addDraftTask}
-              >
-                <Icon name="plus" size={16} />
-              </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label={t("새 할 일 추가")}
+                  onClick={addDraftTask}
+                >
+                  <Icon name="plus" size={16} />
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="student-picker">
-            <h3>{t("보여줄 자료")}</h3>
-            {data.versions
-              .filter((v) => v.researchId === researchId)
-              .map((version) => (
-                <label className="student-choice-row" key={version.id}>
-                  <Checkbox
-                    checked={versionIds.includes(version.id)}
-                    onCheckedChange={(next) =>
-                      setVersionIds((ids) =>
-                        next
-                          ? [...ids, version.id]
-                          : ids.filter((id) => id !== version.id),
-                      )
-                    }
-                  />
-                  <span>
-                    {version.fileName}
-                    <small>
-                      {t("파일 v{number}", { number: version.number })}
-                    </small>
-                  </span>
-                </label>
-              ))}
-            {!data.versions.some((v) => v.researchId === researchId) && (
-              <InlineEmpty>
-                {t(
-                  "아직 올린 파일이 없어요. 여기서 바로 PDF를 올릴 수 있어요.",
-                )}
-              </InlineEmpty>
-            )}
-            <QuickPdfUpload
-              researchId={researchId}
-              onUploaded={(version) =>
-                setVersionIds((ids) => [...new Set([...ids, version.id])])
-              }
-            />
-          </div>
-          <div className="student-picker">
-            <h3>{t("물어볼 질문")}</h3>
-            {allQuestions
-              .filter((q) => q.status === "open" || questionIds.includes(q.id))
-              .map((question) => (
-                <label className="student-choice-row" key={question.id}>
-                  <Checkbox
-                    checked={questionIds.includes(question.id)}
-                    onCheckedChange={(next) =>
-                      setQuestionIds((ids) =>
-                        next
-                          ? [...ids, question.id]
-                          : ids.filter((id) => id !== question.id),
-                      )
-                    }
-                  />
-                  <span>{question.text}</span>
-                </label>
-              ))}
-            <div className="inline-form">
-              <Input
-                value={newQuestion}
-                onChange={(e) => setNewQuestion(e.target.value)}
-                placeholder={t("예: 설문 문항 수를 줄여도 될까요?")}
-                aria-label={t("준비에 추가할 질문")}
-                onKeyDown={(e) => {
-                  // 한글 조합을 끝내는 Enter로 질문이 덜 쓴 채 추가되지 않게 한다.
-                  if (e.key === "Enter") {
-                    // Enter here adds a question; it must never submit the
-                    // surrounding form, and the Enter that finishes Korean
-                    // composition must not add a half-typed question.
-                    e.preventDefault();
-                    if (!isImeComposing(e)) addDraftQuestion();
-                  }
-                }}
+            <div className="student-picker">
+              <h3>{t("보여줄 자료")}</h3>
+              {data.versions
+                .filter((v) => v.researchId === researchId)
+                .map((version) => (
+                  <label className="student-choice-row" key={version.id}>
+                    <Checkbox
+                      checked={versionIds.includes(version.id)}
+                      onCheckedChange={(next) =>
+                        setVersionIds((ids) =>
+                          next
+                            ? [...ids, version.id]
+                            : ids.filter((id) => id !== version.id),
+                        )
+                      }
+                    />
+                    <span>
+                      {version.fileName}
+                      <small>
+                        {t("파일 v{number}", { number: version.number })}
+                      </small>
+                    </span>
+                  </label>
+                ))}
+              {!data.versions.some((v) => v.researchId === researchId) && (
+                <InlineEmpty>
+                  {t(
+                    "아직 올린 파일이 없어요. 여기서 바로 PDF를 올릴 수 있어요.",
+                  )}
+                </InlineEmpty>
+              )}
+              <QuickPdfUpload
+                researchId={researchId}
+                onUploaded={(version) =>
+                  setVersionIds((ids) => [...new Set([...ids, version.id])])
+                }
               />
-              <Button
-                type="button"
-                variant="outline"
-                aria-label={t("질문 추가")}
-                onClick={addDraftQuestion}
-                disabled={!newQuestion.trim()}
-              >
-                <Icon name="plus" size={17} />
-              </Button>
             </div>
-          </div>
-          <ErrorNotice error={prepForm.error} />
+            <div className="student-picker">
+              <h3>{t("물어볼 질문")}</h3>
+              {allQuestions
+                .filter(
+                  (q) => q.status === "open" || questionIds.includes(q.id),
+                )
+                .map((question) => (
+                  <label className="student-choice-row" key={question.id}>
+                    <Checkbox
+                      checked={questionIds.includes(question.id)}
+                      onCheckedChange={(next) =>
+                        setQuestionIds((ids) =>
+                          next
+                            ? [...ids, question.id]
+                            : ids.filter((id) => id !== question.id),
+                        )
+                      }
+                    />
+                    <span>{question.text}</span>
+                  </label>
+                ))}
+              <div className="inline-form">
+                <Input
+                  value={newQuestion}
+                  onChange={(e) => setNewQuestion(e.target.value)}
+                  placeholder={t("예: 설문 문항 수를 줄여도 될까요?")}
+                  aria-label={t("준비에 추가할 질문")}
+                  onKeyDown={(e) => {
+                    // 한글 조합을 끝내는 Enter로 질문이 덜 쓴 채 추가되지 않게 한다.
+                    if (e.key === "Enter") {
+                      // Enter here adds a question; it must never submit the
+                      // surrounding form, and the Enter that finishes Korean
+                      // composition must not add a half-typed question.
+                      e.preventDefault();
+                      if (!isImeComposing(e)) addDraftQuestion();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label={t("질문 추가")}
+                  onClick={addDraftQuestion}
+                  disabled={!newQuestion.trim()}
+                >
+                  <Icon name="plus" size={17} />
+                </Button>
+              </div>
+            </div>
+            <ErrorNotice error={prepForm.error} />
+          </DialogBody>
           <SaveActions
             saving={prepForm.saving}
             onCancel={() => setPreparing(false)}
@@ -1844,7 +1859,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         title={t("미팅 정보 편집")}
       >
         <form
-          className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             void metaForm.perform(async () => {
@@ -1862,50 +1876,52 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             });
           }}
         >
-          <LabeledInput
-            label={t("미팅 이름")}
-            required
-            value={meta.title}
-            onChange={(title) => setMeta((v) => ({ ...v, title }))}
-          />
-          <div className="form-grid">
+          <DialogBody>
             <LabeledInput
-              label={t("날짜")}
-              type="date"
-              value={meta.date}
-              onChange={(date) => setMeta((v) => ({ ...v, date }))}
+              label={t("미팅 이름")}
+              required
+              value={meta.title}
+              onChange={(title) => setMeta((v) => ({ ...v, title }))}
             />
-            <LabeledInput
-              label={t("시각")}
-              type="time"
-              value={meta.time}
-              onChange={(time) => setMeta((v) => ({ ...v, time }))}
-              disabled={!meta.date}
-            />
-          </div>
-          <label className="field">
-            <span className="field-name">{t("미팅 상태")}</span>
-            <SelectField
-              className="native-select"
-              value={meta.status}
-              onChange={(e) =>
-                setMeta((v) => ({
-                  ...v,
-                  status: e.target.value as Meeting["status"],
-                }))
-              }
-            >
-              {Object.entries(meetingLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </SelectField>
-          </label>
-          <p className="student-inline-note">
-            {t("날짜나 상태를 바꿔도 고른 할 일의 기한은 바뀌지 않아요.")}
-          </p>
-          <ErrorNotice error={metaForm.error} />
+            <div className="form-grid">
+              <LabeledInput
+                label={t("날짜")}
+                type="date"
+                value={meta.date}
+                onChange={(date) => setMeta((v) => ({ ...v, date }))}
+              />
+              <LabeledInput
+                label={t("시각")}
+                type="time"
+                value={meta.time}
+                onChange={(time) => setMeta((v) => ({ ...v, time }))}
+                disabled={!meta.date}
+              />
+            </div>
+            <label className="field">
+              <span className="field-name">{t("미팅 상태")}</span>
+              <SelectField
+                className="native-select"
+                value={meta.status}
+                onChange={(e) =>
+                  setMeta((v) => ({
+                    ...v,
+                    status: e.target.value as Meeting["status"],
+                  }))
+                }
+              >
+                {Object.entries(meetingLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </SelectField>
+            </label>
+            <p className="student-inline-note">
+              {t("날짜나 상태를 바꿔도 고른 할 일의 기한은 바뀌지 않아요.")}
+            </p>
+            <ErrorNotice error={metaForm.error} />
+          </DialogBody>
           <SaveActions
             saving={metaForm.saving}
             onCancel={() => setEditingMeta(false)}
@@ -1937,74 +1953,76 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               : t("질문 추가")
         }
       >
-        <form className="stack" noValidate onSubmit={storeEntry}>
-          {entry === "feedback" && (
-            <LabeledInput
-              label={t("제목")}
-              required
-              value={entryTitle}
-              onChange={setEntryTitle}
-            />
-          )}
-          <label className="field">
-            <span className="field-name">
-              {t("내용")} <span className="required-mark">*</span>
-            </span>
-            <Textarea
-              value={entryBody}
-              onChange={(e) => setEntryBody(e.target.value)}
-              required
-              rows={5}
-            />
-          </label>
-          {entry === "decision" && (
-            <>
-              <label className="field">
-                <span className="field-name">{t("이유")}</span>
-                <Textarea
-                  value={entryReason}
-                  maxLength={REASON_MAX}
-                  onChange={(e) => setEntryReason(e.target.value)}
-                  rows={2}
-                  placeholder={t("왜 이렇게 정했는지 한두 문장으로 적어요.")}
-                />
-              </label>
-              {replaceable.length > 0 && (
+        <form noValidate onSubmit={storeEntry}>
+          <DialogBody>
+            {entry === "feedback" && (
+              <LabeledInput
+                label={t("제목")}
+                required
+                value={entryTitle}
+                onChange={setEntryTitle}
+              />
+            )}
+            <label className="field">
+              <span className="field-name">
+                {t("내용")} <span className="required-mark">*</span>
+              </span>
+              <Textarea
+                value={entryBody}
+                onChange={(e) => setEntryBody(e.target.value)}
+                required
+                rows={5}
+              />
+            </label>
+            {entry === "decision" && (
+              <>
                 <label className="field">
-                  <span className="field-name">{t("바꾸는 이전 결정")}</span>
-                  <SelectField
-                    className="native-select"
-                    value={entryReplaces}
-                    onChange={(e) => setEntryReplaces(e.target.value)}
-                  >
-                    <option value="">{t("없음")}</option>
-                    {replaceable.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.text.slice(0, 60)}
-                      </option>
-                    ))}
-                  </SelectField>
+                  <span className="field-name">{t("이유")}</span>
+                  <Textarea
+                    value={entryReason}
+                    maxLength={REASON_MAX}
+                    onChange={(e) => setEntryReason(e.target.value)}
+                    rows={2}
+                    placeholder={t("왜 이렇게 정했는지 한두 문장으로 적어요.")}
+                  />
                 </label>
-              )}
-            </>
-          )}
-          {entryFrom === "transcript" && (
-            <p className="transcript-notice">
-              {t(
-                "전사문은 나만 보는 기록이에요. 여기에 저장하면 이 내용은 공동연구자도 볼 수 있어요.",
-              )}
-              {entry === "feedback" &&
-                (entrySource
-                  ? ` ${t("고른 문장의 녹음 위치도 함께 저장해서 피드백에서 그 구간을 들을 수 있어요.")}`
-                  : ` ${t("이 문장의 녹음 위치를 찾지 못해 녹음 구간 없이 저장돼요.")}`)}
-            </p>
-          )}
-          {!editingDecision && (
-            <p className="student-footnote">
-              {t("직접 작성한 항목으로 저장돼요.")}
-            </p>
-          )}
-          <ErrorNotice error={entryForm.error} />
+                {replaceable.length > 0 && (
+                  <label className="field">
+                    <span className="field-name">{t("바꾸는 이전 결정")}</span>
+                    <SelectField
+                      className="native-select"
+                      value={entryReplaces}
+                      onChange={(e) => setEntryReplaces(e.target.value)}
+                    >
+                      <option value="">{t("없음")}</option>
+                      {replaceable.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.text.slice(0, 60)}
+                        </option>
+                      ))}
+                    </SelectField>
+                  </label>
+                )}
+              </>
+            )}
+            {entryFrom === "transcript" && (
+              <p className="transcript-notice">
+                {t(
+                  "전사문은 나만 보는 기록이에요. 여기에 저장하면 이 내용은 공동연구자도 볼 수 있어요.",
+                )}
+                {entry === "feedback" &&
+                  (entrySource
+                    ? ` ${t("고른 문장의 녹음 위치도 함께 저장해서 피드백에서 그 구간을 들을 수 있어요.")}`
+                    : ` ${t("이 문장의 녹음 위치를 찾지 못해 녹음 구간 없이 저장돼요.")}`)}
+              </p>
+            )}
+            {!editingDecision && (
+              <p className="student-footnote">
+                {t("직접 작성한 항목으로 저장돼요.")}
+              </p>
+            )}
+            <ErrorNotice error={entryForm.error} />
+          </DialogBody>
           <SaveActions
             saving={entryForm.saving}
             onCancel={() => setEntry(null)}
@@ -2022,22 +2040,24 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
           "결정 사항은 그대로 두고, 할 일 목록에 새 할 일을 만들어요. 기한과 우선순위는 할 일 화면에서 정할 수 있어요.",
         )}
       >
-        <form className="stack" noValidate onSubmit={storeTaskFrom}>
-          <LabeledInput
-            label={t("할 일 이름")}
-            required
-            value={taskTitle}
-            onChange={(value) => {
-              setTaskTitle(value);
-              setTaskTitleError("");
-            }}
-            error={taskTitleError || undefined}
-            inputRef={taskTitleInput}
-          />
-          <p className="student-footnote">
-            {t("설명에 이 미팅과 결정 사항이 함께 적혀요.")}
-          </p>
-          <ErrorNotice error={taskForm.error} />
+        <form noValidate onSubmit={storeTaskFrom}>
+          <DialogBody>
+            <LabeledInput
+              label={t("할 일 이름")}
+              required
+              value={taskTitle}
+              onChange={(value) => {
+                setTaskTitle(value);
+                setTaskTitleError("");
+              }}
+              error={taskTitleError || undefined}
+              inputRef={taskTitleInput}
+            />
+            <p className="student-footnote">
+              {t("설명에 이 미팅과 결정 사항이 함께 적혀요.")}
+            </p>
+            <ErrorNotice error={taskForm.error} />
+          </DialogBody>
           <SaveActions
             saving={taskForm.saving}
             onCancel={() => setTaskFrom(null)}
@@ -2057,7 +2077,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         )}
       >
         <form
-          className="stack"
           onSubmit={(event) => {
             event.preventDefault();
             void questionForm.perform(async () => {
@@ -2077,30 +2096,32 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
             });
           }}
         >
-          <label className="field">
-            <span className="field-name">{t("추가할 미팅")}</span>
-            <SelectField
-              className="native-select"
-              value={targetMeetingId}
-              onChange={(e) => setTargetMeetingId(e.target.value)}
-              required
-            >
-              <option value="">{t("미팅 선택")}</option>
-              {data.meetings
-                .filter(
-                  (m) =>
-                    m.researchId === researchId &&
-                    m.id !== meeting.id &&
-                    m.status !== "cancelled",
-                )
-                .map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.title} · {formatDate(m.date)}
-                  </option>
-                ))}
-            </SelectField>
-          </label>
-          <ErrorNotice error={questionForm.error} />
+          <DialogBody>
+            <label className="field">
+              <span className="field-name">{t("추가할 미팅")}</span>
+              <SelectField
+                className="native-select"
+                value={targetMeetingId}
+                onChange={(e) => setTargetMeetingId(e.target.value)}
+                required
+              >
+                <option value="">{t("미팅 선택")}</option>
+                {data.meetings
+                  .filter(
+                    (m) =>
+                      m.researchId === researchId &&
+                      m.id !== meeting.id &&
+                      m.status !== "cancelled",
+                  )
+                  .map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.title} · {formatDate(m.date)}
+                    </option>
+                  ))}
+              </SelectField>
+            </label>
+            <ErrorNotice error={questionForm.error} />
+          </DialogBody>
           <SaveActions
             saving={questionForm.saving}
             onCancel={() => setLinkQuestionId(null)}

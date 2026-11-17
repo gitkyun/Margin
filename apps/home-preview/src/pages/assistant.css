@@ -2,15 +2,11 @@
 @layer margin {
   /* AI 연구 도우미: 대화 · 작업 오버뷰 · 사용량
    이 화면의 배치 규칙은 이 파일 한 곳에만 둡니다. */
-  /* 작업대: 대화가 720px 열을 온전히 씁니다. 근거·제안·기록은 여백 패널에 있어요. */
+  /* 작업대: 틀은 본문 폭을 다 쓰고, 대화 열·안내문·입력창만 가운데 760px 열을 같이 씁니다.
+     근거·제안·기록은 여백 패널에 있어요. 머리 간격은 화면 틀(reference.css)이 정합니다. */
   .assistant-experience {
     width: 100%;
-    max-width: 1040px;
     min-width: 0;
-    margin: 0 auto;
-  }
-  .assistant-experience > .page-header {
-    margin-bottom: var(--spacing-16);
   }
 
   /* 대화: 왼쪽 대화 목록 + 오른쪽 대화 면(내용은 가운데 760px 열) */
@@ -19,7 +15,7 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
-    height: max(460px, calc(100dvh - 216px));
+    height: max(460px, calc(100dvh - 224px));
   }
   .ai-chat-main > .chat-scroll {
     flex: 1;
@@ -518,8 +514,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin: 10px 0 0;
+    gap: var(--spacing-12);
+    width: 100%;
+    max-width: 760px;
+    margin: var(--spacing-12) auto 0;
   }
 
   /* 자료 선택 */
@@ -728,25 +726,46 @@
 @layer margin {
   .assistant-sources {
     display: grid;
-    gap: var(--spacing-4);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--spacing-8);
     margin: 0;
     padding: 0;
     list-style: none;
   }
   .assistant-sources li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--spacing-8);
     min-height: 44px;
     padding: var(--spacing-6) var(--spacing-6) var(--spacing-6)
-      var(--spacing-10);
+      var(--spacing-12);
     border-radius: var(--radius-10);
     background: var(--selected-fill);
     color: var(--semantic-foreground-brand-primary);
     font-size: var(--typography-label1-fontSize);
   }
+  /* 앞 아이콘은 제목 첫 줄에, 빼기 버튼은 행 가운데에 둡니다. */
   .assistant-sources li > svg {
     flex-shrink: 0;
+    margin-top: var(--spacing-2);
+  }
+  .assistant-sources li > [data-slot="button"] {
+    flex: none;
+    align-self: center;
+  }
+  /* 기록 제목은 2줄까지, 종류는 1줄. 잘린 제목은 title로 전체를 볼 수 있어요. */
+  .source-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  .assistant-sources small,
+  .assistant-panel .source-picker button small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .assistant-sources li > span {
     flex: 1;
@@ -759,18 +778,39 @@
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
   }
+  /* 구역 사이 24(선 위아래), 구역 제목 ↔ 카드 12, 카드 사이 8. */
   .assistant-panel .source-picker {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--spacing-8);
     max-height: none;
-    margin-top: var(--spacing-8);
-    padding: var(--spacing-16) 0 0;
+    margin-top: var(--spacing-12);
+    padding: var(--spacing-24) 0 0;
     border-top: 1px solid var(--line);
     overflow: visible;
+  }
+  .assistant-panel .source-picker > [data-slot="button"] {
+    justify-self: start;
+    margin-bottom: 0;
+  }
+  .panel-frame.assistant-panel .source-picker h3 {
+    margin: var(--spacing-16) 0 var(--spacing-4);
+  }
+  .assistant-panel .source-picker > button:not([data-slot="button"]) {
+    gap: var(--spacing-8);
+    padding: var(--spacing-12);
+  }
+  .assistant-panel .source-picker > button:not([data-slot="button"]) > svg {
+    flex: none;
+    margin-top: var(--spacing-2);
+  }
+  .assistant-panel .source-picker button small {
+    margin-top: var(--spacing-4);
   }
   .assistant-panel .candidate-overview-row {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-10);
-    padding: var(--spacing-14) 0;
+    gap: var(--spacing-12);
+    padding: var(--spacing-16) 0;
   }
   .assistant-panel .candidate-overview-row h4 {
     margin: var(--spacing-8) 0 var(--spacing-4);
@@ -787,16 +827,30 @@
   .assistant-panel .run-row > div {
     flex: 1;
   }
+  /* 입력창 위 안내문: 대화 열·입력창과 같은 760px 열의 왼쪽 가장자리에서 시작해요.
+     두 줄이 되면 마지막 줄에 한 어절만 남지 않게 줄 길이를 고르게 나눕니다. */
   .assistant-unavailable {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--spacing-8);
-    margin: 0 0 var(--spacing-8);
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto var(--spacing-8);
     color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
+    word-break: var(--text-word-break, keep-all);
+    text-wrap: balance;
   }
   .assistant-unavailable > svg {
     flex-shrink: 0;
+    margin-top: var(--spacing-2);
+  }
+  /* 고른 기록이 많아도 대화 면과 입력창이 화면 밖으로 밀리지 않게, 첨부 카드 묶음만 안에서 스크롤해요. */
+  .composer-attachment-list {
+    max-height: min(40dvh, 320px);
+    padding-block: var(--spacing-2);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
   .ai-composer textarea:disabled {
     cursor: not-allowed;
@@ -808,7 +862,7 @@
   }
   @media (max-width: 767px) {
     .ai-chat-main {
-      height: max(440px, calc(100dvh - 250px));
+      height: max(440px, calc(100dvh - 258px));
     }
     .ai-composer {
       width: 100%;
@@ -1674,11 +1728,14 @@
     display: grid;
     min-width: 0;
   }
+  /* 파일 이름: 2줄까지, 공백 없는 긴 이름도 줄바꿈. 전체 이름은 title로. */
   .message-attachment-card strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     max-width: 240px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
     font-size: var(--typography-label2-fontSize);
     font-weight: 600;
   }

@@ -299,7 +299,7 @@ export function ComposerAttachmentCards({
   if (!contexts.length && !uploading) return null;
   return (
     <div
-      className="flex w-full flex-col gap-4"
+      className="composer-attachment-list flex w-full flex-col gap-4"
       role="group"
       aria-label={t("첨부한 기록")}
     >
