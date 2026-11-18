@@ -742,7 +742,10 @@ function HomeLists({
       {tab === "alerts" && (
         <div className="hm-list">
           {pending.length > 0 && (
-            <Link className="hm-row" to={`${base}/assistant?tab=overview`}>
+            <Link
+              className="hm-row"
+              to="?panel=assistant&panelView=suggestions"
+            >
               <Icon name="sparkles" size={16} />
               <span>
                 {t("확인할 AI 제안 {count}개", { count: pending.length })}

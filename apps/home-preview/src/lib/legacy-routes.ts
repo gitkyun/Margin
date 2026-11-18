@@ -1,7 +1,7 @@
 import { legacySettingsTarget } from "@/components/settings/settings-sections";
 
 // IA v2 예전 주소 이동(01 §3.3) 가운데 0단계에 옮길 수 있는 것만 둡니다.
-// 새 화면이 아직 없는 것(results·reviews·assistant, `new=` 값 바꾸기,
+// 새 화면이 아직 없는 것(results·reviews, `new=` 값 바꾸기,
 // planning?tab=schedule → meetings?type=poll, plans·recordings 찾아가기)은 그 단계에서 더합니다.
 
 type Rule = (
@@ -53,6 +53,17 @@ const RULES: Record<string, Rule> = {
     if (id) params.set("detail", `feedback:${id}`);
     return build(`${base}/tasks`, params);
   },
+  // 4단계: 연구 도우미 화면은 사이드 창으로 엽니다(01 §3.3). 요청 종류(`mode`)는 넘기지 않고,
+  // 예전 제안 탭(`tab=overview`)은 창의 제안 보기로, 글에서 넘어온 것(`document=`)은 그 글 위의 창으로 엽니다.
+  assistant: (base, _rest, params) => {
+    const document = params.get("document");
+    const suggestions = params.get("tab") === "overview";
+    for (const key of ["document", "selection", "tab", "mode"])
+      params.delete(key);
+    params.set("panel", "assistant");
+    if (suggestions) params.set("panelView", "suggestions");
+    return build(document ? `${base}/docs/w/${document}` : base, params);
+  },
   decisions: (base, [id], params) => {
     if (!id) return null;
     params.set("detail", `decision:${id}`);
@@ -92,4 +103,6 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/r/a/settings", "?tab=lifecycle"],
   ["/r/a/settings", "?tab=phases"],
   ["/account", ""],
+  ["/r/a/assistant", "?tab=overview"],
+  ["/r/a/assistant", "?document=d1&selection=1"],
 ];

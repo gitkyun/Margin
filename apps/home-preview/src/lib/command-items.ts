@@ -385,10 +385,11 @@ function goEntries(researchId: string | undefined): CommandEntry[] {
         "go:assistant",
         t("연구 도우미"),
         "sparkles",
-        `${base}/assistant`,
+        // 화면을 옮기지 않고 사이드 창의 연구 도우미를 엽니다(4단계, 01 §3.3).
+        "?panel=assistant",
         ["AI"],
       ),
-      "assistant",
+      "?panel=assistant",
     ),
     withShortcut(
       navigateEntry(

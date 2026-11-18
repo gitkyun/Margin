@@ -48,3 +48,34 @@ export function rememberPanel(width: number, tab: SidePanelTab | null): void {
   if (width < PUSH_MIN_WIDTH) return;
   write(OPEN_KEY, tab ? "1" : "0");
 }
+
+/** 주소로 여는 사이드 창(01 §3.3, 02 §4.5): `?panel=assistant|tasks|log`, 연구 도우미는 `&panelView=suggestions|runs` */
+export interface PanelRequest {
+  tab: SidePanelTab;
+  view?: "suggestions" | "runs";
+}
+
+export function panelRequest(search: string): PanelRequest | null {
+  const params = new URLSearchParams(search);
+  const tab = params.get("panel");
+  if (!(TABS as readonly string[]).includes(tab ?? "")) return null;
+  const view = params.get("panelView");
+  return {
+    tab: tab as SidePanelTab,
+    ...(tab === "assistant" && (view === "suggestions" || view === "runs")
+      ? { view }
+      : {}),
+  };
+}
+
+/**
+ * 창을 연 뒤 주소에서 `panel`·`panelView`를 지운 검색어(`?…` 또는 빈 문자열).
+ * 열림은 주소가 아니라 창이 들고 있어서, 닫은 뒤 새로 고쳐도 다시 열리지 않습니다.
+ */
+export function withoutPanelRequest(search: string): string {
+  const params = new URLSearchParams(search);
+  params.delete("panel");
+  params.delete("panelView");
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}

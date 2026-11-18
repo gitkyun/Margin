@@ -5,12 +5,19 @@ import { SHELL_MENUS, isMenuActive } from "./shell-menus";
 
 /**
  * 휴대폰 아래 탭 줄(02 §6, Q1). 메뉴 넷 + 연구 도우미.
- * 사이드 창 탭이 아직 없는 0~3단계에는 연구 도우미 칸이 지금 화면으로 가는 링크입니다.
+ * 4단계: 연구 도우미 칸은 화면을 옮기지 않고 사이드 창의 연구 도우미를 여닫습니다(다시 누르면 닫힘).
+ * 층의 높이·뒤로 가기로 닫기·세그먼트(D16)는 휴대폰 층 작업에서 더합니다.
  */
-export function MobileTabBar({ researchId }: { researchId: string }) {
+export function MobileTabBar({
+  researchId,
+  assistantOpen,
+  onAssistant,
+}: {
+  researchId: string;
+  assistantOpen: boolean;
+  onAssistant(): void;
+}) {
   const { pathname } = useLocation();
-  const assistantPath = `/r/${researchId}/assistant`;
-  const assistantOn = pathname.startsWith(assistantPath);
   const assistantName = t("연구 도우미");
   const assistantShort = tc("tabbar", "연구 도우미");
   return (
@@ -30,17 +37,18 @@ export function MobileTabBar({ researchId }: { researchId: string }) {
           </Link>
         );
       })}
-      <Link
-        to={assistantPath}
-        className={`ia-tab ${assistantOn ? "active" : ""}`}
-        aria-current={assistantOn ? "page" : undefined}
+      <button
+        type="button"
+        className={`ia-tab ia-tab-assistant ${assistantOpen ? "active" : ""}`}
+        aria-pressed={assistantOpen}
         aria-label={
           assistantShort === assistantName ? undefined : assistantName
         }
+        onClick={onAssistant}
       >
         <Icon name="sparkles" size={20} />
         <span>{assistantShort}</span>
-      </Link>
+      </button>
     </nav>
   );
 }
