@@ -64,6 +64,7 @@ import { editorOutline, savedTime } from "@/lib/editor-head";
 import { documentFeedback, documentTasks } from "@/lib/doc-margin";
 import { useOpenDetail } from "@/lib/item-detail";
 import { EditorGutter, FeedbackHandled } from "./docs/EditorGutter";
+import { EditorInfo } from "./docs/EditorInfo";
 import type { Task } from "@/lib/domain";
 import { CompareView, type CompareMode } from "./docs/CompareView";
 /** 예전 이름. 낱말 비교는 writing/WordDiff에 있어요. */
@@ -660,12 +661,14 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       });
     });
   }
-  const milestones = data.milestones.filter(
-    (milestone) =>
-      milestone.researchId === initial.researchId &&
-      !milestone.archivedAt &&
-      milestone.documentIds.includes(initial.id),
-  );
+  // 정보 보기(05 §3.8): 여백 자리에 300px 정보 열(`?side=info`).
+  const sideInfo = searchParams.get("side") === "info";
+  function setSideInfo(on: boolean) {
+    const next = new URLSearchParams(searchParams);
+    if (on) next.set("side", "info");
+    else next.delete("side");
+    setSearchParams(next);
+  }
   // 비교 보기(05 §3.7): 버전을 고르면 본문 자리가 비교 보기로 바뀝니다(`?compare=`).
   const compareVersion = versionList.find(
     (v) => v.id === searchParams.get("compare"),
@@ -790,10 +793,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           },
         }}
         onEditInfo={() => setInfoEdit(true)}
-        onShowInfo={() => {
-          setInfoTab("versions");
-          setInfoOpen(true);
-        }}
+        onShowInfo={() => setSideInfo(true)}
         onPdf={makePDF}
         onArchive={archive}
         busy={!!busy}
@@ -862,15 +862,28 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               runAI={runAI}
             />
           </div>
-          <EditorGutter
-            paper={paper}
-            tasks={marginTasks}
-            headings={outline.map((entry) => entry.text).filter(Boolean)}
-            numbers={feedbackNumbers}
-            onToggle={toggleTask}
-            onOpenTask={(id) => openDetail({ kind: "task", id })}
-            onOpenFeedback={(id) => openDetail({ kind: "feedback", id })}
-          />
+          {sideInfo ? (
+            <EditorInfo
+              researchId={initial.researchId}
+              documentId={initial.id}
+              tasks={marginTasks}
+              feedback={marginFeedback}
+              onToggle={toggleTask}
+              onOpenTask={(id) => openDetail({ kind: "task", id })}
+              onOpenFeedback={(id) => openDetail({ kind: "feedback", id })}
+              onClose={() => setSideInfo(false)}
+            />
+          ) : (
+            <EditorGutter
+              paper={paper}
+              tasks={marginTasks}
+              headings={outline.map((entry) => entry.text).filter(Boolean)}
+              numbers={feedbackNumbers}
+              onToggle={toggleTask}
+              onOpenTask={(id) => openDetail({ kind: "task", id })}
+              onOpenFeedback={(id) => openDetail({ kind: "feedback", id })}
+            />
+          )}
         </div>
       </div>
       <p className="editor-status">
@@ -897,7 +910,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         }}
       />
       <MarginPanel
-        label={t("문서 버전과 연결된 기록")}
+        label={t("버전·문장 점검")}
         open={infoOpen}
         onOpen={() => setInfoOpen(true)}
         onClose={() => setInfoOpen(false)}
@@ -909,7 +922,6 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           onTab={setInfoTab}
           tabs={[
             { value: "versions", label: t("버전"), count: versionList.length },
-            { value: "links", label: t("연결"), count: milestones.length },
             { value: "review", label: t("AI 문장 점검") },
           ]}
         >
@@ -944,34 +956,6 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   "버전을 누르면 지금 작성 중인 내용과 비교해요. 저장만으로는 버전이 생기지 않아요.",
                 )}
               </p>
-            </div>
-          )}
-          {infoTab === "links" && (
-            <div className="panel-frame-body">
-              <h3>
-                {t("목표")}
-                <span className="count-chip">{milestones.length}</span>
-              </h3>
-              {milestones.map((milestone) => (
-                <Link
-                  className="student-simple-row"
-                  key={milestone.id}
-                  to={`/r/${initial.researchId}/planning`}
-                >
-                  <span className="grow">
-                    <strong>{milestone.title}</strong>
-                    <small>
-                      {milestone.status === "done" ? t("끝남") : t("진행 예정")}
-                    </small>
-                  </span>
-                  <Icon name="chevron-right" size={15} />
-                </Link>
-              ))}
-              {!milestones.length && (
-                <InlineEmpty>
-                  {t("계획·일정의 목표에 이 문서를 넣으면 여기에 보여요.")}
-                </InlineEmpty>
-              )}
             </div>
           )}
         </PanelFrame>
