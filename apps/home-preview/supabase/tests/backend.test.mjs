@@ -763,3 +763,33 @@ test('inline_edit mode runs without saving ai_candidates and enforces per-run li
  assert.ok(!data.aiCandidates.some(c=>c.runId===run));
  assert.equal(data.aiRuns.find(r=>r.id===run).status,'complete');
 })
+test('credits: one-trip start and complete keep the same rules as the separate calls (speed work 5-2·5-4)',async()=>{
+ await resetCredits();await db.exec('reset role');await db.query("update public.rms_ai_runs set created_at=now()-interval '2 days' where user_id=$1",[ids.student])
+ const start=async(id,amount)=>{await service();return call('rms_ai_start',[ids.student,ids.research,`fast-${id}`,id,'ask_research','test-model','low',amount])}
+ const complete=async(id,amount,output={answer:'OK',candidates:[]})=>{await service();return call('rms_ai_complete',[id,amount,JSON.stringify({inputTokens:10}),JSON.stringify(output),'[]'])}
+ // 브라우저·익명은 부를 수 없음
+ const a='c0ffee00-0000-4000-8000-0000000fa001'
+ await as(ids.student);await failure(()=>call('rms_ai_start',[ids.student,ids.research,'x',a,'ask_research','m','low',1]),'42501')
+ await failure(()=>call('rms_ai_complete',[a,1,'{}','{}','[]']),'42501')
+ // 시작+예약 → 정산+결과 저장
+ assert.deepEqual(await start(a,10),{run_id:a,held:true});assert.equal((await summary(ids.student)).reserved,10)
+ const done=await complete(a,2.5);assert.deepEqual([done.settled,done.closed,done.accepted,Number(done.charged)],[true,true,true,2.5])
+ let c=await summary(ids.student);assert.equal(c.used,2.5);assert.equal(c.reserved,0)
+ await as(ids.student);assert.equal((await call('rms_ai_run_result',[a])).status,'complete')
+ // 두 번 끝내도 다시 차감하지 않음
+ const again=await complete(a,9);assert.deepEqual([again.closed,again.accepted],[false,false]);assert.equal((await summary(ids.student)).used,2.5)
+ // 예약 오류는 실행 기록을 남기고 코드로 돌려줌
+ const b='c0ffee00-0000-4000-8000-0000000fa002'
+ const blocked=await start(b,0);assert.equal(blocked.run_id,b);assert.equal(blocked.held,false);assert.equal(blocked.error_code,'22023')
+ await as(ids.student);assert.equal((await call('rms_ai_run_result',[b])).status,'running')
+ // 시작 단계 오류(중복 실행 번호)는 그대로 올라옴
+ await failure(()=>start(a,10),'55000')
+ // [중단]한 실행: 실제 사용량은 정산하되 결과는 받지 않음
+ const d='c0ffee00-0000-4000-8000-0000000fa003'
+ await start(d,10);await as(ids.student);await call('rms_cancel_ai',[d])
+ const late=await complete(d,1);assert.deepEqual([late.settled,late.closed,late.accepted],[true,true,false])
+ // 결과 저장이 실패해도(너무 큰 결과) 정산은 되돌리지 않음
+ const e='c0ffee00-0000-4000-8000-0000000fa004'
+ await start(e,10);const big=await complete(e,1,{answer:'x'.repeat(300000)})
+ assert.deepEqual([big.closed,big.accepted,big.finish_error],[true,false,'22023']);await as(ids.student);assert.equal((await call('rms_ai_run_result',[e])).status,'running')
+})

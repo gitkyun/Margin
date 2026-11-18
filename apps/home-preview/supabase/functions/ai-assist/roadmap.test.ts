@@ -61,10 +61,16 @@ describe("roadmap proposal input", () => {
   it("rejects malformed stages", () => {
     const base = { today, submissionDate, completedStages: [] };
     expect(() =>
-      validateRoadmapPlan({ ...base, stages: [{ title: " ", status: "planned" }] }),
+      validateRoadmapPlan({
+        ...base,
+        stages: [{ title: " ", status: "planned" }],
+      }),
     ).toThrow();
     expect(() =>
-      validateRoadmapPlan({ ...base, stages: [{ title: "분석", status: "done" }] }),
+      validateRoadmapPlan({
+        ...base,
+        stages: [{ title: "분석", status: "done" }],
+      }),
     ).toThrow();
     expect(() =>
       validateRoadmapPlan({
@@ -86,7 +92,11 @@ describe("roadmap proposal output", () => {
             startDate: "2027-03-01",
             endDate: submissionDate,
           }),
-          stage({ sourceIndex: 2, startDate: "2026-12-10", endDate: "2027-02-28" }),
+          stage({
+            sourceIndex: 2,
+            startDate: "2026-12-10",
+            endDate: "2027-02-28",
+          }),
           stage(),
         ],
         assumptions: " 설문 자료를 이미 모았다고 가정했어요. ",
@@ -124,14 +134,22 @@ describe("roadmap proposal output", () => {
 
   it("refuses unknown or repeated stage references and empty plans", () => {
     expect(() =>
-      normalizeRoadmap({ stages: [stage({ sourceIndex: 3 })], assumptions: "" }, plan),
+      normalizeRoadmap(
+        { stages: [stage({ sourceIndex: 3 })], assumptions: "" },
+        plan,
+      ),
     ).toThrow();
     expect(() =>
       normalizeRoadmap({ stages: [stage(), stage()], assumptions: "" }, plan),
     ).toThrow();
-    expect(() => normalizeRoadmap({ stages: [], assumptions: "" }, plan)).toThrow();
     expect(() =>
-      normalizeRoadmap({ stages: Array(13).fill(stage({ sourceIndex: 0 })) }, plan),
+      normalizeRoadmap({ stages: [], assumptions: "" }, plan),
+    ).toThrow();
+    expect(() =>
+      normalizeRoadmap(
+        { stages: Array(13).fill(stage({ sourceIndex: 0 })) },
+        plan,
+      ),
     ).toThrow();
   });
 
@@ -139,9 +157,17 @@ describe("roadmap proposal output", () => {
     const check = (s: { startDate: string; endDate: string }) =>
       stageDateProblem(s, today, submissionDate);
     expect(check({ startDate: "", endDate: "2026-12-01" })).toBe("missing");
-    expect(check({ startDate: "2026-12-02", endDate: "2026-12-01" })).toBe("reversed");
-    expect(check({ startDate: "2026-11-01", endDate: "2026-12-01" })).toBe("before_today");
-    expect(check({ startDate: "2026-12-01", endDate: "2027-04-02" })).toBe("after_submission");
-    expect(check({ startDate: "2026-12-01", endDate: "2026-12-01" })).toBeNull();
+    expect(check({ startDate: "2026-12-02", endDate: "2026-12-01" })).toBe(
+      "reversed",
+    );
+    expect(check({ startDate: "2026-11-01", endDate: "2026-12-01" })).toBe(
+      "before_today",
+    );
+    expect(check({ startDate: "2026-12-01", endDate: "2027-04-02" })).toBe(
+      "after_submission",
+    );
+    expect(
+      check({ startDate: "2026-12-01", endDate: "2026-12-01" }),
+    ).toBeNull();
   });
 });
