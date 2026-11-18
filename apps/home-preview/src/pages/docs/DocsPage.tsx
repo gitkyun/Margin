@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -31,6 +31,9 @@ import {
   type DocsSort,
   type DocsView,
 } from "@/lib/docs-list";
+import { DocInfoDialog } from "./DocInfoDialog";
+import { MaterialInfoDialog, MoveFolderDialog } from "./MaterialView";
+import { NewDocDialog } from "./NewDocDialog";
 import "./docs.css";
 
 const MATERIAL_TYPES = [
@@ -103,6 +106,19 @@ export function DocsPage() {
   const folderTitle =
     folder && !archivedView ? folderPath(data.folders, folder) : "";
   const preview = rows.find((row) => `${row.kind}:${row.id}` === selected);
+  // 줄 메뉴의 폴더로 옮기기·정보 편집, 머리의 [새 글](05 §2.3, §2.4)
+  const [moving, setMoving] = useState<DocRow | null>(null);
+  const [editing, setEditing] = useState<DocRow | null>(null);
+  const [creating, setCreating] = useState(false);
+  const folders = data.folders.filter(
+    (f) => f.researchId === researchId && !f.archivedAt,
+  );
+  // 열어 둔 탭 줄의 [+]는 ?new=1로 와서 새 글 창을 엽니다.
+  useEffect(() => {
+    if (params.get("new") !== "1") return;
+    setCreating(true);
+    set({ new: null });
+  }, [params]);
 
   function set(patch: Record<string, string | null>) {
     const next = new URLSearchParams(params);
@@ -124,6 +140,33 @@ export function DocsPage() {
           onClick: () => void restore(row),
         },
       });
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+  /** 글·자료의 폴더를 바꿉니다. 지금 기록을 다시 읽어 다른 칸을 덮지 않습니다. */
+  async function moveTo(row: DocRow, folderId: string | undefined) {
+    try {
+      if (row.kind === "writing") {
+        const current =
+          data.documents.find((d) => d.id === row.id) ?? row.document;
+        if ((current.folderId ?? undefined) === folderId) return;
+        await save("documents", { ...current, folderId });
+      } else {
+        const current =
+          data.materials.find((m) => m.id === row.id) ?? row.material;
+        if ((current.folderId ?? undefined) === folderId) return;
+        await save("materials", { ...current, folderId });
+      }
+      const target = folders.find((f) => f.id === folderId);
+      toast.success(
+        target
+          ? t("‘{title}’을 ‘{folder}’ 폴더로 옮겼어요.", {
+              title: row.title,
+              folder: target.title,
+            })
+          : t("‘{title}’을 폴더에서 뺐어요.", { title: row.title }),
+      );
     } catch (error) {
       toast.error(friendlyError(error));
     }
@@ -216,10 +259,7 @@ export function DocsPage() {
                 <Icon name="upload" size={16} />
                 {t("올리기")}
               </Button>
-              <Button
-                size="sm"
-                onClick={() => navigate(`${base}?full=1&new=1`)}
-              >
+              <Button size="sm" onClick={() => setCreating(true)}>
                 <Icon name="plus" size={16} />
                 {t("새 글")}
               </Button>
@@ -331,6 +371,19 @@ export function DocsPage() {
                           >
                             {t("새 탭에서 열기")}
                           </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => setMoving(row)}>
+                            {t("폴더로 옮기기")}
+                          </DropdownMenuItem>
+                          {rowFolder(row) && (
+                            <DropdownMenuItem
+                              onSelect={() => void moveTo(row, undefined)}
+                            >
+                              {t("폴더에서 빼기")}
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onSelect={() => setEditing(row)}>
+                            {t("정보 편집")}
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => void archive(row)}>
                             {t("보관")}
                           </DropdownMenuItem>
@@ -358,8 +411,61 @@ export function DocsPage() {
           </aside>
         )}
       </div>
+      <NewDocDialog
+        open={creating}
+        onOpenChange={setCreating}
+        researchId={researchId}
+        folderId={folder && !archivedView ? folder : undefined}
+      />
+      <MoveFolderDialog
+        open={moving !== null}
+        onOpenChange={(open) => !open && setMoving(null)}
+        folders={folders}
+        value={moving ? rowFolder(moving) : undefined}
+        onMove={async (folderId) => {
+          if (moving) await moveTo(moving, folderId);
+        }}
+      />
+      {editing?.kind === "writing" && (
+        <DocInfoDialog
+          open
+          editTitle
+          onOpenChange={(open) => !open && setEditing(null)}
+          document={
+            data.documents.find((d) => d.id === editing.id) ?? editing.document
+          }
+          folders={folders}
+          onSave={async ({ title, type, folderId }) => {
+            const current =
+              data.documents.find((d) => d.id === editing.id) ??
+              editing.document;
+            await save("documents", { ...current, title, type, folderId });
+            toast.success(t("글 정보를 저장했어요."));
+          }}
+        />
+      )}
+      {editing?.kind === "material" && (
+        <MaterialInfoDialog
+          open
+          onOpenChange={(open) => !open && setEditing(null)}
+          material={
+            data.materials.find((m) => m.id === editing.id) ?? editing.material
+          }
+          typeOptions={(
+            ["draft", "reference", "analysis", "other"] as const
+          ).map((value) => ({ value, label: materialTypeLabel(value) }))}
+          onSave={async (next) => {
+            await save("materials", next);
+            toast.success(t("자료 정보를 저장했어요."));
+          }}
+        />
+      )}
     </div>
   );
+}
+
+function rowFolder(row: DocRow): string | undefined {
+  return row.kind === "writing" ? row.document.folderId : row.material.folderId;
 }
 
 function RowBody({ row }: { row: DocRow }) {

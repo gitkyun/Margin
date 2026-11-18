@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Choice } from "@/components/experience";
+import { Input } from "@/components/ui/input";
 import type { DocumentRecord, MaterialFolder } from "@/lib/domain";
 import { folderPath } from "@/lib/docs-list";
 import { DOC_TYPE_LABEL } from "./EditorHeader";
@@ -18,29 +19,37 @@ import { DOC_TYPE_LABEL } from "./EditorHeader";
 /** 고르기 칸은 빈 값을 '선택 안 함'으로 그려서 '폴더 없음'을 따로 값으로 둡니다. */
 const NO_FOLDER = "none";
 
-/** 글 정보(IA v2 05 §3.3 ⋯ › 글 정보): 종류와 폴더를 바꿉니다. 제목은 머리에서 바로 고칩니다. */
+/**
+ * 글 정보(IA v2 05 §3.3 ⋯ › 글 정보, §2.3 줄 메뉴 › 정보 편집): 종류와 폴더를 바꿉니다.
+ * 글 편집 화면에서는 제목을 머리에서 바로 고치므로 `editTitle`일 때만 제목 칸을 둡니다.
+ */
 export function DocInfoDialog({
   open,
   onOpenChange,
   document,
   folders,
+  editTitle = false,
   onSave,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  document: Pick<DocumentRecord, "type" | "folderId">;
+  document: Pick<DocumentRecord, "title" | "type" | "folderId">;
   folders: readonly MaterialFolder[];
+  editTitle?: boolean;
   onSave: (next: {
+    title: string;
     type: DocumentRecord["type"];
     folderId?: string;
   }) => Promise<void>;
 }) {
+  const [title, setTitle] = useState(document.title);
   const [type, setType] = useState(document.type);
   const [folderId, setFolderId] = useState(document.folderId ?? NO_FOLDER);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
     if (!open) return;
+    setTitle(document.title);
     setType(document.type);
     setFolderId(document.folderId ?? NO_FOLDER);
     setError("");
@@ -55,7 +64,9 @@ export function DocInfoDialog({
   )
     folderOptions.unshift({ value: folderId, label: t("찾을 수 없는 폴더") });
   const changed =
-    type !== document.type || folderId !== (document.folderId ?? NO_FOLDER);
+    title.trim() !== document.title ||
+    type !== document.type ||
+    folderId !== (document.folderId ?? NO_FOLDER);
   return (
     <Dialog
       open={open}
@@ -66,18 +77,22 @@ export function DocInfoDialog({
       <DialogContent className="rms-dialog">
         <DialogHeader>
           <DialogTitle>{t("글 정보")}</DialogTitle>
-          <DialogDescription>
-            {t("제목은 글 위에서 바로 고칠 수 있어요.")}
-          </DialogDescription>
+          {!editTitle && (
+            <DialogDescription>
+              {t("제목은 글 위에서 바로 고칠 수 있어요.")}
+            </DialogDescription>
+          )}
         </DialogHeader>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             if (saving) return;
+            if (!title.trim()) return setError(t("문서 제목을 적어 주세요."));
             if (!changed) return onOpenChange(false);
             setSaving(true);
             setError("");
             onSave({
+              title: title.trim(),
               type,
               folderId: folderId === NO_FOLDER ? undefined : folderId,
             })
@@ -87,6 +102,16 @@ export function DocInfoDialog({
           }}
         >
           <DialogBody>
+            {editTitle && (
+              <label className="field">
+                <span>{t("제목")}</span>
+                <Input
+                  value={title}
+                  maxLength={300}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </label>
+            )}
             <label className="field">
               <span>{t("종류")}</span>
               <Choice
