@@ -1,4 +1,8 @@
 @layer margin {
+  /* 새 글 창 폭 480(05 §2.4) */
+  [data-slot="dialog-content"].new-doc-dialog {
+    --margin-dialog-max-width: 480px;
+  }
   /* 글·자료 목록(IA v2 05 §2.1): 분류 200 + 목록 + 미리보기 360 */
   .docs-frame {
     container-type: inline-size;

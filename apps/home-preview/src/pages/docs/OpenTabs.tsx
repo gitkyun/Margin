@@ -175,7 +175,7 @@ export function DocTabsFrame({
         </ul>
         <Link
           className="doc-tabs-new"
-          to={`/r/${researchId}/docs?full=1&new=1`}
+          to={`/r/${researchId}/docs?new=1`}
           aria-label={t("새 글")}
         >
           <Icon name="plus" size={16} />

@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { TableKit } from "@tiptap/extension-table";
 import {
   Link,
+  useLocation,
   useNavigate,
   useParams,
   useSearchParams,
@@ -59,6 +60,7 @@ import {
 import { BackLink, DocumentTabs } from "./student/shared";
 import { EditorHeader, Outline, type SaveState } from "./docs/EditorHeader";
 import { DocInfoDialog } from "./docs/DocInfoDialog";
+import { FOCUS_BODY } from "./docs/NewDocDialog";
 import { editorOutline, savedTime } from "@/lib/editor-head";
 import { documentFeedback, documentTasks } from "@/lib/doc-margin";
 import { useOpenDetail } from "@/lib/item-detail";
@@ -598,6 +600,17 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   // 할 일 상세의 [글 열기]는 `?at=제목`으로 그 제목 위치를 엽니다(06 항목 상세 '고칠 글').
   const [searchParams] = useSearchParams();
   const at = searchParams.get("at");
+  // 새 글 창에서 만들고 오면 본문 첫 줄에 커서를 둡니다(05 §2.4).
+  const location = useLocation();
+  const focusBody = !!(location.state as Record<string, unknown> | null)?.[
+    FOCUS_BODY
+  ];
+  useEffect(() => {
+    if (!editor || !focusBody) return;
+    // 새 글 창이 닫히며 포커스를 돌려놓는 일이 끝난 뒤에 옮깁니다.
+    const timer = setTimeout(() => editor.commands.focus("start"), 150);
+    return () => clearTimeout(timer);
+  }, [editor, focusBody]);
   useEffect(() => {
     if (!editor || !at) return;
     const index = outline.findIndex((entry) => entry.text === at);
@@ -833,6 +846,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           (f) => f.researchId === initial.researchId && !f.archivedAt,
         )}
         onSave={async ({ type, folderId }) => {
+          // 제목은 머리에서 고치므로 여기서는 종류와 폴더만 저장합니다.
           const saved = await save("documents", { ...base, type, folderId });
           setBase(saved);
           toast.success(t("글 정보를 저장했어요."));

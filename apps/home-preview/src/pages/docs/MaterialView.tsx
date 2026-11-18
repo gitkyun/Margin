@@ -21,8 +21,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Choice } from "@/components/experience";
+import { Input } from "@/components/ui/input";
 import { InlineEmpty } from "@/components/common";
-import type { Material, MaterialFolder, MaterialVersion } from "@/lib/domain";
+import {
+  safeUrl,
+  type Material,
+  type MaterialFolder,
+  type MaterialVersion,
+} from "@/lib/domain";
 import { useWorkspace } from "@/lib/workspace";
 import { folderPath } from "@/lib/docs-list";
 import "./material-view.css";
@@ -338,6 +344,121 @@ export function MoveFolderDialog({
             </Button>
             <Button type="submit" disabled={busy}>
               {busy ? t("옮기는 중") : t("옮기기")}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** 줄 메뉴 › 정보 편집(05 §2.3, §4 ⋯): 이름·종류·링크. 폴더는 '폴더로 옮기기'에서 바꿉니다. */
+export function MaterialInfoDialog({
+  open,
+  onOpenChange,
+  material,
+  typeOptions,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  material: Material;
+  typeOptions: { value: Material["type"]; label: string }[];
+  onSave: (next: Material) => Promise<void>;
+}) {
+  const [draft, setDraft] = useState(material);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    if (!open) return;
+    setDraft(material);
+    setError("");
+  }, [open]);
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!busy) onOpenChange(next);
+      }}
+    >
+      <DialogContent className="rms-dialog">
+        <DialogHeader>
+          <DialogTitle>{t("자료 정보 편집")}</DialogTitle>
+          <DialogDescription>
+            {t("이름과 종류를 바꿔도 올린 파일과 버전은 그대로예요.")}
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (busy) return;
+            const title = draft.title.trim();
+            if (!title) return setError(t("자료 이름을 적어 주세요."));
+            let externalUrl = draft.externalUrl;
+            if (material.externalUrl !== undefined) {
+              externalUrl = safeUrl(draft.externalUrl ?? "") ?? undefined;
+              if (!externalUrl)
+                return setError(
+                  t("http 또는 https로 시작하는 링크를 적어 주세요."),
+                );
+            }
+            setBusy(true);
+            setError("");
+            onSave({ ...draft, title, externalUrl })
+              .then(() => onOpenChange(false))
+              .catch((err: Error) => setError(err.message))
+              .finally(() => setBusy(false));
+          }}
+        >
+          <DialogBody>
+            <label className="field">
+              <span>{t("자료 이름")}</span>
+              <Input
+                value={draft.title}
+                maxLength={200}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              />
+            </label>
+            <label className="field">
+              <span>{t("자료 종류")}</span>
+              <Choice
+                label={t("자료 종류")}
+                value={draft.type}
+                onChange={(v) =>
+                  setDraft({ ...draft, type: v as Material["type"] })
+                }
+                options={typeOptions}
+              />
+            </label>
+            {material.externalUrl !== undefined && (
+              <label className="field">
+                <span>{t("링크")}</span>
+                <Input
+                  type="url"
+                  value={draft.externalUrl ?? ""}
+                  onChange={(e) =>
+                    setDraft({ ...draft, externalUrl: e.target.value })
+                  }
+                />
+              </label>
+            )}
+            {error && (
+              <p className="rms-error" role="alert">
+                {error}
+              </p>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => onOpenChange(false)}
+            >
+              {t("취소")}
+            </Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? t("저장 중") : t("저장")}
             </Button>
           </DialogFooter>
         </form>
