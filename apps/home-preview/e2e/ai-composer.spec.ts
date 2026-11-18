@@ -427,7 +427,7 @@ test("웹 검색을 해제하면 기존 질문 입력으로 돌아오고 실패�
   await expect(input(page)).toHaveValue("지우면 안 되는 질문");
 });
 
-test("슬래시에서 실제 연결된 일곱 기능을 고르고 일정 요청을 실행한다", async ({
+test("슬래시에서 실제 연결된 여덟 기능을 고르고 일정 요청을 실행한다", async ({
   page,
 }) => {
   const { server } = await open(page);
@@ -438,6 +438,7 @@ test("슬래시에서 실제 연결된 일곱 기능을 고르고 일정 요청�
     "원고 검토",
     "할 일 정리",
     "논문·자료 요약",
+    "초안 쓰기",
     "웹 검색",
     "일정 확인",
   ]) {
@@ -677,4 +678,48 @@ test("기존 대화의 표지 PDF를 재선택 없이 전체 추출하고 실패
     "과거 표지 텍스트",
   );
   expect(savedConversation.contexts[0].text).toBe(upgraded?.text);
+});
+
+test("초안 쓰기는 정해 둔 지시문을 붙여 보내고 답 아래 '이어서'로 입력창을 채운다(IA v2 06 §2.3·§2.4)", async ({
+  page,
+}) => {
+  const { server, errors } = await open(page);
+  await input(page).fill("/초안");
+  await input(page).press("Enter");
+  await expect(
+    composer(page).getByRole("button", { name: "초안 쓰기 선택 해제" }),
+  ).toBeVisible();
+  await input(page).fill("서론 첫 문단");
+  await input(page).press("Enter");
+  await expect(page.locator(".ai-message.assistant")).toHaveCount(1);
+  const body = server.calls.find(
+    (call) => call.name === "ai-assist" && call.body,
+  )?.body as { mode?: string; question?: string; webSearch?: boolean };
+  expect(body).toMatchObject({ mode: "ask_research", webSearch: false });
+  expect(body.question).toContain("글 초안을 써 줘");
+  expect(body.question?.endsWith("요청: 서론 첫 문단")).toBe(true);
+  // 대화에는 사용자가 쓴 요청만 남습니다.
+  await expect(page.locator(".ai-message.user")).toContainText("서론 첫 문단");
+  await expect(page.locator(".ai-message.user")).not.toContainText(
+    "글 초안을 써 줘",
+  );
+  await expect(page.locator(".assistant-question-mode")).toHaveText(
+    "초안 쓰기",
+  );
+  const next = page.getByRole("group", { name: "이어서" });
+  await expect(next.getByRole("button")).toHaveText([
+    "글로 저장",
+    "더 짧게",
+    "더 자세히",
+  ]);
+  await next.getByRole("button", { name: "더 짧게" }).click();
+  await expect(input(page)).toHaveValue(
+    "방금 초안을 핵심만 남겨 절반 길이로 줄여 줘",
+  );
+  await expect(
+    composer(page).getByRole("button", { name: "초안 쓰기 선택 해제" }),
+  ).toBeVisible();
+  await next.getByRole("button", { name: "글로 저장" }).click();
+  await expect(page.getByRole("dialog", { name: "글로 저장" })).toBeVisible();
+  expect(errors).toEqual([]);
 });

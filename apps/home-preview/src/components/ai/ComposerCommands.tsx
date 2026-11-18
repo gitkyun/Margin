@@ -153,6 +153,7 @@ export interface QueuedQuestion {
   mode: AIInput["mode"];
   webSearch?: boolean;
   calendar?: boolean;
+  draft?: boolean;
   contexts?: AIContext[];
 }
 
