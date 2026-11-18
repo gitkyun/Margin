@@ -724,6 +724,101 @@ test("초안 쓰기는 정해 둔 지시문을 붙여 보내고 답 아래 '이�
   expect(errors).toEqual([]);
 });
 
+test("사이드 창의 대화 | 제안 | 실행 내역을 오가고, 실행 줄을 누르면 그 답으로 간다(IA v2 06 §2.1·§2.8)", async ({
+  page,
+}) => {
+  const { server, errors } = await open(
+    page,
+    1440,
+    900,
+    0,
+    `/r/${RESEARCH_ID}`,
+  );
+  const at = "2026-11-18T01:00:00.000Z";
+  // 끝난 실행 둘: 하나는 답이 대화에 남아 있고(누를 수 있음), 하나는 갈 곳이 없습니다(누를 수 없음).
+  server.rpc("rms_bootstrap", () => ({
+    ...WORKSPACE,
+    conversations: [
+      {
+        id: "conv-runs",
+        researchId: RESEARCH_ID,
+        createdAt: at,
+        updatedAt: at,
+        createdBy: OWNER.id,
+        title: "지난 대화",
+        contexts: [],
+        messages: [
+          { role: "user", text: "지난 질문", createdAt: at },
+          {
+            role: "assistant",
+            text: "지난 답의 본문",
+            createdAt: at,
+            runId: "run-linked",
+          },
+        ],
+      },
+    ],
+    aiRuns: [
+      {
+        id: "run-linked",
+        researchId: RESEARCH_ID,
+        userId: OWNER.id,
+        mode: "ask_research",
+        status: "complete",
+        createdAt: at,
+      },
+      {
+        id: "run-orphan",
+        researchId: RESEARCH_ID,
+        userId: OWNER.id,
+        mode: "plan_research",
+        status: "failed",
+        createdAt: "2026-11-17T01:00:00.000Z",
+      },
+    ],
+  }));
+  await page.reload();
+  await page
+    .getByRole("toolbar", { name: "옆 창 열기" })
+    .getByRole("button", { name: "연구 도우미" })
+    .click();
+  const panel = page.locator(".assistant-side-panel");
+  const views = panel.getByRole("tablist", { name: "연구 도우미 보기" });
+  await expect(views.getByRole("tab")).toHaveText([
+    "대화",
+    "제안",
+    "실행 내역",
+  ]);
+  const panelInput = panel
+    .locator("[data-kokonut-composer]")
+    .getByRole("textbox", { name: "연구 도우미에게 질문" });
+  await panelInput.fill("쓰던 질문");
+
+  // 제안·실행 내역을 보는 동안 입력창은 숨고, 돌아오면 쓰던 글이 그대로입니다.
+  await views.getByRole("tab", { name: "제안" }).click();
+  await expect(
+    panel.getByText("AI 제안이 나오면 여기에 표시돼요."),
+  ).toBeVisible();
+  await expect(panelInput).toBeHidden();
+  await views.getByRole("tab", { name: "실행 내역" }).click();
+  await expect(panel.locator(".run-row")).toHaveCount(2);
+  // 갈 곳이 있는 줄만 누를 수 있습니다.
+  await expect(panel.locator(".run-row-link")).toHaveCount(1);
+  await shot(page, "panel-views-runs");
+  await views.getByRole("tab", { name: "대화" }).click();
+  await expect(panelInput).toHaveValue("쓰던 질문");
+
+  // 실행 줄을 누르면 그 답이 남은 대화로 바뀌고 대화 보기로 돌아옵니다.
+  await views.getByRole("tab", { name: "실행 내역" }).click();
+  await panel.locator(".run-row-link").click();
+  await expect(views.getByRole("tab", { name: "대화" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(panel.getByText("지난 답의 본문")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("답 아래 [할 일 추가]는 할 일 제안을 펼치고 고른 줄만 할 일로 저장한다(IA v2 06 §2.4)", async ({
   page,
 }) => {

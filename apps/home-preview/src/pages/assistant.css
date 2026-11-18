@@ -893,6 +893,37 @@
   .assistant-panel .run-row > div {
     flex: 1;
   }
+  /* 갈 곳이 있는 실행 줄(06 §2.8): 줄 전체를 누르고, 끝의 화살표로 누를 수 있음을 보입니다. */
+  .run-row-link {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .run-row-link > svg {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+  }
+  .run-row-link > div {
+    flex: 1;
+    min-width: 0;
+  }
+  .run-row-link:hover strong {
+    text-decoration: underline;
+  }
+  .run-row-link:focus-visible {
+    border-radius: var(--radius-8);
+    outline: 2px solid var(--semantic-foreground-brand-primary);
+    outline-offset: 2px;
+  }
   /* 입력창 위 안내문: 대화 열·입력창과 같은 760px 열의 왼쪽 가장자리에서 시작해요.
      두 줄이 되면 마지막 줄에 한 어절만 남지 않게 줄 길이를 고르게 나눕니다. */
   .assistant-unavailable {

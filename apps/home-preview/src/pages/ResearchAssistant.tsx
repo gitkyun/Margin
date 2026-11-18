@@ -90,9 +90,13 @@ import { MarginPanel } from "@/components/margin-panel/MarginPanel";
 import { queryDown } from "@/design/responsive";
 import {
   AssistantPanel,
+  AssistantRuns,
+  AssistantSuggestions,
   MAX_SOURCES,
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
+import { runTarget } from "@/lib/assistant-runs";
+import { Tabs } from "@/components/ui/tabs";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
 import { NextSteps } from "./assistant/NextSteps";
 import { AnswerTasks } from "./assistant/AnswerTasks";
@@ -182,6 +186,12 @@ export function ResearchAssistant({
     wantsSuggestions = params.get("tab") === "overview";
   // 계정 설정에서 고른 나만의 연구 도우미 이름. 고르지 않았으면 기본 마스코트.
   const agent = readAgentProfile(user.preferences);
+  // 사이드 창 안의 보기(06 §2.1): 대화 | 제안 | 실행 내역. 화면에서는 늘 대화이고 제안·실행 내역은 오른쪽 패널에 있습니다.
+  const [panelView, setPanelView] = useState<"chat" | AssistantPanelTab>(
+    "chat",
+  );
+  // 실행 내역에서 고른 답(runId). 그 대화로 바꾼 뒤 그 답까지 스크롤합니다.
+  const [jumpToRun, setJumpToRun] = useState<string | null>(null);
   const [panelTab, setPanelTab] = useState<AssistantPanelTab>("suggestions"),
     [panelOpen, setPanelOpen] = useState(
       // 확인할 AI 제안이 있을 때만 처음부터 열어 둡니다. 기록을 고르는 탭은 없어요.
@@ -407,6 +417,16 @@ export function ResearchAssistant({
     if ((!messages.length && !running) || !stickToBottom.current) return;
     end.current?.scrollIntoView({ block: "nearest" });
   }, [messages.length, running]);
+  useEffect(() => {
+    if (!jumpToRun) return;
+    const answer = scrollRef.current?.querySelector(
+      `[data-run="${CSS.escape(jumpToRun)}"]`,
+    );
+    if (!answer) return;
+    stickToBottom.current = false;
+    answer.scrollIntoView({ block: "start" });
+    setJumpToRun(null);
+  }, [jumpToRun, conversation?.id, panelView]);
   useEffect(() => {
     const id = params.get("document");
     const doc = data.documents.find(
@@ -1110,7 +1130,32 @@ export function ResearchAssistant({
       toast.error((e as Error).message);
     }
   }
+  function openConversation(c: AIConversation) {
+    setConversation(c);
+    setContexts([]);
+    setCalendar(c.messages.at(-1)?.calendar ?? false);
+    setWebSearch(c.messages.at(-1)?.webSearch ?? false);
+    setDrafting(lastAsked(c.messages)?.draft ?? false);
+    setError("");
+    setPanelView("chat");
+  }
+  /** 실행 내역 줄의 갈 곳(06 §2.8): 그 답이 남은 대화, 없으면 그 실행의 제안. 진행 중에는 대화를 바꾸지 않습니다. */
+  function runLink(id: string): (() => void) | undefined {
+    const target = runTarget(id, conversations, pending);
+    if (!target) return undefined;
+    if (target.kind === "suggestions")
+      return () =>
+        inPanel ? setPanelView("suggestions") : openPanel("suggestions");
+    const found = conversations.find((c) => c.id === target.conversationId);
+    if (!found || (running && found.id !== conversation?.id)) return undefined;
+    return () => {
+      if (found.id !== conversation?.id) openConversation(found);
+      else setPanelView("chat");
+      setJumpToRun(id);
+    };
+  }
   function startNew() {
+    setPanelView("chat");
     setConversation(null);
     setWebSearch(false);
     setCalendar(false);
@@ -1362,14 +1407,7 @@ export function ResearchAssistant({
                     <DropdownMenuItem
                       key={c.id}
                       value={c.id}
-                      onSelect={() => {
-                        setConversation(c);
-                        setContexts([]);
-                        setCalendar(c.messages.at(-1)?.calendar ?? false);
-                        setWebSearch(c.messages.at(-1)?.webSearch ?? false);
-                        setDrafting(lastAsked(c.messages)?.draft ?? false);
-                        setError("");
-                      }}
+                      onSelect={() => openConversation(c)}
                     >
                       {c.title}
                     </DropdownMenuItem>
@@ -1405,19 +1443,23 @@ export function ResearchAssistant({
               <Icon name="close" size={18} />
             </Button>
           </span>
-          {pending.length > 0 && (
-            <button
-              type="button"
-              className="assistant-panel-pending"
-              onClick={() => {
-                onClose?.();
-                navigate(`/r/${researchId}/assistant?tab=overview`);
-              }}
-            >
-              {t("확인할 AI 제안 {count}개", { count: pending.length })}
-              <Icon name="chevron-right" size={14} />
-            </button>
-          )}
+          <Tabs
+            className="assistant-panel-views"
+            label={t("연구 도우미 보기")}
+            value={panelView}
+            onChange={(value) =>
+              setPanelView(value as "chat" | AssistantPanelTab)
+            }
+            options={[
+              { value: "chat", label: t("대화") },
+              {
+                value: "suggestions",
+                label: t("제안"),
+                count: pending.length,
+              },
+              { value: "runs", label: t("실행 내역") },
+            ]}
+          />
         </header>
       ) : (
         <PageHeader
@@ -1451,14 +1493,7 @@ export function ResearchAssistant({
                     <DropdownMenuItem
                       key={c.id}
                       value={c.id}
-                      onSelect={() => {
-                        setConversation(c);
-                        setContexts([]);
-                        setCalendar(c.messages.at(-1)?.calendar ?? false);
-                        setWebSearch(c.messages.at(-1)?.webSearch ?? false);
-                        setDrafting(lastAsked(c.messages)?.draft ?? false);
-                        setError("");
-                      }}
+                      onSelect={() => openConversation(c)}
                     >
                       {c.title}
                     </DropdownMenuItem>
@@ -1473,7 +1508,29 @@ export function ResearchAssistant({
           }
         />
       )}
-      <section className="ai-chat-main">
+      {inPanel && panelView === "suggestions" && (
+        <div className="assistant-panel assistant-panel-view">
+          <AssistantSuggestions
+            pending={pending}
+            onAdopt={adopt}
+            onDismiss={(c) => void dismiss(c)}
+          />
+        </div>
+      )}
+      {inPanel && panelView === "runs" && (
+        <div className="assistant-panel assistant-panel-view">
+          <AssistantRuns
+            runs={runs}
+            onCancelRun={(id) => void w.cancelRun(id)}
+            runLink={runLink}
+          />
+        </div>
+      )}
+      {/* 제안·실행 내역을 보는 동안에도 대화·입력 중인 글·대기 질문은 그대로 둡니다(숨기기만 함). */}
+      <section
+        className="ai-chat-main"
+        hidden={inPanel && panelView !== "chat"}
+      >
         <div
           ref={scrollRef}
           className="chat-scroll"
@@ -1516,7 +1573,11 @@ export function ResearchAssistant({
             </div>
           ) : (
             messages.map((m, i) => (
-              <article className={`ai-message ${m.role}`} key={i}>
+              <article
+                className={`ai-message ${m.role}`}
+                key={i}
+                data-run={m.role === "assistant" ? m.runId : undefined}
+              >
                 {m.role === "user" ? (
                   <>
                     <span className="sr-only">{t("나")}</span>
@@ -2237,6 +2298,7 @@ export function ResearchAssistant({
             onDismiss={(c) => void dismiss(c)}
             runs={runs}
             onCancelRun={(id) => void w.cancelRun(id)}
+            runLink={runLink}
           />
         </MarginPanel>
       )}

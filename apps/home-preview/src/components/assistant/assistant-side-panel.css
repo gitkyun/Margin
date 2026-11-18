@@ -43,20 +43,24 @@
     align-items: center;
     gap: var(--spacing-2);
   }
-  .assistant-panel-pending {
-    display: inline-flex;
+  /* 대화 | 제안 | 실행 내역(06 §2.1): 머리 아래 한 줄을 다 씁니다. */
+  .assistant-panel-head > .margin-tabs {
     flex-basis: 100%;
-    align-items: center;
-    gap: var(--spacing-4);
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--brand);
-    font: inherit;
-    font-size: var(--typography-label2-fontSize);
-    font-weight: 600;
-    text-align: left;
-    cursor: pointer;
+  }
+  .assistant-panel-head .margin-tabs .margin-tabs-list .margin-tabs-tab {
+    padding-inline: var(--spacing-8);
+  }
+  /* 제안·실행 내역 보기: 창 높이 안에서 이 보기만 스크롤합니다. */
+  .assistant-panel-view {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .assistant-panel-view > .panel-frame-body {
+    padding: 0 0 var(--spacing-16);
+  }
+  .assistant-experience[data-variant="panel"] .ai-chat-main[hidden] {
+    display: none;
   }
   .assistant-experience[data-variant="panel"] .ai-chat-main {
     flex: 1;
