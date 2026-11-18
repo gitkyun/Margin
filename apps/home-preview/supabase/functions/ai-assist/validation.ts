@@ -7,7 +7,8 @@ export type Mode =
   | "read_material"
   | "propose_roadmap"
   | "continue_writing"
-  | "inline_edit";
+  | "inline_edit"
+  | "suggest_edits";
 export interface AIInput {
   webSearch?: boolean;
   calendar?: boolean;
@@ -28,6 +29,9 @@ export interface AIInput {
   feedbackId?: string;
   sourceText: string;
   sourceRevision?: number;
+  /** suggest_edits: 고칠 글과 (선택) 그 글 평문의 범위(UTF-16 위치) */
+  documentId?: string;
+  range?: { start: number; end: number };
   question?: string;
   history?: { role: "user" | "assistant"; text: string }[];
 }
@@ -77,8 +81,74 @@ function text(value: unknown, max: number, required = false): string {
     );
   return value;
 }
+/**
+ * 본문 안 수정 제안(IA v2 08 §5.3) 입력. 원문은 화면이 보내지 않고 서버가 글을 직접 읽습니다.
+ * 근거(contexts)는 피드백·할 일·미팅만, 8개까지.
+ */
+function validateSuggestEdits(input: Record<string, unknown>): AIInput {
+  if (
+    !uuid.test(String(input.researchId)) ||
+    !uuid.test(String(input.clientRunId)) ||
+    !uuid.test(String(input.documentId)) ||
+    !Number.isInteger(input.sourceRevision) ||
+    Number(input.sourceRevision) < 0 ||
+    (input.question !== undefined &&
+      (typeof input.question !== "string" || input.question.length > 2000)) ||
+    (input.sourceText !== undefined && input.sourceText !== "") ||
+    (input.model !== undefined && typeof input.model !== "string") ||
+    (input.thinking !== undefined && typeof input.thinking !== "string")
+  )
+    throw new AIError("INVALID_INPUT", "고칠 글과 실행 정보를 확인해 주세요.");
+  let range: AIInput["range"];
+  if (input.range !== undefined) {
+    const r = object(input.range);
+    if (
+      !Number.isInteger(r.start) ||
+      !Number.isInteger(r.end) ||
+      Number(r.start) < 0 ||
+      Number(r.end) <= Number(r.start)
+    )
+      throw new AIError("INVALID_INPUT", "고칠 범위를 확인해 주세요.");
+    range = { start: Number(r.start), end: Number(r.end) };
+  }
+  const raw = Array.isArray(input.contexts) ? input.contexts : [];
+  if (raw.length > 8)
+    throw new AIError("INVALID_INPUT", "근거는 8개까지 고를 수 있어요.");
+  const contexts = raw.map((v) => {
+    const c = object(v);
+    if (
+      !uuid.test(String(c.id)) ||
+      !["feedback", "tasks", "meetings"].includes(String(c.kind)) ||
+      typeof c.title !== "string" ||
+      c.title.length > 300
+    )
+      throw new AIError("INVALID_INPUT", "선택한 근거를 확인해 주세요.");
+    return { id: String(c.id), kind: String(c.kind), title: c.title };
+  });
+  return {
+    mode: "suggest_edits",
+    researchId: String(input.researchId),
+    clientRunId: String(input.clientRunId),
+    model: input.model as string | undefined,
+    thinking: input.thinking as string | undefined,
+    documentId: String(input.documentId),
+    sourceRevision: Number(input.sourceRevision),
+    ...(range ? { range } : {}),
+    question: typeof input.question === "string" ? input.question : "",
+    contexts,
+    sourceText: "",
+  };
+}
 export function validateInput(value: unknown): AIInput {
   const input = object(value);
+  if (input.mode === "suggest_edits") {
+    if (input.webSearch || input.calendar)
+      throw new AIError(
+        "INVALID_INPUT",
+        "웹 검색과 일정 확인은 질문하기에서 따로 실행해 주세요.",
+      );
+    return validateSuggestEdits(input);
+  }
   if (
     (input.webSearch !== undefined && typeof input.webSearch !== "boolean") ||
     (input.calendar !== undefined && typeof input.calendar !== "boolean")
@@ -506,4 +576,87 @@ export function normalizeOrganize(
       502,
     );
   return { candidates, droppedQuotes };
+}
+
+/** 본문 안 수정 제안 한 건(IA v2 08 §5.3). 위치는 글 평문(documents.text) 전체 기준 UTF-16. */
+export interface EditSuggestion {
+  title: string;
+  sourceQuote: string;
+  body: string;
+  sourceStart: number;
+  sourceEnd: number;
+}
+
+/**
+ * 수정 제안 정규화: 제안마다 sourceQuote를 고칠 범위 안에서 찾아 위치를 매깁니다.
+ * 찾지 못했거나, 바꿀 글자가 같거나, 앞 제안과 겹치면 그 제안만 빼고 수를 셉니다.
+ * 원고를 바꾸는 제안이라 글자가 그 자리에 정확히 있는 것만 남깁니다.
+ */
+export function normalizeSuggestEdits(
+  value: unknown,
+  text: string,
+  range: { start: number; end: number } = { start: 0, end: text.length },
+): { candidates: EditSuggestion[]; droppedQuotes: number } {
+  const output = object(value);
+  if (Array.isArray(output.candidates) && output.candidates.length === 0)
+    throw new AIError(
+      "NOTHING_FOUND",
+      "고칠 곳을 찾지 못했어요. 범위를 바꾸거나 지시를 더 구체적으로 적어 주세요.",
+      422,
+    );
+  if (!Array.isArray(output.candidates) || output.candidates.length > 20)
+    throw new AIError(
+      "INVALID_OUTPUT",
+      "AI가 사용할 수 있는 수정 제안을 반환하지 않았습니다. 다시 시도해 주세요.",
+      502,
+    );
+  const used: [number, number][] = [];
+  const overlaps = (start: number, end: number) =>
+    used.some(([a, b]) => start < b && a < end);
+  const candidates: EditSuggestion[] = [];
+  let droppedQuotes = 0;
+  for (const item of output.candidates) {
+    const c = object(item);
+    const title = text_(c.title, 200)?.trim();
+    const quote = text_(c.sourceQuote, 2000);
+    const body = text_(c.body, 4000);
+    // 지우기만 하는 제안은 body가 빈 글자입니다. 형식이 틀리면(null) 그 제안만 뺍니다.
+    if (!title || !quote || body === null || body === quote) {
+      droppedQuotes += 1;
+      continue;
+    }
+    // 같은 글자가 여러 번 나오면 범위 안에서 앞 제안과 겹치지 않는 첫 자리를 씁니다.
+    let at = text.indexOf(quote, range.start);
+    while (
+      at >= 0 &&
+      at + quote.length <= range.end &&
+      overlaps(at, at + quote.length)
+    )
+      at = text.indexOf(quote, at + 1);
+    if (at < 0 || at + quote.length > range.end) {
+      droppedQuotes += 1;
+      continue;
+    }
+    used.push([at, at + quote.length]);
+    candidates.push({
+      title,
+      sourceQuote: quote,
+      body,
+      sourceStart: at,
+      sourceEnd: at + quote.length,
+    });
+    if (candidates.length >= 12) break;
+  }
+  if (!candidates.length)
+    throw new AIError(
+      "UNVERIFIED_QUOTE",
+      "제안한 자리를 글에서 찾지 못해 적용하지 않았어요. 다시 시도해 주세요.",
+      502,
+    );
+  candidates.sort((a, b) => a.sourceStart - b.sourceStart);
+  return { candidates, droppedQuotes };
+}
+/** 문자열이 아니거나 너무 길면 null(그 제안만 뺌). */
+function text_(value: unknown, max: number): string | null {
+  return typeof value === "string" && value.length <= max ? value : null;
 }

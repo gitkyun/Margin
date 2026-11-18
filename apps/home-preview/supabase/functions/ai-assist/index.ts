@@ -36,6 +36,7 @@ import {
   type AIInput,
   normalizeCandidates,
   normalizeOrganize,
+  normalizeSuggestEdits,
   type OrganizeSource,
   normalizeAnswer,
   validateInput,
@@ -107,6 +108,26 @@ const revisionSchema = {
           "suggestedTasks",
           "sourceQuote",
         ],
+      },
+    },
+  },
+  required: ["candidates"],
+};
+
+/** 본문 안 수정 제안(IA v2 08 §5.3). 위치는 서버가 원문에서 찾아 매깁니다. */
+const suggestEditsSchema = {
+  type: "OBJECT",
+  properties: {
+    candidates: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          title: { type: "STRING" },
+          sourceQuote: { type: "STRING" },
+          body: { type: "STRING" },
+        },
+        required: ["title", "sourceQuote", "body"],
       },
     },
   },
@@ -332,6 +353,9 @@ Deno.serve(async (request) => {
     let contexts = input.contexts ?? [];
     // 서버가 연구 기록에서 직접 읽어 넣은 근거. 실행 기록과 응답에는 본문 없이 제목만 남깁니다.
     const workspaceIds = new Set<string>();
+    // suggest_edits: 고칠 글의 평문과 범위(제안 위치를 확인하는 기준)
+    let editText = "";
+    let editRange: { start: number; end: number } | undefined;
     // 요청한 사람의 토큰으로 읽어 기존 RLS 정책이 비공개 기록을 그대로 걸러냅니다.
     const loadWorkspace = async (task: WorkspaceTask, used = 0) => {
       const query = new URLSearchParams({
@@ -376,7 +400,101 @@ Deno.serve(async (request) => {
       !input.feedbackId &&
       !input.calendar &&
       !input.webSearch;
-    if (input.webSearch) {
+    if (input.mode === "suggest_edits") {
+      // 글은 화면이 보낸 글자가 아니라 저장된 글을 서버가 읽습니다. 비공개 글은 접근 확인에서 걸러집니다.
+      const docRows = (await rest(
+        `rms_records?${new URLSearchParams({ id: `eq.${input.documentId}`, research_id: `eq.${input.researchId}`, kind: "eq.documents", select: "data" })}`,
+      )) as { data: Record<string, unknown> }[];
+      if (
+        docRows.length !== 1 ||
+        !(await rpc("rms_record_access", {
+          p_id: input.documentId,
+          p_user: user.id,
+        }))
+      )
+        throw new AIError("FORBIDDEN", "이 글을 읽을 수 없습니다.", 403);
+      const doc = docRows[0].data;
+      if (doc.archivedAt)
+        throw new AIError("SOURCE_MISSING", "보관한 글이에요.", 409);
+      if (doc.revision !== input.sourceRevision)
+        throw new AIError(
+          "SOURCE_CHANGED",
+          "글이 바뀌었어요. 다시 제안받을 수 있어요.",
+          409,
+        );
+      editText = typeof doc.text === "string" ? doc.text : "";
+      editRange = input.range ?? { start: 0, end: editText.length };
+      if (editRange.end > editText.length)
+        throw new AIError(
+          "SOURCE_CHANGED",
+          "고른 범위가 저장한 글과 맞지 않아요. 저장한 뒤 다시 골라 주세요.",
+          409,
+        );
+      const slice = editText.slice(editRange.start, editRange.end);
+      if (!slice.trim())
+        throw new AIError("SOURCE_MISSING", "고칠 글자가 아직 없어요.", 409);
+      if (slice.length > 30000)
+        throw new AIError(
+          "INPUT_TOO_LARGE",
+          "고칠 범위를 30,000자 이내로 골라 주세요.",
+          413,
+        );
+      const docTitle = String(doc.title ?? "");
+      const grounding: {
+        id: string;
+        kind: string;
+        title: string;
+        text: string;
+      }[] = [];
+      for (const c of contexts) {
+        if (!(await rpc("rms_record_access", { p_id: c.id, p_user: user.id })))
+          throw new AIError(
+            "FORBIDDEN",
+            "선택한 근거를 읽을 수 없습니다.",
+            403,
+          );
+        const rows = (await rest(
+          `rms_records?${new URLSearchParams({ id: `eq.${c.id}`, research_id: `eq.${input.researchId}`, kind: `eq.${c.kind}`, select: "data" })}`,
+        )) as { data: Record<string, unknown> }[];
+        if (rows.length !== 1)
+          throw new AIError("FORBIDDEN", "선택한 근거를 확인해 주세요.", 403);
+        const stored = rows[0].data;
+        const body =
+          c.kind === "feedback"
+            ? String(stored.body ?? "")
+            : c.kind === "tasks"
+              ? `${stored.title ?? ""}\n${stored.description ?? ""}`
+              : String(stored.memo ?? "");
+        grounding.push({
+          id: c.id,
+          kind: c.kind,
+          title: String(stored.title ?? c.title),
+          text: body,
+        });
+      }
+      input.sourceText =
+        `[고칠 글] ${docTitle}\n${slice}` +
+        grounding
+          .map((c, i) => `\n\n[근거 ${i + 1}] ${c.title}\n${c.text}`)
+          .join("");
+      if (input.sourceText.length > 50000)
+        throw new AIError(
+          "INPUT_TOO_LARGE",
+          "고칠 범위나 근거를 줄여 주세요.",
+          413,
+        );
+      // 실행 기록에는 글과 근거의 본문을 다시 남기지 않고 무엇이었는지만 남깁니다.
+      contexts = [
+        {
+          id: input.documentId!,
+          kind: "documents",
+          title: docTitle,
+          revision: input.sourceRevision,
+        },
+        ...grounding.map(({ id, kind, title }) => ({ id, kind, title })),
+      ];
+      for (const c of contexts) workspaceIds.add(c.id);
+    } else if (input.webSearch) {
       contexts = [];
       input.sourceText = "";
     } else if (input.calendar) {
@@ -704,7 +822,9 @@ Deno.serve(async (request) => {
         ? chatSchema
         : input.mode === "organize_meeting"
           ? organizeSchema
-          : revisionSchema;
+          : input.mode === "suggest_edits"
+            ? suggestEditsSchema
+            : revisionSchema;
     const maxOutput =
       input.mode === "continue_writing" || input.mode === "inline_edit"
         ? 2048
@@ -856,19 +976,25 @@ Deno.serve(async (request) => {
             ],
           )
         : null;
-    const candidates = organized
-      ? organized.candidates
-      : ["ask_research", "continue_writing", "inline_edit"].includes(
-            input.mode,
-          ) || plan
-        ? []
-        : normalizeCandidates(
-            candidateData,
-            input.mode,
-            input.sourceText,
-            originalQuote,
-          );
-    const droppedQuotes = organized?.droppedQuotes ?? 0;
+    const edits =
+      input.mode === "suggest_edits"
+        ? normalizeSuggestEdits(candidateData, editText, editRange)
+        : null;
+    const candidates = edits
+      ? edits.candidates
+      : organized
+        ? organized.candidates
+        : ["ask_research", "continue_writing", "inline_edit"].includes(
+              input.mode,
+            ) || plan
+          ? []
+          : normalizeCandidates(
+              candidateData,
+              input.mode,
+              input.sourceText,
+              originalQuote,
+            );
+    const droppedQuotes = edits?.droppedQuotes ?? organized?.droppedQuotes ?? 0;
     const output = {
       candidates,
       ...(droppedQuotes ? { droppedQuotes } : {}),

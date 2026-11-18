@@ -31,7 +31,11 @@ export function AssistantSidePanel({
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
     .slice(0, RECENT_LIMIT);
   const pending = data.aiCandidates.filter(
-    (c) => c.researchId === researchId && c.status === "pending",
+    (c) =>
+      c.researchId === researchId &&
+      c.status === "pending" &&
+      // 본문 안 수정 제안은 글 편집 화면에서만 다룹니다(IA v2 05 §3.6).
+      c.mode !== "suggest_edits",
   ).length;
 
   // 화면으로 넘어가면 이 창은 닫습니다(같은 내용이 두 곳에 뜨지 않게).
