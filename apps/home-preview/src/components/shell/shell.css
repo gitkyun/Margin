@@ -361,12 +361,19 @@
         100dvh - var(--ia-topbar-height) - var(--dock-height, 0px)
       );
     }
+    /* 기본 규칙(sticky, 50vw)이 margin-panel.css의 모바일 시트를 덮지 않도록 여기서 전체 폭 시트로 되돌립니다. */
     .ia-shell .margin-panel {
+      position: fixed;
       top: var(--ia-topbar-height);
+      right: 0;
       bottom: var(--dock-height, 0px);
+      left: 0;
+      z-index: var(--z-sheet);
+      width: 100%;
       height: auto;
       align-self: auto;
       border-radius: 0;
+      box-shadow: var(--shadow-pop);
     }
     .ia-shell .ia-tabbar {
       display: grid;
