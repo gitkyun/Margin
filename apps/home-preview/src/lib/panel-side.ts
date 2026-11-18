@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { useWorkspace } from "./workspace";
+import { assertConnected } from "./supabase";
 
 // 사이드 창 위치(IA v2 07 §1.2 '화면', 0단계 완료 기준 ④).
 // 계정 메타데이터 preferences.panelSide에 저장합니다. 설정 창에서 바꾼 값은
@@ -35,4 +36,19 @@ export function usePanelSide(): PanelSide {
     () => override,
   );
   return current ?? readPanelSide(user.preferences?.[PANEL_SIDE_KEY]);
+}
+
+/**
+ * 아이콘 줄의 화면 배치 메뉴처럼 설정 창 밖에서 바꾼 위치를 계정에 저장합니다.
+ * 저장 직전에 계정의 다른 설정을 다시 읽어 그 위에 이 값만 덮어써요(다른 설정을 지우지 않게).
+ */
+export async function savePanelSide(side: PanelSide): Promise<void> {
+  const client = assertConnected();
+  const { data, error } = await client.auth.getUser();
+  if (error) throw error;
+  const preferences = data.user?.user_metadata?.preferences ?? {};
+  const { error: saveError } = await client.auth.updateUser({
+    data: { preferences: { ...preferences, [PANEL_SIDE_KEY]: side } },
+  });
+  if (saveError) throw saveError;
 }

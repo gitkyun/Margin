@@ -26,6 +26,7 @@ import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
   panelRequest,
+  lastPanelTab,
   rememberPanel,
   withoutPanelRequest,
   type PanelRequest,
@@ -169,7 +170,8 @@ export function WorkspaceShell({
   const research = data.researches.find((r) => r.id === researchId);
   const [search, setSearch] = useState(false),
     [shortcutsOpen, setShortcutsOpen] = useState(false),
-    [notifications, setNotifications] = useState(false);
+    [notifications, setNotifications] = useState(false),
+    [panelResizing, setPanelResizing] = useState(false);
   const overlayPanel = useMediaQuery(OVERLAY_PANEL_QUERY);
   const panelSide = usePanelSide();
   const updates = unreadReviewNotifications(data, user, researchId);
@@ -193,12 +195,35 @@ export function WorkspaceShell({
   // ?detail= 항목 상세(06 §6)는 사이드 창 자리에 덮여 뜹니다. 창이 닫혀 있어도 엽니다.
   const detail = useDetailRef();
   // 아이콘 줄의 실제 탭(1단계: 할 일 창 P2). 화면이 보낸 임시 탭과는 한 번에 하나만 엽니다.
-  const [railTab, setRailTabState] = useState<SidePanelTab | null>(() =>
-    initialPanelTab(window.innerWidth),
-  );
+  const [railSelection, setRailSelection] = useState<{
+    active: SidePanelTab | null;
+    closing: SidePanelTab | null;
+  }>(() => ({ active: initialPanelTab(window.innerWidth), closing: null }));
+  const railTab = railSelection.active;
+  // 열어 본 탭은 같은 연구 안에서 보존해 작성 내용·필터·스크롤을 이어 씁니다.
+  const [visitedPanels, setVisitedPanels] = useState<{
+    researchId?: string;
+    tabs: SidePanelTab[];
+  }>({ researchId, tabs: [] });
+  useEffect(() => {
+    setVisitedPanels((previous) => {
+      if (previous.researchId !== researchId)
+        return { researchId, tabs: railTab ? [railTab] : [] };
+      if (!railTab || previous.tabs.includes(railTab)) return previous;
+      return { researchId, tabs: [...previous.tabs, railTab] };
+    });
+  }, [researchId, railTab]);
+  const hasVisited = (tab: SidePanelTab) =>
+    railTab === tab ||
+    (visitedPanels.researchId === researchId &&
+      visitedPanels.tabs.includes(tab));
   // 사람이 여닫은 것만 기억합니다(화면 이동으로 닫힌 것은 남기지 않음, 02 §4.5).
   const setRailTab = (tab: SidePanelTab | null, remember = false) => {
-    setRailTabState(tab);
+    setRailSelection((previous) =>
+      previous.active === tab
+        ? previous
+        : { active: tab, closing: tab ? null : previous.active },
+    );
     if (remember) rememberPanel(window.innerWidth, tab);
   };
   // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
@@ -324,6 +349,12 @@ export function WorkspaceShell({
   const assistantOpen = inResearch && railTab === "assistant";
   const railOpen = tasksOpen || logOpen || assistantOpen;
   const panelShown = !!panel.active || detailOpen || railOpen;
+  // 닫히는 동안 마지막 탭을 그리되, 창 전체는 즉시 조작할 수 없게 합니다.
+  const visibleRailTab = inResearch
+    ? panelShown
+      ? railTab
+      : railSelection.closing
+    : null;
   return (
     <div
       style={
@@ -382,70 +413,101 @@ export function WorkspaceShell({
             onClick={panel.active.onClose}
           />
         )}
-        {panelShown && (
-          <PanelResizer
-            side={panelSide}
-            width={panelWidth}
-            onChange={setPanelWidth}
-            currentWidth={() =>
-              document.querySelector<HTMLElement>(".margin-panel")
-                ?.offsetWidth ?? 312
-            }
-          />
-        )}
-        <aside
-          id="margin-panel"
-          className="margin-panel"
-          aria-label={
-            detailOpen
-              ? t("항목 상세")
-              : (panel.active?.label ?? t("여백 패널"))
-          }
-          hidden={!panelShown}
-          tabIndex={-1}
+        <div
+          className={`ia-panel-frame ${panelShown ? "is-open" : "is-closed"} ${panelResizing ? "is-resizing" : ""}`}
+          aria-hidden={!panelShown}
+          inert={!panelShown ? true : undefined}
         >
-          {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
-          <div
-            className="margin-panel-slot"
-            hidden={detailOpen || railOpen}
-            ref={panel.setSlot}
-          />
-          {/* 실제 탭은 상세가 덮여 있어도 살려 두고 숨깁니다(쓰던 글·스크롤 유지, 02 §4.2). */}
-          {assistantOpen && researchId && (
-            <div hidden={detailOpen}>
-              <AssistantSidePanel
-                researchId={researchId}
-                request={assistantRequest}
-                onClose={() => setRailTab(null, true)}
+          {panelShown && (
+            <PanelResizer
+              side={panelSide}
+              width={panelWidth}
+              onChange={setPanelWidth}
+              onDraggingChange={setPanelResizing}
+              currentWidth={() =>
+                document.querySelector<HTMLElement>(".margin-panel")
+                  ?.offsetWidth ?? 312
+              }
+            />
+          )}
+          <div className="ia-panel-viewport">
+            <aside
+              id="margin-panel"
+              className="margin-panel"
+              aria-label={
+                detailOpen
+                  ? t("항목 상세")
+                  : (panel.active?.label ?? t("여백 패널"))
+              }
+              tabIndex={-1}
+            >
+              {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
+              <div
+                className="margin-panel-slot"
+                hidden={detailOpen || !!visibleRailTab}
+                ref={panel.setSlot}
               />
-            </div>
-          )}
-          {tasksOpen && researchId && (
-            <div hidden={detailOpen}>
-              <TasksPanel
-                researchId={researchId}
-                onClose={() => setRailTab(null, true)}
-              />
-            </div>
-          )}
-          {logOpen && researchId && (
-            <div hidden={detailOpen}>
-              <LogPanel
-                researchId={researchId}
-                onClose={() => setRailTab(null, true)}
-              />
-            </div>
-          )}
-          {detailOpen && detail && researchId && (
-            <ItemDetail researchId={researchId} detail={detail} />
-          )}
-        </aside>
+              {/* 각 탭이 자기 스크롤과 입력 상태를 유지합니다(02 §4.2). */}
+              {researchId && hasVisited("assistant") && (
+                <div
+                  key={researchId + "-assistant"}
+                  className="ia-panel-tab"
+                  hidden={detailOpen || visibleRailTab !== "assistant"}
+                >
+                  <AssistantSidePanel
+                    researchId={researchId}
+                    request={assistantRequest}
+                    onClose={() => setRailTab(null, true)}
+                  />
+                </div>
+              )}
+              {researchId && hasVisited("tasks") && (
+                <div
+                  key={researchId + "-tasks"}
+                  className="ia-panel-tab"
+                  hidden={detailOpen || visibleRailTab !== "tasks"}
+                >
+                  <TasksPanel
+                    researchId={researchId}
+                    onClose={() => setRailTab(null, true)}
+                  />
+                </div>
+              )}
+              {researchId && hasVisited("log") && (
+                <div
+                  key={researchId + "-log"}
+                  className="ia-panel-tab"
+                  hidden={detailOpen || visibleRailTab !== "log"}
+                >
+                  <LogPanel
+                    researchId={researchId}
+                    onClose={() => setRailTab(null, true)}
+                  />
+                </div>
+              )}
+              {detailOpen && detail && researchId && (
+                <ItemDetail researchId={researchId} detail={detail} />
+              )}
+            </aside>
+          </div>
+        </div>
         {inResearch && (
           <SideRail
             researchId={researchId}
             offered={panel.offered}
             active={railOpen ? null : panel.active}
             openTab={railTab}
+            panelWidth={panelWidth}
+            onResetPanelWidth={() => setPanelWidth(null)}
+            panelOpen={railOpen || !!panel.active}
+            onTogglePanel={() => {
+              if (railOpen || panel.active) {
+                panel.active?.onClose();
+                setRailTab(null, true);
+                return;
+              }
+              setRailTab(lastPanelTab(), true);
+            }}
             onTab={(tab) => {
               if (railTab === tab) {
                 setRailTab(null, true);

@@ -111,7 +111,11 @@ export function SelectField(props: SelectHTMLAttributes<HTMLSelectElement>) {
         .join("")
         .trim();
     if (text) setFieldLabel(text);
-    setInToolbar(!!host.current?.closest(".student-filter-row, .page-toolbar"));
+    setInToolbar(
+      !!host.current?.closest(
+        ".student-filter-row, .page-toolbar, .tasks-filters",
+      ),
+    );
   }, [props.id]);
   return (
     <span className="select-field-host" ref={host}>

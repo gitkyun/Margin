@@ -79,3 +79,11 @@ export function withoutPanelRequest(search: string): string {
   const query = params.toString();
   return query ? `?${query}` : "";
 }
+
+/** 접었다 다시 펼 때 열 탭: 마지막으로 연 탭, 없으면 할 일 */
+export function lastPanelTab(): SidePanelTab {
+  const tab = read(TAB_KEY);
+  return (TABS as readonly string[]).includes(tab ?? "")
+    ? (tab as SidePanelTab)
+    : "tasks";
+}

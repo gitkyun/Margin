@@ -7,31 +7,27 @@
     --settings-dialog-radius: var(--radius-16);
     box-shadow: var(--shadow-pop);
   }
-  .settings-dialog-content {
-    position: relative;
-  }
   .settings-dialog-close {
-    position: sticky;
-    top: 0;
-    float: right;
+    position: absolute;
+    inset-block-start: var(--spacing-12);
+    inset-inline-end: var(--spacing-12);
     z-index: 1;
     display: inline-grid;
     place-items: center;
     width: 36px;
     height: 36px;
-    margin: calc(var(--spacing-8) * -1) calc(var(--spacing-8) * -1) 0
-      var(--spacing-8);
     border: 0;
     border-radius: var(--radius-8);
-    background: var(--surface);
+    background: var(--surface-raised);
     color: var(--text-secondary);
     cursor: pointer;
   }
   .settings-dialog-close:hover {
-    background: var(--brand-soft);
-    color: var(--text-primary);
+    background: var(--navigation-selected-fill);
+    color: var(--text);
   }
   .settings-dialog-frame {
+    position: relative;
     display: grid;
     grid-template-columns: var(--settings-list-width) minmax(0, 1fr);
     height: var(--settings-dialog-height);
@@ -42,7 +38,8 @@
     gap: var(--spacing-16);
     min-height: 0;
     padding: var(--spacing-20) var(--spacing-12);
-    border-right: 1px solid var(--line);
+    border-inline-end: 1px solid var(--line);
+    background: var(--canvas);
     overflow-y: auto;
   }
   .settings-dialog-title {
@@ -75,12 +72,12 @@
     cursor: pointer;
   }
   .settings-dialog-item:hover {
-    background: var(--surface-muted, var(--brand-soft));
-    color: var(--text-primary);
+    background: var(--hover-fill);
+    color: var(--text);
   }
   .settings-dialog-item[aria-current="page"] {
-    background: var(--brand-soft);
-    color: var(--brand);
+    background: var(--navigation-selected-fill);
+    color: var(--text);
     font-weight: 600;
   }
   .settings-dialog-item:focus-visible {
@@ -103,7 +100,8 @@
   .settings-dialog-content {
     min-width: 0;
     min-height: 0;
-    padding: var(--spacing-20) var(--spacing-24);
+    padding: var(--spacing-20) var(--spacing-56) var(--spacing-24)
+      var(--spacing-24);
     overflow-y: auto;
   }
   .settings-dialog-back {
@@ -128,7 +126,7 @@
       grid-template-columns: minmax(0, 1fr);
     }
     .settings-dialog-nav {
-      border-right: 0;
+      border-inline-end: 0;
     }
     .settings-dialog-frame[data-view="content"] .settings-dialog-nav,
     .settings-dialog-frame[data-view="list"] .settings-dialog-content {
@@ -141,6 +139,7 @@
       display: inline-flex;
       align-items: center;
       gap: var(--spacing-4);
+      min-height: 36px;
       margin-bottom: var(--spacing-12);
       padding: var(--spacing-6) 0;
       border: 0;

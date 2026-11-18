@@ -9,6 +9,7 @@ import { t } from "@/lib/i18n";
 import { shouldToggleOnSwipe } from "@/lib/swipe-toggle";
 import { UNDO_MS } from "@/lib/use-task-completion";
 import { Icon } from "./icons";
+import "./task-row-frame.css";
 
 interface TaskRowFrameProps {
   className: string;

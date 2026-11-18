@@ -124,7 +124,15 @@ async function endpoint(options: {
     if (url.endsWith("/auth/v1/user"))
       return Response.json({ id: userId, email_confirmed_at: "2026-01-01" });
     if (url.includes("/rpc/"))
-      return Response.json(url.endsWith("rms_ai_begin_v2") ? runId : true);
+      return Response.json(
+        url.endsWith("rms_ai_start")
+          ? { run_id: runId, held: true }
+          : url.endsWith("rms_ai_complete")
+            ? { settled: true, closed: true, charged: 3, accepted: true }
+            : url.endsWith("rms_ai_begin_v2")
+              ? runId
+              : true,
+      );
     if (url.includes("/rms_ai_credit_ledger"))
       return Response.json([{ amount: -3 }]);
     if (url.includes("/rms_researches")) return Response.json([{ data: {} }]);
@@ -231,7 +239,7 @@ describe("[정리하기]에 내 전사문 붙이기(IA v2 08 §5.1)", () => {
     const sent = JSON.stringify(provider.body);
     expect(sent).toContain("미팅 메모");
     expect(sent).toContain("내 전사문 · 11월 녹음");
-    const finish = calls.find((c) => c.url.endsWith("rms_ai_finish_v2"))!;
+    const finish = calls.find((c) => c.url.endsWith("rms_ai_complete"))!;
     // 전사 글자는 실행 기록에 저장하지 않습니다.
     expect(JSON.stringify(finish.body.p_contexts)).not.toContain(
       "표를 다시 그려 오세요",

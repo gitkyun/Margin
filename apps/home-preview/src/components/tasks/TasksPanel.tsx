@@ -106,6 +106,7 @@ export function TasksPanel({
         <Button
           variant="ghost"
           size="icon-sm"
+          className="ia-panel-close"
           aria-label={t("할 일 창 닫기")}
           onClick={onClose}
         >

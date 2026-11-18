@@ -500,7 +500,7 @@ function RowBody({ row }: { row: DocRow }) {
         <Icon name="edit" size={18} />
         <span className="docs-row-copy">
           <strong>
-            {d.title}
+            <span className="docs-row-title">{d.title}</span>
             {d.visibility === "private" && (
               <span className="docs-row-lock">
                 <Icon name="lock" size={13} />
@@ -526,7 +526,9 @@ function RowBody({ row }: { row: DocRow }) {
         <Icon name="file" size={18} />
       )}
       <span className="docs-row-copy">
-        <strong>{m.title}</strong>
+        <strong>
+          <span className="docs-row-title">{m.title}</span>
+        </strong>
         <small>
           {m.externalUrl
             ? [

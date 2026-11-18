@@ -703,7 +703,7 @@ export default function ProfileDropdown({
     accounts[0] ?? { id: "guest", name: t("사용자"), email: "" };
   const tone = Math.max(0, accounts.indexOf(account));
   const others = accounts.filter((entry) => entry.id !== account.id);
-  const sharedTransition = instant ? INSTANT : SPRING;
+  const sharedTransition = instant || phase === "closed" ? INSTANT : SPRING;
   const sharedInPanel = phase === "open";
   const menuId = `${uid}-menu`;
 

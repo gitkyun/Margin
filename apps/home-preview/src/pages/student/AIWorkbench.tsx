@@ -1,7 +1,11 @@
 import { AssistantMascot } from "@/components/brand/Brand";
 import { WorkbenchLoading } from "@/pages/assistant/AssistantThinking";
 import { workingMascot, workMessages } from "@/lib/assistant-presentation";
-import { useAICapabilities, resolveAISelection } from "@/lib/ai-capabilities";
+import {
+  DEFAULT_THINKING,
+  useAICapabilities,
+  resolveAISelection,
+} from "@/lib/ai-capabilities";
 import { AIModelSelector } from "@/components/ai/AIModelSelector";
 import { AICreditStatus } from "@/components/ai/AICreditStatus";
 import { useAIUsage } from "@/lib/ai-usage";
@@ -73,7 +77,7 @@ export function AIWorkbench({
     String(input.model ?? user.preferences?.model ?? ""),
   );
   const [preferredDepth, setPreferredDepth] = useState(
-    String(input.thinking ?? user.preferences?.thinking ?? "high"),
+    String(input.thinking ?? user.preferences?.thinking ?? DEFAULT_THINKING),
   );
   const selection = resolveAISelection(caps.isError ? [] : caps.data?.models, {
     model: selectedModelId,

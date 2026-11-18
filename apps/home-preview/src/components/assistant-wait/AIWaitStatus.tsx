@@ -32,6 +32,7 @@ export function AIWaitStatus({
   label,
   detail,
   now,
+  keepsRunning = false,
 }: {
   /** 요청을 보낸 시각(Date.now()) */
   startedAt: number;
@@ -41,6 +42,8 @@ export function AIWaitStatus({
   detail?: string;
   /** 테스트용 현재 시각 고정 */
   now?: number;
+  /** 화면을 떠나도 서버가 끝까지 만들고 돌아오면 이어 받는 요청인지(연구 도우미) */
+  keepsRunning?: boolean;
 }) {
   const elapsed = useAIWaitElapsed(startedAt, now);
   const level = aiWaitLevel(elapsed);
@@ -101,7 +104,13 @@ export function AIWaitStatus({
           </p>
           {detail && <p className="ai-wait-note">{detail}</p>}
           <p className="ai-wait-note">
-            {t("이 화면을 떠나면 멈춰요. 끝날 때까지 이 화면에 있어 주세요.")}
+            {keepsRunning
+              ? t(
+                  "다른 화면으로 가도 답은 계속 만들어요. 다시 열면 이어서 보여 드려요.",
+                )
+              : t(
+                  "이 화면을 떠나면 멈춰요. 끝날 때까지 이 화면에 있어 주세요.",
+                )}
           </p>
         </div>
       )}

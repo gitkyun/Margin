@@ -40,7 +40,15 @@ async function endpoint(calendar = false) {
         },
       });
     if (url.includes("/rpc/"))
-      return Response.json(url.endsWith("rms_ai_begin_v2") ? runId : true);
+      return Response.json(
+        url.endsWith("rms_ai_start")
+          ? { run_id: runId, held: true }
+          : url.endsWith("rms_ai_complete")
+            ? { settled: true, closed: true, charged: 14.1, accepted: true }
+            : url.endsWith("rms_ai_begin_v2")
+              ? runId
+              : true,
+      );
     if (url.includes("/rms_ai_credit_ledger"))
       return Response.json([{ amount: -14.1 }]);
     if (url.includes("/rms_researches"))
@@ -130,7 +138,7 @@ it("uses the real Google tool and never sends research/profile/history in a web 
   expect(calls.some((call) => call.url.includes("/rms_researches"))).toBe(
     false,
   );
-  const finish = calls.find((call) => call.url.endsWith("rms_ai_finish_v2"))!;
+  const finish = calls.find((call) => call.url.endsWith("rms_ai_complete"))!;
   expect(finish.body.p_contexts).toEqual([]);
   expect(finish.body.p_output.webGrounding.sources).toHaveLength(1);
 });
@@ -203,7 +211,7 @@ it("reads the whole research through the caller's RLS token even when nothing is
     call.url.includes("aiplatform.googleapis.com"),
   )!;
   expect(JSON.stringify(provider.body)).toContain("2026-11-20");
-  const finish = calls.find((call) => call.url.endsWith("rms_ai_finish_v2"))!;
+  const finish = calls.find((call) => call.url.endsWith("rms_ai_complete"))!;
   expect(JSON.stringify(finish.body.p_contexts)).not.toContain("2026-11-20");
 });
 it("tells the student what is missing when a request has no record to work on", async () => {

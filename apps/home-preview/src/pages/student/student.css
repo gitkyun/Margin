@@ -855,7 +855,7 @@
     }
   }
   .material-list-row[aria-current="true"] {
-    background: var(--selected-fill);
+    background: var(--navigation-selected-fill);
   }
   .material-preview-title {
     font-size: var(--typography-headline2-fontSize);
@@ -1573,79 +1573,5 @@
     from {
       stroke-dashoffset: 1;
     }
-  }
-
-  /* 완료 직후 몇 초 동안 행 안의 ‘되돌리기’. 아래 막대가 남은 시간만큼 줄어요. */
-  .task-row-undo {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-4);
-    min-height: 32px;
-    padding: 0 var(--spacing-8);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    background: var(--surface);
-    color: var(--brand);
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 600;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-    white-space: nowrap;
-    overflow: hidden;
-    cursor: pointer;
-    animation: text-swap-in var(--motion-duration-enter)
-      var(--motion-ease-standard);
-  }
-  .task-row-undo:hover {
-    background: var(--brand-soft);
-  }
-  .task-row-undo-timer {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: var(--brand);
-    transform-origin: left center;
-    animation-name: task-undo-timer;
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-  }
-  @keyframes task-undo-timer {
-    from {
-      transform: scaleX(1);
-    }
-    to {
-      transform: scaleX(0);
-    }
-  }
-
-  /* 767px 이하: 할 일 행을 오른쪽으로 밀어 완료를 바꿔요. 뒤에 무엇이 될지 보여요. */
-  .task-swipe {
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid var(--line);
-  }
-  .task-swipe:last-child {
-    border-bottom: 0;
-  }
-  .task-swipe > .student-task-row {
-    position: relative;
-    border-bottom: 0;
-    background: var(--surface);
-    touch-action: pan-y;
-  }
-  .task-swipe-hint {
-    position: absolute;
-    inset-block: 0;
-    left: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-6);
-    padding-inline: var(--spacing-12);
-    color: var(--brand);
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 600;
   }
 }
