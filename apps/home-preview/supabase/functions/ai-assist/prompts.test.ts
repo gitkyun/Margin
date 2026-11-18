@@ -209,3 +209,22 @@ describe("research background sent with every mode", () => {
     expect(prompt).toContain('"""a"b"""');
   });
 });
+
+describe("입력 캐시가 맞도록 바뀌는 것을 뒤에 둔다(응답 속도 작업 7장)", () => {
+  it("이번 질문이 맨 끝에 오고 대화 이력은 그 앞에 온다", () => {
+    const payload = JSON.parse(
+      buildUserPayload({
+        mode: "ask_research",
+        sourceText: "기록",
+        question: "이번 질문",
+        history: [{ role: "user", text: "지난 질문" }],
+      }),
+    );
+    expect(Object.keys(payload)).toEqual([
+      "task",
+      "sourceText",
+      "history",
+      "question",
+    ]);
+  });
+});

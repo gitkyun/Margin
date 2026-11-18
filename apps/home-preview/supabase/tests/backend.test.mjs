@@ -246,6 +246,14 @@ test('AI adoption is atomic, private, caller-owned and idempotent after a lost r
  const first=await inputCall('rms_adopt_candidate',input),retry=await inputCall('rms_adopt_candidate',{...input,value:{...input.value,id:'a5555555-5555-4555-8555-555555555555'}});assert.equal(first.id,retry.id);assert.equal(first.visibility,'private');assert.equal(first.createdBy,ids.student);
  await as(ids.professor);await failure(()=>inputCall('rms_adopt_candidate',input),'42501');
 })
+test('a finished AI run can be read again only by its owner (resume after leaving the screen)',async()=>{
+ const run='a3333333-3333-4333-8333-333333333333';
+ await as(ids.student);const mine=await call('rms_ai_run_result',[run]);assert.equal(mine.status,'complete');assert.equal(mine.output.candidates[0].title,'비교 기준 정리');
+ await as(ids.professor);assert.equal(await call('rms_ai_run_result',[run]),null);
+ await as(ids.student);assert.equal(await call('rms_ai_run_result',['a9999999-9999-4999-8999-999999999999']),null);
+ const late=await call('rms_ai_run_result',['a2222222-2222-4222-8222-222222222222']);assert.equal(late.status,'cancelled');assert.equal(late.output,undefined);
+ await as(null);await failure(()=>call('rms_ai_run_result',[run]),'42501');
+})
 test('private attachment record rejects mismatched stored MIME metadata',async()=>{
  await as(ids.student);const id='a6666666-6666-4666-8666-666666666666',path=`${ids.student}/${ids.research}/${id}.pdf`;
  await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3)',['research-private',path,JSON.stringify({size:1024,mimetype:'text/plain'})]);

@@ -551,6 +551,8 @@ export interface AIInput {
   contexts?: AIContext[];
   conversationId?: ID;
   clientRunId?: ID;
+  /** 화면을 떠나도 서버가 끝까지 만들어 저장하고, 돌아온 화면이 실행 번호로 다시 읽습니다(연구 도우미만). */
+  resumable?: boolean;
   question?: string;
   history?: { role: "user" | "assistant"; text: string }[];
   researchId: ID;

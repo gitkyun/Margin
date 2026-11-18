@@ -305,6 +305,8 @@ export async function requestRoadmapProposal(
     throw new Error(localizeServerMessage((error as Error).message));
   }
 }
+/** Supabase DB가 있는 리전(싱가포르). 함수도 여기서 실행하도록 요청합니다. */
+const AI_FUNCTION_REGION = "ap-southeast-1";
 /** ai-assist 함수에 요청을 보냅니다. 화면 언어를 함께 보내 그 언어로 답하게 합니다. */
 async function postAI(
   input: object,
@@ -322,6 +324,8 @@ async function postAI(
         "Content-Type": "application/json",
         apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         Authorization: `Bearer ${data.session.access_token}`,
+        // 함수를 DB와 같은 리전에서 실행해 기록 읽기·크레딧 처리 왕복을 리전 안으로 둡니다(작업 문서 5-1).
+        "x-region": AI_FUNCTION_REGION,
       },
       body: JSON.stringify({ ...input, locale: currentLang() }),
       signal,
