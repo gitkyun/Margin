@@ -14,6 +14,7 @@
     --ia-pane-edge: inset 0 0 0 1px var(--line);
     --ia-column-edge: inset 1px 0 0 0 var(--line);
     --margin-panel-width: 312px;
+    --ia-panel-transition: 240ms cubic-bezier(0.22, 1, 0.36, 1);
     --ia-panel-actual: min(
       var(--margin-panel-user-width, var(--margin-panel-width)),
       50vw
@@ -54,6 +55,14 @@
     }
   }
   @media (min-width: 1200px) {
+    .ia-shell .ia-topbar {
+      transition:
+        margin-inline-start var(--ia-panel-transition),
+        margin-inline-end var(--ia-panel-transition);
+    }
+    .ia-shell:has(> .ia-body > .ia-panel-frame.is-resizing) .ia-topbar {
+      transition: none;
+    }
     .app-shell.floating-workspace.ia-shell.margin-panel-open:has(
         > .ia-body > .ia-rail
       ) {
@@ -231,17 +240,51 @@
     box-shadow: var(--ia-pane-edge);
     overflow: clip;
   }
-  /* 사이드 창: 상단 줄 높이만큼 끌어올려 화면 맨 위부터 아래까지 붙입니다. */
-  .ia-shell .margin-panel {
+  /* 창을 접을 때 틀만 줄이고, 탭 내용은 원래 너비에서 잘립니다. */
+  .ia-shell .ia-panel-frame {
     position: sticky;
     top: 0;
+    flex: none;
     width: var(--ia-panel-actual);
     height: calc(100dvh - var(--dock-height, 0px));
     margin-top: calc(-1 * var(--ia-topbar-height));
+    transition:
+      width var(--ia-panel-transition),
+      visibility 0s;
+  }
+  .ia-shell .ia-panel-frame.is-closed {
+    visibility: hidden;
+    pointer-events: none;
+    transition-delay: 0s, 240ms;
+  }
+  .ia-shell .ia-panel-frame.is-resizing {
+    transition: none;
+  }
+  .ia-shell.ia-shell-outside .ia-panel-frame.is-closed {
+    display: none;
+  }
+  .ia-shell .ia-panel-viewport {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: clip;
+  }
+  .ia-shell .margin-panel {
+    position: static;
+    width: var(--ia-panel-actual);
+    height: 100%;
     border: 0;
     border-radius: 0;
     background: var(--canvas);
     box-shadow: var(--ia-column-edge);
+  }
+  @media (min-width: 1200px) {
+    .ia-shell:not(.ia-shell-outside) .ia-panel-frame {
+      margin-right: calc(-1 * var(--ia-gap));
+    }
+    .ia-shell .ia-panel-frame.is-closed {
+      width: 0;
+    }
   }
   .ia-shell .ia-panel-tab {
     height: 100%;
@@ -249,14 +292,6 @@
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-  .ia-shell .margin-panel-resizer {
-    top: 0;
-    height: calc(100dvh - var(--dock-height, 0px));
-    margin-top: calc(-1 * var(--ia-topbar-height));
-    margin-right: calc(-1 * var(--ia-gap) - 5px);
-    margin-left: -4px;
-  }
-
   .ia-shell .ia-rail {
     position: sticky;
     top: 0;
@@ -268,14 +303,9 @@
     width: var(--ia-rail-width);
     height: calc(100dvh - var(--dock-height, 0px));
     margin-top: calc(-1 * var(--ia-topbar-height));
-    margin-left: calc(-1 * var(--ia-gap));
     padding: 0 0 var(--spacing-16);
     background: var(--canvas);
     box-shadow: var(--ia-column-edge);
-  }
-  /* 창이 닫혀 있으면 본문 판과 아이콘 줄 사이는 띄웁니다(아이콘 줄이 판에 붙지 않게). */
-  .ia-shell:not(.margin-panel-open) .ia-rail {
-    margin-left: 0;
   }
   /* 맨 위 밀기 버튼: 상단 줄과 같은 높이 안 가운데 */
   .ia-shell .ia-rail-push {
@@ -450,47 +480,47 @@
     }
   }
 
+  @media (max-width: 1199px) {
+    .ia-shell .ia-panel-frame {
+      position: fixed;
+      z-index: var(--z-sheet);
+      bottom: var(--dock-height, 0px);
+      height: auto;
+      margin-top: 0;
+      transition: visibility 0s;
+    }
+    .ia-shell .ia-panel-frame.is-closed {
+      transition-delay: 240ms;
+    }
+    .ia-shell .ia-panel-viewport {
+      opacity: 1;
+      box-shadow: var(--shadow-pop);
+      transition:
+        transform var(--ia-panel-transition),
+        opacity var(--ia-panel-transition);
+    }
+    .ia-shell .ia-panel-frame.is-closed .ia-panel-viewport {
+      opacity: 0;
+    }
+    .ia-shell .margin-panel {
+      width: 100%;
+    }
+  }
+
   /* 768~1199px: 사이드 창은 아이콘 줄 옆에 겹쳐 뜨고 뒤를 가리지 않음(D15) */
   @media (min-width: 768px) and (max-width: 1199px) {
-    .ia-shell .margin-panel {
-      position: fixed;
-      top: 0;
+    .ia-shell .ia-panel-frame {
       right: var(--ia-rail-width);
-      bottom: var(--dock-height, 0px);
-      left: auto;
-      z-index: var(--z-sheet);
       width: min(
         var(--margin-panel-user-width, var(--margin-panel-width)),
         calc(100vw - var(--ia-rail-width) - 2 * var(--ia-gap))
       );
-      height: auto;
-      margin-top: 0;
-      /* 고정 위치에도 align-self가 걸려 위아래로 늘어나지 않으므로 되돌립니다. */
-      align-self: auto;
-      border-radius: 0;
-      /* 본문 위에 겹쳐 뜨므로 여기서만 깊이를 줍니다. */
-      box-shadow: var(--ia-column-edge), var(--shadow-pop);
     }
-    .ia-shell .margin-panel-backdrop,
-    .ia-shell .margin-panel-resizer {
+    .ia-shell .ia-panel-frame.is-closed .ia-panel-viewport {
+      transform: translateX(20px);
+    }
+    .ia-shell .margin-panel-backdrop {
       display: none;
-    }
-  }
-
-  @media (min-width: 768px) and (max-width: 1199px) and (prefers-reduced-motion: no-preference) {
-    .ia-shell .margin-panel {
-      --ia-panel-enter-x: var(--spacing-12);
-      animation: ia-panel-enter var(--motion-duration-enter)
-        var(--motion-ease-standard);
-    }
-    .ia-shell[data-panel-side="left"] .margin-panel {
-      --ia-panel-enter-x: calc(-1 * var(--spacing-12));
-    }
-    @keyframes ia-panel-enter {
-      from {
-        transform: translateX(var(--ia-panel-enter-x));
-        opacity: 0;
-      }
     }
   }
 
@@ -523,21 +553,17 @@
         100dvh - var(--ia-topbar-height) - var(--dock-height, 0px)
       );
     }
-    /* 기본 규칙(sticky, 50vw)이 margin-panel.css의 모바일 시트를 덮지 않도록 여기서 전체 폭 시트로 되돌립니다. */
-    .ia-shell .margin-panel {
-      position: fixed;
+    .ia-shell .ia-panel-frame {
       top: var(--ia-topbar-height);
-      right: 0;
-      bottom: var(--dock-height, 0px);
-      left: 0;
-      z-index: var(--z-sheet);
+      inset-inline: 0;
       width: 100%;
-      height: auto;
-      margin-top: 0;
-      align-self: auto;
-      border-radius: 0;
+    }
+    .ia-shell .ia-panel-frame.is-closed .ia-panel-viewport {
+      transform: translateY(20px);
+    }
+    .ia-shell .margin-panel {
       background: var(--surface);
-      box-shadow: var(--shadow-pop);
+      box-shadow: none;
     }
     .ia-shell .ia-tabbar {
       display: grid;
@@ -580,26 +606,41 @@
       flex-direction: row-reverse;
       padding: 0 var(--ia-gap) calc(var(--ia-gap) + var(--dock-height, 0px)) 0;
     }
-    .ia-shell[data-panel-side="left"] .ia-rail {
-      margin-right: calc(-1 * var(--ia-gap));
-      margin-left: 0;
-      box-shadow: inset -1px 0 0 0 var(--line);
-    }
-    .ia-shell[data-panel-side="left"]:not(.margin-panel-open) .ia-rail {
-      margin-right: 0;
-    }
+    .ia-shell[data-panel-side="left"] .ia-rail,
     .ia-shell[data-panel-side="left"] .margin-panel {
       box-shadow: inset -1px 0 0 0 var(--line);
     }
+  }
+  @media (min-width: 1200px) {
+    .ia-shell[data-panel-side="left"]:not(.ia-shell-outside) .ia-panel-frame {
+      margin-right: 0;
+      margin-left: calc(-1 * var(--ia-gap));
+    }
+    .ia-shell[data-panel-side="left"] .ia-panel-viewport {
+      justify-content: flex-end;
+    }
     .ia-shell[data-panel-side="left"] .margin-panel-resizer {
-      margin-right: -4px;
-      margin-left: calc(-1 * var(--ia-gap) - 5px);
+      right: -5px;
+      left: auto;
     }
   }
   @media (min-width: 768px) and (max-width: 1199px) {
-    .ia-shell[data-panel-side="left"] .margin-panel {
+    .ia-shell[data-panel-side="left"] .ia-panel-frame {
       right: auto;
       left: var(--ia-rail-width);
+    }
+    .ia-shell[data-panel-side="left"]
+      .ia-panel-frame.is-closed
+      .ia-panel-viewport {
+      transform: translateX(-20px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ia-shell .ia-topbar,
+    .ia-shell .ia-panel-frame,
+    .ia-shell .ia-panel-frame.is-closed,
+    .ia-shell .ia-panel-viewport {
+      transition: none;
     }
   }
 }
