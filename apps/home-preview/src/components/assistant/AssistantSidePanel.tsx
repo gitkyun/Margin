@@ -1,20 +1,18 @@
-import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/icons";
-import { useWorkspace } from "@/lib/workspace";
-import { formatDateTime } from "@/lib/domain";
-import { handoffState, type AssistantHandoff } from "@/lib/assistant-handoff";
-import { contextKey, viewingContext } from "@/lib/viewing-context";
+import { lazy, Suspense } from "react";
 import { t } from "@/lib/i18n";
 import "./assistant-side-panel.css";
 
-/** 사이드 창에 보여 줄 최근 대화 수 */
-const RECENT_LIMIT = 5;
+// 연구 도우미 화면은 크고(입력창·모델·명령·첨부) 처음 화면에는 필요 없어서, 창을 열 때 불러옵니다.
+const ResearchAssistant = lazy(() =>
+  import("@/pages/ResearchAssistant").then((m) => ({
+    default: m.ResearchAssistant,
+  })),
+);
 
 /**
- * 아이콘 줄의 연구 도우미 탭(IA v2 02 §4.1). 누르면 이 창이 열리고 화면은 그대로 둡니다.
- * 질문을 보내거나, 대화를 고르거나, '전체 화면으로 열기'를 눌렀을 때만 연구 도우미 화면으로 갑니다.
+ * 아이콘 줄의 연구 도우미 탭(IA v2 06 §2.1). 화면을 옮기지 않고 이 창 안에서 묻고 답합니다.
+ * 대화·입력창·모델·명령·첨부는 연구 도우미 화면과 같은 부품(Kokonut 원본)을 그대로 씁니다.
+ * '지금 보는 기록' 칩은 연구 도우미가 창 안에서 저절로 놓습니다(06 §2.2).
  */
 export function AssistantSidePanel({
   researchId,
@@ -23,140 +21,21 @@ export function AssistantSidePanel({
   researchId: string;
   onClose(): void;
 }) {
-  const { data } = useWorkspace();
-  const navigate = useNavigate();
-  const [draft, setDraft] = useState("");
-  const location = useLocation();
-  // '지금 보는 기록'(IA v2 06 §2.2): 연 화면의 대상이 저절로 칩으로 놓입니다.
-  // ×로 뺀 대상은 이 창을 연 동안 다시 놓지 않습니다.
-  const [removed, setRemoved] = useState<string[]>([]);
-  const viewing = viewingContext(
-    location.pathname,
-    location.search,
-    data,
-    researchId,
-  );
-  const chip =
-    viewing && !removed.includes(contextKey(viewing)) ? viewing : null;
-  const path = `/r/${researchId}/assistant`;
-  const conversations = data.conversations
-    .filter((c) => c.researchId === researchId && !c.archivedAt)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, RECENT_LIMIT);
-  const pending = data.aiCandidates.filter(
-    (c) =>
-      c.researchId === researchId &&
-      c.status === "pending" &&
-      // 본문 안 수정 제안은 글 편집 화면에서만 다룹니다(IA v2 05 §3.6).
-      c.mode !== "suggest_edits",
-  ).length;
-
-  // 화면으로 넘어가면 이 창은 닫습니다(같은 내용이 두 곳에 뜨지 않게).
-  const go = (handoff?: AssistantHandoff, search = "") => {
-    onClose();
-    navigate(
-      { pathname: path, search },
-      handoff ? { state: handoffState(handoff) } : undefined,
-    );
-  };
-  const submit = (event?: FormEvent) => {
-    event?.preventDefault();
-    if (draft.trim())
-      go({ ask: draft.trim(), ...(chip ? { contexts: [chip] } : {}) });
-  };
-  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key !== "Enter" || event.shiftKey) return;
-    if (event.nativeEvent.isComposing) return;
-    event.preventDefault();
-    submit();
-  };
-
   return (
     <section
       className="assistant-side-panel"
-      aria-labelledby="assistant-side-heading"
+      aria-label={t("연구 도우미")}
+      data-research={researchId}
     >
-      <header className="assistant-side-head">
-        <h2 id="assistant-side-heading">{t("연구 도우미")}</h2>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={t("전체 화면으로 열기")}
-          title={t("전체 화면으로 열기")}
-          onClick={() => go(chip ? { contexts: [chip] } : undefined)}
-        >
-          <Icon name="arrow-up-right" size={18} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={t("연구 도우미 창 닫기")}
-          onClick={onClose}
-        >
-          <Icon name="close" size={18} />
-        </Button>
-      </header>
-      <form className="assistant-side-form" onSubmit={submit}>
-        {chip && (
-          <span className="assistant-side-chip">
-            <Icon name="file" size={14} />
-            <span>{t("지금 보는 기록 · {title}", { title: chip.title })}</span>
-            <button
-              type="button"
-              aria-label={t("{title} 빼기", { title: chip.title })}
-              onClick={() => setRemoved((prev) => [...prev, contextKey(chip)])}
-            >
-              <Icon name="close" size={12} />
-            </button>
-          </span>
-        )}
-        <textarea
-          aria-label={t("연구 도우미에게 물어보기")}
-          placeholder={t("이 연구에 대해 물어보세요")}
-          rows={3}
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={onKeyDown}
-        />
-        <div className="assistant-side-form-row">
-          <small>
-            {chip
-              ? t("지금 보는 기록을 먼저 읽고, 이 연구의 다른 기록도 읽어요.")
-              : t("이 연구의 기록을 읽고 답해요.")}{" "}
-            {t("보내면 연구 도우미 화면에서 답을 이어서 봐요.")}
-          </small>
-          <Button type="submit" size="sm" disabled={!draft.trim()}>
-            {t("보내기")}
-          </Button>
-        </div>
-      </form>
-      {pending > 0 && (
-        <Link
-          className="item-detail-link"
-          to={`${path}?tab=overview`}
-          onClick={onClose}
-        >
-          {t("확인할 AI 제안 {count}개", { count: pending })}
-          <Icon name="chevron-right" size={14} />
-        </Link>
-      )}
-      <section className="assistant-side-recent">
-        <h3>{t("최근 대화")}</h3>
-        {conversations.map((conversation) => (
-          <button
-            key={conversation.id}
-            type="button"
-            className="assistant-side-conversation"
-            onClick={() => go({ conversationId: conversation.id })}
-          >
-            <span>{conversation.title || t("제목 없는 대화")}</span>
-            <small>{formatDateTime(conversation.updatedAt)}</small>
-          </button>
-        ))}
-        {!conversations.length && (
-          <p className="item-detail-empty">{t("아직 나눈 대화가 없어요.")}</p>
-        )}
-      </section>
+      <Suspense
+        fallback={
+          <p className="assistant-side-loading" role="status">
+            {t("연구 도우미를 불러오고 있어요.")}
+          </p>
+        }
+      >
+        <ResearchAssistant variant="panel" onClose={onClose} />
+      </Suspense>
     </section>
   );
 }

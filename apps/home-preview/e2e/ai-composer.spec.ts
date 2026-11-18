@@ -154,7 +154,7 @@ test("Enter로 보내면 비고 중단하면 질문이 복원된다", async ({ p
   expect(errors).toEqual([]);
 });
 
-test("아이콘 줄의 연구 도우미는 사이드 창으로 열고, 보내기를 눌러야 화면으로 간다", async ({
+test("아이콘 줄의 연구 도우미는 사이드 창 안에서 묻고 답한다(IA v2 06 §2.1)", async ({
   page,
 }) => {
   const { errors } = await open(page, 1440, 900, 0, `/r/${RESEARCH_ID}`);
@@ -164,19 +164,33 @@ test("아이콘 줄의 연구 도우미는 사이드 창으로 열고, 보내기
   await expect(button).toHaveAttribute("aria-pressed", "true");
   const panel = page.locator(".assistant-side-panel");
   await expect(panel).toBeVisible();
-  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}$`));
+  const panelInput = panel
+    .locator("[data-kokonut-composer]")
+    .getByRole("textbox", { name: "연구 도우미에게 질문" });
+  await expect(panelInput).toBeVisible();
   await shot(page, "rail-assistant-panel");
 
-  await panel
-    .getByRole("textbox", { name: "연구 도우미에게 물어보기" })
-    .fill("이 연구의 핵심만 알려 줘");
-  await panel.getByRole("button", { name: "보내기" }).click();
+  await panelInput.fill("이 연구의 핵심만 알려 줘");
+  await panelInput.press("Enter");
+  // 화면을 옮기지 않고 창 안에서 답을 받습니다.
+  await expect(panel.getByText("핵심만").first()).toBeVisible();
+  await expect(
+    panel.getByText("이 연구의 핵심만 알려 줘").first(),
+  ).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}$`));
+  // 사이드 창이 312px 기본 폭이어도 입력창이 화면 밖으로 넘치지 않습니다(06 완료 기준 ③).
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth + 1,
+    ),
+  ).toBe(false);
+
+  // [전체 화면으로 열기]는 창을 닫고 연구 도우미 화면으로 갑니다. 같은 대화를 이어 보는 것은
+  // 저장한 대화를 다시 불러와야 해서(가짜 서버는 저장한 기록을 돌려주지 않음) 단위 테스트·실제 서비스에서 봅니다.
+  await panel.getByRole("button", { name: "전체 화면으로 열기" }).click();
   await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}/assistant$`));
   await expect(panel).toBeHidden();
-  await expect(page.getByText("핵심만").first()).toBeVisible();
-  await expect(
-    page.getByText("이 연구의 핵심만 알려 줘").first(),
-  ).toBeVisible();
+  await expect(page.locator("[data-kokonut-composer]")).toBeVisible();
   expect(errors).toEqual([]);
 });
 

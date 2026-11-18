@@ -35,7 +35,8 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { readHandoff } from "@/lib/assistant-handoff";
+import { handoffState, readHandoff } from "@/lib/assistant-handoff";
+import { contextKey, viewingContext } from "@/lib/viewing-context";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, privateBlob } from "@/lib/experience";
 import { Hint } from "@/components/ui/hint";
@@ -125,13 +126,29 @@ function panelStartsOpen(): boolean {
 const clockLabel = (sec: number) =>
   `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 
-export function ResearchAssistant() {
+/** 사이드 창에서는 화면 주소 대신 쓰는 빈 값(바뀌지 않게 하나만 둡니다) */
+const EMPTY_PARAMS = new URLSearchParams();
+
+/**
+ * 연구 도우미. `variant="panel"`이면 사이드 창(IA v2 06 §2.1) 안에서 같은 대화·입력창을 씁니다.
+ * 창에서는 화면 주소의 값(mode·document·tab)과 넘겨받기를 읽지 않고, 제안·실행 내역은 전체 화면으로 보냅니다.
+ */
+export function ResearchAssistant({
+  variant = "page",
+  onClose,
+}: {
+  variant?: "page" | "panel";
+  onClose?: () => void;
+} = {}) {
+  const inPanel = variant === "panel";
   const { researchId = "" } = useParams(),
     w = useExperience(),
     navigate = useNavigate(),
     location = useLocation(),
     { data, user, save, runAI, mode, refresh } = w,
-    [params, setParams] = useSearchParams(),
+    [pageParams, setParams] = useSearchParams(),
+    // 사이드 창은 다른 화면 위에 뜨므로 그 화면의 주소 값을 연구 도우미 설정으로 읽지 않습니다.
+    params = inPanel ? EMPTY_PARAMS : pageParams,
     // 예전 주소(?tab=overview)는 패널의 제안 탭으로 엽니다.
     wantsSuggestions = params.get("tab") === "overview";
   // 계정 설정에서 고른 나만의 연구 도우미 이름. 고르지 않았으면 기본 마스코트.
@@ -140,11 +157,12 @@ export function ResearchAssistant() {
     [panelOpen, setPanelOpen] = useState(
       // 확인할 AI 제안이 있을 때만 처음부터 열어 둡니다. 기록을 고르는 탭은 없어요.
       () =>
-        wantsSuggestions ||
-        (panelStartsOpen() &&
-          data.aiCandidates.some(
-            (c) => c.researchId === researchId && c.status === "pending",
-          )),
+        !inPanel &&
+        (wantsSuggestions ||
+          (panelStartsOpen() &&
+            data.aiCandidates.some(
+              (c) => c.researchId === researchId && c.status === "pending",
+            ))),
     );
   const [conversation, setConversation] = useState<AIConversation | null>(null),
     [draft, setDraft] = useState(""),
@@ -331,7 +349,8 @@ export function ResearchAssistant() {
   }, [dictation.listening, dictation.stream]);
 
   useNavigationGuard({
-    dirty: !!draft.trim(),
+    // 사이드 창은 화면을 옮겨도 남아 있으므로 쓰던 질문이 사라지지 않습니다.
+    dirty: !inPanel && !!draft.trim(),
     busy: uploading,
     label: t("AI 질문"),
   });
@@ -1037,7 +1056,39 @@ export function ResearchAssistant() {
   }
   const unavailable = mode === "preview" || aiNotConfigured;
   // 사이드 창의 연구 도우미에서 넘겨받은 대화·질문(lib/assistant-handoff.ts). 한 번만 씁니다.
-  const handoff = useRef(readHandoff(location.state));
+  const handoff = useRef(inPanel ? null : readHandoff(location.state));
+  // 사이드 창: '지금 보는 기록'을 근거 칩으로 저절로 놓습니다(IA v2 06 §2.2).
+  // 화면을 옮기면 앞 화면의 칩을 새 대상으로 바꾸고, ×로 뺀 대상은 이 창을 연 동안 다시 놓지 않습니다.
+  const viewing = inPanel
+    ? viewingContext(location.pathname, location.search, data, researchId)
+    : null;
+  const viewingKeyNow = viewing ? contextKey(viewing) : "";
+  const placedViewing = useRef("");
+  const removedViewing = useRef(new Set<string>());
+  useEffect(() => {
+    if (!inPanel) return;
+    const previous = placedViewing.current;
+    const next =
+      viewing && !removedViewing.current.has(viewingKeyNow) ? viewing : null;
+    placedViewing.current = next ? viewingKeyNow : "";
+    setContexts((current) => {
+      const rest = current.filter((c) => contextKey(c) !== previous);
+      if (!next) return rest.length === current.length ? current : rest;
+      return rest.some((c) => contextKey(c) === viewingKeyNow)
+        ? rest
+        : [next, ...rest];
+    });
+  }, [inPanel, viewingKeyNow]);
+  /** 사이드 창 → 전체 화면: 지금 대화와 근거 칩을 넘깁니다. */
+  function expand() {
+    onClose?.();
+    navigate(`/r/${researchId}/assistant`, {
+      state: handoffState({
+        ...(conversation ? { conversationId: conversation.id } : {}),
+        ...(contexts.length ? { contexts } : {}),
+      }),
+    });
+  }
   // 사이드 창의 '지금 보는 기록' 칩은 모델 목록을 기다리지 않고 바로 이 화면의 근거 칩으로 놓습니다(IA v2 06 §2.2).
   useEffect(() => {
     const chips = handoff.current?.contexts;
@@ -1114,58 +1165,140 @@ export function ResearchAssistant() {
   }
 
   return (
-    <div className="assistant-experience">
-      <PageHeader
-        title={t("연구 도우미")}
-        description={t(
-          "이 연구의 기록을 모두 읽고 답하거나 수정 방법을 제안해요.",
-        )}
-        status={
-          <StatusBadge icon={<Icon name="lock" size={13} />}>
-            {t("나만 볼 수 있는 공간")}
-          </StatusBadge>
-        }
-        actions={
-          <>
-            <DropdownMenu value={conversation?.id}>
-              <DropdownMenuTrigger>
-                <Button
-                  variant="outline"
-                  disabled={running || !conversations.length}
-                >
-                  <Icon name="chat" size={16} />
-                  {t("대화 기록")}
-                  <Icon name="chevron-down" size={15} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="assistant-history-menu"
-              >
-                {conversations.map((c) => (
-                  <DropdownMenuItem
-                    key={c.id}
-                    value={c.id}
-                    onSelect={() => {
-                      setConversation(c);
-                      setContexts([]);
-                      setCalendar(c.messages.at(-1)?.calendar ?? false);
-                      setWebSearch(c.messages.at(-1)?.webSearch ?? false);
-                      setError("");
-                    }}
+    <div className="assistant-experience" data-variant={variant}>
+      {inPanel ? (
+        <header className="assistant-panel-head">
+          <h2>{t("연구 도우미")}</h2>
+          <span className="assistant-panel-actions">
+            {conversations.length > 0 && (
+              <DropdownMenu value={conversation?.id}>
+                <DropdownMenuTrigger>
+                  <Button
+                    variant="outline"
+                    disabled={running || !conversations.length}
                   >
-                    {c.title}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="outline" disabled={running} onClick={startNew}>
-              <Icon name="plus" size={16} />
-              {t("새 대화")}
+                    <Icon name="chat" size={16} />
+                    {t("대화 기록")}
+                    <Icon name="chevron-down" size={15} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="assistant-history-menu"
+                >
+                  {conversations.map((c) => (
+                    <DropdownMenuItem
+                      key={c.id}
+                      value={c.id}
+                      onSelect={() => {
+                        setConversation(c);
+                        setContexts([]);
+                        setCalendar(c.messages.at(-1)?.calendar ?? false);
+                        setWebSearch(c.messages.at(-1)?.webSearch ?? false);
+                        setError("");
+                      }}
+                    >
+                      {c.title}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("새 대화")}
+              title={t("새 대화")}
+              disabled={running}
+              onClick={startNew}
+            >
+              <Icon name="plus" size={18} />
             </Button>
-          </>
-        }
-      />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("전체 화면으로 열기")}
+              title={t("전체 화면으로 열기")}
+              onClick={expand}
+            >
+              <Icon name="arrow-up-right" size={18} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("연구 도우미 창 닫기")}
+              onClick={onClose}
+            >
+              <Icon name="close" size={18} />
+            </Button>
+          </span>
+          {pending.length > 0 && (
+            <button
+              type="button"
+              className="assistant-panel-pending"
+              onClick={() => {
+                onClose?.();
+                navigate(`/r/${researchId}/assistant?tab=overview`);
+              }}
+            >
+              {t("확인할 AI 제안 {count}개", { count: pending.length })}
+              <Icon name="chevron-right" size={14} />
+            </button>
+          )}
+        </header>
+      ) : (
+        <PageHeader
+          title={t("연구 도우미")}
+          description={t(
+            "이 연구의 기록을 모두 읽고 답하거나 수정 방법을 제안해요.",
+          )}
+          status={
+            <StatusBadge icon={<Icon name="lock" size={13} />}>
+              {t("나만 볼 수 있는 공간")}
+            </StatusBadge>
+          }
+          actions={
+            <>
+              <DropdownMenu value={conversation?.id}>
+                <DropdownMenuTrigger>
+                  <Button
+                    variant="outline"
+                    disabled={running || !conversations.length}
+                  >
+                    <Icon name="chat" size={16} />
+                    {t("대화 기록")}
+                    <Icon name="chevron-down" size={15} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="assistant-history-menu"
+                >
+                  {conversations.map((c) => (
+                    <DropdownMenuItem
+                      key={c.id}
+                      value={c.id}
+                      onSelect={() => {
+                        setConversation(c);
+                        setContexts([]);
+                        setCalendar(c.messages.at(-1)?.calendar ?? false);
+                        setWebSearch(c.messages.at(-1)?.webSearch ?? false);
+                        setError("");
+                      }}
+                    >
+                      {c.title}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="outline" disabled={running} onClick={startNew}>
+                <Icon name="plus" size={16} />
+                {t("새 대화")}
+              </Button>
+            </>
+          }
+        />
+      )}
       <section className="ai-chat-main">
         <div
           ref={scrollRef}
@@ -1635,11 +1768,18 @@ export function ResearchAssistant() {
                         uploading={uploading}
                         uploadProgress={uploadProgress}
                         disabled={working || uploading}
-                        onRemove={(index) =>
+                        onRemove={(index) => {
+                          // 사이드 창에서 '지금 보는 기록'을 ×로 빼면 이 창을 연 동안 다시 놓지 않습니다.
+                          const removed = contexts[index];
+                          if (
+                            removed &&
+                            contextKey(removed) === placedViewing.current
+                          )
+                            removedViewing.current.add(placedViewing.current);
                           setContexts((items) =>
                             items.filter((_, i) => i !== index),
-                          )
-                        }
+                          );
+                        }}
                       />
                     )
                   }
@@ -1802,23 +1942,25 @@ export function ResearchAssistant() {
           </div>
         )}
       </section>
-      <MarginPanel
-        label={t("제안과 실행 내역")}
-        open={panelOpen}
-        onOpen={() => setPanelOpen(true)}
-        onClose={() => setPanelOpen(false)}
-      >
-        <AssistantPanel
-          tab={panelTab}
-          onTab={setPanelTab}
+      {!inPanel && (
+        <MarginPanel
+          label={t("제안과 실행 내역")}
+          open={panelOpen}
+          onOpen={() => setPanelOpen(true)}
           onClose={() => setPanelOpen(false)}
-          pending={pending}
-          onAdopt={adopt}
-          onDismiss={(c) => void dismiss(c)}
-          runs={runs}
-          onCancelRun={(id) => void w.cancelRun(id)}
-        />
-      </MarginPanel>
+        >
+          <AssistantPanel
+            tab={panelTab}
+            onTab={setPanelTab}
+            onClose={() => setPanelOpen(false)}
+            pending={pending}
+            onAdopt={adopt}
+            onDismiss={(c) => void dismiss(c)}
+            runs={runs}
+            onCancelRun={(id) => void w.cancelRun(id)}
+          />
+        </MarginPanel>
+      )}
       <input
         {...getComposerInputProps({
           hidden: true,
