@@ -63,6 +63,7 @@ import { FOCUS_BODY } from "./docs/NewDocDialog";
 import { editorOutline, savedTime } from "@/lib/editor-head";
 import { documentFeedback, documentTasks } from "@/lib/doc-margin";
 import { useOpenDetail } from "@/lib/item-detail";
+import { registerFlush } from "@/lib/editor-flush";
 import { EditorGutter, FeedbackHandled } from "./docs/EditorGutter";
 import { EditorInfo } from "./docs/EditorInfo";
 import type { Task } from "@/lib/domain";
@@ -394,6 +395,27 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       if (preview) URL.revokeObjectURL(preview.url);
     },
     [preview],
+  );
+  // 열어 둔 탭을 닫거나 바꿀 때 먼저 저장합니다(05 §3.2). 실패하면 이동 보호가 확인을 띄웁니다.
+  const flushRef = useRef<() => Promise<boolean>>(async () => true);
+  flushRef.current = async () => {
+    if (!dirty) return true;
+    if (!title.trim()) return false;
+    try {
+      setBusy("save");
+      await persist();
+      guard.clear();
+      return true;
+    } catch (e) {
+      setError((e as Error).message);
+      return false;
+    } finally {
+      setBusy("");
+    }
+  };
+  useEffect(
+    () => registerFlush(initial.id, () => flushRef.current()),
+    [initial.id],
   );
   function saveNow() {
     void action("save", async () => {
