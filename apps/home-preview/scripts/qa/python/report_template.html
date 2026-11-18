@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>마진 화면 QA 리포트</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#16181d;--sub:#5b6270;--line:#e1e4ea;--brand:#2563eb;--ok:#0f7b3f;--okbg:#e4f6ec;--bad:#b42318;--badbg:#fde8e6;--warn:#8a5a00;--warnbg:#fff3d6;--skip:#5b6270;--skipbg:#eceef2;--chg:#6d28d9;--chgbg:#efe7fd;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1116;--panel:#171b22;--ink:#e8eaee;--sub:#9aa3b2;--line:#2a303b;--brand:#6aa1ff;--ok:#5fd394;--okbg:#10301f;--bad:#ff8a80;--badbg:#3a1613;--warn:#f1c35a;--warnbg:#3a2d0c;--skip:#9aa3b2;--skipbg:#222732;--chg:#b69cff;--chgbg:#2a1f4a;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,"Pretendard","Apple SD Gothic Neo",sans-serif}
+header{padding:20px max(16px,4vw) 8px}h1{margin:0 0 4px;font-size:22px}.meta{color:var(--sub);font-size:12.5px;word-break:break-all}
+main{padding:0 max(16px,4vw) 48px}section{margin-top:22px}h2{font-size:16px;margin:0 0 10px}
+.notice{margin:8px 0;padding:8px 12px;border-radius:8px;background:var(--warnbg);color:var(--warn);font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.stat b{display:block;font-size:24px;line-height:1.2}.stat span{color:var(--sub);font-size:12px}
+.stat.bad b{color:var(--bad)}.stat.ok b{color:var(--ok)}.stat.warn b{color:var(--warn)}.stat.chg b{color:var(--chg)}
+table{border-collapse:collapse;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--sub);font-weight:600;background:var(--bg)}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}.scroll-x{overflow-x:auto}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0}
+select,input[type=search],button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+button{cursor:pointer}button:hover{border-color:var(--brand)}label.chk{display:flex;gap:5px;align-items:center;color:var(--sub)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
+.card:hover{border-color:var(--brand)}.thumb{height:150px;background:var(--skipbg);overflow:hidden;display:flex;align-items:flex-start;justify-content:center}.thumb img{width:100%;height:auto;display:block}
+.thumb.none{align-items:center;color:var(--sub);font-size:12px;padding:8px;text-align:center}
+.body{padding:8px 10px}.title{font-weight:600}.sub{color:var(--sub);font-size:12px}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.b{display:inline-block;padding:1px 7px;border-radius:99px;font-size:11.5px;background:var(--skipbg);color:var(--skip);white-space:nowrap}
+.b.ok{background:var(--okbg);color:var(--ok)}.b.bad{background:var(--badbg);color:var(--bad)}.b.warn{background:var(--warnbg);color:var(--warn)}.b.chg{background:var(--chgbg);color:var(--chg)}
+dialog{width:min(1280px,96vw);max-height:94vh;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink)}dialog::backdrop{background:rgba(0,0,0,.55)}
+.dhead{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.dgrid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:14px;padding:14px}@media(max-width:860px){.dgrid{grid-template-columns:1fr}}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}.tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.shotbox{position:relative;border:1px solid var(--line);border-radius:8px;overflow:auto;max-height:70vh;background:var(--skipbg)}.shotbox img{display:block;width:100%}
+.ov{position:absolute;border:2px solid #e11d48;background:rgba(225,29,72,.14);pointer-events:none}.ov.suspect{border-color:#d97706;background:rgba(217,119,6,.14)}
+.sbs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sbs figure{margin:0}.sbs figcaption{font-size:12px;color:var(--sub);margin-bottom:3px}.sbs img{width:100%;border:1px solid var(--line);border-radius:6px}
+.issue{border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:7px;font-size:12.5px}.issue code{display:block;color:var(--sub);word-break:break-all;margin-top:2px}
+code,pre{font-family:ui-monospace,Menlo,monospace;font-size:12px}pre{background:var(--bg);padding:8px;border-radius:6px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:4px 0}
+.empty{color:var(--sub);padding:14px;text-align:center}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>마진 화면 QA 리포트</h1>
+  <div class="meta" id="meta"></div>
+  <div id="notices"></div>
+</header>
+<main>
+  <section><div class="cards" id="cards"></div></section>
+  <section class="tables"><div class="scroll-x"><h2>브라우저별</h2><div id="t-browser"></div></div><div class="scroll-x"><h2>화면 크기별</h2><div id="t-viewport"></div></div></section>
+  <section>
+    <h2>화면별 결과 <span class="sub" id="count"></span></h2>
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+  <section><h2>미검사 (조용히 제외하지 않고 기록)</h2><div class="scroll-x" id="skipped"></div></section>
+  <section><h2>라우트 커버리지 (RmsApp.tsx 기준)</h2><div class="scroll-x" id="coverage"></div></section>
+  <section><h2>실행 정보</h2><pre id="info"></pre></section>
+</main>
+<dialog id="dlg"></dialog>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const M = D.manifest, R = D.records;
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const vpName = (r) => r.viewport ? `${r.viewport.name} ${r.viewport.width}` : '-';
+const diffOf = (r) => { const cs = r.shots.map((s) => s.compare).filter(Boolean); if (!cs.length) return null; for (const k of ['changed','size_mismatch','minor','new','identical']) if (cs.some((c) => c.status === k)) return k; return null; };
+const STATUS = {passed: ['성공', 'ok'], failed: ['실패', 'bad'], skipped: ['미검사', '']};
+const DIFFS = {changed: ['달라짐', 'chg'], size_mismatch: ['크기 다름', 'chg'], minor: ['미세 차이', ''], new: ['기준 없음', ''], identical: ['같음', 'ok']};
+const run = R.filter((r) => r.status !== 'skipped');
+const sum = (f) => R.reduce((a, r) => a + f(r), 0);
+
+// 헤더·알림
+$('#meta').textContent = `${M.generated_at} · 모드 ${M.mode}(${M.mode_note}) · ${M.base_url} [${M.target}/${M.target_kind}] · git ${M.git.commit}${M.git.dirty ? '+수정' : ''} (${M.git.branch}) · ${M.duration_s}초`;
+const notes = [];
+if (M.webkit_note) notes.push(M.webkit_note);
+const sf = M.safari; if (sf && sf.status !== 'ran') notes.push(`실제 Safari: ${sf.status === 'not_requested' ? '이번 실행에서는 검사하지 않음 — ' : '실행하지 못함 — '}${sf.reason}`);
+if (M.compare) notes.push(`시각 비교 기준: ${M.compare}. 픽셀 차이는 버그 판정이 아니라 사람이 확인할 후보입니다.`);
+if (!M.compare) notes.push('시각 비교를 하지 않은 실행입니다(--compare baseline). 기준 이미지가 없으면 먼저 approve 로 기준을 만드세요.');
+$('#notices').innerHTML = notes.map((n) => `<div class="notice">${esc(n)}</div>`).join('');
+
+// 요약 카드
+const changedN = run.filter((r) => ['changed', 'size_mismatch'].includes(diffOf(r))).length;
+const card = (n, l, c = '') => `<div class="stat ${c}"><b>${n}</b><span>${l}</span></div>`;
+$('#cards').innerHTML = [
+  card(M.scenarios_selected.length + '/' + M.scenarios_total, '선택/전체 시나리오'),
+  card(R.length, '조합 수(시나리오×환경)'), card(run.filter((r) => r.status === 'passed').length, '성공', 'ok'),
+  card(run.filter((r) => r.status === 'failed').length, '실패', 'bad'), card(R.filter((r) => r.status === 'skipped').length, '미검사', 'warn'),
+  card(sum((r) => r.counts.confirmed), '확인된 UI 오류', 'bad'), card(sum((r) => r.counts.suspect), '의심 항목', 'warn'),
+  card(sum((r) => r.counts.allowed), '허용된 예외'), card(sum((r) => r.runtime.errors.length), '실행 오류(JS)', 'bad'),
+  card(sum((r) => r.runtime.network.length), '네트워크 문제', 'warn'), card(M.compare ? changedN : '-', '이전과 달라진 화면', 'chg'),
+].join('');
+
+function breakdown(keyFn, el) {
+  const g = {};
+  for (const r of R) { const k = keyFn(r); (g[k] ??= {passed: 0, failed: 0, skipped: 0, conf: 0, sus: 0, chg: 0})[r.status]++; g[k].conf += r.counts.confirmed; g[k].sus += r.counts.suspect; if (['changed','size_mismatch'].includes(diffOf(r))) g[k].chg++; }
+  $(el).innerHTML = `<table><tr><th></th><th>성공</th><th>실패</th><th>미검사</th><th>확인된 오류</th><th>의심</th><th>달라짐</th></tr>${Object.entries(g).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.passed}</td><td>${v.failed}</td><td>${v.skipped}</td><td>${v.conf}</td><td>${v.sus}</td><td>${v.chg}</td></tr>`).join('')}</table>`;
+}
+breakdown((r) => r.browser, '#t-browser'); breakdown(vpName, '#t-viewport');
+
+// 필터
+const uniq = (f) => [...new Set(R.map(f))].filter((x) => x && x !== '-').sort();
+const sel = (id, label, opts) => `<select id="${id}"><option value="">${label}: 전체</option>${opts.map((o) => `<option value="${esc(o[0] ?? o)}">${esc(o[1] ?? o)}</option>`).join('')}</select>`;
+$('#filters').innerHTML = sel('f-browser', '브라우저', uniq((r) => r.browser)) + sel('f-vp', '화면 크기', uniq(vpName)) + sel('f-page', '페이지', uniq((r) => r.page)) + sel('f-theme', '테마', uniq((r) => r.theme)) +
+  sel('f-sev', '문제', [['confirmed', '확인된 오류 있음'], ['suspect', '의심 항목 있음'], ['any', '문제 있음(오류·의심)'], ['none', '문제 없음']]) + sel('f-status', '결과', [['passed', '성공'], ['failed', '실패'], ['skipped', '미검사']]) +
+  `<label class="chk"><input type="checkbox" id="f-chg"> 변경된 화면만</label><input type="search" id="f-q" placeholder="화면 이름 검색">`;
+for (const el of document.querySelectorAll('#filters select,#filters input')) el.addEventListener('input', render);
+
+function matches(r) {
+  const v = (id) => $(id).value;
+  if (v('#f-browser') && r.browser !== v('#f-browser')) return false;
+  if (v('#f-vp') && vpName(r) !== v('#f-vp')) return false;
+  if (v('#f-page') && r.page !== v('#f-page')) return false;
+  if (v('#f-theme') && r.theme !== v('#f-theme')) return false;
+  if (v('#f-status') && r.status !== v('#f-status')) return false;
+  const sev = v('#f-sev'); const c = r.counts;
+  if (sev === 'confirmed' && !c.confirmed) return false; if (sev === 'suspect' && !c.suspect) return false;
+  if (sev === 'any' && !(c.confirmed || c.suspect)) return false; if (sev === 'none' && (c.confirmed || c.suspect)) return false;
+  if ($('#f-chg').checked && !['changed', 'size_mismatch'].includes(diffOf(r))) return false;
+  const q = v('#f-q').trim(); if (q && !(r.title + r.scenario).includes(q)) return false;
+  return true;
+}
+const badge = (t, c = '') => `<span class="b ${c}">${esc(t)}</span>`;
+function render() {
+  const list = R.filter(matches);
+  $('#count').textContent = `(${list.length}/${R.length})`;
+  $('#grid').innerHTML = list.length ? list.map((r) => {
+    const i = R.indexOf(r), shot = r.shots[0], d = diffOf(r), c = r.counts;
+    const img = shot ? `<img loading="lazy" src="screenshots/${r.browser}/${r.viewport.name}-${r.viewport.width}/${r.theme}/${shot.file}" alt="">` : '';
+    return `<div class="card" data-i="${i}"><div class="thumb ${shot ? '' : 'none'}">${img || esc(r.reason || '스크린샷 없음')}</div><div class="body"><div class="title">${esc(r.title)}</div><div class="sub">${esc(r.scenario)}</div><div class="badges">${badge(r.browser)}${badge(vpName(r))}${r.theme ? badge(r.theme) : ''}${badge(...STATUS[r.status])}${c.confirmed ? badge('오류 ' + c.confirmed, 'bad') : ''}${c.suspect ? badge('의심 ' + c.suspect, 'warn') : ''}${r.runtime.errors.length ? badge('JS 오류 ' + r.runtime.errors.length, 'bad') : ''}${d ? badge(...DIFFS[d]) : ''}</div></div></div>`;
+  }).join('') : '<div class="empty">조건에 맞는 결과가 없어요.</div>';
+  for (const el of document.querySelectorAll('.card')) el.onclick = () => openDetail(+el.dataset.i);
+}
+
+// 상세
+const shotUrl = (r, s) => `screenshots/${r.browser}/${r.viewport.name}-${r.viewport.width}/${r.theme}/${s.file}`;
+function openDetail(i, shotIdx = 0, tab = 'now') {
+  const r = R[i], dlg = $('#dlg'), s = r.shots[shotIdx];
+  const siblings = R.map((x, j) => [x, j]).filter(([x, j]) => j !== i && x.scenario === r.scenario && x.theme === r.theme && x.shots.length && r.viewport);
+  const cmp = s?.compare;
+  const tabs = [['now', '현재']]; if (cmp?.baseline) tabs.push(['base', '기준']); if (cmp?.diff) tabs.push(['diff', '차이']); if (cmp?.baseline) tabs.push(['sbs', '기준/현재 나란히']);
+  let view = '<div class="empty">스크린샷이 없어요.</div>';
+  if (s) {
+    const cur = shotUrl(r, s);
+    if (tab === 'now') {
+      const showOv = s.kind === 'viewport' && shotIdx === 0;
+      const ov = showOv ? r.issues.filter((x) => x.rect && x.classification !== 'allowed').map((x) => `<div class="ov ${x.classification}" style="left:${x.rect.x / r.viewport.width * 100}%;top:${x.rect.y / r.viewport.height * 100}%;width:${x.rect.w / r.viewport.width * 100}%;height:${x.rect.h / r.viewport.height * 100}%" title="${esc(x.kind)}"></div>`).join('') : '';
+      view = `<div class="shotbox"><img src="${cur}" alt="">${ov}</div>${showOv ? '<div class="sub">빨간 상자=확인된 오류, 주황=의심 위치</div>' : ''}`;
+    } else if (tab === 'base') view = `<div class="shotbox"><img src="${cmp.baseline}" alt=""></div>`;
+    else if (tab === 'diff') view = `<div class="shotbox"><img src="${cmp.diff}" alt=""></div><div class="sub">바뀐 픽셀 ${(cmp.ratio * 100).toFixed(3)}% · 영역 ${cmp.regions.length}곳</div>`;
+    else if (tab === 'sbs') view = `<div class="sbs"><figure><figcaption>기준</figcaption><img src="${cmp.baseline}"></figure><figure><figcaption>현재</figcaption><img src="${cur}"></figure></div>`;
+  }
+  const shotTabs = r.shots.length > 1 ? `<div class="tabs">${r.shots.map((x, k) => `<button class="${k === shotIdx ? 'on' : ''}" data-shot="${k}">${esc(x.label)}</button>`).join('')}</div>` : '';
+  const issueHtml = (cls, name) => { const l = r.issues.filter((x) => x.classification === cls); return l.length ? `<h3>${name} ${l.length}</h3>` + l.map((x) => `<div class="issue">${badge(x.severity, x.severity === 'high' ? 'bad' : 'warn')} <b>${esc(x.kind)}</b> ${esc(x.detail)}${x.reason ? ' — ' + esc(x.reason) : ''}<code>${esc(x.selector)}</code>${x.rect ? `<code>x${x.rect.x} y${x.rect.y} ${x.rect.w}×${x.rect.h}px${x.text ? ' · “' + esc(x.text) + '”' : ''}</code>` : ''}</div>`).join('') : ''; };
+  const rt = r.runtime, rtHtml = ['errors', 'console', 'network'].some((k) => rt[k].length) ? `<h3>실행 오류</h3><pre>${esc([...rt.errors.map((e) => '[JS] ' + e), ...rt.console.map((e) => '[console] ' + e), ...rt.network.map((e) => '[net] ' + e)].join('\n'))}</pre>` : '';
+  dlg.innerHTML = `<div class="dhead"><div><b>${esc(r.title)}</b> <span class="sub">${esc(r.scenario)}</span><div class="badges">${badge(r.browser)}${badge(vpName(r))}${r.theme ? badge(r.theme) : ''}${badge(...STATUS[r.status])}</div></div><button id="x">닫기</button></div>
+  <div class="dgrid"><div>${shotTabs}<div class="tabs">${tabs.map(([k, l]) => `<button class="${k === tab ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</div>${view}
+  ${siblings.length ? `<div style="margin-top:10px"><select id="cmp"><option value="">다른 환경과 나란히 보기…</option>${siblings.map(([x, j]) => `<option value="${j}">${esc(x.browser)} · ${esc(vpName(x))}</option>`).join('')}</select><div id="cmpbox"></div></div>` : ''}</div>
+  <div><div class="sub">URL <code>${esc(r.url)}</code> · 역할 ${esc(r.role)}${r.duration_s ? ' · ' + r.duration_s + '초' : ''}</div>
+  ${r.reason ? `<div class="notice">${esc(r.reason)}</div>` : ''}${issueHtml('confirmed', '확인된 오류')}${issueHtml('suspect', '의심 항목')}${issueHtml('allowed', '허용된 예외')}${rtHtml}
+  <h3>재현 방법</h3><pre>${esc(r.repro)}</pre>${r.steps?.length ? `<h3>상호작용</h3><pre>${esc(r.steps.join('\n'))}</pre>` : ''}</div></div>`;
+  dlg.querySelector('#x').onclick = () => dlg.close();
+  for (const b of dlg.querySelectorAll('[data-tab]')) b.onclick = () => openDetail(i, shotIdx, b.dataset.tab);
+  for (const b of dlg.querySelectorAll('[data-shot]')) b.onclick = () => openDetail(i, +b.dataset.shot, 'now');
+  const cs = dlg.querySelector('#cmp'); if (cs) cs.onchange = () => { const x = R[+cs.value]; dlg.querySelector('#cmpbox').innerHTML = cs.value ? `<div class="sbs"><figure><figcaption>${esc(r.browser)} · ${esc(vpName(r))}</figcaption><img src="${shotUrl(r, r.shots[0])}"></figure><figure><figcaption>${esc(x.browser)} · ${esc(vpName(x))}</figcaption><img src="${shotUrl(x, x.shots[0])}"></figure></div>` : ''; };
+  if (!dlg.open) dlg.showModal();
+}
+$('#dlg').addEventListener('click', (e) => { if (e.target === $('#dlg')) $('#dlg').close(); });
+
+// 미검사·커버리지·정보
+const skipped = R.filter((r) => r.status === 'skipped');
+const seen = new Set();
+$('#skipped').innerHTML = skipped.length ? `<table><tr><th>화면</th><th>브라우저</th><th>이유</th></tr>${skipped.filter((r) => { const k = r.scenario + r.browser + r.reason; if (seen.has(k)) return false; seen.add(k); return true; }).map((r) => `<tr><td>${esc(r.title)}<div class="sub">${esc(r.scenario)}</div></td><td>${esc(r.browser)}</td><td>${esc(r.reason)}</td></tr>`).join('')}</table>` : '<div class="empty">미검사 항목이 없어요.</div>';
+const covLabel = {covered: ['검사함', 'ok'], unavailable: ['미검사(사유 기록)', 'warn'], uncovered: ['시나리오 없음', 'bad']};
+$('#coverage').innerHTML = `<table><tr><th>라우트</th><th>상태</th></tr>${M.coverage.routes.map((x) => `<tr><td><code>${esc(x.route)}</code></td><td>${badge(...covLabel[x.status])}</td></tr>`).join('')}</table><div class="sub">시나리오 없음 = 목록에 등록되지 않은 라우트(예: 예전 주소로 이동만 하는 경로, 문서 편집기). scenarios.json 에 추가하면 됩니다.</div>`;
+$('#info').textContent = JSON.stringify({명령: M.command, 브라우저: M.browsers, 화면크기: M.viewports.map((v) => `${v.name} ${v.width}x${v.height}@${v.dpr}${v.mobile ? ' mobile' : ''}`), 테마: M.themes, 환경: M.platform, 변경파일: M.changed_files}, null, 2);
+render();
+</script>
+</body>
+</html>
