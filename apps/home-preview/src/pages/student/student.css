@@ -1241,134 +1241,6 @@
   .material-symbol.is-link {
     color: var(--text-secondary);
   }
-  .material-detail-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 280px;
-    align-items: start;
-    gap: var(--spacing-24);
-  }
-  .material-viewer-column {
-    min-width: 0;
-  }
-  /* 자료 상세의 폴더 선택: 본문 전체 폭이 아니라 내용에 맞는 폭으로 둡니다(검수 P2). */
-  .material-location {
-    margin-bottom: var(--spacing-24);
-  }
-  .material-location > .field {
-    max-width: 320px;
-  }
-  .material-version-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-12);
-    margin-bottom: var(--spacing-16);
-  }
-  .material-version-toolbar > .meta {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-8);
-    font-size: var(--typography-caption1-fontSize);
-    overflow-wrap: anywhere;
-    min-width: 0;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .material-version-toolbar > .meta svg {
-    flex-shrink: 0;
-  }
-  .material-version-toolbar .native-select {
-    max-width: 45%;
-    min-height: 34px;
-    font-size: var(--typography-caption1-fontSize);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .material-history > h2 {
-    margin-bottom: var(--spacing-16) !important;
-  }
-  .version-history-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-12);
-    width: 100%;
-    padding: var(--spacing-12) 0;
-    border: 0;
-    background: none;
-    color: var(--text);
-    text-align: left;
-    cursor: pointer;
-  }
-  .version-history-item > span:nth-child(2) {
-    min-width: 0;
-    flex: 1;
-  }
-  .version-number {
-    width: 30px;
-    height: 30px;
-    display: grid;
-    place-items: center;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    flex-shrink: 0;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .version-history-item strong {
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 500;
-    overflow-wrap: anywhere;
-    line-height: var(--typography-caption1-lineHeight);
-    display: block;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .version-history-item small {
-    display: block;
-    margin-top: var(--spacing-6);
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .version-history-item.active .version-number {
-    color: var(--brand);
-    background: var(--brand-soft);
-    border-color: color-mix(in srgb, var(--brand) 20%, var(--line));
-  }
-  .version-history-item.active > svg {
-    color: var(--brand);
-    flex-shrink: 0;
-  }
-  .external-reference {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-24);
-    margin-bottom: var(--spacing-24);
-  }
-  .external-reference h2 {
-    font-size: var(--typography-headline1-fontSize);
-    margin: var(--spacing-12) 0 var(--spacing-8);
-    font-weight: 600;
-    letter-spacing: var(--typography-headline1-letterSpacing);
-  }
-  .external-reference p {
-    font-size: var(--typography-label2-fontSize);
-    color: var(--text-secondary);
-    line-height: var(--typography-label2-lineHeight);
-    margin-bottom: var(--spacing-12);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .external-reference a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-8);
-    font-size: var(--typography-label2-fontSize);
-    color: var(--brand);
-    overflow-wrap: anywhere;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .external-reference > button {
-    flex-shrink: 0;
-  }
   .upload-progress {
     margin-top: var(--spacing-16);
   }
@@ -1477,9 +1349,6 @@
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   @media (max-width: 1199px) {
-    .material-detail-layout {
-      grid-template-columns: minmax(0, 1fr) 230px;
-    }
     .saved-plan-footer > .button-row {
       width: 100%;
       justify-content: flex-end;
@@ -1494,14 +1363,6 @@
     .preparation-columns,
     .student-two-column {
       grid-template-columns: minmax(0, 1fr);
-    }
-    .material-detail-layout {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    /* 991 이하 1열: 옆 카드(파일 버전·사용 기록)도 본문 전체 폭을 씁니다.
-       aside는 .stack(세로 flex)이라 align-items만 늘림으로 둡니다. */
-    .student-page .material-detail-layout > aside {
-      align-items: stretch;
     }
   }
   @media (max-width: 767px) {
@@ -1570,22 +1431,6 @@
     .material-symbol {
       width: 38px;
       height: 46px;
-    }
-    .material-version-toolbar {
-      align-items: flex-start;
-      flex-wrap: wrap;
-    }
-    .material-version-toolbar > .meta {
-      width: 100%;
-    }
-    .material-version-toolbar .native-select {
-      max-width: 100%;
-      width: 100%;
-    }
-    .external-reference {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--spacing-16);
     }
     .pending-upload-note {
       flex-wrap: wrap;

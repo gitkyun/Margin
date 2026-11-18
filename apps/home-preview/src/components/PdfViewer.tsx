@@ -18,6 +18,8 @@ import { ErrorNotice } from "./common";
 export interface PdfViewerHandle {
   /** 1부터 세는 페이지로 이동해요. 범위를 넘으면 처음·끝 페이지로 맞춰요. */
   goToPage(page: number): void;
+  /** 불러온 파일을 내려받아요. 아직 불러오지 못했으면 아무것도 하지 않아요. */
+  download(): void;
 }
 
 export interface PdfPin {
@@ -37,6 +39,7 @@ export function PdfViewer({
   pinMode = false,
   onDropPin,
   onSelectPin,
+  onPageChange,
 }: {
   version: MaterialVersion;
   ref?: Ref<PdfViewerHandle>;
@@ -44,6 +47,8 @@ export function PdfViewer({
   pinMode?: boolean;
   onDropPin?: (pin: { page: number; x: number; y: number }) => void;
   onSelectPin?: (id: string) => void;
+  /** 보는 페이지가 바뀔 때(자료 보기 주소의 `?page=`) */
+  onPageChange?: (page: number) => void;
 }) {
   const { openFile } = useWorkspace();
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null),
@@ -76,9 +81,23 @@ export function PdfViewer({
         setPage(Math.min(doc.numPages, Math.max(1, Math.round(target))));
         host.current?.scrollIntoView({ block: "nearest" });
       },
+      download() {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = version.fileName;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      },
     }),
-    [doc],
+    [doc, blob, version.fileName],
   );
+  const pageListener = useRef(onPageChange);
+  pageListener.current = onPageChange;
+  useEffect(() => {
+    if (doc) pageListener.current?.(page);
+  }, [doc, page]);
   useEffect(() => {
     if (!doc || pendingPage.current === null) return;
     const target = pendingPage.current;
