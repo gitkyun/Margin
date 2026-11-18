@@ -26,6 +26,7 @@ import {
   type WorkspaceData,
 } from "@/lib/domain";
 import { feedbackProgress } from "@/lib/feedback-progress";
+import { documentOutline } from "@/lib/docs-list";
 import {
   detailValue,
   useCloseDetail,
@@ -528,6 +529,7 @@ function TaskBody({ researchId, task }: { researchId: string; task: Task }) {
           <p className="item-detail-text">{task.description}</p>
         </Section>
       )}
+      <DocTarget researchId={researchId} task={task} />
       <Section title={t("연결된 피드백")}>
         {feedback.length ? (
           feedback.map((item) => (
@@ -567,6 +569,87 @@ function TaskBody({ researchId, task }: { researchId: string; task: Task }) {
         )}
       </Section>
     </>
+  );
+}
+
+/**
+ * 고칠 글(IA v2 06 항목 상세): 글을 고르고 그 글의 제목에서 위치를 고릅니다.
+ * 위치를 고르지 않으면 글 맨 위 여백에 보입니다(05 §3.5).
+ */
+function DocTarget({ researchId, task }: { researchId: string; task: Task }) {
+  const { data } = useWorkspace();
+  const instant = useInstantSave();
+  const docs = data.documents
+    .filter((d) => d.researchId === researchId && !d.archivedAt)
+    .sort((a, b) => a.title.localeCompare(b.title, "ko"));
+  const doc = docs.find((d) => d.id === task.documentId);
+  const headings = doc ? [...new Set(documentOutline(doc.content, 200))] : [];
+  const anchor = task.sectionAnchor ?? "";
+  return (
+    <Section title={t("고칠 글")}>
+      <div className="item-detail-fields">
+        <label>
+          <span>{t("글")}</span>
+          <select
+            value={task.documentId ?? ""}
+            onChange={(event) =>
+              void instant("task", {
+                ...task,
+                documentId: event.target.value || undefined,
+                sectionAnchor: undefined,
+              })
+            }
+          >
+            <option value="">{t("고르지 않음")}</option>
+            {task.documentId && !doc && (
+              <option value={task.documentId}>{t("찾을 수 없는 글")}</option>
+            )}
+            {docs.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        {doc && (
+          <label>
+            <span>{t("위치")}</span>
+            <select
+              value={anchor}
+              onChange={(event) =>
+                void instant("task", {
+                  ...task,
+                  sectionAnchor: event.target.value || undefined,
+                })
+              }
+            >
+              <option value="">{t("글 맨 위")}</option>
+              {anchor && !headings.includes(anchor) && (
+                <option value={anchor}>
+                  {t("찾을 수 없는 제목 · {title}", { title: anchor })}
+                </option>
+              )}
+              {headings.map((heading) => (
+                <option key={heading} value={heading}>
+                  {heading}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+      {doc && (
+        <Link
+          className="item-detail-link"
+          to={`/r/${researchId}/docs/w/${doc.id}${
+            anchor ? `?at=${encodeURIComponent(anchor)}` : ""
+          }`}
+        >
+          {t("글 열기")}
+          <Icon name="chevron-right" size={14} />
+        </Link>
+      )}
+    </Section>
   );
 }
 

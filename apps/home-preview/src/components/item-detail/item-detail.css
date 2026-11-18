@@ -71,6 +71,14 @@
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
   }
+  /* 고칠 글처럼 긴 글 제목도 판 밖으로 나가지 않게 합니다. */
+  .item-detail-fields label {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .item-detail-fields select {
+    max-width: 100%;
+  }
   .item-detail-fields select,
   .item-detail-fields input {
     min-height: 32px;

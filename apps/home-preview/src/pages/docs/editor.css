@@ -60,7 +60,7 @@
   .editor-outline-trigger {
     display: none;
   }
-  /* 목차 + 본문(05 §3.1). 여백 열(§3.5)은 이어지는 변경에서 붙습니다. */
+  /* 목차 + 본문·여백(05 §3.1) */
   .editor-body {
     display: grid;
     grid-template-columns: 200px minmax(0, 1fr);
@@ -142,6 +142,157 @@
     background: var(--surface);
     color: var(--text);
     box-shadow: var(--shadow-pop);
+  }
+  /* 본문 + 여백 48(05 §3.1). 둘을 한 덩어리로 가운데 둡니다. */
+  .editor-sheet {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-8);
+    width: 100%;
+    max-width: calc(760px + 56px);
+    min-width: 0;
+    margin: 0 auto;
+  }
+  .editor-sheet .writing-paper {
+    flex: 1;
+    margin: 0;
+  }
+  .editor-gutter {
+    position: relative;
+    flex: none;
+    width: 48px;
+    align-self: stretch;
+  }
+  .editor-gutter-group {
+    position: absolute;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    width: 48px;
+  }
+  .editor-gutter-task {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+  }
+  .editor-gutter-row {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+  .editor-gutter-row input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--brand);
+    cursor: pointer;
+  }
+  .editor-gutter-open {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+  }
+  .editor-gutter-open:hover {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .editor-gutter-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 var(--spacing-4);
+    border: 0;
+    border-radius: var(--radius-full);
+    background: var(--brand);
+    color: var(--surface);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .editor-gutter-open:focus-visible,
+  .editor-gutter-num:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  /* 도구 줄 2(05 §3.5·§3.6): 있을 때만 */
+  .editor-toolbar-2 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-6);
+  }
+  .editor-feedback-popover {
+    z-index: calc(var(--z-sheet) + 1);
+    width: min(340px, calc(100vw - 32px));
+    max-height: min(420px, 70vh);
+    overflow-y: auto;
+    padding: var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-pop);
+  }
+  .editor-feedback-popover ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .editor-feedback-popover li button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    width: 100%;
+    padding: var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    text-align: left;
+    cursor: pointer;
+  }
+  .editor-feedback-popover li button:hover {
+    background: var(--hover-fill);
+  }
+  .editor-feedback-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .editor-feedback-popover small {
+    flex: none;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .editor-feedback-popover small[data-handled] {
+    color: var(--text-secondary);
+  }
+  .editor-feedback-note {
+    margin: 0 0 var(--spacing-6);
+    padding: var(--spacing-4) var(--spacing-8);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    word-break: keep-all;
   }
   .editor-body .writing-paper {
     width: 100%;

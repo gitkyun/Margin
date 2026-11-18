@@ -127,6 +127,10 @@ export interface Task extends BaseRecord {
   sourceMemoRevision?: number;
   sourceStart?: number;
   sourceEnd?: number;
+  /** 이 할 일로 고칠 글(IA v2 08 §3). 그 글의 여백에 보입니다. */
+  documentId?: ID;
+  /** 그 글의 어느 제목 아래인지(제목 글자). 없거나 찾지 못하면 글 맨 위 여백. */
+  sectionAnchor?: string;
 }
 export interface Question extends BaseRecord {
   origin?: RecordOrigin;
