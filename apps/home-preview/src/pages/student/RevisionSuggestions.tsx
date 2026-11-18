@@ -8,7 +8,7 @@ import {
   workingMascot,
   workMessages,
 } from "@/lib/assistant-presentation";
-import { useAICapabilities } from "@/lib/ai-capabilities";
+import { DEFAULT_THINKING, useAICapabilities } from "@/lib/ai-capabilities";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
   AINotConfiguredError,
@@ -73,7 +73,7 @@ export function RevisionSuggestions({
     String(input.model ?? user.preferences?.model ?? ""),
   );
   const [preferredDepth, setPreferredDepth] = useState(
-    String(input.thinking ?? user.preferences?.thinking ?? "high"),
+    String(input.thinking ?? user.preferences?.thinking ?? DEFAULT_THINKING),
   );
   const selectedModel =
     caps.data?.models.find((m) => m.id === selectedModelId) ??

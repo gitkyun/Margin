@@ -1,6 +1,7 @@
 import KokonutModelSelector from "@/components/kokonut/ai-model-selector";
 import {
   isAIModelAvailable,
+  DEFAULT_THINKING,
   resolveAISelection,
   type AIModelCapability,
 } from "@/lib/ai-capabilities";
@@ -64,7 +65,9 @@ export function AIModelSelector({
           label: option.label,
           hint: reviewDepthHints[option.value],
         })),
-        defaultEffort: item.thinking?.[0],
+        defaultEffort: item.thinking?.includes(DEFAULT_THINKING)
+          ? DEFAULT_THINKING
+          : item.thinking?.[0],
         disabled: !isAIModelAvailable(item),
       }))}
       value={{
