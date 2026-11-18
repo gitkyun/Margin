@@ -26,9 +26,15 @@ export function EditorInfo({
   onOpenTask,
   onOpenFeedback,
   onClose,
+  draft,
 }: {
   researchId: string;
   documentId: string;
+  /** 연구 도우미 초안이면 근거로 쓴 기록과 사람이 고쳤는지(05 §3.9) */
+  draft?: {
+    from: { kind: string; id: string; title: string }[];
+    edited: boolean;
+  };
   tasks: Task[];
   feedback: { feedback: Feedback; number: number }[];
   onToggle: (task: Task) => void;
@@ -157,6 +163,62 @@ export function EditorInfo({
               <small>{feedbackLabels[item.status]}</small>
             </button>
           ))}
+        </section>
+      )}
+      {draft && (
+        <section>
+          <h3>{t("초안의 근거")}</h3>
+          {draft.edited && (
+            <p className="editor-info-empty">
+              {t("연구 도우미가 쓴 초안에서 시작한 글이에요.")}
+            </p>
+          )}
+          {draft.from.map((source) => {
+            const href =
+              source.kind === "meetings"
+                ? `/r/${researchId}/meetings/${source.id}`
+                : source.kind === "documents"
+                  ? `/r/${researchId}/docs/w/${source.id}`
+                  : null;
+            if (href)
+              return (
+                <Link
+                  key={`${source.kind}:${source.id}`}
+                  className="editor-info-row-link"
+                  to={href}
+                >
+                  <span>{source.title}</span>
+                </Link>
+              );
+            if (source.kind === "feedback" || source.kind === "tasks")
+              return (
+                <button
+                  key={`${source.kind}:${source.id}`}
+                  type="button"
+                  className="editor-info-feedback"
+                  onClick={() =>
+                    source.kind === "feedback"
+                      ? onOpenFeedback(source.id)
+                      : onOpenTask(source.id)
+                  }
+                >
+                  <span>{source.title}</span>
+                </button>
+              );
+            return (
+              <p
+                key={`${source.kind}:${source.id}`}
+                className="editor-info-empty"
+              >
+                {source.title}
+              </p>
+            );
+          })}
+          {!draft.from.length && (
+            <p className="editor-info-empty">
+              {t("근거로 쓴 기록이 따로 남아 있지 않아요.")}
+            </p>
+          )}
         </section>
       )}
       <section>
