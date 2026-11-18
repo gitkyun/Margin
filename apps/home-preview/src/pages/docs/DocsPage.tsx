@@ -34,6 +34,8 @@ import {
 import { DocInfoDialog } from "./DocInfoDialog";
 import { MaterialInfoDialog, MoveFolderDialog } from "./MaterialView";
 import { NewDocDialog } from "./NewDocDialog";
+import { useMaterialUpload } from "./MaterialUpload";
+import { useFileDrop } from "@/lib/use-file-drop";
 import "./docs.css";
 
 const MATERIAL_TYPES = [
@@ -113,6 +115,17 @@ export function DocsPage() {
   const folders = data.folders.filter(
     (f) => f.researchId === researchId && !f.archivedAt,
   );
+  // 올리기 창(05 §2.5): [올리기]로 열거나, 판 어디에든 PDF를 끌어 오면 그 파일이 든 채로 엽니다.
+  const uploader = useMaterialUpload(researchId);
+  const uploadFolder = folder && !archivedView ? folder : undefined;
+  const drop = useFileDrop({
+    noClick: true,
+    noKeyboard: true,
+    onSelect: (file) => uploader.start({ file, folderId: uploadFolder }),
+    onError: (message) => {
+      if (message) toast.error(message);
+    },
+  });
   // 열어 둔 탭 줄의 [+]는 ?new=1로 와서 새 글 창을 엽니다.
   useEffect(() => {
     if (params.get("new") !== "1") return;
@@ -198,7 +211,17 @@ export function DocsPage() {
           : t("글·자료"));
 
   return (
-    <div className="docs-frame">
+    <div
+      {...drop.getRootProps({ className: "docs-frame" })}
+      data-dropping={drop.isDragActive ? "" : undefined}
+    >
+      <input {...drop.getInputProps()} />
+      {drop.isDragActive && (
+        <div className="docs-drop-hint" aria-hidden>
+          <Icon name="upload" size={20} />
+          {t("놓으면 올리기 창이 열려요")}
+        </div>
+      )}
       <div className="docs-layout" data-preview={preview ? "" : undefined}>
         <nav className="docs-side" aria-label={t("글·자료 분류")}>
           {(
@@ -250,11 +273,7 @@ export function DocsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  navigate(
-                    `${base}?kind=material&full=1&register=1${folder && !archivedView ? `&folder=${folder}` : ""}`,
-                  )
-                }
+                onClick={() => uploader.start({ folderId: uploadFolder })}
               >
                 <Icon name="upload" size={16} />
                 {t("올리기")}
@@ -299,6 +318,7 @@ export function DocsPage() {
               <option value="name">{t("이름순")}</option>
             </select>
           </div>
+          {uploader.node}
           <ul className="docs-rows">
             {rows.map((row) => {
               const key = `${row.kind}:${row.id}`;

@@ -1,0 +1,54 @@
+@layer margin {
+  /* 자료 올리기 창과 '등록 다시 시도' 띠(IA v2 05 §2.5). student.css에서 옮김. */
+  .material-registration-form {
+    min-height: 440px;
+    display: flex;
+    flex-direction: column;
+  }
+  .material-registration-form > .button-row:last-child {
+    margin-top: auto;
+    padding-top: var(--spacing-20);
+  }
+  .pending-upload-note {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    padding: var(--spacing-20);
+    margin-top: var(--spacing-24);
+    border: 1px solid color-mix(in srgb, var(--warning) 25%, var(--line));
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .pending-upload-note > svg {
+    color: var(--warning);
+    flex-shrink: 0;
+  }
+  .pending-upload-note > span {
+    flex: 1;
+    min-width: 0;
+  }
+  .pending-upload-note strong {
+    display: block;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    line-height: var(--typography-label2-lineHeight);
+    letter-spacing: var(--typography-label2-letterSpacing);
+  }
+  .pending-upload-note small {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    display: block;
+    margin-top: var(--spacing-6);
+    overflow-wrap: anywhere;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  @media (max-width: 767px) {
+    .pending-upload-note {
+      flex-wrap: wrap;
+    }
+    .pending-upload-note > button {
+      margin-left: var(--spacing-32);
+    }
+  }
+}
