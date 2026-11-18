@@ -23,6 +23,7 @@ import {
   shouldRetry,
   stageClock,
 } from "./tuning.ts";
+import { unverifiedSubject } from "./jwt.ts";
 import {
   buildSystemPrompt,
   buildUserPayload,
@@ -63,6 +64,8 @@ const provider =
   (apiKey.startsWith("AIza") ? "studio" : "vertex");
 const projectId = Deno.env.get("GEMINI_PROJECT_ID") ?? "";
 
+/** 연결이 끊긴 뒤 취소 기록을 다시 확인하는 간격 */
+const CANCEL_CHECK_MS = 2000;
 const origins = allowedOrigins(Deno.env.get("ALLOWED_ORIGINS"));
 const chatSchema = {
   type: "OBJECT",
@@ -191,14 +194,45 @@ async function rpc(name: string, input: Record<string, unknown>) {
   });
 }
 
-Deno.serve(async (request) => {
+// 화면을 떠나 연결이 끊겨도 실행을 끝까지 마치고 결과를 저장하도록 런타임에 알립니다(작업 문서 6-1).
+// 돌아온 화면은 실행 번호로 저장된 결과를 다시 읽습니다(rms_ai_run_result).
+const runtime = (
+  globalThis as {
+    EdgeRuntime?: { waitUntil(promise: Promise<unknown>): void };
+  }
+).EdgeRuntime;
+
+Deno.serve((request) => {
+  const work = handle(request);
+  try {
+    runtime?.waitUntil(work.catch(() => undefined));
+  } catch {
+    /* waitUntil이 없는 실행 환경(테스트)에서는 응답을 기다리는 동안만 실행합니다. */
+  }
+  return work;
+});
+
+/** 사람이 [중단]을 눌러 이 실행을 취소했는지 확인합니다. */
+async function isCancelled(id: string) {
+  try {
+    const rows = (await rest(
+      `rms_ai_cancellations?${new URLSearchParams({ id: `eq.${id}`, select: "id", limit: "1" })}`,
+    )) as unknown[];
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function handle(request: Request): Promise<Response> {
   const origin = request.headers.get("origin");
   const headers: Record<string, string> = {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
     Vary: "Origin",
+    // x-region: 화면이 DB와 같은 리전(ap-southeast-1)에서 함수를 실행하도록 요청합니다.
     "Access-Control-Allow-Headers":
-      "authorization, apikey, content-type, x-client-info",
+      "authorization, apikey, content-type, x-client-info, x-region",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     // 브라우저 개발자 도구와 화면이 구간별 시간을 읽을 수 있게 합니다(입력 내용은 담지 않음).
     "Access-Control-Expose-Headers": "Server-Timing",
@@ -244,8 +278,11 @@ Deno.serve(async (request) => {
   let chargedCredits = 0;
   let finishReason: string | undefined;
   let attempts = 0;
+  let userCancelled = false;
   // 운영 확인용 실행 요약. 질문·기록·토큰 문자열은 남기지 않고 종류·시간·토큰 수만 남깁니다.
   let runInfo: Record<string, unknown> = {};
+  // 로그인 확인이 끝나기 전에 난 입력 오류는, 로그인이 틀렸다면 로그인 오류로 바꿔 알려 줍니다.
+  let verifyLogin: (() => Promise<unknown>) | undefined;
   const logRun = (status: string) =>
     console.info(
       "rms_ai_timing",
@@ -285,26 +322,35 @@ Deno.serve(async (request) => {
         "로그인한 뒤 AI를 실행해 주세요.",
         401,
       );
-    const auth = await fetch(`${url}/auth/v1/user`, {
+    // 로그인 확인은 기다리지 않고 시작해 두고, 입력 확인·연구 접근 확인과 겹쳐 진행합니다.
+    // 접근 확인 결과는 로그인 확인이 끝나 같은 사용자임을 확인한 뒤에만 씁니다.
+    const userRead = fetch(`${url}/auth/v1/user`, {
       headers: { apikey: publishableKey, Authorization: token },
-    });
-    if (!auth.ok)
-      throw new AIError(
-        "UNAUTHENTICATED",
-        "로그인 시간이 만료되었습니다. 다시 로그인해 주세요.",
-        401,
-      );
-    const user = await auth.json();
-    if (!user.id || !user.email_confirmed_at)
-      throw new AIError(
-        "UNAUTHENTICATED",
-        "확인된 계정으로 로그인해 주세요.",
-        401,
-      );
-    clock.mark("auth");
+    }).then(async (auth) => (auth.ok ? await auth.json() : null));
+    userRead.catch(() => undefined);
+    const requireUser = async () => {
+      const found = await userRead;
+      if (!found)
+        throw new AIError(
+          "UNAUTHENTICATED",
+          "로그인 시간이 만료되었습니다. 다시 로그인해 주세요.",
+          401,
+        );
+      if (!found.id || !found.email_confirmed_at)
+        throw new AIError(
+          "UNAUTHENTICATED",
+          "확인된 계정으로 로그인해 주세요.",
+          401,
+        );
+      return found;
+    };
+    verifyLogin = requireUser;
+    const claimedUser = unverifiedSubject(token);
     // 답변 깊이(생각 단계)는 세 단계입니다. 화면 기본값은 간단히(low)예요(src/lib/ai-capabilities.ts).
-    if (request.method === "GET")
+    if (request.method === "GET") {
+      await requireUser();
       return reply({ models: apiKey ? models : [] });
+    }
     if (Number(request.headers.get("content-length") ?? 0) > 262144)
       throw new AIError(
         "INPUT_TOO_LARGE",
@@ -362,6 +408,7 @@ Deno.serve(async (request) => {
         }
       : validateInput(parsed);
     const locale = readLocale(body0.locale);
+    const resumable = body0.resumable === true;
     const model = input.model ?? "gemini-3.8-flash";
     const selectedModel = models.find((item) => item.id === model);
     if (!selectedModel)
@@ -396,11 +443,17 @@ Deno.serve(async (request) => {
             (rows) => ({ rows: rows as { data: Record<string, unknown> }[] }),
             (error) => ({ error }),
           );
+    const accessFor = (userId: string) =>
+      rpc("rms_member_access", { p_id: input.researchId, p_user: userId });
+    const earlyAccess = claimedUser ? accessFor(claimedUser) : undefined;
+    earlyAccess?.catch(() => undefined);
+    const user = await requireUser();
+    verifyLogin = undefined;
+    clock.mark("auth");
     if (
-      !(await rpc("rms_member_access", {
-        p_id: input.researchId,
-        p_user: user.id,
-      }))
+      !(await (claimedUser === user.id && earlyAccess
+        ? earlyAccess
+        : accessFor(user.id)))
     )
       throw new AIError("FORBIDDEN", "이 연구에 접근할 수 없습니다.", 403);
     let source: Record<string, unknown> = {};
@@ -517,11 +570,7 @@ Deno.serve(async (request) => {
               403,
             );
           if (rows.length !== 1)
-            throw new AIError(
-              "FORBIDDEN",
-              "선택한 근거를 확인해 주세요.",
-              403,
-            );
+            throw new AIError("FORBIDDEN", "선택한 근거를 확인해 주세요.", 403);
           const stored = rows[0].data;
           const body =
             c.kind === "feedback"
@@ -670,12 +719,13 @@ Deno.serve(async (request) => {
       if (input.sourceText.length > 50000)
         throw new AIError("INPUT_TOO_LARGE", "선택한 범위를 줄여 주세요.", 413);
       if (input.mode === "ask_research") {
-        // 첨부한 기록을 먼저 두고, 남는 한도만큼 이 연구의 나머지 기록을 이어 붙입니다.
+        // 첨부한 기록의 글자 수를 먼저 빼고, 남는 한도만큼 이 연구의 나머지 기록을 읽습니다.
+        // 보내는 순서는 연구 기록(대화마다 거의 같음) → 이번에 첨부한 기록이라 입력 캐시가 맞습니다(7장).
         const rest = await loadWorkspace(
           "ask_research",
           input.sourceText.length,
         );
-        contexts = [...verified, ...rest];
+        contexts = [...rest, ...verified];
         input.sourceText = workspaceSourceText(
           contexts as {
             id: string;
@@ -931,9 +981,29 @@ Deno.serve(async (request) => {
     for (let attempt = 1; ; attempt++) {
       attempts = attempt;
       const controller = new AbortController(),
-        timeout = setTimeout(() => controller.abort(), attemptTimeout),
-        abort = () => controller.abort();
-      request.signal.addEventListener("abort", abort, { once: true });
+        timeout = setTimeout(() => controller.abort(), attemptTimeout);
+      // 연결이 끊겨도(화면을 떠남) 계속 만들어 결과를 저장합니다. 사람이 [중단]을 눌러 취소 기록이
+      // 생겼을 때만 멈춥니다. 화면은 연결을 먼저 끊고 취소를 저장하므로 끊긴 뒤 잠깐씩 다시 확인합니다.
+      let watch: ReturnType<typeof setInterval> | undefined;
+      const check = () =>
+        void isCancelled(runId!).then((yes) => {
+          if (!yes) return;
+          userCancelled = true;
+          controller.abort();
+        });
+      // 결과를 다시 불러올 수 있는 화면(연구 도우미)만 resumable을 보냅니다. 다른 화면은 예전처럼
+      // 연결이 끊기면 바로 멈춰, 아무도 보지 않을 답에 크레딧을 쓰지 않습니다.
+      const abort = resumable
+        ? () => {
+            check();
+            watch = setInterval(check, CANCEL_CHECK_MS);
+          }
+        : () => {
+            userCancelled = true;
+            controller.abort();
+          };
+      if (request.signal.aborted) abort();
+      else request.signal.addEventListener("abort", abort, { once: true });
       let outcome: "timeout" | "network" | number;
       let failure: unknown;
       try {
@@ -952,13 +1022,14 @@ Deno.serve(async (request) => {
         });
         outcome = result.response.status;
       } catch (error) {
-        if (request.signal.aborted)
+        if (userCancelled)
           throw new AIError("CANCELLED", "AI 실행을 중단했습니다.", 499);
         result = undefined;
         failure = error;
         outcome = controller.signal.aborted ? "timeout" : "network";
       } finally {
         clearTimeout(timeout);
+        clearInterval(watch);
         request.signal.removeEventListener("abort", abort);
       }
       if (result?.response.ok) break;
@@ -966,7 +1037,7 @@ Deno.serve(async (request) => {
         !shouldRetry({
           attempt,
           outcome,
-          cancelled: request.signal.aborted,
+          cancelled: userCancelled,
           elapsedMs: performance.now() - modelStarted,
           nextTimeoutMs: attemptTimeout,
         })
@@ -1155,7 +1226,12 @@ Deno.serve(async (request) => {
       sourceRevision: input.sourceRevision,
       createdAt: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (caught) {
+    let error = caught;
+    if (verifyLogin)
+      await verifyLogin().catch((loginError) => {
+        error = loginError;
+      });
     // 제공사가 요청을 거절한 것이 확실할 때만 환불합니다. 사용량을 받았다면 위에서 이미 정산했고,
     // 사용량을 모르는 경우(시간 초과·연결 끊김·사용량 누락)는 0으로 지어내지 않고 예약을 남겨 운영이 확인합니다.
     if (runId && reserved && !settled && providerRejected)
@@ -1200,4 +1276,4 @@ Deno.serve(async (request) => {
       500,
     );
   }
-});
+}

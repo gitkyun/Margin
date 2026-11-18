@@ -49,10 +49,22 @@ import {
   draftRequestMax,
   lastAsked,
   nextSteps,
-  suggestedTasksOf,
   taskLink,
 } from "@/lib/assistant-next";
 import { assistantStarters, type Starter } from "@/lib/assistant-starters";
+import {
+  assistantMessage,
+  claimRun,
+  clearPendingRun,
+  loadPendingRun,
+  RESUME_GIVE_UP_MS,
+  RESUME_NOT_STARTED_MS,
+  RESUME_POLL_MS,
+  savePendingRun,
+  type StoredRunResult,
+} from "@/lib/ai-resume";
+import { rpc } from "@/lib/repository";
+import { localizeServerMessage } from "@/lib/server-messages";
 import { SaveDraftDialog, type DraftSource } from "./assistant/SaveDraftDialog";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, privateBlob } from "@/lib/experience";
@@ -68,6 +80,7 @@ import {
   type AIContext,
   type AIConversation,
   type Attachment,
+  type AICandidate,
   type SavedAICandidate,
   type Task,
   isLegacyOrganizeCandidate,
@@ -162,6 +175,10 @@ const GENERIC_STARTERS = [
 
 /** 사이드 창에서는 화면 주소 대신 쓰는 빈 값(바뀌지 않게 하나만 둡니다) */
 const EMPTY_PARAMS = new URLSearchParams();
+
+/** 답이 없고 후보만 온 요청은 후보를 글로 이어 붙여 대화에 남깁니다. */
+const candidateText = (x: AICandidate) =>
+  `${x.title}\n${x.body ?? x.method ?? ""}\n${x.assumptions ? t("확인할 가정: {assumptions}", { assumptions: x.assumptions }) : ""}`;
 
 /**
  * 연구 도우미. `variant="panel"`이면 사이드 창(IA v2 06 §2.1) 안에서 같은 대화·입력창을 씁니다.
@@ -408,12 +425,115 @@ export function ResearchAssistant({
   });
   useEffect(
     () => () => {
+      // 화면을 떠나면 이 화면의 기다림만 멈춥니다. 서버는 답을 끝까지 만들어 저장하고, 다시 열면
+      // 이어 받습니다(응답 속도 작업 6-1). 실행을 멈추는 것은 [중단]을 눌렀을 때뿐이에요.
       sequence.current++;
       abort.current?.abort();
-      if (runId.current) void w.cancelRun(runId.current).catch(() => {});
     },
     [],
   );
+  const conversationsRef = useRef(conversations);
+  conversationsRef.current = conversations;
+  // 화면을 떠났다 돌아왔을 때 그 사이 서버가 만든 답을 이어 받습니다(응답 속도 작업 6-1).
+  useEffect(() => {
+    if (mode !== "connected" || runId.current) return;
+    const pendingRun = loadPendingRun(researchId);
+    if (!pendingRun) return;
+    if (Date.now() - pendingRun.startedAt > RESUME_GIVE_UP_MS) {
+      clearPendingRun(researchId, pendingRun.runId);
+      return;
+    }
+    if (!claimRun(pendingRun.runId)) return;
+    const seq = ++sequence.current;
+    const live = () => seq === sequence.current;
+    runId.current = pendingRun.runId;
+    setLastRunId(pendingRun.runId);
+    setActiveRun({
+      first: false,
+      steps: pendingRun.steps,
+      startedAt: pendingRun.startedAt,
+      mode: pendingRun.mode,
+    });
+    setRunning(true);
+    const deliver = async (result: StoredRunResult) => {
+      if (result.status === "failed")
+        setError(
+          localizeServerMessage(
+            result.error ?? t("AI 응답을 받지 못했어요. 다시 질문해 주세요."),
+          ),
+        );
+      if (result.status !== "complete" || !result.output) return;
+      const target = conversationsRef.current.find(
+        (c) => c.id === pendingRun.conversationId,
+      );
+      if (!target || target.messages.some((m) => m.runId === pendingRun.runId))
+        return;
+      const answeredAt = result.completedAt ?? now();
+      const elapsedMs = Math.max(
+        0,
+        Date.parse(answeredAt) - pendingRun.startedAt,
+      );
+      const saved = await save("conversations", {
+        ...target,
+        messages: [
+          ...target.messages,
+          assistantMessage(
+            { ...result.output, runId: pendingRun.runId },
+            {
+              createdAt: answeredAt,
+              steps: pendingRun.steps.map((s) => s.done),
+              elapsedMs,
+              webSearch: pendingRun.webSearch,
+              calendar: pendingRun.calendar,
+              contexts: pendingRun.contexts,
+              candidateText,
+            },
+          ),
+        ],
+      });
+      setLastUsedCredits(result.creditsUsed);
+      if (!conversationRef.current || conversationRef.current.id === saved.id)
+        setConversation(saved);
+    };
+    void (async () => {
+      try {
+        while (live()) {
+          const result = await rpc<StoredRunResult | null>(
+            "rms_ai_run_result",
+            { p_id: pendingRun.runId },
+          ).catch(() => undefined);
+          if (!live()) return;
+          if (result && result.status !== "running") {
+            await deliver(result);
+            break;
+          }
+          // 서버가 실행을 시작하기 전에 떠났거나 너무 오래됐으면 더 기다리지 않습니다.
+          const waited = Date.now() - pendingRun.startedAt;
+          if (
+            (result === null && waited > RESUME_NOT_STARTED_MS) ||
+            waited > RESUME_GIVE_UP_MS
+          ) {
+            setError(
+              t("떠나 있던 사이의 답을 확인하지 못했어요. 다시 질문해 주세요."),
+            );
+            break;
+          }
+          await new Promise((done) => setTimeout(done, RESUME_POLL_MS));
+        }
+      } catch (e) {
+        if (live()) setError((e as Error).message);
+      } finally {
+        if (live()) {
+          clearPendingRun(researchId, pendingRun.runId);
+          setRunning(false);
+          runId.current = "";
+          void refresh();
+        }
+      }
+    })();
+    // 처음 열 때 한 번만 확인합니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [researchId, mode]);
   useEffect(() => {
     if ((!messages.length && !running) || !stickToBottom.current) return;
     end.current?.scrollIntoView({ block: "nearest" });
@@ -869,6 +989,17 @@ export function ResearchAssistant({
       });
       setConversation(c);
       const runStartedAt = Date.now();
+      savePendingRun({
+        runId: id,
+        researchId,
+        conversationId: c.id,
+        mode: activeMode,
+        startedAt: runStartedAt,
+        steps: run.steps,
+        webSearch: useWebSearch,
+        calendar: useCalendar,
+        contexts: requestContexts,
+      });
       const result = await runAI(
         {
           mode: activeMode,
@@ -887,6 +1018,7 @@ export function ResearchAssistant({
                   .map(({ role, text }) => ({ role, text })),
           conversationId: c.id,
           clientRunId: id,
+          resumable: true,
         },
         controller.signal,
       );
@@ -896,36 +1028,21 @@ export function ResearchAssistant({
       if (result.candidates.length) openPanel("suggestions");
       for (const source of result.webGrounding?.sources ?? [])
         override?.onWebSource?.(source);
-      const answer =
-        result.answer ??
-        result.candidates
-          .map(
-            (x) =>
-              `${x.title}\n${x.body ?? x.method ?? ""}\n${x.assumptions ? t("확인할 가정: {assumptions}", { assumptions: x.assumptions }) : ""}`,
-          )
-          .join("\n\n");
       const answeredAt = now();
       const elapsedMs = Date.now() - runStartedAt;
       const saved = await save("conversations", {
         ...c,
         messages: [
           ...c.messages,
-          {
-            role: "assistant",
-            text: answer,
+          assistantMessage(result, {
             createdAt: answeredAt,
             steps: run.steps.map((s) => s.done),
             elapsedMs,
             webSearch: useWebSearch,
             calendar: useCalendar,
-            webGrounding: result.webGrounding,
-            contexts: result.contexts ?? requestContexts,
-            ...(result.runId ? { runId: result.runId } : {}),
-            // 답 아래 [할 일 추가](06 §2.4): 고르기 전까지는 대화에만 남는 제안입니다.
-            ...(suggestedTasksOf(result.candidates).length
-              ? { suggestedTasks: suggestedTasksOf(result.candidates) }
-              : {}),
-          },
+            contexts: requestContexts,
+            candidateText,
+          }),
         ],
       });
       savedConversation = saved;
@@ -952,6 +1069,8 @@ export function ResearchAssistant({
       }
     } finally {
       if (seq === sequence.current) {
+        // 이 화면에서 끝까지 받았으면(성공·실패 모두) 이어 받을 일이 없습니다.
+        clearPendingRun(researchId, id);
         setRunning(false);
         runId.current = "";
       }
@@ -976,6 +1095,7 @@ export function ResearchAssistant({
     abort.current?.abort();
     setRunning(false);
     const id = runId.current;
+    clearPendingRun(researchId, id);
     runId.current = "";
     if (!skipRestoreOnCancel.current && restoreContextsRef.current) {
       const sentContexts = restoreContextsRef.current;

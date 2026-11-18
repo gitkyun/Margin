@@ -33,7 +33,12 @@ export function AssistantThinking({
   return (
     <div className="ai-message assistant" role="status">
       {level === "detailed" ? (
-        <AIWaitStatus startedAt={startedAt} kind={kind} label={label} />
+        <AIWaitStatus
+          startedAt={startedAt}
+          kind={kind}
+          label={label}
+          keepsRunning
+        />
       ) : (
         <AIToolCalls
           calls={[
