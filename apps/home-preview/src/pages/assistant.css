@@ -91,6 +91,55 @@
     transform: scale(0.98);
   }
 
+  /* 답 아래 [할 일 추가]로 펼친 제안 줄(06 §2.4) */
+  .assistant-answer-tasks {
+    display: grid;
+    gap: var(--spacing-8);
+    margin-top: -8px;
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+  }
+  .assistant-answer-tasks-head {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-answer-tasks ul {
+    display: grid;
+    gap: var(--spacing-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .assistant-answer-tasks li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-height: 36px;
+  }
+  .assistant-answer-tasks-title {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    word-break: var(--text-word-break, keep-all);
+  }
+  .assistant-answer-tasks-done {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-answer-tasks li > button,
+  .assistant-answer-tasks li > span > button {
+    flex-shrink: 0;
+  }
+
   /* 답 아래 '이어서'(06 §2.4): 예시 질문과 같은 알약 칩을 왼쪽 정렬로 둡니다. */
   .assistant-next {
     display: flex;

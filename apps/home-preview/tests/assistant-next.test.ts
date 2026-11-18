@@ -5,6 +5,8 @@ import {
   draftRequestMax,
   lastAsked,
   nextSteps,
+  suggestedTasksOf,
+  taskLink,
 } from "@/lib/assistant-next";
 import type { AIConversationMessage } from "@/lib/domain";
 
@@ -41,6 +43,12 @@ describe("이어서 (IA v2 06 §2.4)", () => {
   it("요청 종류별로 정해 둔 목록", () => {
     expect(ids({ mode: "organize_meeting" })).toEqual(["revisions", "draft"]);
     expect(ids({ mode: "suggest_revisions" })).toEqual(["draft"]);
+    expect(
+      nextSteps(
+        { mode: "suggest_revisions" },
+        { canSuggestEdits: false, hasTasks: true },
+      ).map((s) => s.id),
+    ).toEqual(["tasks", "draft"]);
     expect(ids({ mode: "ask_research", draft: true })).toEqual([
       "save",
       "shorter",
@@ -86,5 +94,39 @@ describe("이어서 (IA v2 06 §2.4)", () => {
     expect(lastAsked(messages, 3)?.draft).toBe(true);
     expect(lastAsked(messages)?.draft).toBe(true);
     expect(lastAsked([])).toBeUndefined();
+  });
+});
+
+describe("답 아래 할 일 추가 (IA v2 06 §2.4)", () => {
+  it("제안마다 딸린 할 일 제안을 겹치지 않게 모으고 할 일 후보 자체는 넣지 않는다", () => {
+    expect(
+      suggestedTasksOf([
+        {
+          title: "방안 1",
+          suggestedTasks: ["표 기준 보완", "  질문지   고치기 "],
+        },
+        { title: "방안 2", suggestedTasks: ["표 기준 보완", ""] },
+        { title: "할 일 후보", category: "task" },
+      ]),
+    ).toEqual(["표 기준 보완", "질문지 고치기"]);
+    expect(
+      suggestedTasksOf([
+        {
+          title: "x",
+          suggestedTasks: Array.from({ length: 20 }, (_, i) => `${i}`),
+        },
+      ]),
+    ).toHaveLength(10);
+  });
+
+  it("요청 칩의 기록을 할 일에 잇는다", () => {
+    expect(
+      taskLink([
+        { kind: "feedback", id: "f1", title: "" },
+        { kind: "meetings", id: "m1", title: "" },
+        { kind: "documents", id: "d1", title: "" },
+      ]),
+    ).toEqual({ feedbackIds: ["f1"], sourceRecordId: "m1", documentId: "d1" });
+    expect(taskLink([])).toEqual({ feedbackIds: [] });
   });
 });

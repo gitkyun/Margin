@@ -350,6 +350,12 @@ export interface AIConversationMessage {
   mode?: AIInput["mode"];
   /** 사용자 메시지: 초안 쓰기로 보냈는지(IA v2 06 §2.3) */
   draft?: boolean;
+  /** 답 메시지: 이 답을 낳은 실행 */
+  runId?: ID;
+  /** 답 메시지: 답에 딸린 할 일 제안(06 §2.4 [할 일 추가]). 고르기 전에는 할 일이 아닙니다. */
+  suggestedTasks?: string[];
+  /** 답 메시지: 그 가운데 할 일로 추가한 것 */
+  addedTasks?: { title: string; taskId: ID }[];
   webGrounding?: WebGrounding;
   role: "user" | "assistant";
   text: string;

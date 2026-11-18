@@ -723,3 +723,72 @@ test("초안 쓰기는 정해 둔 지시문을 붙여 보내고 답 아래 '이�
   await expect(page.getByRole("dialog", { name: "글로 저장" })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("답 아래 [할 일 추가]는 할 일 제안을 펼치고 고른 줄만 할 일로 저장한다(IA v2 06 §2.4)", async ({
+  page,
+}) => {
+  const { server, errors } = await open(page);
+  server.fn("ai-assist", async (body, route) => {
+    if (route.request().method() === "GET") return { models };
+    return {
+      runId: "run-tasks",
+      candidates: [
+        {
+          title: "비교 기준을 좁히기",
+          method: "비교표의 기준을 두 개로 줄여요.",
+          suggestedTasks: [
+            "비교표 기준 두 개로 줄이기",
+            "교수님께 기준 확인하기",
+          ],
+        },
+      ],
+      creditsUsed: 0.5,
+      creditStatus: "settled",
+      model: (body as { model?: string }).model,
+    };
+  });
+  await input(page).fill("/수정");
+  await input(page).press("Enter");
+  await input(page).fill("남은 피드백을 어떻게 고칠까?");
+  await input(page).press("Enter");
+  const answer = page.locator(".ai-message.assistant");
+  await expect(answer).toHaveCount(1);
+  const toggle = answer
+    .getByRole("group", { name: "답변 동작" })
+    .getByRole("button", { name: "할 일 추가" });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  // '이어서'의 할 일 추가도 같은 줄을 펼칩니다.
+  await expect(
+    page.getByRole("group", { name: "이어서" }).getByRole("button"),
+  ).toHaveText(["할 일 추가", "초안 쓰기"]);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  const list = page.getByRole("region", { name: "할 일 제안" });
+  await expect(list.getByRole("listitem")).toHaveCount(2);
+  await list
+    .getByRole("button", { name: "'비교표 기준 두 개로 줄이기' 할 일로 선택" })
+    .click();
+  await expect(list.getByText("추가함")).toHaveCount(1);
+  const saves = server.calls
+    .filter((call) => call.name === "rms_save_record")
+    .map(
+      (call) =>
+        call.body as { p_kind: string; p_value: Record<string, unknown> },
+    );
+  const tasks = saves.filter((s) => s.p_kind === "tasks");
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0].p_value).toMatchObject({
+    title: "비교표 기준 두 개로 줄이기",
+    origin: "ai",
+    visibility: "private",
+    status: "todo",
+  });
+  // 고르지 않은 줄은 할 일이 아니고, 대화에는 추가한 줄이 남습니다.
+  const conversation = saves.filter((s) => s.p_kind === "conversations").at(-1)
+    ?.p_value as { messages: { addedTasks?: unknown[] }[] };
+  expect(conversation.messages.at(-1)?.addedTasks).toHaveLength(1);
+  await expect(
+    list.getByRole("button", { name: "'교수님께 기준 확인하기' 할 일로 선택" }),
+  ).toBeEnabled();
+  expect(errors).toEqual([]);
+});
