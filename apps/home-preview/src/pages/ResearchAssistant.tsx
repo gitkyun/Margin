@@ -38,6 +38,7 @@ import {
 import { handoffState, readHandoff } from "@/lib/assistant-handoff";
 import { contextKey, viewingContext } from "@/lib/viewing-context";
 import { canInsertInto, insertIntoEditor } from "@/lib/editor-flush";
+import { assistantStarters, type Starter } from "@/lib/assistant-starters";
 import { SaveDraftDialog, type DraftSource } from "./assistant/SaveDraftDialog";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, privateBlob } from "@/lib/experience";
@@ -127,6 +128,13 @@ function panelStartsOpen(): boolean {
 
 const clockLabel = (sec: number) =>
   `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+
+/** 지금 화면에 맞춰 권할 것이 없을 때 쓰는 예시 질문 */
+const GENERIC_STARTERS = [
+  t("다음 미팅 전에 끝낼 일이 뭐가 있지?"),
+  t("이 피드백은 어떻게 고치면 좋을까?"),
+  t("이 문단에서 더 구체적으로 쓸 곳을 찾아 줘"),
+];
 
 /** 사이드 창에서는 화면 주소 대신 쓰는 빈 값(바뀌지 않게 하나만 둡니다) */
 const EMPTY_PARAMS = new URLSearchParams();
@@ -1081,6 +1089,8 @@ export function ResearchAssistant({
         : [next, ...rest];
     });
   }, [inPanel, viewingKeyNow]);
+  // 빈 대화의 첫 화면에서 권할 것(06 §2.6). 사이드 창이면 그 아래 화면 기준입니다.
+  const starters = assistantStarters(location.pathname, data, researchId);
   // 답 아래 [글로 저장]·[이 글에 넣기](06 §2.4)
   const [draftSource, setDraftSource] = useState<DraftSource | null>(null);
   const insertTarget =
@@ -1322,20 +1332,25 @@ export function ResearchAssistant({
               <h2>{t("아직 대화가 없어요")}</h2>
               {!unavailable && (
                 <div className="assistant-prompts">
-                  {[
-                    t("다음 미팅 전에 끝낼 일이 뭐가 있지?"),
-                    t("이 피드백은 어떻게 고치면 좋을까?"),
-                    t("이 문단에서 더 구체적으로 쓸 곳을 찾아 줘"),
-                  ].map((prompt) => (
+                  {/* 지금 화면과 기록에 맞춰 해 볼 만한 것(06 §2.6). 없으면 늘 쓰는 예시 질문. */}
+                  {(starters.length
+                    ? starters
+                    : GENERIC_STARTERS.map((prompt) => ({
+                        id: prompt,
+                        label: prompt,
+                        prompt,
+                      }))
+                  ).map((starter: Starter) => (
                     <button
-                      key={prompt}
+                      key={starter.id}
                       type="button"
                       onClick={() => {
-                        setDraft(prompt);
+                        if (starter.mode) setTask(starter.mode);
+                        setDraft(starter.prompt);
                         composerRef.current?.focus();
                       }}
                     >
-                      {prompt}
+                      {starter.label}
                     </button>
                   ))}
                 </div>
