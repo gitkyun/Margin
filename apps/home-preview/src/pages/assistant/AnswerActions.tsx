@@ -12,16 +12,27 @@ export interface AnswerActionsProps {
   /** 실행 중이거나 쓸 수 없을 때 다시 답하기를 막아요. */
   disabled: boolean;
   onRetry(question: string): void;
+  /** [글로 저장](IA v2 06 §2.4): 답이 200자 이상일 때만 보입니다. */
+  onSaveDraft?: () => void;
+  /** [이 글에 넣기]: 글을 열어 둔 때만 보입니다. */
+  onInsert?: () => void;
 }
+
+/** 이보다 짧은 답은 글로 저장할 만큼이 아니라 버튼을 두지 않습니다(06 §2.4). */
+export const DRAFT_MIN_LENGTH = 200;
 
 const COPIED_MS = 1800;
 
-/** 연구 도우미 답변 아래 아이콘 줄: 복사(체크 아이콘 피드백), 다시 답하기. */
+/**
+ * 연구 도우미 답변 아래 줄: 아이콘 버튼(복사·다시 답하기) 다음에 글자 버튼(글로 저장·이 글에 넣기)을 둡니다.
+ */
 export function AnswerActions({
   text,
   question,
   disabled,
   onRetry,
+  onSaveDraft,
+  onInsert,
 }: AnswerActionsProps) {
   const [copied, setCopied] = useState(false);
   const copyTimer = useRef<number | null>(null);
@@ -67,6 +78,18 @@ export function AnswerActions({
           onClick={() => onRetry(question)}
         >
           <Icon name="refresh" size={16} />
+        </Button>
+      )}
+      {onSaveDraft && text.length >= DRAFT_MIN_LENGTH && (
+        <Button type="button" variant="ghost" size="sm" onClick={onSaveDraft}>
+          <Icon name="file" size={15} />
+          {t("글로 저장")}
+        </Button>
+      )}
+      {onInsert && (
+        <Button type="button" variant="ghost" size="sm" onClick={onInsert}>
+          <Icon name="edit" size={15} />
+          {t("이 글에 넣기")}
         </Button>
       )}
     </div>

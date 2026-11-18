@@ -37,6 +37,8 @@ import {
 } from "react-router-dom";
 import { handoffState, readHandoff } from "@/lib/assistant-handoff";
 import { contextKey, viewingContext } from "@/lib/viewing-context";
+import { canInsertInto, insertIntoEditor } from "@/lib/editor-flush";
+import { SaveDraftDialog, type DraftSource } from "./assistant/SaveDraftDialog";
 import { toast } from "sonner";
 import { useExperience, uploadPrivate, privateBlob } from "@/lib/experience";
 import { Hint } from "@/components/ui/hint";
@@ -1079,6 +1081,10 @@ export function ResearchAssistant({
         : [next, ...rest];
     });
   }, [inPanel, viewingKeyNow]);
+  // 답 아래 [글로 저장]·[이 글에 넣기](06 §2.4)
+  const [draftSource, setDraftSource] = useState<DraftSource | null>(null);
+  const insertTarget =
+    viewing?.kind === "documents" && canInsertInto(viewing.id) ? viewing : null;
   /** 사이드 창 → 전체 화면: 지금 대화와 근거 칩을 넘깁니다. */
   function expand() {
     onClose?.();
@@ -1397,6 +1403,28 @@ export function ResearchAssistant({
                       text={m.text}
                       question={questionBefore(messages, i)}
                       disabled={working || unavailable || uploading}
+                      onSaveDraft={() =>
+                        setDraftSource({
+                          text: m.text,
+                          question: questionBefore(messages, i),
+                          contexts: m.contexts ?? conversation?.contexts ?? [],
+                        })
+                      }
+                      onInsert={
+                        insertTarget
+                          ? () => {
+                              if (insertIntoEditor(insertTarget.id, m.text))
+                                toast.success(
+                                  t(
+                                    "'{title}'에 넣었어요. 되돌리려면 글에서 ⌘/Ctrl+Z를 눌러요.",
+                                    {
+                                      title: insertTarget.title,
+                                    },
+                                  ),
+                                );
+                            }
+                          : undefined
+                      }
                       onRetry={(question) =>
                         void send(question, {
                           webSearch: m.webSearch ?? !!m.webGrounding,
@@ -1973,6 +2001,11 @@ export function ResearchAssistant({
             dropzoneRef.current = node;
           fileInput.current = node;
         }}
+      />
+      <SaveDraftDialog
+        researchId={researchId}
+        source={draftSource}
+        onClose={() => setDraftSource(null)}
       />
       <Dialog
         open={!!viewingSources}
