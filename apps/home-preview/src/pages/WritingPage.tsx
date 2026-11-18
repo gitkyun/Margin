@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -66,6 +66,19 @@ import { useOpenDetail } from "@/lib/item-detail";
 import { registerFlush } from "@/lib/editor-flush";
 import { EditorGutter, FeedbackHandled } from "./docs/EditorGutter";
 import { EditorInfo } from "./docs/EditorInfo";
+import {
+  EditSuggestionMarks,
+  SuggestionBar,
+  SuggestionCard,
+  announceSuggestions,
+  useEditSuggestions,
+} from "./docs/EditSuggestions";
+import {
+  SuggestRequestDialog,
+  type SuggestRequest,
+} from "./docs/SuggestRequestDialog";
+import { textMap, toTextOffset } from "@/lib/edit-suggestions";
+import { getTextSerializersFromSchema } from "@tiptap/core";
 import type { Task } from "@/lib/domain";
 import { CompareView, type CompareMode } from "./docs/CompareView";
 /** 예전 이름. 낱말 비교는 writing/WordDiff에 있어요. */
@@ -333,6 +346,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       // AI 문장 점검 범위·원문 강조 및 커서 뒤 이어쓰기(꾸밈만, 문서 내용에는 남지 않아요)
       AIReviewHighlight,
       AIAutocompleteGhost,
+      // 본문 안 수정 제안 표시(IA v2 05 §3.6). 꾸밈만, 글에는 남지 않아요.
+      EditSuggestionMarks,
     ],
     content: restored?.content ?? initial.content,
     // 도구 줄의 눌림 상태·글자 수·표 행 추가 버튼이 커서 이동과 입력을 따라가게 한다.
@@ -593,6 +608,72 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     return v;
   }
   const outline = editor ? editorOutline(editor.getJSON()) : [];
+  // 본문 안 수정 제안(05 §3.6): 이 글에 대해 내가 받은 대기 중 제안
+  const suggestionRecords = useMemo(
+    () =>
+      data.aiCandidates.filter(
+        (c) =>
+          c.mode === "suggest_edits" &&
+          c.status === "pending" &&
+          !c.archivedAt &&
+          c.contexts?.[0]?.id === initial.id,
+      ),
+    [data.aiCandidates, initial.id],
+  );
+  const suggestions = useEditSuggestions({
+    editor,
+    records: suggestionRecords,
+    onStatus: async (record, status) => {
+      try {
+        await save("aiCandidates", { ...record, status });
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
+    },
+  });
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  /** 저장한 글을 보내 수정 제안을 받습니다. 저장 안 한 변경은 먼저 저장합니다. */
+  async function requestSuggestions(request: SuggestRequest) {
+    if (!editor) return;
+    setSuggesting(true);
+    setError("");
+    try {
+      const saved = dirty ? await persist() : base;
+      const map = textMap(
+        editor.state.doc,
+        getTextSerializersFromSchema(editor.schema),
+      );
+      const { from, to, empty } = editor.state.selection;
+      const range =
+        request.scope === "selection" && !empty
+          ? { start: toTextOffset(map, from), end: toTextOffset(map, to) }
+          : undefined;
+      const result = await runAI({
+        mode: "suggest_edits",
+        researchId: initial.researchId,
+        clientRunId: crypto.randomUUID(),
+        documentId: initial.id,
+        sourceRevision: saved.revision,
+        ...(range && range.end > range.start ? { range } : {}),
+        question: request.question,
+        contexts: marginFeedback
+          .filter(({ feedback }) => request.feedbackIds.includes(feedback.id))
+          .map(({ feedback }) => ({
+            id: feedback.id,
+            kind: "feedback" as const,
+            title: feedback.title,
+          })),
+        sourceText: "",
+      });
+      setSuggestOpen(false);
+      announceSuggestions(result.candidates.length, result.droppedQuotes);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSuggesting(false);
+    }
+  }
   // 여백(05 §3.5): 이 글을 고칠 할 일과 딸린 피드백
   const openDetail = useOpenDetail();
   const paper = useRef<HTMLDivElement>(null);
@@ -800,19 +881,13 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         }
         onOpenVersion={openCompare}
         review={{
-          disabled: dirty || !!busy || !editor?.getText().trim(),
-          hint: dirty
-            ? t("저장한 뒤에 AI 문장 점검을 할 수 있어요.")
-            : t(
-                "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토해요.",
-              ),
+          disabled: !!busy || suggesting || !editor?.getText().trim(),
+          hint: t(
+            "고른 부분이나 글 전체에서 고칠 곳을 찾아 본문 안에 제안받아요.",
+          ),
           selection: editor?.state.selection.empty === false,
-          onStart: () => {
-            // 이동하지 않고 오른쪽 여백 패널에서 점검해요. 선택한 문단이 있으면 그 원문만 보내요.
-            if (!review.start()) return;
-            setInfoTab("review");
-            setInfoOpen(true);
-          },
+          // 본문 안 수정 제안(05 §3.6): 보낼 범위와 지시·근거를 확인하는 창을 엽니다.
+          onStart: () => setSuggestOpen(true),
         }}
         onEditInfo={() => setInfoEdit(true)}
         onShowInfo={() => setSideInfo(true)}
@@ -829,10 +904,24 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       {!compareVersion && (
         <>
           <EditorToolbar editor={editor} />
-          <FeedbackHandled
-            items={marginFeedback}
-            onOpen={(id) => openDetail({ kind: "feedback", id })}
-          />
+          {(marginFeedback.length > 0 || suggestions.count > 0) && (
+            <div className="editor-toolbar-2">
+              <FeedbackHandled
+                items={marginFeedback}
+                onOpen={(id) => openDetail({ kind: "feedback", id })}
+              />
+              <SuggestionBar
+                count={suggestions.count}
+                index={suggestions.live.findIndex(
+                  (p) => p.id === suggestions.active?.id,
+                )}
+                onPrev={suggestions.prev}
+                onNext={suggestions.next}
+                onApplyAll={suggestions.applyAll}
+                onDismissAll={suggestions.dismissAll}
+              />
+            </div>
+          )}
         </>
       )}
       <div className="editor-body">
@@ -854,6 +943,13 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         {/* 비교하는 동안에도 본문 편집기는 그대로 두어 쓰던 내용·되돌리기 기록이 남습니다. */}
         <div className="editor-sheet" hidden={!!compareVersion}>
           <div className="writing-paper" ref={paper}>
+            <SuggestionCard
+              editor={editor}
+              paper={paper}
+              target={suggestions.active}
+              onApply={() => suggestions.apply()}
+              onDismiss={() => suggestions.dismiss()}
+            />
             {review.selectionBar}
             <SectionBoundary>
               <EditorContent editor={editor} />
@@ -917,6 +1013,14 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         <span aria-hidden="true">·</span>
         {t("마지막 저장 {time}", { time: savedTime(base.updatedAt) })}
       </p>
+      <SuggestRequestDialog
+        open={suggestOpen}
+        onOpenChange={setSuggestOpen}
+        hasSelection={editor?.state.selection.empty === false}
+        feedback={marginFeedback}
+        busy={suggesting}
+        onSubmit={(request) => void requestSuggestions(request)}
+      />
       <DocInfoDialog
         open={infoEdit}
         onOpenChange={setInfoEdit}
@@ -932,7 +1036,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         }}
       />
       <MarginPanel
-        label={t("버전·문장 점검")}
+        label={t("문서 버전")}
         open={infoOpen}
         onOpen={() => setInfoOpen(true)}
         onClose={() => setInfoOpen(false)}
@@ -944,11 +1048,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           onTab={setInfoTab}
           tabs={[
             { value: "versions", label: t("버전"), count: versionList.length },
-            { value: "review", label: t("AI 문장 점검") },
           ]}
         >
-          {/* 다른 탭을 봐도 실행 중인 점검과 제안이 사라지지 않게 숨기기만 해요. */}
-          <div hidden={infoTab !== "review"}>{review.panel}</div>
           {infoTab === "versions" && (
             <div className="panel-frame-body">
               {[...versionList].reverse().map((v) => (

@@ -61,6 +61,7 @@ export const workMessages: Record<AIInput["mode"], string> = {
   continue_writing: t("선택한 문맥을 바탕으로 다음 문장을 준비하고 있어요."),
   inline_edit: t("선택한 문장을 요청에 맞게 다듬고 있어요."),
   review_writing: t("선택한 문단의 근거와 표현을 살펴보고 있어요."),
+  suggest_edits: t("글에서 고칠 곳을 찾아 수정 제안을 준비하고 있어요."),
   plan_research: t("남은 할 일과 다음 미팅 준비를 살펴보고 있어요."),
   read_material: t("선택한 자료 구간을 읽고 있어요."),
   ask_research: t("선택한 기록을 바탕으로 답변을 준비하고 있어요."),

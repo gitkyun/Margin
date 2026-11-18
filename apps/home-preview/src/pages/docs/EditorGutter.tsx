@@ -142,53 +142,51 @@ export function FeedbackHandled({
     isHandled(item.feedback.status),
   ).length;
   return (
-    <div className="editor-toolbar-2">
-      <Popover.Root>
-        <Popover.Trigger asChild>
-          <Button variant="ghost" size="sm">
-            {t("피드백 {handled}/{total} 다룸", {
-              handled,
-              total: items.length,
-            })}
-            <Icon name="chevron-down" size={14} />
-          </Button>
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            className="editor-feedback-popover"
-            align="start"
-            sideOffset={6}
-            collisionPadding={16}
-          >
-            <p className="editor-feedback-note">
-              {t(
-                "학생이 표시한 처리 상태를 센 수예요. 교수 응답은 피드백 상세에서 따로 보여요.",
-              )}
-            </p>
-            <ul>
-              {items.map(({ feedback, number }) => (
-                <li key={feedback.id}>
-                  <Popover.Close asChild>
-                    <button type="button" onClick={() => onOpen(feedback.id)}>
-                      <span className="editor-gutter-num" aria-hidden>
-                        {number}
-                      </span>
-                      <span className="editor-feedback-title">
-                        {feedback.title}
-                      </span>
-                      <small
-                        data-handled={isHandled(feedback.status) || undefined}
-                      >
-                        {feedbackLabels[feedback.status]}
-                      </small>
-                    </button>
-                  </Popover.Close>
-                </li>
-              ))}
-            </ul>
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
-    </div>
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <Button variant="ghost" size="sm">
+          {t("피드백 {handled}/{total} 다룸", {
+            handled,
+            total: items.length,
+          })}
+          <Icon name="chevron-down" size={14} />
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          className="editor-feedback-popover"
+          align="start"
+          sideOffset={6}
+          collisionPadding={16}
+        >
+          <p className="editor-feedback-note">
+            {t(
+              "학생이 표시한 처리 상태를 센 수예요. 교수 응답은 피드백 상세에서 따로 보여요.",
+            )}
+          </p>
+          <ul>
+            {items.map(({ feedback, number }) => (
+              <li key={feedback.id}>
+                <Popover.Close asChild>
+                  <button type="button" onClick={() => onOpen(feedback.id)}>
+                    <span className="editor-gutter-num" aria-hidden>
+                      {number}
+                    </span>
+                    <span className="editor-feedback-title">
+                      {feedback.title}
+                    </span>
+                    <small
+                      data-handled={isHandled(feedback.status) || undefined}
+                    >
+                      {feedbackLabels[feedback.status]}
+                    </small>
+                  </button>
+                </Popover.Close>
+              </li>
+            ))}
+          </ul>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

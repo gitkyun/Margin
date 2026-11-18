@@ -526,7 +526,8 @@ export interface AIInput {
     | "plan_research"
     | "read_material"
     | "continue_writing"
-    | "inline_edit";
+    | "inline_edit"
+    | "suggest_edits";
   model?: string;
   thinking?: "minimal" | "low" | "medium" | "high";
   /** 화면 언어. 요청을 보낼 때 채워지고, 서버가 이 언어로 답하게 합니다. */
@@ -541,6 +542,9 @@ export interface AIInput {
   feedbackId?: ID;
   sourceText: string;
   sourceRevision?: number;
+  /** suggest_edits: 고칠 글과 (선택) 그 글 평문의 범위(IA v2 08 §5.3) */
+  documentId?: ID;
+  range?: { start: number; end: number };
 }
 export const emptyWorkspace = (): WorkspaceData => ({
   documents: [],
