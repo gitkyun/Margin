@@ -48,7 +48,7 @@ const cases: {
   {
     name: "자료 등록",
     async open(page) {
-      // IA v2 3a: 글·자료 목록의 [올리기]가 예전 자료 화면의 등록 창을 엽니다.
+      // IA v2 3a: 글·자료 목록의 [올리기]가 목록 위에 올리기 창을 엽니다(05 §2.5).
       await page.goto(`${await openResearch(page)}/docs`);
       await page
         .getByRole("button", { name: "올리기", exact: true })

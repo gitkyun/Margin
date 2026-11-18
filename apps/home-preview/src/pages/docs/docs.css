@@ -1,4 +1,28 @@
 @layer margin {
+  /* 판에 PDF를 끌어 오는 동안(05 §2.5) */
+  .docs-frame {
+    position: relative;
+  }
+  .docs-drop-hint {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-sticky);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-8);
+    border: 2px dashed var(--brand);
+    border-radius: var(--radius-12);
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    color: var(--brand);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    pointer-events: none;
+  }
+  .docs-main .pending-upload-note {
+    margin-top: 0;
+    margin-bottom: var(--spacing-12);
+  }
   /* 새 글 창 폭 480(05 §2.4) */
   [data-slot="dialog-content"].new-doc-dialog {
     --margin-dialog-max-width: 480px;

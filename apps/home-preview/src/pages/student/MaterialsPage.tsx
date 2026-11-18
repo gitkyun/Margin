@@ -1,11 +1,7 @@
-import { DialogBody, DialogFooter } from "@/components/ui/dialog";
+import { DialogBody } from "@/components/ui/dialog";
 import { dateLocale, t } from "@/lib/i18n";
 import { AnimatedList } from "@/components/AnimatedList";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
-import {
-  MaterialUploadField,
-  MaterialSubmitLabel,
-} from "./MaterialUploadField";
 import { MaterialFolders, useMoveMaterial } from "@/components/MaterialFolders";
 import {
   DropdownMenu,
@@ -15,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MATERIAL_DRAG_TYPE } from "@/lib/material-folders";
-import { Segments, SelectField } from "@/components/experience";
+import { SelectField } from "@/components/experience";
 import { useEffect, useRef, useState } from "react";
 import {
   Link,
@@ -34,17 +30,15 @@ import {
   MaterialInfo,
   MoveFolderDialog,
 } from "@/pages/docs/MaterialView";
+import {
+  MATERIAL_TYPE_LABELS,
+  useMaterialUpload,
+} from "@/pages/docs/MaterialUpload";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { queryUp } from "@/design/responsive";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
-import { UploadConnectionError } from "@/lib/repository";
-import {
-  recordBase,
-  safeUrl,
-  type Material,
-  type MaterialVersion,
-} from "@/lib/domain";
+import { safeUrl, type Material } from "@/lib/domain";
 import {
   BackLink,
   DocumentTabs,
@@ -65,17 +59,7 @@ const materialFilters = [
   ["analysis", t("분석 자료")],
   ["links", t("링크")],
 ] as const;
-import {
-  OrphanMaterialError,
-  pendingUploadKey,
-  registerPdf,
-} from "./material-upload";
-const materialTypes = {
-  draft: t("논문·초안"),
-  reference: t("참고문헌"),
-  analysis: t("분석 자료"),
-  other: t("기타"),
-};
+const materialTypes = MATERIAL_TYPE_LABELS;
 function byteSize(bytes: number) {
   return bytes >= 1048576
     ? `${(bytes / 1048576).toFixed(1)}MB`
@@ -85,7 +69,7 @@ export function MaterialsPage() {
   const { researchId = "", materialId } = useParams();
   // 넓은 화면(1200px 이상)에서는 행을 누르면 여백 패널에 미리보기를 엽니다.
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const { data, save, upload, remove } = useWorkspace();
+  const { data, save, remove } = useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState("");
@@ -96,30 +80,13 @@ export function MaterialsPage() {
       setParams(n);
     };
   const folder = params.get("folder") ?? "";
-  const [registering, setRegistering] = useState(false);
-  const [target, setTarget] = useState<Material | null>(null);
-  const [registerMode, setRegisterMode] = useState<"file" | "link">("file");
-  const [draft, setDraft] = useState<Material | null>(null);
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState<number | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const abort = useRef<AbortController | null>(null);
+  const uploader = useMaterialUpload(researchId);
   const [editing, setEditing] = useState<Material | null>(null);
   const editForm = useSaving();
   const moveMaterial = useMoveMaterial();
   const activeFolders = data.folders.filter(
     (f) => f.researchId === researchId && !f.archivedAt,
   );
-  const pendingKey = pendingUploadKey(researchId);
-  const [pending, setPending] = useState<MaterialVersion | null>(() => {
-    try {
-      const raw = sessionStorage.getItem(pendingKey);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  });
   const current = data.materials.find(
     (item) => item.id === materialId && item.researchId === researchId,
   );
@@ -130,182 +97,16 @@ export function MaterialsPage() {
     versions.find(
       (item) => item.id === (params.get("ver") ?? params.get("version")),
     ) ?? versions[0];
-  useEffect(
-    () => () => {
-      abort.current?.abort();
-    },
-    [],
-  );
   // 글·자료 목록의 [올리기](IA v2 05 §2.5)는 ?register=1로 와서 올리기 창을 엽니다.
   useEffect(() => {
     if (materialId || params.get("register") !== "1") return;
-    startRegistration();
+    uploader.start({
+      folderId: folder && folder !== "archived" ? folder : undefined,
+    });
     const rest = new URLSearchParams(params);
     rest.delete("register");
     setParams(rest, { replace: true });
   }, []);
-  function startRegistration(material?: Material) {
-    if (pending) {
-      setError(
-        t(
-          "먼저 올려 둔 파일의 등록을 마쳐 주세요. ‘등록 다시 시도’를 누르면 파일을 다시 올리지 않고 등록할 수 있어요.",
-        ),
-      );
-      return;
-    }
-    setTarget(material ?? null);
-    setDraft(
-      material
-        ? { ...material }
-        : {
-            ...recordBase(researchId),
-            title: "",
-            type: "other",
-            folderId: folder && folder !== "archived" ? folder : undefined,
-          },
-    );
-    setFile(null);
-    setProgress(null);
-    setError(null);
-    setRegisterMode("file");
-    setRegistering(true);
-  }
-  function selectFile(chosen: File | undefined) {
-    if (!chosen) return;
-    if (!chosen.name.toLowerCase().endsWith(".pdf")) {
-      setError(t("PDF 파일만 올릴 수 있어요."));
-      return;
-    }
-    if (chosen.size > 500 * 1024 * 1024) {
-      setError(t("500MB 이하의 PDF만 올릴 수 있어요."));
-      return;
-    }
-    setError(null);
-    setFile(chosen);
-    if (!target)
-      setDraft((value) =>
-        value
-          ? {
-              ...value,
-              title: value.title || chosen.name.replace(/\.pdf$/i, ""),
-            }
-          : value,
-      );
-  }
-  function rememberPending(version: MaterialVersion | null) {
-    setPending(version);
-    try {
-      if (version) sessionStorage.setItem(pendingKey, JSON.stringify(version));
-      else sessionStorage.removeItem(pendingKey);
-    } catch {}
-  }
-  async function reconnect() {
-    if (!pending || saving) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const version = await save("versions", pending);
-      rememberPending(null);
-      setRegistering(false);
-      navigate(
-        `/r/${researchId}/docs/m/${version.materialId}?ver=${version.id}`,
-      );
-      toast.success(t("올려 둔 파일을 자료에 등록했어요"));
-    } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : t(
-              "파일 등록을 마치지 못했어요. 파일을 다시 올릴 필요 없이 등록만 다시 시도해 주세요.",
-            ),
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
-  async function register(event: React.FormEvent) {
-    event.preventDefault();
-    if (saving || !draft) return;
-    if (pending) {
-      await reconnect();
-      return;
-    }
-    if (!draft.title.trim()) {
-      setError(t("자료 이름을 적어 주세요."));
-      return;
-    }
-    if (registerMode === "link" && !safeUrl(draft.externalUrl ?? "")) {
-      setError(t("http 또는 https로 시작하는 링크를 적어 주세요."));
-      return;
-    }
-    if (registerMode === "file" && !file) {
-      setError(t("등록할 PDF를 선택해 주세요."));
-      return;
-    }
-    setSaving(true);
-    setError(null);
-    const controller = new AbortController();
-    abort.current = controller;
-    try {
-      if (registerMode === "link") {
-        const material = await save("materials", {
-          ...draft,
-          title: draft.title.trim(),
-          externalUrl: safeUrl(draft.externalUrl ?? "") ?? undefined,
-        });
-        setDraft(material);
-        setRegistering(false);
-        navigate(`/r/${researchId}/docs/m/${material.id}`);
-        toast.success(t("링크를 등록했어요"));
-      } else {
-        setProgress(0);
-        const { material, version } = await registerPdf(
-          { save, upload, remove },
-          {
-            draft: { ...draft, title: draft.title.trim() },
-            isNew: !target,
-            file: file!,
-            onProgress: (value) => setProgress(value),
-            signal: controller.signal,
-            // A retry on an existing material needs its new updatedAt.
-            onMaterialSaved: (saved) => {
-              if (target) setDraft(saved);
-            },
-          },
-        );
-        setDraft(material);
-        setRegistering(false);
-        navigate(`/r/${researchId}/docs/m/${material.id}?ver=${version.id}`);
-        toast.success(
-          target ? t("새 버전을 추가했어요") : t("PDF를 등록했어요"),
-        );
-      }
-    } catch (e) {
-      if (e instanceof UploadConnectionError) {
-        rememberPending(e.uploadedVersion);
-        setError(e.message);
-      } else if (e instanceof OrphanMaterialError) {
-        setError(e.message);
-        setProgress(null);
-      } else if (controller.signal.aborted) {
-        setError(
-          t(
-            "업로드를 중단했어요. 창을 닫았다가 ‘자료 등록’을 다시 눌러 등록해 주세요.",
-          ),
-        );
-        setProgress(null);
-      } else
-        setError(
-          e instanceof Error
-            ? e.message
-            : t(
-                "등록하지 못했어요. 선택한 파일과 입력한 내용은 그대로 있어요.",
-              ),
-        );
-    } finally {
-      setSaving(false);
-    }
-  }
   const hasMaterials = data.materials.some(
     (item) => item.researchId === researchId && !item.archivedAt,
   );
@@ -412,7 +213,7 @@ export function MaterialsPage() {
             versions={versions}
             selected={selected}
             onVersion={pickVersion}
-            onUpload={() => startRegistration(current)}
+            onUpload={() => uploader.start({ material: current })}
             onDownload={() => viewer.current?.download()}
             onEdit={() => {
               setEditing({ ...current });
@@ -465,7 +266,7 @@ export function MaterialsPage() {
                     action={
                       <Button
                         variant="outline"
-                        onClick={() => startRegistration(current)}
+                        onClick={() => uploader.start({ material: current })}
                       >
                         {t("PDF 추가")}
                       </Button>
@@ -498,7 +299,12 @@ export function MaterialsPage() {
               // 자료가 없을 때는 빈 상태의 '자료 등록'이 주 행동이라 여기는 보조로 낮춥니다.
               <Button
                 variant={hasMaterials ? undefined : "outline"}
-                onClick={() => startRegistration()}
+                onClick={() =>
+                  uploader.start({
+                    folderId:
+                      folder && folder !== "archived" ? folder : undefined,
+                  })
+                }
               >
                 <Icon name="plus" size={17} />
                 {t("자료 등록")}
@@ -681,7 +487,14 @@ export function MaterialsPage() {
                   folder === "archived" ? undefined : (
                     <Button
                       variant="outline"
-                      onClick={() => startRegistration()}
+                      onClick={() =>
+                        uploader.start({
+                          folderId:
+                            folder && folder !== "archived"
+                              ? folder
+                              : undefined,
+                        })
+                      }
                     >
                       {t("자료 등록")}
                     </Button>
@@ -697,153 +510,7 @@ export function MaterialsPage() {
           />
         </>
       )}
-      {pending && (
-        <div className="pending-upload-note" role="status">
-          <Icon name="warning" size={19} />
-          <span>
-            <strong>{t("파일은 올렸지만 자료에 등록하지 못했어요.")}</strong>
-            <small>
-              {t("{fileName} · 파일은 다시 올리지 않아도 돼요.", {
-                fileName: pending.fileName,
-              })}
-            </small>
-          </span>
-          <Button
-            variant="outline"
-            disabled={saving}
-            onClick={() => void reconnect()}
-          >
-            {t("등록 다시 시도")}
-          </Button>
-        </div>
-      )}
-      {!registering && error && <ErrorNotice error={error} />}
-      <FormDialog
-        busy={saving}
-        open={registering}
-        onOpenChange={(open) => {
-          if (!saving) setRegistering(open);
-        }}
-        title={target ? t("새 버전 추가") : t("자료 등록")}
-        description={
-          target
-            ? t("새 버전을 올려도 이전 파일과 교수 응답은 그대로 남아요.")
-            : t(
-                "PDF는 올린 내용이 그대로 남고, 링크한 문서는 내용이 바뀔 수 있어요.",
-              )
-        }
-      >
-        <form className="material-registration-form" onSubmit={register}>
-          <DialogBody>
-            {!target && (
-              <Segments
-                fill
-                label={t("자료 종류")}
-                value={registerMode}
-                onChange={(value) =>
-                  setRegisterMode(value as typeof registerMode)
-                }
-                options={[
-                  { value: "file", label: t("PDF 파일") },
-                  { value: "link", label: t("링크") },
-                ]}
-              />
-            )}
-            {draft && (
-              <>
-                <LabeledInput
-                  label={t("자료 이름")}
-                  required
-                  value={draft.title}
-                  onChange={(title) =>
-                    setDraft((v) => (v ? { ...v, title } : v))
-                  }
-                  disabled={saving}
-                />
-                <label className="field">
-                  <span className="field-name">{t("자료 유형")}</span>
-                  <SelectField
-                    className="native-select"
-                    value={draft.type}
-                    onChange={(event) =>
-                      setDraft((v) =>
-                        v
-                          ? {
-                              ...v,
-                              type: event.target.value as Material["type"],
-                            }
-                          : v,
-                      )
-                    }
-                    disabled={saving}
-                  >
-                    {Object.entries(materialTypes).map(([value, label]) => (
-                      <option value={value} key={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </SelectField>
-                </label>
-                {registerMode === "link" ? (
-                  <LabeledInput
-                    label={t("링크")}
-                    required
-                    type="url"
-                    value={draft.externalUrl ?? ""}
-                    onChange={(externalUrl) =>
-                      setDraft((v) => (v ? { ...v, externalUrl } : v))
-                    }
-                    placeholder="https://"
-                    hint={t(
-                      "링크한 문서를 누가 볼 수 있는지는 원래 서비스의 공유 설정을 따라요.",
-                    )}
-                    disabled={saving}
-                  />
-                ) : (
-                  <MaterialUploadField
-                    file={file}
-                    busy={saving}
-                    progress={progress}
-                    pending={!!pending}
-                    onSelect={selectFile}
-                    onClear={() => {
-                      setFile(null);
-                      setProgress(null);
-                      setError(null);
-                    }}
-                    onAbort={() => abort.current?.abort()}
-                  />
-                )}
-              </>
-            )}
-            <ErrorNotice error={error} />
-          </DialogBody>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={saving}
-              onClick={() => setRegistering(false)}
-            >
-              {t("취소")}
-            </Button>
-            <Button type="submit" disabled={saving} aria-busy={saving}>
-              <MaterialSubmitLabel
-                busy={saving}
-                label={
-                  pending
-                    ? t("등록 다시 시도")
-                    : registerMode === "link"
-                      ? t("링크 등록")
-                      : target
-                        ? t("새 버전 추가")
-                        : t("자료 등록")
-                }
-              />
-            </Button>
-          </DialogFooter>
-        </form>
-      </FormDialog>
+      {uploader.node}
       <FormDialog
         busy={editForm.saving}
         open={editing !== null}
