@@ -494,6 +494,10 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       visibility,
       content: editor.getJSON(),
       text: editor.getText(),
+      // 연구 도우미 초안을 사람이 처음 고쳐 저장하면 그때를 남겨 '초안' 띠를 거둡니다(05 §3.9).
+      ...(base.origin === "ai" && !base.humanEditedAt
+        ? { humanEditedAt: new Date().toISOString() }
+        : {}),
     };
     let value: DocumentRecord;
     try {
@@ -911,6 +915,27 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       {/* 비교 보기 중에는 서식 도구가 숨은 본문을 고치지 않게 감춥니다. */}
       {!compareVersion && (
         <>
+          {base.origin === "ai" && !base.humanEditedAt && (
+            <div className="editor-draft-banner" role="note">
+              <Icon name="sparkles" size={16} />
+              <span>
+                {base.draftedFrom?.length
+                  ? t("연구 도우미가 쓴 초안이에요. 근거로 쓴 기록 {count}개", {
+                      count: base.draftedFrom.length,
+                    })
+                  : t("연구 도우미가 쓴 초안이에요.")}
+              </span>
+              {!!base.draftedFrom?.length && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSideInfo(true)}
+                >
+                  {t("보기")}
+                </Button>
+              )}
+            </div>
+          )}
           <EditorToolbar editor={editor} />
           {(marginFeedback.length > 0 || suggestions.count > 0) && (
             <div className="editor-toolbar-2">
@@ -992,6 +1017,14 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             <EditorInfo
               researchId={initial.researchId}
               documentId={initial.id}
+              draft={
+                base.origin === "ai"
+                  ? {
+                      from: base.draftedFrom ?? [],
+                      edited: !!base.humanEditedAt,
+                    }
+                  : undefined
+              }
               tasks={marginTasks}
               feedback={marginFeedback}
               onToggle={toggleTask}

@@ -545,6 +545,28 @@
     height: 18px;
     accent-color: var(--brand);
   }
+  /* 연구 도우미 초안 띠(05 §3.9): 사람이 고치면 사라집니다. */
+  .editor-draft-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-12);
+    padding: var(--spacing-8) var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--brand-soft);
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    word-break: keep-all;
+  }
+  .editor-draft-banner > svg {
+    flex: none;
+    color: var(--brand);
+  }
+  .editor-draft-banner > span {
+    flex: 1;
+    min-width: 0;
+  }
   .editor-status {
     display: flex;
     flex-wrap: wrap;
