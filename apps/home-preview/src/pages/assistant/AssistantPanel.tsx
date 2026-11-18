@@ -37,6 +37,8 @@ export interface AssistantPanelProps {
   onDismiss(candidate: SavedAICandidate): void;
   runs: RunRecord[];
   onCancelRun(runId: string): void;
+  /** 실행 내역 줄을 누르면 갈 곳(06 §2.8). 갈 곳이 없으면 undefined이고 줄을 누를 수 없습니다. */
+  runLink?(runId: string): (() => void) | undefined;
 }
 
 /**
@@ -57,15 +59,24 @@ export function AssistantPanel(props: AssistantPanelProps) {
         { value: "runs", label: t("실행 내역") },
       ]}
     >
-      {tab === "suggestions" && <SuggestionsTab {...props} />}
+      {tab === "suggestions" && <AssistantSuggestions {...props} />}
       {tab === "runs" && (
-        <RunsTab runs={runs} onCancelRun={props.onCancelRun} />
+        <AssistantRuns
+          runs={runs}
+          onCancelRun={props.onCancelRun}
+          runLink={props.runLink}
+        />
       )}
     </PanelFrame>
   );
 }
 
-function SuggestionsTab({ pending, onAdopt, onDismiss }: AssistantPanelProps) {
+/** 제안 보기(06 §2.7): 연구 도우미 화면의 패널과 사이드 창의 '제안' 보기가 함께 씁니다. */
+export function AssistantSuggestions({
+  pending,
+  onAdopt,
+  onDismiss,
+}: Pick<AssistantPanelProps, "pending" | "onAdopt" | "onDismiss">) {
   return (
     <div className="panel-frame-body">
       <h3>
@@ -118,55 +129,72 @@ function SuggestionsTab({ pending, onAdopt, onDismiss }: AssistantPanelProps) {
   );
 }
 
-function RunsTab({
+/** 실행 내역(06 §2.8): 연구 도우미 화면의 패널과 사이드 창의 '실행 내역' 보기가 함께 씁니다. */
+export function AssistantRuns({
   runs,
   onCancelRun,
-}: Pick<AssistantPanelProps, "runs" | "onCancelRun">) {
+  runLink,
+}: Pick<AssistantPanelProps, "runs" | "onCancelRun" | "runLink">) {
   return (
     <div className="panel-frame-body">
       <h3>{t("실행 내역")}</h3>
-      {runs.map((run) => (
-        <div className="run-row" key={run.id}>
-          <Icon
-            name={
-              run.status === "complete"
-                ? "check"
-                : run.status === "failed"
-                  ? "warning"
-                  : "sparkles"
-            }
-            size={18}
-          />
-          <div>
-            <strong>{modeLabels[run.mode] ?? t("연구 대화")}</strong>
-            <small>
-              {formatDateTime(run.createdAt)}
-              {run.model && ` · ${run.model}`}
-            </small>
-            {run.error && <p>{run.error}</p>}
-          </div>
-          <StatusBadge
-            tone={
-              run.status === "complete"
-                ? "green"
-                : run.status === "failed"
-                  ? "red"
-                  : "neutral"
-            }
-          >
-            {RUN_STATE_LABELS[run.status]}
-          </StatusBadge>
-          {run.status === "running" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onCancelRun(run.id)}
+      {runs.map((run) => {
+        const open = runLink?.(run.id);
+        const content = (
+          <>
+            <Icon
+              name={
+                run.status === "complete"
+                  ? "check"
+                  : run.status === "failed"
+                    ? "warning"
+                    : "sparkles"
+              }
+              size={18}
+            />
+            <div>
+              <strong>{modeLabels[run.mode] ?? t("연구 대화")}</strong>
+              <small>
+                {formatDateTime(run.createdAt)}
+                {run.model && ` · ${run.model}`}
+              </small>
+              {run.error && <p>{run.error}</p>}
+            </div>
+            <StatusBadge
+              tone={
+                run.status === "complete"
+                  ? "green"
+                  : run.status === "failed"
+                    ? "red"
+                    : "neutral"
+              }
             >
-              {t("중단")}
-            </Button>
-          )}
-        </div>
-      ))}
+              {RUN_STATE_LABELS[run.status]}
+            </StatusBadge>
+          </>
+        );
+        return (
+          <div className="run-row" key={run.id}>
+            {open ? (
+              <button type="button" className="run-row-link" onClick={open}>
+                {content}
+                <Icon name="chevron-right" size={16} />
+              </button>
+            ) : (
+              content
+            )}
+            {run.status === "running" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onCancelRun(run.id)}
+              >
+                {t("중단")}
+              </Button>
+            )}
+          </div>
+        );
+      })}
       {!runs.length && (
         <InlineEmpty variant="panel">
           {t("아직 실행 내역이 없어요.")}
