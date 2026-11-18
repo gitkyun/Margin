@@ -48,7 +48,6 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Choice, Segments } from "@/components/experience";
 import { EditorToolbar } from "./writing/EditorToolbar";
 import { WordDiff } from "./writing/WordDiff";
 import { AIReviewHighlight } from "./writing/ai-review";
@@ -66,10 +65,7 @@ import { documentFeedback, documentTasks } from "@/lib/doc-margin";
 import { useOpenDetail } from "@/lib/item-detail";
 import { EditorGutter, FeedbackHandled } from "./docs/EditorGutter";
 import type { Task } from "@/lib/domain";
-import {
-  VersionCompareSlider,
-  VersionSheet,
-} from "@/components/VersionCompareSlider";
+import { CompareView, type CompareMode } from "./docs/CompareView";
 /** 예전 이름. 낱말 비교는 writing/WordDiff에 있어요. */
 export const TextComparison = WordDiff;
 export function WritingPage() {
@@ -294,13 +290,10 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     [editTick, setEditTick] = useState(0),
     [busy, setBusy] = useState(""),
     [conflict, setConflict] = useState<DocumentRecord | null>(null),
-    [versionsOpen, setVersionsOpen] = useState(false),
     // 여백 패널: 버전 목록과 이 문서를 넣은 목표
     [infoOpen, setInfoOpen] = useState(false),
     [infoTab, setInfoTab] = useState("versions"),
-    [from, setFrom] = useState(""),
-    [to, setTo] = useState("draft"),
-    [compareView, setCompareView] = useState<"changes" | "slide">("changes"),
+    [compareMode, setCompareMode] = useState<CompareMode>("words"),
     [error, setError] = useState(""),
     [preview, setPreview] = useState<{
       blob: Blob;
@@ -331,12 +324,6 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     versionList = data.documentVersions
       .filter((v) => v.documentId === initial.id)
       .sort((a, b) => a.number - b.number);
-  // 버전이 하나도 없으면 아래 안내 문장이 이유를 알려 줍니다.
-  const restoreReason = useDisabledReason(
-    !from &&
-      versionList.length > 0 &&
-      t("이전 버전을 고르면 되돌릴 수 있어요."),
-  );
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -598,7 +585,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     }).catch((e: Error) => toast.error(e.message));
   }
   // 할 일 상세의 [글 열기]는 `?at=제목`으로 그 제목 위치를 엽니다(06 항목 상세 '고칠 글').
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const at = searchParams.get("at");
   // 새 글 창에서 만들고 오면 본문 첫 줄에 커서를 둡니다(05 §2.4).
   const location = useLocation();
@@ -679,20 +666,64 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       !milestone.archivedAt &&
       milestone.documentIds.includes(initial.id),
   );
-  const fromVersion = versionList.find((v) => v.id === from),
-    toVersion = versionList.find((v) => v.id === to),
-    beforeLabel = fromVersion ? `v${fromVersion.number}` : t("이전 버전"),
-    afterLabel =
-      to === "draft"
-        ? t("지금 쓰는 내용")
-        : toVersion
-          ? `v${toVersion.number}`
-          : t("이후 버전");
-  const before = versionList.find((v) => v.id === from)?.text ?? "",
-    after =
-      to === "draft"
-        ? (editor?.getText() ?? "")
-        : (versionList.find((v) => v.id === to)?.text ?? "");
+  // 비교 보기(05 §3.7): 버전을 고르면 본문 자리가 비교 보기로 바뀝니다(`?compare=`).
+  const compareVersion = versionList.find(
+    (v) => v.id === searchParams.get("compare"),
+  );
+  function openCompare(id: string) {
+    const next = new URLSearchParams(searchParams);
+    next.set("compare", id);
+    setSearchParams(next);
+  }
+  function closeCompare() {
+    const next = new URLSearchParams(searchParams);
+    next.delete("compare");
+    setSearchParams(next);
+  }
+  /** 고른 버전 내용으로 되살리고 그 내용을 새 버전으로 남깁니다. 지금 내용은 지우지 않습니다. */
+  function restoreVersion(v: DocumentVersion) {
+    void action("restore", async () => {
+      // 지금 내용이 어느 버전에도 없으면 먼저 버전으로 남겨 사라지지 않게 합니다.
+      let current = base;
+      const latest = versionList.at(-1);
+      if (dirty || !latest || latest.text !== (editor?.getText() ?? "")) {
+        current = await persist();
+        await save("documentVersions", {
+          ...recordBase(current.researchId),
+          documentId: current.id,
+          title: current.title,
+          number: 0,
+          content: current.content,
+          text: current.text,
+        });
+      }
+      const saved = await save("documents", {
+        ...current,
+        title: v.title,
+        content: v.content,
+        text: v.text,
+      });
+      await save("documentVersions", {
+        ...recordBase(saved.researchId),
+        documentId: saved.id,
+        title: saved.title,
+        number: 0,
+        content: saved.content,
+        text: saved.text,
+      });
+      setBase(saved);
+      setTitle(saved.title);
+      editor?.commands.setContent(saved.content);
+      setDirty(false);
+      localStorage.removeItem(key);
+      closeCompare();
+      toast.success(
+        t("v{number} 내용으로 되돌리고 새 버전으로 남겼어요.", {
+          number: v.number,
+        }),
+      );
+    });
+  }
   return (
     <div className="writing-page editor-page">
       {/* 휴대폰 폭에서는 열어 둔 탭 줄이 없어 뒤로 가기로 목록에 갑니다(05 §3.1). */}
@@ -742,11 +773,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
             toast.success(t("지금 내용을 저장하고 새 버전으로 남겼어요."));
           })
         }
-        onOpenVersion={(id) => {
-          setFrom(id);
-          setTo("draft");
-          setVersionsOpen(true);
-        }}
+        onOpenVersion={openCompare}
         review={{
           disabled: dirty || !!busy || !editor?.getText().trim(),
           hint: dirty
@@ -776,17 +803,34 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           {error}
         </div>
       )}
-      <EditorToolbar editor={editor} />
-      <FeedbackHandled
-        items={marginFeedback}
-        onOpen={(id) => openDetail({ kind: "feedback", id })}
-      />
+      {/* 비교 보기 중에는 서식 도구가 숨은 본문을 고치지 않게 감춥니다. */}
+      {!compareVersion && (
+        <>
+          <EditorToolbar editor={editor} />
+          <FeedbackHandled
+            items={marginFeedback}
+            onOpen={(id) => openDetail({ kind: "feedback", id })}
+          />
+        </>
+      )}
       <div className="editor-body">
         <nav className="editor-outline" aria-label={t("목차")}>
           <h2>{t("목차")}</h2>
           <Outline entries={outline} onPick={scrollToHeading} />
         </nav>
-        <div className="editor-sheet">
+        {compareVersion && (
+          <CompareView
+            version={compareVersion}
+            current={editor?.getText() ?? ""}
+            mode={compareMode}
+            onMode={setCompareMode}
+            busy={!!busy}
+            onRestore={() => restoreVersion(compareVersion)}
+            onClose={closeCompare}
+          />
+        )}
+        {/* 비교하는 동안에도 본문 편집기는 그대로 두어 쓰던 내용·되돌리기 기록이 남습니다. */}
+        <div className="editor-sheet" hidden={!!compareVersion}>
           <div className="writing-paper" ref={paper}>
             {review.selectionBar}
             <SectionBoundary>
@@ -879,11 +923,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
                   className="student-simple-row writing-version-row"
                   key={v.id}
                   disabled={!!busy}
-                  onClick={() => {
-                    setFrom(v.id);
-                    setTo("draft");
-                    setVersionsOpen(true);
-                  }}
+                  onClick={() => openCompare(v.id)}
                 >
                   <span className="grow">
                     <strong>v{v.number}</strong>
@@ -992,170 +1032,6 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
               }}
             >
               {t("내가 쓴 내용 유지")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={versionsOpen} onOpenChange={setVersionsOpen}>
-        <DialogContent className="rms-dialog wide-dialog">
-          <DialogHeader>
-            <DialogTitle>{t("문서 버전")}</DialogTitle>
-            <DialogDescription>
-              {t(
-                "되돌리면 문서가 선택한 버전 내용으로 바뀌고, 이 내용이 새 버전으로 남아요. 기존 버전은 지워지지 않아요. 지금 내용도 남기려면 먼저 ‘지금 버전 남기기’를 눌러 주세요.",
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody>
-            <div className="comparison-selects">
-              <Choice
-                label={t("이전 버전")}
-                value={from}
-                onChange={setFrom}
-                options={[
-                  { value: "", label: t("비교할 버전 선택") },
-                  ...versionList.map((v) => ({
-                    value: v.id,
-                    label: `v${v.number} · ${formatDateTime(v.createdAt)}`,
-                  })),
-                ]}
-              />
-              <Icon name="arrow-right" size={18} />
-              <Choice
-                label={t("이후 버전")}
-                value={to}
-                onChange={setTo}
-                options={[
-                  { value: "draft", label: t("지금 쓰는 내용") },
-                  ...versionList.map((v) => ({
-                    value: v.id,
-                    label: `v${v.number}`,
-                  })),
-                ]}
-              />
-            </div>
-            {from ? (
-              <>
-                <Segments
-                  label={t("비교 방식")}
-                  size="small"
-                  value={compareView}
-                  onChange={(next) =>
-                    setCompareView(next as typeof compareView)
-                  }
-                  options={[
-                    { value: "changes", label: t("바뀐 부분") },
-                    { value: "slide", label: t("밀어서 비교") },
-                  ]}
-                />
-                {compareView === "changes" ? (
-                  <TextComparison before={before} after={after} />
-                ) : (
-                  <div>
-                    <div className="version-compare-scroll">
-                      <VersionCompareSlider
-                        label={t("{before} · {after} 비교", {
-                          before: beforeLabel,
-                          after: afterLabel,
-                        })}
-                        sideLabels={{
-                          before: t("이전 버전 · {label}", {
-                            label: beforeLabel,
-                          }),
-                          after:
-                            to === "draft"
-                              ? t("현재 버전")
-                              : t("이후 버전 · {label}", { label: afterLabel }),
-                        }}
-                        before={
-                          <VersionSheet
-                            tone="before"
-                            label={beforeLabel}
-                            text={before}
-                          />
-                        }
-                        after={
-                          <VersionSheet
-                            tone="after"
-                            label={afterLabel}
-                            text={after}
-                          />
-                        }
-                      />
-                    </div>
-                    <p className="version-compare-hint">
-                      {t(
-                        "가운데 손잡이를 끌거나, 손잡이에 포커스를 두고 좌우 방향키로 5%씩 옮겨요.",
-                      )}
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <InlineEmpty variant="panel">
-                {t(
-                  "저장만 해서는 버전이 생기지 않아요. ‘지금 버전 남기기’로 버전을 남기면 이후에 고친 내용과 비교할 수 있어요.",
-                )}
-              </InlineEmpty>
-            )}
-            {restoreReason.node}
-          </DialogBody>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              disabled={!from || !!busy}
-              aria-describedby={restoreReason.describedBy}
-              onClick={() =>
-                void action("restore", async () => {
-                  const v = versionList.find((v) => v.id === from)!;
-                  const saved = await save("documents", {
-                    ...base,
-                    title: v.title,
-                    content: v.content,
-                    text: v.text,
-                  });
-                  await save("documentVersions", {
-                    ...recordBase(saved.researchId),
-                    documentId: saved.id,
-                    title: saved.title,
-                    number: 0,
-                    content: saved.content,
-                    text: saved.text,
-                  });
-                  setBase(saved);
-                  setTitle(saved.title);
-                  editor?.commands.setContent(saved.content);
-                  setDirty(false);
-                  setVersionsOpen(false);
-                  localStorage.removeItem(key);
-                  toast.success(
-                    t("v{number} 내용으로 되돌리고 새 버전으로 남겼어요.", {
-                      number: v.number,
-                    }),
-                  );
-                })
-              }
-            >
-              {from
-                ? t("v{number} 내용으로 되돌리기", {
-                    number: versionList.find((v) => v.id === from)?.number,
-                  })
-                : t("되돌리기")}
-            </Button>
-            <Button
-              disabled={!!busy}
-              onClick={() =>
-                void action("version", async () => {
-                  const version = await keepVersion();
-                  setFrom(version.id);
-                  setTo("draft");
-                  toast.success(
-                    t("지금 내용을 저장하고 새 버전으로 남겼어요."),
-                  );
-                })
-              }
-            >
-              {t("지금 버전 남기기")}
             </Button>
           </DialogFooter>
         </DialogContent>
