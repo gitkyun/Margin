@@ -69,7 +69,7 @@
     letter-spacing: var(--typography-body2-letterSpacing);
   }
   .command-palette [cmdk-item][data-selected="true"] {
-    background: var(--selected-fill);
+    background: var(--hover-fill);
     color: var(--semantic-foreground-neutral-primary);
   }
   .command-palette [cmdk-item][data-selected="true"] > svg {

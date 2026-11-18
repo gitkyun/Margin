@@ -48,3 +48,11 @@ export function rememberPanel(width: number, tab: SidePanelTab | null): void {
   if (width < PUSH_MIN_WIDTH) return;
   write(OPEN_KEY, tab ? "1" : "0");
 }
+
+/** 접었다 다시 펼 때 열 탭: 마지막으로 연 탭, 없으면 할 일 */
+export function lastPanelTab(): SidePanelTab {
+  const tab = read(TAB_KEY);
+  return (TABS as readonly string[]).includes(tab ?? "")
+    ? (tab as SidePanelTab)
+    : "tasks";
+}

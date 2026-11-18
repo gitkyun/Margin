@@ -125,15 +125,15 @@ export function SettingsDialog({ researchId }: { researchId?: string }) {
               inResearch={!!researchId}
               onChoose={choose}
             />
+            <button
+              type="button"
+              className="settings-dialog-close"
+              aria-label={t("닫기")}
+              onClick={close}
+            >
+              <Icon name="close" size={20} />
+            </button>
             <div className="settings-dialog-content">
-              <button
-                type="button"
-                className="settings-dialog-close"
-                aria-label={t("닫기")}
-                onClick={close}
-              >
-                <Icon name="close" size={20} />
-              </button>
               <button
                 type="button"
                 className="settings-dialog-back"

@@ -154,3 +154,23 @@ for (const width of [390, 1440]) {
     });
   }
 }
+
+test("휴대폰 설정은 세부 화면과 항목 목록 모두에서 닫을 수 있다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/r?settings=profile");
+
+  const frame = page.locator(".settings-dialog-frame");
+  const close = frame.getByRole("button", { name: "닫기", exact: true });
+  await expect(close).toBeVisible();
+  await frame.getByRole("button", { name: "설정", exact: true }).click();
+  await expect(
+    frame.getByRole("navigation", { name: "설정 항목" }),
+  ).toBeVisible();
+  await expect(close).toBeVisible();
+  await close.click();
+
+  await expect(frame).toHaveCount(0);
+  await expect(page).toHaveURL(/\/r$/);
+});

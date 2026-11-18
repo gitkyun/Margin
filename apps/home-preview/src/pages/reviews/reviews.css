@@ -471,11 +471,11 @@
     background: var(--surface-muted);
   }
   .review-item-nav.selected {
-    border-color: var(--selected-line);
-    background: var(--selected-fill);
+    border-color: var(--line-strong);
+    background: var(--navigation-selected-fill);
   }
   .review-item-nav.selected .review-item-number {
-    color: var(--brand);
+    color: var(--text);
   }
   /* 긴 배지는 칸 안에서 잘리고 옆 칸으로 넘치지 않습니다(배지 부품은 그대로, 감싸는 칸에서 처리). */
   .review-badge-fit {

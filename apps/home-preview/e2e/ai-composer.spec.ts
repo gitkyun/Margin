@@ -194,7 +194,8 @@ test("아이콘 줄의 연구 도우미는 사이드 창 안에서 묻고 답한
   await panel.getByRole("button", { name: "전체 화면으로 열기" }).click();
   await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}/assistant$`));
   await expect(panel).toBeHidden();
-  await expect(page.locator("[data-kokonut-composer]")).toBeVisible();
+  // 사이드 창의 대화는 숨긴 채 보존되므로(02 §4.2) 본문의 입력창만 봅니다.
+  await expect(page.locator("main [data-kokonut-composer]")).toBeVisible();
   expect(errors).toEqual([]);
 });
 

@@ -184,3 +184,37 @@ test("연결이 끊기면 상단 띠 하나만 연결 끊김으로 바뀐다", a
     page.getByText("인터넷 연결이 끊겼어요.", { exact: false }),
   ).toHaveCount(0);
 });
+
+test("사이드 창을 전환하거나 닫아도 각 창에서 고른 보기가 남는다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const rail = page.getByRole("toolbar", { name: "옆 창 열기" });
+  const assistant = rail.getByRole("button", {
+    name: "연구 도우미",
+    exact: true,
+  });
+  const log = rail.getByRole("button", { name: "결정·질문", exact: true });
+  const panel = page.locator("#margin-panel");
+  // 미리보기에는 AI 모델이 없어 입력창이 꺼져 있으므로, 창 안에서 고른 탭으로 보존을 확인합니다.
+  await assistant.click();
+  const suggestions = panel.getByRole("tab", { name: "제안", exact: true });
+  await suggestions.click();
+  await expect(suggestions).toHaveAttribute("aria-selected", "true");
+  await log.click();
+  const questions = panel.getByRole("radio", { name: /^질문/ });
+  await questions.click();
+  await assistant.click();
+  await expect(suggestions).toHaveAttribute("aria-selected", "true");
+  await assistant.click();
+  await expect(suggestions).toBeHidden();
+  await log.click();
+  await expect(questions).toHaveAttribute("aria-checked", "true");
+  await assistant.click();
+  await expect(suggestions).toHaveAttribute("aria-selected", "true");
+});

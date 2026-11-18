@@ -667,7 +667,20 @@ function HomeLists({
 
   return (
     <section className="hm-card hm-lists" aria-label={t("홈 목록")}>
-      <div className="hm-lists-head">
+      <div
+        className="hm-lists-head"
+        onFocusCapture={(event) => {
+          const tab = event.target.closest('[role="tab"]');
+          const strip = tab?.closest<HTMLElement>(".margin-tabs");
+          if (!strip || !tab) return;
+          const bounds = strip.getBoundingClientRect();
+          const item = tab.getBoundingClientRect();
+          if (item.left < bounds.left)
+            strip.scrollLeft += item.left - bounds.left;
+          else if (item.right > bounds.right)
+            strip.scrollLeft += item.right - bounds.right;
+        }}
+      >
         <Tabs
           label={t("홈 목록")}
           value={tab}

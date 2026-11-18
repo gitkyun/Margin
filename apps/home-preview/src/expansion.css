@@ -1293,8 +1293,9 @@
   }
   .folder-tree-row button[aria-pressed="true"],
   .folder-all[aria-pressed="true"] {
-    background: var(--selected-fill);
-    color: var(--semantic-foreground-brand-primary);
+    background: var(--navigation-selected-fill);
+    color: var(--text);
+    font-weight: 600;
   }
   .folder-tree-row button:first-child:hover,
   .folder-all:hover {

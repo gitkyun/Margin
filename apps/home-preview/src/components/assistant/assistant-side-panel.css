@@ -21,20 +21,27 @@
     flex-direction: column;
     gap: var(--spacing-8);
     min-height: 0;
-    padding: var(--spacing-12) var(--spacing-12) var(--spacing-8);
+    padding: var(--spacing-8) var(--spacing-16);
   }
+  /* 사이드 창 머리는 할 일·결정·질문 창(tasks.css .tasks-panel-head)과 같은 높이·글자입니다. */
   .assistant-panel-head {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--spacing-4);
   }
+  /* 머리가 탭 줄로 감겨도 첫 줄은 36 높이로 다른 창 머리와 같게 */
   .assistant-panel-head h2 {
+    display: flex;
     flex: 1;
+    align-items: center;
     min-width: 0;
+    min-height: 36px;
     margin: 0;
     color: var(--text);
     font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
     font-weight: 700;
   }
   .assistant-panel-actions {

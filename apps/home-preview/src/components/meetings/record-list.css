@@ -17,10 +17,10 @@
   .record-list-search,
   .record-list-filter select {
     width: 100%;
-    min-height: 36px;
-    padding: 0 var(--spacing-10);
+    min-height: var(--field-height-toolbar);
+    padding: 0 var(--spacing-12);
     border: 1px solid var(--line);
-    border-radius: var(--radius-8);
+    border-radius: var(--field-radius-toolbar);
     background: var(--surface);
     color: var(--text);
     font: inherit;
@@ -64,7 +64,10 @@
     background: var(--hover-fill);
   }
   .record-line[aria-current="page"] {
-    background: var(--selected-fill);
+    background: var(--navigation-selected-fill);
+  }
+  .record-line[aria-current="page"] strong {
+    font-weight: 700;
   }
   .record-line > svg {
     flex: none;
