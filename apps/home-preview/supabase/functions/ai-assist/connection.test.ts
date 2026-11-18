@@ -36,6 +36,15 @@ const rpcFailure = (code: string) =>
 let googleReply: () => Response = () => googleOk();
 let rpcReply: (name: string) => Response | undefined = () => undefined;
 const rpcNamed = (name: string) => rpcCalls.filter((c) => c.name === name);
+const defaultReply = (name: string) =>
+  rpcReply(name) ??
+  Response.json(name === "rms_ai_begin_v2" ? crypto.randomUUID() : true);
+/** 묶음 함수 안에서 부르는 기존 함수 한 번. 기존 시험의 응답 바꾸기(rpcReply)를 그대로 따릅니다. */
+const inner = async (name: string, body: any) => {
+  rpcCalls.push({ name, body });
+  const response = defaultReply(name);
+  return { ok: response.ok, body: await response.json() };
+};
 const post = (model = "gemini-3.8-flash") =>
   handle(
     new Request("https://function.example.test", {
@@ -68,11 +77,53 @@ beforeAll(async () => {
         });
       if (url.includes("/rpc/")) {
         const name = url.split("/rpc/")[1];
-        rpcCalls.push({ name, body: JSON.parse(String(init.body)) });
-        return (
-          rpcReply(name) ??
-          Response.json(name === "rms_ai_begin_v2" ? crypto.randomUUID() : true)
-        );
+        const body = JSON.parse(String(init.body));
+        rpcCalls.push({ name, body });
+        // 묶음 함수(rms_ai_start·rms_ai_complete, 2026-11-19)는 DB에서처럼 기존 함수를 차례로 부른 것으로 기록합니다.
+        if (name === "rms_ai_start") {
+          const { p_amount, ...beginBody } = body;
+          const begin = await inner("rms_ai_begin_v2", beginBody);
+          if (!begin.ok) return Response.json(begin.body, { status: 500 });
+          const reserve = await inner("rms_ai_reserve_credits", {
+            p_run_id: begin.body,
+            p_user_id: body.p_user_id,
+            p_amount,
+          });
+          return Response.json(
+            reserve.ok
+              ? { run_id: begin.body, held: reserve.body === true }
+              : {
+                  run_id: begin.body,
+                  held: false,
+                  error_code: reserve.body.code,
+                  error_message: reserve.body.message,
+                },
+          );
+        }
+        if (name === "rms_ai_complete") {
+          const settle = await inner("rms_ai_settle_credits", {
+            p_run_id: body.p_run_id,
+            p_amount: body.p_amount,
+            p_usage: body.p_usage,
+            p_refund: false,
+          });
+          const finish = await inner("rms_ai_finish_v2", {
+            p_run_id: body.p_run_id,
+            p_status: "complete",
+            p_output: body.p_output,
+            p_contexts: body.p_contexts,
+          });
+          const closed = settle.ok && settle.body === true;
+          return Response.json({
+            settled: settle.ok,
+            closed,
+            ...(closed ? { charged: body.p_amount } : {}),
+            accepted: finish.ok && finish.body === true,
+            ...(settle.ok ? {} : { settle_error: settle.body.code }),
+            ...(finish.ok ? {} : { finish_error: finish.body.code }),
+          });
+        }
+        return defaultReply(name);
       }
       if (url.includes("/rms_ai_credit_ledger?")) {
         const amount =
@@ -225,4 +276,33 @@ it("maps a cancelled reservation to a cancel response without calling Google", a
   expect(r.status).toBe(499);
   expect((await r.json()).error.code).toBe("CANCELLED");
   expect(sent).toHaveLength(0);
+});
+it("opens and closes a run with one DB round trip each (speed work 5-2·5-4)", async () => {
+  const before = (globalThis.fetch as any).mock.calls.length;
+  expect((await post()).status).toBe(200);
+  const urls = (globalThis.fetch as any).mock.calls
+    .slice(before)
+    .map(([url]: [string]) => url)
+    .filter(
+      (url: string) => url.includes("/rpc/") || url.includes("/rest/v1/rms_ai"),
+    );
+  expect(
+    urls.filter((u: string) => u.endsWith("/rpc/rms_ai_start")),
+  ).toHaveLength(1);
+  expect(
+    urls.filter((u: string) => u.endsWith("/rpc/rms_ai_complete")),
+  ).toHaveLength(1);
+  // 예전처럼 따로 부르거나 청구액을 다시 읽지 않습니다.
+  for (const old of [
+    "rms_ai_begin_v2",
+    "rms_ai_reserve_credits",
+    "rms_ai_settle_credits",
+    "rms_ai_finish_v2",
+    "rms_ai_credit_ledger",
+  ])
+    expect(
+      urls.some(
+        (u: string) => u.endsWith(`/rpc/${old}`) || u.includes(`/${old}?`),
+      ),
+    ).toBe(false);
 });

@@ -156,36 +156,38 @@ async function rest(path: string, init: RequestInit = {}): Promise<unknown> {
     },
   });
   const body = await response.json().catch(() => null);
-  if (!response.ok) {
-    if (body?.code === "P0001" && String(body.message).includes("크레딧"))
-      throw new AIError(
-        "CREDITS_EXHAUSTED",
-        "남은 AI 크레딧이 부족합니다. 입력을 줄이거나 다음 지급일을 확인해 주세요.",
-        402,
-      );
-    if (body?.code === "P0001")
-      throw new AIError(
-        "RATE_LIMITED",
-        "AI 사용 한도에 도달했습니다. 잠시 뒤 다시 시도해 주세요.",
-        429,
-      );
-    if (body?.code === "55000")
-      throw new AIError(
-        "ALREADY_RUNNING",
-        "같은 원문의 AI 처리가 진행 중입니다.",
-        409,
-      );
-    if (body?.code === "57014")
-      throw new AIError("CANCELLED", "중단한 요청입니다.", 499);
-    if (body?.code === "42501")
-      throw new AIError("FORBIDDEN", "이 기록의 AI를 실행할 수 없습니다.", 403);
-    throw new AIError(
-      "SERVER_ERROR",
-      "AI 실행을 준비하지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
-      500,
-    );
-  }
+  if (!response.ok) throw dbError(body?.code, body?.message);
   return body;
+}
+/** DB 함수 오류 코드를 화면에 보낼 오류로 바꿉니다. */
+function dbError(code: unknown, message: unknown): AIError {
+  if (code === "P0001" && String(message).includes("크레딧"))
+    return new AIError(
+      "CREDITS_EXHAUSTED",
+      "남은 AI 크레딧이 부족합니다. 입력을 줄이거나 다음 지급일을 확인해 주세요.",
+      402,
+    );
+  if (code === "P0001")
+    return new AIError(
+      "RATE_LIMITED",
+      "AI 사용 한도에 도달했습니다. 잠시 뒤 다시 시도해 주세요.",
+      429,
+    );
+  if (code === "55000")
+    return new AIError(
+      "ALREADY_RUNNING",
+      "같은 원문의 AI 처리가 진행 중입니다.",
+      409,
+    );
+  if (code === "57014")
+    return new AIError("CANCELLED", "중단한 요청입니다.", 499);
+  if (code === "42501")
+    return new AIError("FORBIDDEN", "이 기록의 AI를 실행할 수 없습니다.", 403);
+  return new AIError(
+    "SERVER_ERROR",
+    "AI 실행을 준비하지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+    500,
+  );
 }
 async function rpc(name: string, input: Record<string, unknown>) {
   return await rest(`rpc/${name}`, {
@@ -279,6 +281,8 @@ async function handle(request: Request): Promise<Response> {
   let finishReason: string | undefined;
   let attempts = 0;
   let userCancelled = false;
+  // 결과를 쓸 수 없을 때 확인된 사용량으로 정산만 하는 함수(모델 응답을 받은 뒤 채워짐)
+  let settleOnly: (() => Promise<void>) | undefined;
   // 운영 확인용 실행 요약. 질문·기록·토큰 문자열은 남기지 않고 종류·시간·토큰 수만 남깁니다.
   let runInfo: Record<string, unknown> = {};
   // 로그인 확인이 끝나기 전에 난 입력 오류는, 로그인이 틀렸다면 로그인 오류로 바꿔 알려 줍니다.
@@ -896,15 +900,6 @@ async function handle(request: Request): Promise<Response> {
     const hash = [...new Uint8Array(digest)]
       .map((v) => v.toString(16).padStart(2, "0"))
       .join("");
-    runId = (await rpc("rms_ai_begin_v2", {
-      p_user_id: user.id,
-      p_research_id: input.researchId,
-      p_input_hash: hash,
-      p_id: input.clientRunId ?? crypto.randomUUID(),
-      p_mode: input.mode,
-      p_model: model,
-      p_thinking: input.thinking ?? null,
-    })) as string;
     const originalQuote =
       typeof source.sourceQuote === "string" ? source.sourceQuote : "";
     // 연구 설정의 이름·목적·연구 질문을 배경으로 보냅니다(선택한 원문과 구분). 접근 권한은 위에서 확인했습니다.
@@ -956,9 +951,16 @@ async function handle(request: Request): Promise<Response> {
           background,
           plan,
         });
-    const held = await rpc("rms_ai_reserve_credits", {
-      p_run_id: runId,
+    // 실행 시작과 크레딧 예약을 DB 왕복 한 번으로 합니다(작업 문서 5-2). 예약에서 막히면 실행 기록은
+    // 남고(실패로 닫음) 오류 코드만 돌아옵니다.
+    const started = (await rpc("rms_ai_start", {
       p_user_id: user.id,
+      p_research_id: input.researchId,
+      p_input_hash: hash,
+      p_id: input.clientRunId ?? crypto.randomUUID(),
+      p_mode: input.mode,
+      p_model: model,
+      p_thinking: input.thinking ?? null,
       p_amount: reserveCredits(
         selectedModel,
         systemPrompt,
@@ -967,8 +969,16 @@ async function handle(request: Request): Promise<Response> {
         maxOutput,
         input.webSearch,
       ),
-    });
-    if (held !== true)
+    })) as {
+      run_id: string;
+      held: boolean;
+      error_code?: string;
+      error_message?: string;
+    };
+    runId = started.run_id;
+    if (started.error_code)
+      throw dbError(started.error_code, started.error_message);
+    if (started.held !== true)
       throw new AIError("CANCELLED", "중단한 요청입니다.", 499);
     reserved = true;
     clock.mark("reserve");
@@ -1081,46 +1091,40 @@ async function handle(request: Request): Promise<Response> {
         502,
       );
     // 제공사가 실제로 처리한 요청은 출력이 비어 있거나 형식이 틀려도 비용이 생깁니다.
-    // 그래서 출력을 읽기 전에 확인된 사용량으로 먼저 정산합니다.
-    // 정산 호출이 실패하면 예약을 그대로 두고(공짜 처리하지 않음) 응답은 계속 돌려줍니다.
-    if (measuredUsage?.known) {
-      try {
-        const amount = usageCredits(selectedModel, measuredUsage);
-        const closed = await rpc("rms_ai_settle_credits", {
-          p_run_id: runId,
-          p_amount: amount,
-          // 정산 내역에 멈춘 이유·시도 횟수·구간 시간도 함께 남겨 느린 실행을 나중에 찾을 수 있게 합니다.
-          p_usage: {
-            ...measuredUsage,
-            ...(finishReason ? { finishReason } : {}),
-            attempts,
-            timing: { ...clock.marks },
-          },
-          p_refund: false,
-        });
-        settled = true;
-        if (closed === true) {
-          // The ledger is authoritative when settlement clamps a charge to the remaining balance.
+    // 결과가 정상이면 정산·청구액·결과 저장을 DB 왕복 한 번(rms_ai_complete, 작업 문서 5-4)으로 하고,
+    // 결과를 쓸 수 없으면 아래 catch에서 확인된 사용량으로 정산만 합니다(공짜 처리하지 않음).
+    const ledgerUsage = measuredUsage?.known
+      ? {
+          ...measuredUsage,
+          ...(finishReason ? { finishReason } : {}),
+          attempts,
+          // 정산 내역에 멈춘 이유·시도 횟수·구간 시간도 남겨 느린 실행을 나중에 찾을 수 있게 합니다.
+          timing: { ...clock.marks },
+        }
+      : undefined;
+    const usageAmount = ledgerUsage
+      ? usageCredits(selectedModel, measuredUsage!)
+      : 0;
+    settleOnly = ledgerUsage
+      ? async () => {
           try {
-            const ledger = (await rest(
-              `rms_ai_credit_ledger?${new URLSearchParams({ run_id: `eq.${runId}`, kind: "eq.charge", select: "amount", limit: "1" })}`,
-            )) as { amount: number | string }[];
-            const actual = Number(ledger[0]?.amount);
-            if (Number.isFinite(actual)) chargedCredits = Math.abs(actual);
+            await rpc("rms_ai_settle_credits", {
+              p_run_id: runId,
+              p_amount: usageAmount,
+              p_usage: ledgerUsage,
+              p_refund: false,
+            });
+            settled = true;
           } catch {
-            /* The usage screen can still read the settled ledger. */
+            // 운영자가 청구 내역과 대조해 확정할 수 있게 실행 번호와 확인된 사용량만 남깁니다(입력 내용은 남기지 않음).
+            console.error(
+              "rms_ai_settle_failed",
+              JSON.stringify({ runId, usage: measuredUsage }),
+            );
           }
         }
-      } catch {
-        // 운영자가 청구 내역과 대조해 확정할 수 있게 실행 번호와 확인된 사용량만 남깁니다(입력 내용은 남기지 않음).
-        console.error(
-          "rms_ai_settle_failed",
-          JSON.stringify({ runId, usage: measuredUsage }),
-        );
-      }
-    }
-    clock.mark("settle");
-    // 출력 상한에 걸려 잘린 답은 형식 오류와 구분해 알려 줍니다(크레딧은 위에서 실제 사용량으로 정산됨).
+      : undefined;
+    // 출력 상한에 걸려 잘린 답은 형식 오류와 구분해 알려 줍니다(크레딧은 실제 사용량으로 정산됨).
     const truncated = () =>
       new AIError(
         "OUTPUT_TRUNCATED",
@@ -1194,12 +1198,45 @@ async function handle(request: Request): Promise<Response> {
         ? { id: c.id, kind: c.kind, title: c.title, revision: c.revision }
         : c,
     );
-    const accepted = await rpc("rms_ai_finish_v2", {
-      p_run_id: runId,
-      p_status: "complete",
-      p_output: output,
-      p_contexts: storedContexts,
-    });
+    let accepted: boolean;
+    if (ledgerUsage) {
+      const done = (await rpc("rms_ai_complete", {
+        p_run_id: runId,
+        p_amount: usageAmount,
+        p_usage: ledgerUsage,
+        p_output: output,
+        p_contexts: storedContexts,
+      })) as {
+        settled: boolean;
+        closed: boolean;
+        charged?: number | string;
+        accepted: boolean;
+        settle_error?: string;
+        finish_error?: string;
+      };
+      settled = done.settled;
+      if (!done.settled)
+        console.error(
+          "rms_ai_settle_failed",
+          JSON.stringify({
+            runId,
+            usage: measuredUsage,
+            code: done.settle_error,
+          }),
+        );
+      // 정산이 잔액 범위로 줄었을 수 있어 실제 청구액은 정산 내역의 값을 씁니다.
+      const actual = Number(done.charged);
+      if (done.closed && Number.isFinite(actual)) chargedCredits = actual;
+      if (done.finish_error) throw dbError(done.finish_error, "");
+      accepted = done.accepted;
+    } else {
+      accepted = (await rpc("rms_ai_finish_v2", {
+        p_run_id: runId,
+        p_status: "complete",
+        p_output: output,
+        p_contexts: storedContexts,
+      })) as boolean;
+    }
     if (!accepted)
       throw new AIError("CANCELLED", "중단한 결과는 적용하지 않았습니다.", 499);
     clock.mark("finish");
@@ -1232,6 +1269,8 @@ async function handle(request: Request): Promise<Response> {
       await verifyLogin().catch((loginError) => {
         error = loginError;
       });
+    // 모델이 처리해 사용량을 받았는데 결과를 쓰지 못했으면, 실제 사용량으로 정산합니다.
+    if (runId && reserved && !settled && settleOnly) await settleOnly();
     // 제공사가 요청을 거절한 것이 확실할 때만 환불합니다. 사용량을 받았다면 위에서 이미 정산했고,
     // 사용량을 모르는 경우(시간 초과·연결 끊김·사용량 누락)는 0으로 지어내지 않고 예약을 남겨 운영이 확인합니다.
     if (runId && reserved && !settled && providerRejected)
