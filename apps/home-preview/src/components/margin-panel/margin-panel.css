@@ -129,21 +129,8 @@
       --margin-panel-width: 340px;
     }
   }
-  /* 768~991: 본문 위를 덮는 오른쪽 시트(최대 420px) */
-  @media (max-width: 991px) {
-    .margin-panel {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      z-index: var(--z-sheet);
-      width: min(420px, 100vw);
-      height: 100dvh;
-      border-radius: 0;
-      box-shadow: var(--shadow-pop);
-      animation: margin-panel-in var(--motion-duration-enter)
-        var(--motion-ease-standard);
-    }
+  /* 768~1199px: 본문 위를 덮는 오른쪽 시트 */
+  @media (max-width: 1199px) {
     .margin-panel-backdrop {
       display: block;
       position: fixed;
@@ -153,29 +140,8 @@
       background: var(--semantic-effect-dimmer-primary);
       animation: margin-panel-fade var(--motion-duration-enter) ease-out;
     }
-    @keyframes margin-panel-in {
-      from {
-        transform: translateX(24px);
-        opacity: 0;
-      }
-    }
     @keyframes margin-panel-fade {
       from {
-        opacity: 0;
-      }
-    }
-  }
-  /* 767 이하: 아래에서 올라오는 전체 높이 시트 */
-  @media (max-width: 767px) {
-    .margin-panel {
-      left: 0;
-      width: 100%;
-      border-left: 0;
-      animation-name: margin-panel-up;
-    }
-    @keyframes margin-panel-up {
-      from {
-        transform: translateY(24px);
         opacity: 0;
       }
     }
@@ -188,28 +154,20 @@
   }
 }
 
-/* 경계선 끌기로 너비 조절(992px 이상, 패널이 본문 옆에 붙을 때만). 사용자 너비는 본문 절반을 넘지 않아요. */
+/* 경계선 끌기로 너비 조절(1200px 이상, 패널이 본문 옆에 붙을 때만). 사용자 너비는 본문 절반을 넘지 않아요. */
 @layer margin {
   .margin-panel-resizer {
     display: none;
   }
-  @media (min-width: 992px) {
-    .margin-panel {
-      width: min(
-        var(--margin-panel-user-width, var(--margin-panel-width)),
-        50vw
-      );
-    }
+  @media (min-width: 1200px) {
     .margin-panel-resizer {
-      position: sticky;
-      top: 52px;
-      z-index: 1;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -5px;
+      z-index: 2;
       display: block;
-      flex: none;
-      align-self: flex-start;
       width: 9px;
-      height: calc(100dvh - 52px - 16px);
-      margin-right: -5px;
       cursor: col-resize;
       touch-action: none;
     }
@@ -219,7 +177,7 @@
       position: absolute;
       top: 0;
       bottom: 0;
-      left: 3px;
+      left: 4px;
       width: 2px;
       background: transparent;
       transition: background var(--motion-duration-micro)
@@ -233,20 +191,8 @@
     .margin-panel-resizer:focus-visible {
       outline: none;
     }
-    .margin-panel-resizer.dragging ~ .margin-panel {
+    .margin-panel-resizer.dragging ~ .ia-panel-viewport {
       user-select: none;
-    }
-    /* 패널이 열릴 때 내용이 흐림에서 선명하게(Panel reveal). 동작 줄이기면 전역 규칙이 멈춰요. */
-    .margin-panel:not([hidden]) > .margin-panel-section:not([hidden]) {
-      animation: margin-panel-reveal var(--motion-duration-page)
-        var(--motion-ease-standard);
-    }
-  }
-  @keyframes margin-panel-reveal {
-    from {
-      opacity: 0;
-      filter: blur(4px);
-      transform: translateX(8px);
     }
   }
 }

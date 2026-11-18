@@ -9,6 +9,7 @@
     --ia-rail-width: 64px;
     --ia-gap: var(--spacing-12);
     --margin-panel-width: 312px;
+    --ia-panel-transition: 240ms cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -186,25 +187,60 @@
     box-shadow: var(--panel-shadow);
     overflow: clip;
   }
-  .ia-shell .margin-panel {
+  .ia-shell.ia-shell-outside .ia-panel-frame {
+    display: none;
+  }
+  .ia-shell .ia-panel-frame {
     position: sticky;
     top: var(--ia-topbar-height);
+    flex: 0 0 auto;
+    align-self: flex-start;
     width: min(var(--margin-panel-user-width, var(--margin-panel-width)), 50vw);
     height: calc(
       100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
     );
-    border: 0;
+    overflow: visible;
+    transition:
+      width var(--ia-panel-transition),
+      visibility 0ms linear 0ms;
+  }
+  .ia-shell .ia-panel-frame.is-closed {
+    width: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      width var(--ia-panel-transition),
+      visibility 0ms linear 240ms;
+  }
+  .ia-shell .ia-panel-frame.is-resizing,
+  .ia-shell .ia-panel-frame.is-resizing .ia-panel-viewport,
+  .ia-shell .ia-panel-frame.is-resizing .margin-panel {
+    transition: none;
+  }
+  .ia-shell .ia-panel-viewport {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    overflow: clip;
     border-radius: var(--radius-16);
     background: var(--surface);
     box-shadow: var(--panel-shadow);
+    transition: box-shadow var(--ia-panel-transition);
   }
-  .ia-shell .margin-panel-resizer {
-    top: var(--ia-topbar-height);
-    height: calc(
-      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
-    );
-    margin-right: calc(-1 * var(--ia-gap) - 5px);
-    margin-left: -4px;
+  .ia-shell .ia-panel-frame.is-closed .ia-panel-viewport {
+    box-shadow: none;
+  }
+  .ia-shell .margin-panel {
+    position: static;
+    flex: none;
+    width: min(var(--margin-panel-user-width, var(--margin-panel-width)), 50vw);
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    transition: width var(--ia-panel-transition);
   }
 
   .ia-shell .ia-rail {
@@ -309,7 +345,7 @@
 
   /* 768~1199px: 사이드 창은 아이콘 줄 옆에 겹쳐 뜨고 뒤를 가리지 않음(D15) */
   @media (min-width: 768px) and (max-width: 1199px) {
-    .ia-shell .margin-panel {
+    .ia-shell .ia-panel-frame {
       position: fixed;
       top: var(--ia-topbar-height);
       right: var(--ia-rail-width);
@@ -321,10 +357,34 @@
         calc(100vw - var(--ia-rail-width) - 2 * var(--ia-gap))
       );
       height: auto;
-      /* 고정 위치에도 align-self가 걸려 위아래로 늘어나지 않으므로 되돌립니다. */
       align-self: auto;
+      transition: visibility 0ms linear 0ms;
+    }
+    .ia-shell .ia-panel-frame.is-closed {
+      width: min(
+        var(--margin-panel-user-width, var(--margin-panel-width)),
+        calc(100vw - var(--ia-rail-width) - 2 * var(--ia-gap))
+      );
+      visibility: hidden;
+      pointer-events: none;
+      transition: visibility 0ms linear 240ms;
+    }
+    .ia-shell .ia-panel-viewport {
       border-radius: var(--radius-16);
       box-shadow: var(--shadow-pop);
+      transform: translateX(0);
+      opacity: 1;
+      transition:
+        transform var(--ia-panel-transition),
+        opacity var(--ia-panel-transition);
+    }
+    .ia-shell .ia-panel-frame.is-closed .ia-panel-viewport {
+      box-shadow: var(--shadow-pop);
+      transform: translateX(20px);
+      opacity: 0;
+    }
+    .ia-shell .margin-panel {
+      width: 100%;
     }
     .ia-shell .margin-panel-backdrop,
     .ia-shell .margin-panel-resizer {
@@ -362,7 +422,7 @@
       );
     }
     /* 기본 규칙(sticky, 50vw)이 margin-panel.css의 모바일 시트를 덮지 않도록 여기서 전체 폭 시트로 되돌립니다. */
-    .ia-shell .margin-panel {
+    .ia-shell .ia-panel-frame {
       position: fixed;
       top: var(--ia-topbar-height);
       right: 0;
@@ -372,8 +432,30 @@
       width: 100%;
       height: auto;
       align-self: auto;
+      transition: visibility 0ms linear 0ms;
+    }
+    .ia-shell .ia-panel-frame.is-closed {
+      width: 100%;
+      visibility: hidden;
+      pointer-events: none;
+      transition: visibility 0ms linear 240ms;
+    }
+    .ia-shell .ia-panel-viewport {
       border-radius: 0;
       box-shadow: var(--shadow-pop);
+      transform: translateY(0);
+      opacity: 1;
+      transition:
+        transform var(--ia-panel-transition),
+        opacity var(--ia-panel-transition);
+    }
+    .ia-shell .ia-panel-frame.is-closed .ia-panel-viewport {
+      box-shadow: var(--shadow-pop);
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    .ia-shell .margin-panel {
+      width: 100%;
     }
     .ia-shell .ia-tabbar {
       display: grid;
@@ -420,15 +502,32 @@
       margin-right: calc(-1 * var(--ia-gap));
       margin-left: 0;
     }
+    .ia-shell[data-panel-side="left"] .ia-panel-viewport {
+      justify-content: flex-end;
+    }
     .ia-shell[data-panel-side="left"] .margin-panel-resizer {
-      margin-right: -4px;
-      margin-left: calc(-1 * var(--ia-gap) - 5px);
+      right: -5px;
+      left: auto;
     }
   }
   @media (min-width: 768px) and (max-width: 1199px) {
-    .ia-shell[data-panel-side="left"] .margin-panel {
+    .ia-shell[data-panel-side="left"] .ia-panel-frame,
+    .ia-shell[data-panel-side="left"] .ia-panel-frame.is-closed {
       right: auto;
       left: var(--ia-rail-width);
+    }
+    .ia-shell[data-panel-side="left"]
+      .ia-panel-frame.is-closed
+      .ia-panel-viewport {
+      transform: translateX(-20px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ia-shell .ia-panel-frame,
+    .ia-shell .ia-panel-frame.is-closed,
+    .ia-shell .ia-panel-viewport,
+    .ia-shell .margin-panel {
+      transition: none;
     }
   }
 }

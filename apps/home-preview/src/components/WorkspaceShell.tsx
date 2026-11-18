@@ -165,7 +165,8 @@ export function WorkspaceShell({
   const research = data.researches.find((r) => r.id === researchId);
   const [search, setSearch] = useState(false),
     [shortcutsOpen, setShortcutsOpen] = useState(false),
-    [notifications, setNotifications] = useState(false);
+    [notifications, setNotifications] = useState(false),
+    [panelResizing, setPanelResizing] = useState(false);
   const overlayPanel = useMediaQuery(OVERLAY_PANEL_QUERY);
   const panelSide = usePanelSide();
   const updates = unreadReviewNotifications(data, user, researchId);
@@ -356,63 +357,71 @@ export function WorkspaceShell({
             onClick={panel.active.onClose}
           />
         )}
-        {panelShown && (
-          <PanelResizer
-            side={panelSide}
-            width={panelWidth}
-            onChange={setPanelWidth}
-            currentWidth={() =>
-              document.querySelector<HTMLElement>(".margin-panel")
-                ?.offsetWidth ?? 312
-            }
-          />
-        )}
-        <aside
-          id="margin-panel"
-          className="margin-panel"
-          aria-label={
-            detailOpen
-              ? t("항목 상세")
-              : (panel.active?.label ?? t("여백 패널"))
-          }
-          hidden={!panelShown}
-          tabIndex={-1}
+        <div
+          className={`ia-panel-frame ${panelShown ? "is-open" : "is-closed"} ${panelResizing ? "is-resizing" : ""}`}
+          aria-hidden={!panelShown}
+          inert={!panelShown ? true : undefined}
         >
-          {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
-          <div
-            className="margin-panel-slot"
-            hidden={detailOpen || railOpen}
-            ref={panel.setSlot}
-          />
-          {/* 실제 탭은 상세가 덮여 있어도 살려 두고 숨깁니다(쓰던 글·스크롤 유지, 02 §4.2). */}
-          {assistantOpen && researchId && (
-            <div hidden={detailOpen}>
-              <AssistantSidePanel
-                researchId={researchId}
-                onClose={() => setRailTab(null, true)}
+          {panelShown && (
+            <PanelResizer
+              side={panelSide}
+              width={panelWidth}
+              onChange={setPanelWidth}
+              onDraggingChange={setPanelResizing}
+              currentWidth={() =>
+                document.querySelector<HTMLElement>(".margin-panel")
+                  ?.offsetWidth ?? 312
+              }
+            />
+          )}
+          <div className="ia-panel-viewport">
+            <aside
+              id="margin-panel"
+              className="margin-panel"
+              aria-label={
+                detailOpen
+                  ? t("항목 상세")
+                  : (panel.active?.label ?? t("여백 패널"))
+              }
+              tabIndex={-1}
+            >
+              {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
+              <div
+                className="margin-panel-slot"
+                hidden={detailOpen || railOpen}
+                ref={panel.setSlot}
               />
-            </div>
-          )}
-          {tasksOpen && researchId && (
-            <div hidden={detailOpen}>
-              <TasksPanel
-                researchId={researchId}
-                onClose={() => setRailTab(null, true)}
-              />
-            </div>
-          )}
-          {logOpen && researchId && (
-            <div hidden={detailOpen}>
-              <LogPanel
-                researchId={researchId}
-                onClose={() => setRailTab(null, true)}
-              />
-            </div>
-          )}
-          {detailOpen && detail && researchId && (
-            <ItemDetail researchId={researchId} detail={detail} />
-          )}
-        </aside>
+              {/* 실제 탭은 상세가 덮여 있어도 살려 두고 숨깁니다(쓰던 글·스크롤 유지, 02 §4.2). */}
+              {assistantOpen && researchId && (
+                <div hidden={detailOpen}>
+                  <AssistantSidePanel
+                    researchId={researchId}
+                    onClose={() => setRailTab(null, true)}
+                  />
+                </div>
+              )}
+              {tasksOpen && researchId && (
+                <div hidden={detailOpen}>
+                  <TasksPanel
+                    researchId={researchId}
+                    onClose={() => setRailTab(null, true)}
+                  />
+                </div>
+              )}
+              {logOpen && researchId && (
+                <div hidden={detailOpen}>
+                  <LogPanel
+                    researchId={researchId}
+                    onClose={() => setRailTab(null, true)}
+                  />
+                </div>
+              )}
+              {detailOpen && detail && researchId && (
+                <ItemDetail researchId={researchId} detail={detail} />
+              )}
+            </aside>
+          </div>
+        </div>
         {inResearch && (
           <SideRail
             researchId={researchId}
