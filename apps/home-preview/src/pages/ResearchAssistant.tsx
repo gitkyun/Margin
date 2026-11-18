@@ -48,6 +48,8 @@ import {
   draftRequestMax,
   lastAsked,
   nextSteps,
+  suggestedTasksOf,
+  taskLink,
 } from "@/lib/assistant-next";
 import { assistantStarters, type Starter } from "@/lib/assistant-starters";
 import { SaveDraftDialog, type DraftSource } from "./assistant/SaveDraftDialog";
@@ -66,8 +68,10 @@ import {
   type AIConversation,
   type Attachment,
   type SavedAICandidate,
+  type Task,
   isLegacyOrganizeCandidate,
 } from "@/lib/domain";
+import { useOpenDetail } from "@/lib/item-detail";
 import { Button } from "@/components/ui/button";
 import {
   PageHeader,
@@ -89,6 +93,7 @@ import {
 } from "./assistant/AssistantPanel";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
 import { NextSteps } from "./assistant/NextSteps";
+import { AnswerTasks } from "./assistant/AnswerTasks";
 import {
   messageFileContexts,
   restorePendingContexts,
@@ -892,6 +897,11 @@ export function ResearchAssistant({
             calendar: useCalendar,
             webGrounding: result.webGrounding,
             contexts: result.contexts ?? requestContexts,
+            ...(result.runId ? { runId: result.runId } : {}),
+            // 답 아래 [할 일 추가](06 §2.4): 고르기 전까지는 대화에만 남는 제안입니다.
+            ...(suggestedTasksOf(result.candidates).length
+              ? { suggestedTasks: suggestedTasksOf(result.candidates) }
+              : {}),
           },
         ],
       });
@@ -1137,6 +1147,59 @@ export function ResearchAssistant({
   const starters = assistantStarters(location.pathname, data, researchId);
   // 답 아래 [글로 저장]·[이 글에 넣기](06 §2.4)
   const [draftSource, setDraftSource] = useState<DraftSource | null>(null);
+  // 답 아래 [할 일 추가](06 §2.4): 펼친 답(createdAt)과 지금 추가하는 줄
+  const [tasksOpenAt, setTasksOpenAt] = useState<string | null>(null);
+  const [taskBusy, setTaskBusy] = useState<string | null>(null);
+  const openDetail = useOpenDetail();
+  const conversationRef = useRef(conversation);
+  conversationRef.current = conversation;
+  /** 고른 할 일 제안 한 줄을 할 일로 저장하고, 답에 추가했다고 남깁니다. */
+  async function addSuggestedTask(answeredAt: string, title: string) {
+    const start = conversationRef.current;
+    if (!start || taskBusy) return;
+    const index = start.messages.findIndex(
+      (m) => m.role === "assistant" && m.createdAt === answeredAt,
+    );
+    if (index < 0) return;
+    setTaskBusy(title);
+    try {
+      const task = await save("tasks", {
+        ...recordBase(researchId),
+        origin: "ai",
+        title,
+        description: "",
+        status: "todo",
+        priority: "normal",
+        dueDate: null,
+        visibility: "private",
+        ...taskLink(lastAsked(start.messages, index)?.contexts ?? []),
+      } as Task);
+      const latest =
+        conversationRef.current?.id === start.id
+          ? conversationRef.current
+          : start;
+      const saved = await save("conversations", {
+        ...latest,
+        messages: latest.messages.map((m) =>
+          m.role === "assistant" && m.createdAt === answeredAt
+            ? {
+                ...m,
+                addedTasks: [
+                  ...(m.addedTasks ?? []),
+                  { title, taskId: task.id },
+                ],
+              }
+            : m,
+        ),
+      });
+      if (conversationRef.current?.id === saved.id) setConversation(saved);
+      toast.success(t("할 일로 추가했어요."));
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setTaskBusy(null);
+    }
+  }
   const insertTarget =
     viewing?.kind === "documents" && canInsertInto(viewing.id) ? viewing : null;
   /** 사이드 창 → 전체 화면: 지금 대화와 근거 칩을 넘깁니다. */
@@ -1491,6 +1554,19 @@ export function ResearchAssistant({
                             }
                           : undefined
                       }
+                      tasks={
+                        m.suggestedTasks?.length
+                          ? {
+                              count: m.suggestedTasks.length,
+                              open: tasksOpenAt === m.createdAt,
+                              controls: `answer-tasks-${i}`,
+                              onToggle: () =>
+                                setTasksOpenAt((at) =>
+                                  at === m.createdAt ? null : m.createdAt,
+                                ),
+                            }
+                          : undefined
+                      }
                       onRetry={(question) => {
                         const asked = lastAsked(messages, i);
                         void send(question, {
@@ -1502,9 +1578,26 @@ export function ResearchAssistant({
                         });
                       }}
                     />
+                    {tasksOpenAt === m.createdAt &&
+                      !!m.suggestedTasks?.length && (
+                        <AnswerTasks
+                          id={`answer-tasks-${i}`}
+                          suggestions={m.suggestedTasks}
+                          added={m.addedTasks ?? []}
+                          busy={taskBusy}
+                          disabled={working || unavailable}
+                          onAdd={(title) =>
+                            void addSuggestedTask(m.createdAt, title)
+                          }
+                          onOpen={(taskId) =>
+                            openDetail({ kind: "task", id: taskId })
+                          }
+                        />
+                      )}
                     {i === messages.length - 1 && !working && (
                       <NextSteps
                         steps={nextSteps(lastAsked(messages, i), {
+                          hasTasks: !!m.suggestedTasks?.length,
                           canSuggestEdits:
                             insertTarget !== null &&
                             canSuggestIn(insertTarget.id) &&
@@ -1523,6 +1616,8 @@ export function ResearchAssistant({
                               contexts:
                                 m.contexts ?? conversation?.contexts ?? [],
                             });
+                          else if (step.kind === "tasks")
+                            setTasksOpenAt(m.createdAt);
                           else if (step.kind === "suggest_edits") {
                             if (insertTarget) openSuggestEdits(insertTarget.id);
                           } else {

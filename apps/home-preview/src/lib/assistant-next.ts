@@ -1,5 +1,11 @@
 import { t } from "@/lib/i18n";
-import type { AIConversationMessage, AIInput } from "@/lib/domain";
+import type {
+  AICandidate,
+  AIContext,
+  AIConversationMessage,
+  AIInput,
+  Task,
+} from "@/lib/domain";
 
 /**
  * 초안 쓰기(IA v2 06 §2.3): 서버의 묻고 답하기(`ask_research`)에 정해 둔 지시문을 붙여 보냅니다.
@@ -43,6 +49,7 @@ export type NextStep =
       prompt: string;
     }
   | { id: string; label: string; kind: "save" }
+  | { id: string; label: string; kind: "tasks" }
   | { id: string; label: string; kind: "suggest_edits" };
 
 /**
@@ -52,7 +59,7 @@ export type NextStep =
  */
 export function nextSteps(
   asked: AskedRequest | undefined,
-  options: { canSuggestEdits: boolean },
+  options: { canSuggestEdits: boolean; hasTasks?: boolean },
 ): NextStep[] {
   if (!asked || asked.webSearch || asked.calendar) return [];
   const draft = (prompt: string, id = "draft", label = t("초안 쓰기")) => ({
@@ -90,8 +97,13 @@ export function nextSteps(
         draft(t("이 미팅 정리를 바탕으로 고칠 부분의 초안을 써 줘")),
       ];
     case "suggest_revisions":
-      // '할 일 추가'는 답 아래 [할 일 추가] 버튼(제안 줄마다 선택)과 함께 넣습니다. 지금은 초안 쓰기만.
-      return [draft(t("방금 제안한 수정 방법대로 고친 문단의 초안을 써 줘"))];
+      return [
+        // 답의 할 일 제안을 펼칩니다(답 아래 [할 일 추가]와 같음). 제안이 없으면 두지 않습니다.
+        ...(options.hasTasks
+          ? [{ id: "tasks", label: t("할 일 추가"), kind: "tasks" as const }]
+          : []),
+        draft(t("방금 제안한 수정 방법대로 고친 문단의 초안을 써 줘")),
+      ];
     case "review_writing":
       return options.canSuggestEdits
         ? [
@@ -105,4 +117,34 @@ export function nextSteps(
     default:
       return [];
   }
+}
+
+/** 한 답에서 보여 줄 할 일 제안의 최대 수 */
+export const TASK_SUGGESTIONS_MAX = 10;
+
+/**
+ * 답 아래 [할 일 추가](06 §2.4): 실행 결과의 제안마다 딸린 '할 일 제안'(suggestedTasks)을 모읍니다.
+ * 미팅 정리의 할 일 후보(category task)는 제안 탭에서 고르므로 넣지 않습니다(같은 것을 두 곳에서 고르지 않게).
+ */
+export function suggestedTasksOf(candidates: AICandidate[]): string[] {
+  const out: string[] = [];
+  for (const candidate of candidates)
+    for (const raw of candidate.suggestedTasks ?? []) {
+      const title = raw.replace(/\s+/g, " ").trim().slice(0, 200);
+      if (title && !out.includes(title)) out.push(title);
+    }
+  return out.slice(0, TASK_SUGGESTIONS_MAX);
+}
+
+/** 요청에 놓인 칩의 기록을 할 일에 잇습니다: 피드백은 feedbackIds, 미팅은 나온 기록, 글은 고칠 글. */
+export function taskLink(
+  contexts: AIContext[],
+): Pick<Task, "feedbackIds" | "sourceRecordId" | "documentId"> {
+  const meeting = contexts.find((c) => c.kind === "meetings");
+  const document = contexts.find((c) => c.kind === "documents");
+  return {
+    feedbackIds: contexts.filter((c) => c.kind === "feedback").map((c) => c.id),
+    ...(meeting ? { sourceRecordId: meeting.id } : {}),
+    ...(document ? { documentId: document.id } : {}),
+  };
 }
