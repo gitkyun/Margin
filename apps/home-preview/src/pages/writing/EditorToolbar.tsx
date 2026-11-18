@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Icon } from "@/components/icons";
 import { Choice } from "@/components/experience";
-import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/hint";
 
 const ICON = 18;
@@ -68,24 +67,11 @@ function Tool({
 }
 
 /**
- * 글쓰기 서식 도구 줄. 문서 위에 붙어 따라오고, 왼쪽부터
+ * 글쓰기 서식 도구 줄(IA v2 05 §3.4 도구 줄 1). 문서 위에 붙어 따라오고, 왼쪽부터
  * 되돌리기 → 문단 형식 → 글자 서식 → 목록·인용 → 표 순서로 묶습니다.
+ * 목차는 왼쪽 열(좁은 판은 머리의 [목차]), 문장 점검은 머리로 옮겼습니다.
  */
-export function EditorToolbar({
-  editor,
-  outlineOpen,
-  onToggleOutline,
-  aiDisabled,
-  aiHint,
-  onAiReview,
-}: {
-  editor: Editor | null;
-  outlineOpen: boolean;
-  onToggleOutline: () => void;
-  aiDisabled: boolean;
-  aiHint: string;
-  onAiReview: () => void;
-}) {
+export function EditorToolbar({ editor }: { editor: Editor | null }) {
   const chain = () => editor?.chain().focus();
   const marks = [
     {
@@ -129,14 +115,6 @@ export function EditorToolbar({
   ];
   return (
     <div className="editor-toolbar" role="toolbar" aria-label={t("문서 서식")}>
-      <Tool
-        label={t("목차·공개 범위")}
-        active={outlineOpen}
-        onClick={onToggleOutline}
-      >
-        <Icon name="menu" size={ICON} />
-      </Tool>
-      <i aria-hidden="true" />
       <Tool
         label={t("실행 취소")}
         disabled={!editor?.can().undo()}
@@ -208,24 +186,6 @@ export function EditorToolbar({
       >
         <RemoveFormatting size={ICON} />
       </Tool>
-      <span className="editor-toolbar-end">
-        <Hint label={aiHint} position="bottom-center">
-          <span>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={aiDisabled}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={onAiReview}
-            >
-              <Icon name="sparkles" size={16} />
-              {editor?.state.selection.empty === false
-                ? t("선택 부분 AI 문장 점검")
-                : t("AI 문장 점검")}
-            </Button>
-          </span>
-        </Hint>
-      </span>
     </div>
   );
 }
