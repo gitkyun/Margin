@@ -60,6 +60,10 @@ import { BackLink, DocumentTabs } from "./student/shared";
 import { EditorHeader, Outline, type SaveState } from "./docs/EditorHeader";
 import { DocInfoDialog } from "./docs/DocInfoDialog";
 import { editorOutline, savedTime } from "@/lib/editor-head";
+import { documentFeedback, documentTasks } from "@/lib/doc-margin";
+import { useOpenDetail } from "@/lib/item-detail";
+import { EditorGutter, FeedbackHandled } from "./docs/EditorGutter";
+import type { Task } from "@/lib/domain";
 import {
   VersionCompareSlider,
   VersionSheet,
@@ -577,6 +581,28 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     return v;
   }
   const outline = editor ? editorOutline(editor.getJSON()) : [];
+  // 여백(05 §3.5): 이 글을 고칠 할 일과 딸린 피드백
+  const openDetail = useOpenDetail();
+  const paper = useRef<HTMLDivElement>(null);
+  const marginTasks = documentTasks(data.tasks, initial.id);
+  const marginFeedback = documentFeedback(marginTasks, data.feedback);
+  const feedbackNumbers = new Map(
+    marginFeedback.map((item) => [item.feedback.id, item.number]),
+  );
+  function toggleTask(task: Task) {
+    void save("tasks", {
+      ...task,
+      status: task.status === "done" ? "todo" : "done",
+    }).catch((e: Error) => toast.error(e.message));
+  }
+  // 할 일 상세의 [글 열기]는 `?at=제목`으로 그 제목 위치를 엽니다(06 항목 상세 '고칠 글').
+  const [searchParams] = useSearchParams();
+  const at = searchParams.get("at");
+  useEffect(() => {
+    if (!editor || !at) return;
+    const index = outline.findIndex((entry) => entry.text === at);
+    if (index >= 0) requestAnimationFrame(() => scrollToHeading(index));
+  }, [editor, at]);
   function scrollToHeading(index: number) {
     const el = document.querySelectorAll(
       ".rms-document-editor h1,.rms-document-editor h2,.rms-document-editor h3",
@@ -738,38 +764,55 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         </div>
       )}
       <EditorToolbar editor={editor} />
+      <FeedbackHandled
+        items={marginFeedback}
+        onOpen={(id) => openDetail({ kind: "feedback", id })}
+      />
       <div className="editor-body">
         <nav className="editor-outline" aria-label={t("목차")}>
           <h2>{t("목차")}</h2>
           <Outline entries={outline} onPick={scrollToHeading} />
         </nav>
-        <div className="writing-paper">
-          {review.selectionBar}
-          <SectionBoundary>
-            <EditorContent editor={editor} />
-          </SectionBoundary>
-          <WritingAutocomplete
-            editor={editor}
-            researchId={initial.researchId}
-            documentId={initial.id}
-            title={base.title}
-            revision={base.revision}
-            dirty={dirty}
-            saveFirst={async () => {
-              // 자동 저장과 겹치지 않게 저장하는 동안 busy로 표시해요.
-              setBusy("save");
-              try {
-                return await persist();
-              } catch (e) {
-                setError((e as Error).message);
-                throw e;
-              } finally {
-                setBusy("");
+        <div className="editor-sheet">
+          <div className="writing-paper" ref={paper}>
+            {review.selectionBar}
+            <SectionBoundary>
+              <EditorContent editor={editor} />
+            </SectionBoundary>
+            <WritingAutocomplete
+              editor={editor}
+              researchId={initial.researchId}
+              documentId={initial.id}
+              title={base.title}
+              revision={base.revision}
+              dirty={dirty}
+              saveFirst={async () => {
+                // 자동 저장과 겹치지 않게 저장하는 동안 busy로 표시해요.
+                setBusy("save");
+                try {
+                  return await persist();
+                } catch (e) {
+                  setError((e as Error).message);
+                  throw e;
+                } finally {
+                  setBusy("");
+                }
+              }}
+              disabled={
+                mode === "preview" || !!busy || !editor?.getText().trim()
               }
-            }}
-            disabled={mode === "preview" || !!busy || !editor?.getText().trim()}
-            preview={mode === "preview"}
-            runAI={runAI}
+              preview={mode === "preview"}
+              runAI={runAI}
+            />
+          </div>
+          <EditorGutter
+            paper={paper}
+            tasks={marginTasks}
+            headings={outline.map((entry) => entry.text).filter(Boolean)}
+            numbers={feedbackNumbers}
+            onToggle={toggleTask}
+            onOpenTask={(id) => openDetail({ kind: "task", id })}
+            onOpenFeedback={(id) => openDetail({ kind: "feedback", id })}
           />
         </div>
       </div>
