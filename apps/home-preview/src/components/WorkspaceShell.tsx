@@ -25,8 +25,11 @@ import { AssistantSidePanel } from "./assistant/AssistantSidePanel";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
+  panelRequest,
   lastPanelTab,
   rememberPanel,
+  withoutPanelRequest,
+  type PanelRequest,
   type SidePanelTab,
 } from "@/lib/side-panel";
 import { MobileTabBar } from "./shell/MobileTabBar";
@@ -163,6 +166,7 @@ export function WorkspaceShell({
   const researchId = researchOverride ?? params.researchId;
   const { data, user, mode, markEvent } = useExperience(),
     location = useLocation();
+  const navigate = useNavigate();
   const research = data.researches.find((r) => r.id === researchId);
   const [search, setSearch] = useState(false),
     [shortcutsOpen, setShortcutsOpen] = useState(false),
@@ -251,6 +255,28 @@ export function WorkspaceShell({
     panelRef.current.active?.onClose();
     setRailTab(null);
   }, [location.pathname, overlayPanel]);
+  // 주소의 ?panel=(예전 /assistant 주소, 홈·명령·단축키)로 사이드 창 탭을 엽니다(01 §3.3).
+  // 겹쳐 뜬 창이 화면 이동으로 닫힌 뒤에 열도록 위 효과 다음에 둡니다. 연 뒤 주소에서 값을 지웁니다.
+  const [assistantRequest, setAssistantRequest] = useState<
+    (PanelRequest & { at: number }) | null
+  >(null);
+  useEffect(() => {
+    const request = panelRequest(location.search);
+    if (!request || !research) return;
+    panelRef.current.active?.onClose();
+    // 링크·명령·단축키로 연 것도 사람이 연 것이라 열림과 탭을 기억합니다(새로 고쳐도 같은 창).
+    setRailTab(request.tab, true);
+    if (request.tab === "assistant")
+      setAssistantRequest({ ...request, at: Date.now() });
+    navigate(
+      {
+        pathname: location.pathname,
+        search: withoutPanelRequest(location.search),
+        hash: location.hash,
+      },
+      { replace: true, state: location.state },
+    );
+  }, [location.search, research?.id]);
   // 화면이 보낸 창을 열면 할 일 창은 닫습니다(한 번에 하나).
   useEffect(() => {
     if (panel.active) setRailTab(null);
@@ -263,7 +289,7 @@ export function WorkspaceShell({
       if (!(target instanceof Element)) return;
       if (
         target.closest(
-          ".margin-panel, .ia-rail, .margin-panel-resizer, [data-radix-popper-content-wrapper], [role='dialog'], [role='menu']",
+          ".margin-panel, .ia-rail, .ia-tab-assistant, .margin-panel-resizer, [data-radix-popper-content-wrapper], [role='dialog'], [role='menu']",
         )
       )
         return;
@@ -430,6 +456,7 @@ export function WorkspaceShell({
                 >
                   <AssistantSidePanel
                     researchId={researchId}
+                    request={assistantRequest}
                     onClose={() => setRailTab(null, true)}
                   />
                 </div>
@@ -495,7 +522,18 @@ export function WorkspaceShell({
       <BottomDock>
         <MiniRecorder />
         {inResearch && !incomingOnly && (
-          <MobileTabBar researchId={researchId} />
+          <MobileTabBar
+            researchId={researchId}
+            assistantOpen={assistantOpen}
+            onAssistant={() => {
+              if (assistantOpen) {
+                setRailTab(null);
+                return;
+              }
+              panel.active?.onClose();
+              setRailTab("assistant");
+            }}
+          />
         )}
       </BottomDock>
       <Sheet open={notifications} onOpenChange={setNotifications}>

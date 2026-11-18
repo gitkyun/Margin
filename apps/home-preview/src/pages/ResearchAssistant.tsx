@@ -36,7 +36,7 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { handoffState, readHandoff } from "@/lib/assistant-handoff";
+import { readHandoff } from "@/lib/assistant-handoff";
 import { contextKey, viewingContext } from "@/lib/viewing-context";
 import {
   canInsertInto,
@@ -187,9 +187,12 @@ const candidateText = (x: AICandidate) =>
 export function ResearchAssistant({
   variant = "page",
   onClose,
+  openView,
 }: {
   variant?: "page" | "panel";
   onClose?: () => void;
+  /** 사이드 창을 주소로 열 때의 보기(`at`이 바뀌면 다시 엶) */
+  openView?: { view: "chat" | AssistantPanelTab; at: number };
 } = {}) {
   const inPanel = variant === "panel";
   const { researchId = "" } = useParams(),
@@ -208,6 +211,9 @@ export function ResearchAssistant({
   const [panelView, setPanelView] = useState<"chat" | AssistantPanelTab>(
     "chat",
   );
+  useEffect(() => {
+    if (openView) setPanelView(openView.view);
+  }, [openView?.at]);
   // 실행 내역에서 고른 답(runId). 그 대화로 바꾼 뒤 그 답까지 스크롤합니다.
   const [jumpToRun, setJumpToRun] = useState<string | null>(null);
   const [panelTab, setPanelTab] = useState<AssistantPanelTab>("suggestions"),
@@ -1415,16 +1421,6 @@ export function ResearchAssistant({
   }
   const insertTarget =
     viewing?.kind === "documents" && canInsertInto(viewing.id) ? viewing : null;
-  /** 사이드 창 → 전체 화면: 지금 대화와 근거 칩을 넘깁니다. */
-  function expand() {
-    onClose?.();
-    navigate(`/r/${researchId}/assistant`, {
-      state: handoffState({
-        ...(conversation ? { conversationId: conversation.id } : {}),
-        ...(contexts.length ? { contexts } : {}),
-      }),
-    });
-  }
   // 사이드 창의 '지금 보는 기록' 칩은 모델 목록을 기다리지 않고 바로 이 화면의 근거 칩으로 놓습니다(IA v2 06 §2.2).
   useEffect(() => {
     const chips = handoff.current?.contexts;
@@ -1545,15 +1541,6 @@ export function ResearchAssistant({
               onClick={startNew}
             >
               <Icon name="plus" size={18} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t("전체 화면으로 열기")}
-              title={t("전체 화면으로 열기")}
-              onClick={expand}
-            >
-              <Icon name="arrow-up-right" size={18} />
             </Button>
             <Button
               variant="ghost"

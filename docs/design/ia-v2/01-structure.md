@@ -136,6 +136,8 @@
 
 이동 규칙이 쓰는 값(`tab`, `new`, `mode`, `intent`)은 넘기지 않고 지웁니다. 표에 없는 `tab` 값은 그 묶음의 첫 구획으로 갑니다(`/r/:id/settings?tab=아무값` → `?settings=research`, `/account?tab=아무값` → `?settings=profile`).
 
+[사실, 2026-11-18 4단계 구현] 연구 도우미 화면 주소는 위 두 줄대로 옮깁니다(`lib/legacy-routes.ts`). 예전 제안 탭(`tab=overview`)은 창의 제안 보기(`&panelView=suggestions`)로 엽니다. 사이드 창은 `?panel=assistant|tasks|log`(연구 도우미는 `&panelView=suggestions|runs`)로 열리고, 연 뒤에는 주소에서 이 값을 지웁니다(닫은 뒤 새로 고쳐도 다시 열리지 않게, `lib/side-panel.ts`). 홈의 "확인할 AI 제안", ⌘K의 '연구 도우미', G A도 화면을 옮기지 않고 이 값으로 창을 엽니다.
+
 `/feedback/:id`·`/plans/:id`·`/recordings/:id`처럼 대상을 찾아야 하는 이동은 **첫 불러오기가 끝난 뒤** 판단합니다. 대상 기록이 있고 내가 읽을 수 있으며 보관되지 않았을 때만 그 기록 화면으로, 아니면 `/r/:id?detail=…`로 보내 항목 상세의 '열 수 없음'([06](06-assistant.md) §6.7)이 뜨게 합니다(남의 '나만 보기' 미팅에 달린 공유 피드백이 깨진 기록 화면으로 가지 않게).
 
 `/login?next=`의 허용 목록(`lib/social-login.ts`의 `safeNext`)은 지금 `/r` `/reviews` `/schedule` `/join`만 받습니다. 새 주소는 모두 `/r` 아래라 그대로 통과합니다.

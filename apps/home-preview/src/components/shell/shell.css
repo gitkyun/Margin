@@ -594,6 +594,13 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+    /* 연구 도우미 칸은 창을 여닫는 버튼입니다(링크 칸과 같은 모양). */
+    .ia-shell button.ia-tab {
+      border: 0;
+      background: transparent;
+      font-family: inherit;
+      cursor: pointer;
+    }
     .ia-shell .ia-tab.active {
       color: var(--brand);
       font-weight: 700;

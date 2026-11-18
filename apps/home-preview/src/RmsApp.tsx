@@ -70,7 +70,6 @@ function DocsRoute() {
   const materials = params.get("kind") === "material" || params.has("folder");
   return materials ? <MaterialsPage /> : <WritingPage />;
 }
-import { ResearchAssistant } from "@/pages/ResearchAssistant";
 import { DocsPage } from "@/pages/docs/DocsPage";
 import { DocTabsFrame } from "@/pages/docs/OpenTabs";
 import { isHomeEntry } from "@/lib/entry-route";
@@ -212,10 +211,7 @@ function WorkspaceRoutes() {
               element={<LegacyRedirect />}
             />
           ))}
-          <Route
-            path="/r/:researchId/assistant"
-            element={<ResearchAssistant />}
-          />
+          <Route path="/r/:researchId/assistant" element={<LegacyRedirect />} />
           <Route path="/r/:researchId" element={<HomePage />} />
           {/* IA v2 0단계: 새 메뉴 주소는 지금 화면을 그대로 띄웁니다(10-build-plan §2). */}
           <Route path="/r/:researchId/docs" element={<DocsRoute />} />

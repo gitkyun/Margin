@@ -22,6 +22,19 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     ],
     ["/r/a/settings", "?tab=members", "/r/a?settings=people"],
     ["/account", "?tab=appearance", "/r?settings=display"],
+    // 4단계: 연구 도우미 화면은 사이드 창으로(요청 종류는 넘기지 않음)
+    ["/r/a/assistant", "", "/r/a?panel=assistant"],
+    ["/r/a/assistant", "?mode=organize_meeting", "/r/a?panel=assistant"],
+    [
+      "/r/a/assistant",
+      "?tab=overview",
+      "/r/a?panel=assistant&panelView=suggestions",
+    ],
+    [
+      "/r/a/assistant",
+      "?document=d1&selection=1",
+      "/r/a/docs/w/d1?panel=assistant",
+    ],
   ])("%s%s → %s", (path, search, target) => {
     expect(legacyRedirect(path, search)).toBe(target);
   });

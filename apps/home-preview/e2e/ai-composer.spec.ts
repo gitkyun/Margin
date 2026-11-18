@@ -105,7 +105,9 @@ const input = (page: Page) =>
 test("원본 입력창이 데스크톱 너비에서 넘치지 않는다", async ({ page }) => {
   const { errors } = await open(page);
   for (const width of [1440, 1024]) {
+    // 연구 도우미는 사이드 창이라 폭마다 다시 엽니다(밀기 ↔ 겹치기가 바뀌면 겹친 창은 닫힘).
     await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/r/${RESEARCH_ID}/assistant`);
     await expect(input(page)).toBeVisible();
     await expect(
       composer(page).getByRole("combobox", {
@@ -189,13 +191,10 @@ test("아이콘 줄의 연구 도우미는 사이드 창 안에서 묻고 답한
     ),
   ).toBe(false);
 
-  // [전체 화면으로 열기]는 창을 닫고 연구 도우미 화면으로 갑니다. 같은 대화를 이어 보는 것은
-  // 저장한 대화를 다시 불러와야 해서(가짜 서버는 저장한 기록을 돌려주지 않음) 단위 테스트·실제 서비스에서 봅니다.
-  await panel.getByRole("button", { name: "전체 화면으로 열기" }).click();
-  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}/assistant$`));
-  await expect(panel).toBeHidden();
-  // 사이드 창의 대화는 숨긴 채 보존되므로(02 §4.2) 본문의 입력창만 봅니다.
-  await expect(page.locator("main [data-kokonut-composer]")).toBeVisible();
+  // 창에는 [전체 화면으로 열기]가 없습니다(연구 도우미 화면은 이 창으로 바뀜, 01 §3.3).
+  await expect(
+    panel.getByRole("button", { name: "전체 화면으로 열기" }),
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
@@ -722,6 +721,58 @@ test("초안 쓰기는 정해 둔 지시문을 붙여 보내고 답 아래 '이�
   ).toBeVisible();
   await next.getByRole("button", { name: "글로 저장" }).click();
   await expect(page.getByRole("dialog", { name: "글로 저장" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("예전 연구 도우미 주소는 화면을 옮기지 않고 사이드 창으로 연다(IA v2 01 §3.3)", async ({
+  page,
+}) => {
+  const { errors } = await open(
+    page,
+    1440,
+    900,
+    0,
+    `/r/${RESEARCH_ID}/assistant?tab=overview&mode=organize_meeting`,
+  );
+  // 홈 위에 창이 열리고, 주소에는 창을 여는 값이 남지 않습니다.
+  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}$`));
+  const panel = page.locator(".assistant-side-panel");
+  await expect(panel).toBeVisible();
+  const views = panel.getByRole("tablist", { name: "연구 도우미 보기" });
+  // 예전 제안 탭(tab=overview)은 창의 제안 보기로 엽니다.
+  await expect(views.getByRole("tab", { name: "제안" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(
+    page
+      .getByRole("toolbar", { name: "옆 창 열기" })
+      .getByRole("button", { name: "연구 도우미" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(errors).toEqual([]);
+});
+
+test("휴대폰 아래 탭의 연구 도우미는 화면을 옮기지 않고 창을 여닫는다(IA v2 02 §6)", async ({
+  page,
+}) => {
+  const { errors } = await open(page, 390, 844, 0, `/r/${RESEARCH_ID}/tasks`);
+  const tab = page
+    .getByRole("navigation", { name: "주요 메뉴" })
+    .getByRole("button", { name: "연구 도우미" });
+  await expect(tab).toHaveAttribute("aria-pressed", "false");
+  await tab.click();
+  await expect(tab).toHaveAttribute("aria-pressed", "true");
+  const panel = page.locator(".assistant-side-panel");
+  await expect(
+    panel
+      .locator("[data-kokonut-composer]")
+      .getByRole("textbox", { name: "연구 도우미에게 질문" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}/tasks$`));
+  await shot(page, "mobile-tab-assistant");
+  await tab.click();
+  await expect(tab).toHaveAttribute("aria-pressed", "false");
+  await expect(panel).toBeHidden();
   expect(errors).toEqual([]);
 });
 
