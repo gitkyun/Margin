@@ -47,7 +47,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Choice, VisibilityField, Segments } from "@/components/experience";
+import { Choice, Segments } from "@/components/experience";
 import { EditorToolbar } from "./writing/EditorToolbar";
 import { WordDiff } from "./writing/WordDiff";
 import { AIReviewHighlight } from "./writing/ai-review";
@@ -57,6 +57,9 @@ import {
   WritingAutocomplete,
 } from "./writing/WritingAutocomplete";
 import { BackLink, DocumentTabs } from "./student/shared";
+import { EditorHeader, Outline, type SaveState } from "./docs/EditorHeader";
+import { DocInfoDialog } from "./docs/DocInfoDialog";
+import { editorOutline, savedTime } from "@/lib/editor-head";
 import {
   VersionCompareSlider,
   VersionSheet,
@@ -261,7 +264,7 @@ export function WritingPage() {
 const AUTOSAVE_DELAY_MS = 1500;
 function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   const navigate = useNavigate();
-  const { data, save, user, upload, runAI, mode } = useWorkspace(),
+  const { data, save, remove, user, upload, runAI, mode } = useWorkspace(),
     // 편집기를 만들기 전에 이 브라우저의 작성본을 읽어 초기 내용으로 쓴다.
     [restored] = useState(() => {
       try {
@@ -298,7 +301,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       version: DocumentVersion;
       url: string;
     } | null>(null),
-    [outline, setOutline] = useState(false);
+    [infoEdit, setInfoEdit] = useState(false);
   // 제목 칸 높이를 글 줄 수에 맞춥니다(폭이 바뀌어도 다시 잽니다).
   const titleField = useRef<HTMLTextAreaElement>(null);
   useLayoutEffect(() => {
@@ -373,7 +376,7 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       } catch {}
   }, [title, dirty, base.updatedAt]);
   const discarded = useRef(false);
-  useNavigationGuard({
+  const guard = useNavigationGuard({
     dirty,
     busy: !!busy,
     label: t("문서 초안"),
@@ -573,14 +576,64 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     });
     return v;
   }
-  const headings =
-    editor
-      ?.getJSON()
-      .content?.filter((n) => n.type === "heading")
-      .map(
-        (n) =>
-          n.content?.map((c) => ("text" in c ? c.text : "")).join("") ?? "",
-      ) ?? [];
+  const outline = editor ? editorOutline(editor.getJSON()) : [];
+  function scrollToHeading(index: number) {
+    const el = document.querySelectorAll(
+      ".rms-document-editor h1,.rms-document-editor h2,.rms-document-editor h3",
+    )[index];
+    el?.scrollIntoView({
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+      block: "center",
+    });
+  }
+  const saveState: SaveState =
+    busy === "save"
+      ? "saving"
+      : error && dirty
+        ? "failed"
+        : dirty
+          ? "dirty"
+          : "saved";
+  function makePDF() {
+    void action("pdf", async () => {
+      const version = await keepVersion(),
+        { documentPDF } = await import("@/lib/document-pdf"),
+        blob = await documentPDF(version);
+      pendingPDF.current = {};
+      setPreview({ blob, version, url: URL.createObjectURL(blob) });
+    });
+  }
+  /** 보관(05 §3.3 ⋯ › 보관): 쓰던 내용을 먼저 저장하고 목록으로 돌아가 6초 되돌리기를 띄웁니다. */
+  function archive() {
+    void action("archive", async () => {
+      if (dirty) await persist();
+      guard.clear();
+      const listHref = `/r/${initial.researchId}/docs`;
+      navigate(listHref);
+      try {
+        await remove("documents", initial.id);
+      } catch (e) {
+        // 화면을 떠났으니 오류 줄 대신 알림으로 알려요.
+        toast.error((e as Error).message);
+        return;
+      }
+      toast.success(t("보관했어요."), {
+        duration: 6000,
+        action: {
+          label: t("되돌리기"),
+          onClick: () => {
+            const latest =
+              data.documents.find((d) => d.id === initial.id) ?? base;
+            void save("documents", { ...latest, archivedAt: undefined })
+              .then(() => toast.success(t("복원했어요.")))
+              .catch((e: Error) => toast.error(e.message));
+          },
+        },
+      });
+    });
+  }
   const milestones = data.milestones.filter(
     (milestone) =>
       milestone.researchId === initial.researchId &&
@@ -602,140 +655,94 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
         ? (editor?.getText() ?? "")
         : (versionList.find((v) => v.id === to)?.text ?? "");
   return (
-    <div className="writing-page">
-      <BackLink to={`/r/${initial.researchId}/writing`}>{t("글쓰기")}</BackLink>
-      <header className="writing-heading">
-        <div>
-          {/* 긴 제목은 줄을 바꿔 다 보이게 자동 높이 textarea로 둡니다.
-              제목은 한 줄 값이라 Enter는 줄바꿈을 넣지 않고, 붙여넣은 줄바꿈은 공백으로 바꿔요. */}
-          <textarea
-            ref={titleField}
-            rows={1}
-            aria-label={t("문서 제목")}
-            className="document-title-input"
-            value={title}
-            maxLength={300}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.nativeEvent.isComposing)
-                e.preventDefault();
-            }}
-            onChange={(e) => {
-              setTitle(e.target.value.replace(/\r\n|\r|\n/g, " "));
-              setDirty(true);
-              setEditTick((value) => value + 1);
-            }}
-          />
-          <div className="writing-meta">
-            <span className="writing-save-status" role="status">
-              {/* 상태가 바뀔 때마다 key가 바뀌어 흐림→선명 전환이 한 번 재생돼요 */}
-              <span
-                key={busy ? "busy" : dirty ? "dirty" : "saved"}
-                className="text-swap"
-              >
-                <Icon name={busy || dirty ? "clock" : "check"} size={15} />
-                {busy
-                  ? t("저장 중")
-                  : dirty
-                    ? t("저장하지 않은 변경")
-                    : t("저장됨")}
-              </span>
-            </span>
-            <span>
-              {t("{count}자", { count: editor?.getText().length ?? 0 })}
-            </span>
-            <span>{t("저장 {count}회", { count: base.revision })}</span>
-          </div>
-        </div>
-        <div className="button-row">
-          <Button
-            variant="outline"
-            disabled={!!busy}
-            onClick={() => {
-              setFrom(versionList.at(-1)?.id ?? "");
-              setVersionsOpen(true);
-            }}
-          >
-            <Icon name="history" size={16} />
-            {t("버전")}
-          </Button>
-          <Button
-            variant="outline"
-            disabled={!!busy}
-            onClick={() =>
-              void action("pdf", async () => {
-                const version = await keepVersion(),
-                  { documentPDF } = await import("@/lib/document-pdf"),
-                  blob = await documentPDF(version);
-                pendingPDF.current = {};
-                setPreview({ blob, version, url: URL.createObjectURL(blob) });
-              })
-            }
-          >
-            {t("검토용 PDF")}
-          </Button>
-          {/* 저장 버튼은 두지 않아요. 자동 저장하고, ⌘S로 바로 저장할 수 있어요(결정 D3). */}
-        </div>
-      </header>
+    <div className="writing-page editor-page">
+      {/* 휴대폰 폭에서는 열어 둔 탭 줄이 없어 뒤로 가기로 목록에 갑니다(05 §3.1). */}
+      <span className="editor-back">
+        <BackLink to={`/r/${initial.researchId}/docs`}>{t("글·자료")}</BackLink>
+      </span>
+      <EditorHeader
+        titleField={
+          <>
+            {/* 긴 제목은 줄을 바꿔 다 보이게 자동 높이 textarea로 둡니다.
+                제목은 한 줄 값이라 Enter는 줄바꿈을 넣지 않고, 붙여넣은 줄바꿈은 공백으로 바꿔요. */}
+            <textarea
+              ref={titleField}
+              rows={1}
+              aria-label={t("문서 제목")}
+              className="document-title-input"
+              value={title}
+              maxLength={300}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.nativeEvent.isComposing)
+                  e.preventDefault();
+              }}
+              onChange={(e) => {
+                setTitle(e.target.value.replace(/\r\n|\r|\n/g, " "));
+                setDirty(true);
+                setEditTick((value) => value + 1);
+              }}
+            />
+          </>
+        }
+        type={base.type}
+        save={saveState}
+        savedAt={savedTime(base.updatedAt)}
+        onRetry={saveNow}
+        visibility={visibility}
+        onVisibility={(v) => {
+          setVisibility(v);
+          setDirty(true);
+          setEditTick((value) => value + 1);
+        }}
+        outline={outline}
+        onOutline={scrollToHeading}
+        versions={versionList}
+        onKeepVersion={() =>
+          void action("version", async () => {
+            await keepVersion();
+            toast.success(t("지금 내용을 저장하고 새 버전으로 남겼어요."));
+          })
+        }
+        onOpenVersion={(id) => {
+          setFrom(id);
+          setTo("draft");
+          setVersionsOpen(true);
+        }}
+        review={{
+          disabled: dirty || !!busy || !editor?.getText().trim(),
+          hint: dirty
+            ? t("저장한 뒤에 AI 문장 점검을 할 수 있어요.")
+            : t(
+                "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토해요.",
+              ),
+          selection: editor?.state.selection.empty === false,
+          onStart: () => {
+            // 이동하지 않고 오른쪽 여백 패널에서 점검해요. 선택한 문단이 있으면 그 원문만 보내요.
+            if (!review.start()) return;
+            setInfoTab("review");
+            setInfoOpen(true);
+          },
+        }}
+        onEditInfo={() => setInfoEdit(true)}
+        onShowInfo={() => {
+          setInfoTab("versions");
+          setInfoOpen(true);
+        }}
+        onPdf={makePDF}
+        onArchive={archive}
+        busy={!!busy}
+      />
       {error && (
         <div className="rms-error" role="alert">
           {error}
         </div>
       )}
-      <EditorToolbar
-        editor={editor}
-        outlineOpen={outline}
-        onToggleOutline={() => setOutline(!outline)}
-        aiDisabled={dirty || !!busy || !editor?.getText().trim()}
-        aiHint={
-          dirty
-            ? t("저장한 뒤에 AI 문장 점검을 할 수 있어요.")
-            : t(
-                "일부를 선택하면 그 부분만, 선택하지 않으면 저장한 문서 전체를 검토해요.",
-              )
-        }
-        onAiReview={() => {
-          // 이동하지 않고 오른쪽 여백 패널에서 점검해요. 선택한 문단이 있으면 그 원문만 보내요.
-          if (!review.start()) return;
-          setInfoTab("review");
-          setInfoOpen(true);
-        }}
-      />
-      <div className="writing-layout">
-        {outline && (
-          <aside className="writing-outline">
-            <h2>{t("목차")}</h2>
-            {headings.length ? (
-              headings.map((h, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    const el = document.querySelectorAll(
-                      ".rms-document-editor h1,.rms-document-editor h2,.rms-document-editor h3",
-                    )[i];
-                    el?.scrollIntoView({
-                      behavior: matchMedia("(prefers-reduced-motion: reduce)")
-                        .matches
-                        ? "instant"
-                        : "smooth",
-                      block: "center",
-                    });
-                  }}
-                >
-                  {h || t("제목 없음")}
-                </button>
-              ))
-            ) : (
-              <p>{t("소제목을 넣으면 목차가 생겨요.")}</p>
-            )}
-            <VisibilityField
-              value={visibility}
-              onChange={(v) => {
-                setVisibility(v);
-                setDirty(true);
-              }}
-            />
-          </aside>
-        )}
+      <EditorToolbar editor={editor} />
+      <div className="editor-body">
+        <nav className="editor-outline" aria-label={t("목차")}>
+          <h2>{t("목차")}</h2>
+          <Outline entries={outline} onPick={scrollToHeading} />
+        </nav>
         <div className="writing-paper">
           {review.selectionBar}
           <SectionBoundary>
@@ -766,6 +773,28 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
           />
         </div>
       </div>
+      <p className="editor-status">
+        {t("{count}자", {
+          count: (editor?.getText().length ?? 0).toLocaleString(),
+        })}
+        <span aria-hidden="true">·</span>
+        {t("버전 {count}개", { count: versionList.length })}
+        <span aria-hidden="true">·</span>
+        {t("마지막 저장 {time}", { time: savedTime(base.updatedAt) })}
+      </p>
+      <DocInfoDialog
+        open={infoEdit}
+        onOpenChange={setInfoEdit}
+        document={base}
+        folders={data.folders.filter(
+          (f) => f.researchId === initial.researchId && !f.archivedAt,
+        )}
+        onSave={async ({ type, folderId }) => {
+          const saved = await save("documents", { ...base, type, folderId });
+          setBase(saved);
+          toast.success(t("글 정보를 저장했어요."));
+        }}
+      />
       <MarginPanel
         label={t("문서 버전과 연결된 기록")}
         open={infoOpen}
