@@ -64,7 +64,10 @@
     background: var(--hover-fill);
   }
   .record-line[aria-current="page"] {
-    background: var(--selected-fill);
+    background: var(--navigation-selected-fill);
+  }
+  .record-line[aria-current="page"] strong {
+    font-weight: 700;
   }
   .record-line > svg {
     flex: none;

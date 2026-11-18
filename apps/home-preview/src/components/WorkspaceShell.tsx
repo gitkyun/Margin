@@ -192,6 +192,23 @@ export function WorkspaceShell({
   const [railTab, setRailTabState] = useState<SidePanelTab | null>(() =>
     initialPanelTab(window.innerWidth),
   );
+  // 열어 본 탭은 같은 연구 안에서 보존해 작성 내용·필터·스크롤을 이어 씁니다.
+  const [visitedPanels, setVisitedPanels] = useState<{
+    researchId?: string;
+    tabs: SidePanelTab[];
+  }>({ researchId, tabs: [] });
+  useEffect(() => {
+    setVisitedPanels((previous) => {
+      if (previous.researchId !== researchId)
+        return { researchId, tabs: railTab ? [railTab] : [] };
+      if (!railTab || previous.tabs.includes(railTab)) return previous;
+      return { researchId, tabs: [...previous.tabs, railTab] };
+    });
+  }, [researchId, railTab]);
+  const hasVisited = (tab: SidePanelTab) =>
+    railTab === tab ||
+    (visitedPanels.researchId === researchId &&
+      visitedPanels.tabs.includes(tab));
   // 사람이 여닫은 것만 기억합니다(화면 이동으로 닫힌 것은 남기지 않음, 02 §4.5).
   const setRailTab = (tab: SidePanelTab | null, remember = false) => {
     setRailTabState(tab);
@@ -384,25 +401,37 @@ export function WorkspaceShell({
             hidden={detailOpen || railOpen}
             ref={panel.setSlot}
           />
-          {/* 실제 탭은 상세가 덮여 있어도 살려 두고 숨깁니다(쓰던 글·스크롤 유지, 02 §4.2). */}
-          {assistantOpen && researchId && (
-            <div hidden={detailOpen}>
+          {/* 각 탭이 자기 스크롤과 입력 상태를 유지합니다(02 §4.2). */}
+          {researchId && hasVisited("assistant") && (
+            <div
+              key={researchId + "-assistant"}
+              className="ia-panel-tab"
+              hidden={detailOpen || !assistantOpen}
+            >
               <AssistantSidePanel
                 researchId={researchId}
                 onClose={() => setRailTab(null, true)}
               />
             </div>
           )}
-          {tasksOpen && researchId && (
-            <div hidden={detailOpen}>
+          {researchId && hasVisited("tasks") && (
+            <div
+              key={researchId + "-tasks"}
+              className="ia-panel-tab"
+              hidden={detailOpen || !tasksOpen}
+            >
               <TasksPanel
                 researchId={researchId}
                 onClose={() => setRailTab(null, true)}
               />
             </div>
           )}
-          {logOpen && researchId && (
-            <div hidden={detailOpen}>
+          {researchId && hasVisited("log") && (
+            <div
+              key={researchId + "-log"}
+              className="ia-panel-tab"
+              hidden={detailOpen || !logOpen}
+            >
               <LogPanel
                 researchId={researchId}
                 onClose={() => setRailTab(null, true)}

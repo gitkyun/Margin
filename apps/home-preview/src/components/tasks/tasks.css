@@ -161,7 +161,7 @@
   .tasks-panel-head h2 {
     flex: 1;
     margin: 0;
-    font-size: var(--typography-label1-fontSize);
+    font-size: var(--typography-headline2-fontSize);
     font-weight: 700;
   }
   .tasks-panel-group {

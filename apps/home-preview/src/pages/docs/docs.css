@@ -65,7 +65,7 @@
     background: var(--hover-fill);
   }
   .docs-side-item[aria-pressed="true"] {
-    background: var(--selected-fill);
+    background: var(--navigation-selected-fill);
     font-weight: 600;
   }
   .docs-side-item span {
@@ -159,9 +159,12 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    overflow: hidden;
     font-size: var(--typography-label1-fontSize);
     font-weight: 600;
+  }
+  .docs-row-title {
+    min-width: 0;
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

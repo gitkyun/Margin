@@ -184,3 +184,65 @@ test("연결이 끊기면 상단 띠 하나만 연결 끊김으로 바뀐다", a
     page.getByText("인터넷 연결이 끊겼어요.", { exact: false }),
   ).toHaveCount(0);
 });
+
+test("일본어 태블릿 상단바에서도 계정 버튼이 화면 안에 보인다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 768, height: 850 });
+  await page.addInitScript(() => localStorage.setItem("margin-lang", "ja"));
+  await page.goto("/r");
+  await page
+    .locator('main a[href^="/r/"]')
+    .filter({ hasNotText: /新規/ })
+    .first()
+    .click();
+  await expect(page.locator(".hm-home")).toBeVisible();
+
+  const topbar = page.locator(".ia-topbar");
+  const account = topbar.locator(".kokonut-profile-trigger");
+  await expect(account).toBeVisible();
+  const right = await account.evaluate(
+    (el) => el.getBoundingClientRect().right,
+  );
+  expect(right).toBeLessThanOrEqual(768);
+  const overflow = await topbar.evaluate(
+    (el) => el.scrollWidth - el.clientWidth,
+  );
+  expect(overflow).toBe(0);
+});
+
+test("사이드 창을 전환하거나 닫아도 질문 초안과 선택한 보기가 남는다", async ({
+  page,
+}) => {
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const rail = page.getByRole("toolbar", { name: "옆 창 열기" });
+  const assistant = rail.getByRole("button", {
+    name: "연구 도우미",
+    exact: true,
+  });
+  const log = rail.getByRole("button", { name: "결정·질문", exact: true });
+  await assistant.click();
+  const draft = page.locator("#margin-panel .ia-panel-tab textarea").first();
+  await draft.fill("패널을 바꿔도 남아 있어야 하는 질문");
+  await log.click();
+  const questions = page
+    .locator("#margin-panel")
+    .getByText("질문", { exact: true })
+    .first();
+  await questions.click();
+  await assistant.click();
+  await expect(draft).toHaveValue("패널을 바꿔도 남아 있어야 하는 질문");
+  await assistant.click();
+  await expect(draft).toBeHidden();
+  await log.click();
+  await expect(questions.locator("xpath=..")).toHaveAttribute(
+    "data-active",
+    "true",
+  );
+  await assistant.click();
+  await expect(draft).toHaveValue("패널을 바꿔도 남아 있어야 하는 질문");
+});

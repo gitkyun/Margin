@@ -58,6 +58,7 @@
   /* 상호작용 — 누를 수 있는 카드·행은 이 두 값만 씁니다 */
   --hover-line: var(--semantic-line-brand-strong);
   --hover-fill: var(--semantic-surface-neutral-secondary);
+  --navigation-selected-fill: var(--semantic-surface-neutral-tertiary);
   --selected-fill: rgba(
     var(--semantic-surface-brand-primary-rgb),
     var(--opacity-8)
