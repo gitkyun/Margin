@@ -86,4 +86,39 @@
   .assistant-side-conversation small {
     color: var(--text-secondary);
   }
+  /* '지금 보는 기록' 칩(06 §2.2): 실선 칩 */
+  .assistant-side-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    max-width: 100%;
+    padding: var(--spacing-4) var(--spacing-6) var(--spacing-4) var(--spacing-8);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-side-chip > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .assistant-side-chip button {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .assistant-side-chip button:hover {
+    background: var(--hover-fill);
+  }
 }

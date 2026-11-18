@@ -1,10 +1,11 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { formatDateTime } from "@/lib/domain";
 import { handoffState, type AssistantHandoff } from "@/lib/assistant-handoff";
+import { contextKey, viewingContext } from "@/lib/viewing-context";
 import { t } from "@/lib/i18n";
 import "./assistant-side-panel.css";
 
@@ -25,6 +26,18 @@ export function AssistantSidePanel({
   const { data } = useWorkspace();
   const navigate = useNavigate();
   const [draft, setDraft] = useState("");
+  const location = useLocation();
+  // '지금 보는 기록'(IA v2 06 §2.2): 연 화면의 대상이 저절로 칩으로 놓입니다.
+  // ×로 뺀 대상은 이 창을 연 동안 다시 놓지 않습니다.
+  const [removed, setRemoved] = useState<string[]>([]);
+  const viewing = viewingContext(
+    location.pathname,
+    location.search,
+    data,
+    researchId,
+  );
+  const chip =
+    viewing && !removed.includes(contextKey(viewing)) ? viewing : null;
   const path = `/r/${researchId}/assistant`;
   const conversations = data.conversations
     .filter((c) => c.researchId === researchId && !c.archivedAt)
@@ -48,7 +61,8 @@ export function AssistantSidePanel({
   };
   const submit = (event?: FormEvent) => {
     event?.preventDefault();
-    if (draft.trim()) go({ ask: draft.trim() });
+    if (draft.trim())
+      go({ ask: draft.trim(), ...(chip ? { contexts: [chip] } : {}) });
   };
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key !== "Enter" || event.shiftKey) return;
@@ -69,7 +83,7 @@ export function AssistantSidePanel({
           size="icon-sm"
           aria-label={t("전체 화면으로 열기")}
           title={t("전체 화면으로 열기")}
-          onClick={() => go()}
+          onClick={() => go(chip ? { contexts: [chip] } : undefined)}
         >
           <Icon name="arrow-up-right" size={18} />
         </Button>
@@ -83,6 +97,19 @@ export function AssistantSidePanel({
         </Button>
       </header>
       <form className="assistant-side-form" onSubmit={submit}>
+        {chip && (
+          <span className="assistant-side-chip">
+            <Icon name="file" size={14} />
+            <span>{t("지금 보는 기록 · {title}", { title: chip.title })}</span>
+            <button
+              type="button"
+              aria-label={t("{title} 빼기", { title: chip.title })}
+              onClick={() => setRemoved((prev) => [...prev, contextKey(chip)])}
+            >
+              <Icon name="close" size={12} />
+            </button>
+          </span>
+        )}
         <textarea
           aria-label={t("연구 도우미에게 물어보기")}
           placeholder={t("이 연구에 대해 물어보세요")}
@@ -92,7 +119,12 @@ export function AssistantSidePanel({
           onKeyDown={onKeyDown}
         />
         <div className="assistant-side-form-row">
-          <small>{t("보내면 연구 도우미 화면에서 답을 이어서 봐요.")}</small>
+          <small>
+            {chip
+              ? t("지금 보는 기록을 먼저 읽고, 이 연구의 다른 기록도 읽어요.")
+              : t("이 연구의 기록을 읽고 답해요.")}{" "}
+            {t("보내면 연구 도우미 화면에서 답을 이어서 봐요.")}
+          </small>
           <Button type="submit" size="sm" disabled={!draft.trim()}>
             {t("보내기")}
           </Button>

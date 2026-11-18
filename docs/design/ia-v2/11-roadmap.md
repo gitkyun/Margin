@@ -55,10 +55,10 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 | 0 | 틀: 상단 줄(메뉴 4개), 사이드 창 틀, 휴대폰 아래 탭, 새 주소, 설정 창, 저장 대기 줄 | 없음 | [x] [#102](https://github.com/gitkyun/Margin/pull/102), 고침 [#104](https://github.com/gitkyun/Margin/pull/104) | 캡처 검수 → 병합 |
 | 1 | 공통 줄 부품, 항목 상세, 할 일 화면(T1)·할 일 창, 결정·질문 창, 홈 | 없음 | [~] [#103](https://github.com/gitkyun/Margin/pull/103) 병합(진행 중) | 캡처 검수 → 병합 |
 | 2a | 미팅 목록·기록 화면, 원문 선택·형광펜, 넘어온 할 일, 수정 결과 구획 | 없음 | [~] [#105](https://github.com/gitkyun/Margin/pull/105)·[#106](https://github.com/gitkyun/Margin/pull/106)·[#107](https://github.com/gitkyun/Margin/pull/107) 병합(진행 중) | 캡처 검수 → 병합 → 실제 학생 사용 시험 여부 |
-| 2b | [정리하기]에 본인 전사, 요약·제안 검사 | `ai-assist` | [ ] | 실제 AI 결과 + 캡처 → 병합(함수 배포) |
-| 3a | 글·자료 합친 목록, 열어 둔 탭, 글 편집 틀, 자료 보기 | 없음 | [ ] | 캡처 검수 → 병합 |
-| 3b | 본문 안 수정 제안 | `ai-assist` | [ ] | 실제 AI 결과 + 캡처 → 병합(함수 배포) |
-| 4 | 연구 도우미 창(P1), 자료 창(P4) | 없음 | [~] 연구 도우미 간이 창 먼저(`feat/rail-assistant-panel`) | 캡처 검수 → 병합 |
+| 2b | [정리하기]에 본인 전사, 요약·제안 검사 | `ai-assist` | [x] [#120](https://github.com/gitkyun/Margin/pull/120)·[#121](https://github.com/gitkyun/Margin/pull/121) (실제 AI 결과 확인 전) | 실제 AI 결과 + 캡처 → 병합(함수 배포) |
+| 3a | 글·자료 합친 목록, 열어 둔 탭, 글 편집 틀, 자료 보기 | 없음 | [x] [#122](https://github.com/gitkyun/Margin/pull/122)~[#131](https://github.com/gitkyun/Margin/pull/131) (캡처 검수 전) | 캡처 검수 → 병합 |
+| 3b | 본문 안 수정 제안 | `ai-assist` | [x] [#132](https://github.com/gitkyun/Margin/pull/132)·[#133](https://github.com/gitkyun/Margin/pull/133) (실제 AI 결과 확인 전) | 실제 AI 결과 + 캡처 → 병합(함수 배포) |
+| 4 | 연구 도우미 창(P1), 자료 창(P4) | 없음 | [~] 간이 창(`feat/rail-assistant-panel`), '지금 보는 기록' 칩(`feat/ia-v2-4-viewing-chip`) | 캡처 검수 → 병합 |
 | 5 | 정리: 연구 흐름, 예전 화면·임시 통로 제거, 문서 마무리 | 없음 | [ ] | 최종 검수 → 병합 |
 | 6 | 후속(사진 붙이기, 서버 전사, 형광펜 종류, 발표 자료 형태, 함께 쓰기) | 마이그레이션 | 결정 전 | 시작 여부 |
 

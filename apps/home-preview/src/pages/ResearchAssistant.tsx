@@ -1038,6 +1038,11 @@ export function ResearchAssistant() {
   const unavailable = mode === "preview" || aiNotConfigured;
   // 사이드 창의 연구 도우미에서 넘겨받은 대화·질문(lib/assistant-handoff.ts). 한 번만 씁니다.
   const handoff = useRef(readHandoff(location.state));
+  // 사이드 창의 '지금 보는 기록' 칩은 모델 목록을 기다리지 않고 바로 이 화면의 근거 칩으로 놓습니다(IA v2 06 §2.2).
+  useEffect(() => {
+    const chips = handoff.current?.contexts;
+    if (chips?.length) setContexts(chips);
+  }, []);
   useEffect(() => {
     const received = handoff.current;
     if (!received || caps.isPending) return;
@@ -1058,7 +1063,11 @@ export function ResearchAssistant() {
     if (!received.ask) return;
     // 바로 보낼 수 없으면(미리보기·AI 미설정·모델 없음) 입력창에 넣어 두기만 합니다.
     if (unavailable || !selection.model) setDraft(received.ask);
-    else void send(received.ask, { fromComposer: true });
+    else
+      void send(received.ask, {
+        fromComposer: true,
+        ...(received.contexts?.length ? { contexts: received.contexts } : {}),
+      });
     // 넘겨받은 값은 처음 한 번만 씁니다(모델 목록을 다 받은 뒤).
   }, [caps.isPending]);
   const {
