@@ -168,6 +168,10 @@ test("아이콘 줄의 연구 도우미는 사이드 창 안에서 묻고 답한
     .locator("[data-kokonut-composer]")
     .getByRole("textbox", { name: "연구 도우미에게 질문" });
   await expect(panelInput).toBeVisible();
+  // 빈 대화의 첫 화면은 지금 화면(홈, 남은 할 일 있음)에 맞춰 권합니다(06 §2.6).
+  await expect(
+    panel.getByRole("button", { name: "이번 주 할 일 정리하기" }),
+  ).toBeVisible();
   await shot(page, "rail-assistant-panel");
 
   await panelInput.fill("이 연구의 핵심만 알려 줘");
