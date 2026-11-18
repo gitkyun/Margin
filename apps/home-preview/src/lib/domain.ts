@@ -253,6 +253,8 @@ export interface DocumentRecord extends BaseRecord {
   origin?: "ai";
   /** 그 초안의 근거로 쓴 기록(본문 없이 종류·id·제목) */
   draftedFrom?: { kind: string; id: ID; title: string }[];
+  /** 그 초안을 사람이 처음 고친 때. 있으면 '초안' 띠를 거둡니다(05 §3.9). */
+  humanEditedAt?: string;
 }
 export interface DocumentVersion extends BaseRecord {
   documentId: ID;
