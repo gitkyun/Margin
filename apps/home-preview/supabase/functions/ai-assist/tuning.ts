@@ -14,12 +14,53 @@ const OUTPUT_LIMIT: Record<ThinkingLevel, { short: number; long: number }> = {
   high: { short: 16384, long: 24576 },
 };
 
-/** 한 번 호출의 제한 시간(ms) */
+/** 한 번 호출의 제한 시간(ms). low는 큰 연구 기록 입력의 타임아웃을 방지하기 위해 45초로 둡니다. */
 const ATTEMPT_TIMEOUT_MS: Record<ThinkingLevel, number> = {
-  low: 35_000,
+  low: 45_000,
   medium: 60_000,
   high: 90_000,
 };
+
+/**
+ * 작업별 최소 Thinking 수준.
+ * 깊은 논리 점검이나 날짜 제약이 필요한 작업은 최소 medium으로 보장해 품질 저하를 방지합니다.
+ */
+const TASK_MINIMUM_THINKING: Partial<Record<string, ThinkingLevel>> = {
+  review_writing: "medium",
+  propose_roadmap: "medium",
+};
+
+/**
+ * 작업별 최대 Thinking 수준.
+ * 이어쓰기나 인라인 수정 같은 짧은 결과 작업은 high가 불필요하게 응답 시간을 늘리지 않도록 low로 제한합니다.
+ */
+const TASK_MAXIMUM_THINKING: Partial<Record<string, ThinkingLevel>> = {
+  continue_writing: "low",
+  inline_edit: "low",
+};
+
+const LEVEL_ORDER: ThinkingLevel[] = ["low", "medium", "high"];
+
+/**
+ * 작업 종류와 사용자의 요청 수준을 종합하여 실제 적용할 생각 단계를 결정합니다.
+ * 사용자가 고른 값을 기본으로 존중하되, 작업 특성에 따른 최소/최대 안전 범위를 적용합니다.
+ */
+export function effectiveThinking(
+  mode: string,
+  requested: string | undefined,
+): ThinkingLevel {
+  const level = thinkingLevel(requested);
+  const min = TASK_MINIMUM_THINKING[mode];
+  const max = TASK_MAXIMUM_THINKING[mode];
+  let effective = level;
+  if (min && LEVEL_ORDER.indexOf(effective) < LEVEL_ORDER.indexOf(min)) {
+    effective = min;
+  }
+  if (max && LEVEL_ORDER.indexOf(effective) > LEVEL_ORDER.indexOf(max)) {
+    effective = max;
+  }
+  return effective;
+}
 
 /** 재시도를 포함한 전체 모델 대기 한도. Edge Function 실행 한도(150초) 안에 끝나도록 둡니다. */
 export const MODEL_BUDGET_MS = 130_000;
@@ -37,12 +78,18 @@ export function maxOutputFor(
   mode: string,
   thinking: string | undefined,
 ): number {
-  const limit = OUTPUT_LIMIT[thinkingLevel(thinking)];
+  const limit = OUTPUT_LIMIT[effectiveThinking(mode, thinking)];
   return SHORT_MODES.has(mode) ? limit.short : limit.long;
 }
 
-export function attemptTimeoutFor(thinking: string | undefined): number {
-  return ATTEMPT_TIMEOUT_MS[thinkingLevel(thinking)];
+export function attemptTimeoutFor(
+  thinking: string | undefined,
+  mode?: string,
+): number {
+  const level = mode
+    ? effectiveThinking(mode, thinking)
+    : thinkingLevel(thinking);
+  return ATTEMPT_TIMEOUT_MS[level];
 }
 
 /**

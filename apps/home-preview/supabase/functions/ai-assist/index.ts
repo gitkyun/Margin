@@ -18,6 +18,7 @@ import {
 } from "./providers.ts";
 import {
   attemptTimeoutFor,
+  effectiveThinking,
   maxOutputFor,
   serverTiming,
   shouldRetry,
@@ -428,10 +429,12 @@ async function handle(request: Request): Promise<Response> {
         "INVALID_INPUT",
         "이 모델에서 지원하는 생각 수준을 선택해 주세요.",
       );
+    const effectiveLevel = effectiveThinking(input.mode, input.thinking);
     runInfo = {
       mode: input.mode,
       model,
       thinking: input.thinking ?? null,
+      effectiveThinking: effectiveLevel,
       provider,
       webSearch: !!input.webSearch,
     };
@@ -960,7 +963,7 @@ async function handle(request: Request): Promise<Response> {
       p_id: input.clientRunId ?? crypto.randomUUID(),
       p_mode: input.mode,
       p_model: model,
-      p_thinking: input.thinking ?? null,
+      p_thinking: effectiveLevel,
       p_amount: reserveCredits(
         selectedModel,
         systemPrompt,
@@ -984,8 +987,8 @@ async function handle(request: Request): Promise<Response> {
     clock.mark("reserve");
     runInfo = { ...runInfo, maxOutput, inputChars: prompt.length };
     // 생각 단계별 제한 시간으로 한 번 기다리고, 시간 초과면 남은 시간 안에서 한 번만 다시 보냅니다. 같은 실행 번호와 예약을 그대로 쓰므로 크레딧은 한 번만 예약되고, 정산은 받은 응답의
-    // 실제 사용량으로만 합니다.
-    const attemptTimeout = attemptTimeoutFor(input.thinking);
+    // 실제 사용량으로만 합니다. 작업 특성에 따라 보정된 생각 단계(effectiveLevel)를 바탕으로 제한 시간을 정합니다.
+    const attemptTimeout = attemptTimeoutFor(input.thinking, input.mode);
     const modelStarted = performance.now();
     let result: ProviderResult | undefined;
     for (let attempt = 1; ; attempt++) {
@@ -1023,7 +1026,7 @@ async function handle(request: Request): Promise<Response> {
           system: systemPrompt,
           prompt,
           schema,
-          thinking: input.thinking,
+          thinking: effectiveLevel,
           maxOutput,
           signal: controller.signal,
           apiKey,
