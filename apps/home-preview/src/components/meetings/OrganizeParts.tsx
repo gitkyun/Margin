@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { WorkbenchLoading } from "@/pages/assistant/AssistantThinking";
 import { useWorkspace } from "@/lib/workspace";
+import { keepSummary } from "@/lib/meeting-summary";
 import { useExperience } from "@/lib/experience";
 import { useAICapabilities, resolveAISelection } from "@/lib/ai-capabilities";
 import {
@@ -182,16 +183,7 @@ export function SummaryBody({
     )
       return;
     try {
-      await save("meetings", {
-        ...meeting,
-        summary: {
-          text: proposal.candidate.body ?? "",
-          createdAt: new Date().toISOString(),
-          memoRevision: meeting.memoRevision,
-          runId: proposal.runId,
-        },
-      });
-      await save("aiCandidates", { ...proposal, status: "adopted" });
+      await keepSummary(save, meeting, proposal);
       toast.success(t("요약을 저장했어요."));
     } catch {
       toast.error(t("저장하지 못했어요. 다시 선택해 주세요."));

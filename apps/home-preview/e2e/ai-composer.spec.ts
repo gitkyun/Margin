@@ -792,3 +792,73 @@ test("답 아래 [할 일 추가]는 할 일 제안을 펼치고 고른 줄만 �
   ).toBeEnabled();
   expect(errors).toEqual([]);
 });
+
+test("미팅 정리 답 아래 [요약 저장]은 그 기록의 요약으로 저장하고 제안을 고른 것으로 남긴다(IA v2 06 §2.4)", async ({
+  page,
+}) => {
+  const { server, errors } = await open(page);
+  const meeting = WORKSPACE.meetings[0];
+  let organized = false;
+  const proposal = {
+    id: "cand-summary",
+    researchId: RESEARCH_ID,
+    runId: "run-organize",
+    mode: "organize_meeting",
+    title: "요약",
+    candidate: {
+      title: "요약",
+      category: "summary",
+      body: "비교표 기준을 좁히기로 했어요.",
+    },
+    contexts: [{ kind: "meetings", id: meeting.id, title: meeting.title }],
+    status: "pending",
+    visibility: "private",
+    createdBy: OWNER.id,
+    updatedBy: OWNER.id,
+    createdAt: "2026-11-18T00:00:00.000Z",
+    updatedAt: "2026-11-18T00:00:00.000Z",
+  };
+  server.rpc("rms_bootstrap", () =>
+    organized ? { ...WORKSPACE, aiCandidates: [proposal] } : WORKSPACE,
+  );
+  server.fn("ai-assist", async (body, route) => {
+    if (route.request().method() === "GET") return { models };
+    organized = true;
+    return {
+      runId: "run-organize",
+      candidates: [proposal.candidate],
+      creditsUsed: 0.5,
+      creditStatus: "settled",
+      model: (body as { model?: string }).model,
+    };
+  });
+  await input(page).fill("/미팅");
+  await input(page).press("Enter");
+  await input(page).fill("지난 미팅 정리해 줘");
+  await input(page).press("Enter");
+  const actions = page
+    .locator(".ai-message.assistant")
+    .getByRole("group", { name: "답변 동작" });
+  await actions.getByRole("button", { name: "요약 저장" }).click();
+  await expect
+    .poll(() =>
+      server.calls
+        .filter((call) => call.name === "rms_save_record")
+        .map((call) => (call.body as { p_kind: string }).p_kind),
+    )
+    .toEqual(expect.arrayContaining(["meetings", "aiCandidates"]));
+  const saves = server.calls
+    .filter((call) => call.name === "rms_save_record")
+    .map(
+      (call) =>
+        call.body as { p_kind: string; p_value: Record<string, unknown> },
+    );
+  expect(saves.find((s) => s.p_kind === "meetings")?.p_value).toMatchObject({
+    id: meeting.id,
+    summary: { text: "비교표 기준을 좁히기로 했어요.", runId: "run-organize" },
+  });
+  expect(saves.find((s) => s.p_kind === "aiCandidates")?.p_value).toMatchObject(
+    { id: "cand-summary", status: "adopted" },
+  );
+  expect(errors).toEqual([]);
+});

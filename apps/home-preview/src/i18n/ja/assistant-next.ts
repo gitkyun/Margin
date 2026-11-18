@@ -27,6 +27,9 @@ const dictionary: Record<string, string> = {
   "'{title}' 할 일 열기": "「{title}」のタスクを開く",
   "'{title}' 할 일로 선택": "「{title}」をタスクとして選択",
   "추가 중": "追加中",
+  "이 기록의 요약을 바꿀까요?": "この記録の要約を置き換えますか？",
+  "지금 저장된 요약 대신 이 요약을 저장해요.":
+    "今保存されている要約の代わりに、この要約を保存します。",
 };
 
 export default dictionary;

@@ -72,6 +72,8 @@ import {
   isLegacyOrganizeCandidate,
 } from "@/lib/domain";
 import { useOpenDetail } from "@/lib/item-detail";
+import { keepSummary, summaryProposalOf } from "@/lib/meeting-summary";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
   PageHeader,
@@ -1151,6 +1153,51 @@ export function ResearchAssistant({
   const [tasksOpenAt, setTasksOpenAt] = useState<string | null>(null);
   const [taskBusy, setTaskBusy] = useState<string | null>(null);
   const openDetail = useOpenDetail();
+  const [confirmDialog, confirm] = useConfirm();
+  const [summaryBusy, setSummaryBusy] = useState(false);
+  /** 답 아래 [요약 저장](06 §2.4): 기록 화면의 [요약 저장](04 §5.4 ①)과 같은 동작입니다. */
+  async function saveSummary(
+    found: NonNullable<ReturnType<typeof summaryProposalOf>>,
+  ) {
+    const { meeting, proposal } = found;
+    if (summaryBusy) return;
+    if (
+      (meeting.summary || meeting.visibility === "shared") &&
+      !(await confirm({
+        title: meeting.summary
+          ? t("이 기록의 요약을 바꿀까요?")
+          : t("공동연구자도 이 요약을 볼 수 있어요."),
+        description: [
+          meeting.summary ? t("지금 저장된 요약 대신 이 요약을 저장해요.") : "",
+          meeting.visibility === "shared"
+            ? meeting.summary
+              ? t("공동연구자도 이 요약을 볼 수 있어요.") +
+                " " +
+                t("전사문에만 있던 내용이 담길 수 있어요.")
+              : t("전사문에만 있던 내용이 담길 수 있어요.")
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" "),
+        confirmLabel: t("저장"),
+      }))
+    )
+      return;
+    setSummaryBusy(true);
+    try {
+      await keepSummary(save, meeting, proposal);
+      toast.success(t("요약을 저장했어요."), {
+        action: {
+          label: t("열기"),
+          onClick: () => navigate(`/r/${researchId}/meetings/${meeting.id}`),
+        },
+      });
+    } catch {
+      toast.error(t("저장하지 못했어요. 다시 선택해 주세요."));
+    } finally {
+      setSummaryBusy(false);
+    }
+  }
   const conversationRef = useRef(conversation);
   conversationRef.current = conversation;
   /** 고른 할 일 제안 한 줄을 할 일로 저장하고, 답에 추가했다고 남깁니다. */
@@ -1290,6 +1337,7 @@ export function ResearchAssistant({
 
   return (
     <div className="assistant-experience" data-variant={variant}>
+      {confirmDialog}
       {inPanel ? (
         <header className="assistant-panel-head">
           <h2>{t("연구 도우미")}</h2>
@@ -1554,6 +1602,17 @@ export function ResearchAssistant({
                             }
                           : undefined
                       }
+                      onSaveSummary={(() => {
+                        const found = summaryProposalOf(
+                          m.runId,
+                          data.aiCandidates,
+                          data.meetings,
+                        );
+                        return found?.proposal.status === "pending"
+                          ? () => void saveSummary(found)
+                          : undefined;
+                      })()}
+                      summaryBusy={summaryBusy}
                       tasks={
                         m.suggestedTasks?.length
                           ? {
