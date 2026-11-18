@@ -1,0 +1,232 @@
+@layer margin {
+  /* 자료 보기(W3) 틀(IA v2 05 §4) */
+  .material-view {
+    container-type: inline-size;
+  }
+  .material-view-back {
+    display: none;
+  }
+  .material-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-16);
+    padding: var(--spacing-16) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .material-head-main {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-width: 0;
+  }
+  .material-head-title {
+    min-width: 0;
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-title3-fontSize);
+    font-weight: 700;
+    line-height: var(--typography-title3-lineHeight);
+    letter-spacing: var(--typography-title3-letterSpacing);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .material-badge {
+    padding: 0 var(--spacing-6);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-4);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .material-head-version {
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .material-head-actions {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .material-info-trigger {
+    display: none;
+  }
+  /* PDF(남는 폭) + 정보 300 */
+  .material-view-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+    gap: var(--spacing-24);
+    padding-top: var(--spacing-16);
+  }
+  .material-view-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-16);
+    min-width: 0;
+  }
+  .material-view-side {
+    position: sticky;
+    top: 76px;
+    min-width: 0;
+  }
+  .material-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-20);
+  }
+  .material-info section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+  .material-info h2 {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    letter-spacing: var(--typography-caption1-letterSpacing);
+  }
+  .material-info-versions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .material-info-versions button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    width: 100%;
+    padding: var(--spacing-6) var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-8);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    text-align: left;
+    cursor: pointer;
+  }
+  .material-info-versions button:hover {
+    background: var(--hover-fill);
+  }
+  .material-info-versions button[aria-current] {
+    background: var(--selected-fill);
+  }
+  .material-info-versions span {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-secondary);
+  }
+  .material-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-6) var(--spacing-8);
+    border-radius: var(--radius-8);
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    text-decoration: none;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .material-info-row:hover {
+    background: var(--hover-fill);
+  }
+  .material-info-row small {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .material-info-note {
+    margin: 0;
+    padding: 0 var(--spacing-8);
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: var(--typography-caption1-lineHeight);
+    word-break: keep-all;
+  }
+  .material-info-popover {
+    z-index: calc(var(--z-sheet) + 1);
+    width: min(320px, calc(100vw - 32px));
+    max-height: min(480px, 70vh);
+    overflow-y: auto;
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-pop);
+  }
+  .material-link-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--spacing-12);
+    padding: var(--spacing-16);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+  }
+  .material-link-card > svg {
+    flex: none;
+    margin-top: var(--spacing-2);
+    color: var(--text-secondary);
+  }
+  .material-link-card > div:first-of-type {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    min-width: 0;
+  }
+  .material-link-card p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+    word-break: keep-all;
+  }
+  .material-link-url {
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    overflow-wrap: anywhere;
+  }
+  .material-link-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-8);
+  }
+  @media (max-width: 639px) {
+    .material-view-back {
+      display: block;
+    }
+  }
+  /* 판이 864px보다 좁으면 정보 열을 접고 머리의 [정보] 팝오버로(05 §4). 같은 특이도 규칙보다 뒤에 둡니다. */
+  @container (max-width: 863px) {
+    .material-view-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .material-view-side {
+      display: none;
+    }
+    .material-info-trigger {
+      display: inline-flex;
+    }
+  }
+  @container (max-width: 639px) {
+    .material-head {
+      flex-wrap: wrap;
+    }
+    .material-head-actions {
+      flex-basis: 100%;
+    }
+  }
+}

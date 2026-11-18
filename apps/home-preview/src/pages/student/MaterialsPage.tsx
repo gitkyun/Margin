@@ -25,14 +25,15 @@ import {
 } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  PageHeader,
-  EmptyState,
-  StatusBadge,
-  InlineEmpty,
-} from "@/components/common";
+import { PageHeader, EmptyState, InlineEmpty } from "@/components/common";
 import { SectionBoundary } from "@/components/SectionBoundary";
-import { PdfViewer } from "@/components/PdfViewer";
+import { PdfViewer, type PdfViewerHandle } from "@/components/PdfViewer";
+import {
+  LinkCard,
+  MaterialHeader,
+  MaterialInfo,
+  MoveFolderDialog,
+} from "@/pages/docs/MaterialView";
 import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { queryUp } from "@/design/responsive";
 import { Icon } from "@/components/icons";
@@ -54,7 +55,6 @@ import {
   SaveActions,
   SearchInput,
   useSaving,
-  useBackState,
 } from "./shared";
 import { filterCounts } from "@/lib/filter-counts";
 
@@ -85,7 +85,6 @@ export function MaterialsPage() {
   const { researchId = "", materialId } = useParams();
   // 넓은 화면(1200px 이상)에서는 행을 누르면 여백 패널에 미리보기를 엽니다.
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const back = useBackState();
   const { data, save, upload, remove } = useWorkspace();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -128,7 +127,9 @@ export function MaterialsPage() {
     .filter((item) => item.materialId === materialId)
     .sort((a, b) => b.number - a.number);
   const selected =
-    versions.find((item) => item.id === params.get("version")) ?? versions[0];
+    versions.find(
+      (item) => item.id === (params.get("ver") ?? params.get("version")),
+    ) ?? versions[0];
   useEffect(
     () => () => {
       abort.current?.abort();
@@ -207,7 +208,7 @@ export function MaterialsPage() {
       rememberPending(null);
       setRegistering(false);
       navigate(
-        `/r/${researchId}/materials/${version.materialId}?version=${version.id}`,
+        `/r/${researchId}/docs/m/${version.materialId}?ver=${version.id}`,
       );
       toast.success(t("올려 둔 파일을 자료에 등록했어요"));
     } catch (e) {
@@ -254,7 +255,7 @@ export function MaterialsPage() {
         });
         setDraft(material);
         setRegistering(false);
-        navigate(`/r/${researchId}/materials/${material.id}`);
+        navigate(`/r/${researchId}/docs/m/${material.id}`);
         toast.success(t("링크를 등록했어요"));
       } else {
         setProgress(0);
@@ -274,9 +275,7 @@ export function MaterialsPage() {
         );
         setDraft(material);
         setRegistering(false);
-        navigate(
-          `/r/${researchId}/materials/${material.id}?version=${version.id}`,
-        );
+        navigate(`/r/${researchId}/docs/m/${material.id}?ver=${version.id}`);
         toast.success(
           target ? t("새 버전을 추가했어요") : t("PDF를 등록했어요"),
         );
@@ -328,6 +327,67 @@ export function MaterialsPage() {
   const materials = searched
     .filter((item) => matches(item, filter))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  // 자료 보기(W3, 05 §4): 주소에 ?ver=(예전 ?version=)와 ?page=가 남습니다.
+  const viewer = useRef<PdfViewerHandle>(null);
+  const [moving, setMoving] = useState(false);
+  function pickVersion(id: string) {
+    const next = new URLSearchParams(params);
+    next.delete("version");
+    next.delete("page");
+    next.set("ver", id);
+    setParams(next);
+  }
+  function rememberPage(page: number) {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (page > 1) next.set("page", String(page));
+        else next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  }
+  const initialPage = Number(params.get("page"));
+  useEffect(() => {
+    if (initialPage > 1) viewer.current?.goToPage(initialPage);
+  }, [selected?.id]);
+  async function archiveCurrent(material: Material) {
+    if (material.archivedAt) {
+      try {
+        await save("materials", { ...material, archivedAt: undefined });
+        toast.success(t("복원했어요."));
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
+      return;
+    }
+    navigate(`/r/${researchId}/docs`);
+    try {
+      await remove("materials", material.id);
+    } catch (e) {
+      toast.error((e as Error).message);
+      return;
+    }
+    toast.success(t("보관했어요. 검토에 쓴 파일은 그대로 남아요."), {
+      duration: 6000,
+      action: {
+        label: t("되돌리기"),
+        onClick: () =>
+          void save("materials", { ...material, archivedAt: undefined })
+            .then(() => toast.success(t("복원했어요.")))
+            .catch((e: Error) => toast.error(e.message)),
+      },
+    });
+  }
+  const info = (
+    <MaterialInfo
+      researchId={researchId}
+      versions={versions}
+      selected={selected}
+      onVersion={pickVersion}
+    />
+  );
   if (materialId && !current)
     return (
       <>
@@ -341,148 +401,56 @@ export function MaterialsPage() {
   return (
     <div className="student-page">
       {current ? (
-        <>
-          <PageHeader
-            back={
-              <BackLink to={`/r/${researchId}/materials`}>
-                {t("자료 목록")}
-              </BackLink>
-            }
-            title={current.title}
-            description={`${materialTypes[current.type]} · ${current.externalUrl ? t("링크") : t("PDF 파일")}`}
-            actions={
-              <>
-                {/* 자주 쓰지 않는 보관은 머리의 보조 동작으로 둡니다(검수 P2). 머리 버튼은 모두 높이 40. */}
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      await save("materials", {
-                        ...current,
-                        archivedAt: current.archivedAt
-                          ? undefined
-                          : new Date().toISOString(),
-                      });
-                      toast.success(
-                        current.archivedAt
-                          ? t("자료를 복원했어요")
-                          : t(
-                              "자료를 보관했어요. 검토에 쓴 파일은 그대로 남아요.",
-                            ),
-                      );
-                    } catch (e) {
-                      toast.error((e as Error).message);
-                    }
-                  }}
-                >
-                  {current.archivedAt ? t("자료 복원") : t("자료 보관")}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setEditing({ ...current });
-                    editForm.setError(null);
-                  }}
-                >
-                  <Icon name="edit" size={16} />
-                  {t("정보 편집")}
-                </Button>
-                <Button onClick={() => startRegistration(current)}>
-                  <Icon name="upload" size={16} />
-                  {t("새 버전 추가")}
-                </Button>
-              </>
-            }
+        <div className="material-view">
+          {/* 휴대폰 폭에서는 열어 둔 탭 줄이 없어 뒤로 가기로 목록에 갑니다(05 §3.1). */}
+          <span className="material-view-back">
+            <BackLink to={`/r/${researchId}/docs`}>{t("글·자료")}</BackLink>
+          </span>
+          <MaterialHeader
+            material={current}
+            typeLabel={materialTypes[current.type]}
+            versions={versions}
+            selected={selected}
+            onVersion={pickVersion}
+            onUpload={() => startRegistration(current)}
+            onDownload={() => viewer.current?.download()}
+            onEdit={() => {
+              setEditing({ ...current });
+              editForm.setError(null);
+            }}
+            onMove={() => setMoving(true)}
+            archived={!!current.archivedAt}
+            onArchive={() => void archiveCurrent(current)}
+            info={info}
           />
-          <div className="material-location">
-            <label className="field">
-              {t("폴더")}
-              <SelectField
-                aria-label={t("폴더")}
-                value={current.folderId ?? ""}
-                onChange={(e) =>
-                  void save("materials", {
-                    ...current,
-                    folderId: e.target.value || undefined,
-                  }).catch((e) => toast.error((e as Error).message))
-                }
-              >
-                <option value="">{t("폴더 없음")}</option>
-                {data.folders
-                  .filter((f) => f.researchId === researchId && !f.archivedAt)
-                  .map((f) => (
-                    <option value={f.id} key={f.id}>
-                      {f.title}
-                    </option>
-                  ))}
-              </SelectField>
-            </label>
-          </div>
-          {current.externalUrl && (
-            <section className="surface external-reference">
-              <div>
-                <StatusBadge tone="neutral">{t("링크")}</StatusBadge>
-                <h2>{t("원본 문서")}</h2>
-                <p>
-                  {t(
-                    "링크한 문서는 원래 서비스에서 내용이 바뀔 수 있어요. 링크만으로는 지금 내용이 남지 않아요.",
-                  )}
-                </p>
-                <a
-                  href={safeUrl(current.externalUrl) ?? undefined}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {current.externalUrl}
-                  <Icon name="arrow-up-right" size={16} />
-                </a>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  void navigator.clipboard
-                    .writeText(current.externalUrl!)
-                    .then(() => toast.success(t("링크를 복사했어요")))
-                    .catch(() =>
-                      toast.error(
-                        t(
-                          "링크를 복사하지 못했어요. 링크를 직접 선택해 복사해 주세요.",
+          <div className="material-view-body">
+            <div className="material-view-main">
+              {current.externalUrl && safeUrl(current.externalUrl) && (
+                <LinkCard
+                  url={safeUrl(current.externalUrl)!}
+                  onCopy={() => {
+                    void navigator.clipboard
+                      .writeText(current.externalUrl!)
+                      .then(() => toast.success(t("링크를 복사했어요")))
+                      .catch(() =>
+                        toast.error(
+                          t(
+                            "링크를 복사하지 못했어요. 링크를 직접 선택해 복사해 주세요.",
+                          ),
                         ),
-                      ),
-                    );
-                }}
-              >
-                {t("링크 복사")}
-              </Button>
-            </section>
-          )}
-          <div className="material-detail-layout">
-            <section className="material-viewer-column">
+                      );
+                  }}
+                />
+              )}
               {selected ? (
-                <>
-                  <div className="material-version-toolbar">
-                    <label className="sr-only" htmlFor="version-select">
-                      {t("파일 버전 선택")}
-                    </label>
-                    <SelectField
-                      id="version-select"
-                      className="native-select"
-                      value={selected.id}
-                      onChange={(event) =>
-                        setParams({ version: event.target.value })
-                      }
-                    >
-                      {versions.map((version) => (
-                        <option key={version.id} value={version.id}>
-                          v{version.number} · {version.fileName}
-                        </option>
-                      ))}
-                    </SelectField>
-                  </div>
-                  <SectionBoundary resetKeys={[selected.id]}>
-                    <PdfViewer key={selected.id} version={selected} />
-                  </SectionBoundary>
-                </>
+                <SectionBoundary resetKeys={[selected.id]}>
+                  <PdfViewer
+                    key={selected.id}
+                    ref={viewer}
+                    version={selected}
+                    onPageChange={rememberPage}
+                  />
+                </SectionBoundary>
               ) : (
                 <section className="surface">
                   <EmptyState
@@ -505,100 +473,19 @@ export function MaterialsPage() {
                   />
                 </section>
               )}
-            </section>
-            <aside className="stack">
-              <section className="surface material-history">
-                <h2>{t("파일 버전")}</h2>
-                {versions.length ? (
-                  versions.map((version) => (
-                    <button
-                      key={version.id}
-                      className={`version-history-item ${selected?.id === version.id ? "active" : ""}`}
-                      onClick={() => setParams({ version: version.id })}
-                    >
-                      <span className="version-number">v{version.number}</span>
-                      <span>
-                        <strong>{version.fileName}</strong>
-                        <small>
-                          {new Intl.DateTimeFormat(dateLocale(), {
-                            month: "long",
-                            day: "numeric",
-                          }).format(new Date(version.createdAt))}{" "}
-                          · {byteSize(version.size)}
-                        </small>
-                      </span>
-                      {selected?.id === version.id && (
-                        <Icon name="check" size={15} />
-                      )}
-                    </button>
-                  ))
-                ) : (
-                  <InlineEmpty>
-                    {t("PDF를 올리면 여기에서 버전별로 다시 열 수 있어요.")}
-                  </InlineEmpty>
-                )}
-                <p className="student-footnote">
-                  {t(
-                    "새 파일을 올려도 이전 버전과 검토에 쓴 파일은 그대로 남아요.",
-                  )}
-                </p>
-              </section>
-              {selected && (
-                <section className="surface">
-                  <h2>{t("이 버전을 사용한 기록")}</h2>
-                  {data.results
-                    .filter((result) => result.versionId === selected.id)
-                    .map((result) => (
-                      <Link
-                        key={result.id}
-                        className="student-simple-row"
-                        to={`/r/${researchId}/results/${result.id}`}
-                        state={back(current.title)}
-                      >
-                        <span className="grow">
-                          <strong>{result.title}</strong>
-                          <small>
-                            {t("수정 결과 · {location}", {
-                              location: result.location || t("볼 위치 없음"),
-                            })}
-                          </small>
-                        </span>
-                        <Icon name="chevron-right" size={15} />
-                      </Link>
-                    ))}
-                  {data.meetings
-                    .filter((meeting) =>
-                      meeting.versionIds.includes(selected.id),
-                    )
-                    .map((meeting) => (
-                      <Link
-                        key={meeting.id}
-                        className="student-simple-row"
-                        to={`/r/${researchId}/meetings/${meeting.id}?tab=prepare`}
-                        state={back(current.title)}
-                      >
-                        <span className="grow">
-                          <strong>{meeting.title}</strong>
-                          <small>{t("미팅 준비")}</small>
-                        </span>
-                        <Icon name="chevron-right" size={15} />
-                      </Link>
-                    ))}
-                  {!data.results.some(
-                    (result) => result.versionId === selected.id,
-                  ) &&
-                    !data.meetings.some((meeting) =>
-                      meeting.versionIds.includes(selected.id),
-                    ) && (
-                      <InlineEmpty>
-                        {t("아직 이 버전을 사용한 기록이 없어요.")}
-                      </InlineEmpty>
-                    )}
-                </section>
-              )}
+            </div>
+            <aside className="material-view-side" aria-label={t("자료 정보")}>
+              {info}
             </aside>
           </div>
-        </>
+          <MoveFolderDialog
+            open={moving}
+            onOpenChange={setMoving}
+            folders={activeFolders}
+            value={current.folderId}
+            onMove={(folderId) => moveMaterial(current, folderId)}
+          />
+        </div>
       ) : (
         <>
           <PageHeader
@@ -656,7 +543,7 @@ export function MaterialsPage() {
                   <div key={material.id} className="material-list-item">
                     <Link
                       className="material-list-row list-row"
-                      to={`/r/${researchId}/materials/${material.id}`}
+                      to={`/r/${researchId}/docs/m/${material.id}`}
                       aria-current={
                         previewId === material.id ? "true" : undefined
                       }
@@ -1121,7 +1008,7 @@ function MaterialPreviewPanel({
               )}
             </dl>
             <Button asChild>
-              <Link to={`/r/${researchId}/materials/${material.id}`}>
+              <Link to={`/r/${researchId}/docs/m/${material.id}`}>
                 {t("전체 화면으로 열기")}
                 <Icon name="arrow-right" size={15} />
               </Link>
