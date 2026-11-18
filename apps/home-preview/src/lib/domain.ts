@@ -346,6 +346,10 @@ export interface WebGrounding {
 export interface AIConversationMessage {
   webSearch?: boolean;
   calendar?: boolean;
+  /** 사용자 메시지: 보낸 요청 종류. 예전 메시지에는 없습니다. */
+  mode?: AIInput["mode"];
+  /** 사용자 메시지: 초안 쓰기로 보냈는지(IA v2 06 §2.3) */
+  draft?: boolean;
   webGrounding?: WebGrounding;
   role: "user" | "assistant";
   text: string;

@@ -51,3 +51,32 @@ export function insertIntoEditor(documentId: string, answer: string): boolean {
 export function canInsertInto(documentId: string): boolean {
   return inserters.has(documentId);
 }
+
+/**
+ * 연구 도우미 '이어서'의 [수정 제안 받기](IA v2 06 §2.4): 열려 있는 글 편집기가 본문 안 수정 제안 창 열기를 맡겨 둡니다.
+ * 보내기 전에 범위와 지시를 고르는 창은 글 화면의 것 그대로입니다.
+ */
+type OpenSuggest = () => void;
+const suggesters = new Map<string, OpenSuggest>();
+
+export function registerSuggest(
+  documentId: string,
+  open: OpenSuggest,
+): () => void {
+  suggesters.set(documentId, open);
+  return () => {
+    if (suggesters.get(documentId) === open) suggesters.delete(documentId);
+  };
+}
+
+/** 그 글의 편집기가 열려 있으면 수정 제안 창을 열고 true */
+export function openSuggestEdits(documentId: string): boolean {
+  const open = suggesters.get(documentId);
+  if (!open) return false;
+  open();
+  return true;
+}
+
+export function canSuggestIn(documentId: string): boolean {
+  return suggesters.has(documentId);
+}

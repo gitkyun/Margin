@@ -91,6 +91,41 @@
     transform: scale(0.98);
   }
 
+  /* 답 아래 '이어서'(06 §2.4): 예시 질문과 같은 알약 칩을 왼쪽 정렬로 둡니다. */
+  .assistant-next {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .assistant-next-label {
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .assistant-next button {
+    min-height: 32px;
+    padding: 0 var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: var(--typography-label2-fontSize);
+    letter-spacing: var(--typography-label2-letterSpacing);
+    white-space: nowrap;
+  }
+  .assistant-next button:hover:not(:disabled) {
+    border-color: var(--hover-line);
+    background: var(--hover-fill);
+  }
+  .assistant-next button:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .assistant-next button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
   /* 대화 줄: Kokonut AI Tool Calls·AI Attachment 데모와 같은 배치(gap-4, 질문 14px 회색 말풍선, 답변 15px/28px). */
   .ai-message {
     display: flex;

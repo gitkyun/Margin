@@ -63,7 +63,11 @@ import { FOCUS_BODY } from "./docs/NewDocDialog";
 import { editorOutline, savedTime } from "@/lib/editor-head";
 import { documentFeedback, documentTasks } from "@/lib/doc-margin";
 import { useOpenDetail } from "@/lib/item-detail";
-import { registerFlush, registerInsert } from "@/lib/editor-flush";
+import {
+  registerFlush,
+  registerInsert,
+  registerSuggest,
+} from "@/lib/editor-flush";
 import { answerBlocks } from "@/lib/answer-doc";
 import { EditorGutter, FeedbackHandled } from "./docs/EditorGutter";
 import { EditorInfo } from "./docs/EditorInfo";
@@ -645,6 +649,11 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
   });
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
+  // 연구 도우미 '이어서'의 [수정 제안 받기](06 §2.4)가 이 창을 엽니다.
+  useEffect(
+    () => registerSuggest(initial.id, () => setSuggestOpen(true)),
+    [initial.id],
+  );
   /** 저장한 글을 보내 수정 제안을 받습니다. 저장 안 한 변경은 먼저 저장합니다. */
   async function requestSuggestions(request: SuggestRequest) {
     if (!editor) return;

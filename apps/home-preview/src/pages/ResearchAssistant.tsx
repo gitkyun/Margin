@@ -37,7 +37,18 @@ import {
 } from "react-router-dom";
 import { handoffState, readHandoff } from "@/lib/assistant-handoff";
 import { contextKey, viewingContext } from "@/lib/viewing-context";
-import { canInsertInto, insertIntoEditor } from "@/lib/editor-flush";
+import {
+  canInsertInto,
+  canSuggestIn,
+  insertIntoEditor,
+  openSuggestEdits,
+} from "@/lib/editor-flush";
+import {
+  draftQuestion,
+  draftRequestMax,
+  lastAsked,
+  nextSteps,
+} from "@/lib/assistant-next";
 import { assistantStarters, type Starter } from "@/lib/assistant-starters";
 import { SaveDraftDialog, type DraftSource } from "./assistant/SaveDraftDialog";
 import { toast } from "sonner";
@@ -77,6 +88,7 @@ import {
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
+import { NextSteps } from "./assistant/NextSteps";
 import {
   messageFileContexts,
   restorePendingContexts,
@@ -215,6 +227,8 @@ export function ResearchAssistant({
     [voiceOpen, setVoiceOpen] = useState(false),
     [webSearch, setWebSearch] = useState(false),
     [calendar, setCalendar] = useState(false),
+    // 초안 쓰기(06 §2.3): 묻고 답하기에 정해 둔 지시문을 붙여 보냅니다.
+    [drafting, setDrafting] = useState(false),
     [voiceSeconds, setVoiceSeconds] = useState(0),
     [voiceReview, setVoiceReview] = useState<{
       before: string;
@@ -284,6 +298,12 @@ export function ResearchAssistant({
     () => (slashQuery === null ? [] : filterComposerCommands(slashQuery)),
     [slashQuery],
   );
+  const draftCommand = {
+    id: "draft",
+    label: t("초안 쓰기"),
+    description: t("이 연구의 기록으로 글 초안을 써요"),
+    icon: "edit",
+  };
   const activeCommand = calendar
     ? {
         id: "calendar",
@@ -291,9 +311,12 @@ export function ResearchAssistant({
         description: t("이 연구의 미팅·할 일·주요 목표 일정을 확인해요"),
         icon: "calendar",
       }
-    : findComposerCommand(task);
+    : drafting
+      ? draftCommand
+      : findComposerCommand(task);
   const composerCommands = [
     ...COMPOSER_COMMANDS,
+    draftCommand,
     {
       id: "web_search",
       label: t("웹 검색"),
@@ -310,8 +333,9 @@ export function ResearchAssistant({
   function selectComposerCommand(id?: string) {
     setWebSearch(id === "web_search");
     setCalendar(id === "calendar");
+    setDrafting(id === "draft");
     setTask(
-      id === "web_search" || id === "calendar" || !id
+      id === "web_search" || id === "calendar" || id === "draft" || !id
         ? "ask_research"
         : (id as AIInput["mode"]),
     );
@@ -597,6 +621,7 @@ export function ResearchAssistant({
         mode: task,
         webSearch,
         calendar,
+        draft: drafting && !webSearch && !calendar,
         contexts: webSearch || calendar ? [] : [...effectiveContexts],
       },
     ]);
@@ -617,6 +642,7 @@ export function ResearchAssistant({
       fromComposer?: boolean;
       webSearch?: boolean;
       calendar?: boolean;
+      draft?: boolean;
       contexts?: AIContext[];
       onWebSource?: (source: { url: string; title: string }) => void;
     },
@@ -625,8 +651,12 @@ export function ResearchAssistant({
     setVoiceReview(null);
     const useWebSearch = override?.webSearch ?? webSearch;
     const useCalendar = !useWebSearch && (override?.calendar ?? calendar);
+    const useDraft =
+      !useWebSearch && !useCalendar && (override?.draft ?? drafting);
     const activeMode =
-      useWebSearch || useCalendar ? "ask_research" : (override?.mode ?? task);
+      useWebSearch || useCalendar || useDraft
+        ? "ask_research"
+        : (override?.mode ?? task);
     const linked =
       (override?.conversation !== undefined
         ? override.conversation
@@ -648,6 +678,14 @@ export function ResearchAssistant({
     );
     const question = retryQuestion ?? draft;
     if ((!override && working) || unavailable || !question.trim()) return;
+    if (useDraft && question.trim().length > draftRequestMax()) {
+      setError(
+        t("초안 요청은 {count}자까지 쓸 수 있어요.", {
+          count: draftRequestMax().toLocaleString(),
+        }),
+      );
+      return;
+    }
     if (!requestSelection.model) {
       setError(t("사용 가능한 모델을 확인한 뒤 다시 보내 주세요."));
       return;
@@ -782,6 +820,7 @@ export function ResearchAssistant({
           last.text === text &&
           !!last.webSearch === useWebSearch &&
           !!last.calendar === useCalendar &&
+          !!last.draft === useDraft &&
           JSON.stringify(last.contexts ?? []) ===
             JSON.stringify(requestContexts)
             ? c.messages
@@ -793,6 +832,9 @@ export function ResearchAssistant({
                   createdAt: now(),
                   webSearch: useWebSearch,
                   calendar: useCalendar,
+                  // '이어서'(06 §2.4)와 다시 답하기가 같은 요청 종류를 쓰도록 남깁니다.
+                  mode: activeMode,
+                  ...(useDraft ? { draft: true } : {}),
                   contexts: requestContexts,
                 },
               ],
@@ -803,7 +845,7 @@ export function ResearchAssistant({
         {
           mode: activeMode,
           researchId,
-          question: text,
+          question: useDraft ? draftQuestion(text) : text,
           sourceText: "",
           contexts: requestContexts,
           ...requestSelection,
@@ -888,6 +930,7 @@ export function ResearchAssistant({
           mode: nextItem.mode,
           webSearch: nextItem.webSearch ?? false,
           calendar: nextItem.calendar ?? false,
+          draft: nextItem.draft ?? false,
           contexts: nextItem.contexts ?? [],
           conversation: savedConversation,
         });
@@ -1059,6 +1102,7 @@ export function ResearchAssistant({
     setConversation(null);
     setWebSearch(false);
     setCalendar(false);
+    setDrafting(false);
     setContexts([]);
     setDraft("");
     setQueue([]);
@@ -1126,6 +1170,7 @@ export function ResearchAssistant({
       setConversation(picked);
       setCalendar(picked.messages.at(-1)?.calendar ?? false);
       setWebSearch(picked.messages.at(-1)?.webSearch ?? false);
+      setDrafting(lastAsked(picked.messages)?.draft ?? false);
     }
     if (!received.ask) return;
     // 바로 보낼 수 없으면(미리보기·AI 미설정·모델 없음) 입력창에 넣어 두기만 합니다.
@@ -1211,6 +1256,7 @@ export function ResearchAssistant({
                         setContexts([]);
                         setCalendar(c.messages.at(-1)?.calendar ?? false);
                         setWebSearch(c.messages.at(-1)?.webSearch ?? false);
+                        setDrafting(lastAsked(c.messages)?.draft ?? false);
                         setError("");
                       }}
                     >
@@ -1299,6 +1345,7 @@ export function ResearchAssistant({
                         setContexts([]);
                         setCalendar(c.messages.at(-1)?.calendar ?? false);
                         setWebSearch(c.messages.at(-1)?.webSearch ?? false);
+                        setDrafting(lastAsked(c.messages)?.draft ?? false);
                         setError("");
                       }}
                     >
@@ -1345,7 +1392,7 @@ export function ResearchAssistant({
                       key={starter.id}
                       type="button"
                       onClick={() => {
-                        if (starter.mode) setTask(starter.mode);
+                        if (starter.mode) selectComposerCommand(starter.mode);
                         setDraft(starter.prompt);
                         composerRef.current?.focus();
                       }}
@@ -1362,9 +1409,13 @@ export function ResearchAssistant({
                 {m.role === "user" ? (
                   <>
                     <span className="sr-only">{t("나")}</span>
-                    {(m.webSearch || m.calendar) && (
+                    {(m.webSearch || m.calendar || m.draft) && (
                       <small className="assistant-question-mode">
-                        {m.webSearch ? t("웹 검색") : t("일정 확인")}
+                        {m.webSearch
+                          ? t("웹 검색")
+                          : m.calendar
+                            ? t("일정 확인")
+                            : t("초안 쓰기")}
                       </small>
                     )}
                     {messageFileContexts(
@@ -1440,19 +1491,50 @@ export function ResearchAssistant({
                             }
                           : undefined
                       }
-                      onRetry={(question) =>
+                      onRetry={(question) => {
+                        const asked = lastAsked(messages, i);
                         void send(question, {
                           webSearch: m.webSearch ?? !!m.webGrounding,
                           calendar: m.calendar ?? false,
-                          contexts:
-                            messages
-                              .slice(0, i)
-                              .reverse()
-                              .find((message) => message.role === "user")
-                              ?.contexts ?? [],
-                        })
-                      }
+                          ...(asked?.mode ? { mode: asked.mode } : {}),
+                          draft: asked?.draft ?? false,
+                          contexts: asked?.contexts ?? [],
+                        });
+                      }}
                     />
+                    {i === messages.length - 1 && !working && (
+                      <NextSteps
+                        steps={nextSteps(lastAsked(messages, i), {
+                          canSuggestEdits:
+                            insertTarget !== null &&
+                            canSuggestIn(insertTarget.id) &&
+                            (m.contexts ?? []).some(
+                              (c) =>
+                                c.kind === "documents" &&
+                                c.id === insertTarget.id,
+                            ),
+                        })}
+                        disabled={unavailable || uploading}
+                        onPick={(step) => {
+                          if (step.kind === "save")
+                            setDraftSource({
+                              text: m.text,
+                              question: questionBefore(messages, i),
+                              contexts:
+                                m.contexts ?? conversation?.contexts ?? [],
+                            });
+                          else if (step.kind === "suggest_edits") {
+                            if (insertTarget) openSuggestEdits(insertTarget.id);
+                          } else {
+                            selectComposerCommand(
+                              step.draft ? "draft" : step.mode,
+                            );
+                            setDraft(step.prompt);
+                            composerRef.current?.focus();
+                          }
+                        }}
+                      />
+                    )}
                   </>
                 )}
               </article>
