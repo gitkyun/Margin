@@ -1254,6 +1254,16 @@
     .ob-preview-side {
       height: 168px;
     }
+    /* 질문 길이와 상관없이 '계속' 버튼이 첫 화면 아래에 붙어 보이게 합니다(QA 묶음 5). */
+    .ob-actions {
+      position: sticky;
+      bottom: 0;
+      z-index: 1;
+      margin-top: var(--spacing-24);
+      padding: var(--spacing-12) 0
+        calc(var(--spacing-12) + env(safe-area-inset-bottom));
+      background: var(--surface);
+    }
     /* 휴대폰: 사이드바만 빼고 본문 전체를 보여 줍니다. 읽을 크기는 확대가 만들어 줍니다. */
     .ob-stage-canvas {
       grid-template-columns: minmax(0, 1fr);

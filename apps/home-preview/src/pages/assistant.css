@@ -837,7 +837,8 @@
   }
   @media (max-width: 767px) {
     .ai-chat-main {
-      height: max(440px, calc(100dvh - 258px));
+      /* 아래 탭바(--dock-height)만큼 빼야 입력창이 탭바 뒤로 숨지 않습니다(QA 묶음 2). */
+      height: max(360px, calc(100dvh - 258px - var(--dock-height, 0px)));
     }
     .ai-composer {
       width: 100%;
