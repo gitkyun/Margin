@@ -120,7 +120,7 @@
     background: var(--hover-fill);
   }
   .material-info-versions button[aria-current] {
-    background: var(--selected-fill);
+    background: var(--navigation-selected-fill);
   }
   .material-info-versions span {
     flex: 1;

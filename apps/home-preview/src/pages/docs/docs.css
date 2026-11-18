@@ -103,10 +103,10 @@
   }
   .docs-search,
   .docs-filters select {
-    min-height: 36px;
-    padding: 0 var(--spacing-10);
+    min-height: var(--field-height-toolbar);
+    padding: 0 var(--spacing-12);
     border: 1px solid var(--line);
-    border-radius: var(--radius-8);
+    border-radius: var(--field-radius-toolbar);
     background: var(--surface);
     color: var(--text);
     font: inherit;
@@ -131,7 +131,7 @@
     border-bottom: 1px solid var(--line);
   }
   .docs-row[data-selected] {
-    background: var(--selected-fill);
+    background: var(--navigation-selected-fill);
   }
   .docs-row-link {
     display: flex;
@@ -235,8 +235,28 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 10;
   }
+  /* 분류 안의 폴더: 상자 없이 같은 목록처럼(그룹 이름 + 36 높이 줄 + 중립 선택) */
   .docs-side .folder-tree {
     margin-block: var(--spacing-8);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .docs-side .folder-tree .section-heading {
+    min-height: 32px;
+    margin-bottom: var(--spacing-2);
+    padding: 0 var(--spacing-4) 0 var(--spacing-8);
+  }
+  .docs-side .folder-tree h2 {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .docs-side .folder-tree-row .folder-select,
+  .docs-side .folder-all {
+    min-height: 36px;
+    padding: 0 var(--spacing-8);
   }
   /* 목록 줄의 PDF 첫 쪽 그림(05 §2.3) */
   .docs-row .material-preview-badge {
@@ -312,7 +332,7 @@
     background: var(--hover-fill);
   }
   .doc-tab[data-active] {
-    background: var(--selected-fill);
+    background: var(--navigation-selected-fill);
     color: var(--text);
   }
   .doc-tab-link {

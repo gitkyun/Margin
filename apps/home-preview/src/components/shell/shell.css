@@ -6,10 +6,20 @@
 @layer margin {
   .app-shell.floating-workspace.ia-shell {
     --ia-topbar-height: 52px;
-    --ia-rail-width: 64px;
+    /* 오른쪽 열(사이드 창 + 아이콘 줄)은 화면 위에서 아래까지 붙은 평평한 열입니다(토스증권 골조 참고, 2026-11-19).
+       바탕과 같은 면이고 모서리·그림자 없이 선 하나로 본문과 나뉩니다. 상단 줄은 이 열의 왼쪽에만 놓입니다.
+       이름은 짧게(도우미·할 일·결정·질문·의견) 두고 폭 60. */
+    --ia-rail-width: 60px;
     --ia-gap: var(--spacing-12);
     --ia-pane-edge: inset 0 0 0 1px var(--line);
+    --ia-column-edge: inset 1px 0 0 0 var(--line);
     --margin-panel-width: 312px;
+    --ia-panel-actual: min(
+      var(--margin-panel-user-width, var(--margin-panel-width)),
+      50vw
+    );
+    /* 상단 줄이 비켜 줄 오른쪽 열 폭: 아이콘 줄만(창이 닫혔거나 겹쳐 뜨는 너비) */
+    --ia-column-width: 0px;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -31,38 +41,64 @@
     align-items: center;
     gap: var(--spacing-8);
     height: var(--ia-topbar-height);
+    margin-inline-end: var(--ia-column-width);
     padding: 0 var(--spacing-12) 0 var(--spacing-16);
     background: var(--canvas);
+  }
+  @media (min-width: 768px) {
+    .app-shell.floating-workspace.ia-shell:has(> .ia-body > .ia-rail) {
+      --ia-column-width: var(--ia-rail-width);
+    }
+    .ia-shell[data-panel-side="left"] .ia-topbar {
+      margin-inline: var(--ia-column-width) 0;
+    }
+  }
+  @media (min-width: 1200px) {
+    .app-shell.floating-workspace.ia-shell.margin-panel-open:has(
+        > .ia-body > .ia-rail
+      ) {
+      --ia-column-width: calc(var(--ia-rail-width) + var(--ia-panel-actual));
+    }
   }
   .ia-shell .ia-topbar .brand {
     flex: none;
     gap: var(--spacing-8);
     margin-right: var(--spacing-4);
   }
-  .ia-shell .ia-switch {
+  /* 예전 사이드바의 떠 있는 카드 모양(reference.css .workspace-switch)을 이기도록 틀 선택자로 시작합니다.
+     상단 줄에서는 메뉴 글자와 같은 평면 버튼: 배경·그림자 없이 누를 때만 옅은 채움. */
+  .app-shell.floating-workspace.ia-shell .ia-switch {
     width: auto;
     max-width: 200px;
     min-width: 0;
     min-height: 36px;
+    margin: 0;
     padding: 0 var(--spacing-8) 0 var(--spacing-10);
     gap: var(--spacing-4);
     border: 0;
     border-radius: var(--radius-10);
     background: transparent;
+    box-shadow: none;
     font-size: var(--typography-label1-fontSize);
     letter-spacing: var(--typography-label1-letterSpacing);
   }
   .ia-shell .ia-switch > svg {
     flex: none;
   }
-  .ia-shell .ia-switch strong {
+  /* 이름이 짧으면 펼침 표시가 이름 바로 옆에 붙도록(휴대폰에서 버튼이 줄을 채워도) */
+  .app-shell.floating-workspace.ia-shell .ia-switch {
+    justify-content: flex-start;
+  }
+  .app-shell.floating-workspace.ia-shell .ia-switch strong {
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
   }
-  .ia-shell .ia-switch:hover {
+  .app-shell.floating-workspace.ia-shell .ia-switch:hover,
+  .app-shell.floating-workspace.ia-shell .ia-switch[aria-expanded="true"] {
     background: var(--hover-fill);
   }
   .ia-shell .ia-nav {
@@ -195,17 +231,17 @@
     box-shadow: var(--ia-pane-edge);
     overflow: clip;
   }
+  /* 사이드 창: 상단 줄 높이만큼 끌어올려 화면 맨 위부터 아래까지 붙입니다. */
   .ia-shell .margin-panel {
     position: sticky;
-    top: var(--ia-topbar-height);
-    width: min(var(--margin-panel-user-width, var(--margin-panel-width)), 50vw);
-    height: calc(
-      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
-    );
+    top: 0;
+    width: var(--ia-panel-actual);
+    height: calc(100dvh - var(--dock-height, 0px));
+    margin-top: calc(-1 * var(--ia-topbar-height));
     border: 0;
-    border-radius: var(--radius-16);
-    background: var(--surface);
-    box-shadow: var(--ia-pane-edge);
+    border-radius: 0;
+    background: var(--canvas);
+    box-shadow: var(--ia-column-edge);
   }
   .ia-shell .ia-panel-tab {
     height: 100%;
@@ -214,69 +250,119 @@
     overscroll-behavior: contain;
   }
   .ia-shell .margin-panel-resizer {
-    top: var(--ia-topbar-height);
-    height: calc(
-      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
-    );
+    top: 0;
+    height: calc(100dvh - var(--dock-height, 0px));
+    margin-top: calc(-1 * var(--ia-topbar-height));
     margin-right: calc(-1 * var(--ia-gap) - 5px);
     margin-left: -4px;
   }
 
   .ia-shell .ia-rail {
     position: sticky;
-    top: var(--ia-topbar-height);
+    top: 0;
     display: flex;
     flex: none;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-8);
+    gap: 0;
     width: var(--ia-rail-width);
-    height: calc(
-      100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
-    );
+    height: calc(100dvh - var(--dock-height, 0px));
+    margin-top: calc(-1 * var(--ia-topbar-height));
     margin-left: calc(-1 * var(--ia-gap));
-    padding-top: var(--spacing-4);
+    padding: 0 0 var(--spacing-16);
+    background: var(--canvas);
+    box-shadow: var(--ia-column-edge);
+  }
+  /* 창이 닫혀 있으면 본문 판과 아이콘 줄 사이는 띄웁니다(아이콘 줄이 판에 붙지 않게). */
+  .ia-shell:not(.margin-panel-open) .ia-rail {
+    margin-left: 0;
+  }
+  /* 맨 위 밀기 버튼: 상단 줄과 같은 높이 안 가운데 */
+  .ia-shell .ia-rail-push {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 100%;
+    height: var(--ia-topbar-height);
+  }
+  .ia-shell .ia-rail-push-button {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: var(--radius-8);
+    color: var(--text-tertiary);
+  }
+  .ia-shell .ia-rail-push-button:hover {
+    background: var(--hover-fill);
+    color: var(--text);
+  }
+  .ia-shell .ia-rail-push-button:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+  .ia-shell .ia-rail-divider {
+    flex: none;
+    width: 100%;
+    height: 1px;
+    margin: var(--spacing-6) 0;
+    background: var(--line);
   }
   .ia-shell .ia-rail-spacer {
     flex: 1;
   }
+  /* 아이콘 줄의 화면 배치 메뉴: 선택지 둘과 이동 둘이라 넓을 필요 없음 */
+  .ia-layout-menu {
+    min-width: 220px;
+  }
+  /* 아이콘 줄 항목: 36 칸 안 아이콘 + 아래 작은 이름. 켜지면 칸만 옅게 채우고 글자를 진하게. */
   .ia-shell .ia-rail-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-2);
     width: 100%;
-    padding: 0 var(--spacing-2);
+    padding: var(--spacing-4) var(--spacing-2);
     border: 0;
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--text-tertiary);
     text-align: center;
     cursor: pointer;
   }
   .ia-shell .ia-rail-icon {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-10);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-8);
+    color: var(--text-secondary);
+    transition: background-color var(--motion-duration-micro)
+      var(--motion-ease-standard);
   }
   .ia-shell .ia-rail-item:hover .ia-rail-icon {
     background: var(--hover-fill);
     color: var(--text);
   }
-  .ia-shell .ia-rail-item.on {
-    color: var(--text);
+  .ia-shell .ia-rail-item:hover .ia-rail-label {
+    color: var(--text-secondary);
   }
   .ia-shell .ia-rail-item.on .ia-rail-icon {
     background: var(--navigation-selected-fill);
+    color: var(--text);
   }
   .ia-shell .ia-rail-item.on .ia-rail-label {
-    font-weight: 700;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .ia-shell .ia-rail-item + .ia-rail-item {
+    margin-top: var(--spacing-2);
   }
   .ia-shell .ia-rail-item:focus-visible {
     outline: none;
   }
-  .ia-shell .ia-rail-item:focus-visible .ia-rail-icon {
+  .ia-shell .ia-rail-item:focus-visible .ia-rail-icon,
+  .ia-shell .ia-rail-square:focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 1px;
   }
@@ -286,11 +372,48 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    color: var(--text-tertiary);
     font-size: var(--typography-caption1-fontSize);
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 16px;
     letter-spacing: var(--typography-caption1-letterSpacing);
     word-break: keep-all;
+  }
+  /* 아래 묶음의 이름 없는 버튼(화면 배치·연구 설정): 늘 옅게 채운 정사각형, 이름은 툴팁 */
+  .ia-shell .ia-rail-squares {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding-top: var(--spacing-16);
+  }
+  /* 창 닫기(×)는 휴대폰 시트에서만. 768 이상은 아이콘 줄 맨 위 밀기 버튼이 맡습니다. */
+  @media (min-width: 768px) {
+    /* Montage IconButton 스타일은 레이어 밖이라 일반 규칙으로는 숨길 수 없습니다. */
+    .ia-shell .ia-panel-close {
+      display: none !important;
+    }
+  }
+  .ia-shell .ia-rail-square {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-8);
+    background: var(--hover-fill);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .ia-shell .ia-rail-square:hover,
+  .ia-shell .ia-rail-square[aria-expanded="true"],
+  .ia-shell .ia-rail-square.on {
+    background: var(--navigation-selected-fill);
+    color: var(--text);
+  }
+  .ia-shell .ia-rail-square:focus-visible {
+    outline-offset: 2px;
   }
 
   /* ── 아래 묶음: 녹음 줄 + 휴대폰 아래 탭(02 §5) ──────────── */
@@ -307,8 +430,11 @@
     display: none;
   }
 
-  /* 992px 미만: 찾기 칸은 돋보기 버튼(02 §3.3) */
+  /* 992px 미만: 찾기 칸은 돋보기 버튼(02 §3.3). 상단 줄이 오른쪽 열 폭만큼 좁으므로 로고는 심볼만. */
   @media (max-width: 991px) {
+    .app-shell.floating-workspace.ia-shell .ia-topbar .brand .margin-wordmark {
+      display: none;
+    }
     .ia-shell .ia-search {
       flex: none;
       width: 36px;
@@ -328,9 +454,9 @@
   @media (min-width: 768px) and (max-width: 1199px) {
     .ia-shell .margin-panel {
       position: fixed;
-      top: var(--ia-topbar-height);
+      top: 0;
       right: var(--ia-rail-width);
-      bottom: calc(var(--ia-gap) + var(--dock-height, 0px));
+      bottom: var(--dock-height, 0px);
       left: auto;
       z-index: var(--z-sheet);
       width: min(
@@ -338,10 +464,12 @@
         calc(100vw - var(--ia-rail-width) - 2 * var(--ia-gap))
       );
       height: auto;
+      margin-top: 0;
       /* 고정 위치에도 align-self가 걸려 위아래로 늘어나지 않으므로 되돌립니다. */
       align-self: auto;
-      border-radius: var(--radius-16);
-      box-shadow: var(--shadow-pop);
+      border-radius: 0;
+      /* 본문 위에 겹쳐 뜨므로 여기서만 깊이를 줍니다. */
+      box-shadow: var(--ia-column-edge), var(--shadow-pop);
     }
     .ia-shell .margin-panel-backdrop,
     .ia-shell .margin-panel-resizer {
@@ -405,8 +533,10 @@
       z-index: var(--z-sheet);
       width: 100%;
       height: auto;
+      margin-top: 0;
       align-self: auto;
       border-radius: 0;
+      background: var(--surface);
       box-shadow: var(--shadow-pop);
     }
     .ia-shell .ia-tabbar {
@@ -453,6 +583,13 @@
     .ia-shell[data-panel-side="left"] .ia-rail {
       margin-right: calc(-1 * var(--ia-gap));
       margin-left: 0;
+      box-shadow: inset -1px 0 0 0 var(--line);
+    }
+    .ia-shell[data-panel-side="left"]:not(.margin-panel-open) .ia-rail {
+      margin-right: 0;
+    }
+    .ia-shell[data-panel-side="left"] .margin-panel {
+      box-shadow: inset -1px 0 0 0 var(--line);
     }
     .ia-shell[data-panel-side="left"] .margin-panel-resizer {
       margin-right: -4px;

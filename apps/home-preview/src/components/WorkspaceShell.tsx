@@ -25,6 +25,7 @@ import { AssistantSidePanel } from "./assistant/AssistantSidePanel";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
+  lastPanelTab,
   rememberPanel,
   type SidePanelTab,
 } from "@/lib/side-panel";
@@ -448,6 +449,17 @@ export function WorkspaceShell({
             offered={panel.offered}
             active={railOpen ? null : panel.active}
             openTab={railTab}
+            panelWidth={panelWidth}
+            onResetPanelWidth={() => setPanelWidth(null)}
+            panelOpen={railOpen || !!panel.active}
+            onTogglePanel={() => {
+              if (railOpen || panel.active) {
+                panel.active?.onClose();
+                setRailTab(null, true);
+                return;
+              }
+              setRailTab(lastPanelTab(), true);
+            }}
             onTab={(tab) => {
               if (railTab === tab) {
                 setRailTab(null, true);

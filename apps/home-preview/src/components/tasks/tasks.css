@@ -5,7 +5,7 @@
     flex-direction: column;
     gap: var(--spacing-16);
     max-width: 880px;
-    margin: 0 auto;
+    margin: 0;
   }
   .tasks-filters {
     display: flex;
@@ -72,6 +72,15 @@
     font-weight: 600;
     word-break: keep-all;
     overflow-wrap: anywhere;
+  }
+  /* 우선순위 점은 제목 뒤에 둬서 제목 시작선이 줄마다 같게 둡니다. */
+  .task-line-text strong > .priority-dot {
+    order: 1;
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--warning);
   }
   .task-line-text small {
     color: var(--text-secondary);
@@ -151,17 +160,21 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-12);
-    padding: var(--spacing-12) var(--spacing-16);
+    padding: var(--spacing-8) var(--spacing-16);
   }
   .tasks-panel-head {
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
+    min-height: 36px;
   }
   .tasks-panel-head h2 {
     flex: 1;
+    min-width: 0;
     margin: 0;
-    font-size: var(--typography-headline2-fontSize);
+    font-size: var(--typography-label1-fontSize);
+    line-height: var(--typography-label1-lineHeight);
+    letter-spacing: var(--typography-label1-letterSpacing);
     font-weight: 700;
   }
   .tasks-panel-group {

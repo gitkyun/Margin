@@ -6,7 +6,8 @@
     flex-direction: column;
     gap: var(--spacing-20);
     max-width: 1040px;
-    margin: 0 auto;
+    /* 다른 메뉴 화면과 같은 시작선(본문 판 왼쪽 안쪽 여백)에 둡니다. 넓은 화면에서 가운데로 옮기지 않음. */
+    margin: 0;
   }
   .hm-head {
     display: flex;

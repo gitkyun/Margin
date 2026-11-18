@@ -58,6 +58,9 @@
   /* 상호작용 — 누를 수 있는 카드·행은 이 두 값만 씁니다 */
   --hover-line: var(--semantic-line-brand-strong);
   --hover-fill: var(--semantic-surface-neutral-secondary);
+  /* 상태 색의 역할(docs/design/patterns.md §1.1):
+     현재 위치(메뉴·탭·폴더·목록의 지금 항목) = 중립 채움 + 진한 글자,
+     고른 값(선택지·켜진 도구) = 브랜드 옅은 채움(--selected-fill)·선(--selected-line). */
   --navigation-selected-fill: var(--semantic-surface-neutral-tertiary);
   --selected-fill: rgba(
     var(--semantic-surface-brand-primary-rgb),
@@ -71,6 +74,9 @@
   --shadow-pop: var(--semantic-elevation-shadow-normal-large);
 
   /* 앱 배치 값(색 아님) */
+  /* 목록 위 도구 줄의 찾기·고르기 칸: Montage TextField·Select medium과 같은 40/12 */
+  --field-height-toolbar: 40px;
+  --field-radius-toolbar: var(--radius-12);
   --rail-width: 238px;
   --shell-gap: var(--spacing-14);
 }

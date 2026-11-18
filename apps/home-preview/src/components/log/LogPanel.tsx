@@ -59,6 +59,7 @@ export function LogPanel({
         <Button
           variant="ghost"
           size="icon-sm"
+          className="ia-panel-close"
           aria-label={t("결정·질문 창 닫기")}
           onClick={onClose}
         >

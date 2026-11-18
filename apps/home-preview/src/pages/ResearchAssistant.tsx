@@ -1437,6 +1437,7 @@ export function ResearchAssistant({
             <Button
               variant="ghost"
               size="icon-sm"
+              className="ia-panel-close"
               aria-label={t("연구 도우미 창 닫기")}
               onClick={onClose}
             >

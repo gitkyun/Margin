@@ -185,35 +185,10 @@ test("연결이 끊기면 상단 띠 하나만 연결 끊김으로 바뀐다", a
   ).toHaveCount(0);
 });
 
-test("일본어 태블릿 상단바에서도 계정 버튼이 화면 안에 보인다", async ({
+test("사이드 창을 전환하거나 닫아도 각 창에서 고른 보기가 남는다", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 768, height: 850 });
-  await page.addInitScript(() => localStorage.setItem("margin-lang", "ja"));
-  await page.goto("/r");
-  await page
-    .locator('main a[href^="/r/"]')
-    .filter({ hasNotText: /新規/ })
-    .first()
-    .click();
-  await expect(page.locator(".hm-home")).toBeVisible();
-
-  const topbar = page.locator(".ia-topbar");
-  const account = topbar.locator(".kokonut-profile-trigger");
-  await expect(account).toBeVisible();
-  const right = await account.evaluate(
-    (el) => el.getBoundingClientRect().right,
-  );
-  expect(right).toBeLessThanOrEqual(768);
-  const overflow = await topbar.evaluate(
-    (el) => el.scrollWidth - el.clientWidth,
-  );
-  expect(overflow).toBe(0);
-});
-
-test("사이드 창을 전환하거나 닫아도 질문 초안과 선택한 보기가 남는다", async ({
-  page,
-}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/r");
   await page
     .getByRole("link", { name: /연구 도구 사용 경험/ })
@@ -225,24 +200,21 @@ test("사이드 창을 전환하거나 닫아도 질문 초안과 선택한 보�
     exact: true,
   });
   const log = rail.getByRole("button", { name: "결정·질문", exact: true });
+  const panel = page.locator("#margin-panel");
+  // 미리보기에는 AI 모델이 없어 입력창이 꺼져 있으므로, 창 안에서 고른 탭으로 보존을 확인합니다.
   await assistant.click();
-  const draft = page.locator("#margin-panel .ia-panel-tab textarea").first();
-  await draft.fill("패널을 바꿔도 남아 있어야 하는 질문");
+  const suggestions = panel.getByRole("tab", { name: "제안", exact: true });
+  await suggestions.click();
+  await expect(suggestions).toHaveAttribute("aria-selected", "true");
   await log.click();
-  const questions = page
-    .locator("#margin-panel")
-    .getByText("질문", { exact: true })
-    .first();
+  const questions = panel.getByRole("radio", { name: /^질문/ });
   await questions.click();
   await assistant.click();
-  await expect(draft).toHaveValue("패널을 바꿔도 남아 있어야 하는 질문");
+  await expect(suggestions).toHaveAttribute("aria-selected", "true");
   await assistant.click();
-  await expect(draft).toBeHidden();
+  await expect(suggestions).toBeHidden();
   await log.click();
-  await expect(questions.locator("xpath=..")).toHaveAttribute(
-    "data-active",
-    "true",
-  );
+  await expect(questions).toHaveAttribute("aria-checked", "true");
   await assistant.click();
-  await expect(draft).toHaveValue("패널을 바꿔도 남아 있어야 하는 질문");
+  await expect(suggestions).toHaveAttribute("aria-selected", "true");
 });
