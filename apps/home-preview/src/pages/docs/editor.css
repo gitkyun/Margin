@@ -229,6 +229,7 @@
   /* 도구 줄 2(05 §3.5·§3.6): 있을 때만 */
   .editor-toolbar-2 {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--spacing-8);
     margin-top: var(--spacing-6);
@@ -459,6 +460,90 @@
     color: var(--text-tertiary);
     font-size: var(--typography-label2-fontSize);
     word-break: keep-all;
+  }
+  /* 본문 안 수정 제안(05 §3.6): 색만이 아니라 취소선·밑줄로도 구분합니다. */
+  .editor-sheet .writing-paper {
+    position: relative;
+  }
+  .rms-document-editor .suggest-del {
+    border-radius: var(--radius-4);
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    text-decoration: line-through;
+    text-decoration-color: var(--danger);
+  }
+  .rms-document-editor .suggest-ins {
+    margin-left: 1px;
+    border-radius: var(--radius-4);
+    background: var(--brand-soft);
+    color: var(--text);
+    text-decoration: underline 2px var(--brand);
+    text-underline-offset: 3px;
+  }
+  .rms-document-editor .suggest-del.is-active,
+  .rms-document-editor .suggest-ins.is-active {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+  .suggest-card {
+    position: absolute;
+    z-index: var(--z-sticky);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    width: min(300px, calc(100% - 16px));
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    box-shadow: var(--shadow-pop);
+  }
+  .suggest-card p {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    line-height: var(--typography-label2-lineHeight);
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .suggest-card div {
+    display: flex;
+    gap: var(--spacing-6);
+  }
+  .suggest-bar {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  .suggest-bar-count {
+    margin-right: var(--spacing-4);
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+  }
+  .suggest-request-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .suggest-request-feedback legend {
+    margin-bottom: var(--spacing-6);
+    color: var(--text-secondary);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .suggest-request-feedback label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .suggest-request-feedback input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--brand);
   }
   .editor-status {
     display: flex;
