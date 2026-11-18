@@ -40,6 +40,12 @@ describe("account AI selection", () => {
       thinking: undefined,
     });
   });
+  it("uses low depth when the person has not chosen one, and keeps an explicit choice", () => {
+    expect(resolveAISelection(models).thinking).toBe("low");
+    expect(resolveAISelection(models, { thinking: "high" }).thinking).toBe(
+      "high",
+    );
+  });
   it("falls back to server-provided Flash 3.8 if there is no recommendation", () => {
     expect(
       resolveAISelection(

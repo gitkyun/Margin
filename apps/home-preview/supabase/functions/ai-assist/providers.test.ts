@@ -161,3 +161,33 @@ it("does not bill Google search tool-result input as generated output", async ()
   });
   expect(usage).toMatchObject({ input: 100, output: 50, reasoning: 30 });
 });
+it("reads why the provider stopped so a cut-off answer is told apart from a format error", async () => {
+  const { generate } = await import("./providers");
+  const original = globalThis.fetch;
+  globalThis.fetch = (async () =>
+    Response.json({
+      candidates: [
+        {
+          content: { parts: [{ text: '{"answer":"잘' }] },
+          finishReason: "MAX_TOKENS",
+        },
+      ],
+      usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 },
+    })) as typeof fetch;
+  try {
+    const result = await generate({
+      model: availableModels("")[0],
+      system: "s",
+      prompt: "p",
+      schema: {},
+      maxOutput: 100,
+      signal: new AbortController().signal,
+      apiKey: "test-key",
+      projectId: "test-project",
+      provider: "vertex",
+    });
+    expect(result.finishReason).toBe("MAX_TOKENS");
+  } finally {
+    globalThis.fetch = original;
+  }
+});

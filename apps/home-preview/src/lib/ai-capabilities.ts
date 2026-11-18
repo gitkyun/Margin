@@ -27,6 +27,13 @@ export function isAIModelAvailable(model: AIModelCapability) {
   );
 }
 
+/**
+ * 사용자가 답변 깊이를 정하지 않았을 때 쓰는 값. 예전 기본값 high(자세히)는 연구 대화 한 번에
+ * 평균 1분 가까이 걸려(2026-11-19 측정, low는 10~15초) 응답 속도 작업 문서 2-2의 출발점대로
+ * 간단히(low)로 낮췄어요. 사용자가 고른 값은 그대로 따라요.
+ */
+export const DEFAULT_THINKING = "low";
+
 /** The server is the only source of model IDs and supported thinking levels. */
 export function resolveAISelection(
   models: AIModelCapability[] = [],
@@ -42,7 +49,7 @@ export function resolveAISelection(
       ),
     ) ??
     available[0];
-  const preferred = String(prefs.thinking ?? "high");
+  const preferred = String(prefs.thinking ?? DEFAULT_THINKING);
   const thinking = selected?.thinking.includes(preferred)
     ? preferred
     : selected?.thinking[0];

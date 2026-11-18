@@ -13,8 +13,16 @@ import {
   generate,
   reserveCredits,
   usageCredits,
+  type ProviderResult,
   type TokenUsage,
 } from "./providers.ts";
+import {
+  attemptTimeoutFor,
+  maxOutputFor,
+  serverTiming,
+  shouldRetry,
+  stageClock,
+} from "./tuning.ts";
 import {
   buildSystemPrompt,
   buildUserPayload,
@@ -192,11 +200,20 @@ Deno.serve(async (request) => {
     "Access-Control-Allow-Headers":
       "authorization, apikey, content-type, x-client-info",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    // 브라우저 개발자 도구와 화면이 구간별 시간을 읽을 수 있게 합니다(입력 내용은 담지 않음).
+    "Access-Control-Expose-Headers": "Server-Timing",
   };
   if (origin && origins.includes(origin))
     headers["Access-Control-Allow-Origin"] = origin;
-  const reply = (body: unknown, status = 200) =>
-    new Response(JSON.stringify(body), { status, headers });
+  // 구간별 시간: auth(로그인 확인) → context(기록 읽기) → reserve(실행 시작·예약) → model → settle → finish
+  const clock = stageClock();
+  const reply = (body: unknown, status = 200) => {
+    const timing = serverTiming({ ...clock.marks, total: clock.total() });
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...headers, "Server-Timing": timing },
+    });
+  };
   if (origin && !origins.includes(origin))
     return reply(
       {
@@ -225,6 +242,30 @@ Deno.serve(async (request) => {
     providerRejected = false;
   let measuredUsage: TokenUsage | undefined;
   let chargedCredits = 0;
+  let finishReason: string | undefined;
+  let attempts = 0;
+  // 운영 확인용 실행 요약. 질문·기록·토큰 문자열은 남기지 않고 종류·시간·토큰 수만 남깁니다.
+  let runInfo: Record<string, unknown> = {};
+  const logRun = (status: string) =>
+    console.info(
+      "rms_ai_timing",
+      JSON.stringify({
+        ...runInfo,
+        runId,
+        status,
+        attempts,
+        finishReason,
+        marks: { ...clock.marks, total: clock.total() },
+        tokens: measuredUsage?.known
+          ? {
+              input: measuredUsage.input,
+              cached: measuredUsage.cached,
+              output: measuredUsage.output,
+              reasoning: measuredUsage.reasoning,
+            }
+          : undefined,
+      }),
+    );
   try {
     if (
       !url ||
@@ -260,7 +301,8 @@ Deno.serve(async (request) => {
         "확인된 계정으로 로그인해 주세요.",
         401,
       );
-    // 답변 깊이는 세 단계이고, 맨 앞(high)이 기본값입니다.
+    clock.mark("auth");
+    // 답변 깊이(생각 단계)는 세 단계입니다. 화면 기본값은 간단히(low)예요(src/lib/ai-capabilities.ts).
     if (request.method === "GET")
       return reply({ models: apiKey ? models : [] });
     if (Number(request.headers.get("content-length") ?? 0) > 262144)
@@ -335,6 +377,25 @@ Deno.serve(async (request) => {
         "INVALID_INPUT",
         "이 모델에서 지원하는 생각 수준을 선택해 주세요.",
       );
+    runInfo = {
+      mode: input.mode,
+      model,
+      thinking: input.thinking ?? null,
+      provider,
+      webSearch: !!input.webSearch,
+    };
+    // 연구 배경 읽기는 접근 확인과 함께 시작합니다. 결과는 접근 확인을 통과한 뒤에만 씁니다.
+    const researchRead: Promise<
+      { rows: { data: Record<string, unknown> }[] } | { error: unknown }
+    > =
+      input.webSearch || input.calendar
+        ? Promise.resolve({ rows: [] })
+        : rest(
+            `rms_researches?${new URLSearchParams({ id: `eq.${input.researchId}`, select: "data" })}`,
+          ).then(
+            (rows) => ({ rows: rows as { data: Record<string, unknown> }[] }),
+            (error) => ({ error }),
+          );
     if (
       !(await rpc("rms_member_access", {
         p_id: input.researchId,
@@ -402,16 +463,16 @@ Deno.serve(async (request) => {
       !input.webSearch;
     if (input.mode === "suggest_edits") {
       // 글은 화면이 보낸 글자가 아니라 저장된 글을 서버가 읽습니다. 비공개 글은 접근 확인에서 걸러집니다.
-      const docRows = (await rest(
-        `rms_records?${new URLSearchParams({ id: `eq.${input.documentId}`, research_id: `eq.${input.researchId}`, kind: "eq.documents", select: "data" })}`,
-      )) as { data: Record<string, unknown> }[];
-      if (
-        docRows.length !== 1 ||
-        !(await rpc("rms_record_access", {
+      const [docRows, docAllowed] = (await Promise.all([
+        rest(
+          `rms_records?${new URLSearchParams({ id: `eq.${input.documentId}`, research_id: `eq.${input.researchId}`, kind: "eq.documents", select: "data" })}`,
+        ),
+        rpc("rms_record_access", {
           p_id: input.documentId,
           p_user: user.id,
-        }))
-      )
+        }),
+      ])) as [{ data: Record<string, unknown> }[], unknown];
+      if (docRows.length !== 1 || !docAllowed)
         throw new AIError("FORBIDDEN", "이 글을 읽을 수 없습니다.", 403);
       const doc = docRows[0].data;
       if (doc.archivedAt)
@@ -440,38 +501,42 @@ Deno.serve(async (request) => {
           413,
         );
       const docTitle = String(doc.title ?? "");
-      const grounding: {
-        id: string;
-        kind: string;
-        title: string;
-        text: string;
-      }[] = [];
-      for (const c of contexts) {
-        if (!(await rpc("rms_record_access", { p_id: c.id, p_user: user.id })))
-          throw new AIError(
-            "FORBIDDEN",
-            "선택한 근거를 읽을 수 없습니다.",
-            403,
-          );
-        const rows = (await rest(
-          `rms_records?${new URLSearchParams({ id: `eq.${c.id}`, research_id: `eq.${input.researchId}`, kind: `eq.${c.kind}`, select: "data" })}`,
-        )) as { data: Record<string, unknown> }[];
-        if (rows.length !== 1)
-          throw new AIError("FORBIDDEN", "선택한 근거를 확인해 주세요.", 403);
-        const stored = rows[0].data;
-        const body =
-          c.kind === "feedback"
-            ? String(stored.body ?? "")
-            : c.kind === "tasks"
-              ? `${stored.title ?? ""}\n${stored.description ?? ""}`
-              : String(stored.memo ?? "");
-        grounding.push({
-          id: c.id,
-          kind: c.kind,
-          title: String(stored.title ?? c.title),
-          text: body,
-        });
-      }
+      // 근거마다 접근 확인과 원문 읽기를 함께 보내고, 근거끼리도 동시에 읽습니다(순서는 유지).
+      const grounding = await Promise.all(
+        contexts.map(async (c) => {
+          const [allowed, rows] = (await Promise.all([
+            rpc("rms_record_access", { p_id: c.id, p_user: user.id }),
+            rest(
+              `rms_records?${new URLSearchParams({ id: `eq.${c.id}`, research_id: `eq.${input.researchId}`, kind: `eq.${c.kind}`, select: "data" })}`,
+            ),
+          ])) as [unknown, { data: Record<string, unknown> }[]];
+          if (!allowed)
+            throw new AIError(
+              "FORBIDDEN",
+              "선택한 근거를 읽을 수 없습니다.",
+              403,
+            );
+          if (rows.length !== 1)
+            throw new AIError(
+              "FORBIDDEN",
+              "선택한 근거를 확인해 주세요.",
+              403,
+            );
+          const stored = rows[0].data;
+          const body =
+            c.kind === "feedback"
+              ? String(stored.body ?? "")
+              : c.kind === "tasks"
+                ? `${stored.title ?? ""}\n${stored.description ?? ""}`
+                : String(stored.memo ?? "");
+          return {
+            id: c.id,
+            kind: c.kind,
+            title: String(stored.title ?? c.title),
+            text: body,
+          };
+        }),
+      );
       input.sourceText =
         `[고칠 글] ${docTitle}\n${slice}` +
         grounding
@@ -539,57 +604,62 @@ Deno.serve(async (request) => {
     } else if (isRoadmap) {
       contexts = [];
     } else if (contexts.length) {
+      // 자료마다 접근 확인과 원문 읽기를 함께 보내고, 자료끼리도 동시에 읽습니다(순서는 유지).
       const verified: Array<
         NonNullable<AIInput["contexts"]>[number] & { text: string }
-      > = [];
-      for (const c of contexts) {
-        if (!(await rpc("rms_record_access", { p_id: c.id, p_user: user.id })))
-          throw new AIError(
-            "FORBIDDEN",
-            "선택한 자료를 읽을 수 없습니다.",
-            403,
+      > = await Promise.all(
+        contexts.map(async (c) => {
+          const [allowed, rows] = (await Promise.all([
+            rpc("rms_record_access", { p_id: c.id, p_user: user.id }),
+            rest(
+              `rms_records?${new URLSearchParams({ id: `eq.${c.id}`, research_id: `eq.${input.researchId}`, kind: `eq.${c.kind}`, select: "data" })}`,
+            ),
+          ])) as [unknown, { data: Record<string, unknown> }[]];
+          if (!allowed)
+            throw new AIError(
+              "FORBIDDEN",
+              "선택한 자료를 읽을 수 없습니다.",
+              403,
+            );
+          if (rows.length !== 1)
+            throw new AIError("FORBIDDEN", "선택 자료를 확인해 주세요.", 403);
+          const stored = rows[0].data;
+          const original = String(
+            c.kind === "meetings"
+              ? stored.memo
+              : c.kind === "feedback"
+                ? stored.body
+                : c.kind === "documents" || c.kind === "attachments"
+                  ? stored.text
+                  : c.kind === "tasks"
+                    ? stored.title + "\n" + (stored.description ?? "")
+                    : c.kind === "versions"
+                      ? (c.text ?? "")
+                      : JSON.stringify(stored),
           );
-        const rows = (await rest(
-          `rms_records?${new URLSearchParams({ id: `eq.${c.id}`, research_id: `eq.${input.researchId}`, kind: `eq.${c.kind}`, select: "data" })}`,
-        )) as { data: Record<string, unknown> }[];
-        if (rows.length !== 1)
-          throw new AIError("FORBIDDEN", "선택 자료를 확인해 주세요.", 403);
-        const stored = rows[0].data;
-        const original = String(
-          c.kind === "meetings"
-            ? stored.memo
-            : c.kind === "feedback"
-              ? stored.body
-              : c.kind === "documents" || c.kind === "attachments"
-                ? stored.text
-                : c.kind === "tasks"
-                  ? stored.title + "\n" + (stored.description ?? "")
-                  : c.kind === "versions"
-                    ? (c.text ?? "")
-                    : JSON.stringify(stored),
-        );
-        if (
-          (c.kind === "meetings" && c.revision !== stored.memoRevision) ||
-          (c.kind === "documents" && c.revision !== stored.revision)
-        )
-          throw new AIError(
-            "SOURCE_CHANGED",
-            "자료가 변경되었습니다. 최신 내용을 다시 선택해 주세요.",
-            409,
-          );
-        if (c.text && !original.includes(c.text))
-          throw new AIError(
-            "SOURCE_CHANGED",
-            "선택한 문단이 바뀌었습니다. 다시 선택해 주세요.",
-            409,
-          );
-        if (c.kind === "versions" && (!c.page || !c.text?.trim()))
-          throw new AIError(
-            "INVALID_INPUT",
-            "PDF 페이지와 읽을 텍스트를 선택해 주세요.",
-          );
-        verified.push({ ...c, text: c.text ?? original });
-      }
+          if (
+            (c.kind === "meetings" && c.revision !== stored.memoRevision) ||
+            (c.kind === "documents" && c.revision !== stored.revision)
+          )
+            throw new AIError(
+              "SOURCE_CHANGED",
+              "자료가 변경되었습니다. 최신 내용을 다시 선택해 주세요.",
+              409,
+            );
+          if (c.text && !original.includes(c.text))
+            throw new AIError(
+              "SOURCE_CHANGED",
+              "선택한 문단이 바뀌었습니다. 다시 선택해 주세요.",
+              409,
+            );
+          if (c.kind === "versions" && (!c.page || !c.text?.trim()))
+            throw new AIError(
+              "INVALID_INPUT",
+              "PDF 페이지와 읽을 텍스트를 선택해 주세요.",
+            );
+          return { ...c, text: c.text ?? original };
+        }),
+      );
       contexts = verified;
       input.sourceText = verified
         .map(
@@ -655,13 +725,13 @@ Deno.serve(async (request) => {
       // 대상이 하나인 요청은 저장된 원문 그대로라 발췌 확인(sourceQuote)과 버전 대조가 맞습니다.
       if (contexts.length === 1) input.sourceRevision = contexts[0].revision;
     } else {
-      const rows = (await rest(
-        `rms_records?${new URLSearchParams({ id: `eq.${id}`, research_id: `eq.${input.researchId}`, kind: `eq.${kind}`, select: "data" })}`,
-      )) as { data: Record<string, unknown> }[];
-      if (
-        rows.length !== 1 ||
-        !(await rpc("rms_record_access", { p_id: id, p_user: user.id }))
-      )
+      const [rows, allowed] = (await Promise.all([
+        rest(
+          `rms_records?${new URLSearchParams({ id: `eq.${id}`, research_id: `eq.${input.researchId}`, kind: `eq.${kind}`, select: "data" })}`,
+        ),
+        rpc("rms_record_access", { p_id: id, p_user: user.id }),
+      ])) as [{ data: Record<string, unknown> }[], unknown];
+      if (rows.length !== 1 || !allowed)
         throw new AIError("FORBIDDEN", "원문을 읽을 수 없습니다.", 403);
       source = rows[0].data;
       verifySource(input, source);
@@ -772,6 +842,7 @@ Deno.serve(async (request) => {
         ]),
       ),
     );
+    clock.mark("context");
     const hash = [...new Uint8Array(digest)]
       .map((v) => v.toString(16).padStart(2, "0"))
       .join("");
@@ -787,12 +858,9 @@ Deno.serve(async (request) => {
     const originalQuote =
       typeof source.sourceQuote === "string" ? source.sourceQuote : "";
     // 연구 설정의 이름·목적·연구 질문을 배경으로 보냅니다(선택한 원문과 구분). 접근 권한은 위에서 확인했습니다.
-    const researchRows =
-      input.webSearch || input.calendar
-        ? []
-        : ((await rest(
-            `rms_researches?${new URLSearchParams({ id: `eq.${input.researchId}`, select: "data" })}`,
-          )) as { data: Record<string, unknown> }[]);
+    const researchResult = await researchRead;
+    if ("error" in researchResult) throw researchResult.error;
+    const researchRows = researchResult.rows;
     const background = researchBackground(researchRows[0]?.data);
     const systemPrompt = input.webSearch
       ? [
@@ -825,10 +893,8 @@ Deno.serve(async (request) => {
           : input.mode === "suggest_edits"
             ? suggestEditsSchema
             : revisionSchema;
-    const maxOutput =
-      input.mode === "continue_writing" || input.mode === "inline_edit"
-        ? 2048
-        : 8192;
+    // 생각 토큰도 출력 상한 안에서 쓰므로 생각 단계에 맞춰 상한을 둡니다(tuning.ts).
+    const maxOutput = maxOutputFor(input.mode, input.thinking);
     const prompt = input.webSearch
       ? JSON.stringify({ question: input.question })
       : buildUserPayload({
@@ -855,46 +921,74 @@ Deno.serve(async (request) => {
     if (held !== true)
       throw new AIError("CANCELLED", "중단한 요청입니다.", 499);
     reserved = true;
-    const controller = new AbortController(),
-      timeout = setTimeout(() => controller.abort(), 90000),
-      abort = () => controller.abort();
-    request.signal.addEventListener("abort", abort, { once: true });
-    let upstream: Response;
-    let candidateText = "";
-    let webGrounding: WebGrounding | undefined;
-    try {
-      const result = await generate({
-        webSearch: input.webSearch,
-        model: selectedModel,
-        system: systemPrompt,
-        prompt,
-        schema,
-        thinking: input.thinking,
-        maxOutput,
-        signal: controller.signal,
-        apiKey,
-        projectId,
-        provider,
-      });
-      upstream = result.response;
-      candidateText = result.text;
-      webGrounding = result.grounding;
-      measuredUsage = result.usage;
-      providerRejected = !upstream.ok;
-    } catch (error) {
-      if (controller.signal.aborted)
-        throw new AIError(
-          request.signal.aborted ? "CANCELLED" : "TIMEOUT",
-          request.signal.aborted
-            ? "AI 실행을 중단했습니다."
-            : "AI 응답이 늦어 중단했습니다. 입력을 유지한 채 다시 시도하거나 직접 작성해 주세요.",
-          request.signal.aborted ? 499 : 504,
-        );
-      throw error;
-    } finally {
-      clearTimeout(timeout);
-      request.signal.removeEventListener("abort", abort);
+    clock.mark("reserve");
+    runInfo = { ...runInfo, maxOutput, inputChars: prompt.length };
+    // 생각 단계별 제한 시간으로 한 번 기다리고, 시간 초과면 남은 시간 안에서 한 번만 다시 보냅니다. 같은 실행 번호와 예약을 그대로 쓰므로 크레딧은 한 번만 예약되고, 정산은 받은 응답의
+    // 실제 사용량으로만 합니다.
+    const attemptTimeout = attemptTimeoutFor(input.thinking);
+    const modelStarted = performance.now();
+    let result: ProviderResult | undefined;
+    for (let attempt = 1; ; attempt++) {
+      attempts = attempt;
+      const controller = new AbortController(),
+        timeout = setTimeout(() => controller.abort(), attemptTimeout),
+        abort = () => controller.abort();
+      request.signal.addEventListener("abort", abort, { once: true });
+      let outcome: "timeout" | "network" | number;
+      let failure: unknown;
+      try {
+        result = await generate({
+          webSearch: input.webSearch,
+          model: selectedModel,
+          system: systemPrompt,
+          prompt,
+          schema,
+          thinking: input.thinking,
+          maxOutput,
+          signal: controller.signal,
+          apiKey,
+          projectId,
+          provider,
+        });
+        outcome = result.response.status;
+      } catch (error) {
+        if (request.signal.aborted)
+          throw new AIError("CANCELLED", "AI 실행을 중단했습니다.", 499);
+        result = undefined;
+        failure = error;
+        outcome = controller.signal.aborted ? "timeout" : "network";
+      } finally {
+        clearTimeout(timeout);
+        request.signal.removeEventListener("abort", abort);
+      }
+      if (result?.response.ok) break;
+      if (
+        !shouldRetry({
+          attempt,
+          outcome,
+          cancelled: request.signal.aborted,
+          elapsedMs: performance.now() - modelStarted,
+          nextTimeoutMs: attemptTimeout,
+        })
+      ) {
+        if (outcome === "timeout")
+          throw new AIError(
+            "TIMEOUT",
+            "AI 응답이 늦어 중단했습니다. 입력을 유지한 채 다시 시도하거나 직접 작성해 주세요.",
+            504,
+          );
+        if (outcome === "network") throw failure;
+        break;
+      }
+      console.warn("rms_ai_retry", JSON.stringify({ runId, attempt, outcome }));
     }
+    clock.mark("model");
+    const upstream = result!.response;
+    const candidateText = result!.text;
+    const webGrounding: WebGrounding | undefined = result!.grounding;
+    measuredUsage = result!.usage;
+    finishReason = result!.finishReason;
+    providerRejected = !upstream.ok;
     if (!upstream.ok)
       console.error("rms_ai_provider_error", upstream.status, model);
     if (upstream.status === 429)
@@ -924,7 +1018,13 @@ Deno.serve(async (request) => {
         const closed = await rpc("rms_ai_settle_credits", {
           p_run_id: runId,
           p_amount: amount,
-          p_usage: measuredUsage,
+          // 정산 내역에 멈춘 이유·시도 횟수·구간 시간도 함께 남겨 느린 실행을 나중에 찾을 수 있게 합니다.
+          p_usage: {
+            ...measuredUsage,
+            ...(finishReason ? { finishReason } : {}),
+            attempts,
+            timing: { ...clock.marks },
+          },
           p_refund: false,
         });
         settled = true;
@@ -948,6 +1048,16 @@ Deno.serve(async (request) => {
         );
       }
     }
+    clock.mark("settle");
+    // 출력 상한에 걸려 잘린 답은 형식 오류와 구분해 알려 줍니다(크레딧은 위에서 실제 사용량으로 정산됨).
+    const truncated = () =>
+      new AIError(
+        "OUTPUT_TRUNCATED",
+        "답이 길어 끝까지 받지 못했어요. 답변 깊이를 낮추거나 범위를 줄여 다시 시도해 주세요.",
+        502,
+      );
+    if (finishReason === "MAX_TOKENS" && (!candidateText || input.webSearch))
+      throw truncated();
     if (!candidateText)
       throw new AIError(
         "NO_CANDIDATES",
@@ -960,6 +1070,7 @@ Deno.serve(async (request) => {
         ? { answer: candidateText }
         : JSON.parse(candidateText);
     } catch {
+      if (finishReason === "MAX_TOKENS") throw truncated();
       throw new AIError(
         "INVALID_OUTPUT",
         "AI 응답 형식을 확인할 수 없습니다. 입력은 유지됩니다.",
@@ -1020,6 +1131,8 @@ Deno.serve(async (request) => {
     });
     if (!accepted)
       throw new AIError("CANCELLED", "중단한 결과는 적용하지 않았습니다.", 499);
+    clock.mark("finish");
+    logRun("complete");
     return reply({
       runId,
       ...(input.webSearch ? { webGrounding } : {}),
@@ -1064,6 +1177,7 @@ Deno.serve(async (request) => {
             ? error.message
             : "AI 응답을 받지 못했습니다.",
       }).catch(() => undefined);
+    if (runId) logRun(error instanceof AIError ? error.code : "error");
     if (error instanceof RoadmapError)
       return reply(
         { error: { code: error.code, message: error.message } },

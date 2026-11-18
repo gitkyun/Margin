@@ -15,6 +15,8 @@ export interface ProviderResult {
   response: Response;
   text: string;
   usage: TokenUsage;
+  /** 제공사가 생성을 멈춘 이유(STOP, MAX_TOKENS 등). 응답이 없으면 비어 있습니다. */
+  finishReason?: string;
 }
 interface RequestOptions {
   webSearch?: boolean;
@@ -101,9 +103,11 @@ export async function generate(
         )
       : n(u?.candidatesTokenCount) + n(u?.thoughtsTokenCount);
   const grounded = readGrounding(data.candidates?.[0]);
+  const finishReason = data.candidates?.[0]?.finishReason;
   return {
     response,
     text: grounded.text,
+    ...(typeof finishReason === "string" ? { finishReason } : {}),
     ...(webSearch ? { grounding: grounded.grounding } : {}),
     usage: {
       ...(webSearch && grounded.searchQueries !== undefined

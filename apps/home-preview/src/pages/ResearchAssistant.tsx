@@ -3,6 +3,7 @@ import { isImeComposing } from "@/lib/ime";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
+  DEFAULT_THINKING,
   isAIModelAvailable,
   resolveAISelection,
   useAICapabilities,
@@ -211,7 +212,7 @@ export function ResearchAssistant({
     ),
     [model, setModel] = useState(String(user.preferences?.model ?? "")),
     [thinking, setThinking] = useState(
-      String(user.preferences?.thinking || "high"),
+      String(user.preferences?.thinking || DEFAULT_THINKING),
     ),
     [lastRunId, setLastRunId] = useState(""),
     [lastUsedCredits, setLastUsedCredits] = useState<number | undefined>(),
