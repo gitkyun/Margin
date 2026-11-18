@@ -34,3 +34,6 @@ Thumbs.db
 
 # PDF test output (tests/document-pdf.test.ts)
 docs/development/pdf-check-*/
+
+# 화면 QA 결과물(스크린샷·리포트·기준 이미지·로그인 상태)
+qa-results/

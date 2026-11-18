@@ -356,18 +356,22 @@ export function DocsPage() {
                     </Button>
                   ) : (
                     <span className="docs-row-tools">
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        className="docs-row-peek"
-                        aria-pressed={selected === key}
-                        aria-label={t("{title} 미리보기", { title: row.title })}
-                        onClick={() =>
-                          setSelected(selected === key ? null : key)
-                        }
-                      >
-                        <Icon name="eye" size={16} />
-                      </Button>
+                      {/* 레이어 밖 Button의 display가 숨김 규칙을 이기므로 감싼 span을 숨깁니다(docs.css 폭 단계). */}
+                      <span className="docs-row-peek">
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-pressed={selected === key}
+                          aria-label={t("{title} 미리보기", {
+                            title: row.title,
+                          })}
+                          onClick={() =>
+                            setSelected(selected === key ? null : key)
+                          }
+                        >
+                          <Icon name="eye" size={16} />
+                        </Button>
+                      </span>
                       <DropdownMenu>
                         <DropdownMenuTrigger>
                           <Button

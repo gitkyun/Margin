@@ -1,0 +1,4 @@
+# Python 3.11+ . 실제 Safari 검사를 쓰려면 selenium 주석을 해제하세요.
+playwright>=1.51
+pillow>=10
+# selenium>=4.20
