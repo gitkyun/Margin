@@ -239,7 +239,8 @@ export function WorkspaceShell({
     const request = panelRequest(location.search);
     if (!request || !research) return;
     panelRef.current.active?.onClose();
-    setRailTab(request.tab);
+    // 링크·명령·단축키로 연 것도 사람이 연 것이라 열림과 탭을 기억합니다(새로 고쳐도 같은 창).
+    setRailTab(request.tab, true);
     if (request.tab === "assistant")
       setAssistantRequest({ ...request, at: Date.now() });
     navigate(

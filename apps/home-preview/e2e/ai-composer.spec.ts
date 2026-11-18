@@ -105,7 +105,9 @@ const input = (page: Page) =>
 test("원본 입력창이 데스크톱 너비에서 넘치지 않는다", async ({ page }) => {
   const { errors } = await open(page);
   for (const width of [1440, 1024]) {
+    // 연구 도우미는 사이드 창이라 폭마다 다시 엽니다(밀기 ↔ 겹치기가 바뀌면 겹친 창은 닫힘).
     await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/r/${RESEARCH_ID}/assistant`);
     await expect(input(page)).toBeVisible();
     await expect(
       composer(page).getByRole("combobox", {
