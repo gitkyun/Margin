@@ -237,6 +237,8 @@ export function ResearchAssistant() {
       (c) =>
         c.researchId === researchId &&
         c.status === "pending" &&
+        // 본문 안 수정 제안은 글 편집 화면에서만 다룹니다(IA v2 05 §3.6).
+        c.mode !== "suggest_edits" &&
         (c.mode !== "organize_meeting" ||
           isLegacyOrganizeCandidate(c.candidate)),
     ),

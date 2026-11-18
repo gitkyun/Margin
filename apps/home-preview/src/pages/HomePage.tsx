@@ -541,7 +541,10 @@ function HomeLists({
   const ordered = homeTaskOrder(taskPool, nextMeeting?.taskIds ?? []);
   const pending = data.aiCandidates.filter(
     (candidate) =>
-      candidate.researchId === researchId && candidate.status === "pending",
+      candidate.researchId === researchId &&
+      candidate.status === "pending" &&
+      // 본문 안 수정 제안은 글 편집 화면에서만 다룹니다(IA v2 05 §3.6).
+      candidate.mode !== "suggest_edits",
   );
   const events = data.events
     .filter((event) => event.researchId === researchId)

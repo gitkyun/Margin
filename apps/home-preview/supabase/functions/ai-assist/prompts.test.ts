@@ -18,6 +18,7 @@ const modes: PromptMode[] = [
   "read_material",
   "ask_research",
   "propose_roadmap",
+  "suggest_edits",
 ];
 
 describe("research assistant guidelines (docs/ai/assistant-guidelines.md)", () => {

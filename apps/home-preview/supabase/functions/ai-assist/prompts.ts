@@ -11,7 +11,8 @@ export type PromptMode =
   | "read_material"
   | "propose_roadmap"
   | "continue_writing"
-  | "inline_edit";
+  | "inline_edit"
+  | "suggest_edits";
 export type Locale = "ko" | "ja";
 export type Depth = "low" | "medium" | "high";
 
@@ -213,6 +214,8 @@ const MODE_RULES: Record<PromptMode, string> = {
     "작업: 이 연구의 기록(sourceText: 할 일, 연구 단계, 주요 목표, 미팅, 피드백 등)을 보고 무엇부터 할지 정리하는 방안을 1~3개 제안한다. method에는 순서와 그 이유, 빠져 있는 준비를 적는다. suggestedTasks에는 한 번에 끝낼 수 있는 크기의 할 일을 적는다. 기록에 없는 날짜, 마감, 소요 시간을 만들지 않는다. 날짜가 필요하면 '기한을 정해야 해요'라고 적는다. 우선순위의 근거가 기록에 없으면 assumptions에 무엇을 가정했는지 쓴다.",
   read_material:
     "작업: 선택한 논문·자료의 읽힌 본문 전체를 요약한다. 서지 정보만 반복하지 말고 candidates 한 개에 title(자료 요약), method(연구 목적·방법·대상/자료·핵심 결과·한계·핵심 시사점을 소제목으로 나눠 구체적으로 요약), expectedResult(한 줄 핵심), assumptions(원문에서 확인되지 않은 사항), requiredMaterials(빠진 본문이 있으면 필요한 범위), suggestedTasks(사용자가 요약만 요청하면 빈 배열), sourceQuote(핵심 요약의 실제 연속 발췌)를 채운다. 원문에 없는 항목은 확인되지 않음으로 적는다. 텍스트를 읽지 못한 쪽이 표시돼 있으면 그 범위를 먼저 알리고 전체를 읽었다고 말하지 않는다. 페이지 표기가 있으면 근거의 실제 쪽을 method에 함께 적는다. 제목·저자·초록만 있으면 전체 논문 요약으로 가장하지 않는다. 새로운 연구 방안 2~3개를 제안하는 것으로 자료 요약을 대신하지 않는다.",
+  suggest_edits:
+    "작업: 원고에서 고칠 곳을 찾아 본문 안에 바로 넣을 수정 제안을 낸다. sourceText의 [고칠 글]이 원고이고, [근거 n]이 있으면 학생이 고른 피드백·할 일이다. 학생의 지시(question)가 있으면 그것을 먼저 따르고, 근거가 있으면 그 지적을 반영하는 곳을 고친다. 지시와 근거가 없으면 문장의 모호함, 중복, 어색한 연결, 맞춤법을 고친다. 후보마다 sourceQuote([고칠 글]에 있는 연속된 정확한 원문. 한 문장을 넘지 않게 고칠 부분만. 머리 표식은 넣지 않는다), body(sourceQuote 자리에 그대로 들어갈 새 글자. 지우기만 하면 빈 글자), title(왜 고치는지 한 줄. 근거를 따랐으면 '[근거 n]' 내용을 짧게 밝힌다)을 쓴다. 원문의 주장, 수치, 인용, 고유명사를 바꾸지 않고 없던 근거나 결과를 넣지 않는다. 문체와 용어는 원고를 따른다. 제안끼리 같은 곳을 겹쳐 고치지 않는다. 12개까지 낸다. 이 제안은 학생이 하나씩 적용할지 정한다.",
   propose_roadmap:
     "작업: plan.today부터 plan.submissionDate(투고일)까지 연구 단계를 언제 할지 제안한다. 날짜는 모두 YYYY-MM-DD로 쓴다. 모든 단계는 today 이후에 시작하고 submissionDate 이전에 끝난다. 단계는 시작일 순서로 낸다. 기간이 겹쳐도 되지만 같은 일을 두 단계로 나누지 않는다. plan.stages가 있으면 그 단계를 이름과 순서 그대로 쓰고 날짜만 제안하며, sourceIndex에 그 단계의 index를 넣는다. 꼭 필요한 단계가 빠져 있을 때만 새 단계를 더하고 sourceIndex를 0으로 둔다. plan.completedStages는 끝난 단계이므로 다시 넣지 않는다. plan.stages가 비어 있으면 research의 목적과 연구 질문에 맞춰 4~7개 단계를 제안하고 sourceIndex를 0으로 둔다. 투고 전에 교수님 검토와 수정에 쓸 기간을 남긴다. reason에는 그 기간으로 잡은 이유를 한 문장으로 쓴다. assumptions에는 가정한 것(연구 방법, 자료 수집 여부, 주당 작업량 등)과 일정이 빠듯한 부분을 쓴다. 학회·학술지 마감 규정, 교수의 일정, 심사 기간을 지어내지 않는다. 남은 기간이 짧아도 계획이 가능하다고 단정하지 않고 무리한 점을 assumptions에 적는다. 이 계획은 제안이며 학생이 고쳐서 적용한다.",
 };
@@ -260,7 +263,9 @@ export function buildSystemPrompt({
     INJECTION,
     MODE_RULES[mode],
     ...(usesRevisionFields ? [REVISION_FIELDS] : []),
-    ...(usesRevisionFields || mode === "organize_meeting"
+    ...(usesRevisionFields ||
+    mode === "organize_meeting" ||
+    mode === "suggest_edits"
       ? [NOTHING_FOUND]
       : []),
     ...(mode === "ask_research" && freeChat ? [FREE_CHAT] : []),
