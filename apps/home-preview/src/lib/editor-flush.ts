@@ -25,3 +25,29 @@ export async function flushEditor(documentId: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * 연구 도우미 답 아래 [이 글에 넣기](IA v2 06 §2.4): 열려 있는 글 편집기가 "커서 자리에 넣기"를 맡겨 둡니다.
+ * 넣은 내용은 편집기의 되돌리기로 되돌릴 수 있습니다.
+ */
+type Insert = (answer: string) => void;
+const inserters = new Map<string, Insert>();
+
+export function registerInsert(documentId: string, insert: Insert): () => void {
+  inserters.set(documentId, insert);
+  return () => {
+    if (inserters.get(documentId) === insert) inserters.delete(documentId);
+  };
+}
+
+/** 그 글의 편집기가 열려 있으면 넣고 true, 아니면 false */
+export function insertIntoEditor(documentId: string, answer: string): boolean {
+  const insert = inserters.get(documentId);
+  if (!insert) return false;
+  insert(answer);
+  return true;
+}
+
+export function canInsertInto(documentId: string): boolean {
+  return inserters.has(documentId);
+}

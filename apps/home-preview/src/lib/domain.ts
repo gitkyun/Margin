@@ -249,6 +249,10 @@ export interface DocumentRecord extends BaseRecord {
   revision: number;
   /** 글도 폴더에 넣을 수 있어요(IA v2 08 §3.5). */
   folderId?: ID;
+  /** 연구 도우미 답을 '글로 저장'한 초안(IA v2 05 §3.9) */
+  origin?: "ai";
+  /** 그 초안의 근거로 쓴 기록(본문 없이 종류·id·제목) */
+  draftedFrom?: { kind: string; id: ID; title: string }[];
 }
 export interface DocumentVersion extends BaseRecord {
   documentId: ID;

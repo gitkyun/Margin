@@ -63,7 +63,8 @@ import { FOCUS_BODY } from "./docs/NewDocDialog";
 import { editorOutline, savedTime } from "@/lib/editor-head";
 import { documentFeedback, documentTasks } from "@/lib/doc-margin";
 import { useOpenDetail } from "@/lib/item-detail";
-import { registerFlush } from "@/lib/editor-flush";
+import { registerFlush, registerInsert } from "@/lib/editor-flush";
+import { answerBlocks } from "@/lib/answer-doc";
 import { EditorGutter, FeedbackHandled } from "./docs/EditorGutter";
 import { EditorInfo } from "./docs/EditorInfo";
 import {
@@ -432,6 +433,13 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
     () => registerFlush(initial.id, () => flushRef.current()),
     [initial.id],
   );
+  // 연구 도우미 답 아래 [이 글에 넣기](06 §2.4): 커서 자리에 넣고, ⌘Z로 되돌릴 수 있습니다.
+  useEffect(() => {
+    if (!editor) return;
+    return registerInsert(initial.id, (answer) => {
+      editor.chain().focus().insertContent(answerBlocks(answer)).run();
+    });
+  }, [editor, initial.id]);
   function saveNow() {
     void action("save", async () => {
       await persist();
