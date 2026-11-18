@@ -16,6 +16,9 @@ export interface AnswerActionsProps {
   onSaveDraft?: () => void;
   /** [이 글에 넣기]: 글을 열어 둔 때만 보입니다. */
   onInsert?: () => void;
+  /** [요약 저장]: 미팅 정리 답이고 그 요약 제안을 아직 고르지 않았을 때만 보입니다. */
+  onSaveSummary?: () => void;
+  summaryBusy?: boolean;
   /** [할 일 추가]: 답에 할 일 제안이 있을 때만 보입니다. 누르면 제안 줄을 펼치거나 접습니다. */
   tasks?: {
     count: number;
@@ -31,7 +34,7 @@ export const DRAFT_MIN_LENGTH = 200;
 const COPIED_MS = 1800;
 
 /**
- * 연구 도우미 답변 아래 줄: 아이콘 버튼(복사·다시 답하기) 다음에 글자 버튼(할 일 추가·글로 저장·이 글에 넣기)을 둡니다.
+ * 연구 도우미 답변 아래 줄: 아이콘 버튼(복사·다시 답하기) 다음에 글자 버튼(요약 저장·할 일 추가·글로 저장·이 글에 넣기)을 둡니다.
  */
 export function AnswerActions({
   text,
@@ -40,6 +43,8 @@ export function AnswerActions({
   onRetry,
   onSaveDraft,
   onInsert,
+  onSaveSummary,
+  summaryBusy,
   tasks,
 }: AnswerActionsProps) {
   const [copied, setCopied] = useState(false);
@@ -86,6 +91,18 @@ export function AnswerActions({
           onClick={() => onRetry(question)}
         >
           <Icon name="refresh" size={16} />
+        </Button>
+      )}
+      {onSaveSummary && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={summaryBusy}
+          onClick={onSaveSummary}
+        >
+          <Icon name="check" size={15} />
+          {summaryBusy ? t("저장 중") : t("요약 저장")}
         </Button>
       )}
       {tasks && tasks.count > 0 && (
