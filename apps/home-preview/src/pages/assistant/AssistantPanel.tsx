@@ -6,6 +6,8 @@ import { StatusBadge, InlineEmpty } from "@/components/common";
 import { modeLabels } from "@/lib/experience";
 import { formatDateTime, type SavedAICandidate } from "@/lib/domain";
 import { t } from "@/lib/i18n";
+import { useAIUsage } from "@/lib/ai-usage";
+import { runCreditsLabel } from "@/lib/assistant-runs";
 
 export type AssistantPanelTab = "suggestions" | "runs";
 
@@ -135,6 +137,9 @@ export function AssistantRuns({
   onCancelRun,
   runLink,
 }: Pick<AssistantPanelProps, "runs" | "onCancelRun" | "runLink">) {
+  // 쓴 크레딧은 서버의 크레딧 이력에 같은 실행이 있을 때만 보입니다(06 §2.8).
+  const usage = useAIUsage();
+  const credits = usage.isError ? undefined : usage.data?.credits;
   return (
     <div className="panel-frame-body">
       <h3>{t("실행 내역")}</h3>
@@ -155,8 +160,13 @@ export function AssistantRuns({
             <div>
               <strong>{modeLabels[run.mode] ?? t("연구 대화")}</strong>
               <small>
-                {formatDateTime(run.createdAt)}
-                {run.model && ` · ${run.model}`}
+                {[
+                  formatDateTime(run.createdAt),
+                  run.model,
+                  runCreditsLabel(credits, run.id),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </small>
               {run.error && <p>{run.error}</p>}
             </div>

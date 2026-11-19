@@ -829,6 +829,29 @@ test("사이드 창의 대화 | 제안 | 실행 내역을 오가고, 실행 줄�
       },
     ],
   }));
+  // 쓴 크레딧은 정산 이력에 같은 실행이 있는 줄에만 보입니다(예약은 세지 않음).
+  server.rpc("rms_ai_usage", () => ({
+    ...credits,
+    credits: {
+      ...credits.credits,
+      ledger: [
+        {
+          id: "ledger-charge",
+          createdAt: at,
+          amount: -1234.4,
+          kind: "charge",
+          runId: "run-linked",
+        },
+        {
+          id: "ledger-reserve",
+          createdAt: at,
+          amount: -900,
+          kind: "reserve",
+          runId: "run-orphan",
+        },
+      ],
+    },
+  }));
   await page.reload();
   await page
     .getByRole("toolbar", { name: "옆 창 열기" })
@@ -856,6 +879,10 @@ test("사이드 창의 대화 | 제안 | 실행 내역을 오가고, 실행 줄�
   await expect(panel.locator(".run-row")).toHaveCount(2);
   // 갈 곳이 있는 줄만 누를 수 있습니다.
   await expect(panel.locator(".run-row-link")).toHaveCount(1);
+  await expect(panel.locator(".run-row-link")).toContainText("1,234크레딧");
+  await expect(
+    panel.locator(".run-row").filter({ hasText: "실패" }),
+  ).not.toContainText("크레딧");
   await shot(page, "panel-views-runs");
   await views.getByRole("tab", { name: "대화" }).click();
   await expect(panelInput).toHaveValue("쓰던 질문");
