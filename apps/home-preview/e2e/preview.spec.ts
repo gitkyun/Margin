@@ -390,3 +390,29 @@ test("수정 결과는 예전 화면으로 가지 않고 그 자리의 창에서
     page.getByRole("dialog", { name: "수정 결과 편집" }),
   ).toBeVisible();
 });
+
+test("예전 수정 결과 목록은 미팅의 검토 보기에 있는 수정 결과 구획으로 열린다(04 §2.4)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const base = new URL(page.url()).pathname;
+  await page.goto(`${base}/results`);
+  await expect(page).toHaveURL(new RegExp(`${base}/meetings\\?type=review$`));
+  const section = page.locator(".record-results");
+  await expect(
+    section.getByRole("button", { name: /수정 결과 \d+개/ }),
+  ).toBeVisible();
+  const views = section.getByRole("radiogroup", { name: "수정 결과 보기" });
+  await views.getByRole("radio", { name: "요청에 포함" }).click();
+  await section.getByRole("button", { name: /선행연구 비교표 보완/ }).click();
+  await expect(
+    page
+      .getByRole("complementary", { name: "항목 상세" })
+      .getByRole("textbox", { name: "수정 결과 제목" }),
+  ).toHaveValue("선행연구 비교표 보완");
+});

@@ -130,9 +130,6 @@ const TasksHome = lazy(() =>
 const MaterialsPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.MaterialsPage })),
 );
-const ResultsPage = lazy(() =>
-  import("@/pages/student").then((m) => ({ default: m.ResultsPage })),
-);
 const ReviewsPage = lazy(() =>
   import("@/pages/reviews").then((m) => ({ default: m.ReviewsPage })),
 );
@@ -252,13 +249,10 @@ function WorkspaceRoutes() {
               </LegacyOr>
             }
           />
+          {/* 5단계: 수정 결과는 미팅 목록의 검토 보기와 항목 상세로 옮겼습니다(01 §3.3). */}
           <Route
             path="/r/:researchId/results/:resultId?"
-            element={
-              <LegacyOr>
-                <ResultsPage />
-              </LegacyOr>
-            }
+            element={<LegacyRedirect />}
           />
           <Route path="/r/:researchId/reviews" element={<ReviewsPage />} />
         </Route>
