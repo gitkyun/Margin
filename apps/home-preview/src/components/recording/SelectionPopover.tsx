@@ -10,6 +10,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
   type RefObject,
 } from "react";
@@ -192,6 +193,37 @@ function offsetIn(container: Node, node: Node, offset: number): number {
   return range.toString().length;
 }
 
+/**
+ * 컨테이너 글자 기준 [start, end)를 문서 선택으로 고릅니다(키보드로 읽기, IA v2 04 §5.1).
+ * 고른 범위를 돌려주고, 글자 수가 모자라면 null이에요.
+ */
+export function selectOffsets(
+  container: HTMLElement,
+  start: number,
+  end: number,
+): Range | null {
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  const range = document.createRange();
+  let seen = 0,
+    started = false;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const length = node.textContent?.length ?? 0;
+    if (!started && start <= seen + length) {
+      range.setStart(node, start - seen);
+      started = true;
+    }
+    if (started && end <= seen + length) {
+      range.setEnd(node, end - seen);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      return range;
+    }
+    seen += length;
+  }
+  return null;
+}
+
 /** 일반 글(div)에서 고른 범위. 컨테이너 글자 기준 [start, end)를 돌려줘요. */
 export function useDomSelection(
   container: RefObject<HTMLElement | null>,
@@ -200,43 +232,56 @@ export function useDomSelection(
 ) {
   const [picked, setPicked] = useState<PickedText | null>(null);
   const [anchor, setAnchor] = useState<SelectionAnchor | null>(null);
+  // 막대가 떠 있을 때만 스크롤에 따라 자리를 다시 잡아요(키보드로 고르기만 한 때는 띄우지 않음).
+  const menuOpen = useRef(false);
   const clear = useCallback(() => {
+    menuOpen.current = false;
     setPicked(null);
     setAnchor(null);
   }, []);
+  const read = useCallback(() => {
+    const el = container.current,
+      selection = window.getSelection(),
+      h = host.current;
+    if (
+      !el ||
+      !selection ||
+      selection.isCollapsed ||
+      !selection.rangeCount ||
+      !h
+    )
+      return null;
+    const range = selection.getRangeAt(0);
+    if (!el.contains(range.startContainer) || !el.contains(range.endContainer))
+      return null;
+    const start = offsetIn(el, range.startContainer, range.startOffset),
+      end = offsetIn(el, range.endContainer, range.endOffset);
+    const text = range.toString();
+    if (!text.trim()) return null;
+    const rect = range.getBoundingClientRect();
+    return {
+      picked: {
+        text,
+        start: Math.min(start, end),
+        end: Math.max(start, end),
+      },
+      anchor: relative(h, rect.left + rect.width / 2, rect.top),
+    };
+  }, [container, host]);
+  /** 지금 문서 선택을 읽어 둡니다. withMenu면 그 위에 막대도 띄워요. */
+  const refresh = useCallback(
+    (withMenu: boolean) => {
+      const next = read();
+      menuOpen.current = withMenu && !!next;
+      setPicked(next?.picked ?? null);
+      setAnchor(withMenu ? (next?.anchor ?? null) : null);
+    },
+    [read],
+  );
   useEffect(() => {
     const el = container.current;
     if (!el || !enabled) return;
-    const read = () => {
-      const selection = window.getSelection(),
-        h = host.current;
-      if (!selection || selection.isCollapsed || !selection.rangeCount || !h)
-        return null;
-      const range = selection.getRangeAt(0);
-      if (
-        !el.contains(range.startContainer) ||
-        !el.contains(range.endContainer)
-      )
-        return null;
-      const start = offsetIn(el, range.startContainer, range.startOffset),
-        end = offsetIn(el, range.endContainer, range.endOffset);
-      const text = range.toString();
-      if (!text.trim()) return null;
-      const rect = range.getBoundingClientRect();
-      return {
-        picked: {
-          text,
-          start: Math.min(start, end),
-          end: Math.max(start, end),
-        },
-        anchor: relative(h, rect.left + rect.width / 2, rect.top),
-      };
-    };
-    const show = () => {
-      const next = read();
-      setPicked(next?.picked ?? null);
-      setAnchor(next?.anchor ?? null);
-    };
+    const show = () => refresh(true);
     const onChange = () => {
       // 드래그 중에는 막대를 띄우지 않고, 선택이 풀리면 바로 닫아요.
       const selection = window.getSelection();
@@ -250,10 +295,13 @@ export function useDomSelection(
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") clear();
-      else if (e.shiftKey) show();
+      // Shift+↑/↓는 문장 단위로 고르기만 하고, 막대는 Enter로 엽니다(04 §5.1).
+      else if (e.shiftKey && e.key !== "ArrowUp" && e.key !== "ArrowDown")
+        show();
     };
     const onScroll = () => {
-      if (window.getSelection()?.isCollapsed === false) show();
+      if (menuOpen.current && window.getSelection()?.isCollapsed === false)
+        show();
     };
     el.addEventListener("mouseup", show);
     el.addEventListener("keyup", onKey);
@@ -265,6 +313,6 @@ export function useDomSelection(
       document.removeEventListener("selectionchange", onChange);
       window.removeEventListener("scroll", onScroll, true);
     };
-  }, [container, host, enabled, clear]);
-  return { picked, anchor, clear };
+  }, [container, enabled, clear, refresh]);
+  return { picked, anchor, clear, refresh };
 }

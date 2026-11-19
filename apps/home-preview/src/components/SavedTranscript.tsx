@@ -22,7 +22,15 @@ import {
 } from "@/lib/recording-marks";
 import { isMarkKey } from "@/lib/mark-key";
 import {
+  pickRange,
+  sentenceAt,
+  sentenceRanges,
+  stepSentence,
+  type SentencePick,
+} from "@/lib/sentence-keys";
+import {
   SelectionToolbar,
+  selectOffsets,
   useDomSelection,
   type SelectionAction,
 } from "./recording/SelectionPopover";
@@ -131,6 +139,10 @@ export function SavedTranscript({
     textHost,
     draft === null && !!current?.edited_text,
   );
+  // 키보드로 읽기(04 §5.1): ↑/↓로 고른 문장 번호와, 화면 낭독기에 알릴 고른 글
+  const keyPick = useRef<SentencePick | null>(null),
+    [spoken, setSpoken] = useState(""),
+    readingHintId = useId();
   // 고른 글이 있을 때 `H`로 형광펜(04 §11). 칠할 수 있을 때만 아래 렌더에서 채웁니다.
   const markShortcut = useRef<(() => void) | null>(null);
   markShortcut.current = null;
@@ -295,6 +307,64 @@ export function SavedTranscript({
       );
     }
   }
+  /** ↑/↓ 문장 이동, Shift+↑/↓ 범위, Enter 선택 메뉴, Esc 고르기 취소(04 §5.1·§11) */
+  function onReadingKey(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (
+      event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.nativeEvent.isComposing ||
+      !current
+    )
+      return;
+    const box = event.currentTarget;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      const text = current.edited_text;
+      const ranges = sentenceRanges(text);
+      if (!ranges.length) return;
+      event.preventDefault();
+      let pick = keyPick.current;
+      if (!pick && picked) {
+        const index = sentenceAt(ranges, picked.start);
+        pick = { anchor: index, focus: index };
+      }
+      const next = stepSentence(
+        pick,
+        ranges.length,
+        event.key === "ArrowDown" ? 1 : -1,
+        event.shiftKey,
+      );
+      if (!next) return;
+      keyPick.current = next;
+      const { start, end } = pickRange(ranges, next);
+      const range = selectOffsets(box, start, end);
+      if (range) keepInView(box, range);
+      selection.refresh(false);
+      setSpoken(text.slice(start, end));
+    } else if (event.key === "Enter" && picked) {
+      event.preventDefault();
+      selection.refresh(true);
+      // 막대가 뜨면 첫 버튼으로 들어가 Tab·Enter로 고릅니다. Esc는 이 글로 돌아와요.
+      requestAnimationFrame(() =>
+        textHost.current
+          ?.querySelector<HTMLElement>(".selection-toolbar button")
+          ?.focus(),
+      );
+    } else if (event.key === "Escape" && (picked || keyPick.current)) {
+      keyPick.current = null;
+      window.getSelection()?.removeAllRanges();
+      selection.clear();
+      setSpoken("");
+    }
+  }
+  /** 막대를 닫을 때 초점이 막대 안에 있었으면 전사문으로 돌려놓아요. */
+  function dismissToolbar() {
+    const inside = (document.activeElement as HTMLElement | null)?.closest(
+      ".selection-toolbar",
+    );
+    selection.clear();
+    if (inside) textBox.current?.focus();
+  }
   const appendReason =
     !!onAppend &&
     !saving &&
@@ -334,7 +404,18 @@ export function SavedTranscript({
         )}
         {draft === null ? (
           <div className="selection-host" ref={textHost}>
-            <div className="transcript-text" ref={textBox}>
+            <div
+              className="transcript-text"
+              ref={textBox}
+              tabIndex={value ? 0 : undefined}
+              role={value ? "document" : undefined}
+              aria-label={value ? t("한국어 전사문") : undefined}
+              aria-describedby={value ? readingHintId : undefined}
+              onKeyDown={value ? onReadingKey : undefined}
+              onMouseDown={() => {
+                keyPick.current = null;
+              }}
+            >
               {value
                 ? markedPieces(value, marks).map((piece) =>
                     piece.marked ? (
@@ -347,10 +428,13 @@ export function SavedTranscript({
                   )
                 : t("인식한 문장이 없어요. 녹음을 들으며 직접 쓸 수 있어요.")}
             </div>
+            <span className="sr-only" aria-live="polite">
+              {spoken}
+            </span>
             <SelectionToolbar
               anchor={selection.anchor}
               actions={pickActions}
-              onDismiss={selection.clear}
+              onDismiss={dismissToolbar}
               label={t("고른 전사문으로 만들기")}
             />
           </div>
@@ -367,7 +451,7 @@ export function SavedTranscript({
           </label>
         )}
         {draft === null && !!value && (
-          <p className="transcript-mark-hint">
+          <p className="transcript-mark-hint" id={readingHintId}>
             {onPick
               ? t(
                   "문장을 드래그해 고르면 형광펜을 칠하거나 피드백·결정·질문으로 만들 수 있어요. 형광펜은 전사문 글자를 바꾸지 않아요.",
@@ -375,6 +459,7 @@ export function SavedTranscript({
               : t(
                   "문장을 드래그해 고르면 형광펜을 칠할 수 있어요. 형광펜은 전사문 글자를 바꾸지 않아요.",
                 )}
+            {` ${t("키보드로는 위아래 화살표로 문장을 고르고, Shift를 함께 눌러 넓힌 뒤 Enter로 메뉴를 열어요. H를 누르면 형광펜을 칠해요.")}`}
             {lostMarks &&
               ` ${t("전사문을 고쳐서 일부 형광펜 표시가 사라졌어요.")}`}
           </p>
@@ -549,4 +634,14 @@ export function SavedTranscript({
       </Dialog>
     </Disclosure>
   );
+}
+
+/** 키보드로 고른 문장이 전사문 상자(스크롤 영역) 밖이면 보이는 곳으로 옮겨요. */
+function keepInView(box: HTMLElement, range: Range) {
+  const rect = range.getBoundingClientRect(),
+    frame = box.getBoundingClientRect(),
+    gap = 8;
+  if (rect.top < frame.top) box.scrollTop -= frame.top - rect.top + gap;
+  else if (rect.bottom > frame.bottom)
+    box.scrollTop += rect.bottom - frame.bottom + gap;
 }
