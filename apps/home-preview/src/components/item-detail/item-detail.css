@@ -117,7 +117,8 @@
     font-size: var(--typography-body2-fontSize);
     font-weight: 600;
   }
-  .item-detail-empty {
+  .item-detail-empty,
+  .item-detail-muted {
     color: var(--text-tertiary);
   }
   .item-detail-badge {

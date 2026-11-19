@@ -56,6 +56,51 @@ test("할 일 목록에 가상 연구의 할 일이 보인다", async ({ page })
   ).toBeVisible();
 });
 
+test("할 일 추가는 예전 화면 없이 할 일 목록의 빠른 추가로, 한 건은 상세에서 다룬다(06 §6.3)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: new RegExp(RESEARCH) })
+    .first()
+    .click();
+  const base = new URL(page.url()).pathname;
+
+  // 예전 추가 주소는 `new=task`로 옮겨 빠른 추가 줄을 엽니다.
+  await page.goto(`${base}/tasks?new=1`);
+  const input = page.getByRole("textbox", { name: "새 할 일 제목" });
+  await expect(input).toBeFocused();
+  await expect(page).toHaveURL(/\/tasks$/);
+  await input.fill("표 단위 맞추기");
+  await input.press("Enter");
+  const row = page
+    .locator(".tasks-groups .task-line")
+    .filter({ hasText: "표 단위 맞추기" });
+  await expect(row).toBeVisible();
+
+  // 예전 한 건 전체 화면 주소는 항목 상세로 엽니다.
+  await page.goto(`${base}/tasks`);
+  await page
+    .locator(".tasks-groups .task-line")
+    .getByText("선행연구 비교 기준 정리", { exact: true })
+    .click();
+  await expect(page).toHaveURL(/detail=task%3A/);
+  const detailUrl = new URL(page.url());
+  const taskId = decodeURIComponent(
+    detailUrl.searchParams.get("detail") ?? "",
+  ).slice("task:".length);
+  await page.goto(`${base}/tasks/${taskId}?full=1`);
+  await expect(page).toHaveURL(new RegExp(`/tasks\\?detail=task%3A${taskId}$`));
+  const detail = page.getByRole("complementary", { name: "항목 상세" });
+  const priority = detail.getByRole("combobox", { name: "우선순위" });
+  await priority.selectOption({ label: "높음" });
+  await expect(priority).toHaveValue("high");
+  await expect(
+    detail.getByRole("button", { name: "수정 결과 추가" }),
+  ).toBeVisible();
+});
+
 test("미리보기에서는 공동연구자 설정이 열리고, 메일 초대 대신 기존 안내를 보여 준다", async ({
   page,
 }) => {

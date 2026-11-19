@@ -600,6 +600,11 @@ export const taskLabels = {
   doing: t("진행 중"),
   done: t("완료"),
 } as const;
+export const priorityLabels: Record<Task["priority"], string> = {
+  high: t("높음"),
+  normal: t("보통"),
+  low: t("낮음"),
+};
 export const originLabels = {
   manual: t("직접 작성"),
   ai: t("AI 제안에서 선택"),

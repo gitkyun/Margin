@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ import { friendlyError } from "@/lib/supabase";
 import { doneToday, groupTasks, taskSource } from "@/lib/task-groups";
 import {
   feedbackLabels,
+  priorityLabels,
   recordBase,
   responseLabels,
   type Feedback,
@@ -30,12 +31,6 @@ import type { DetailHistoryState } from "@/lib/item-detail";
 import "@/components/tasks/tasks.css";
 
 const DETAIL_STATE: DetailHistoryState = { layer: "detail", depth: 1 };
-
-const priorityLabels = {
-  high: t("높음"),
-  normal: t("보통"),
-  low: t("낮음"),
-};
 
 /** 피드백 탭의 기본 필터: 남은 피드백(시작 전·진행 중) */
 const OPEN_FEEDBACK: Feedback["status"][] = ["unprocessed", "in_progress"];
@@ -64,6 +59,17 @@ export function TasksHome() {
       task.status !== "done",
   );
   const [adding, setAdding] = useState(false);
+  // `?new=task&feedback=`(01 §3.3): 할 일 보기에서 빠른 추가 줄을 열고, 그 피드백에 잇습니다.
+  const [addFeedbackId, setAddFeedbackId] = useState<string | null>(null);
+  const addFeedback = feedback.find((item) => item.id === addFeedbackId);
+  useEffect(() => {
+    if (params.get("new") !== "task") return;
+    setAddFeedbackId(params.get("feedback"));
+    setAdding(true);
+    const next = new URLSearchParams(params);
+    for (const key of ["new", "feedback", "view"]) next.delete(key);
+    setParams(next, { replace: true });
+  }, [params.get("new")]);
 
   function setParam(key: string, value: string | null) {
     const next = new URLSearchParams(params);
@@ -83,7 +89,7 @@ export function TasksHome() {
         dueDate: null,
         priority: "normal",
         visibility: "private",
-        feedbackIds: [],
+        feedbackIds: addFeedback ? [addFeedback.id] : [],
       } as Task);
       toast.success(t("할 일을 추가했어요."), {
         duration: 6000,
@@ -141,7 +147,15 @@ export function TasksHome() {
           userId={user.id}
           ownerId={research.ownerId}
           adding={adding}
-          onCloseAdd={() => setAdding(false)}
+          addNote={
+            addFeedback
+              ? t("‘{title}’ 피드백에 이어요.", { title: addFeedback.title })
+              : undefined
+          }
+          onCloseAdd={() => {
+            setAdding(false);
+            setAddFeedbackId(null);
+          }}
           onAdd={addTask}
           params={params}
           setParam={setParam}
@@ -165,6 +179,7 @@ function TaskList({
   userId,
   ownerId,
   adding,
+  addNote,
   onCloseAdd,
   onAdd,
   params,
@@ -175,6 +190,8 @@ function TaskList({
   userId: string;
   ownerId: string;
   adding: boolean;
+  /** 빠른 추가 줄 아래 한 줄 안내(이어 둘 피드백) */
+  addNote?: string;
   onCloseAdd(): void;
   onAdd(title: string): Promise<void>;
   params: URLSearchParams;
@@ -346,7 +363,9 @@ function TaskList({
           </Button>
         </p>
       )}
-      {adding && <QuickTaskInput onAdd={onAdd} onClose={onCloseAdd} />}
+      {adding && (
+        <QuickTaskInput onAdd={onAdd} onClose={onCloseAdd} note={addNote} />
+      )}
       {groups.length ? (
         <div className="tasks-groups">
           {groups.map((group) => (

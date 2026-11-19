@@ -14,6 +14,9 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     ["/r/a/questions/q1", "", "/r/a?detail=question%3Aq1"],
     ["/r/a/decisions/d1", "", "/r/a?detail=decision%3Ad1"],
     ["/r/a/tasks/t1", "", "/r/a/tasks?detail=task%3At1"],
+    // 5단계: 할 일 한 건의 예전 전체 화면도 상세로, 추가 창은 `new=task`로 엽니다.
+    ["/r/a/tasks/t1", "?full=1", "/r/a/tasks?detail=task%3At1"],
+    ["/r/a/tasks", "?new=1&feedback=f1", "/r/a/tasks?new=task&feedback=f1"],
     ["/r/a/feedback", "", "/r/a/tasks?view=feedback"],
     ["/r/a/feedback", "?new=1", "/r/a?new=feedback"],
     ["/r/a/feedback/f1", "?new=1", "/r/a?new=feedback"],
@@ -71,8 +74,7 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     expect(legacyRedirect("/r/a/docs", "?kind=writing")).toBeNull();
     expect(legacyRedirect("/r/a/meetings/m1", "")).toBeNull();
     expect(legacyRedirect("/r/a", "")).toBeNull();
-    // 상세에서 못 하는 일을 하러 예전 화면을 여는 통로(할 일 한 건)
-    expect(legacyRedirect("/r/a/tasks/t1", "?full=1")).toBeNull();
+    expect(legacyRedirect("/r/a/tasks", "?new=task")).toBeNull();
   });
 
   it("never redirects a target onto another legacy rule", () => {

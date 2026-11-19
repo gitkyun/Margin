@@ -238,8 +238,7 @@
      앞 칸은 위 정렬, 배지·화살표는 세로 가운데. 767 이하에서 배지는 메타 아래 줄로 내려갑니다. */
   .meeting-list,
   .results-list,
-  .material-list,
-  .task-table {
+  .material-list {
     padding: 0 var(--spacing-24);
   }
   .list-row {
@@ -889,158 +888,12 @@
       display: block;
     }
   }
-  /* 도구 줄 둘째 줄(할 일의 미팅·우선순위 선택 상자와 개수): 라벨 ↔ 선택 상자 8, 묶음 사이 12. */
-  .toolbar-filters {
-    display: flex;
-    flex: 1 0 100%;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--spacing-8) var(--spacing-12);
-    min-width: 0;
-  }
-  .toolbar-filters > label {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-8);
-    min-width: 0;
-    max-width: 100%;
-    color: var(--text-secondary);
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
-    white-space: nowrap;
-  }
-  .toolbar-filters .select-field-host {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-  .toolbar-filters > .meta {
-    margin-left: auto;
-    white-space: nowrap;
-  }
-  /* 할 일 표: 머리 칸과 값 칸이 같은 열 틀을 씁니다(머리 첫 칸은 체크 칸까지 차지). */
-  .task-table-head,
-  .student-task-row {
-    display: grid;
-    grid-template-columns: 18px minmax(0, 1fr) 100px 80px 36px;
-    column-gap: var(--spacing-16);
-    align-items: center;
-    padding: var(--spacing-16) 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .task-table-head {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .task-table-head > :first-child {
-    grid-column: span 2;
-  }
-  .student-task-row > * {
-    min-width: 0;
-  }
-  /* 앞 칸(체크)은 제목 첫 줄에 맞춰 위 정렬. */
-  .student-task-row > :first-child {
-    align-self: start;
-    margin-top: var(--spacing-2);
-  }
-  .student-task-row:last-child {
-    border-bottom: 0;
-  }
-  .student-task-row input[type="checkbox"] {
-    width: 17px;
-    height: 17px;
-    accent-color: var(--brand);
-    cursor: pointer;
-  }
-  /* 상태 배지는 칸보다 넓어지면 칸 안에서 잘려 기한 칸을 덮지 않습니다. */
-  .student-task-row > .status-badge {
-    justify-self: start;
-    max-width: 100%;
-    overflow: hidden;
-  }
-  .task-row-text {
-    display: grid;
-    gap: var(--spacing-4);
-    min-width: 0;
-    text-decoration: none;
-    color: var(--text);
-  }
-  /* 제목·보조 설명은 2줄까지. 우선순위 점은 첫 줄 앞에 남습니다(검수 F-6). */
-  .task-row-text strong,
-  .task-row-text small {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    overflow-wrap: anywhere;
-  }
-  .task-row-text strong {
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 600;
-    line-height: var(--typography-label1Reading-lineHeight);
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .task-row-text strong > .priority-dot {
-    display: inline-block;
-    margin-right: var(--spacing-8);
-    vertical-align: middle;
-  }
-  .task-row-text small {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    line-height: var(--typography-caption1-lineHeight);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .student-task-row.is-complete .task-row-text strong {
-    color: var(--text-secondary);
-    text-decoration: line-through;
-  }
   .priority-dot {
     width: 5px;
     height: 5px;
     background: var(--warning);
     border-radius: 50%;
     flex-shrink: 0;
-  }
-  .task-list-date {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-    overflow-wrap: anywhere;
-  }
-  .task-detail-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(270px, 1fr);
-    align-items: start;
-    gap: var(--spacing-24);
-  }
-  .task-property-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-24);
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-    padding: var(--spacing-24) 0;
-    margin: var(--spacing-24) 0;
-  }
-  .task-property-grid span {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    display: block;
-    margin-bottom: var(--spacing-8);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .task-property-grid strong {
-    font-size: var(--typography-label1-fontSize);
-    font-weight: 600;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .student-bottom-actions {
-    display: flex;
-    justify-content: flex-end;
-    padding: var(--spacing-20) 0;
-    color: var(--text-secondary);
   }
   /* 자료 행의 앞 칸(PDF 썸네일·링크 아이콘)도 목록 행의 앞 칸 규칙을 따릅니다. */
   .list-row > .material-preview-badge,
@@ -1136,7 +989,6 @@
     .ai-workbench {
       max-width: none;
     }
-    .task-detail-grid,
     .preparation-columns,
     .student-two-column {
       grid-template-columns: minmax(0, 1fr);
@@ -1145,8 +997,7 @@
   @media (max-width: 767px) {
     .meeting-list,
     .results-list,
-    .material-list,
-    .task-table {
+    .material-list {
       padding: 0 var(--spacing-16);
     }
     /* 목록 행: 배지는 내용 아래 줄로 내려가 제목 폭을 뺏지 않습니다. 화살표·날짜는 숨깁니다. */
@@ -1186,18 +1037,6 @@
     .memo-actions {
       flex-wrap: wrap;
     }
-    .toolbar-filters > .meta {
-      flex-basis: 100%;
-      margin-left: 0;
-    }
-    .task-table-head,
-    .student-task-row {
-      grid-template-columns: 18px minmax(0, 1fr) 76px 52px;
-      column-gap: var(--spacing-8);
-    }
-    .task-table-head > :last-child {
-      display: none;
-    }
     .material-symbol {
       width: 38px;
       height: 46px;
@@ -1205,9 +1044,7 @@
   }
 
   .student-page
-    .surface:not(
-      :where(.meeting-list, .results-list, .material-list, .task-table)
-    ) {
+    .surface:not(:where(.meeting-list, .results-list, .material-list)) {
     padding: var(--spacing-24);
   }
   .student-body-text {
@@ -1222,9 +1059,7 @@
   }
   @media (max-width: 767px) {
     .student-page
-      .surface:not(
-        :where(.meeting-list, .results-list, .material-list, .task-table)
-      ) {
+      .surface:not(:where(.meeting-list, .results-list, .material-list)) {
       padding: var(--spacing-16);
     }
   }
