@@ -1,9 +1,16 @@
+import type { AIContext } from "@/lib/domain";
+
 /** 사이드 창 열림·마지막 탭 기억(IA v2 02 §4.5). 이 브라우저에만 둡니다. */
-export type SidePanelTab = "assistant" | "tasks" | "log";
+export type SidePanelTab = "assistant" | "tasks" | "log" | "materials";
 
 const OPEN_KEY = "margin-panel-open";
 const TAB_KEY = "margin-panel-tab";
-const TABS: readonly SidePanelTab[] = ["assistant", "tasks", "log"];
+const TABS: readonly SidePanelTab[] = [
+  "assistant",
+  "tasks",
+  "log",
+  "materials",
+];
 
 /** 창이 본문을 미는 폭. 그보다 좁으면 열림을 읽지도 쓰지도 않습니다(D15). */
 export const PUSH_MIN_WIDTH = 1200;
@@ -49,7 +56,7 @@ export function rememberPanel(width: number, tab: SidePanelTab | null): void {
   write(OPEN_KEY, tab ? "1" : "0");
 }
 
-/** 주소로 여는 사이드 창(01 §3.3, 02 §4.5): `?panel=assistant|tasks|log`, 연구 도우미는 `&panelView=suggestions|runs` */
+/** 주소로 여는 사이드 창(01 §3.3, 02 §4.5): `?panel=assistant|tasks|log|materials`, 연구 도우미는 `&panelView=suggestions|runs` */
 export interface PanelRequest {
   tab: SidePanelTab;
   view?: "suggestions" | "runs";
@@ -86,4 +93,14 @@ export function lastPanelTab(): SidePanelTab {
   return (TABS as readonly string[]).includes(tab ?? "")
     ? (tab as SidePanelTab)
     : "tasks";
+}
+
+/**
+ * 연구 도우미 창을 열 때 함께 넘기는 것: 보여 줄 보기와 놓을 근거 칩(자료 창의 [연구 도우미에게 묻기], 06 §5).
+ * `at`이 바뀔 때마다 한 번 적용합니다.
+ */
+export interface AssistantOpen {
+  view?: PanelRequest["view"];
+  context?: AIContext;
+  at: number;
 }

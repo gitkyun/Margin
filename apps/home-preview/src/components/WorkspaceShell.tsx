@@ -22,6 +22,7 @@ import { ItemDetail } from "./item-detail/ItemDetail";
 import { TasksPanel } from "./tasks/TasksPanel";
 import { LogPanel } from "./log/LogPanel";
 import { AssistantSidePanel } from "./assistant/AssistantSidePanel";
+import { MaterialsPanel } from "./materials/MaterialsPanel";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
@@ -29,7 +30,7 @@ import {
   lastPanelTab,
   rememberPanel,
   withoutPanelRequest,
-  type PanelRequest,
+  type AssistantOpen,
   type SidePanelTab,
 } from "@/lib/side-panel";
 import { MobileTabBar } from "./shell/MobileTabBar";
@@ -257,9 +258,8 @@ export function WorkspaceShell({
   }, [location.pathname, overlayPanel]);
   // 주소의 ?panel=(예전 /assistant 주소, 홈·명령·단축키)로 사이드 창 탭을 엽니다(01 §3.3).
   // 겹쳐 뜬 창이 화면 이동으로 닫힌 뒤에 열도록 위 효과 다음에 둡니다. 연 뒤 주소에서 값을 지웁니다.
-  const [assistantRequest, setAssistantRequest] = useState<
-    (PanelRequest & { at: number }) | null
-  >(null);
+  const [assistantRequest, setAssistantRequest] =
+    useState<AssistantOpen | null>(null);
   useEffect(() => {
     const request = panelRequest(location.search);
     if (!request || !research) return;
@@ -267,7 +267,7 @@ export function WorkspaceShell({
     // 링크·명령·단축키로 연 것도 사람이 연 것이라 열림과 탭을 기억합니다(새로 고쳐도 같은 창).
     setRailTab(request.tab, true);
     if (request.tab === "assistant")
-      setAssistantRequest({ ...request, at: Date.now() });
+      setAssistantRequest({ view: request.view, at: Date.now() });
     navigate(
       {
         pathname: location.pathname,
@@ -347,7 +347,8 @@ export function WorkspaceShell({
   const tasksOpen = inResearch && railTab === "tasks";
   const logOpen = inResearch && railTab === "log";
   const assistantOpen = inResearch && railTab === "assistant";
-  const railOpen = tasksOpen || logOpen || assistantOpen;
+  const materialsOpen = inResearch && railTab === "materials";
+  const railOpen = tasksOpen || logOpen || assistantOpen || materialsOpen;
   const panelShown = !!panel.active || detailOpen || railOpen;
   // 닫히는 동안 마지막 탭을 그리되, 창 전체는 즉시 조작할 수 없게 합니다.
   const visibleRailTab = inResearch
@@ -482,6 +483,23 @@ export function WorkspaceShell({
                   <LogPanel
                     researchId={researchId}
                     onClose={() => setRailTab(null, true)}
+                  />
+                </div>
+              )}
+              {researchId && hasVisited("materials") && (
+                <div
+                  key={researchId + "-materials"}
+                  className="ia-panel-tab"
+                  hidden={detailOpen || visibleRailTab !== "materials"}
+                >
+                  <MaterialsPanel
+                    researchId={researchId}
+                    onClose={() => setRailTab(null, true)}
+                    onAsk={(context) => {
+                      // 근거 칩을 놓고 연구 도우미 창으로 바꿉니다(06 §5).
+                      setRailTab("assistant", true);
+                      setAssistantRequest({ context, at: Date.now() });
+                    }}
                   />
                 </div>
               )}

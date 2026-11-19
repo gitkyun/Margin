@@ -28,19 +28,25 @@ describe("아이콘 줄 키보드(02 §4.1)", () => {
       </MemoryRouter>,
     );
     const list = items();
-    // 연구 도우미 · 할 일 · 결정·질문 · 의견 보내기 · 화면 배치 · 설정
-    expect(list).toHaveLength(6);
-    expect(list.map((item) => item.tabIndex)).toEqual([0, -1, -1, -1, -1, -1]);
+    // 연구 도우미 · 할 일 · 결정·질문 · 글·자료 · 의견 보내기 · 화면 배치 · 설정
+    expect(list).toHaveLength(7);
+    expect(list.map((item) => item.tabIndex)).toEqual([
+      0, -1, -1, -1, -1, -1, -1,
+    ]);
 
     list[0]!.focus();
     fireEvent.keyDown(list[0]!, { key: "ArrowDown" });
     expect(document.activeElement).toBe(list[1]);
-    expect(list.map((item) => item.tabIndex)).toEqual([-1, 0, -1, -1, -1, -1]);
+    expect(list.map((item) => item.tabIndex)).toEqual([
+      -1, 0, -1, -1, -1, -1, -1,
+    ]);
 
     fireEvent.keyDown(list[1]!, { key: "ArrowUp" });
     fireEvent.keyDown(list[0]!, { key: "ArrowUp" });
-    expect(document.activeElement).toBe(list[5]);
-    expect(list.map((item) => item.tabIndex)).toEqual([-1, -1, -1, -1, -1, 0]);
+    expect(document.activeElement).toBe(list[6]);
+    expect(list.map((item) => item.tabIndex)).toEqual([
+      -1, -1, -1, -1, -1, -1, 0,
+    ]);
   });
 
   it("실제 탭(할 일·결정·질문)은 눌린 상태를 알리고 같은 탭을 다시 누르면 닫는다", () => {

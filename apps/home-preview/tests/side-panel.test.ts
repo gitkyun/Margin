@@ -46,6 +46,7 @@ describe("주소로 여는 사이드 창(01 §3.3)", () => {
     expect(panelRequest("?panel=assistant&panelView=other")).toEqual({
       tab: "assistant",
     });
+    expect(panelRequest("?panel=materials")).toEqual({ tab: "materials" });
   });
 
   it("모르는 값이나 panel이 없으면 열지 않음", () => {
