@@ -534,8 +534,10 @@
     height: 100%;
     transform-origin: 0 0;
   }
+  /* 소개 장면도 새 틀(IA v2 07 §6): 위에 상단 줄, 아래 본문 판 */
   .ob-stage-canvas {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
   .ob-window-canvas {
     grid-template-columns: minmax(0, 1fr);
@@ -595,10 +597,9 @@
   }
   .ob-stage-rail {
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: var(--spacing-16);
-    padding: var(--spacing-16) 0;
+    padding: var(--spacing-8) var(--spacing-16);
   }
   .ob-stage-rail .ob-rail-mark {
     width: 22px;
@@ -608,8 +609,9 @@
   .ob-stage-nav {
     position: relative;
     display: grid;
-    grid-auto-rows: 44px;
-    width: 44px;
+    grid-auto-flow: column;
+    grid-auto-columns: 44px;
+    height: 36px;
   }
   .ob-stage-nav span {
     position: relative;
@@ -624,13 +626,13 @@
   .ob-stage-nav span[data-state="active"] {
     color: var(--semantic-static-white);
   }
-  /* 고른 단계를 따라 사이드바의 파란 면이 미끄러져 갑니다. */
+  /* 고른 단계를 따라 상단 줄의 파란 면이 옆으로 미끄러져 갑니다. */
   .ob-stage-cursor {
     position: absolute;
     top: 0;
     left: 0;
     width: 44px;
-    height: 44px;
+    height: 36px;
     border-radius: var(--radius-12);
     background: var(--brand);
     transition: transform var(--motion-duration-page)
@@ -1205,7 +1207,7 @@
     .ob-preview-full .ob-window {
       height: auto;
     }
-    /* 위쪽 띠에 맞게 장면을 줄입니다. 태블릿 폭에서는 사이드바까지 전체를 보여 줍니다. */
+    /* 위쪽 띠에 맞게 장면을 줄입니다. 태블릿 폭에서는 상단 줄까지 전체를 보여 줍니다. */
     .ob-stage {
       max-width: 720px;
       height: 100%;
@@ -1213,7 +1215,7 @@
       padding: var(--spacing-4);
     }
     .ob-stage-canvas {
-      grid-template-columns: 56px minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
     }
     .ob-stage-main {
       gap: var(--spacing-8);
@@ -1251,7 +1253,7 @@
         calc(var(--spacing-12) + env(safe-area-inset-bottom));
       background: var(--surface);
     }
-    /* 휴대폰: 사이드바만 빼고 본문 전체를 보여 줍니다. 읽을 크기는 확대가 만들어 줍니다. */
+    /* 휴대폰: 상단 줄만 빼고 본문 전체를 보여 줍니다. 읽을 크기는 확대가 만들어 줍니다. */
     .ob-stage-canvas {
       grid-template-columns: minmax(0, 1fr);
     }

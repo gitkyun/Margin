@@ -140,7 +140,7 @@ export function IntroStage({ slide, flowIndex }: IntroStageProps) {
             {flow && (
               <i
                 className="ob-stage-cursor"
-                style={{ transform: `translateY(${flowIndex * 100}%)` }}
+                style={{ transform: `translateX(${flowIndex * 100}%)` }}
               />
             )}
             {INTRO_FLOW.map((item, index) => (
