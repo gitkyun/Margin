@@ -17,7 +17,6 @@ import {
   type PanelSide,
 } from "@/lib/panel-side";
 import { Icon } from "../icons";
-import type { MarginPanelEntry } from "../margin-panel/MarginPanel";
 import { useOpenSettings } from "../settings/SettingsDialog";
 import { Hint } from "../ui/hint";
 import {
@@ -35,9 +34,6 @@ export type RailTab = "assistant" | "tasks" | "log" | "materials";
 
 export interface SideRailProps {
   researchId?: string;
-  /** 화면이 보낸 패널(0단계 임시 탭, 02 §4.6). 열 수 있는 것이 없으면 없음. */
-  offered?: MarginPanelEntry | null;
-  active?: MarginPanelEntry | null;
   /** 열린 실제 탭(연구 도우미, 할 일 P2, 결정·질문 P3, 자료 P4)과 여닫기 */
   openTab?: RailTab | null;
   onTab?(tab: RailTab): void;
@@ -52,12 +48,9 @@ export interface SideRailProps {
 /**
  * IA v2 아이콘 줄(02 §4.1, D14). 아이콘 아래에 이름을 글자로 둡니다.
  * 연구 도우미도 다른 탭처럼 사이드 창을 엽니다(화면 이동 없음). 전체 화면은 창 안에서 엽니다.
- * 화면이 패널을 보내면 '이 화면' 임시 탭을 둡니다.
  */
 export function SideRail({
   researchId,
-  offered,
-  active,
   openTab = null,
   onTab,
   panelWidth = null,
@@ -169,15 +162,6 @@ export function SideRail({
             onClick={() => onTab("materials")}
           />
         </>
-      )}
-      {offered && <span className="ia-rail-divider" aria-hidden />}
-      {offered && (
-        <RailButton
-          icon="panel"
-          label={offered.label}
-          pressed={!!active}
-          onClick={() => (active ? active.onClose() : offered.onOpen?.())}
-        />
       )}
       <span className="ia-rail-spacer" />
       <a

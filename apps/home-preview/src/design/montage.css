@@ -158,11 +158,6 @@
 .tabs-line[role="tablist"] {
   margin-block: 0 var(--spacing-24);
 }
-/* 여백 패널의 탭 줄: 이름·내용과 같은 왼쪽 선(20px)에서 시작하고 아래 간격은 내용 쪽 여백이 맡습니다. */
-.panel-frame > .tabs-line[role="tablist"] {
-  margin-block: 0;
-  padding-inline: var(--spacing-20);
-}
 /*
  * 선택하지 않은 탭 글자: Montage 기본값은 비활성 글자색(대비 약 1.8:1)이라 쓸 수 없는 탭처럼 보였어요.
  * 보조 글자색으로 올려 누를 수 있는 탭으로 읽히게 합니다(2026-11-11 검수 P1-3).

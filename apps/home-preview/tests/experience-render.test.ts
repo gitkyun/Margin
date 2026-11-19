@@ -104,13 +104,18 @@ describe("experience pages render with an empty research", () => {
         .some((link) => link.getAttribute("data-action") === "create_meeting"),
     ).toBe(true);
   });
-  it("writing is usable without existing documents", async () => {
+  it("a missing document points back to the docs list", async () => {
     const { WritingPage } = await import("../src/pages/WritingPage");
-    await page(WritingPage, "/r/r1/writing");
-    expect(screen.getByText("아직 문서가 없어요")).toBeTruthy();
+    // 글 목록과 새 글 만들기는 글·자료 화면에 있고, 글 한 편 화면은 그 글만 엽니다(5단계).
+    await page(
+      WritingPage,
+      "/r/r1/docs/w/missing",
+      "/r/:researchId/docs/w/:documentId",
+    );
+    expect(screen.getByText("글을 열 수 없어요")).toBeTruthy();
     expect(
-      screen.getAllByRole("button", { name: "계획서 만들기" }).length,
-    ).toBeGreaterThan(0);
+      screen.getByRole("link", { name: /글·자료/ }).getAttribute("href"),
+    ).toBe("/r/r1/docs");
   });
   it("assistant panel keeps suggestions and run history in its own views", async () => {
     const { ResearchAssistant } =
