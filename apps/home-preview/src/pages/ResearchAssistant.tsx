@@ -38,6 +38,7 @@ import {
 } from "react-router-dom";
 import { readHandoff } from "@/lib/assistant-handoff";
 import { contextKey, viewingContext } from "@/lib/viewing-context";
+import { isSourceChanged, refreshSourceContexts } from "@/lib/assistant-source";
 import {
   canInsertInto,
   canSuggestIn,
@@ -337,6 +338,14 @@ export function ResearchAssistant({
   const effectiveContexts = contexts.length ? contexts : linkedContexts;
   const activeRun = runs.find((r) => r.status === "running");
   const working = running || !!activeRun;
+  // 근거가 바뀌어 서버가 받지 않은 요청(06 §2.2, 09 A7). 안내 문구가 그대로일 때만 [다시 보내기]를 둡니다.
+  const [staleSource, setStaleSource] = useState<{
+    message: string;
+    text: string;
+    mode: AIInput["mode"];
+    draft: boolean;
+    contexts: AIContext[];
+  } | null>(null);
 
   // `/` 명령 메뉴: 입력 맨 앞이 `/`이고 줄바꿈이 없을 때만 열어요.
   const slashQuery =
@@ -805,6 +814,8 @@ export function ResearchAssistant({
       calendar?: boolean;
       draft?: boolean;
       contexts?: AIContext[];
+      /** 실패하면 입력창에 되돌려 놓을 칩(기본: 이번에 보낸 입력창의 칩) */
+      restore?: AIContext[];
       onWebSource?: (source: { url: string; title: string }) => void;
     },
   ) {
@@ -919,7 +930,7 @@ export function ResearchAssistant({
     } else {
       restoreDraftRef.current = null;
     }
-    restoreContextsRef.current = composerRequestContexts;
+    restoreContextsRef.current = override?.restore ?? composerRequestContexts;
     if (requestContexts.length)
       setContexts((current) =>
         current.filter((context) => !composerRequestContexts.includes(context)),
@@ -973,18 +984,28 @@ export function ResearchAssistant({
         visibility: "private" as const,
       };
       const last = c.messages.at(-1);
+      // 답을 받지 못한 같은 질문을 다시 보내면 사용자 메시지를 새로 쌓지 않습니다.
+      // 근거가 바뀌어 다시 보낼 때(06 §2.2)는 같은 기록의 판만 달라지므로 그 메시지의 칩만 최신으로 바꿉니다.
+      const sameRequest =
+        last?.role === "user" &&
+        last.text === text &&
+        !!last.webSearch === useWebSearch &&
+        !!last.calendar === useCalendar &&
+        !!last.draft === useDraft &&
+        JSON.stringify((last.contexts ?? []).map(contextKey)) ===
+          JSON.stringify(requestContexts.map(contextKey));
       c = await save("conversations", {
         ...c,
         contexts: useWebSearch || useCalendar ? c.contexts : requestContexts,
         messages:
-          last?.role === "user" &&
-          last.text === text &&
-          !!last.webSearch === useWebSearch &&
-          !!last.calendar === useCalendar &&
-          !!last.draft === useDraft &&
-          JSON.stringify(last.contexts ?? []) ===
-            JSON.stringify(requestContexts)
-            ? c.messages
+          sameRequest && last
+            ? JSON.stringify(last.contexts ?? []) ===
+              JSON.stringify(requestContexts)
+              ? c.messages
+              : [
+                  ...c.messages.slice(0, -1),
+                  { ...last, contexts: requestContexts },
+                ]
             : [
                 ...c.messages,
                 {
@@ -1078,7 +1099,22 @@ export function ResearchAssistant({
           setDraft((cur) => cur || toRestore);
           restoreDraftRef.current = null;
         }
-        setError(e instanceof AINotConfiguredError ? "" : (e as Error).message);
+        if (isSourceChanged(e) && requestContexts.length) {
+          const message = t(
+            "보고 있던 기록이 바뀌었어요. 최신 내용으로 다시 보낼까요?",
+          );
+          setStaleSource({
+            message,
+            text,
+            mode: activeMode,
+            draft: useDraft,
+            contexts: requestContexts,
+          });
+          setError(message);
+        } else
+          setError(
+            e instanceof AINotConfiguredError ? "" : (e as Error).message,
+          );
       }
     } finally {
       if (seq === sequence.current) {
@@ -1102,6 +1138,43 @@ export function ResearchAssistant({
       }
     }
     return succeeded;
+  }
+  /**
+   * [다시 보내기](06 §2.2): 보낸 근거 칩을 지금 기록의 최신 판으로 바꿔 같은 질문을 다시 보냅니다.
+   * 입력창에 되돌려 둔 질문을 고쳤으면 고친 질문을 보냅니다. 고른 글이 사라진 칩은 다시 고르게 합니다.
+   */
+  function resendWithLatest() {
+    const stale = staleSource;
+    if (!stale || working) return;
+    setStaleSource(null);
+    const { contexts: fresh, missing } = refreshSourceContexts(
+      stale.contexts,
+      data,
+      researchId,
+    );
+    if (missing.length) {
+      setError(
+        t(
+          "‘{title}’에서 보낸 부분을 찾지 못했어요. 칩을 빼거나 다시 놓은 뒤 보내 주세요.",
+          { title: missing[0].title },
+        ),
+      );
+      return;
+    }
+    const keys = new Set(fresh.map(contextKey));
+    const chips = fresh.filter((f) =>
+      contexts.some((c) => contextKey(c) === contextKey(f)),
+    );
+    setContexts((current) => current.filter((c) => !keys.has(contextKey(c))));
+    void send(draft.trim() ? draft : stale.text, {
+      mode: stale.mode,
+      draft: stale.draft,
+      webSearch: false,
+      calendar: false,
+      contexts: fresh,
+      restore: chips,
+      fromComposer: true,
+    });
   }
   async function cancel(silent = false) {
     sequence.current++;
@@ -2384,17 +2457,28 @@ export function ResearchAssistant({
               <AssistantMascot state="attention" size={36} />
               <span>{error}</span>
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                pendingFile.current ? void attach() : void send()
-              }
-            >
-              {pendingFile.current
-                ? t("등록 다시 시도")
-                : t("질문 다시 보내기")}
-            </Button>
+            {staleSource?.message === error ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={working}
+                onClick={resendWithLatest}
+              >
+                {t("다시 보내기")}
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  pendingFile.current ? void attach() : void send()
+                }
+              >
+                {pendingFile.current
+                  ? t("등록 다시 시도")
+                  : t("질문 다시 보내기")}
+              </Button>
+            )}
           </div>
         )}
       </section>
