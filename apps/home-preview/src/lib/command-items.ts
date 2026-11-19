@@ -318,7 +318,7 @@ export function createEntries(researchId: string | undefined): CommandEntry[] {
       "create:task",
       t("할 일 추가"),
       "tasks",
-      `${base}/tasks?new=1`,
+      `${base}/tasks?new=task`,
       KEYWORDS.newTask,
     ),
     navigateEntry(

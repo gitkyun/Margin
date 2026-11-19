@@ -49,12 +49,6 @@ function LegacyRedirect() {
   return <Navigate to={target ?? "/r"} replace />;
 }
 
-/** 할 일 화면(T1). 한 건 주소(`?full=1`로만 남음)는 예전 상세 화면을 띄웁니다. */
-function TasksRoute() {
-  const { taskId } = useParams();
-  return taskId ? <TasksPage /> : <TasksHome />;
-}
-
 /** 예전 주소면 새 주소로 옮기고, 아니면 지금 화면을 그대로 띄웁니다(할 일·피드백 한 건 → 항목 상세). */
 function LegacyOr({ children }: { children: ReactNode }) {
   const location = useLocation();
@@ -117,9 +111,6 @@ function PollRoute() {
 }
 const MeetingsPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.MeetingsPage })),
-);
-const TasksPage = lazy(() =>
-  import("@/pages/student").then((m) => ({ default: m.TasksPage })),
 );
 const TasksHome = lazy(() =>
   import("@/pages/tasks/TasksHome").then((m) => ({ default: m.TasksHome })),
@@ -232,13 +223,18 @@ function WorkspaceRoutes() {
             path="/r/:researchId/feedback/:feedbackId?"
             element={<LegacyRedirect />}
           />
+          {/* 할 일 화면(T1). 예전 추가 주소(`new=1`)는 `new=task`로, 한 건(`full=1` 포함)은 항목 상세로 옮깁니다(01 §3.3). */}
           <Route
-            path="/r/:researchId/tasks/:taskId?"
+            path="/r/:researchId/tasks"
             element={
               <LegacyOr>
-                <TasksRoute />
+                <TasksHome />
               </LegacyOr>
             }
+          />
+          <Route
+            path="/r/:researchId/tasks/:taskId"
+            element={<LegacyRedirect />}
           />
           {/* 5단계: 수정 결과는 미팅 목록의 검토 보기와 항목 상세로 옮겼습니다(01 §3.3). */}
           <Route

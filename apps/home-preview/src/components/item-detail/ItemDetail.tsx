@@ -15,6 +15,7 @@ import { friendlyError } from "@/lib/supabase";
 import {
   feedbackLabels,
   formatDate,
+  priorityLabels,
   recordBase,
   responseLabels,
   taskLabels,
@@ -27,6 +28,7 @@ import {
 } from "@/lib/domain";
 import { feedbackProgress } from "@/lib/feedback-progress";
 import { documentOutline } from "@/lib/docs-list";
+import { selectNextMeeting } from "@/lib/home-meeting";
 import {
   detailValue,
   useCloseDetail,
@@ -566,18 +568,47 @@ function AddTaskButton({
 }
 
 function TaskBody({ researchId, task }: { researchId: string; task: Task }) {
-  const { data } = useWorkspace();
+  const { data, save } = useWorkspace();
   const instant = useInstantSave();
+  const [resultDraft, setResultDraft] = useState<RevisionResult | null>(null);
   const feedback = data.feedback.filter(
     (item) => task.feedbackIds.includes(item.id) && !item.archivedAt,
   );
+  const otherFeedback = data.feedback.filter(
+    (item) =>
+      item.researchId === researchId &&
+      !item.archivedAt &&
+      !task.feedbackIds.includes(item.id),
+  );
+  const plan = task.planId
+    ? data.plans.find((item) => item.id === task.planId)
+    : undefined;
   const meetings = data.meetings.filter(
     (meeting) => meeting.taskIds.includes(task.id) && !meeting.archivedAt,
+  );
+  const research = data.researches.find((item) => item.id === researchId);
+  const next = selectNextMeeting(
+    data.meetings.filter((meeting) => meeting.researchId === researchId),
+    research?.nextMeetingId,
   );
   const results = data.results.filter(
     (result) => result.taskIds.includes(task.id) && !result.archivedAt,
   );
   const done = task.status === "done";
+
+  async function bringToNext() {
+    if (!next) return;
+    try {
+      await save("meetings", {
+        ...next,
+        taskIds: [...new Set([...next.taskIds, task.id])],
+      });
+      toast.success(t("‘{title}’에 가져가요.", { title: next.title }));
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+
   return (
     <>
       <div className="item-detail-headline">
@@ -627,40 +658,131 @@ function TaskBody({ researchId, task }: { researchId: string; task: Task }) {
             }
           />
         </label>
+        <label>
+          <span>{t("우선순위")}</span>
+          <select
+            value={task.priority}
+            onChange={(event) =>
+              void instant("task", {
+                ...task,
+                priority: event.target.value as Task["priority"],
+              })
+            }
+          >
+            {(Object.keys(priorityLabels) as Task["priority"][]).map((key) => (
+              <option key={key} value={key}>
+                {priorityLabels[key]}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
-      {task.description && (
-        <Section title={t("설명")}>
-          <p className="item-detail-text">{task.description}</p>
-        </Section>
-      )}
+      <Quote
+        text={task.sourceQuote}
+        meetingId={task.sourceRecordId}
+        researchId={researchId}
+      />
+      <LongTextSection
+        title={t("설명")}
+        value={task.description}
+        empty={t("아직 설명이 없어요.")}
+        onSave={async (description) => {
+          await save("tasks", { ...task, description });
+        }}
+      />
       <DocTarget researchId={researchId} task={task} />
       <Section title={t("연결된 피드백")}>
-        {feedback.length ? (
-          feedback.map((item) => (
-            <DetailRow key={item.id} target={{ kind: "feedback", id: item.id }}>
+        {feedback.map((item) => (
+          <div key={item.id} className="item-detail-task">
+            <DetailRow target={{ kind: "feedback", id: item.id }}>
               <Icon name="feedback" size={16} />
               <span>{item.title}</span>
             </DetailRow>
-          ))
-        ) : (
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={t("‘{title}’ 연결 빼기", { title: item.title })}
+              onClick={() =>
+                void instant("task", {
+                  ...task,
+                  feedbackIds: task.feedbackIds.filter((id) => id !== item.id),
+                })
+              }
+            >
+              <Icon name="close" size={14} />
+            </Button>
+          </div>
+        ))}
+        {!feedback.length && (
           <p className="item-detail-empty">{t("연결된 피드백이 없어요.")}</p>
         )}
+        {otherFeedback.length > 0 && (
+          <div className="item-detail-fields">
+            <label>
+              <span>{t("피드백 잇기")}</span>
+              <select
+                value=""
+                onChange={(event) => {
+                  const id = event.target.value;
+                  if (id)
+                    void instant("task", {
+                      ...task,
+                      feedbackIds: [...task.feedbackIds, id],
+                    });
+                }}
+              >
+                <option value="">{t("고르기")}</option>
+                {otherFeedback.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
       </Section>
-      {meetings.length > 0 && (
-        <Section title={t("가져간 미팅")}>
-          {meetings.map((meeting) => (
-            <Link
-              key={meeting.id}
-              className="item-detail-row"
-              to={`/r/${researchId}/meetings/${meeting.id}`}
-            >
-              <Icon name="calendar" size={16} />
-              <span>{meeting.title}</span>
-              <small>{formatDate(meeting.date)}</small>
-            </Link>
-          ))}
+      {plan && (
+        <Section title={t("수정 방법")}>
+          <p className="item-detail-text">
+            {plan.title || t("제목 없는 수정 방법")}
+            {plan.status === "cancelled" && (
+              <small className="item-detail-muted">
+                {" · "}
+                {t("선택 취소됨")}
+              </small>
+            )}
+          </p>
         </Section>
       )}
+      <Section title={t("가져간 미팅")}>
+        {meetings.map((meeting) => (
+          <Link
+            key={meeting.id}
+            className="item-detail-row"
+            to={`/r/${researchId}/meetings/${meeting.id}`}
+          >
+            <Icon name="calendar" size={16} />
+            <span>{meeting.title}</span>
+            <small>{formatDate(meeting.date)}</small>
+          </Link>
+        ))}
+        {!meetings.length && (
+          <p className="item-detail-empty">
+            {t("아직 미팅에 가져가지 않았어요.")}
+          </p>
+        )}
+        {next && !next.taskIds.includes(task.id) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void bringToNext()}
+          >
+            <Icon name="calendar" size={16} />
+            {t("다음 미팅에 가져가기")}
+          </Button>
+        )}
+      </Section>
       <Section title={t("수정 결과")}>
         {results.map((result) => (
           <DetailRow key={result.id} target={{ kind: "result", id: result.id }}>
@@ -671,7 +793,23 @@ function TaskBody({ researchId, task }: { researchId: string; task: Task }) {
         {!results.length && (
           <p className="item-detail-empty">{t("아직 수정 결과가 없어요.")}</p>
         )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setResultDraft(newResultDraft(researchId, { task }))}
+        >
+          <Icon name="plus" size={16} />
+          {t("수정 결과 추가")}
+        </Button>
+        <ResultEditorDialog
+          researchId={researchId}
+          draft={resultDraft}
+          setDraft={setResultDraft}
+        />
       </Section>
+      <p className="item-detail-note">
+        {t("할 일 완료는 수정 결과 작성이나 교수 검토와 별개예요.")}
+      </p>
     </>
   );
 }

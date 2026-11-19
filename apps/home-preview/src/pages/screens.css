@@ -806,13 +806,6 @@
     color: var(--danger);
   }
 
-  /* ── 그 밖의 단일 클래스 ──────────────────────────────── */
-
-  .result-body,
-  .task-detail-main {
-    min-width: 0;
-  }
-
   @media (max-width: 767px) {
     .roadmap-timeline {
       padding-left: 0;

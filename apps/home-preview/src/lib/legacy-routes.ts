@@ -39,9 +39,14 @@ const RULES: Record<string, Rule> = {
     return build(base, params);
   },
   // 1단계: 할 일·피드백 한 건은 항목 상세(?detail=)로 엽니다(01 §3.3, 06 §6).
-  // `full=1`은 상세에서 아직 못 하는 일(수정 방법 쓰기·AI 제안)을 하러 예전 화면을 여는 통로입니다.
+  // 5단계: 할 일 상세가 06 §6.3을 다 갖춰 `full=1`도 상세로 열고, 추가 창(`new=1`)은 `new=task`로 바꿉니다.
   tasks: (base, [id], params) => {
-    if (!id || params.get("full") === "1") return null;
+    params.delete("full");
+    if (!id) {
+      if (params.get("new") !== "1") return null;
+      params.set("new", "task");
+      return build(`${base}/tasks`, params);
+    }
     params.set("detail", `task:${id}`);
     return build(`${base}/tasks`, params);
   },
@@ -120,6 +125,8 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/r/a/questions/q", ""],
   ["/r/a/decisions/d", ""],
   ["/r/a/tasks/t", ""],
+  ["/r/a/tasks/t", "?full=1"],
+  ["/r/a/tasks", "?new=1&feedback=f1"],
   ["/r/a/feedback/f", ""],
   ["/r/a/feedback", ""],
   ["/r/a/feedback", "?new=1"],

@@ -116,6 +116,9 @@
 | `/r/:id/tasks` | 그대로(T1 할 일 화면의 주소) |
 | `/r/:id/tasks/:taskId` | `/r/:id/tasks?detail=task:<id>` |
 | `/r/:id/tasks?new=1&feedback=…` | `/r/:id/tasks?new=task&feedback=…` |
+
+[사실, 2026-11-19 5단계] `/tasks/:id`(`full=1` 포함)와 `/tasks?new=1…`도 위 표대로 옮겼습니다. `new=task`는 할 일 화면의 할 일 보기에서 빠른 추가 줄을 열고, `feedback=`이 이 연구의 피드백이면 줄 아래에 "‘…’ 피드백에 이어요."를 보이고 그 피드백에 이어 만듭니다. 예전 할 일 화면(`student/TasksPage`)은 지웠습니다.
+
 | `/r/:id/results` | `/r/:id/meetings?type=review` |
 | `/r/:id/results/:resultId` | `/r/:id/meetings?type=review&detail=result:<id>` |
 | `/r/:id/results?new=1&feedback=&task=&version=` | `/r/:id/meetings?type=review&new=result&…` |

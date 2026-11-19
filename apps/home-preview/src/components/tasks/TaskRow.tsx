@@ -108,10 +108,13 @@ function detailSearch(id: string): string {
 export function QuickTaskInput({
   onAdd,
   onClose,
+  note,
 }: {
   /** 실패하면 스스로 안내(toast)를 띄운 뒤 던지세요. 던지면 적은 글이 남아요. */
   onAdd(title: string): Promise<void>;
   onClose(): void;
+  /** 입력 줄 아래 한 줄 안내(예: 이어 둘 피드백) */
+  note?: string;
 }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -150,6 +153,7 @@ export function QuickTaskInput({
         onChange={(event) => setText(event.target.value)}
         onKeyDown={(event) => void onKeyDown(event)}
       />
+      {note && <small className="task-quick-add-note">{note}</small>}
     </div>
   );
 }
