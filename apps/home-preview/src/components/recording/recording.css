@@ -218,6 +218,17 @@
   .selection-toolbar button:hover {
     background: var(--selected-fill);
   }
+  /* 같은 일을 하는 단축키(형광펜 H) */
+  .selection-toolbar kbd {
+    padding: 0 var(--spacing-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-4);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption2-fontSize, 11px);
+    font-weight: 500;
+    letter-spacing: var(--typography-caption2-letterSpacing, 0);
+  }
   .selection-toolbar button:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: -2px;

@@ -25,6 +25,8 @@ export interface SelectionAction {
   key: string;
   label: string;
   icon?: string;
+  /** 같은 일을 하는 단축키(예: "H"). 버튼 끝에 보이고 보조 기술에도 알려요. */
+  shortcut?: string;
   onSelect(): void;
 }
 
@@ -119,6 +121,7 @@ export function SelectionToolbar({
           <button
             key={action.key}
             type="button"
+            aria-keyshortcuts={action.shortcut}
             onClick={() => {
               action.onSelect();
               onDismiss();
@@ -126,6 +129,7 @@ export function SelectionToolbar({
           >
             {action.icon && <Icon name={action.icon} size={14} />}
             {action.label}
+            {action.shortcut && <kbd aria-hidden="true">{action.shortcut}</kbd>}
           </button>
         ))}
       </div>

@@ -20,6 +20,7 @@ import {
   removeMarks,
   validMarks,
 } from "@/lib/recording-marks";
+import { isMarkKey } from "@/lib/mark-key";
 import {
   SelectionToolbar,
   useDomSelection,
@@ -130,6 +131,25 @@ export function SavedTranscript({
     textHost,
     draft === null && !!current?.edited_text,
   );
+  // 고른 글이 있을 때 `H`로 형광펜(04 §11). 칠할 수 있을 때만 아래 렌더에서 채웁니다.
+  const markShortcut = useRef<(() => void) | null>(null);
+  markShortcut.current = null;
+  useEffect(() => {
+    let previous: { code: string; at: number } | null = null;
+    const onKey = (event: KeyboardEvent) => {
+      const before =
+        previous && event.timeStamp - previous.at < 1000
+          ? previous.code
+          : undefined;
+      previous = { code: event.code, at: event.timeStamp };
+      const run = markShortcut.current;
+      if (!run || !isMarkKey(event, before)) return;
+      event.preventDefault();
+      run();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
   useNavigationGuard({
     dirty,
     busy: saving,
@@ -215,18 +235,25 @@ export function SavedTranscript({
   if (picked && draft === null) {
     const text = current.edited_text;
     const marked = overlapsMark(marks, text, picked.start, picked.end);
-    if (!marking)
+    if (!marking) {
+      const toggleMark = () =>
+        void changeMarks(
+          marked
+            ? removeMarks(marks, text, picked.start, picked.end)
+            : addMark(marks, text, picked.start, picked.end),
+        );
+      markShortcut.current = () => {
+        toggleMark();
+        selection.clear();
+      };
       pickActions.push({
         key: "mark",
         icon: "edit",
         label: marked ? t("형광펜 지우기") : t("형광펜"),
-        onSelect: () =>
-          void changeMarks(
-            marked
-              ? removeMarks(marks, text, picked.start, picked.end)
-              : addMark(marks, text, picked.start, picked.end),
-          ),
+        shortcut: "H",
+        onSelect: toggleMark,
       });
+    }
     if (onPick) {
       const range = timeRangeForSelection(
         current.raw_segments,
