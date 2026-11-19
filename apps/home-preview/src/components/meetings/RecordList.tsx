@@ -210,7 +210,7 @@ export function RecordList({
               {t("다음 미팅 잡기")}
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={() => navigate(`${base}/reviews?new=1`)}
+              onSelect={() => navigate("?type=review&new=review")}
             >
               <Icon name="send" size={16} />
               {t("교수님께 검토 요청")}

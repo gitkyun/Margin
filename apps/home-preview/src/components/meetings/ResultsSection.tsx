@@ -28,7 +28,6 @@ export function ResultsSection({ researchId }: { researchId: string }) {
   const [open, setOpen] = useState(true);
   const view = parseResultView(params.get("results"));
   const query = params.get("q") ?? "";
-  const base = `/r/${researchId}`;
   const counts = resultCounts(data.results, data.reviewItems, researchId);
   const rows = resultRows(
     data.results,
@@ -147,7 +146,7 @@ export function ResultsSection({ researchId }: { researchId: string }) {
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <Link to={`${base}/reviews?new=1`}>
+              <Link to="?type=review&new=review">
                 <Icon name="send" size={15} />
                 {t("검토 요청 만들기")}
               </Link>

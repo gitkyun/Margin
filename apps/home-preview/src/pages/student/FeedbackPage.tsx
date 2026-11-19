@@ -532,7 +532,7 @@ function FeedbackDetail({ feedback }: { feedback: Feedback }) {
                   aria-describedby={sendReason.describedBy}
                   onClick={() =>
                     navigate(
-                      `/r/${researchId}/reviews?result=${sendTarget.resultIds.join(",")}`,
+                      `?new=review&result=${sendTarget.resultIds.join(",")}`,
                     )
                   }
                 >

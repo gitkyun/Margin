@@ -15,99 +15,7 @@
 
 /* 화면 CSS는 margin 레이어 안에 둡니다. Montage 부품 스타일(레이어 없음)이 항상 이깁니다. design/montage.css 참고. */
 @layer margin {
-  .reviews-page {
-    min-width: 0;
-  }
-  /* 도구 줄과 찾기 칸은 공통 틀(.page-toolbar, .page-search)을 씁니다. */
-  /* 목록 행: 앞 칸 ↔ 내용 16, 내용 ↔ 배지 12, 위아래 16, 카드 안쪽 좌우 24(767 이하 16). */
-  .review-list {
-    padding: 0 var(--spacing-24);
-  }
-  .review-list-row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    align-items: center;
-    column-gap: var(--spacing-12);
-    row-gap: var(--spacing-8);
-    padding: var(--spacing-16) 0;
-    text-decoration: none;
-    color: var(--text);
-    border-bottom: 1px solid var(--line);
-  }
-  .review-list-row:last-child {
-    border-bottom: 0;
-  }
-  .review-list-row:hover .review-list-title > strong {
-    color: var(--brand);
-  }
-  /* 앞 아이콘 칸은 위 정렬, 뒤 배지·화살표는 세로 가운데. */
-  .review-list-icon {
-    align-self: start;
-    width: 44px;
-    height: 44px;
-    margin-right: var(--spacing-4);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-12);
-    display: grid;
-    place-items: center;
-    color: var(--text-secondary);
-    background: var(--surface-muted);
-  }
-  .review-list-main {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-8);
-  }
-  .review-list-title {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-8);
-    min-width: 0;
-  }
-  /* 목록 제목은 2줄까지(전체 글은 title). */
-  .review-list-title > strong {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-    min-width: 0;
-    font-size: var(--typography-body2-fontSize);
-    font-weight: 600;
-    line-height: var(--typography-body2-lineHeight);
-    letter-spacing: var(--typography-body2-letterSpacing);
-    word-break: var(--text-word-break, keep-all);
-    overflow-wrap: anywhere;
-  }
-  /* 메타(이메일 · 날짜)는 1줄 말줄임. */
-  .review-list-main > .muted {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: var(--typography-label2-fontSize);
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .review-new-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--brand);
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .review-counts {
-    display: flex;
-    gap: var(--spacing-2) var(--spacing-12);
-    flex-wrap: wrap;
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .review-count-confirmed {
-    color: var(--success);
-  }
-  .review-count-changes {
-    color: var(--warning);
-  }
+  /* 예전 검토 요청 목록 화면(목록 행·응답 수)은 5단계에 미팅 검토 보기로 옮겨 지웠습니다. */
   /* 검토 요청 만들기: 공개 미리보기(PDF 포함)가 있어 넓은 대화상자 폭(560)을 씁니다.
      안쪽 여백·버튼 줄·본문 스크롤은 styles.css "대화상자 틀"이 맡습니다. */
   [data-slot="dialog-content"].review-compose-dialog {
@@ -1190,26 +1098,6 @@
     }
   }
   @media (max-width: 767px) {
-    .review-list {
-      padding: 0 var(--spacing-16);
-    }
-    /* 좁은 화면: 배지는 내용 아래 줄로 내려가고 화살표는 첫 줄에 남습니다. */
-    .review-list-row {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-    }
-    .review-list-row > .status-badge {
-      grid-column: 2;
-      grid-row: 2;
-      justify-self: start;
-    }
-    .review-list-row > svg {
-      grid-column: 3;
-      grid-row: 1;
-    }
-    .review-list-icon {
-      width: 40px;
-      height: 40px;
-    }
     .review-workspace-header {
       padding: var(--spacing-16);
     }

@@ -64,6 +64,14 @@ const RULES: Record<string, Rule> = {
     else if (params.get("new") === "1") params.set("new", "result");
     return build(`${base}/meetings`, params);
   },
+  // 5단계: 검토 요청 목록은 미팅 목록의 검토 보기로, 만들기 창(`new=1`, 골라 둔 `result=`)은 그 자리의 창(`new=review`)으로(01 §3.3).
+  reviews: (base, rest, params) => {
+    if (rest.length) return null;
+    params.set("type", "review");
+    if (params.get("new") === "1" || params.has("result"))
+      params.set("new", "review");
+    return build(`${base}/meetings`, params);
+  },
   // 4단계: 연구 도우미 화면은 사이드 창으로 엽니다(01 §3.3). 요청 종류(`mode`)는 넘기지 않고,
   // 예전 제안 탭(`tab=overview`)은 창의 제안 보기로, 글에서 넘어온 것(`document=`)은 그 글 위의 창으로 엽니다.
   assistant: (base, _rest, params) => {
@@ -119,4 +127,7 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/r/a/results/r1", "?full=1"],
   ["/r/a/results", "?new=1&version=v1"],
   ["/r/a/results", ""],
+  ["/r/a/reviews", ""],
+  ["/r/a/reviews", "?new=1"],
+  ["/r/a/reviews", "?result=r1,r2"],
 ];

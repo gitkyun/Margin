@@ -986,7 +986,9 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           <div className="review-header-left">
             <Link
               className="review-brand"
-              to={isOwner ? `/r/${request.researchId}/reviews` : "/r"}
+              to={
+                isOwner ? `/r/${request.researchId}/meetings?type=review` : "/r"
+              }
               aria-label={
                 isOwner
                   ? t("마진(Margin) 검토 요청 목록으로 돌아가기")
@@ -1990,7 +1992,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
         <div className="review-embedded">
           <PageHeader
             back={
-              <BackLink to={`/r/${request.researchId}/reviews`}>
+              <BackLink to={`/r/${request.researchId}/meetings?type=review`}>
                 {t("검토 요청 목록")}
               </BackLink>
             }

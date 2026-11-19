@@ -120,6 +120,8 @@
 [사실, 2026-11-19 5단계] `/results/:id`(`full=1` 포함)와 `/results?new=1…`은 위 표대로 옮깁니다. `new=result`는 미팅 화면만이 아니라 어느 화면에서든 그 자리에서 작성 창을 엽니다([06](06-assistant.md) §6.6). `/results` 목록도 같은 날 미팅 목록의 수정 결과 구획([04](04-meetings.md) §2.4)으로 옮겼습니다.
 | `/r/:id/reviews` | `/r/:id/meetings?type=review` |
 | `/r/:id/reviews?new=1` / `?result=a,b` | `/r/:id/meetings?type=review&new=review` / `…&result=a,b` |
+
+[사실, 2026-11-19 5단계] `/reviews` 목록·`new=1`·`result=`도 위 표대로 옮겼습니다. `new=review`(`&result=`로 골라 둠)는 어느 화면에서든 그 자리에서 검토 요청 만들기 창을 엽니다(`components/reviews/ReviewCreateHost.tsx`). 예전 검토 요청 목록 화면은 지웠고, 검토 화면(`/reviews/:id`)의 뒤로 가기는 미팅 검토 보기로 갑니다.
 | `/r/:id/meetings/:meetingId?tab=prepare` / `?tab=record` | `…/meetings/:meetingId?mode=prepare` / `?mode=record` |
 | `/r/:id/meetings/:meetingId?tab=questions` | `…/meetings/:meetingId` (오른쪽 열 '질문' 구획을 펼친 채로) |
 | `/r/:id/meetings?new=1` (`&intent=record`, `&date=`) | `/r/:id/meetings?new=meeting` (`intent=record`면 `new=record`, `date=` 유지) |

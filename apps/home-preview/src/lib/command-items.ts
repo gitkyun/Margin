@@ -330,7 +330,8 @@ export function createEntries(researchId: string | undefined): CommandEntry[] {
       "create:review",
       t("검토 요청 만들기"),
       "send",
-      `${base}/reviews?new=1`,
+      // 지금 화면 위에서 만들기 창을 엽니다(01 §3.3 `new=review`).
+      "?new=review",
       KEYWORDS.newReview,
     ),
     navigateEntry(
