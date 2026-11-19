@@ -30,7 +30,7 @@
 - 시각 기준은 Wanted Montage 4.2.0([디자인 기준](docs/design/README.md)). 일반 화면의 색·크기는 Montage 토큰·컴포넌트를 그대로 쓰고 hex 색상표·`.dark` 블록·새 전역 덮어쓰기 CSS(`*-refinements.css` 등)를 만들지 않는다. 테마는 Montage ThemeProvider(쿠키 `margin-theme`) 하나.
 - AI 연구 도우미와 계정 메뉴 기준은 [Kokonut UI](https://kokonutui.com/docs/ai)([MIT](apps/home-preview/THIRD_PARTY_NOTICES.md))이고, 마진 부품 매핑은 [Kokonut 매핑표](docs/design/kokonut-map.md)를 따른다. 2026-11-16 사용자 결정: 공식 레지스트리의 실제 원본 코드를 가져와 구조·치수·간격·정렬·모션·상호작용을 그대로 유지한다. 원본 부품을 Montage 부품으로 바꾸거나 기존 CSS로 재현하지 않는다. 색·폰트·한글 문구와 실제 데이터 연결만 변경한다. 마진에 없는 기능은 제외하고 그 차이를 매핑표에 기록한다.
 - 한국어 카피가 원문, Pretendard·브랜드 블루. 일본어는 한국어 원문을 열쇠로 한 사전(`apps/home-preview/src/i18n/ja`)으로 제공하고 [일본어 문구 기준](docs/design/ux-writing-ja.md)을 따른다. 화면 문구는 `t("한국어 원문")`으로 쓰고 사전에 일본어를 함께 넣는다(`node scripts/i18n-scan.mjs`와 `tests/i18n.test.ts`가 빠진 문구를 잡는다). 소개 Cloud Shader 유지, LiquidGlass 제거. 로그인 후 구름·유리·광학 굴절 금지.
-- 공개/앱 머리 로고 크기 일치(지금은 사이드바, IA v2 이후 상단 줄). 로그인 후 테마는 계정 메뉴와 계정 설정(같은 부품), 공개 푸터는 별도 허용.
+- 공개/앱 머리 로고 크기 일치(앱은 상단 줄). 로그인 후 테마는 계정 메뉴와 계정 설정(같은 부품), 공개 푸터는 별도 허용.
 - 사용자가 시각 검증을 담당한다. 별도 요청 없이 마이크나 실제 연구 자료를 사용하지 않는다.
 - 원본 참고자료·실제 연구 자료·개인 인계 기록·계정 비밀번호·API 키를 커밋하지 않는다. 환경값은 예제만, 배포 비밀값은 GitHub Secrets. 예외는 아래 ‘체험 계정’ 하나뿐이다.
 - DB 마이그레이션은 추가만 한다. 적용된 파일 수정·삭제·원격 이력 repair·DB reset 금지. 실제 원격 버전과 현재 파일을 먼저 대조한다.

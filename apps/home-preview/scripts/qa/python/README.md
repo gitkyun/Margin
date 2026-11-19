@@ -35,7 +35,7 @@ macOS 런처: `./run-qa.command [인자]` (더블클릭도 가능. 서버가 꺼
 | 목적 | 명령 |
 |---|---|
 | 특정 브라우저 | `--browser chrome` / `webkit` / `safari`(아래) / `chrome,webkit` |
-| 특정 화면 묶음 | `--page home` (home, meetings, tasks, docs, flow, results, reviews, assistant, settings, shell, landing, auth, research, error) |
+| 특정 화면 묶음 | `--page home` (home, meetings, tasks, docs, flow, reviews, assistant, settings, shell, landing, auth, research, error) |
 | 특정 시나리오 | `--scenario writing-toc,meeting-record` |
 | 크기·테마 지정 | `--viewport phone,desktop --theme dark` (`both`) |
 | 반응형 경계 | `--boundaries` (663/665·767/769·863/865·991/993·1023/1025·1199/1201px) |

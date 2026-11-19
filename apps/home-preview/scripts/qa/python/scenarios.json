@@ -621,7 +621,7 @@
   {
    "id": "flow-calendar",
    "page": "flow",
-   "title": "연구 흐름 · 캘린더",
+   "title": "연구 흐름 · 달력",
    "route": "{research}/flow",
    "role": "student",
    "tiers": "full",
@@ -629,62 +629,50 @@
     {
      "click": {
       "role": "tab",
-      "name": "캘린더",
+      "name": "달력",
       "exact": true
      }
     }
    ]
   },
   {
-   "id": "flow-poll",
-   "page": "flow",
-   "title": "연구 흐름 · 시간 조율",
-   "route": "{research}/flow",
+   "id": "meetings-poll",
+   "page": "meetings",
+   "title": "미팅 · 시간 조율 보기",
+   "route": "{research}/meetings?type=poll",
    "role": "student",
-   "tiers": "full",
-   "steps": [
-    {
-     "click": {
-      "role": "tab",
-      "name": "시간 조율",
-      "exact": true
-     }
-    }
-   ]
+   "tiers": "full"
   },
   {
-   "id": "results",
-   "page": "results",
-   "title": "수정 결과 목록",
-   "route": "{research}/results",
+   "id": "meetings-review",
+   "page": "meetings",
+   "title": "미팅 · 검토 보기(수정 결과 구획·검토 요청)",
+   "route": "{research}/meetings?type=review",
    "role": "student",
    "tiers": "standard"
   },
   {
    "id": "result-detail",
-   "page": "results",
-   "title": "수정 결과 상세",
-   "detail": {
-    "of": "results",
-    "pattern": "^/r/[^/]+/results/[0-9a-f-]{36}$"
-   },
+   "page": "meetings",
+   "title": "수정 결과 상세(항목 상세)",
    "role": "student",
-   "tiers": "full"
-  },
-  {
-   "id": "reviews",
-   "page": "reviews",
-   "title": "검토 요청 목록",
-   "route": "{research}/reviews",
-   "role": "student",
-   "tiers": "standard"
+   "tiers": "full",
+   "route": "{research}/meetings?type=review",
+   "steps": [
+    {
+     "click": {
+      "css": ".record-results .record-line"
+     }
+    }
+   ],
+   "ready": "[aria-label='항목 상세']"
   },
   {
    "id": "review-detail",
    "page": "reviews",
    "title": "검토 요청 상세(교수 화면)",
    "detail": {
-    "of": "reviews",
+    "of": "meetings?type=review",
     "pattern": "^/reviews/[0-9a-f-]{36}$"
    },
    "role": "student",
@@ -694,7 +682,7 @@
    "id": "assistant",
    "page": "assistant",
    "title": "연구 도우미",
-   "route": "{research}/assistant",
+   "route": "{research}?panel=assistant",
    "role": "student",
    "tiers": "smoke",
    "ready": "textarea,[contenteditable]"
@@ -703,7 +691,7 @@
    "id": "assistant-history",
    "page": "assistant",
    "title": "연구 도우미 · 대화 기록",
-   "route": "{research}/assistant",
+   "route": "{research}?panel=assistant",
    "role": "student",
    "tiers": "full",
    "steps": [
