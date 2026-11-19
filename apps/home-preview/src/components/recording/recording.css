@@ -240,6 +240,13 @@
     }
   }
 
+  /* 키보드로 읽기(04 §5.1): 전사문 상자가 초점을 받으면 테두리로 알려요. */
+  .transcript-text:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 4px;
+    border-radius: var(--radius-4);
+  }
+
   /* 전사문 형광펜과 불확실한 인식 */
   .transcript-mark {
     padding: 0;

@@ -56,3 +56,16 @@ it("shows a shortcut hint without changing the button name", async () => {
   expect(button.getAttribute("aria-keyshortcuts")).toBe("H");
   expect(button.querySelector("kbd")?.textContent).toBe("H");
 });
+
+it("selects text by character offsets across highlighted pieces", async () => {
+  const { selectOffsets } =
+    await import("@/components/recording/SelectionPopover");
+  const box = document.createElement("div");
+  box.innerHTML = "첫 문장. <mark>둘째 문장.</mark> 셋째.";
+  document.body.append(box);
+  const range = selectOffsets(box, 6, 15);
+  expect(range?.toString()).toBe("둘째 문장. 셋째");
+  expect(window.getSelection()?.toString()).toBe("둘째 문장. 셋째");
+  expect(selectOffsets(box, 0, 99)).toBeNull();
+  box.remove();
+});
