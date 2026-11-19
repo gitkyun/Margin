@@ -48,6 +48,13 @@ describe("useGoShortcuts", () => {
     press("g");
     press("h");
     expect(path()).toBe("/r/r1");
+    // 5단계: 피드백·검토 요청은 예전 주소를 거치지 않고 새 자리로 갑니다.
+    press("g");
+    press("f");
+    expect(path()).toBe("/r/r1/tasks");
+    press("g");
+    press("r");
+    expect(path()).toBe("/r/r1/meetings");
   });
 
   it("works with the Korean keyboard layout (physical keys)", () => {

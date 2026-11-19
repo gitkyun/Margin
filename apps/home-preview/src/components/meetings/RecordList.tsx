@@ -29,6 +29,7 @@ import { Segments } from "@/components/experience";
 import { parseReviewShare, reviewMatchesShare } from "@/lib/results-section";
 import { ResultsSection } from "./ResultsSection";
 import "./record-list.css";
+import { handleListKeys } from "@/lib/list-keys";
 
 const FILTERS: RecordFilter[] = ["all", "open", "written", "review", "poll"];
 
@@ -174,7 +175,11 @@ export function RecordList({
   }
 
   return (
-    <nav className="record-list" aria-label={t("기록 목록")}>
+    <nav
+      className="record-list"
+      aria-label={t("기록 목록")}
+      onKeyDown={handleListKeys}
+    >
       <div className="record-list-top">
         <DropdownMenu>
           <DropdownMenuTrigger>

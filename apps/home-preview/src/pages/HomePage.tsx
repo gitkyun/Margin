@@ -57,6 +57,7 @@ import {
 } from "@/lib/home-lists";
 import "./research-home.css";
 import "./home/home.css";
+import { handleListKeys } from "@/lib/list-keys";
 
 const TOUR_DELAY_MS = 500;
 /** 온보딩 전환(바뀌기·멈춤·커지기 2.5초)이 끝난 뒤 */
@@ -677,7 +678,11 @@ function HomeLists({
   );
 
   return (
-    <section className="hm-card hm-lists" aria-label={t("홈 목록")}>
+    <section
+      className="hm-card hm-lists"
+      aria-label={t("홈 목록")}
+      onKeyDown={handleListKeys}
+    >
       <div
         className="hm-lists-head"
         onFocusCapture={(event) => {
