@@ -363,6 +363,8 @@ const dictionary: Record<string, string> = {
   "위치 핀 {number}: {label}": "位置ピン {number}: {label}",
   "PDF에서 위치를 누르세요": "PDF上の位置をクリックしてください",
   "PDF 위치 핀 찍기": "PDFにピンを打つ",
+  "연구 관리": "研究管理",
+  "연구 관리 메뉴": "研究管理メニュー",
 };
 
 export default dictionary;

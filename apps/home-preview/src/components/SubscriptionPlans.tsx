@@ -14,6 +14,7 @@ import {
 import "./subscription-plans.css";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
+import { AI_PLAN_FEATURE_LABEL } from "@/lib/ai-execution-policy";
 import { configured } from "@/lib/supabase";
 
 const plans = [
@@ -26,7 +27,7 @@ const plans = [
       t("미팅 기록과 다음 미팅 준비"),
       t("원고 작성과 버전 비교"),
       t("피드백·할 일·교수 검토"),
-      t("선택한 기록으로 AI 실행"),
+      AI_PLAN_FEATURE_LABEL(),
     ],
     note: t("미팅 기록부터 교수 검토까지 기본 기능을 모두 담았어요."),
   },

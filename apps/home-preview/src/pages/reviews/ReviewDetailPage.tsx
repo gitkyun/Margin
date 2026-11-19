@@ -83,7 +83,6 @@ import {
   splitResolvedThreads,
   evidenceIssue,
   errorText,
-  isLatestRound,
   latestResponse,
   latestRound,
   sharingLabels,
@@ -91,6 +90,7 @@ import {
   timeText,
   versionForRound,
 } from "./helpers";
+import { reviewPermissions } from "@/lib/review-permissions";
 import { Tabs } from "@/components/ui/tabs";
 import { RequestDirection } from "./RequestDirection";
 import { ReviewNotifyBar } from "./ReviewNotifyBar";
@@ -517,14 +517,20 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     }
   }, [round?.id, params, setParams]);
   const response = latestResponse(data, round?.id);
-  const isOwner =
-    !!request && data.researches.some((r) => r.id === request.researchId);
-  const isProfessor = !!request && request.professorId === user.id && !isOwner;
-  const canRead =
-    !!request && (isOwner || (isProfessor && request.status === "shared"));
-  const canWrite = canRead && request?.status === "shared";
-  const canRespond =
-    isProfessor && canWrite && !!round && isLatestRound(data, round);
+  const permissions = reviewPermissions(data, request, user.id, round);
+  const {
+    canEditResearch,
+    isDesignatedReviewer,
+    isDualRole,
+    canRead,
+    canComment: canWrite,
+    canRespondOnLatestRound,
+    canRespond,
+    canRequestRecheck,
+    canManageSharing,
+    canShareRequest,
+    canEditSourceResult,
+  } = permissions;
   const version =
     request && round ? versionForRound(round, request, data) : undefined;
   const [mobilePanel, setMobilePanel] = useState<"document" | "response">(
@@ -843,7 +849,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     status: "shared" | "stopped",
     changeEmail: boolean,
   ) => {
-    if (!request || !isOwner) return;
+    if (!request || !canManageSharing) return;
     if (
       changeEmail &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sharingEmail.trim())
@@ -872,7 +878,14 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     if (saved) setSharingOpen(false);
   };
   const submitRecheck = async () => {
-    if (!request || !item || !privateResult || !recheckConfirmed) return;
+    if (
+      !request ||
+      !item ||
+      !privateResult ||
+      !recheckConfirmed ||
+      !canRequestRecheck
+    )
+      return;
     const issue = evidenceIssue(privateResult, data);
     if (issue) {
       setError(issue);
@@ -965,9 +978,66 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     setEmailError("");
     setSharingOpen(true);
   };
+  const openRecheck = () => {
+    recheckKey.current = uid();
+    setRecheckConfirmed(false);
+    setError("");
+    setRecheckOpen(true);
+  };
+  // 공동연구자이면서 지정 교수인 경우, 주 흐름은 검토 응답에 두고 기존 연구 관리 동작은 보조 메뉴에 모읍니다.
+  const researchManageMenu = isDualRole ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <Button
+          type="button"
+          variant="outline"
+          aria-label={t("연구 관리 메뉴")}
+        >
+          <Icon name="more" size={16} />
+          {t("연구 관리")}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {canManageSharing && (
+          <DropdownMenuItem onSelect={openSharing}>
+            <Icon name="settings" size={16} />
+            {t("공유 설정")}
+          </DropdownMenuItem>
+        )}
+        {canShareRequest && (
+          <DropdownMenuItem onSelect={() => void copyLink()}>
+            <Icon name="link" size={16} />
+            {t("링크 복사")}
+          </DropdownMenuItem>
+        )}
+        {canRequestRecheck && privateResult && (
+          <DropdownMenuItem
+            onSelect={() => {
+              if (!busy) openRecheck();
+            }}
+          >
+            <Icon name="refresh" size={16} />
+            {t("다시 확인 요청")}
+          </DropdownMenuItem>
+        )}
+        {canEditSourceResult && privateResult && (
+          <DropdownMenuItem
+            onSelect={() =>
+              navigate(`/r/${request.researchId}/results/${privateResult.id}`, {
+                state: back(request.title),
+              })
+            }
+          >
+            <Icon name="edit" size={16} />
+            {t("수정 결과에서 고치기")}
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
   const sharedLine = (
     <>
-      {isOwner
+      {canEditResearch && !isDesignatedReviewer
         ? t("{email}에게 공유", { email: request.professorEmail })
         : t("학생이 보낸 수정 내용")}{" "}
       · {timeText(request.createdAt)}
@@ -986,21 +1056,21 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           <div className="review-header-left">
             <Link
               className="review-brand"
-              to={isOwner ? `/r/${request.researchId}/reviews` : "/r"}
+              to={canEditResearch ? `/r/${request.researchId}/reviews` : "/r"}
               aria-label={
-                isOwner
+                canEditResearch
                   ? t("마진(Margin) 검토 요청 목록으로 돌아가기")
                   : t("마진(Margin) 홈")
               }
             >
-              {isOwner && <Icon name="arrow-left" size={21} />}
+              {canEditResearch && <Icon name="arrow-left" size={21} />}
               <BrandMark />
               <BrandWordmark />
             </Link>
             <span className="review-header-divider" />
             <div>
               {/* 교수는 받은 검토 요청 목록(/r)으로 바로 돌아가요(감사 F5·F6). */}
-              {isProfessor && (
+              {isDesignatedReviewer && (
                 <TextLink className="review-back-link" to="/r">
                   <Icon name="arrow-left" size={14} />
                   {t("받은 검토 요청")}
@@ -1022,7 +1092,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   disabled: !!busy,
                   onSelect: () => void refresh(),
                 },
-                ...(isOwner
+                ...(canManageSharing && !isDualRole
                   ? [
                       {
                         id: "sharing",
@@ -1034,7 +1104,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   : []),
               ]}
               primary={
-                isOwner
+                canShareRequest && !isDualRole
                   ? [
                       {
                         id: "copy-link",
@@ -1046,6 +1116,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   : []
               }
             />
+            {researchManageMenu}
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <button
@@ -1086,7 +1157,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           )}
         </div>
       )}
-      {isOwner && request.status === "shared" && (
+      {canShareRequest && !isDesignatedReviewer && request.status === "shared" && (
         <ReviewNotifyBar
           requestId={request.id}
           requestTitle={request.title}
@@ -1103,7 +1174,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
           )}
         </div>
       )}
-      {!isOwner && (
+      {!canEditResearch && (
         <div className="review-direction-bar">
           <RequestDirection
             name={request.researchName}
@@ -1189,16 +1260,11 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                     }))}
                   />
                 </div>
-                {isOwner && request.status === "shared" && (
+                {canRequestRecheck && !isDualRole && (
                   <Button
                     variant="outline"
                     disabled={!!busy || !privateResult}
-                    onClick={() => {
-                      recheckKey.current = uid();
-                      setRecheckConfirmed(false);
-                      setError("");
-                      setRecheckOpen(true);
-                    }}
+                    onClick={openRecheck}
                   >
                     <Icon name="refresh" size={15} />
                     {t("다시 확인 요청")}
@@ -1400,7 +1466,8 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   )}
                   {/* ‘추가 수정 필요’를 받은 학생이 고칠 곳으로 바로 갑니다(검수 H-1).
                       교수 결과와 학생의 수정 결과 상태는 합치지 않고 길만 이어 줍니다. */}
-                  {isOwner &&
+                  {canEditSourceResult &&
+                    !isDualRole &&
                     response?.result === "changes_requested" &&
                     privateResult && (
                       <span className="review-fit-button">
@@ -1539,9 +1606,8 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                     </form>
                   ) : (
                     <p className="review-response-help">
-                      {isOwner
-                        ? t("교수님 응답은 여기에 보여요.")
-                        : isProfessor && canWrite
+                      {isDesignatedReviewer
+                        ? canRespondOnLatestRound
                           ? t(
                               "이 항목은 {latest}차 검토가 있어 {current}차에는 응답할 수 없어요. 최신 검토에서 결과를 남겨 주세요.",
                               {
@@ -1549,10 +1615,13 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                                 current: round.number,
                               },
                             )
+                          : t("공유 중일 때 응답할 수 있어요.")
+                        : canEditResearch
+                          ? t("교수님 응답은 여기에 보여요.")
                           : t("공유 중일 때 응답할 수 있어요.")}
                     </p>
                   )}
-                  {isProfessor && canWrite && response && (
+                  {canRespondOnLatestRound && response && (
                     <ProfessorProgress
                       pending={items.filter(
                         (record) =>
@@ -1727,7 +1796,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                           }))
                         }
                         placeholder={
-                          isProfessor
+                          isDesignatedReviewer
                             ? t("예: 그림 2의 범례도 함께 확인해 주세요.")
                             : t("예: 표 제목은 다음 검토 때 함께 고칠게요.")
                         }
@@ -2007,17 +2076,23 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   <Icon name="refresh" size={16} />
                   {t("새로고침")}
                 </Button>
-                {isOwner && (
-                  <Button variant="outline" onClick={openSharing}>
-                    <Icon name="settings" size={16} />
-                    {t("공유 설정")}
-                  </Button>
-                )}
-                {isOwner && (
-                  <Button onClick={copyLink}>
-                    <Icon name="link" size={16} />
-                    {t("링크 복사")}
-                  </Button>
+                {isDualRole ? (
+                  researchManageMenu
+                ) : (
+                  <>
+                    {canManageSharing && (
+                      <Button variant="outline" onClick={openSharing}>
+                        <Icon name="settings" size={16} />
+                        {t("공유 설정")}
+                      </Button>
+                    )}
+                    {canShareRequest && (
+                      <Button onClick={copyLink}>
+                        <Icon name="link" size={16} />
+                        {t("링크 복사")}
+                      </Button>
+                    )}
+                  </>
                 )}
               </>
             }

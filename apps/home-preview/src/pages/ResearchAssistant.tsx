@@ -88,6 +88,7 @@ import {
   researchModelLabel,
   workingMascot,
 } from "@/lib/assistant-presentation";
+import { getAIExecutionPolicy } from "@/lib/ai-execution-policy";
 import {
   Dialog,
   DialogContent,
@@ -1889,25 +1890,25 @@ export function ResearchAssistant({
                 </button>
               </div>
             )}
-          {webSearch && (
-            <p className="assistant-web-scope">
-              {t(
-                "웹 검색에는 질문만 보내요. 선택한 연구 기록과 이전 대화는 보내지 않아요.",
-              )}
-            </p>
-          )}
-          {calendar && (
-            <p className="assistant-web-scope">
-              {t(
-                "일정 확인에는 이 연구의 일정만 사용해요. 선택한 파일은 보내지 않아요.",
-              )}
-            </p>
-          )}
-          {webSearch && (
-            <p className="assistant-web-scope">
-              {t("웹 검색은 실제 검색어마다 14크레딧이 추가돼요.")}
-            </p>
-          )}
+          {(() => {
+            const policy = getAIExecutionPolicy({
+              mode: task,
+              webSearch,
+              calendar,
+            });
+            return (
+              <>
+                <p className="assistant-web-scope" data-ai-scope={policy.kind}>
+                  {policy.preSendNotice()}
+                </p>
+                {policy.extraCostNotice && (
+                  <p className="assistant-web-scope">
+                    {policy.extraCostNotice()}
+                  </p>
+                )}
+              </>
+            );
+          })()}
           {!unavailable && (
             <AIComposerUsage
               runId={lastRunId || undefined}

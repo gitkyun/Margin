@@ -20,6 +20,10 @@ import { useNavigationGuard } from "@/lib/navigation-guard";
 import { assertConnected, friendlyError } from "@/lib/supabase";
 import { changeAccountPassword } from "@/lib/password-change";
 import { useAIUsage, MONTHLY_AI_CREDITS, formatCredits } from "@/lib/ai-usage";
+import {
+  AI_SETTINGS_SCOPE_NOTE,
+  AI_USAGE_SCOPE_SUMMARY,
+} from "@/lib/ai-execution-policy";
 import { AIModelSelector } from "@/components/ai/AIModelSelector";
 import { useExperience } from "@/lib/experience";
 import { useAICapabilities, resolveAISelection } from "@/lib/ai-capabilities";
@@ -163,7 +167,7 @@ export function UsageDetails() {
         </div>
         <div>
           <span>{t("사용 범위")}</span>
-          <strong>{t("선택한 기록과 질문만")}</strong>
+          <strong>{AI_USAGE_SCOPE_SUMMARY()}</strong>
         </div>
       </div>
       <Disclosure summary={t("크레딧 이력")}>
@@ -416,9 +420,7 @@ function PreferenceSettings({ kind }: { kind: "notifications" | "ai" }) {
         <h2>{kind === "ai" ? t("AI 기본 설정") : t("알림 설정")}</h2>
         <p>
           {kind === "ai"
-            ? t(
-                "AI를 실행할 때마다 사용할 기록을 확인해요. 기본값을 바꿔도 AI가 자동으로 실행되지 않아요.",
-              )
+            ? AI_SETTINGS_SCOPE_NOTE()
             : t(
                 "마진 안에서 받을 알림을 선택하세요. 이메일이나 브라우저 알림은 보내지 않아요. 스위치를 바꾸면 바로 저장돼요.",
               )}

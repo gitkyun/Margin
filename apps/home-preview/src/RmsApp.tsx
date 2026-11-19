@@ -90,11 +90,12 @@ const PlanningPage = lazy(() =>
 const PollPage = lazy(() =>
   import("@/pages/PlanningPage").then((m) => ({ default: m.PollPage })),
 );
+import { reviewPermissions } from "@/lib/review-permissions";
 function ReviewRoute() {
   const { requestId } = useParams(),
-    { data } = useWorkspace();
+    { data, user } = useWorkspace();
   const q = data.reviews.find((r) => r.id === requestId);
-  return q && data.researches.some((r) => r.id === q.researchId) ? (
+  return q && reviewPermissions(data, q, user.id).canEditResearch ? (
     <Shell researchOverride={q.researchId}>
       <ReviewDetailPage embedded />
     </Shell>

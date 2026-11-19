@@ -7,6 +7,11 @@ import type {
   WorkspaceData,
 } from "./domain";
 
+import {
+  reviewPermissions,
+  type ReviewPermissions,
+} from "./review-permissions";
+
 export interface ReviewNotification {
   id: string;
   kind: "response" | "comment" | "round";
@@ -31,26 +36,12 @@ export function unreadReviewNotifications(
   if (user.preferences?.review === false) return [];
   const permitted = new Map<
     string,
-    { request: ReviewRequest; owner: boolean }
+    { request: ReviewRequest; permissions: ReviewPermissions }
   >();
   for (const request of data.reviews) {
     if (researchId && request.researchId !== researchId) continue;
-    const owner = data.researches.some(
-      (r) =>
-        r.id === request.researchId &&
-        (r.ownerId === user.id ||
-          data.members.some(
-            (m) =>
-              m.researchId === r.id &&
-              m.userId === user.id &&
-              m.status === "active",
-          )),
-    );
-    if (
-      owner ||
-      (request.professorId === user.id && request.status === "shared")
-    )
-      permitted.set(request.id, { request, owner });
+    const permissions = reviewPermissions(data, request, user.id);
+    if (permissions.canRead) permitted.set(request.id, { request, permissions });
   }
   const notifications: ReviewNotification[] = [];
   const add = (
@@ -79,9 +70,12 @@ export function unreadReviewNotifications(
     });
   };
   for (const round of data.rounds) {
-    const permission = permitted.get(round.requestId);
-    if (!permission) continue;
-    if (!permission.owner)
+    const entry = permitted.get(round.requestId);
+    if (!entry) continue;
+    if (
+      entry.permissions.canRespondOnLatestRound &&
+      round.createdBy !== user.id
+    )
       add(round, {
         id: `round:${round.id}`,
         kind: "round",
@@ -92,7 +86,7 @@ export function unreadReviewNotifications(
         tone: "blue",
         createdAt: round.createdAt,
       });
-    if (permission.owner) {
+    if (entry.permissions.canEditResearch) {
       for (const response of data.responses.filter(
         (r) => r.roundId === round.id && r.userId !== user.id,
       ))
