@@ -61,7 +61,9 @@ export const TOUR_STEPS: TourStep[] = [
     key: "menu",
     selector: ".ia-rail",
     title: t("옆 창과 설정은 오른쪽 줄에 있어요"),
-    text: t("연구 도우미, 이 화면의 옆 창, 의견 보내기, 설정을 여기서 열어요."),
+    text: t(
+      "연구 도우미, 할 일, 결정·질문, 자료 창과 의견 보내기, 설정을 여기서 열어요. ] 키로도 창을 여닫아요.",
+    ),
   },
   {
     key: "flow",
