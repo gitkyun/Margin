@@ -60,6 +60,39 @@
     text-decoration: none;
     white-space: nowrap;
   }
+  /* 휴대폰 바로가기 줄(03 §1) */
+  .hm-shortcuts {
+    display: none;
+  }
+  @media (max-width: 767px) {
+    .hm-shortcuts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--spacing-8);
+    }
+  }
+  .hm-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-6);
+    min-height: 44px;
+    padding: 0 var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--typography-label1-fontSize);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .hm-shortcut:hover {
+    background: var(--hover-fill);
+  }
+  .hm-shortcut > svg {
+    color: var(--text-secondary);
+  }
   .hm-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;

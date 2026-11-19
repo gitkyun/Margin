@@ -314,13 +314,22 @@ export function WorkspaceShell({
     setRailTab(request.tab, true);
     if (request.tab === "assistant")
       setAssistantRequest({ view: request.view, at: Date.now() });
+    // 휴대폰에서 층의 세그먼트를 연 주소(홈 바로가기 줄 등)는 그 주소 자리를 층 자리로 바꿔
+    // 아래 탭으로 연 것처럼 뒤로 가기로 닫힙니다(02 §6, D16).
+    const asLayer = phone && isLayerSegment(request.tab);
+    if (asLayer) layerPushed.current = true;
     navigate(
       {
         pathname: location.pathname,
         search: withoutPanelRequest(location.search),
         hash: location.hash,
       },
-      { replace: true, state: location.state },
+      {
+        replace: true,
+        state: asLayer
+          ? { ...((location.state as object | null) ?? {}), layer: "panel" }
+          : location.state,
+      },
     );
   }, [location.search, research?.id]);
   // 화면이 보낸 창을 열면 할 일 창은 닫습니다(한 번에 하나).
