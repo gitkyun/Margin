@@ -58,9 +58,11 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 | 2b | [정리하기]에 본인 전사, 요약·제안 검사 | `ai-assist` | [x] [#120](https://github.com/gitkyun/Margin/pull/120)·[#121](https://github.com/gitkyun/Margin/pull/121) (실제 AI 결과 확인 전) | 실제 AI 결과 + 캡처 → 병합(함수 배포) |
 | 3a | 글·자료 합친 목록, 열어 둔 탭, 글 편집 틀, 자료 보기 | 없음 | [x] [#122](https://github.com/gitkyun/Margin/pull/122)~[#131](https://github.com/gitkyun/Margin/pull/131) (캡처 검수 전) | 캡처 검수 → 병합 |
 | 3b | 본문 안 수정 제안 | `ai-assist` | [x] [#132](https://github.com/gitkyun/Margin/pull/132)·[#133](https://github.com/gitkyun/Margin/pull/133) (실제 AI 결과 확인 전) | 실제 AI 결과 + 캡처 → 병합(함수 배포) |
-| 4 | 연구 도우미 창(P1), 자료 창(P4) | 없음 | [~] [#134](https://github.com/gitkyun/Margin/pull/134)~[#137](https://github.com/gitkyun/Margin/pull/137)·[#139](https://github.com/gitkyun/Margin/pull/139)·[#140](https://github.com/gitkyun/Margin/pull/140)·[#141](https://github.com/gitkyun/Margin/pull/141)·[#142](https://github.com/gitkyun/Margin/pull/142)·[#143](https://github.com/gitkyun/Margin/pull/143)·[#144](https://github.com/gitkyun/Margin/pull/144)·[#153](https://github.com/gitkyun/Margin/pull/153)·[#154](https://github.com/gitkyun/Margin/pull/154)·[#155](https://github.com/gitkyun/Margin/pull/155)·[#156](https://github.com/gitkyun/Margin/pull/156) 병합, 휴대폰 홈 바로가기 줄(`feat/ia-v2-4-home-shortcuts`) | 캡처 검수 → 병합 |
+| 4 | 연구 도우미 창(P1), 자료 창(P4) | 없음 | [x] [#134](https://github.com/gitkyun/Margin/pull/134)~[#137](https://github.com/gitkyun/Margin/pull/137)·[#139](https://github.com/gitkyun/Margin/pull/139)·[#140](https://github.com/gitkyun/Margin/pull/140)·[#141](https://github.com/gitkyun/Margin/pull/141)·[#142](https://github.com/gitkyun/Margin/pull/142)·[#143](https://github.com/gitkyun/Margin/pull/143)·[#144](https://github.com/gitkyun/Margin/pull/144)·[#153](https://github.com/gitkyun/Margin/pull/153)·[#154](https://github.com/gitkyun/Margin/pull/154)·[#155](https://github.com/gitkyun/Margin/pull/155)·[#156](https://github.com/gitkyun/Margin/pull/156)·[#157](https://github.com/gitkyun/Margin/pull/157) (캡처 검수 전) | 캡처 검수 → 병합 |
 | 5 | 정리: 연구 흐름, 예전 화면·임시 통로 제거, 문서 마무리 | 없음 | [ ] | 최종 검수 → 병합 |
 | 6 | 후속(사진 붙이기, 서버 전사, 형광펜 종류, 발표 자료 형태, 함께 쓰기) | 마이그레이션 | 결정 전 | 시작 여부 |
+
+2026-11-19 확인: 4단계(#134~#157)도 PR마다 사용자 확인으로 병합·배포했지만 캡처 검수(360~1440px·다크·일본어)와 실제 AI 결과 확인은 남아 있습니다. 4단계에서 정해 둔 남은 일: 글을 미팅에 가져가기(준비 화면에 `documentIds`가 보일 때), 예전 연구 도우미 화면 부품·`assistant-handoff` 지우기(5단계).
 
 2026-11-17 확인: 1단계(#103)와 2a(#105~#107)는 '캡처 검수' 없이 병합됐습니다. 사용자 캡처 검수는 아직 남아 있고, 2a는 2b보다 먼저 나갔습니다(녹음만 있고 메모가 없는 기록은 2b 전까지 [정리하기]로 정리할 수 없음).
 
