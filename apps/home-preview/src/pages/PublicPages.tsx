@@ -290,6 +290,9 @@ export function PublicFrame({
     </div>
   );
 }
+/** 미리보기 창 상단 메뉴와 장면마다 켜지는 메뉴: 미팅 원문 → 미팅, 수정 방법 → 할 일(피드백), 글 → 글·자료, 검토 → 미팅(검토 보기) */
+const PREVIEW_MENUS = [t("홈"), t("미팅"), t("할 일"), t("글·자료")];
+const PREVIEW_MENU_OF_SCENE = [1, 2, 3, 1];
 function ProductPreview({ index }: { index: number }) {
   const content = [
     <div className="lp-preview-note" key="note">
@@ -409,20 +412,22 @@ function ProductPreview({ index }: { index: number }) {
           <i />
         </span>
         <span>{t("내 연구")}</span>
+        {/* 로그인 뒤 화면처럼 상단 메뉴 넷(IA v2 07 §6). 장면이 있는 메뉴가 켜집니다. */}
+        <span className="lp-mini-menu" aria-hidden="true">
+          {PREVIEW_MENUS.map((label, menu) => (
+            <span
+              key={label}
+              className={
+                menu === PREVIEW_MENU_OF_SCENE[index] ? "selected" : ""
+              }
+            >
+              {label}
+            </span>
+          ))}
+        </span>
         <span className="lp-window-example">{t("사용 예시")}</span>
       </div>
       <div className="lp-window-body">
-        <div className="lp-mini-sidebar" aria-hidden="true">
-          <ResearchMark small />
-          {["home", "calendar", "edit", "feedback", "folder"].map((icon) => (
-            <span
-              key={icon}
-              className={icon === journey[index].icon ? "selected" : ""}
-            >
-              <Icon name={icon} size={18} />
-            </span>
-          ))}
-        </div>
         <AnimatePresence mode="wait">
           <motion.div
             className="lp-window-content"
@@ -1180,19 +1185,19 @@ export function InfoPage({
               [
                 t("미팅 기록하기"),
                 t(
-                  "연구를 만들고 미팅을 등록하세요. 날짜가 정해지지 않았어도 등록할 수 있어요. 메모는 자동으로 저장돼요.",
+                  "연구를 만들고 위 메뉴의 ‘미팅’에서 [기록 추가]로 다음 미팅을 잡거나 녹음을 시작하세요. 날짜가 정해지지 않았어도 등록할 수 있어요. 메모는 자동으로 저장돼요.",
                 ),
               ],
               [
                 t("수정 방법 고르기"),
                 t(
-                  "피드백을 직접 정리하거나, 선택한 원문으로 AI 정리를 요청하세요. 고른 수정 방법은 할 일로 만들고, 고친 뒤에는 수정 결과로 남기세요.",
+                  "미팅 기록에서 [정리하기]를 누르거나 피드백을 직접 추가하세요. 피드백을 누르면 오른쪽 창에서 수정 방법을 직접 쓰거나 연구 도우미에게 제안받을 수 있어요. 고른 방법은 할 일로 만들고, 고친 뒤에는 수정 결과로 남기세요.",
                 ),
               ],
               [
                 t("교수님께 검토 요청하기"),
                 t(
-                  "수정 설명, 파일, 먼저 볼 위치를 담아 검토 링크를 만들고, 교수님께 직접 전달해 주세요. 교수님은 항목마다 ‘수정 내용 확인’ 또는 ‘추가 수정 필요’를 남겨요. ‘추가 수정 필요’를 받은 항목은 고친 뒤 다시 확인을 요청할 수 있어요.",
+                  "수정 결과에서, 또는 ‘미팅’의 검토 요청 보기에서 [검토 요청 만들기]를 누르세요. 수정 설명, 파일, 먼저 볼 위치를 담아 검토 링크를 만들고, 교수님께 직접 전달해 주세요. 교수님은 항목마다 ‘수정 내용 확인’ 또는 ‘추가 수정 필요’를 남겨요. ‘추가 수정 필요’를 받은 항목은 고친 뒤 다시 확인을 요청할 수 있어요.",
                 ),
               ],
             ]

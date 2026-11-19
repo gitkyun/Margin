@@ -534,11 +534,14 @@
     height: 100%;
     transform-origin: 0 0;
   }
+  /* 소개 장면도 새 틀(IA v2 07 §6): 위에 상단 줄, 아래 본문 판 */
   .ob-stage-canvas {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
   .ob-window-canvas {
-    grid-template-columns: 132px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
   /*
    * 확대된 동안 핵심 컴포넌트가 아닌 부분은 흐리게 물러납니다(사용자 요청, 2026-11-11).
@@ -546,7 +549,7 @@
    */
   .ob-stage-canvas :is(.ob-stage-rail, .ob-shot *),
   .ob-window-canvas
-    :is(.ob-rail, .ob-side, .ob-head, .ob-head *, .ob-columns, .ob-card > *) {
+    :is(.ob-topbar, .ob-head, .ob-head *, .ob-card, .ob-card > *) {
     transition:
       filter var(--motion-duration-page) ease-out,
       opacity var(--motion-duration-page) ease-out;
@@ -573,9 +576,11 @@
   .ob-stage-canvas[data-zoomed]
     :has(> .ob-shot-focus):not(.ob-shot)
     > :not(.ob-shot-focus),
-  .ob-window-canvas[data-zoomed]
-    :is(.ob-rail, .ob-side, .ob-head > :last-child),
-  .ob-window-canvas:is([data-zoomed="name"], [data-zoomed="phase"]) .ob-columns,
+  .ob-window-canvas[data-zoomed] :is(.ob-topbar, .ob-card-list),
+  .ob-window-canvas:is([data-zoomed="name"], [data-zoomed="phase"])
+    .ob-card-meeting,
+  .ob-window-canvas[data-zoomed="name"] .ob-chips,
+  .ob-window-canvas[data-zoomed="phase"] .ob-head-copy,
   .ob-window-canvas[data-zoomed="meeting"] .ob-card-meeting > :not([data-part]),
   .ob-window-canvas[data-zoomed="meeting"] .ob-head {
     filter: blur(3px) brightness(0.78);
@@ -592,10 +597,9 @@
   }
   .ob-stage-rail {
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: var(--spacing-16);
-    padding: var(--spacing-16) 0;
+    padding: var(--spacing-8) var(--spacing-16);
   }
   .ob-stage-rail .ob-rail-mark {
     width: 22px;
@@ -605,8 +609,9 @@
   .ob-stage-nav {
     position: relative;
     display: grid;
-    grid-auto-rows: 44px;
-    width: 44px;
+    grid-auto-flow: column;
+    grid-auto-columns: 44px;
+    height: 36px;
   }
   .ob-stage-nav span {
     position: relative;
@@ -621,13 +626,13 @@
   .ob-stage-nav span[data-state="active"] {
     color: var(--semantic-static-white);
   }
-  /* 고른 단계를 따라 사이드바의 파란 면이 미끄러져 갑니다. */
+  /* 고른 단계를 따라 상단 줄의 파란 면이 옆으로 미끄러져 갑니다. */
   .ob-stage-cursor {
     position: absolute;
     top: 0;
     left: 0;
     width: 44px;
-    height: 44px;
+    height: 36px;
     border-radius: var(--radius-12);
     background: var(--brand);
     transition: transform var(--motion-duration-page)
@@ -850,51 +855,52 @@
     line-height: 1.4;
     view-transition-name: margin-home;
   }
-  .ob-rail,
+  .ob-topbar,
   .ob-main {
     border: 1px solid var(--line);
     border-radius: var(--radius-12);
     background: var(--surface);
     min-width: 0;
   }
-  .ob-rail {
+  /* 상단 줄(IA v2 02 §3): 로고 · 연구 이름 · 메뉴 넷 · 찾기 */
+  .ob-topbar {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-6);
-    padding: var(--spacing-12) var(--spacing-8);
+    align-items: center;
+    gap: var(--spacing-12);
+    padding: var(--spacing-8) var(--spacing-12);
   }
   .ob-rail-mark {
+    flex: none;
     width: 18px;
     height: 18px;
-    margin: 0 var(--spacing-4) var(--spacing-6);
   }
-  .ob-rail-research {
-    display: block;
-    min-height: 24px;
-    margin-bottom: var(--spacing-6);
-    padding: var(--spacing-4) var(--spacing-6);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
+  .ob-topbar-research {
+    flex: 0 1 120px;
+    min-width: 48px;
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .ob-rail-item {
+  .ob-topbar-menus {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-6);
-    padding: var(--spacing-4) var(--spacing-6);
-    border-radius: var(--radius-8);
+    gap: var(--spacing-4);
     color: var(--text-secondary);
+    white-space: nowrap;
   }
-  .ob-rail-item .ob-skel {
-    flex: 1;
-    max-width: 56px;
+  .ob-topbar-menus > span {
+    padding: var(--spacing-2) var(--spacing-6);
+    border-radius: var(--radius-8);
   }
-  .ob-rail-current {
+  .ob-topbar-current {
     background: var(--selected-fill);
     color: var(--brand);
+    font-weight: 600;
+  }
+  .ob-topbar-search {
+    width: 72px;
+    height: 16px;
+    margin-left: auto;
   }
   .ob-main {
     display: flex;
@@ -927,11 +933,22 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .ob-phase {
+  .ob-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--spacing-4);
+    max-width: 50%;
+  }
+  .ob-chip {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: 999px;
     color: var(--text-secondary);
+    white-space: nowrap;
   }
   .ob-lead {
     flex: none;
@@ -940,19 +957,6 @@
     background: var(--brand);
     color: var(--semantic-static-white);
     font-weight: 600;
-  }
-  .ob-columns {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 38%;
-    gap: var(--spacing-8);
-    flex: 1;
-    min-height: 0;
-  }
-  .ob-side {
-    display: grid;
-    gap: var(--spacing-8);
-    align-content: start;
-    min-width: 0;
   }
   .ob-card {
     display: grid;
@@ -969,6 +973,39 @@
     gap: var(--spacing-4);
     font-weight: 600;
   }
+  /* 다음 미팅 카드: 왼쪽 내용, 오른쪽 주 버튼(03 §1) */
+  .ob-card-meeting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-12);
+  }
+  /* 목록 카드: 탭 줄과 할 일 세 줄 */
+  .ob-tabs {
+    display: flex;
+    gap: var(--spacing-12);
+    padding-bottom: var(--spacing-6);
+    border-bottom: 1px solid var(--line);
+    color: var(--text-secondary);
+  }
+  .ob-tabs b {
+    color: var(--text);
+  }
+  .ob-task {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+  }
+  .ob-check {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-4);
+  }
+  .ob-task .ob-skel {
+    flex: 1;
+  }
   .ob-meeting-block {
     display: grid;
     gap: var(--spacing-8);
@@ -980,23 +1017,6 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-8);
-  }
-  .ob-date {
-    display: grid;
-    justify-items: center;
-    flex: none;
-    width: 38px;
-    padding: var(--spacing-4) 0;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-  }
-  .ob-date small {
-    color: var(--brand);
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 600;
-  }
-  .ob-date strong {
-    font-size: 13px;
   }
   .ob-meeting-copy {
     display: grid;
@@ -1022,42 +1042,6 @@
   .ob-empty {
     color: var(--text-secondary);
   }
-  .ob-week {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    text-align: center;
-  }
-  .ob-week > span {
-    display: grid;
-    justify-items: center;
-    gap: var(--spacing-2);
-  }
-  .ob-week small {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-  }
-  .ob-week b {
-    display: grid;
-    place-items: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    font-size: var(--typography-caption1-fontSize);
-    font-weight: 600;
-  }
-  .ob-week-today b {
-    background: var(--brand);
-    color: var(--semantic-static-white);
-  }
-  .ob-week i {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-  }
-  .ob-week-dot {
-    background: var(--brand);
-  }
-
   /* 아직 답하지 않은 자리의 뼈대 */
   .ob-skel {
     display: block;
@@ -1080,6 +1064,11 @@
     width: 76px;
     height: 26px;
     border-radius: var(--radius-8);
+  }
+  .ob-skel-chip {
+    width: 72px;
+    height: 18px;
+    border-radius: 999px;
   }
   .ob-skel-row {
     width: 100%;
@@ -1218,7 +1207,7 @@
     .ob-preview-full .ob-window {
       height: auto;
     }
-    /* 위쪽 띠에 맞게 장면을 줄입니다. 태블릿 폭에서는 사이드바까지 전체를 보여 줍니다. */
+    /* 위쪽 띠에 맞게 장면을 줄입니다. 태블릿 폭에서는 상단 줄까지 전체를 보여 줍니다. */
     .ob-stage {
       max-width: 720px;
       height: 100%;
@@ -1226,7 +1215,7 @@
       padding: var(--spacing-4);
     }
     .ob-stage-canvas {
-      grid-template-columns: 56px minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
     }
     .ob-stage-main {
       gap: var(--spacing-8);
@@ -1245,7 +1234,7 @@
     .ob-gather-row:nth-of-type(3) {
       --from-y: 14px;
     }
-    .ob-rail {
+    .ob-topbar-menus {
       display: none;
     }
   }
@@ -1264,7 +1253,7 @@
         calc(var(--spacing-12) + env(safe-area-inset-bottom));
       background: var(--surface);
     }
-    /* 휴대폰: 사이드바만 빼고 본문 전체를 보여 줍니다. 읽을 크기는 확대가 만들어 줍니다. */
+    /* 휴대폰: 상단 줄만 빼고 본문 전체를 보여 줍니다. 읽을 크기는 확대가 만들어 줍니다. */
     .ob-stage-canvas {
       grid-template-columns: minmax(0, 1fr);
     }
@@ -1296,12 +1285,6 @@
     .ob-gather-row {
       padding: var(--spacing-4) var(--spacing-12);
       font-size: var(--typography-label1-fontSize);
-    }
-    .ob-columns {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .ob-side {
-      display: none;
     }
     .ob-date-fields {
       grid-template-columns: minmax(0, 1fr);

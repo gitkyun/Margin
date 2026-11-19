@@ -7,16 +7,8 @@ import { Icon } from "@/components/icons";
 import { formatDate, relativeDay } from "@/lib/domain";
 import type { OnboardingMeeting } from "@/lib/onboarding";
 
-const NAV_ICONS = ["home", "flag", "calendar", "edit", "feedback", "tasks"];
-const WEEKDAYS = [
-  t("일"),
-  t("월"),
-  t("화"),
-  t("수"),
-  t("목"),
-  t("금"),
-  t("토"),
-];
+/** 상단 줄 메뉴 넷(IA v2 02 §3). 홈이 켜져 있습니다. */
+const MENUS = [t("홈"), t("미팅"), t("할 일"), t("글·자료")];
 
 export interface HomePreviewProps {
   name: string;
@@ -26,28 +18,15 @@ export interface HomePreviewProps {
   /** 세 번째 질문에 답했는지와 그 결과(건너뛰면 null) */
   meeting?: OnboardingMeeting | null;
   leadLabel?: string;
-  today: string;
   /** 지금 묻는 질문이 채우는 자리. 전체 화면에서 그 자리로 확대해 들어갑니다. */
   focus?: "name" | "phase" | "meeting";
   /** 첫 질문에서 적은 지도교수 수. 0이면 줄을 내지 않습니다. */
   advisorCount?: number;
 }
 
-/** 오늘이 든 주(일~토)의 날짜 문자열 일곱 개 */
-function weekOf(today: string): string[] {
-  const start = new Date(`${today}T12:00:00`);
-  start.setDate(start.getDate() - start.getDay());
-  return WEEKDAYS.map((_, index) => {
-    const day = new Date(start);
-    day.setDate(start.getDate() + index);
-    const month = String(day.getMonth() + 1).padStart(2, "0");
-    const date = String(day.getDate()).padStart(2, "0");
-    return `${day.getFullYear()}-${month}-${date}`;
-  });
-}
-
 /**
- * 온보딩 오른쪽의 연구 홈 미리보기. 답한 것만 글자로 채우고 나머지는 뼈대로 둡니다.
+ * 온보딩 오른쪽의 연구 홈 미리보기(IA v2 07 §3): 상단 줄 + 머리 + 다음 미팅 카드 + 할 일 세 줄.
+ * 답한 것만 글자로 채우고 나머지는 뼈대로 둡니다.
  * 누를 수 없는 그림이라 보조 기술에서는 숨기고, 반영된 내용은 온보딩 화면이 따로 읽어 줍니다.
  */
 export function HomePreview({
@@ -56,12 +35,10 @@ export function HomePreview({
   phaseTitle,
   meeting,
   leadLabel,
-  today,
   focus,
   advisorCount = 0,
 }: HomePreviewProps) {
   const title = name.trim();
-  const week = weekOf(today);
   const frame = useRef<HTMLDivElement>(null);
   // 지금 묻는 질문이 채우는 자리로 전체 화면에서 확대해 들어갑니다.
   useZoomInto(frame, focus && `[data-part="${focus}"]`, focus ?? "whole", {
@@ -79,20 +56,22 @@ export function HomePreview({
   return (
     <div className="ob-window" ref={frame} aria-hidden="true" inert>
       <div className="ob-window-canvas" data-zoom-canvas>
-        <div className="ob-rail">
+        <div className="ob-topbar">
           <BrandMark className="ob-rail-mark" />
-          <span className={`ob-rail-research ${title ? "ob-filled" : ""}`}>
+          <span className={`ob-topbar-research ${title ? "ob-filled" : ""}`}>
             {title || <i className="ob-skel" />}
           </span>
-          {NAV_ICONS.map((icon, index) => (
-            <span
-              className={`ob-rail-item ${index === 0 ? "ob-rail-current" : ""}`}
-              key={icon}
-            >
-              <Icon name={icon} size={14} />
-              <i className="ob-skel" />
-            </span>
-          ))}
+          <span className="ob-topbar-menus">
+            {MENUS.map((label, index) => (
+              <span
+                key={label}
+                className={index === 0 ? "ob-topbar-current" : undefined}
+              >
+                {label}
+              </span>
+            ))}
+          </span>
+          <i className="ob-skel ob-topbar-search" />
         </div>
         <div className="ob-main">
           <div className="ob-head">
@@ -109,21 +88,54 @@ export function HomePreview({
               ) : (
                 <i className="ob-skel ob-skel-line" />
               )}
+            </div>
+            <div className="ob-chips">
+              {phaseTitle ? (
+                <span className="ob-chip ob-filled" data-part="phase">
+                  <Icon name="flag" size={12} />
+                  {t("현재 단계 {title}", { title: phaseTitle })}
+                </span>
+              ) : (
+                (phaseTitle === undefined || focus === "phase") && (
+                  <i className="ob-skel ob-skel-chip" data-part="phase" />
+                )
+              )}
               {advisorCount > 0 && (
-                <span className="ob-phase ob-filled">
+                <span className="ob-chip ob-filled">
                   <Icon name="users" size={12} />
                   {t("지도교수 {count}명", { count: advisorCount })}
                 </span>
               )}
-              {phaseTitle ? (
-                <span className="ob-phase ob-filled" data-part="phase">
-                  <Icon name="flag" size={12} />
-                  {t("현재 단계 · {phase}", { phase: phaseTitle })}
+            </div>
+          </div>
+          <div className="ob-card ob-card-meeting">
+            <div className="ob-meeting-block" data-part="meeting">
+              <span className="ob-card-label">
+                <Icon name="calendar" size={12} />
+                {t("다음 미팅")}
+              </span>
+              {meeting ? (
+                <div className="ob-meeting ob-filled">
+                  <span className="ob-meeting-copy">
+                    <small>
+                      {meeting.date ? formatDate(meeting.date) : t("날짜 미정")}
+                      {meeting.time && ` · ${formatClock(meeting.time)}`}
+                      {relativeDay(meeting.date) && (
+                        <em>{relativeDay(meeting.date)}</em>
+                      )}
+                    </small>
+                    <strong>{meeting.title}</strong>
+                  </span>
+                </div>
+              ) : meeting === null ? (
+                <span className="ob-empty ob-filled">
+                  {t("다음 미팅이 아직 없어요")}
                 </span>
               ) : (
-                (phaseTitle === undefined || focus === "phase") && (
-                  <i className="ob-skel ob-skel-short" data-part="phase" />
-                )
+                <>
+                  <i className="ob-skel ob-skel-line" />
+                  <i className="ob-skel ob-skel-short" />
+                </>
               )}
             </div>
             {leadLabel ? (
@@ -132,83 +144,18 @@ export function HomePreview({
               <i className="ob-skel ob-skel-button" />
             )}
           </div>
-          <div className="ob-columns">
-            <div className="ob-card ob-card-meeting">
-              <div className="ob-meeting-block" data-part="meeting">
-                <span className="ob-card-label">
-                  <Icon name="calendar" size={12} />
-                  {t("다음 미팅")}
-                </span>
-                {meeting ? (
-                  <div className="ob-meeting ob-filled">
-                    <span className="ob-date">
-                      {meeting.date ? (
-                        <>
-                          <small>
-                            {t("{month}월", {
-                              month: Number(meeting.date.slice(5, 7)),
-                            })}
-                          </small>
-                          <strong>{Number(meeting.date.slice(8, 10))}</strong>
-                        </>
-                      ) : (
-                        <>
-                          <small>{t("날짜")}</small>
-                          <strong>{t("미정")}</strong>
-                        </>
-                      )}
-                    </span>
-                    <span className="ob-meeting-copy">
-                      <small>
-                        {formatDate(meeting.date)}
-                        {meeting.time && ` · ${formatClock(meeting.time)}`}
-                        {relativeDay(meeting.date) && (
-                          <em>{relativeDay(meeting.date)}</em>
-                        )}
-                      </small>
-                      <strong>{meeting.title}</strong>
-                    </span>
-                  </div>
-                ) : meeting === null ? (
-                  <span className="ob-empty ob-filled">
-                    {t("다음 미팅이 아직 없어요")}
-                  </span>
-                ) : (
-                  <>
-                    <i className="ob-skel ob-skel-line" />
-                    <i className="ob-skel ob-skel-short" />
-                  </>
-                )}
-              </div>
-              <i className="ob-skel ob-skel-row" />
-              <i className="ob-skel ob-skel-row" />
-            </div>
-            <div className="ob-side">
-              <div className="ob-card">
-                <span className="ob-card-label">{t("이번 주")}</span>
-                <div className="ob-week">
-                  {week.map((date, index) => (
-                    <span
-                      key={date}
-                      className={date === today ? "ob-week-today" : ""}
-                    >
-                      <small>{WEEKDAYS[index]}</small>
-                      <b>{Number(date.slice(8, 10))}</b>
-                      <i
-                        className={
-                          meeting?.date === date ? "ob-week-dot ob-filled" : ""
-                        }
-                      />
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div className="ob-card">
-                <span className="ob-card-label">{t("남은 할 일")}</span>
+          <div className="ob-card ob-card-list">
+            <span className="ob-tabs">
+              <b>{t("할 일")}</b>
+              <span>{t("알림")}</span>
+              <span>{t("최근 미팅")}</span>
+            </span>
+            {[0, 1, 2].map((row) => (
+              <span className="ob-task" key={row}>
+                <i className="ob-check" />
                 <i className="ob-skel ob-skel-row" />
-                <i className="ob-skel ob-skel-row" />
-              </div>
-            </div>
+              </span>
+            ))}
           </div>
         </div>
       </div>

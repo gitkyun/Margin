@@ -359,29 +359,20 @@
     height: 450px;
     min-height: 0;
   }
-  .lp-mini-sidebar {
+  /* 창 위 메뉴 넷(IA v2 상단 줄). 장면의 메뉴만 켜집니다. */
+  .lp-mini-menu {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 18px;
-    padding: 20px 15px;
-    background: var(--surface-muted);
-    border-right: 1px solid var(--line);
-    color: var(--text-secondary);
+    gap: 4px;
+    white-space: nowrap;
   }
-  .lp-mini-sidebar .lp-mark {
-    margin-bottom: 2px;
-  }
-  .lp-mini-sidebar > span:not(.lp-mark) {
-    width: 30px;
-    height: 26px;
-    display: grid;
-    place-items: center;
+  .lp-mini-menu > span {
+    padding: 2px 8px;
     border-radius: var(--radius-8);
   }
-  .lp-mini-sidebar .selected {
+  .lp-mini-menu .selected {
     color: var(--brand);
     background: var(--brand-soft);
+    font-weight: 600;
   }
   .lp-window-content {
     overflow-y: auto;
@@ -1084,7 +1075,7 @@
   .lp-stack-preview .lp-window-content {
     padding: 22px;
   }
-  .lp-stack-preview .lp-mini-sidebar {
+  .lp-stack-preview .lp-mini-menu {
     display: none;
   }
   /* 카드 바탕은 불투명해야 아래 카드가 비치지 않습니다. */
@@ -1710,7 +1701,7 @@
       height: 430px;
       min-height: 0;
     }
-    .lp-mini-sidebar {
+    .lp-mini-menu {
       display: none;
     }
     .lp-window-content {
@@ -2269,9 +2260,6 @@
   .lp-workflow-preview .lp-window-content {
     overflow: hidden;
   }
-  .lp-workflow-preview .lp-mini-sidebar {
-    display: flex;
-  }
   .lp-window-filler {
     display: grid;
     gap: 14px;
@@ -2349,7 +2337,7 @@
   }
 
   @media (max-width: 767px) {
-    .lp-workflow-preview .lp-mini-sidebar {
+    .lp-workflow-preview .lp-mini-menu {
       display: none;
     }
   }
