@@ -122,6 +122,41 @@
   .record-line-count {
     background: var(--surface-muted);
   }
+  /* 검토 보기의 수정 결과 구획(04 §2.4) */
+  .record-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    padding-bottom: var(--spacing-12);
+    border-bottom: 1px solid var(--line);
+  }
+  .record-results-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.record-line {
+    width: 100%;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .record-results-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-6);
+  }
   .record-list-empty {
     margin: 0;
     color: var(--text-tertiary);

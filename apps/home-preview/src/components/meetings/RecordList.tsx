@@ -25,6 +25,9 @@ import {
   type RecordRow,
 } from "@/lib/record-view";
 import { useNavigate } from "react-router-dom";
+import { Segments } from "@/components/experience";
+import { parseReviewShare, reviewMatchesShare } from "@/lib/results-section";
+import { ResultsSection } from "./ResultsSection";
 import "./record-list.css";
 
 const FILTERS: RecordFilter[] = ["all", "open", "written", "review", "poll"];
@@ -106,7 +109,9 @@ export function RecordList({
     (recorder.state === "recording" || recorder.state === "paused")
       ? recorder.session.meetingId
       : null;
-  const groups = recordGroups({
+  // 검토 보기의 검토 요청 줄 보조 필터(04 §2.4): 전체 | 공유 중 | 공유 중지
+  const share = parseReviewShare(params.get("share"));
+  const allGroups = recordGroups({
     researchId,
     today,
     meetings: data.meetings,
@@ -122,6 +127,18 @@ export function RecordList({
     showCancelled,
     matches: (text, q) => koreanScore(text, q) > 0,
   });
+  const groups =
+    filter === "review" && share !== "all"
+      ? allGroups
+          .map((group) => ({
+            ...group,
+            rows: group.rows.filter(
+              (row) =>
+                row.kind !== "review" || reviewMatchesShare(row.review, share),
+            ),
+          }))
+          .filter((group) => group.rows.length > 0)
+      : allGroups;
 
   async function archive(meeting: Meeting) {
     try {
@@ -300,6 +317,25 @@ export function RecordList({
         </div>
       ) : (
         <div className="record-list-groups">
+          {filter === "review" && (
+            <>
+              <ResultsSection researchId={researchId} />
+              <Segments
+                value={share}
+                onChange={(value) =>
+                  set("share", value === "all" ? null : value)
+                }
+                label={t("검토 요청 보기")}
+                size="small"
+                fill
+                options={[
+                  { value: "all", label: t("전체") },
+                  { value: "shared", label: t("공유 중") },
+                  { value: "stopped", label: t("공유 중지") },
+                ]}
+              />
+            </>
+          )}
           {groups.map((group) => (
             <section key={group.key} aria-label={groupLabel(group, today)}>
               <h3>{groupLabel(group, today)}</h3>

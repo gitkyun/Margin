@@ -37,6 +37,7 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
       "?new=1&version=v1",
       "/r/a/meetings?new=result&version=v1&type=review",
     ],
+    ["/r/a/results", "", "/r/a/meetings?type=review"],
     ["/r/a/settings", "?tab=members", "/r/a?settings=people"],
     ["/account", "?tab=appearance", "/r?settings=display"],
     // 4단계: 연구 도우미 화면은 사이드 창으로(요청 종류는 넘기지 않음)
@@ -63,8 +64,6 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     // 상세에서 못 하는 일을 하러 예전 화면을 여는 통로(할 일 한 건)
     expect(legacyRedirect("/r/a/tasks/t1", "?full=1")).toBeNull();
     expect(legacyRedirect("/r/a/feedback", "?new=1")).toBeNull();
-    // 수정 결과 목록은 미팅 목록의 수정 결과 구획이 생길 때까지 예전 화면
-    expect(legacyRedirect("/r/a/results", "")).toBeNull();
   });
 
   it("never redirects a target onto another legacy rule", () => {
