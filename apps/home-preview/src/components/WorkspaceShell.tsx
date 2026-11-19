@@ -26,7 +26,10 @@ import { MaterialsPanel } from "./materials/MaterialsPanel";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
+  isLayerSegment,
+  lastLayerSegment,
   panelRequest,
+  rememberLayerSegment,
   lastPanelTab,
   rememberPanel,
   withoutPanelRequest,
@@ -34,6 +37,8 @@ import {
   type SidePanelTab,
 } from "@/lib/side-panel";
 import { MobileTabBar } from "./shell/MobileTabBar";
+import { MobileLayerHead, type AssistantView } from "./shell/MobileLayerHead";
+import { pendingSuggestions } from "@/lib/assistant-runs";
 import { BottomDock } from "./shell/BottomDock";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { usePanelSide } from "@/lib/panel-side";
@@ -155,6 +160,8 @@ function AccountMenu({ incomingOnly }: { incomingOnly: boolean }) {
 }
 /** 사이드 창이 본문을 미는 최소 폭. 이보다 좁으면 본문 위에 겹쳐 뜹니다(IA v2 02 §1.2). */
 const OVERLAY_PANEL_QUERY = queryDown("lg");
+/** 휴대폰: 메뉴는 아래 탭, 사이드 창은 탭처럼 여닫는 층(02 §6, D16) */
+const PHONE_QUERY = queryDown("sm");
 /** 사이드 창이 넓게(440) 열리는 화면: 글 편집, 자료 보기(02 §1.1) */
 const WIDE_PANEL_ROUTE =
   /^\/r\/[^/]+\/(writing\/[^/]+|materials\/[^/]+|docs\/[wm]\/[^/]+)/;
@@ -174,6 +181,7 @@ export function WorkspaceShell({
     [notifications, setNotifications] = useState(false),
     [panelResizing, setPanelResizing] = useState(false);
   const overlayPanel = useMediaQuery(OVERLAY_PANEL_QUERY);
+  const phone = useMediaQuery(PHONE_QUERY);
   const panelSide = usePanelSide();
   const updates = unreadReviewNotifications(data, user, researchId);
   const widePanel = WIDE_PANEL_ROUTE.test(location.pathname);
@@ -260,6 +268,44 @@ export function WorkspaceShell({
   // 겹쳐 뜬 창이 화면 이동으로 닫힌 뒤에 열도록 위 효과 다음에 둡니다. 연 뒤 주소에서 값을 지웁니다.
   const [assistantRequest, setAssistantRequest] =
     useState<AssistantOpen | null>(null);
+  // 휴대폰 층(02 §6, D16): 아래 탭 '연구 도우미'로 열 때 주소를 하나 쌓아(`state.layer = 'panel'`) 뒤로 가기로 닫습니다.
+  // 쌓은 주소에서 벗어나면(뒤로 가기·다른 칸) 층을 닫습니다. 마지막에 본 세그먼트를 기억합니다.
+  const [assistantView, setAssistantView] = useState<AssistantView>("chat");
+  const layerPushed = useRef(false);
+  const atLayerEntry = () =>
+    (location.state as { layer?: string } | null)?.layer === "panel";
+  useEffect(() => {
+    if (!layerPushed.current || atLayerEntry()) return;
+    layerPushed.current = false;
+    setRailTab(null);
+  }, [location.key]);
+  useEffect(() => {
+    if (phone && isLayerSegment(railTab)) rememberLayerSegment(railTab);
+  }, [phone, railTab]);
+  const openLayer = () => {
+    panelRef.current.active?.onClose();
+    setRailTab(lastLayerSegment());
+    if (layerPushed.current) return;
+    layerPushed.current = true;
+    navigate(
+      {
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      },
+      {
+        state: {
+          ...((location.state as object | null) ?? {}),
+          layer: "panel",
+        },
+      },
+    );
+  };
+  const closeLayer = () => {
+    // 쌓은 주소 위에 있으면 뒤로 가서 닫습니다(위 효과가 닫음). 아니면 바로 닫습니다.
+    if (layerPushed.current && atLayerEntry()) navigate(-1);
+    else setRailTab(null);
+  };
   useEffect(() => {
     const request = panelRequest(location.search);
     if (!request || !research) return;
@@ -349,6 +395,9 @@ export function WorkspaceShell({
   const assistantOpen = inResearch && railTab === "assistant";
   const materialsOpen = inResearch && railTab === "materials";
   const railOpen = tasksOpen || logOpen || assistantOpen || materialsOpen;
+  // 휴대폰에서 세그먼트(연구 도우미·결정·질문·자료) 중 하나가 열려 있으면 층입니다.
+  const layerSegment =
+    phone && inResearch && isLayerSegment(railTab) ? railTab : null;
   const panelShown = !!panel.active || detailOpen || railOpen;
   // 닫히는 동안 마지막 탭을 그리되, 창 전체는 즉시 조작할 수 없게 합니다.
   const visibleRailTab = inResearch
@@ -416,6 +465,7 @@ export function WorkspaceShell({
         )}
         <div
           className={`ia-panel-frame ${panelShown ? "is-open" : "is-closed"} ${panelResizing ? "is-resizing" : ""}`}
+          data-layer={layerSegment ? "" : undefined}
           aria-hidden={!panelShown}
           inert={!panelShown ? true : undefined}
         >
@@ -442,6 +492,23 @@ export function WorkspaceShell({
               }
               tabIndex={-1}
             >
+              {layerSegment && !detailOpen && (
+                <MobileLayerHead
+                  segment={layerSegment}
+                  onSegment={(segment) => setRailTab(segment)}
+                  assistantView={assistantView}
+                  pending={
+                    pendingSuggestions(data.aiCandidates, researchId ?? "")
+                      .length
+                  }
+                  onAssistantView={(view) =>
+                    setAssistantRequest({
+                      view: view === "chat" ? undefined : view,
+                      at: Date.now(),
+                    })
+                  }
+                />
+              )}
               {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
               <div
                 className="margin-panel-slot"
@@ -459,6 +526,7 @@ export function WorkspaceShell({
                     researchId={researchId}
                     request={assistantRequest}
                     onClose={() => setRailTab(null, true)}
+                    onViewChange={setAssistantView}
                   />
                 </div>
               )}
@@ -542,15 +610,8 @@ export function WorkspaceShell({
         {inResearch && !incomingOnly && (
           <MobileTabBar
             researchId={researchId}
-            assistantOpen={assistantOpen}
-            onAssistant={() => {
-              if (assistantOpen) {
-                setRailTab(null);
-                return;
-              }
-              panel.active?.onClose();
-              setRailTab("assistant");
-            }}
+            assistantOpen={!!layerSegment}
+            onAssistant={() => (layerSegment ? closeLayer() : openLayer())}
           />
         )}
       </BottomDock>

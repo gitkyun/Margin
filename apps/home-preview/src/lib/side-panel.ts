@@ -104,3 +104,22 @@ export interface AssistantOpen {
   context?: AIContext;
   at: number;
 }
+
+/** 휴대폰 층(02 §6, D16)의 세그먼트. 할 일은 아래 탭에 따로 있어 빠집니다. */
+export const LAYER_SEGMENTS = ["assistant", "log", "materials"] as const;
+export type LayerSegment = (typeof LAYER_SEGMENTS)[number];
+const LAYER_KEY = "margin-phone-layer";
+
+export function isLayerSegment(tab: string | null): tab is LayerSegment {
+  return (LAYER_SEGMENTS as readonly string[]).includes(tab ?? "");
+}
+
+/** 아래 탭 '연구 도우미'로 층을 열 때 보일 세그먼트: 마지막에 본 것, 없으면 연구 도우미 */
+export function lastLayerSegment(): LayerSegment {
+  const segment = read(LAYER_KEY);
+  return isLayerSegment(segment) ? segment : "assistant";
+}
+
+export function rememberLayerSegment(segment: LayerSegment): void {
+  write(LAYER_KEY, segment);
+}

@@ -2,7 +2,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   initialPanelTab,
+  isLayerSegment,
+  lastLayerSegment,
   panelRequest,
+  rememberLayerSegment,
   rememberPanel,
   withoutPanelRequest,
 } from "../src/lib/side-panel";
@@ -63,5 +66,21 @@ describe("주소로 여는 사이드 창(01 §3.3)", () => {
     expect(withoutPanelRequest("?detail=task%3At1&panel=tasks")).toBe(
       "?detail=task%3At1",
     );
+  });
+});
+
+describe("휴대폰 층의 세그먼트(02 §6, D16)", () => {
+  it("처음엔 연구 도우미, 그 뒤엔 마지막에 본 세그먼트", () => {
+    expect(lastLayerSegment()).toBe("assistant");
+    rememberLayerSegment("materials");
+    expect(lastLayerSegment()).toBe("materials");
+  });
+
+  it("할 일은 세그먼트가 아니고, 모르는 값은 연구 도우미로", () => {
+    expect(isLayerSegment("tasks")).toBe(false);
+    expect(isLayerSegment(null)).toBe(false);
+    expect(isLayerSegment("log")).toBe(true);
+    localStorage.setItem("margin-phone-layer", "tasks");
+    expect(lastLayerSegment()).toBe("assistant");
   });
 });

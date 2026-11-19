@@ -84,7 +84,6 @@ import {
   type AICandidate,
   type SavedAICandidate,
   type Task,
-  isLegacyOrganizeCandidate,
 } from "@/lib/domain";
 import { useOpenDetail } from "@/lib/item-detail";
 import { keepSummary, summaryProposalOf } from "@/lib/meeting-summary";
@@ -110,7 +109,7 @@ import {
   MAX_SOURCES,
   type AssistantPanelTab,
 } from "./assistant/AssistantPanel";
-import { runTarget } from "@/lib/assistant-runs";
+import { pendingSuggestions, runTarget } from "@/lib/assistant-runs";
 import { Tabs } from "@/components/ui/tabs";
 import { AnswerActions, questionBefore } from "./assistant/AnswerActions";
 import { NextSteps } from "./assistant/NextSteps";
@@ -189,9 +188,12 @@ export function ResearchAssistant({
   variant = "page",
   onClose,
   openView,
+  onViewChange,
 }: {
   variant?: "page" | "panel";
   onClose?: () => void;
+  /** 사이드 창의 보기(대화 | 제안 | 실행 내역)가 바뀔 때. 휴대폰 층의 [⋯] 메뉴가 지금 보기를 알게 합니다. */
+  onViewChange?: (view: "chat" | AssistantPanelTab) => void;
   /** 사이드 창을 주소·자료 창에서 열 때의 보기와 놓을 근거 칩(`at`이 바뀌면 다시 적용) */
   openView?: {
     view: "chat" | AssistantPanelTab;
@@ -222,6 +224,9 @@ export function ResearchAssistant({
     // 자료 창의 [연구 도우미에게 묻기](06 §5): 그 글·자료를 근거 칩으로 놓습니다. 보내기는 사용자가 합니다.
     if (openView.context) void addContext(openView.context);
   }, [openView?.at]);
+  useEffect(() => {
+    onViewChange?.(panelView);
+  }, [panelView]);
   // 실행 내역에서 고른 답(runId). 그 대화로 바꾼 뒤 그 답까지 스크롤합니다.
   const [jumpToRun, setJumpToRun] = useState<string | null>(null);
   const [panelTab, setPanelTab] = useState<AssistantPanelTab>("suggestions"),
@@ -324,15 +329,8 @@ export function ResearchAssistant({
       .filter((c) => c.researchId === researchId && !c.archivedAt)
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     runs = data.aiRuns.filter((r) => r.researchId === researchId),
-    pending = data.aiCandidates.filter(
-      (c) =>
-        c.researchId === researchId &&
-        c.status === "pending" &&
-        // 본문 안 수정 제안은 글 편집 화면에서만 다룹니다(IA v2 05 §3.6).
-        c.mode !== "suggest_edits" &&
-        (c.mode !== "organize_meeting" ||
-          isLegacyOrganizeCandidate(c.candidate)),
-    ),
+    // 본문 안 수정 제안은 글 편집 화면에서만 다룹니다(IA v2 05 §3.6).
+    pending = pendingSuggestions(data.aiCandidates, researchId),
     messages = conversation?.messages ?? [];
   const linkedContexts = conversation?.contexts ?? [];
   const effectiveContexts = contexts.length ? contexts : linkedContexts;
