@@ -82,7 +82,7 @@ function InviteLinkForm({
 
 type InviteState = "checking" | "open" | "closed" | "unreachable";
 
-/** 초대 링크로 들어온 사람만 가입할 수 있는 화면(/signup?invite=<코드>). */
+/** 가입 화면(/signup). 초대 링크(`?invite=<코드>`)로 오면 그 링크가 유효한지 먼저 확인합니다. */
 export function InviteSignupPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
