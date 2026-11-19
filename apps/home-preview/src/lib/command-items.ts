@@ -25,7 +25,7 @@ const KEYWORDS = {
 
 /**
  * ⌘K '이동' 항목(IA v2 01 §4 순서): [경로, 아이콘, 이름, 예전 이름(검색어)].
- * '(예전)' 항목은 새 화면으로 옮기기 전까지 쓰는 임시 통로이고 5단계에서 지웁니다.
+ * 예전 피드백·수정 결과·검토 요청 화면은 5단계에서 할 일·미팅으로 옮겨, 그 이름은 옮긴 화면의 검색어로 남깁니다.
  * 결정·질문은 그 창이 생기는 단계에서 더합니다.
  */
 export const RESEARCH_NAVIGATION: readonly (readonly [
@@ -35,13 +35,15 @@ export const RESEARCH_NAVIGATION: readonly (readonly [
   keywords: readonly string[],
 ])[] = [
   ["", "home", t("홈"), []],
-  ["meetings", "calendar", t("미팅"), []],
+  [
+    "meetings",
+    "calendar",
+    t("미팅"),
+    ["수정 결과", "검토 요청", "修正結果", "レビュー依頼"], // i18n-ignore
+  ],
   ["docs", "file", t("글·자료"), ["문서", "자료", "글쓰기", "文書", "資料"]], // i18n-ignore
   ["flow", "flag", t("연구 흐름"), ["일정", "계획", "단계", "予定", "計画"]], // i18n-ignore
-  ["tasks", "tasks", t("할 일"), []],
-  ["feedback", "feedback", t("(예전) 피드백"), ["피드백", "フィードバック"]], // i18n-ignore
-  ["results", "check", t("(예전) 수정 결과"), ["수정 결과", "修正結果"]], // i18n-ignore
-  ["reviews", "send", t("(예전) 검토 요청"), ["검토 요청", "レビュー依頼"]], // i18n-ignore
+  ["tasks", "tasks", t("할 일"), ["피드백", "フィードバック"]], // i18n-ignore
 ];
 
 export type CommandAction = { kind: "navigate"; to: string };
@@ -308,7 +310,8 @@ export function createEntries(researchId: string | undefined): CommandEntry[] {
       "create:feedback",
       t("피드백 추가"),
       "message",
-      `${base}/feedback?new=1`,
+      // 지금 화면 위에서 입력 창을 엽니다(01 §3.3 `new=feedback`).
+      "?new=feedback",
       KEYWORDS.newFeedback,
     ),
     navigateEntry(

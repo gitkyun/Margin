@@ -2,10 +2,9 @@
 import React from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 import {
   BackLink,
-  LinkChip,
   readBackState,
   useBackState,
 } from "../src/pages/student/shared";
@@ -60,9 +59,9 @@ describe("돌아올 곳(location.state)", () => {
     function Feedback() {
       const back = useBackState();
       return (
-        <LinkChip to="/r/a/tasks/t1" state={back("초록 피드백")}>
+        <Link to="/r/a/tasks/t1" state={back("초록 피드백")}>
           할 일 열기
-        </LinkChip>
+        </Link>
       );
     }
     function Task() {

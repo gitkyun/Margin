@@ -110,6 +110,9 @@
 | `/r/:id/feedback` | `/r/:id/tasks?view=feedback` |
 | `/r/:id/feedback/:feedbackId` | 그 피드백의 기록이 있으면 `/r/:id/meetings/<기록 id>?detail=feedback:<id>`, 없으면 `/r/:id?detail=feedback:<id>` |
 | `/r/:id/feedback?new=1` | `/r/:id?new=feedback` |
+
+[사실, 2026-11-19 5단계] `/feedback?new=1`도 위 표대로 옮겼습니다. `new=feedback`은 어느 화면에서든 그 자리에서 피드백 직접 추가 창을 열고(`components/feedback/FeedbackCreateHost.tsx`), 저장하면 그 피드백의 항목 상세를 엽니다. ⌘K '피드백 추가'는 지금 화면 위에서, 할 일 화면 피드백 보기의 버튼은 그 목록 위에서 엽니다. 예전 피드백 화면(`student/FeedbackPage`)은 지웠고, `/feedback`으로 시작하는 주소는 모두 위 표대로 옮겨집니다.
+
 | `/r/:id/tasks` | 그대로(T1 할 일 화면의 주소) |
 | `/r/:id/tasks/:taskId` | `/r/:id/tasks?detail=task:<id>` |
 | `/r/:id/tasks?new=1&feedback=…` | `/r/:id/tasks?new=task&feedback=…` |

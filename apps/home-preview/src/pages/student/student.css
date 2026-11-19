@@ -165,18 +165,6 @@
   }
   /* 뒤로 가기(.student-back)는 reference.css의 "화면 틀"에 있습니다. */
   /* 글자형 링크(추가 +, 열기 →)는 공통 TextLink(.text-link, styles.css)를 씁니다. */
-  .student-link-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-8);
-    padding: var(--spacing-8) var(--spacing-12);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: var(--typography-caption1-fontSize);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
   .student-error {
     display: flex;
     gap: var(--spacing-8);
@@ -249,7 +237,6 @@
      앞 칸 ↔ 내용 16, 내용 ↔ 배지 12, 행 위아래 16, 카드 좌우 768 이상 24 / 767 이하 16.
      앞 칸은 위 정렬, 배지·화살표는 세로 가운데. 767 이하에서 배지는 메타 아래 줄로 내려갑니다. */
   .meeting-list,
-  .feedback-list,
   .results-list,
   .material-list,
   .task-table {
@@ -598,30 +585,6 @@
   .question-detail-row.resolved .question-status-button {
     color: var(--success);
   }
-  .student-feedback-symbol {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-12);
-    background: var(--surface-muted);
-    color: var(--text-secondary);
-  }
-  .feedback-detail-layout {
-    display: grid;
-    /* 1fr만 쓰면 열이 내용 최소 폭(375px)만큼 넓어져 360px에서 카드가 잘립니다. */
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: var(--spacing-24);
-  }
-  .feedback-body {
-    font-size: var(--typography-headline2-fontSize);
-    line-height: var(--typography-headline2-lineHeight);
-    margin: var(--spacing-24) 0;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    letter-spacing: var(--typography-headline2-letterSpacing);
-  }
   .source-excerpt {
     margin: var(--spacing-20) 0;
     padding: var(--spacing-16) var(--spacing-20);
@@ -642,83 +605,6 @@
     font-weight: 600;
     color: var(--text-secondary);
     letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .student-private-note {
-    margin-top: var(--spacing-24);
-    padding: var(--spacing-16);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-12);
-  }
-  .student-private-note > span {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-6);
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .student-private-note p {
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    margin: var(--spacing-12) 0 0;
-    white-space: pre-wrap;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .saved-plan {
-    border: 1px solid var(--line);
-    border-radius: var(--radius-12);
-    padding: var(--spacing-20);
-    margin-top: var(--spacing-20);
-  }
-  .saved-plan-heading,
-  .saved-plan-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-16);
-  }
-  .plan-index {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--brand);
-    font-weight: 600;
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .saved-plan > h3 {
-    font-size: var(--typography-headline2-fontSize);
-    letter-spacing: var(--typography-headline2-letterSpacing);
-    font-weight: 600;
-    margin: var(--spacing-12) 0;
-  }
-  .saved-plan > p {
-    font-size: var(--typography-label1-fontSize);
-    line-height: var(--typography-label1Reading-lineHeight);
-    margin: 0 0 var(--spacing-20);
-    white-space: pre-wrap;
-    letter-spacing: var(--typography-label1-letterSpacing);
-  }
-  .saved-plan > dl {
-    margin: var(--spacing-16) 0;
-  }
-  .saved-plan dt {
-    font-size: var(--typography-caption1-fontSize);
-    color: var(--text-secondary);
-    font-weight: 500;
-    margin-bottom: var(--spacing-6);
-    letter-spacing: var(--typography-caption1-letterSpacing);
-  }
-  .saved-plan dd {
-    font-size: var(--typography-label2-fontSize);
-    color: var(--text);
-    line-height: var(--typography-label2-lineHeight);
-    margin: 0;
-    white-space: pre-wrap;
-    letter-spacing: var(--typography-label2-letterSpacing);
-  }
-  .saved-plan-footer {
-    border-top: 1px solid var(--line);
-    margin-top: var(--spacing-20);
-    padding-top: var(--spacing-16);
-    flex-wrap: wrap;
   }
   .ai-assumption {
     background: color-mix(in srgb, var(--warning) 7%, var(--surface));
@@ -1246,12 +1132,6 @@
   .quick-upload .upload-progress {
     margin-top: 0;
   }
-  @media (max-width: 1199px) {
-    .saved-plan-footer > .button-row {
-      width: 100%;
-      justify-content: flex-end;
-    }
-  }
   @media (max-width: 991px) {
     .ai-workbench {
       max-width: none;
@@ -1264,7 +1144,6 @@
   }
   @media (max-width: 767px) {
     .meeting-list,
-    .feedback-list,
     .results-list,
     .material-list,
     .task-table {
@@ -1307,12 +1186,6 @@
     .memo-actions {
       flex-wrap: wrap;
     }
-    .revision-plans > .section-heading {
-      flex-direction: column;
-    }
-    .revision-plans > .section-heading > .button-row {
-      align-self: flex-end;
-    }
     .toolbar-filters > .meta {
       flex-basis: 100%;
       margin-left: 0;
@@ -1329,20 +1202,11 @@
       width: 38px;
       height: 46px;
     }
-    .saved-plan {
-      padding: var(--spacing-16);
-    }
   }
 
   .student-page
     .surface:not(
-      :where(
-        .meeting-list,
-        .feedback-list,
-        .results-list,
-        .material-list,
-        .task-table
-      )
+      :where(.meeting-list, .results-list, .material-list, .task-table)
     ) {
     padding: var(--spacing-24);
   }
@@ -1359,13 +1223,7 @@
   @media (max-width: 767px) {
     .student-page
       .surface:not(
-        :where(
-          .meeting-list,
-          .feedback-list,
-          .results-list,
-          .material-list,
-          .task-table
-        )
+        :where(.meeting-list, .results-list, .material-list, .task-table)
       ) {
       padding: var(--spacing-16);
     }
@@ -1480,24 +1338,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-8);
-  }
-
-  /* 피드백 진행 줄 5번째 칸(교수 확인)의 ‘교수에게 보내기’ */
-  .feedback-progress-send {
-    display: grid;
-    gap: var(--spacing-2);
-    justify-items: start;
-    min-width: 0;
-  }
-  .feedback-progress-send > button {
-    margin-top: var(--spacing-2);
-    margin-inline-start: calc(var(--spacing-4) * -1);
-  }
-  .feedback-progress-send .disabled-reason {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-    line-height: var(--typography-caption1-lineHeight);
   }
 
   /* 할 일 완료: 체크 표시가 선으로 그려져요(방금 완료한 줄에만). */

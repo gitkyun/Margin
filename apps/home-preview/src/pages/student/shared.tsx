@@ -11,8 +11,6 @@ import {
 } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
-import { useWorkspace } from "@/lib/workspace";
-import { unreadReviewNotifications } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateField, TimeField } from "@/components/ui/date-field";
@@ -518,57 +516,6 @@ export function SaveActions({
         {saving ? t("저장 중") : label}
       </Button>
     </DialogFooter>
-  );
-}
-export function LinkChip({
-  to,
-  state,
-  children,
-}: {
-  to: string;
-  state?: BackState;
-  children: ReactNode;
-}) {
-  return (
-    <Link className="student-link-chip" to={to} state={state}>
-      {children}
-      <Icon name="arrow-up-right" size={13} />
-    </Link>
-  );
-}
-
-/** 피드백·수정 화면의 탭. 할 일은 사이드바 메뉴가 따로 있어 여기에 넣지 않습니다. */
-export function WorkTabs({
-  researchId,
-  selected,
-}: {
-  researchId: string;
-  selected: "feedback" | "results" | "reviews";
-}) {
-  const navigate = useNavigate();
-  const { data, user } = useWorkspace();
-  // 탭 숫자: 피드백은 아직 다루지 않은 것, 검토 요청은 안 본 교수 응답·댓글. 0이면 숨겨요.
-  const unprocessed = data.feedback.filter(
-    (item) => item.researchId === researchId && item.status === "unprocessed",
-  ).length;
-  const freshResponses = unreadReviewNotifications(
-    data,
-    user,
-    researchId,
-  ).length;
-  // 사이드바 '피드백' 메뉴 하나에 받은 것 → 고친 것 → 보낸 것을 보기로 둡니다(감사 F1).
-  return (
-    <Tabs
-      className="work-tabs"
-      label={t("피드백 보기")}
-      value={selected}
-      onChange={(tab) => navigate(`/r/${researchId}/${tab}`)}
-      options={[
-        { value: "feedback", label: t("피드백"), count: unprocessed },
-        { value: "results", label: t("수정 결과") },
-        { value: "reviews", label: t("검토 요청"), count: freshResponses },
-      ]}
-    />
   );
 }
 /** 사이드바 '문서' 메뉴의 두 보기: 쓰는 글과 올린 자료(감사 F1). */

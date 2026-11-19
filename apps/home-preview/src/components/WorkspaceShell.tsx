@@ -25,6 +25,7 @@ import { AssistantSidePanel } from "./assistant/AssistantSidePanel";
 import { MaterialsPanel } from "./materials/MaterialsPanel";
 import { ResultCreateHost } from "./item-detail/ResultCreateHost";
 import { ReviewCreateHost } from "./reviews/ReviewCreateHost";
+import { FeedbackCreateHost } from "./feedback/FeedbackCreateHost";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
@@ -630,6 +631,10 @@ export function WorkspaceShell({
       {inResearch && researchId && <ResultCreateHost researchId={researchId} />}
       {/* `?new=review&result=`로 검토 요청 만들기 창을 그 자리에서 엽니다(01 §3.3). */}
       {inResearch && researchId && <ReviewCreateHost researchId={researchId} />}
+      {/* `?new=feedback`으로 피드백 직접 추가 창을 그 자리에서 엽니다(01 §3.3). */}
+      {inResearch && researchId && (
+        <FeedbackCreateHost researchId={researchId} />
+      )}
       <Sheet open={notifications} onOpenChange={setNotifications}>
         <SheetContent className="notifications-sheet">
           <SheetHeader>

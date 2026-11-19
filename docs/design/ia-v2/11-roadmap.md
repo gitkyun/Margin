@@ -123,11 +123,11 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 
 | 통로 | 예전 화면 | 새 자리 |
 |---|---|---|
-| ~~피드백 상세의 '수정 방법 쓰기·제안받기'(`/feedback/:id?full=1`)~~ 상세로 옮김(#159), 피드백 입력(`/feedback?new=1`) | `student/FeedbackPage` | 항목 상세 수정 방법 구획([06](06-assistant.md) §6.2), 기록 추가 창 |
+| ~~피드백 상세의 '수정 방법 쓰기·제안받기'(`/feedback/:id?full=1`)~~ 상세로 옮김(#159), ~~피드백 입력(`/feedback?new=1`)~~ 그 자리의 창(`new=feedback`)으로 옮기고 화면 삭제(`feat/ia-v2-5-feedback-dialog`) | ~~`student/FeedbackPage`~~ | 항목 상세 수정 방법 구획([06](06-assistant.md) §6.2), 피드백 직접 추가 창 |
 | ~~수정 결과 상세의 '편집', '수정 결과 작성'~~ 그 자리의 창으로 옮김(#160), ~~수정 결과 목록~~ 미팅 검토 보기의 구획으로 옮기고 화면 삭제(#161) | ~~`student/ResultsPage`~~ | 수정 결과 대화상자(§6.6), 미팅 목록의 검토 구획 |
 | ~~⌘K '검토 요청 만들기'·항목 상세·미팅 목록의 `/reviews?new=1`, 검토 요청 목록~~ 그 자리의 창과 미팅 검토 보기로 옮기고 화면 삭제(`feat/ia-v2-5-review-dialog`) | ~~`reviews/ReviewsPage`~~ | 검토 요청 창을 그 자리에서 열기 |
 | 할 일 한 건 `/tasks/:id?full=1` | `student/TasksPage` | 항목 상세(§6.3) |
 | `/flow` | `PlanningPage` | 연구 흐름([07](07-other-screens.md) §3) |
 | 화면이 보내는 임시 탭(`MarginPanel`) | 미팅·글·자료·피드백·수정 결과 화면 | 각 화면의 사이드 창 내용 정리 후 `MarginPanel` 통로 제거 |
-| ⌘K '(예전) 피드백·수정 결과·검토 요청' | — | 위 화면이 옮겨지면 지움 |
+| ~~⌘K '(예전) 피드백·수정 결과·검토 요청'~~ 지우고 그 이름을 할 일·미팅의 검색어로 남김(`feat/ia-v2-5-feedback-dialog`) | — | 위 화면이 옮겨지면 지움 |
 

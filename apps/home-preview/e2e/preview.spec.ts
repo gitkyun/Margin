@@ -357,6 +357,45 @@ test("예전 피드백 전체 화면 주소는 항목 상세로 연다", async (
   );
 });
 
+test("피드백 입력은 예전 화면으로 가지 않고 그 자리의 창에서 쓰고, 저장하면 상세가 열린다(01 §3.3)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const base = new URL(page.url()).pathname;
+
+  // 예전 입력 주소는 연구 홈 위의 창으로 옮겨 열립니다.
+  await page.goto(`${base}/feedback?new=1`);
+  const dialog = page.getByRole("dialog", { name: "피드백 직접 추가" });
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`${base}$`));
+  await dialog.getByRole("button", { name: "취소" }).click();
+  await expect(dialog).toBeHidden();
+
+  // 할 일 화면 피드백 보기의 [피드백 추가]는 그 화면 위에서 창을 엽니다.
+  await page.goto(`${base}/tasks?view=feedback`);
+  await page
+    .getByRole("main")
+    .getByRole("link", { name: "피드백 추가" })
+    .click();
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(/\/tasks\?view=feedback$/);
+  await dialog.getByRole("textbox", { name: /제목/ }).fill("표 단위 맞추기");
+  await dialog
+    .getByRole("textbox", { name: /피드백 내용/ })
+    .fill("표 2와 표 3의 단위를 같게 적어 주세요.");
+  await dialog.getByRole("button", { name: /저장/ }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL(/detail=feedback%3A/);
+  await expect(
+    page.getByText("표 2와 표 3의 단위를 같게 적어 주세요.").first(),
+  ).toBeVisible();
+});
+
 test("수정 결과는 예전 화면으로 가지 않고 그 자리의 창에서 쓰고 고친다(06 §6.6)", async ({
   page,
 }) => {
