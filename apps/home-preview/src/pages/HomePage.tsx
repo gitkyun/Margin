@@ -196,6 +196,17 @@ export function HomePage() {
           )}
         </div>
       </header>
+      {/* 휴대폰 바로가기 줄(03 §1): 결정·질문과 글·자료 창을 휴대폰 층으로 엽니다. 할 일은 아래 탭에 있습니다. */}
+      <nav className="hm-shortcuts" aria-label={t("바로가기")}>
+        <Link className="hm-shortcut" to="?panel=log">
+          <Icon name="flag" size={18} />
+          {t("결정·질문")}
+        </Link>
+        <Link className="hm-shortcut" to="?panel=materials">
+          <Icon name="folder" size={18} />
+          {t("자료")}
+        </Link>
+      </nav>
       <div className="hm-grid">
         <div className="hm-main">
           {action.notice && <LeadNotice action={action} disabled={archived} />}

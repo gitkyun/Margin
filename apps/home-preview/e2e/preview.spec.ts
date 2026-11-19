@@ -264,3 +264,29 @@ test("글·자료 창에서 찾아 훑어보고, 준비 중인 미팅에 자료�
     peek.getByRole("button", { name: "이 미팅에 가져갔어요" }),
   ).toBeDisabled();
 });
+
+test("휴대폰 홈의 바로가기 줄은 층을 그 세그먼트로 열고 뒤로 가기로 닫는다(03 §1, 02 §6)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const shortcuts = page.getByRole("navigation", { name: "바로가기" });
+  await shortcuts.getByRole("link", { name: "자료" }).click();
+  const tab = page
+    .getByRole("navigation", { name: "주요 메뉴" })
+    .getByRole("button", { name: "연구 도우미" });
+  await expect(tab).toHaveAttribute("aria-pressed", "true");
+  const segments = page.getByRole("radiogroup", { name: "옆 창 보기" });
+  await expect(segments.getByRole("radio", { name: "자료" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await expect(page).not.toHaveURL(/panel=/);
+  await page.goBack();
+  await expect(tab).toHaveAttribute("aria-pressed", "false");
+  await expect(shortcuts).toBeVisible();
+});
