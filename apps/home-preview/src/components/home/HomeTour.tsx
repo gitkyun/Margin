@@ -53,7 +53,7 @@ function visibleTarget(selector: string): HTMLElement | null {
 
 /**
  * 연구 홈에 처음 들어왔을 때의 화면 안내. 화면에 실제로 보이는 자리만 차례로 짚어 주고
- * (좁은 화면에서 접힌 사이드바 항목은 건너뜀), 고리가 다음 자리로 옮겨 갑니다.
+ * (좁은 화면에서 숨은 아이콘 줄 같은 항목은 건너뜀), 고리가 다음 자리로 옮겨 갑니다.
  * 아무것도 저장하지 않고, Esc나 ‘안내 끝내기’로 언제든 닫습니다.
  */
 export function HomeTour({
