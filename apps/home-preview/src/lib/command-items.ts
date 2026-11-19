@@ -322,7 +322,8 @@ export function createEntries(researchId: string | undefined): CommandEntry[] {
       "create:result",
       t("수정 결과 작성"),
       "check",
-      `${base}/results?new=1`,
+      // 지금 화면 위에서 작성 창을 엽니다(01 §3.3 `new=result`).
+      "?new=result",
       KEYWORDS.newResult,
     ),
     navigateEntry(

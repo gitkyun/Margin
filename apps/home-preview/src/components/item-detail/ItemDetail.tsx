@@ -39,6 +39,12 @@ import { SourceAudioClip } from "@/components/recording/SourceAudioClip";
 import { ResultEditorDialog } from "@/pages/student/ResultEditorDialog";
 import { newResultDraft } from "@/pages/student/result-draft";
 import { FeedbackPlans } from "./FeedbackPlans";
+import {
+  ResponseStatus,
+  latestResponse,
+  latestRound,
+  timeText,
+} from "@/pages/reviews/helpers";
 import "./item-detail.css";
 
 const KIND_LABEL: Record<DetailKind, string> = {
@@ -1096,10 +1102,14 @@ function ResultBody({
 }) {
   const { data } = useWorkspace();
   const instant = useInstantSave();
+  // [편집]은 지금의 수정 결과 대화상자를 상세 위에서 엽니다(06 §6.6).
+  const [draft, setDraft] = useState<RevisionResult | null>(null);
   const feedback = data.feedback.filter((item) =>
     result.feedbackIds.includes(item.id),
   );
   const tasks = data.tasks.filter((item) => result.taskIds.includes(item.id));
+  const version = data.versions.find((item) => item.id === result.versionId);
+  const items = data.reviewItems.filter((item) => item.resultId === result.id);
   const needsFile =
     result.kind === "document" && (!result.versionId || !result.location);
   return (
@@ -1109,16 +1119,53 @@ function ResultBody({
         value={result.title}
         onSave={(title) => void instant("result", { ...result, title })}
       />
-      {result.description && (
-        <Section title={t("수정한 내용")}>
+      <div className="item-detail-actions">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setDraft({ ...result })}
+        >
+          <Icon name="edit" size={15} />
+          {t("편집")}
+        </Button>
+      </div>
+      <Section title={t("수정한 내용")}>
+        {result.description ? (
           <p className="item-detail-text">{result.description}</p>
-        </Section>
-      )}
-      {result.location && (
-        <Section title={t("볼 위치")}>
-          <p className="item-detail-text">{result.location}</p>
-        </Section>
-      )}
+        ) : (
+          <p className="item-detail-empty">{t("아직 적지 않았어요.")}</p>
+        )}
+      </Section>
+      <Section title={t("교수님이 볼 파일")}>
+        {version ? (
+          <Link
+            className="item-detail-row"
+            to={`/r/${researchId}/docs/m/${version.materialId}?version=${version.id}`}
+          >
+            <Icon name="file" size={16} />
+            <span>
+              {version.fileName}
+              <small>
+                {t("파일 버전 v{number}", { number: version.number })} ·{" "}
+                {result.location || t("볼 위치 없음")}
+              </small>
+            </span>
+          </Link>
+        ) : (
+          <p className="item-detail-empty">
+            {result.kind === "document"
+              ? t("아직 파일을 연결하지 않았어요.")
+              : t("문서 외 수정이라 파일 없이 위에 적은 설명만 보여요.")}
+          </p>
+        )}
+        {needsFile && (
+          <p className="item-detail-note">
+            {t(
+              "문서 수정에는 파일과 볼 위치가 필요해요. 편집에서 추가해 주세요.",
+            )}
+          </p>
+        )}
+      </Section>
       <Section title={t("연결된 피드백·할 일")}>
         {feedback.map((item) => (
           <DetailRow key={item.id} target={{ kind: "feedback", id: item.id }}>
@@ -1133,25 +1180,79 @@ function ResultBody({
           <p className="item-detail-empty">{t("연결된 항목이 없어요.")}</p>
         )}
       </Section>
-      {needsFile && (
-        <p className="item-detail-empty">
-          {t(
-            "문서 수정에는 파일과 볼 위치가 필요해요. 편집에서 추가해 주세요.",
-          )}
-        </p>
+      {items.length ? (
+        <Section title={t("교수 응답")}>
+          {items.map((item) => {
+            const request = data.reviews.find(
+              (review) => review.id === item.requestId,
+            );
+            const round = latestRound(data, item.id);
+            const response = latestResponse(data, round?.id);
+            const comments = data.comments.filter(
+              (comment) => comment.roundId === round?.id,
+            );
+            return (
+              <article key={item.id} className="item-detail-review">
+                <div className="item-detail-review-head">
+                  <strong>{request?.title ?? item.title}</strong>
+                  <ResponseStatus response={response} />
+                </div>
+                <small className="item-detail-note">
+                  {round
+                    ? t("{number}차", { number: round.number })
+                    : t("차수 없음")}
+                  {response ? ` · ${timeText(response.createdAt)}` : ""}
+                </small>
+                {response?.comment && (
+                  <blockquote className="item-detail-quote">
+                    {response.comment}
+                  </blockquote>
+                )}
+                {comments.length > 0 && (
+                  <ul className="item-detail-comments">
+                    {comments.map((comment) => (
+                      <li key={comment.id}>
+                        <small>
+                          {comment.authorName}
+                          {comment.resolved ? ` · ${t("해결됨")}` : ""}
+                        </small>
+                        {comment.body}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="item-detail-actions">
+                  {request && (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/reviews/${request.id}`}>
+                        {t("검토 열기")}
+                      </Link>
+                    </Button>
+                  )}
+                  {response?.comment && (
+                    <AddTaskButton
+                      researchId={researchId}
+                      title={response.comment}
+                      feedbackIds={result.feedbackIds}
+                    />
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </Section>
+      ) : (
+        <ReviewSection
+          researchId={researchId}
+          resultIds={needsFile ? [] : [result.id]}
+          feedbackIds={result.feedbackIds}
+        />
       )}
-      <ReviewSection
+      <ResultEditorDialog
         researchId={researchId}
-        resultIds={needsFile ? [] : [result.id]}
-        feedbackIds={result.feedbackIds}
+        draft={draft}
+        setDraft={setDraft}
       />
-      <Link
-        className="item-detail-link"
-        to={`/r/${researchId}/results/${result.id}?full=1`}
-      >
-        {t("편집")}
-        <Icon name="chevron-right" size={14} />
-      </Link>
     </>
   );
 }

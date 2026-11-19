@@ -254,7 +254,11 @@ function WorkspaceRoutes() {
           />
           <Route
             path="/r/:researchId/results/:resultId?"
-            element={<ResultsPage />}
+            element={
+              <LegacyOr>
+                <ResultsPage />
+              </LegacyOr>
+            }
           />
           <Route path="/r/:researchId/reviews" element={<ReviewsPage />} />
         </Route>
