@@ -1,6 +1,6 @@
 # 마진(Margin) UI·UX 개선 결정사항 및 AI 인계서 (2026-11-15)
 
-> 2026-11-16 정보 구조 개편(IA v2) 설계가 확정됐습니다(구현 전). 화면 배치·메뉴·주소의 새 기준은 [docs/design/ia-v2](../ia-v2/00-README.md)이고, 이 문서의 해당 절은 구현 단계에 맞춰 바뀝니다. 아래에서 **'IA v2로 대체'** 표시가 붙은 항목(사이드바 피드백 메뉴의 새 응답 점, 피드백 메뉴 탭별 새 응답 점, 상단 미니 녹음 컨트롤 위치)은 새 설계서가 기준입니다.
+> 2026-11-16 정보 구조 개편(IA v2) 설계가 확정됐고 2026-11-19에 구현을 마쳤습니다. 화면 배치·메뉴·주소의 새 기준은 [docs/design/ia-v2](../ia-v2/00-README.md)이고, 이 문서의 해당 절은 IA v2 설계서를 따릅니다. 아래에서 **'IA v2로 대체'** 표시가 붙은 항목(사이드바 피드백 메뉴의 새 응답 점, 피드백 메뉴 탭별 새 응답 점, 상단 미니 녹음 컨트롤 위치)은 새 설계서가 기준입니다.
 
 - **작성 목적**: 사용자가 9개 무료 UI 라이브러리 비교 및 마진(`apps/home-preview/src`) 전수 점검 제안을 검토한 뒤 확정한 **최종 선택사항·보류사항·제외사항**을 정리해, 다음 작업 세션이나 다른 AI 에이전트에게 그대로 인계하기 위한 문서입니다.
 - **함께 읽을 문서**:
@@ -53,7 +53,7 @@
 ### 섹션 3. 글로벌 셸 · 사이드바 · 상단 줄 · `⌘K` · 여백 패널
 * **채택 항목**:
   * 계정 메뉴 카드 레이아웃 정돈 ([affectUI Profile Menu](https://www.affectui.com/components/profile-menu)) 및 사이드바/카드 호버 반응 개선
-  * 사이드바 `피드백` 메뉴에 **새 교수 응답 상태 점(Dot)** 표시 ([BoardUI](https://www.boardui.com/components)) — **IA v2로 대체**(구현 전): 피드백 메뉴가 없어지고 점은 상단 '미팅' 메뉴로 옮김 → [02 틀](../ia-v2/02-shell.md) §3.4
+  * 사이드바 `피드백` 메뉴에 **새 교수 응답 상태 점(Dot)** 표시 ([BoardUI](https://www.boardui.com/components)) — **IA v2로 대체**(2026-11-19 구현): 피드백 메뉴가 없어지고 점은 상단 '미팅' 메뉴로 옮김 → [02 틀](../ia-v2/02-shell.md) §3.4
   * `?` 단축키 도움말 창(`ShortcutHelp.tsx`) 키캡 시인성 강화 ([affectUI Kbd](https://www.affectui.com/components/kbd))
   * `+` 만들기 메뉴 및 `⌘K`(`command-items.ts`)에 **‘피드백 추가’** 포함 + `⌘K` 검색 범위를 메모·피드백 본문·교수 댓글까지 확장
   * 오른쪽 여백 패널(`MarginPanel.tsx`) **경계선 드래그로 너비 조절** ([affectUI Resizable](https://www.affectui.com/components/resizable)) 및 **패널 크로스 블러 전환** ([Transitions.dev](https://transitions.dev/) `Panel reveal`)
@@ -72,14 +72,14 @@
   * 미팅 준비 탭 안건/질문 **Sortable List** 드래그 정렬 ([beUI](https://beui.dev/components/motion))
   * 결정 기록(`DecisionLog.tsx`) **타임라인 시각화** ([beUI Timeline](https://beui.dev/components/motion/timeline))
   * 미팅 시간 조율 스케줄러 고도화 ([beUI Availability Scheduler](https://beui.dev/components/blocks))
-  * **녹음은 실시간 음성 파형만 적용** ([Libraries.dev Voice](https://libraries.dev/voice) — `Voice Orb` 제외) + 다른 화면 이동 시 상단 **미니 녹음 컨트롤** 유지(**IA v2로 대체**, 구현 전: 상단 줄이 아니라 화면 맨 아래 녹음 줄 44px → [02 틀](../ia-v2/02-shell.md) §5) ([Bencho Dynamic island](https://bencho.dev/blocks/dynamic-island))
+  * **녹음은 실시간 음성 파형만 적용** ([Libraries.dev Voice](https://libraries.dev/voice) — `Voice Orb` 제외) + 다른 화면 이동 시 상단 **미니 녹음 컨트롤** 유지(**IA v2로 대체**, 2026-11-19 구현: 상단 줄이 아니라 화면 맨 아래 녹음 줄 44px → [02 틀](../ia-v2/02-shell.md) §5) ([Bencho Dynamic island](https://bencho.dev/blocks/dynamic-island))
   * 메모/전사문 텍스트 드래그 시 **플로팅 팝오버**(`+ 피드백`, `+ 결정`, `+ 질문`) ([Watermelon UI Quick Feedback](https://ui.watermelon.sh/animated-components/quick-feedback) / [beUI](https://beui.dev/components/blocks/overflow-actions))
   * **10초 이상 무음/마이크 끊김 경고** ([Transitions.dev](https://transitions.dev/) `Error state shake`), **음성 인식 저신뢰 학술 용어 점선 밑줄 표시**, **전사본 인라인 형광펜 마킹**, **오디오 타임스탬프 연결**
 * **대상 파일**: `pages/student/MeetingsPage.tsx`, `pages/student/DecisionLog.tsx`, `components/RecordingPanel.tsx`, `components/SavedTranscript.tsx`, `lib/live-speech.ts`, `lib/live-transcript.ts`
 
 ### 섹션 6. 피드백 · 수정 방법 · 할 일
 * **채택 항목**:
-  * (**IA v2로 대체**, 구현 전: 이 세 탭은 미팅 목록·할 일 화면으로 흩어지고 새 응답 점은 미팅 목록의 '검토 요청' 칩과 줄로 → [02 틀](../ia-v2/02-shell.md) §3.4) 피드백·수정 결과·검토 요청 **탭별 건수 및 새 응답 점** 표시 ([BoardUI Counter](https://www.boardui.com/components/counter) + [Transitions.dev](https://transitions.dev/))
+  * (**IA v2로 대체**, 2026-11-19 구현: 이 세 탭은 미팅 목록·할 일 화면으로 흩어지고 새 응답 점은 미팅 목록의 '검토 요청' 칩과 줄로 → [02 틀](../ia-v2/02-shell.md) §3.4) 피드백·수정 결과·검토 요청 **탭별 건수 및 새 응답 점** 표시 ([BoardUI Counter](https://www.boardui.com/components/counter) + [Transitions.dev](https://transitions.dev/))
   * 수정 방법 AI 제안에 **스마트 제안 카드** 적용 ([affectUI Smart Recommendation](https://www.affectui.com/components/smart-recommendation))
   * 상태/미팅 **다중 필터 정돈** ([affectUI Filter Menu](https://www.affectui.com/r/filter-menu-clean.json))
   * 피드백 상세 5번째 칸(‘교수 확인’)에 **‘교수에게 보내기’ 버튼 직접 탑재**

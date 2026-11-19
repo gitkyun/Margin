@@ -79,12 +79,12 @@
 - PDF 첨부는 전체 본문을 추출한다. 기존 첨부도 추출 버전이 없으면 다시 읽는다. 문자 없는 스캔 PDF는 OCR 미지원이므로 읽은 척하지 않고 안내하며, 4만 8천 자를 넘으면 분할을 요청한다. 버전 기록의 특정 쪽 선택 기능은 별도 유지한다.
 - 슬래시에는 실제 지원하는 미팅 정리·수정 방법·글 점검·할 일 정리·논문/자료 요약·웹 검색·일정 확인만 둔다. 일정은 요청자 권한으로 읽은 최근 등록 500개 중 최대 80개를 사용하며 선택 파일과 대화 이력은 보내지 않는다. 일정 생성·변경이 자동 확정된 것처럼 표시하지 않는다.
 
-## IA v2 이후 놓일 자리 (2026-11-16 확정, 구현 전)
+## IA v2에서 놓인 자리 (2026-11-16 확정, 2026-11-19 구현)
 
-[IA v2 설계서](ia-v2/00-README.md)대로 화면 틀이 바뀌면 위 표의 부품은 그대로 쓰고 놓이는 자리만 바뀝니다. 위 표는 지금 구현 기준이라 고치지 않았고, 아래는 예정입니다. 구현할 때 실제 파일 경로와 좁은 창에 맞추며 생긴 차이를 위 표에 기록합니다([10 구현 순서](ia-v2/10-build-plan.md) §6).
+[IA v2 설계서](ia-v2/00-README.md)대로 화면 틀이 바뀌어도 위 표의 부품은 그대로 쓰고 놓이는 자리만 바뀌었습니다. 위 표는 IA v2 전 구현 기준으로 남기고, 아래가 지금 놓인 자리와 원본과의 차이입니다(2026-11-19, [10 구현 순서](ia-v2/10-build-plan.md) §6).
 
-| 부품 | 지금 | IA v2 이후(예정) |
+| 부품 | IA v2 전 | 지금(IA v2) |
 | --- | --- | --- |
-| 연구 도우미 부품(ai-prompt·ai-input-search·ai-message-queue·ai-attachment·ai-voice·ai-tool-calls·ai-citations, 모델·깊이 두 칩) | 전체 화면 `ResearchAssistant.tsx` | **[4단계 일부 적용, 2026-11-18]** 오른쪽 사이드 창 안에서 같은 `ResearchAssistant`를 `variant="panel"`로 그림(`components/assistant/AssistantSidePanel.tsx`). 입력창·메시지·대기 줄·첨부·음성·모델·깊이 부품과 그 구조·치수·동작은 바꾸지 않았고, 원본과의 차이는 바깥 틀뿐: 페이지 머리 대신 창 머리(제목·대화 기록·새 대화·전체 화면·닫기 아이콘), 대화 영역 높이를 창 높이에 맞춤, 제안·실행 내역 여백 패널은 창에서 빼고 '확인할 AI 제안 n개' 링크로 전체 화면에 보냄. 기본 폭 312px에서 입력창이 넘치지 않음을 확인해 360px 예외는 쓰지 않음([10](ia-v2/10-build-plan.md) §7 V7). 파일 위치(`components/shell/panels/assistant/*`)는 아직 옮기지 않음 |
+| 연구 도우미 부품(ai-prompt·ai-input-search·ai-message-queue·ai-attachment·ai-voice·ai-tool-calls·ai-citations, 모델·깊이 두 칩) | 전체 화면 `ResearchAssistant.tsx` | **[4·5단계 적용]** 오른쪽 사이드 창 안에서만 그림(`components/assistant/AssistantSidePanel.tsx` → `pages/ResearchAssistant.tsx`). 예전 전체 화면과 `variant`는 5단계(#158)에 지움. 입력창·메시지·대기 줄·첨부·음성·모델·깊이 부품과 그 구조·치수·동작은 바꾸지 않았고, 원본과의 차이는 바깥 틀뿐: 페이지 머리 대신 창 머리(제목·대화 기록·새 대화·닫기 아이콘), 대화 영역 높이를 창 높이에 맞춤, 대화·제안·실행 내역을 창 안의 보기로 둠(휴대폰 층에서는 [⋯] 메뉴). 기본 폭 312px에서 입력창이 넘치지 않음을 확인해 360px 예외는 쓰지 않음([10](ia-v2/10-build-plan.md) §7 V7). 파일 위치(`components/shell/panels/assistant/*`)로는 옮기지 않았고 지금 경로가 기준임 |
 | profile-dropdown(계정 메뉴) | 사이드바 아래에서 위로 열림 | **[0단계 적용]** 상단 줄 오른쪽 끝 아바타(32px)에서 아래로 열림([02](ia-v2/02-shell.md) §3.6). 원본과의 차이: `placement` 옵션 하나를 더해 `"bottom"`일 때 패널을 버튼의 오른쪽 위 모서리에 붙이고 `clip-path` 자라는 방향만 아래로 바꿈(구조·치수·모션 값은 원본 그대로). 여는 버튼의 이름·이메일·화살표는 `shell.css`에서 숨겨 아바타만 보임 |
 | ai-handoff · ai-loading · 입력창 안 ai-context-meter 고리 | 쓰지 않음 | 계속 쓰지 않음([06](ia-v2/06-assistant.md) §1) |
