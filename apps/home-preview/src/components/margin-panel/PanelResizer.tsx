@@ -6,6 +6,7 @@ import {
   type KeyboardEvent,
   type PointerEvent,
 } from "react";
+import "./margin-panel.css";
 
 /** 폭 기억 키. 글 편집·자료 보기의 넓은 창(440)은 따로 기억해요(02 §4.5). */
 export const PANEL_WIDTH_KEY = "margin-panel-width";

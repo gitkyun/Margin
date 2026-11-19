@@ -128,6 +128,6 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 | ~~⌘K '검토 요청 만들기'·항목 상세·미팅 목록의 `/reviews?new=1`, 검토 요청 목록~~ 그 자리의 창과 미팅 검토 보기로 옮기고 화면 삭제(`feat/ia-v2-5-review-dialog`) | ~~`reviews/ReviewsPage`~~ | 검토 요청 창을 그 자리에서 열기 |
 | ~~할 일 한 건 `/tasks/:id?full=1`, 할 일 추가 `/tasks?new=1`~~ 상세와 빠른 추가 줄(`new=task`)로 옮기고 화면 삭제(`feat/ia-v2-5-task-detail`) | ~~`student/TasksPage`~~ | 항목 상세(§6.3) |
 | ~~`/flow`~~ 머리·탭을 연구 흐름으로 바꾸고 시간 조율은 미팅 보기와 그 자리의 창으로 옮김(`feat/ia-v2-5-flow`) | `PlanningPage`(연구 흐름 화면으로 남음) | 연구 흐름([07](07-other-screens.md) §4) |
-| 화면이 보내는 임시 탭(`MarginPanel`) | 미팅·글·자료·피드백·수정 결과 화면 | 각 화면의 사이드 창 내용 정리 후 `MarginPanel` 통로 제거 |
+| ~~화면이 보내는 임시 탭(`MarginPanel`)~~ 통로와 예전 글·자료 목록(`docs?full=1`)을 지움(`feat/ia-v2-5-margin-panel`) | ~~미팅·글·자료 화면의 패널~~ | 미팅 오른쪽 열, 글 머리의 버전 메뉴 |
 | ~~⌘K '(예전) 피드백·수정 결과·검토 요청'~~ 지우고 그 이름을 할 일·미팅의 검색어로 남김(`feat/ia-v2-5-feedback-dialog`) | — | 위 화면이 옮겨지면 지움 |
 

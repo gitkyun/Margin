@@ -69,10 +69,6 @@ import { useWorkspace } from "@/lib/workspace";
 import { friendlyError } from "@/lib/supabase";
 import { useExperience } from "@/lib/experience";
 import { queryDown } from "@/design/responsive";
-import {
-  MarginPanelProvider,
-  useMarginPanelHost,
-} from "./margin-panel/MarginPanel";
 import { AnimatedList, Segments } from "./experience";
 import {
   unreadReviewNotifications,
@@ -204,10 +200,9 @@ export function WorkspaceShell({
   const incomingOnly = isIncomingOnly(data, user.id);
   const homeLabel = incomingOnly ? t("받은 검토 요청") : t("내 연구");
   useGoShortcuts(research ? researchId : undefined);
-  const panel = useMarginPanelHost();
   // ?detail= 항목 상세(06 §6)는 사이드 창 자리에 덮여 뜹니다. 창이 닫혀 있어도 엽니다.
   const detail = useDetailRef();
-  // 아이콘 줄의 실제 탭(1단계: 할 일 창 P2). 화면이 보낸 임시 탭과는 한 번에 하나만 엽니다.
+  // 아이콘 줄의 탭(연구 도우미·할 일·결정·질문·자료). 한 번에 하나만 엽니다.
   const [railSelection, setRailSelection] = useState<{
     active: SidePanelTab | null;
     closing: SidePanelTab | null;
@@ -239,9 +234,8 @@ export function WorkspaceShell({
     );
     if (remember) rememberPanel(window.innerWidth, tab);
   };
-  // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외).
-  const panelRef = useRef(panel);
-  panelRef.current = panel;
+  // ] 키로 사이드 창을 여닫습니다(입력 중이거나 조합 키와 함께일 때는 제외, 02 §4).
+  const railRef = useRef({ railTab, inResearch: false });
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "]" || event.defaultPrevented) return;
@@ -253,10 +247,9 @@ export function WorkspaceShell({
           ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
       )
         return;
-      const { active, offered } = panelRef.current;
-      if (active) active.onClose();
-      else if (offered?.onOpen) offered.onOpen();
-      else return;
+      const { railTab: open, inResearch: available } = railRef.current;
+      if (!available) return;
+      setRailTab(open ? null : lastPanelTab(), true);
       event.preventDefault();
     };
     window.addEventListener("keydown", onKey);
@@ -265,7 +258,6 @@ export function WorkspaceShell({
   // 겹쳐 뜬 사이드 창(1199px 이하)은 다른 화면으로 가면 닫힙니다(D15).
   useEffect(() => {
     if (!overlayPanel) return;
-    panelRef.current.active?.onClose();
     setRailTab(null);
   }, [location.pathname, overlayPanel]);
   // 주소의 ?panel=(예전 /assistant 주소, 홈·명령·단축키)로 사이드 창 탭을 엽니다(01 §3.3).
@@ -287,7 +279,6 @@ export function WorkspaceShell({
     if (phone && isLayerSegment(railTab)) rememberLayerSegment(railTab);
   }, [phone, railTab]);
   const openLayer = () => {
-    panelRef.current.active?.onClose();
     setRailTab(lastLayerSegment());
     if (layerPushed.current) return;
     layerPushed.current = true;
@@ -313,7 +304,6 @@ export function WorkspaceShell({
   useEffect(() => {
     const request = panelRequest(location.search);
     if (!request || !research) return;
-    panelRef.current.active?.onClose();
     // 링크·명령·단축키로 연 것도 사람이 연 것이라 열림과 탭을 기억합니다(새로 고쳐도 같은 창).
     setRailTab(request.tab, true);
     if (request.tab === "assistant")
@@ -336,13 +326,9 @@ export function WorkspaceShell({
       },
     );
   }, [location.search, research?.id]);
-  // 화면이 보낸 창을 열면 할 일 창은 닫습니다(한 번에 하나).
-  useEffect(() => {
-    if (panel.active) setRailTab(null);
-  }, [panel.active?.id]);
   // 겹쳐 뜬 사이드 창은 뒤를 가리지 않고, 바깥을 누르면 닫힙니다(D15).
   useEffect(() => {
-    if (!overlayPanel || (!panel.active && !railTab)) return;
+    if (!overlayPanel || !railTab) return;
     const onPointer = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -352,12 +338,11 @@ export function WorkspaceShell({
         )
       )
         return;
-      panelRef.current.active?.onClose();
       setRailTab(null);
     };
     document.addEventListener("pointerdown", onPointer);
     return () => document.removeEventListener("pointerdown", onPointer);
-  }, [overlayPanel, panel.active, railTab]);
+  }, [overlayPanel, railTab]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -402,6 +387,7 @@ export function WorkspaceShell({
       </div>
     );
   const inResearch = !!research && !!researchId;
+  railRef.current = { railTab, inResearch };
   const detailOpen = inResearch && !!detail;
   const tasksOpen = inResearch && railTab === "tasks";
   const logOpen = inResearch && railTab === "log";
@@ -411,7 +397,7 @@ export function WorkspaceShell({
   // 휴대폰에서 세그먼트(연구 도우미·결정·질문·자료) 중 하나가 열려 있으면 층입니다.
   const layerSegment =
     phone && inResearch && isLayerSegment(railTab) ? railTab : null;
-  const panelShown = !!panel.active || detailOpen || railOpen;
+  const panelShown = detailOpen || railOpen;
   // 닫히는 동안 마지막 탭을 그리되, 창 전체는 즉시 조작할 수 없게 합니다.
   const visibleRailTab = inResearch
     ? panelShown
@@ -452,11 +438,9 @@ export function WorkspaceShell({
             researchId={researchId}
           />
           <main id="main-content" className="workspace-content">
-            <MarginPanelProvider value={panel.context}>
-              <Suspense fallback={<LoadingState />}>
-                {children ?? <Outlet />}
-              </Suspense>
-            </MarginPanelProvider>
+            <Suspense fallback={<LoadingState />}>
+              {children ?? <Outlet />}
+            </Suspense>
           </main>
           <footer className="workspace-footer">
             {/* 슬로건은 소개 화면에만 둡니다(ux-writing). 작업 화면은 이름만. */}
@@ -467,15 +451,6 @@ export function WorkspaceShell({
             </span>
           </footer>
         </div>
-        {panel.active && !detailOpen && (
-          <button
-            type="button"
-            className="margin-panel-backdrop"
-            aria-label={t("{label} 닫기", { label: panel.active.label })}
-            tabIndex={-1}
-            onClick={panel.active.onClose}
-          />
-        )}
         <div
           className={`ia-panel-frame ${panelShown ? "is-open" : "is-closed"} ${panelResizing ? "is-resizing" : ""}`}
           data-layer={layerSegment ? "" : undefined}
@@ -498,11 +473,7 @@ export function WorkspaceShell({
             <aside
               id="margin-panel"
               className="margin-panel"
-              aria-label={
-                detailOpen
-                  ? t("항목 상세")
-                  : (panel.active?.label ?? t("여백 패널"))
-              }
+              aria-label={detailOpen ? t("항목 상세") : t("사이드 창")}
               tabIndex={-1}
             >
               {layerSegment && !detailOpen && (
@@ -522,12 +493,6 @@ export function WorkspaceShell({
                   }
                 />
               )}
-              {/* 화면이 보내는 창 내용은 상세가 덮여 있는 동안에도 살려 두고 숨기기만 합니다(02 §4.2). */}
-              <div
-                className="margin-panel-slot"
-                hidden={detailOpen || !!visibleRailTab}
-                ref={panel.setSlot}
-              />
               {/* 각 탭이 자기 스크롤과 입력 상태를 유지합니다(02 §4.2). */}
               {researchId && hasVisited("assistant") && (
                 <div
@@ -593,15 +558,12 @@ export function WorkspaceShell({
         {inResearch && (
           <SideRail
             researchId={researchId}
-            offered={panel.offered}
-            active={railOpen ? null : panel.active}
             openTab={railTab}
             panelWidth={panelWidth}
             onResetPanelWidth={() => setPanelWidth(null)}
-            panelOpen={railOpen || !!panel.active}
+            panelOpen={railOpen}
             onTogglePanel={() => {
-              if (railOpen || panel.active) {
-                panel.active?.onClose();
+              if (railOpen) {
                 setRailTab(null, true);
                 return;
               }
@@ -612,7 +574,6 @@ export function WorkspaceShell({
                 setRailTab(null, true);
                 return;
               }
-              panel.active?.onClose();
               setRailTab(tab, true);
             }}
           />

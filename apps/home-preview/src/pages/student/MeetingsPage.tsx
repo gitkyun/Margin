@@ -45,12 +45,7 @@ import { Button } from "@/components/ui/button";
 import { Disclosure } from "@/components/ui/disclosure";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  EmptyState,
-  StatusBadge,
-  InlineEmpty,
-  useDisabledReason,
-} from "@/components/common";
+import { EmptyState, StatusBadge, InlineEmpty } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { useWorkspace } from "@/lib/workspace";
 import { useNavigationGuard } from "@/lib/navigation-guard";
@@ -61,18 +56,13 @@ import {
   originLabels,
   recordBase,
   taskLabels,
-  type AIInput,
-  type AICandidate,
   type BaseRecord,
   type Decision,
   type Meeting,
   type Question,
   type Task,
 } from "@/lib/domain";
-import { AIWorkbench } from "./AIWorkbench";
-import { MarginPanel, PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { REASON_MAX, decisionLog, replaceableDecisions } from "@/lib/decisions";
-import { isAISourceStale } from "./ai-source";
 import { QuickPdfUpload } from "./QuickPdfUpload";
 import { hasMemoConflict, restoreMemoDraft } from "./memo-draft";
 import {
@@ -371,9 +361,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
   const [memoError, setMemoError] = useState<string | null>(null);
   const [memoConflict, setMemoConflict] = useState(false);
   const [memoTick, setMemoTick] = useState(0);
-  const memoAIReason = useDisabledReason(
-    !memo.trim() && t("메모를 적으면 AI로 정리할 수 있어요."),
-  );
   const latest = useRef(meeting);
   latest.current = meeting;
   const metaBase = useRef(meeting);
@@ -439,19 +426,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
         : meeting.memoRevision,
   );
   const entryBase = useRef<BaseRecord | null>(null);
-  const [aiInput, setAiInput] = useState<AIInput | null>(null);
-  // 여백 패널: 준비(목표·질문·자료)와 도우미(메모 정리)
-  const [panelTab, setPanelTab] = useState<"prepared" | "assistant">(
-    "prepared",
-  );
-  const [panelOpen, setPanelOpen] = useState(false);
-  const aiOpen = panelOpen && panelTab === "assistant";
-  const aiStale =
-    !!aiInput &&
-    isAISourceStale(aiInput, {
-      text: meeting.memo,
-      revision: meeting.memoRevision,
-    });
   const [entry, setEntry] = useState<
     "feedback" | "decision" | "question" | null
   >(null);
@@ -985,75 +959,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       setPreparing(false);
       toast.success(t("미팅 준비를 저장했어요"));
     });
-  }
-  async function openAI() {
-    const stored = await commitMemo();
-    if (!stored) return;
-    if (!stored.memo.trim()) {
-      toast.error(t("AI로 정리할 메모가 없어요. 메모를 먼저 작성해 주세요."));
-      return;
-    }
-    const source = { text: stored.memo, revision: stored.memoRevision };
-    if (!aiInput || isAISourceStale(aiInput, source))
-      setAiInput({
-        mode: "organize_meeting",
-        researchId,
-        meetingId: meeting.id,
-        sourceText: source.text,
-        sourceRevision: source.revision,
-      });
-    setPanelTab("assistant");
-    setPanelOpen(true);
-  }
-  async function saveCandidate(candidate: AICandidate, base: BaseRecord) {
-    const body = (candidate.body ?? candidate.title).trim();
-    if (candidate.category === "decision") {
-      await save("decisions", {
-        ...base,
-        origin: "ai",
-        meetingId: meeting.id,
-        text: body,
-      });
-    } else if (candidate.category === "question") {
-      const q: Question = {
-        ...base,
-        origin: "ai",
-        meetingId: meeting.id,
-        text: body,
-        status: "open",
-      };
-      await savePreparation(
-        {
-          ...latest.current,
-          questionIds: [...new Set([...latest.current.questionIds, q.id])],
-        },
-        [q],
-      );
-    } else {
-      const source = aiInput?.sourceText ?? "";
-      const quote =
-        candidate.sourceQuote && source.includes(candidate.sourceQuote)
-          ? candidate.sourceQuote
-          : undefined;
-      await save("feedback", {
-        ...base,
-        origin: "ai",
-        meetingId: meeting.id,
-        title: candidate.title.trim(),
-        body,
-        notes: "",
-        status: "unprocessed",
-        sourceQuote: quote,
-        sourceMemoRevision: aiInput?.sourceRevision,
-        ...(quote
-          ? {
-              sourceStart: source.indexOf(quote),
-              sourceEnd: source.indexOf(quote) + quote.length,
-            }
-          : {}),
-      });
-    }
-    toast.success(t("선택한 AI 제안을 저장했어요"));
   }
   // 준비 목록 순서 바꾸기. 다른 내용은 건드리지 않고 순서만 저장해요.
   async function reorderPrepared(
@@ -1653,19 +1558,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                     count: memo.length.toLocaleString(),
                   })}
                 </span>
-                <Button
-                  variant="outline"
-                  disabled={memoState === "saving" || !memo.trim()}
-                  aria-describedby={memoAIReason.describedBy}
-                  onClick={() => void openAI()}
-                >
-                  <Icon name="sparkles" size={16} />
-                  {aiInput && !aiOpen
-                    ? t("AI 정리 다시 열기")
-                    : t("AI로 메모 정리")}
-                </Button>
               </div>
-              {memoAIReason.node}
             </section>
             <RecordSide
               meeting={meeting}
@@ -1678,111 +1571,6 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               onAddQuestion={() => openEntry("question")}
               onShowPreparation={() => void changeTab("prepare")}
             />
-            <MarginPanel
-              label={t("준비한 내용과 연구 도우미")}
-              open={panelOpen}
-              onOpen={() => setPanelOpen(true)}
-              onClose={() => setPanelOpen(false)}
-            >
-              <PanelFrame
-                title={t("이 미팅")}
-                onClose={() => setPanelOpen(false)}
-                tab={panelTab}
-                onTab={(value) =>
-                  value === "assistant"
-                    ? void openAI()
-                    : setPanelTab("prepared")
-                }
-                tabs={[
-                  // 서면 피드백에는 '준비한 것'이 없습니다(04 §5.5).
-                  ...(written
-                    ? []
-                    : [
-                        {
-                          value: "prepared",
-                          label: t("준비"),
-                          count:
-                            preparedQuestions.length + linkedVersions.length,
-                        },
-                      ]),
-                  { value: "assistant", label: t("연구 도우미") },
-                ]}
-              >
-                {panelTab === "prepared" && !written && (
-                  <div className="panel-frame-body">
-                    <h3>{t("이번 미팅에서 보여줄 결과")}</h3>
-                    <p className="meeting-panel-goal">
-                      {meeting.goal || t("아직 정하지 않았어요.")}
-                    </p>
-                    <h3>
-                      {t("준비한 질문")}
-                      <span className="count-chip">
-                        {preparedQuestions.length}
-                      </span>
-                    </h3>
-                    {preparedQuestions.map((question) => (
-                      <div className="student-simple-row" key={question.id}>
-                        <span className="grow">
-                          <strong>{question.text}</strong>
-                        </span>
-                        <StatusBadge
-                          tone={
-                            question.status === "resolved" ? "green" : "neutral"
-                          }
-                        >
-                          {question.status === "resolved"
-                            ? t("해결")
-                            : t("열림")}
-                        </StatusBadge>
-                      </div>
-                    ))}
-                    {!preparedQuestions.length && (
-                      <InlineEmpty>{t("준비한 질문이 없어요.")}</InlineEmpty>
-                    )}
-                    <h3>
-                      {t("보여줄 자료")}
-                      <span className="count-chip">
-                        {linkedVersions.length}
-                      </span>
-                    </h3>
-                    {linkedVersions.map((version) => (
-                      <Link
-                        className="student-simple-row"
-                        key={version.id}
-                        to={`/r/${researchId}/materials/${version.materialId}?version=${version.id}`}
-                        state={back(meeting.title)}
-                      >
-                        <span className="grow">
-                          <strong>{version.fileName}</strong>
-                          <small>v{version.number}</small>
-                        </span>
-                        <Icon name="arrow-up-right" size={15} />
-                      </Link>
-                    ))}
-                    {!linkedVersions.length && (
-                      <InlineEmpty>
-                        {t("보여줄 자료를 고르지 않았어요.")}
-                      </InlineEmpty>
-                    )}
-                    <p className="panel-frame-note">
-                      {t("준비 탭에서 바꾼 내용이 여기에 보여요.")}
-                    </p>
-                  </div>
-                )}
-                {panelTab === "assistant" && aiInput && (
-                  <AIWorkbench
-                    key={aiInput.sourceRevision}
-                    embedded
-                    title={t("메모 정리")}
-                    input={aiInput}
-                    stale={aiStale}
-                    onClose={() => setPanelOpen(false)}
-                    onRefresh={() => void openAI()}
-                    onSave={saveCandidate}
-                  />
-                )}
-              </PanelFrame>
-            </MarginPanel>
           </div>
         </div>
       }
