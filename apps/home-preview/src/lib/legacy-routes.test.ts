@@ -15,6 +15,12 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     ["/r/a/decisions/d1", "", "/r/a?detail=decision%3Ad1"],
     ["/r/a/tasks/t1", "", "/r/a/tasks?detail=task%3At1"],
     ["/r/a/feedback", "", "/r/a/tasks?view=feedback"],
+    // 5단계: 수정 방법 쓰기·편집이 상세로 옮겨 와 예전 전체 화면 주소도 상세로 엽니다.
+    [
+      "/r/a/feedback/f1",
+      "?full=1",
+      "/r/a/tasks?view=feedback&detail=feedback%3Af1",
+    ],
     [
       "/r/a/feedback/f1",
       "?from=x",
@@ -43,8 +49,7 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     expect(legacyRedirect("/r/a/docs", "?kind=writing")).toBeNull();
     expect(legacyRedirect("/r/a/meetings/m1", "")).toBeNull();
     expect(legacyRedirect("/r/a", "")).toBeNull();
-    // 상세에서 못 하는 일을 하러 예전 화면을 여는 통로
-    expect(legacyRedirect("/r/a/feedback/f1", "?full=1")).toBeNull();
+    // 상세에서 못 하는 일을 하러 예전 화면을 여는 통로(할 일 한 건)
     expect(legacyRedirect("/r/a/tasks/t1", "?full=1")).toBeNull();
     expect(legacyRedirect("/r/a/feedback", "?new=1")).toBeNull();
   });

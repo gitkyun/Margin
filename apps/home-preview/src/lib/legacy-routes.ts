@@ -46,9 +46,11 @@ const RULES: Record<string, Rule> = {
     return build(`${base}/tasks`, params);
   },
   // 피드백 목록은 할 일 화면의 피드백 탭(T1)으로, 한 건은 그 위의 항목 상세로 엽니다.
-  // 미팅 화면(2단계) 전까지는 기록을 찾아가지 않습니다. `new=1`(피드백 입력 창)은 지금 화면에 둡니다.
+  // 수정 방법 쓰기·제안받기와 본문·메모 편집이 상세로 옮겨 와 5단계부터 `full=1`도 상세로 엽니다.
+  // `new=1`(피드백 입력 창)만 지금 화면에 둡니다.
   feedback: (base, [id], params) => {
-    if (params.get("full") === "1" || params.get("new") === "1") return null;
+    if (params.get("new") === "1") return null;
+    params.delete("full");
     params.set("view", "feedback");
     if (id) params.set("detail", `feedback:${id}`);
     return build(`${base}/tasks`, params);

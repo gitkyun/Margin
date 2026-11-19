@@ -290,3 +290,69 @@ test("휴대폰 홈의 바로가기 줄은 층을 그 세그먼트로 열고 뒤
   await expect(tab).toHaveAttribute("aria-pressed", "false");
   await expect(shortcuts).toBeVisible();
 });
+
+test("피드백 상세에서 수정 방법을 직접 쓰고, 할 일로 만들고, 선택을 취소했다가 다시 고른다(06 §6.2)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  await page
+    .getByRole("navigation", { name: "주요 메뉴" })
+    .first()
+    .getByRole("link", { name: "할 일", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/tasks$/);
+  await page.getByRole("tab", { name: /피드백/ }).click();
+  await page
+    .getByRole("link", { name: /선행연구 비교 기준 보완/ })
+    .first()
+    .click();
+  const detail = page.getByRole("complementary", { name: "항목 상세" });
+  const plans = detail
+    .locator(".item-detail-section")
+    .filter({ has: page.getByRole("heading", { name: "수정 방법" }) });
+  // 예전 피드백 화면으로 가는 통로 대신 상세 안에서 씁니다.
+  await expect(
+    detail.getByRole("link", { name: "수정 방법 쓰기·제안받기" }),
+  ).toHaveCount(0);
+  await plans.getByRole("button", { name: "직접 쓰기" }).click();
+  const dialog = page.getByRole("dialog", { name: "수정 방법 작성" });
+  await dialog.getByRole("textbox", { name: /제목/ }).fill("비교 기준 열 추가");
+  await dialog
+    .getByRole("textbox", { name: /어떻게 고칠지/ })
+    .fill("표 2에 자료 수집 방법 열을 더한다");
+  await dialog.getByRole("button", { name: "저장" }).click();
+  const plan = plans.locator(".item-detail-plan").filter({
+    hasText: "비교 기준 열 추가",
+  });
+  await expect(plan).toBeVisible();
+
+  await plan.getByRole("button", { name: "할 일 추가" }).click();
+  await expect(plan).toContainText("할 일 1개");
+  await expect(
+    detail.getByRole("checkbox", { name: /비교 기준 열 추가/ }),
+  ).toBeVisible();
+
+  await plan.getByRole("button", { name: "선택 취소" }).click();
+  await expect(plans.getByText("선택 취소한 방법 1개")).toBeVisible();
+  await plans.getByText("선택 취소한 방법 1개").click();
+  await plans.getByRole("button", { name: "다시 선택" }).click();
+  await expect(plan).toBeVisible();
+});
+
+test("예전 피드백 전체 화면 주소는 항목 상세로 연다", async ({ page }) => {
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const base = new URL(page.url()).pathname;
+  await page.goto(`${base}/feedback/missing-id?full=1`);
+  await expect(page).toHaveURL(
+    /\/tasks\?view=feedback&detail=feedback%3Amissing-id$/,
+  );
+});
