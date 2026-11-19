@@ -22,6 +22,12 @@ import { koreanScore } from "@/lib/hangul-search";
 import { friendlyError } from "@/lib/supabase";
 import { formatDate, type DocumentRecord, type Material } from "@/lib/domain";
 import {
+  documentTypeLabel,
+  domainOf,
+  materialTypeLabel,
+  sinceLabel,
+} from "@/lib/docs-labels";
+import {
   docCounts,
   docRows,
   documentOutline,
@@ -45,36 +51,6 @@ const MATERIAL_TYPES = [
   "other",
   "link",
 ] as const;
-
-function documentTypeLabel(type: DocumentRecord["type"]): string {
-  return { plan: t("계획서"), manuscript: t("원고"), note: t("메모") }[type];
-}
-function materialTypeLabel(type: Material["type"] | "link"): string {
-  return {
-    draft: t("초안"),
-    reference: t("참고"),
-    analysis: t("분석"),
-    other: t("기타"),
-    link: t("링크"),
-  }[type];
-}
-function sinceLabel(at: string): string {
-  const diff = Date.now() - new Date(at).getTime();
-  if (!Number.isFinite(diff)) return "";
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return t("방금");
-  if (minutes < 60) return t("{count}분 전", { count: minutes });
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t("{count}시간 전", { count: hours });
-  return formatDate(at.slice(0, 10));
-}
-function domainOf(url?: string): string {
-  try {
-    return url ? new URL(url).hostname : "";
-  } catch {
-    return "";
-  }
-}
 
 /**
  * 글·자료 목록(IA v2 05 §2, W1). 글과 자료를 한 목록에서 찾고, 만들고, 올리고, 폴더로 정리합니다.

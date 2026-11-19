@@ -31,14 +31,14 @@ import {
 
 const FEEDBACK_MAIL = "mailto:admin@margin.com";
 
-export type RailTab = "assistant" | "tasks" | "log";
+export type RailTab = "assistant" | "tasks" | "log" | "materials";
 
 export interface SideRailProps {
   researchId?: string;
   /** 화면이 보낸 패널(0단계 임시 탭, 02 §4.6). 열 수 있는 것이 없으면 없음. */
   offered?: MarginPanelEntry | null;
   active?: MarginPanelEntry | null;
-  /** 열린 실제 탭(연구 도우미, 할 일 P2, 결정·질문 P3)과 여닫기 */
+  /** 열린 실제 탭(연구 도우미, 할 일 P2, 결정·질문 P3, 자료 P4)과 여닫기 */
   openTab?: RailTab | null;
   onTab?(tab: RailTab): void;
   /** 사람이 끌어서 바꾼 사이드 창 너비(없으면 기본 너비) */
@@ -160,6 +160,13 @@ export function SideRail({
             label={t("결정·질문")}
             pressed={openTab === "log"}
             onClick={() => onTab("log")}
+          />
+          <RailButton
+            icon="folder"
+            label={t("자료")}
+            name={t("글·자료")}
+            pressed={openTab === "materials"}
+            onClick={() => onTab("materials")}
           />
         </>
       )}

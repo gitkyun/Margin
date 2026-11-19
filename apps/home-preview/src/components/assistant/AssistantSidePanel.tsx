@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { t } from "@/lib/i18n";
-import type { PanelRequest } from "@/lib/side-panel";
+import type { AssistantOpen } from "@/lib/side-panel";
 import "./assistant-side-panel.css";
 
 // 연구 도우미 화면은 크고(입력창·모델·명령·첨부) 처음 화면에는 필요 없어서, 창을 열 때 불러옵니다.
@@ -21,8 +21,8 @@ export function AssistantSidePanel({
   onClose,
 }: {
   researchId: string;
-  /** 주소(`?panel=assistant&panelView=…`)로 열 때 보여 줄 보기. `at`이 바뀔 때마다 그 보기로 엽니다. */
-  request?: (PanelRequest & { at: number }) | null;
+  /** 주소(`?panel=assistant&panelView=…`)나 자료 창에서 열 때의 보기와 근거 칩. `at`이 바뀔 때마다 적용합니다. */
+  request?: AssistantOpen | null;
   onClose(): void;
 }) {
   return (
@@ -43,7 +43,11 @@ export function AssistantSidePanel({
           onClose={onClose}
           openView={
             request
-              ? { view: request.view ?? "chat", at: request.at }
+              ? {
+                  view: request.view ?? "chat",
+                  at: request.at,
+                  context: request.context,
+                }
               : undefined
           }
         />

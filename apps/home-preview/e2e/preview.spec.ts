@@ -218,3 +218,49 @@ test("사이드 창을 전환하거나 닫아도 각 창에서 고른 보기가 
   await assistant.click();
   await expect(suggestions).toHaveAttribute("aria-selected", "true");
 });
+
+test("글·자료 창에서 찾아 훑어보고, 준비 중인 미팅에 자료를 가져간다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  // 준비 중인 다음 미팅 화면 위에서 창을 엽니다(06 §5).
+  await page.getByRole("link", { name: "기록 열기" }).first().click();
+  await expect(page).toHaveURL(/\/meetings\/[^/]+$/);
+  const rail = page.getByRole("toolbar", { name: "옆 창 열기" });
+  await rail.getByRole("button", { name: "글·자료", exact: true }).click();
+  const panel = page.locator("#margin-panel");
+  const list = panel.locator(".materials-panel-rows");
+  await expect(list.getByRole("button")).toHaveCount(2);
+  const search = panel.getByRole("searchbox", { name: "글·자료에서 찾기" });
+  await search.fill("계획서");
+  await expect(list.getByRole("button")).toHaveCount(1);
+
+  // 훑어보기: [열기]는 자료 보기로, 보여 줄 자료에 없는 자료는 [이 미팅에 가져가기]
+  await list.getByRole("button", { name: /연구계획서/ }).click();
+  const peek = panel.locator(".materials-peek");
+  await expect(peek.getByRole("heading", { name: "연구계획서" })).toBeVisible();
+  await expect(peek.getByRole("link", { name: "열기" })).toHaveAttribute(
+    "href",
+    /\/docs\/m\//,
+  );
+  const take = peek.getByRole("button", { name: "이 미팅에 가져가기" });
+  await take.click();
+  await expect(
+    peek.getByRole("button", { name: "이 미팅에 가져갔어요" }),
+  ).toBeDisabled();
+
+  // [← 목록]으로 돌아오면 찾던 말이 남아 있습니다.
+  await peek.getByRole("button", { name: "목록" }).click();
+  await expect(search).toHaveValue("계획서");
+  await search.fill("");
+  // 이미 보여 줄 자료에 든 자료는 처음부터 가져간 상태입니다.
+  await list.getByRole("button", { name: /선행연구 비교표/ }).click();
+  await expect(
+    peek.getByRole("button", { name: "이 미팅에 가져갔어요" }),
+  ).toBeDisabled();
+});

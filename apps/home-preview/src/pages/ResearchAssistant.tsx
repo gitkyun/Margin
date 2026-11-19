@@ -191,8 +191,12 @@ export function ResearchAssistant({
 }: {
   variant?: "page" | "panel";
   onClose?: () => void;
-  /** 사이드 창을 주소로 열 때의 보기(`at`이 바뀌면 다시 엶) */
-  openView?: { view: "chat" | AssistantPanelTab; at: number };
+  /** 사이드 창을 주소·자료 창에서 열 때의 보기와 놓을 근거 칩(`at`이 바뀌면 다시 적용) */
+  openView?: {
+    view: "chat" | AssistantPanelTab;
+    at: number;
+    context?: AIContext;
+  };
 } = {}) {
   const inPanel = variant === "panel";
   const { researchId = "" } = useParams(),
@@ -212,7 +216,10 @@ export function ResearchAssistant({
     "chat",
   );
   useEffect(() => {
-    if (openView) setPanelView(openView.view);
+    if (!openView) return;
+    setPanelView(openView.view);
+    // 자료 창의 [연구 도우미에게 묻기](06 §5): 그 글·자료를 근거 칩으로 놓습니다. 보내기는 사용자가 합니다.
+    if (openView.context) void addContext(openView.context);
   }, [openView?.at]);
   // 실행 내역에서 고른 답(runId). 그 대화로 바꾼 뒤 그 답까지 스크롤합니다.
   const [jumpToRun, setJumpToRun] = useState<string | null>(null);
