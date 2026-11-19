@@ -489,7 +489,7 @@ function PollLine({
     (person) => person.available.length > 0,
   ).length;
   return (
-    <Link className="hm-poll" to={`${base}/flow?tab=schedule`}>
+    <Link className="hm-poll" to={`${base}/meetings?type=poll`}>
       {t("‘{title}’ 조율 중 · {total}명 중 {answered}명 응답", {
         title: poll.title,
         total: poll.participants.length,

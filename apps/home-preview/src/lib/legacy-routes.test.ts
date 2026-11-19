@@ -10,6 +10,9 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     ["/r/a/materials/m1", "", "/r/a/docs/m/m1"],
     ["/r/a/planning", "?phase=p1", "/r/a/flow?phase=p1"],
     ["/r/a/planning", "?tab=calendar", "/r/a/flow?tab=calendar"],
+    // 5단계: 시간 조율 탭은 미팅 목록의 '시간 조율' 보기로 옮겼습니다(07 §4).
+    ["/r/a/planning", "?tab=schedule", "/r/a/meetings?type=poll"],
+    ["/r/a/flow", "?tab=schedule", "/r/a/meetings?type=poll"],
     ["/r/a/folders/f9", "", "/r/a/docs?folder=f9"],
     ["/r/a/questions/q1", "", "/r/a?detail=question%3Aq1"],
     ["/r/a/decisions/d1", "", "/r/a?detail=decision%3Ad1"],
@@ -75,6 +78,7 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
     expect(legacyRedirect("/r/a/meetings/m1", "")).toBeNull();
     expect(legacyRedirect("/r/a", "")).toBeNull();
     expect(legacyRedirect("/r/a/tasks", "?new=task")).toBeNull();
+    expect(legacyRedirect("/r/a/flow", "?tab=calendar")).toBeNull();
   });
 
   it("never redirects a target onto another legacy rule", () => {

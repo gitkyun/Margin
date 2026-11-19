@@ -213,7 +213,15 @@ function WorkspaceRoutes() {
               </DocTabsFrame>
             }
           />
-          <Route path="/r/:researchId/flow" element={<PlanningPage />} />
+          {/* 연구 흐름(F1). 예전 시간 조율 탭(`tab=schedule`)은 미팅의 시간 조율 보기로 옮깁니다(07 §4). */}
+          <Route
+            path="/r/:researchId/flow"
+            element={
+              <LegacyOr>
+                <PlanningPage />
+              </LegacyOr>
+            }
+          />
           <Route
             path="/r/:researchId/meetings/:meetingId?"
             element={<MeetingsPage />}

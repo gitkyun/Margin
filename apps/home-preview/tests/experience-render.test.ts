@@ -151,9 +151,11 @@ describe("experience pages render with an empty research", () => {
   });
   it("calendar and planning initialize without premium plugins", async () => {
     const { PlanningPage } = await import("../src/pages/PlanningPage");
-    await page(PlanningPage, "/r/r1/planning");
-    expect(screen.getByRole("heading", { name: "일정" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("tab", { name: "캘린더" }));
+    await page(PlanningPage, "/r/r1/flow");
+    expect(screen.getByRole("heading", { name: "연구 흐름" })).toBeTruthy();
+    // 시간 조율 탭은 미팅 목록으로 옮겼습니다(07 §4).
+    expect(screen.queryByRole("tab", { name: /시간 조율/ })).toBeNull();
+    fireEvent.click(screen.getByRole("tab", { name: "달력" }));
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "오늘" })).toBeTruthy(),
     );
