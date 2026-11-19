@@ -1,4 +1,5 @@
 import { currentLang, t } from "@/lib/i18n";
+import { AIRequestError } from "@/lib/assistant-source";
 import { assertConnected, supabase } from "./supabase";
 import {
   AI_NOT_CONFIGURED_CODE,
@@ -342,13 +343,15 @@ async function postAI(
     throw new AINotConfiguredError();
   }
   if (!response.ok)
-    throw new Error(
+    // 오류 코드를 함께 넘겨 화면이 근거가 바뀐 경우(SOURCE_CHANGED)에 [다시 보내기]를 둘 수 있게 합니다.
+    throw new AIRequestError(
       localizeServerMessage(
         payload?.error?.message ??
           payload?.message ??
           payload?.error ??
           t("AI 요청을 처리하지 못했어요. 잠시 뒤 다시 시도해 주세요."),
       ),
+      typeof payload?.error?.code === "string" ? payload.error.code : undefined,
     );
   return payload;
 }

@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import {
+  HANDLED,
   OWNER,
   RESEARCH_ID,
   WORKSPACE,
@@ -1034,5 +1035,110 @@ test("미팅 정리 답 아래 [요약 저장]은 그 기록의 요약으로 저
   expect(saves.find((s) => s.p_kind === "aiCandidates")?.p_value).toMatchObject(
     { id: "cand-summary", status: "adopted" },
   );
+  expect(errors).toEqual([]);
+});
+
+test("보고 있던 기록이 바뀌면 [다시 보내기]가 최신 판으로 같은 질문을 보낸다(IA v2 06 §2.2, 09 A7)", async ({
+  page,
+}) => {
+  const meeting = WORKSPACE.meetings.find((m) => m.status === "recorded")!;
+  const { server, errors } = await open(
+    page,
+    1440,
+    900,
+    0,
+    `/r/${RESEARCH_ID}/meetings/${meeting.id}`,
+  );
+  // 첫 요청은 그 사이 메모가 바뀌어(판 1 → 2) 서버가 받지 않습니다. 화면은 다시 불러와 판 2를 압니다.
+  let changed = false;
+  server.rpc("rms_bootstrap", () =>
+    changed
+      ? {
+          ...WORKSPACE,
+          meetings: WORKSPACE.meetings.map((m) =>
+            m.id === meeting.id ? { ...m, memoRevision: 2 } : m,
+          ),
+        }
+      : WORKSPACE,
+  );
+  const sent: { contexts?: { kind: string; revision?: number }[] }[] = [];
+  server.fn("ai-assist", async (body, route) => {
+    if (route.request().method() === "GET") return { models };
+    sent.push(body as (typeof sent)[number]);
+    if (!changed) {
+      changed = true;
+      await route.fulfill({
+        status: 409,
+        headers: {
+          "access-control-allow-origin": "*",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          error: {
+            code: "SOURCE_CHANGED",
+            message: "자료가 변경되었습니다. 최신 내용을 다시 선택해 주세요.",
+          },
+        }),
+      });
+      return HANDLED;
+    }
+    return {
+      runId: "run-fresh",
+      candidates: [],
+      answer: "최신 메모로 답했어요.",
+      creditsUsed: 0.5,
+      creditStatus: "settled",
+      model: (body as { model?: string }).model,
+    };
+  });
+  await page
+    .getByRole("toolbar", { name: "옆 창 열기" })
+    .getByRole("button", { name: "연구 도우미" })
+    .click();
+  const panel = page.locator(".assistant-side-panel");
+  const panelInput = panel
+    .locator("[data-kokonut-composer]")
+    .getByRole("textbox", { name: "연구 도우미에게 질문" });
+  await panelInput.fill("이 기록에서 남은 일은?");
+  await panelInput.press("Enter");
+
+  const alert = panel.getByRole("alert");
+  await expect(alert).toContainText(
+    "보고 있던 기록이 바뀌었어요. 최신 내용으로 다시 보낼까요?",
+  );
+  // 보낸 질문은 입력창에 그대로 돌아옵니다.
+  await expect(panelInput).toHaveValue("이 기록에서 남은 일은?");
+  await alert.getByRole("button", { name: "다시 보내기" }).click();
+  await expect(panel.getByText("최신 메모로 답했어요.")).toBeVisible();
+  expect(sent).toHaveLength(2);
+  const meetingContext = (i: number) =>
+    sent[i].contexts?.find((c) => c.kind === "meetings");
+  expect(meetingContext(0)?.revision).toBe(1);
+  expect(meetingContext(1)?.revision).toBe(2);
+  // 같은 질문은 한 번만 남고, 그 메시지의 칩만 최신 판으로 바뀝니다.
+  const saved = server.calls
+    .filter((call) => call.name === "rms_save_record")
+    .map(
+      (call) =>
+        (
+          call.body as {
+            p_kind: string;
+            p_value: {
+              messages?: {
+                role: string;
+                contexts?: { kind: string; revision?: number }[];
+              }[];
+            };
+          }
+        ).p_value,
+    )
+    .filter((value) => value.messages)
+    .at(-1)!;
+  const asked = saved.messages!.filter((m) => m.role === "user");
+  expect(asked).toHaveLength(1);
+  expect(asked[0].contexts?.find((c) => c.kind === "meetings")?.revision).toBe(
+    2,
+  );
+  await expect(panelInput).toHaveValue("");
   expect(errors).toEqual([]);
 });
