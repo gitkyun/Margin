@@ -252,6 +252,45 @@
   .item-detail-suggestions {
     min-width: 0;
   }
+  /* 수정 결과의 담긴 검토 요청과 교수 응답(06 §6.6) */
+  .item-detail-row > span > small {
+    display: block;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .item-detail-review {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    padding: var(--spacing-8) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .item-detail-review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    min-width: 0;
+  }
+  .item-detail-review-head strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: var(--typography-label2-fontSize);
+  }
+  .item-detail-comments {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--typography-label2-fontSize);
+  }
+  .item-detail-comments small {
+    display: block;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+  }
   .item-detail-toggle {
     display: inline-flex;
     align-items: center;

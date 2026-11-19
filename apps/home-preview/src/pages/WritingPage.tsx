@@ -589,7 +589,8 @@ function DocumentEditor({ initial }: { initial: DocumentRecord }) {
       const materialId = pending.material.id;
       pendingPDF.current = {};
       setPreview(null);
-      const resultHref = `/r/${initial.researchId}/results?new=1&version=${versionId}`;
+      // 글 화면을 떠나지 않고 그 자리에서 수정 결과 작성 창을 엽니다(01 §3.3 `new=result`).
+      const resultHref = `?new=result&version=${versionId}`;
       if (next === "result" && versionId) {
         toast.success(
           t("PDF를 자료로 등록했어요. 수정 결과에 고친 내용을 적어 주세요."),

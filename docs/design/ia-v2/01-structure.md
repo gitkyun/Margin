@@ -116,6 +116,8 @@
 | `/r/:id/results` | `/r/:id/meetings?type=review` |
 | `/r/:id/results/:resultId` | `/r/:id/meetings?type=review&detail=result:<id>` |
 | `/r/:id/results?new=1&feedback=&task=&version=` | `/r/:id/meetings?type=review&new=result&…` |
+
+[사실, 2026-11-19 5단계] `/results/:id`(`full=1` 포함)와 `/results?new=1…`은 위 표대로 옮깁니다. `new=result`는 미팅 화면만이 아니라 어느 화면에서든 그 자리에서 작성 창을 엽니다([06](06-assistant.md) §6.6). `/results` 목록은 미팅 목록에 수정 결과 구획([04](04-meetings.md) §2.4)이 생기는 PR에서 옮깁니다.
 | `/r/:id/reviews` | `/r/:id/meetings?type=review` |
 | `/r/:id/reviews?new=1` / `?result=a,b` | `/r/:id/meetings?type=review&new=review` / `…&result=a,b` |
 | `/r/:id/meetings/:meetingId?tab=prepare` / `?tab=record` | `…/meetings/:meetingId?mode=prepare` / `?mode=record` |

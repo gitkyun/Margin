@@ -55,6 +55,20 @@ const RULES: Record<string, Rule> = {
     if (id) params.set("detail", `feedback:${id}`);
     return build(`${base}/tasks`, params);
   },
+  // 5단계: 수정 결과 한 건은 미팅의 검토 보기 위의 항목 상세로, 작성 창(`new=1`)은 그 자리의 창(`new=result`)으로 엽니다(01 §3.3).
+  // 수정 결과 목록(`/results`)은 미팅 목록에 수정 결과 구획이 생길 때까지 지금 화면에 둡니다.
+  results: (base, [id], params) => {
+    if (id) {
+      params.delete("full");
+      params.set("type", "review");
+      params.set("detail", `result:${id}`);
+      return build(`${base}/meetings`, params);
+    }
+    if (params.get("new") !== "1") return null;
+    params.set("type", "review");
+    params.set("new", "result");
+    return build(`${base}/meetings`, params);
+  },
   // 4단계: 연구 도우미 화면은 사이드 창으로 엽니다(01 §3.3). 요청 종류(`mode`)는 넘기지 않고,
   // 예전 제안 탭(`tab=overview`)은 창의 제안 보기로, 글에서 넘어온 것(`document=`)은 그 글 위의 창으로 엽니다.
   assistant: (base, _rest, params) => {
@@ -107,4 +121,6 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/account", ""],
   ["/r/a/assistant", "?tab=overview"],
   ["/r/a/assistant", "?document=d1&selection=1"],
+  ["/r/a/results/r1", "?full=1"],
+  ["/r/a/results", "?new=1&version=v1"],
 ];

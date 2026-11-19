@@ -356,3 +356,37 @@ test("예전 피드백 전체 화면 주소는 항목 상세로 연다", async (
     /\/tasks\?view=feedback&detail=feedback%3Amissing-id$/,
   );
 });
+
+test("수정 결과는 예전 화면으로 가지 않고 그 자리의 창에서 쓰고 고친다(06 §6.6)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const base = new URL(page.url()).pathname;
+
+  // ⌘K '수정 결과 작성'과 같은 주소: 지금 화면(홈) 위에서 창이 열리고, 저장하면 그 상세가 열립니다.
+  await page.goto(`${base}?new=result`);
+  const dialog = page.getByRole("dialog", { name: "수정 결과 작성" });
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`${base}$`));
+  await dialog.getByRole("textbox", { name: /제목/ }).fill("비교표 연도 열");
+  await dialog
+    .getByRole("textbox", { name: /수정한 내용/ })
+    .fill("비교표에 연도 열을 더했어요");
+  await dialog.getByRole("button", { name: /저장/ }).click();
+  const detail = page.getByRole("complementary", { name: "항목 상세" });
+  await expect(
+    detail.getByRole("textbox", { name: "수정 결과 제목" }),
+  ).toHaveValue("비교표 연도 열");
+  await expect(page).toHaveURL(/detail=result/);
+
+  // 상세의 [편집]은 수정 결과 대화상자를 상세 위에서 엽니다.
+  await detail.getByRole("button", { name: "편집" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "수정 결과 편집" }),
+  ).toBeVisible();
+});
