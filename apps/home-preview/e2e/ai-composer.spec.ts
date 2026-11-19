@@ -771,9 +771,41 @@ test("휴대폰 아래 탭의 연구 도우미는 화면을 옮기지 않고 창
   ).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}/tasks$`));
   await shot(page, "mobile-tab-assistant");
+
+  // 층(D16): 맨 위 세그먼트, 닫기(×)와 창 안 보기 줄은 없고 [⋯]가 대화 | 제안 | 실행 내역을 맡습니다.
+  const layer = page.locator(".ia-layer-head");
+  const segments = layer.getByRole("radiogroup", { name: "옆 창 보기" });
+  await expect(segments.getByRole("radio")).toHaveText([
+    "연구 도우미",
+    "결정·질문",
+    "자료",
+  ]);
+  await expect(
+    panel.getByRole("button", { name: "연구 도우미 창 닫기" }),
+  ).toBeHidden();
+  await expect(
+    panel.getByRole("tablist", { name: "연구 도우미 보기" }),
+  ).toBeHidden();
+  await layer.getByRole("button", { name: /^연구 도우미 보기/ }).click();
+  await page.getByRole("menuitemradio", { name: "실행 내역" }).click();
+  await expect(panel.getByText("아직 실행 내역이 없어요.")).toBeVisible();
+
+  // 세그먼트를 바꾸고 뒤로 가기로 닫으면 화면은 그대로이고, 다시 열면 마지막 세그먼트로 열립니다.
+  await segments.getByRole("radio", { name: "결정·질문" }).click();
+  await expect(
+    page.locator(".tasks-panel").filter({ hasText: "결정" }),
+  ).toBeVisible();
+  await page.goBack();
+  await expect(tab).toHaveAttribute("aria-pressed", "false");
+  await expect(page).toHaveURL(new RegExp(`/r/${RESEARCH_ID}/tasks$`));
+  await tab.click();
+  await expect(
+    segments.getByRole("radio", { name: "결정·질문" }),
+  ).toHaveAttribute("aria-checked", "true");
+
   await tab.click();
   await expect(tab).toHaveAttribute("aria-pressed", "false");
-  await expect(panel).toBeHidden();
+  await expect(layer).toBeHidden();
   expect(errors).toEqual([]);
 });
 

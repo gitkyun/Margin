@@ -1,4 +1,8 @@
-import type { AIConversation, SavedAICandidate } from "@/lib/domain";
+import {
+  isLegacyOrganizeCandidate,
+  type AIConversation,
+  type SavedAICandidate,
+} from "@/lib/domain";
 import { t } from "@/lib/i18n";
 import { formatCredits, runCreditUsage, type AICredits } from "@/lib/ai-usage";
 
@@ -36,4 +40,21 @@ export function runCreditsLabel(
   return used === undefined
     ? undefined
     : t("{credits}크레딧", { credits: formatCredits(used) });
+}
+
+/**
+ * 확인할 AI 제안(06 §2.7): 이 연구에서 아직 고르지 않은 제안. 본문 안 수정 제안은 글 편집 화면에서만,
+ * 지금 방식의 미팅 정리 제안은 기록 화면에서 다루므로 뺍니다. 연구 도우미의 제안 보기와 휴대폰 층의 [⋯] 점이 같이 씁니다.
+ */
+export function pendingSuggestions(
+  candidates: SavedAICandidate[],
+  researchId: string,
+): SavedAICandidate[] {
+  return candidates.filter(
+    (c) =>
+      c.researchId === researchId &&
+      c.status === "pending" &&
+      c.mode !== "suggest_edits" &&
+      (c.mode !== "organize_meeting" || isLegacyOrganizeCandidate(c.candidate)),
+  );
 }

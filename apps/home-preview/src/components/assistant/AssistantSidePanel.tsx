@@ -19,11 +19,14 @@ export function AssistantSidePanel({
   researchId,
   request,
   onClose,
+  onViewChange,
 }: {
   researchId: string;
   /** 주소(`?panel=assistant&panelView=…`)나 자료 창에서 열 때의 보기와 근거 칩. `at`이 바뀔 때마다 적용합니다. */
   request?: AssistantOpen | null;
   onClose(): void;
+  /** 창 안 보기(대화 | 제안 | 실행 내역)가 바뀔 때(휴대폰 층의 [⋯] 메뉴) */
+  onViewChange?(view: "chat" | "suggestions" | "runs"): void;
 }) {
   return (
     <section
@@ -41,6 +44,7 @@ export function AssistantSidePanel({
         <ResearchAssistant
           variant="panel"
           onClose={onClose}
+          onViewChange={onViewChange}
           openView={
             request
               ? {
