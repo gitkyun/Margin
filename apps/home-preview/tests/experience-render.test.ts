@@ -112,15 +112,18 @@ describe("experience pages render with an empty research", () => {
       screen.getAllByRole("button", { name: "계획서 만들기" }).length,
     ).toBeGreaterThan(0);
   });
-  it("assistant keeps suggestions and run history in the margin panel", async () => {
+  it("assistant panel keeps suggestions and run history in its own views", async () => {
     const { ResearchAssistant } =
       await import("../src/pages/ResearchAssistant");
-    // 확인할 제안이 없으면 패널은 닫혀 있어요. 제안 주소로 열어서 확인해요.
-    await page(ResearchAssistant, "/r/r1/assistant?tab=overview");
-    // 대화 목록 열과 화면 탭(대화·AI 제안·사용량)은 없어요.
-    expect(screen.queryByRole("tab", { name: "대화" })).toBeNull();
+    // 연구 도우미는 사이드 창 하나뿐입니다(예전 전체 화면은 5단계에 지움).
+    await page(ResearchAssistant, "/r/r1");
+    const views = screen.getByRole("tablist", { name: "연구 도우미 보기" });
+    expect(
+      Array.from(views.querySelectorAll("[role=tab]")).map(
+        (tab) => tab.textContent,
+      ),
+    ).toEqual(["대화", "제안", "실행 내역"]);
     expect(screen.queryByRole("tab", { name: "사용량" })).toBeNull();
-    expect(screen.getByRole("button", { name: /대화 기록/ })).toBeTruthy();
     // 연구 기록을 항상 전부 읽으므로 기록을 고르는 근거 탭은 없어요.
     expect(screen.queryByRole("tab", { name: /근거/ })).toBeNull();
     fireEvent.click(screen.getByRole("tab", { name: /제안/ }));
@@ -134,10 +137,16 @@ describe("experience pages render with an empty research", () => {
       expect(screen.getByText("아직 실행 내역이 없어요.")).toBeTruthy(),
     );
   });
-  it("assistant opens the suggestions tab for the old overview address", async () => {
+  it("assistant panel opens the view it is asked for", async () => {
     const { ResearchAssistant } =
       await import("../src/pages/ResearchAssistant");
-    await page(ResearchAssistant, "/r/r1/assistant?tab=overview");
+    await page(
+      () =>
+        React.createElement(ResearchAssistant, {
+          openView: { view: "suggestions", at: 1 },
+        }),
+      "/r/r1",
+    );
     expect(screen.getByText("AI 제안이 나오면 여기에 표시돼요.")).toBeTruthy();
   });
   it("calendar and planning initialize without premium plugins", async () => {
@@ -148,75 +157,5 @@ describe("experience pages render with an empty research", () => {
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "오늘" })).toBeTruthy(),
     );
-  });
-});
-
-describe("writing selections keep the AI scope explicit", () => {
-  const doc = {
-    id: "d-selection",
-    researchId: "r1",
-    title: "계획서",
-    text: "선택한 문장. 다른 문장.",
-    content: { type: "doc", content: [] },
-    type: "plan",
-    revision: 2,
-    createdAt: "2026-11-05T00:00:00Z",
-    updatedAt: "2026-11-05T00:00:00Z",
-  };
-  it("passes only the saved selected paragraph to the assistant", async () => {
-    state.workspace.data.documents = [doc];
-    sessionStorage.setItem(
-      "rms-ai-selection:u1:d-selection",
-      JSON.stringify({ revision: 2, text: "선택한 문장." }),
-    );
-    try {
-      const { ResearchAssistant } =
-        await import("../src/pages/ResearchAssistant");
-      await page(
-        ResearchAssistant,
-        "/r/r1/assistant?document=d-selection&selection=1",
-      );
-      const attached = await screen.findByRole("list", {
-        name: "첨부 자료",
-      });
-      expect(within(attached).getByText("계획서 · 선택 문단")).toBeTruthy();
-      fireEvent.click(
-        within(attached).getByRole("button", {
-          name: "계획서 · 선택 문단 첨부 해제",
-        }),
-      );
-      await waitFor(() =>
-        expect(screen.queryByRole("list", { name: "첨부 자료" })).toBeNull(),
-      );
-    } finally {
-      state.workspace.data.documents = [];
-      sessionStorage.clear();
-    }
-  });
-  it("does not substitute a full document when a selected paragraph is stale", async () => {
-    state.workspace.data.documents = [doc];
-    sessionStorage.setItem(
-      "rms-ai-selection:u1:d-selection",
-      JSON.stringify({ revision: 1, text: "선택한 문장." }),
-    );
-    try {
-      const { ResearchAssistant } =
-        await import("../src/pages/ResearchAssistant");
-      await page(
-        ResearchAssistant,
-        "/r/r1/assistant?document=d-selection&selection=1",
-      );
-      await waitFor(() =>
-        expect(
-          screen.getByText(
-            "선택한 문단을 불러오지 못했어요. 문서가 바뀌었을 수 있으니 글쓰기에서 문단을 다시 선택해 주세요.",
-          ),
-        ).toBeTruthy(),
-      );
-      expect(screen.queryByText("계획서 · 선택 문단")).toBeNull();
-    } finally {
-      state.workspace.data.documents = [];
-      sessionStorage.clear();
-    }
   });
 });

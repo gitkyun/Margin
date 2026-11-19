@@ -42,7 +42,6 @@ export function AssistantSidePanel({
         }
       >
         <ResearchAssistant
-          variant="panel"
           onClose={onClose}
           onViewChange={onViewChange}
           openView={

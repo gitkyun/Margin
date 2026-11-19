@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PanelFrame } from "@/components/margin-panel/MarginPanel";
 import { Icon } from "@/components/icons";
 import { StatusBadge, InlineEmpty } from "@/components/common";
 import { modeLabels } from "@/lib/experience";
@@ -30,10 +29,8 @@ interface RunRecord {
   error?: string | null;
 }
 
+/** 사이드 창 연구 도우미의 제안·실행 내역 보기(06 §2.7·§2.8)가 받는 값 */
 export interface AssistantPanelProps {
-  tab: AssistantPanelTab;
-  onTab(tab: AssistantPanelTab): void;
-  onClose(): void;
   pending: SavedAICandidate[];
   onAdopt(candidate: SavedAICandidate): void;
   onDismiss(candidate: SavedAICandidate): void;
@@ -41,36 +38,6 @@ export interface AssistantPanelProps {
   onCancelRun(runId: string): void;
   /** 실행 내역 줄을 누르면 갈 곳(06 §2.8). 갈 곳이 없으면 undefined이고 줄을 누를 수 없습니다. */
   runLink?(runId: string): (() => void) | undefined;
-}
-
-/**
- * 연구 도우미 작업대의 여백 패널. 제안(확인할 AI 제안), 기록(실행 내역).
- * 연구 도우미는 이 연구의 기록을 항상 전부 읽으므로 기록을 고르는 탭은 없습니다.
- */
-export function AssistantPanel(props: AssistantPanelProps) {
-  const { tab, onTab, onClose, pending, runs } = props;
-  return (
-    <PanelFrame
-      className="assistant-panel"
-      title={t("연구 도우미")}
-      onClose={onClose}
-      tab={tab}
-      onTab={(value) => onTab(value as AssistantPanelTab)}
-      tabs={[
-        { value: "suggestions", label: t("제안"), count: pending.length },
-        { value: "runs", label: t("실행 내역") },
-      ]}
-    >
-      {tab === "suggestions" && <AssistantSuggestions {...props} />}
-      {tab === "runs" && (
-        <AssistantRuns
-          runs={runs}
-          onCancelRun={props.onCancelRun}
-          runLink={props.runLink}
-        />
-      )}
-    </PanelFrame>
-  );
 }
 
 /** 제안 보기(06 §2.7): 연구 도우미 화면의 패널과 사이드 창의 '제안' 보기가 함께 씁니다. */

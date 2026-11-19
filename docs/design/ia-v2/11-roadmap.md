@@ -59,10 +59,10 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 | 3a | 글·자료 합친 목록, 열어 둔 탭, 글 편집 틀, 자료 보기 | 없음 | [x] [#122](https://github.com/gitkyun/Margin/pull/122)~[#131](https://github.com/gitkyun/Margin/pull/131) (캡처 검수 전) | 캡처 검수 → 병합 |
 | 3b | 본문 안 수정 제안 | `ai-assist` | [x] [#132](https://github.com/gitkyun/Margin/pull/132)·[#133](https://github.com/gitkyun/Margin/pull/133) (실제 AI 결과 확인 전) | 실제 AI 결과 + 캡처 → 병합(함수 배포) |
 | 4 | 연구 도우미 창(P1), 자료 창(P4) | 없음 | [x] [#134](https://github.com/gitkyun/Margin/pull/134)~[#137](https://github.com/gitkyun/Margin/pull/137)·[#139](https://github.com/gitkyun/Margin/pull/139)·[#140](https://github.com/gitkyun/Margin/pull/140)·[#141](https://github.com/gitkyun/Margin/pull/141)·[#142](https://github.com/gitkyun/Margin/pull/142)·[#143](https://github.com/gitkyun/Margin/pull/143)·[#144](https://github.com/gitkyun/Margin/pull/144)·[#153](https://github.com/gitkyun/Margin/pull/153)·[#154](https://github.com/gitkyun/Margin/pull/154)·[#155](https://github.com/gitkyun/Margin/pull/155)·[#156](https://github.com/gitkyun/Margin/pull/156)·[#157](https://github.com/gitkyun/Margin/pull/157) (캡처 검수 전) | 캡처 검수 → 병합 |
-| 5 | 정리: 연구 흐름, 예전 화면·임시 통로 제거, 문서 마무리 | 없음 | [ ] | 최종 검수 → 병합 |
+| 5 | 정리: 연구 흐름, 예전 화면·임시 통로 제거, 문서 마무리 | 없음 | [~] 연구 도우미 예전 화면 부품 지우기(`chore/ia-v2-5-assistant-page-cleanup`) | 최종 검수 → 병합 |
 | 6 | 후속(사진 붙이기, 서버 전사, 형광펜 종류, 발표 자료 형태, 함께 쓰기) | 마이그레이션 | 결정 전 | 시작 여부 |
 
-2026-11-19 확인: 4단계(#134~#157)도 PR마다 사용자 확인으로 병합·배포했지만 캡처 검수(360~1440px·다크·일본어)와 실제 AI 결과 확인은 남아 있습니다. 4단계에서 정해 둔 남은 일: 글을 미팅에 가져가기(준비 화면에 `documentIds`가 보일 때), 예전 연구 도우미 화면 부품·`assistant-handoff` 지우기(5단계).
+2026-11-19 확인: 4단계(#134~#157)도 PR마다 사용자 확인으로 병합·배포했지만 캡처 검수(360~1440px·다크·일본어)와 실제 AI 결과 확인은 남아 있습니다. 4단계에서 정해 둔 남은 일: 글을 미팅에 가져가기(준비 화면에 `documentIds`가 보일 때), 예전 연구 도우미 화면 부품·`assistant-handoff` 지우기(5단계 첫 PR).
 
 2026-11-17 확인: 1단계(#103)와 2a(#105~#107)는 '캡처 검수' 없이 병합됐습니다. 사용자 캡처 검수는 아직 남아 있고, 2a는 2b보다 먼저 나갔습니다(녹음만 있고 메모가 없는 기록은 2b 전까지 [정리하기]로 정리할 수 없음).
 
@@ -82,7 +82,7 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 ### 4단계 전에 먼저 넣은 것 (2026-11-17 사용자 요청)
 
 - 아이콘 줄의 연구 도우미를 누르면 화면을 옮기지 않고 사이드 창에 간이 연구 도우미(`components/assistant/AssistantSidePanel.tsx`)가 열립니다. 질문 입력, 확인할 AI 제안 수, 최근 대화 5개가 있습니다.
-- 화면 이동은 창 안에서 [보내기]·대화 고르기·[전체 화면으로 열기]·제안 링크를 눌렀을 때만 합니다. 보낸 질문과 고른 대화는 주소가 아닌 history state(`lib/assistant-handoff.ts`)로 넘기고, 도우미 화면이 모델 목록을 받은 뒤 한 번 보냅니다.
+- 화면 이동은 창 안에서 [보내기]·대화 고르기·[전체 화면으로 열기]·제안 링크를 눌렀을 때만 합니다. 보낸 질문과 고른 대화는 주소가 아닌 history state(`lib/assistant-handoff.ts`, 5단계에 지움)로 넘기고, 도우미 화면이 모델 목록을 받은 뒤 한 번 보냅니다.
 - 06의 창 안 대화(답을 창 안에서 받기, [새 대화][대화 목록 ▾] 머리)는 4단계 그대로 남습니다. 휴대폰 아래 탭의 연구 도우미는 아직 화면으로 갑니다(D16 레이어는 4단계).
 
 ### 동시에 할 수 있는 것
@@ -116,3 +116,18 @@ AI(또는 구현하는 사람)는 **기계로 확인할 수 있는 것은 직접
 - 편집기의 발표 자료 형태, 문단·표 편집 확장: 6단계에서 따로 결정합니다.
 - 형광펜 여러 종류, 사진 붙이기, 서버 쪽 전사: [08](08-data.md) §12.
 - 기간: 사람 수와 검수 방식에 따라 달라져서 적지 않았습니다.
+
+### 5단계 남은 일(2026-11-19 조사)
+
+예전 화면은 아직 아래 통로로 열립니다. 각 통로가 하는 일을 새 화면(항목 상세·미팅·연구 흐름)으로 옮긴 PR에서 그 화면 파일을 지웁니다.
+
+| 통로 | 예전 화면 | 새 자리 |
+|---|---|---|
+| 피드백 상세의 '수정 방법 쓰기·제안받기'(`/feedback/:id?full=1`), 피드백 입력(`/feedback?new=1`) | `student/FeedbackPage` | 항목 상세 수정 방법 구획([06](06-assistant.md) §6.2), 기록 추가 창 |
+| 수정 결과 상세의 '편집'(`/results/:id?full=1`), ⌘K '수정 결과 작성'·글 화면의 수정 결과 만들기(`/results?new=1`), 수정 결과 목록 | `student/ResultsPage` | 수정 결과 대화상자(§6.6), 미팅 목록의 검토 구획 |
+| ⌘K '검토 요청 만들기'·항목 상세·미팅 목록의 `/reviews?new=1`, 검토 요청 목록 | `reviews/ReviewsPage` | 검토 요청 창을 그 자리에서 열기 |
+| 할 일 한 건 `/tasks/:id?full=1` | `student/TasksPage` | 항목 상세(§6.3) |
+| `/flow` | `PlanningPage` | 연구 흐름([07](07-other-screens.md) §3) |
+| 화면이 보내는 임시 탭(`MarginPanel`) | 미팅·글·자료·피드백·수정 결과 화면 | 각 화면의 사이드 창 내용 정리 후 `MarginPanel` 통로 제거 |
+| ⌘K '(예전) 피드백·수정 결과·검토 요청' | — | 위 화면이 옮겨지면 지움 |
+
