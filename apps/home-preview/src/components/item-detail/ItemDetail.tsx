@@ -34,6 +34,11 @@ import {
   type DetailKind,
   type DetailRef,
 } from "@/lib/item-detail";
+import { useNavigationGuard } from "@/lib/navigation-guard";
+import { SourceAudioClip } from "@/components/recording/SourceAudioClip";
+import { ResultEditorDialog } from "@/pages/student/ResultEditorDialog";
+import { newResultDraft } from "@/pages/student/result-draft";
+import { FeedbackPlans } from "./FeedbackPlans";
 import "./item-detail.css";
 
 const KIND_LABEL: Record<DetailKind, string> = {
@@ -282,6 +287,95 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+/**
+ * 긴 글 칸(06 §6.1): [편집]을 누르면 글 칸과 [취소] [저장]. 저장하지 않은 글이 있으면 화면을 옮기기 전에 묻습니다.
+ */
+function LongTextSection({
+  title,
+  value,
+  empty,
+  note,
+  onSave,
+}: {
+  title: string;
+  value: string;
+  /** 비어 있을 때 보일 말 */
+  empty: string;
+  /** 칸 아래 한 줄 안내(예: 나만 보는 메모) */
+  note?: string;
+  onSave(value: string): Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const dirty = editing && text !== value;
+  useNavigationGuard({ dirty, busy: saving, label: title });
+  return (
+    <section className="item-detail-section">
+      <div className="item-detail-section-head">
+        <h3>{title}</h3>
+        {!editing && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setText(value);
+              setEditing(true);
+            }}
+          >
+            {t("편집")}
+          </Button>
+        )}
+      </div>
+      {editing ? (
+        <form
+          className="item-detail-edit"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setSaving(true);
+            try {
+              await onSave(text.trim());
+              setEditing(false);
+            } catch (error) {
+              toast.error(friendlyError(error));
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          <textarea
+            aria-label={title}
+            value={text}
+            maxLength={20000}
+            rows={5}
+            autoFocus
+            onChange={(event) => setText(event.target.value)}
+          />
+          <div className="item-detail-actions">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={saving}
+              onClick={() => setEditing(false)}
+            >
+              {t("취소")}
+            </Button>
+            <Button type="submit" size="sm" disabled={saving}>
+              {saving ? t("저장 중") : t("저장")}
+            </Button>
+          </div>
+        </form>
+      ) : value ? (
+        <p className="item-detail-text">{value}</p>
+      ) : (
+        <p className="item-detail-empty">{empty}</p>
+      )}
+      {note && <p className="item-detail-note">{note}</p>}
+    </section>
+  );
+}
+
 function TitleField({
   value,
   onSave,
@@ -322,15 +416,19 @@ function Quote({
   text,
   meetingId,
   researchId,
+  audio,
 }: {
   text?: string;
   meetingId?: string;
   researchId: string;
+  /** 전사문에서 고른 구간으로 만든 기록이면 그 구간 녹음 듣기 */
+  audio?: { source: NonNullable<Feedback["audioSource"]>; label: string };
 }) {
-  if (!text) return null;
+  if (!text && !audio) return null;
   return (
     <Section title={t("원문")}>
-      <blockquote className="item-detail-quote">{text}</blockquote>
+      {text && <blockquote className="item-detail-quote">{text}</blockquote>}
+      {audio && <SourceAudioClip source={audio.source} label={audio.label} />}
       {meetingId && (
         <Link
           className="item-detail-link"
@@ -747,8 +845,9 @@ function FeedbackBody({
   researchId: string;
   feedback: Feedback;
 }) {
-  const { data } = useWorkspace();
+  const { data, save } = useWorkspace();
   const instant = useInstantSave();
+  const [resultDraft, setResultDraft] = useState<RevisionResult | null>(null);
   const plans = data.plans.filter(
     (plan) => plan.feedbackId === feedback.id && !plan.archivedAt,
   );
@@ -817,34 +916,27 @@ function FeedbackBody({
         text={feedback.sourceQuote}
         meetingId={feedback.meetingId}
         researchId={researchId}
+        audio={
+          feedback.audioSource
+            ? { source: feedback.audioSource, label: feedback.title }
+            : undefined
+        }
       />
-      {feedback.body && (
-        <Section title={t("내용")}>
-          <p className="item-detail-text">{feedback.body}</p>
-        </Section>
-      )}
+      <LongTextSection
+        title={t("내용")}
+        value={feedback.body}
+        empty={t("아직 내용이 없어요.")}
+        onSave={async (body) => {
+          if (!body) throw new Error(t("피드백 내용을 입력해 주세요."));
+          await save("feedback", { ...feedback, body });
+        }}
+      />
       <Section title={t("수정 방법")}>
-        {plans.filter((plan) => plan.status === "saved").length ? (
-          plans
-            .filter((plan) => plan.status === "saved")
-            .map((plan) => (
-              <div key={plan.id} className="item-detail-plan">
-                <strong>{plan.title}</strong>
-                {plan.method && <p>{plan.method}</p>}
-              </div>
-            ))
-        ) : (
-          <p className="item-detail-empty">
-            {t("아직 정한 수정 방법이 없어요.")}
-          </p>
-        )}
-        <Link
-          className="item-detail-link"
-          to={`/r/${researchId}/feedback/${feedback.id}?full=1`}
-        >
-          {t("수정 방법 쓰기·제안받기")}
-          <Icon name="chevron-right" size={14} />
-        </Link>
+        <FeedbackPlans
+          researchId={researchId}
+          feedback={feedback}
+          plans={plans}
+        />
       </Section>
       <Section title={t("할 일")}>
         {tasks.map((task) => (
@@ -875,11 +967,36 @@ function FeedbackBody({
               : t("아직 수정 결과가 없어요.")}
           </p>
         )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            setResultDraft(newResultDraft(researchId, { feedback }))
+          }
+        >
+          <Icon name="plus" size={16} />
+          {t("수정 결과 추가")}
+        </Button>
+        {/* 상세 위에서 바로 엽니다(지금 수정 결과 대화상자). */}
+        <ResultEditorDialog
+          researchId={researchId}
+          draft={resultDraft}
+          setDraft={setResultDraft}
+        />
       </Section>
       <ReviewSection
         researchId={researchId}
         resultIds={results.map((result) => result.id)}
         feedbackIds={[feedback.id]}
+      />
+      <LongTextSection
+        title={t("개인 메모")}
+        value={feedback.notes ?? ""}
+        empty={t("아직 메모가 없어요.")}
+        note={t("나만 보는 메모예요. 교수·공동연구자에게 보이지 않아요.")}
+        onSave={async (notes) => {
+          await save("feedback", { ...feedback, notes });
+        }}
       />
       <SourceMeeting meetingId={feedback.meetingId} researchId={researchId} />
     </>
