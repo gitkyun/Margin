@@ -580,7 +580,6 @@ export function OnboardingPage() {
                 ? onboardingLeadLabel(meetingAnswer, today)
                 : undefined
             }
-            today={today}
             focus={(["name", "phase", "meeting"] as const)[step]}
             advisorCount={advisorEmails.length}
           />
