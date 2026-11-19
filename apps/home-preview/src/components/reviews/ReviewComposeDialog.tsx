@@ -1,6 +1,5 @@
 import { assertConnected } from "@/lib/supabase";
 import { useNavigationGuard } from "@/lib/navigation-guard";
-import { unreadReviewNotifications } from "@/lib/notifications";
 import {
   useEffect,
   useMemo,
@@ -9,16 +8,11 @@ import {
   type FormEvent,
   type ChangeEvent,
 } from "react";
-import {
-  Link,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { Choice, Segments } from "@/components/experience";
+import { Choice } from "@/components/experience";
 import { Checkbox } from "@montage-ui/core";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,13 +24,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  EmptyState,
-  Field,
-  LoadingState,
-  PageHeader,
-  StatusBadge,
-} from "@/components/common";
+import { Field, StatusBadge } from "@/components/common";
 import { SectionBoundary } from "@/components/SectionBoundary";
 import { Icon } from "@/components/icons";
 import { PdfViewer } from "@/components/PdfViewer";
@@ -46,29 +34,37 @@ import {
   evidenceIssue,
   errorText,
   knownProfessorEmails,
-  latestResponse,
-  latestRound,
-  sharingLabels,
-  sharingTone,
   sourceExcerpt,
-  timeText,
-} from "./helpers";
+} from "@/pages/reviews/helpers";
 import { addAdvisor, advisorChoices } from "@/lib/advisors";
 import { isUnregisteredReviewer } from "@/lib/invites";
 import { InviteLinkButton } from "@/components/InviteLinkButton";
 import { localizeServerMessage } from "@/lib/server-messages";
-import { RequestDirection } from "./RequestDirection";
-import { SearchInput, WorkTabs } from "@/pages/student/shared";
+import { RequestDirection } from "@/pages/reviews/RequestDirection";
+// 창의 모양(공개 미리보기·수정 결과 고르기)은 검토 화면과 같은 스타일 파일에 있습니다. 이 파일은 창을 열 때만 불러옵니다.
+import "@/pages/reviews/reviews.css";
 
-export function ReviewsPage() {
-  const { researchId = "" } = useParams();
-  const { data, loading, createReview, saveResearch, user, mode } =
-    useWorkspace();
+/**
+ * 검토 요청 만들기 창(01 §3.3 `new=review`). 예전 검토 요청 화면에 있던 창을 그대로 옮겼습니다:
+ * 제목·교수 계정·수정 결과 고르기 → 공유할 내용 확인 → 검토 링크 만들기. 링크를 만들 뿐 보내지는 않습니다.
+ * `initialResultIds`가 있으면 그 수정 결과를 골라 둔 채 엽니다.
+ */
+export function ReviewComposeDialog({
+  researchId,
+  open,
+  initialResultIds = [],
+  onClose,
+  onWriteResult,
+}: {
+  researchId: string;
+  open: boolean;
+  initialResultIds?: string[];
+  onClose(): void;
+  /** 수정 결과가 없을 때 [수정 결과 작성]: 이 창을 닫고 작성 창을 엽니다. */
+  onWriteResult(): void;
+}) {
+  const { data, createReview, saveResearch, user, mode } = useWorkspace();
   const navigate = useNavigate();
-  const [params, setParams] = useSearchParams();
-  const [filter, setFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const [open, setOpen] = useState(false);
   const [step, setStep] = useState<"compose" | "preview">("compose");
   const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
@@ -77,7 +73,6 @@ export function ReviewsPage() {
   const [discardOpen, setDiscardOpen] = useState(false);
   const [error, setError] = useState("");
   const [previewFile, setPreviewFile] = useState<MaterialVersion | null>(null);
-  const prompted = useRef("");
   const requestKey = useRef(uid());
   const research = data.researches.find((r) => r.id === researchId);
   // 연구에 등록한 지도교수가 먼저, 그다음 전에 검토를 요청한 이메일.
@@ -95,52 +90,43 @@ export function ReviewsPage() {
     dirty: open && (!!title.trim() || emailEdited || selected.length > 0),
     busy,
     label: t("검토 요청"),
-    onDiscard: () => setOpen(false),
+    onDiscard: onClose,
   });
   const results = useMemo(
     () =>
       data.results
-        .filter((r) => r.researchId === researchId)
+        .filter((r) => r.researchId === researchId && !r.archivedAt)
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [data.results, researchId],
   );
   const picks = results.filter((r) => selected.includes(r.id));
-  const hasReviews = data.reviews.some((r) => r.researchId === researchId);
-  const requests = data.reviews
-    .filter(
-      (r) =>
-        r.researchId === researchId &&
-        (filter === "all" || r.status === filter) &&
-        `${r.title} ${r.professorEmail}`
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-    )
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  // ?result=a 또는 ?result=a,b(피드백 상세의 ‘교수에게 보내기’)로 들어오면 그 수정 결과를
-  // 골라 둔 채 만들기 창을 열어요. 링크는 학생이 이 창에서 직접 만들어요.
+  // 열 때마다 새로 시작합니다. 골라 둔 수정 결과가 있으면 제목을 그 이름으로 채웁니다.
+  const initialKey = initialResultIds.join(",");
   useEffect(() => {
-    const raw = params.get("result");
-    if (loading || !raw || prompted.current === raw) return;
-    const ids = [...new Set(raw.split(","))].filter((id) =>
+    if (!open) return;
+    requestKey.current = uid();
+    const ids = [...new Set(initialResultIds)].filter((id) =>
       results.some((r) => r.id === id),
     );
-    if (!ids.length) return;
-    prompted.current = raw;
-    requestKey.current = uid();
     const first = results.find((r) => r.id === ids[0])?.title ?? t("수정 결과");
     setSelected(ids);
-    setEmail((current) => current || professors[0] || "");
+    setEmail(professors[0] ?? "");
     setTitle(
-      ids.length > 1
-        ? t("{title} 외 {count}건 검토", {
-            title: first,
-            count: ids.length - 1,
-          })
-        : t("{title} 검토", { title: first }),
+      !ids.length
+        ? ""
+        : ids.length > 1
+          ? t("{title} 외 {count}건 검토", {
+              title: first,
+              count: ids.length - 1,
+            })
+          : t("{title} 검토", { title: first }),
     );
-    setOpen(true);
+    setError("");
     setStep("compose");
-  }, [params, results, loading]);
+    setPreviewFile(null);
+    setDiscardOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialKey]);
   useEffect(() => {
     requestKey.current = uid();
   }, [title, email, selected]);
@@ -148,40 +134,16 @@ export function ReviewsPage() {
     if (busy) return;
     requestKey.current = uid();
     requestGuard.clear();
-    setOpen(false);
     setDiscardOpen(false);
     setError("");
     setPreviewFile(null);
-    if (params.has("result")) {
-      const p = new URLSearchParams(params);
-      p.delete("result");
-      setParams(p, { replace: true });
-    }
+    onClose();
   };
   const requestClose = () => {
     if (busy) return;
     if (title.trim() || emailEdited || selected.length) setDiscardOpen(true);
     else close();
   };
-  const begin = () => {
-    requestKey.current = uid();
-    setTitle("");
-    setEmail(professors[0] ?? "");
-    setSelected([]);
-    setError("");
-    setStep("compose");
-    setPreviewFile(null);
-    setOpen(true);
-  };
-  // ⌘K ‘검토 요청 만들기’(?new=1)로 들어오면 만들기 대화상자를 바로 엽니다.
-  useEffect(() => {
-    if (loading || params.get("new") !== "1") return;
-    const p = new URLSearchParams(params);
-    p.delete("new");
-    setParams(p, { replace: true });
-    begin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params, loading]);
   const validate = () => {
     if (!title.trim()) return t("검토 요청 제목을 적어 주세요.");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
@@ -253,7 +215,7 @@ export function ReviewsPage() {
       });
       requestKey.current = uid();
       requestGuard.clear();
-      setOpen(false);
+      onClose();
       void registerAdvisor(request.professorEmail);
       toast.success(
         t(
@@ -267,141 +229,8 @@ export function ReviewsPage() {
       setBusy(false);
     }
   };
-  if (loading) return <LoadingState />;
   return (
-    <div className="reviews-page">
-      <PageHeader
-        title={t("검토 요청")}
-        tabs={<WorkTabs researchId={researchId} selected="reviews" />}
-        actions={
-          // 검토 요청이 없을 때는 빈 상태의 버튼이 주 행동이라 여기는 보조로 낮춥니다.
-          <Button variant={hasReviews ? undefined : "outline"} onClick={begin}>
-            <Icon name="plus" size={17} />
-            {t("검토 요청 만들기")}
-          </Button>
-        }
-        toolbar={
-          <>
-            <Segments
-              label={t("공유 상태")}
-              value={filter}
-              onChange={(value) => setFilter(value as typeof filter)}
-              options={[
-                { value: "all", label: t("전체") },
-                { value: "shared", label: t("공유 중") },
-                { value: "stopped", label: t("공유 중지") },
-              ]}
-            />
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder={t("제목이나 교수 이메일로 찾기")}
-            />
-          </>
-        }
-      />
-      {!requests.length ? (
-        <EmptyState
-          title={
-            search || filter !== "all"
-              ? t("조건에 맞는 검토 요청이 없어요")
-              : t("아직 검토 요청이 없어요")
-          }
-          description={
-            search || filter !== "all"
-              ? t("검색어나 공유 상태를 바꿔 보세요.")
-              : t(
-                  "수정 결과를 선택해 검토 링크를 만들고, 교수님께 직접 전달할 수 있어요.",
-                )
-          }
-          action={
-            !results.length ? (
-              <Button asChild variant="outline">
-                <Link to={`/r/${researchId}/results?new=1`}>
-                  {t("수정 결과 작성")}
-                </Link>
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={begin}>
-                {t("검토 요청 만들기")}
-              </Button>
-            )
-          }
-        />
-      ) : (
-        <section
-          className="surface review-list"
-          aria-label={t("검토 요청 목록")}
-        >
-          {requests.map((request) => {
-            const responses = data.reviewItems
-              .filter((i) => i.requestId === request.id)
-              .map((i) => latestResponse(data, latestRound(data, i.id)?.id));
-            const confirmed = responses.filter(
-                (r) => r?.result === "confirmed",
-              ).length,
-              changes = responses.filter(
-                (r) => r?.result === "changes_requested",
-              ).length,
-              pending = responses.filter((r) => !r).length;
-            const hasUnread = unreadReviewNotifications(
-              data,
-              user,
-              researchId,
-            ).some((event) => event.requestId === request.id);
-            return (
-              <Link
-                className="review-list-row"
-                to={`/reviews/${request.id}`}
-                key={request.id}
-              >
-                <span className="review-list-icon">
-                  <Icon name="send" size={20} />
-                </span>
-                <div className="review-list-main">
-                  <div className="review-list-title">
-                    <strong title={request.title}>{request.title}</strong>
-                    {hasUnread && (
-                      <span
-                        className="review-new-dot"
-                        aria-label={t("새 응답·댓글 있음")}
-                      />
-                    )}
-                  </div>
-                  <span
-                    className="muted"
-                    title={`${request.professorEmail} · ${timeText(request.createdAt)}`}
-                  >
-                    {request.professorEmail} · {timeText(request.createdAt)}
-                  </span>
-                  <div className="review-counts">
-                    <span>
-                      {t("항목 {count}개", { count: responses.length })}
-                    </span>
-                    {confirmed > 0 && (
-                      <span className="review-count-confirmed">
-                        {t("수정 내용 확인 {count}개", { count: confirmed })}
-                      </span>
-                    )}
-                    {changes > 0 && (
-                      <span className="review-count-changes">
-                        {t("추가 수정 필요 {count}개", { count: changes })}
-                      </span>
-                    )}
-                    {pending > 0 && (
-                      <span>{t("응답 전 {count}개", { count: pending })}</span>
-                    )}
-                  </div>
-                </div>
-                <StatusBadge tone={sharingTone[request.status]}>
-                  {sharingLabels[request.status]}
-                </StatusBadge>
-                <Icon name="chevron-right" size={18} />
-              </Link>
-            );
-          })}
-        </section>
-      )}
+    <>
       <Dialog
         open={open}
         onOpenChange={(value: boolean) => {
@@ -492,9 +321,17 @@ export function ReviewsPage() {
                   {!results.length ? (
                     <p className="muted">
                       {t("아직 수정 결과가 없어요.")}{" "}
-                      <Link to={`/r/${researchId}/results?new=1`}>
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="sm"
+                        onClick={() => {
+                          close();
+                          onWriteResult();
+                        }}
+                      >
                         {t("수정 결과 작성")}
-                      </Link>
+                      </Button>
                     </p>
                   ) : (
                     results.map((result) => {
@@ -702,6 +539,6 @@ export function ReviewsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

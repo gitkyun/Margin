@@ -130,9 +130,6 @@ const TasksHome = lazy(() =>
 const MaterialsPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.MaterialsPage })),
 );
-const ReviewsPage = lazy(() =>
-  import("@/pages/reviews").then((m) => ({ default: m.ReviewsPage })),
-);
 const ReviewDetailPage = lazy(() =>
   import("@/pages/reviews").then((m) => ({ default: m.ReviewDetailPage })),
 );
@@ -254,7 +251,8 @@ function WorkspaceRoutes() {
             path="/r/:researchId/results/:resultId?"
             element={<LegacyRedirect />}
           />
-          <Route path="/r/:researchId/reviews" element={<ReviewsPage />} />
+          {/* 5단계: 검토 요청 목록·만들기는 미팅 검토 보기와 그 자리의 창으로 옮겼습니다(01 §3.3). */}
+          <Route path="/r/:researchId/reviews" element={<LegacyRedirect />} />
         </Route>
         <Route
           path="/schedule/:pollId"

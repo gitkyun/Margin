@@ -416,3 +416,31 @@ test("예전 수정 결과 목록은 미팅의 검토 보기에 있는 수정 �
       .getByRole("textbox", { name: "수정 결과 제목" }),
   ).toHaveValue("선행연구 비교표 보완");
 });
+
+test("검토 요청은 예전 화면으로 가지 않고 그 자리의 창에서 만든다(01 §3.3)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: /연구 도구 사용 경험/ })
+    .first()
+    .click();
+  const base = new URL(page.url()).pathname;
+  // 예전 만들기 주소(피드백 상세의 '교수에게 보내기'와 같은 꼴)는 미팅 검토 보기 위의 창으로 엽니다.
+  await page.goto(`${base}/reviews?new=1`);
+  await expect(page).toHaveURL(new RegExp(`${base}/meetings\\?type=review$`));
+  const dialog = page.getByRole("dialog", { name: "검토 요청 만들기" });
+  await expect(dialog).toBeVisible();
+  await dialog
+    .getByRole("textbox", { name: "검토 요청 제목" })
+    .fill("비교표 검토");
+  await dialog
+    .locator(".review-pick-row")
+    .filter({ hasText: "선행연구 비교표 보완" })
+    .getByRole("checkbox")
+    .click();
+  await dialog.getByRole("button", { name: /공유할 내용 확인/ }).click();
+  await page.getByRole("button", { name: /검토 링크 만들기/ }).click();
+  await expect(page).toHaveURL(/\/reviews\/[^/?]+/);
+});

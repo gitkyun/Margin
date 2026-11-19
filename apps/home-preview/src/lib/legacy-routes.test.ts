@@ -38,6 +38,14 @@ describe("legacyRedirect (IA v2 01 §3.3, 0단계)", () => {
       "/r/a/meetings?new=result&version=v1&type=review",
     ],
     ["/r/a/results", "", "/r/a/meetings?type=review"],
+    // 5단계: 검토 요청 목록·만들기 창도 미팅 검토 보기와 그 자리의 창으로(01 §3.3)
+    ["/r/a/reviews", "", "/r/a/meetings?type=review"],
+    ["/r/a/reviews", "?new=1", "/r/a/meetings?new=review&type=review"],
+    [
+      "/r/a/reviews",
+      "?result=r1%2Cr2",
+      "/r/a/meetings?result=r1%2Cr2&type=review&new=review",
+    ],
     ["/r/a/settings", "?tab=members", "/r/a?settings=people"],
     ["/account", "?tab=appearance", "/r?settings=display"],
     // 4단계: 연구 도우미 화면은 사이드 창으로(요청 종류는 넘기지 않음)

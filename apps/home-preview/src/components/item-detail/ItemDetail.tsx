@@ -829,9 +829,7 @@ function ReviewSection({
             asChild={!!resultIds.length}
           >
             {resultIds.length ? (
-              <Link
-                to={`/r/${researchId}/reviews?new=1&result=${resultIds[0]}`}
-              >
+              <Link to={`?new=review&result=${resultIds[0]}`}>
                 {t("검토 요청 만들기")}
               </Link>
             ) : (

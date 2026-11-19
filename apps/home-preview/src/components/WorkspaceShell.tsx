@@ -24,6 +24,7 @@ import { LogPanel } from "./log/LogPanel";
 import { AssistantSidePanel } from "./assistant/AssistantSidePanel";
 import { MaterialsPanel } from "./materials/MaterialsPanel";
 import { ResultCreateHost } from "./item-detail/ResultCreateHost";
+import { ReviewCreateHost } from "./reviews/ReviewCreateHost";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
@@ -627,6 +628,8 @@ export function WorkspaceShell({
       </BottomDock>
       {/* 어느 화면에서든 `?new=result`로 수정 결과 작성 창을 그 자리에서 엽니다(01 §3.3, 06 §6.6). */}
       {inResearch && researchId && <ResultCreateHost researchId={researchId} />}
+      {/* `?new=review&result=`로 검토 요청 만들기 창을 그 자리에서 엽니다(01 §3.3). */}
+      {inResearch && researchId && <ReviewCreateHost researchId={researchId} />}
       <Sheet open={notifications} onOpenChange={setNotifications}>
         <SheetContent className="notifications-sheet">
           <SheetHeader>
