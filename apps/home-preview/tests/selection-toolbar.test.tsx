@@ -39,3 +39,20 @@ it("renders nothing without a picked text or actions", () => {
   );
   expect(container.querySelector("[role=toolbar]")).toBeNull();
 });
+
+it("shows a shortcut hint without changing the button name", async () => {
+  render(
+    <div style={{ position: "relative" }}>
+      <SelectionToolbar
+        anchor={{ x: 40, y: 60 }}
+        actions={[
+          { key: "mark", label: "형광펜", shortcut: "H", onSelect: vi.fn() },
+        ]}
+        onDismiss={() => undefined}
+      />
+    </div>,
+  );
+  const button = await screen.findByRole("button", { name: "형광펜" });
+  expect(button.getAttribute("aria-keyshortcuts")).toBe("H");
+  expect(button.querySelector("kbd")?.textContent).toBe("H");
+});
