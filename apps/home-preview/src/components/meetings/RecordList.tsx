@@ -215,9 +215,7 @@ export function RecordList({
               <Icon name="send" size={16} />
               {t("교수님께 검토 요청")}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => navigate(`${base}/flow?tab=schedule`)}
-            >
+            <DropdownMenuItem onSelect={() => navigate("?type=poll&new=poll")}>
               <Icon name="clock" size={16} />
               {t("시간 조율")}
             </DropdownMenuItem>
@@ -317,6 +315,17 @@ export function RecordList({
         </div>
       ) : (
         <div className="record-list-groups">
+          {filter === "poll" && (
+            // 시간 조율 보기(예전 연구 흐름의 시간 조율 탭, 07 §4)에서 바로 새 조율을 엽니다.
+            <div className="record-results-actions">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="?type=poll&new=poll">
+                  <Icon name="clock" size={15} />
+                  {t("시간 조율 시작")}
+                </Link>
+              </Button>
+            </div>
+          )}
           {filter === "review" && (
             <>
               <ResultsSection researchId={researchId} />

@@ -26,6 +26,7 @@ import { MaterialsPanel } from "./materials/MaterialsPanel";
 import { ResultCreateHost } from "./item-detail/ResultCreateHost";
 import { ReviewCreateHost } from "./reviews/ReviewCreateHost";
 import { FeedbackCreateHost } from "./feedback/FeedbackCreateHost";
+import { PollCreateHost } from "./meetings/PollCreate";
 import { useDetailRef } from "@/lib/item-detail";
 import {
   initialPanelTab,
@@ -635,6 +636,8 @@ export function WorkspaceShell({
       {inResearch && researchId && (
         <FeedbackCreateHost researchId={researchId} />
       )}
+      {/* `?new=poll`로 미팅 시간 조율 창을 그 자리에서 엽니다(01 §3.3). */}
+      {inResearch && researchId && <PollCreateHost researchId={researchId} />}
       <Sheet open={notifications} onOpenChange={setNotifications}>
         <SheetContent className="notifications-sheet">
           <SheetHeader>

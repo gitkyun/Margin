@@ -5,7 +5,7 @@ import themePlugin from "@fullcalendar/react/themes/forma";
 import { Input } from "@/components/ui/input";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
-import { lazy, Suspense, useEffect, useId, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useMemo, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -25,10 +25,8 @@ import {
   formatDate,
   recordBase,
   phaseTitles,
-  uid,
   type ResearchPhase,
   type Milestone,
-  type MeetingPoll,
 } from "@/lib/domain";
 import { Button } from "@/components/ui/button";
 import { SortableList } from "@/components/meeting/SortableList";
@@ -57,12 +55,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@montage-ui/core";
-import { DateField, DateTimeField } from "@/components/ui/date-field";
+import { DateField } from "@/components/ui/date-field";
 import { useAINotConfigured } from "@/lib/ai-availability";
 import { RoadmapProposalDialog } from "./planning/RoadmapProposal";
 import { RoadmapTimeline } from "./planning/RoadmapTimeline";
 import { MilestoneTimeline } from "./planning/MilestoneTimeline";
 import { todayKey } from "@/lib/roadmap-plan";
+import { dDayLabel, daysUntil } from "@/lib/submission-countdown";
+import { BackLink } from "@/pages/student/shared";
 import { queryDown } from "@/design/responsive";
 
 /**
@@ -77,8 +77,6 @@ const EVENT_TONE: Record<EventTone, string> = {
   violet: "--semantic-foreground-accent-violet",
   positive: "--semantic-foreground-positive-primary",
 };
-/** 시간 조율 후보는 이 개수까지 넣을 수 있어요. */
-const POLL_OPTION_LIMIT = 12;
 function eventTone(tone: EventTone) {
   const token = EVENT_TONE[tone];
   return {
@@ -94,13 +92,20 @@ export function PlanningPage() {
     { data, save, saveResearch } = w,
     navigate = useNavigate(),
     [params, setParams] = useSearchParams();
-  const tab = params.get("tab") ?? "roadmap";
+  // 시간 조율 탭은 미팅 목록의 '시간 조율' 보기로 옮겼습니다(07 §4).
+  const tab = params.get("tab") === "calendar" ? "calendar" : "roadmap";
+  const countdownDays = useMemo(() => {
+    const date = data.researches.find(
+      (r) => r.id === researchId,
+    )?.submissionDate;
+    return date ? daysUntil(todayKey(), date) : null;
+  }, [data.researches, researchId]);
+  const countdown = countdownDays === null ? "" : dDayLabel(countdownDays);
   const [view, setView] = useState("timeline"),
     [phase, setPhase] = useState<ResearchPhase | null>(null),
     [milestone, setMilestone] = useState<Milestone | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [pollOpen, setPollOpen] = useState(false),
     [proposalOpen, setProposalOpen] = useState(false),
     // AI를 쓸 수 없으면 같은 창을 '균등 배분 초안'으로 열어요(AI 결과 아님).
     [proposalKind, setProposalKind] = useState<"ai" | "even">("ai");
@@ -126,7 +131,6 @@ export function PlanningPage() {
         !m.archivedAt &&
         m.status !== "cancelled",
     ),
-    polls = data.polls.filter((p) => p.researchId === researchId),
     datedPhases = phases.filter(
       (p) => p.startDate && p.dueDate && p.startDate <= p.dueDate,
     );
@@ -164,8 +168,15 @@ export function PlanningPage() {
   return (
     <div className="experience-page">
       <PageHeader
-        title={t("일정")}
-        description={t("연구 단계와 중요한 일정을 확인하세요.")}
+        back={<BackLink to={`/r/${researchId}`}>{t("홈")}</BackLink>}
+        title={t("연구 흐름")}
+        description={
+          countdown
+            ? t("투고 {label} · 연구 단계와 주요 목표를 확인하세요.", {
+                label: countdown,
+              })
+            : t("연구 단계와 주요 목표를 확인하세요.")
+        }
         actions={
           // 탭마다 그 탭에서 만드는 것 하나만 주 행동으로 둡니다.
           tab === "calendar" ? (
@@ -178,32 +189,23 @@ export function PlanningPage() {
           ) : (
             <Button
               // 단계가 없을 때는 빈 상태의 '기본 단계로 시작'이 주 행동이라 여기는 보조로 낮춥니다.
-              variant={
-                tab === "roadmap" && !phases.length ? "outline" : undefined
-              }
-              onClick={() =>
-                tab === "schedule" ? setPollOpen(true) : newPhase()
-              }
+              variant={!phases.length ? "outline" : undefined}
+              onClick={newPhase}
             >
               <Icon name="plus" size={17} />
-              {tab === "schedule" ? t("시간 조율 시작") : t("단계 추가")}
+              {t("단계 추가")}
             </Button>
           )
         }
         tabs={
           <Tabs
             className="tabs-line"
-            label={t("계획 화면")}
+            label={t("연구 흐름 보기")}
             value={tab}
             onChange={(v) => setParams({ tab: v })}
             options={[
-              { value: "roadmap", label: t("연구 로드맵") },
-              { value: "calendar", label: t("캘린더") },
-              {
-                value: "schedule",
-                label: t("시간 조율"),
-                count: polls.filter((p) => p.status === "open").length,
-              },
+              { value: "roadmap", label: t("단계·주요 목표") },
+              { value: "calendar", label: t("달력") },
             ]}
           />
         }
@@ -557,7 +559,8 @@ export function PlanningPage() {
                     start: task.dueDate!,
                     allDay: true,
                     ...eventTone("cautionary"),
-                    url: `/r/${researchId}/tasks/${task.id}`,
+                    // 할 일은 이 화면 위에 항목 상세로 엽니다(07 §4).
+                    url: `?tab=calendar&detail=${encodeURIComponent(`task:${task.id}`)}`,
                   })),
                 ...phases
                   .filter((p) => !p.archivedAt && p.dueDate)
@@ -614,56 +617,7 @@ export function PlanningPage() {
             )}
           </section>
         </>
-      ) : (
-        <section className="experience-panel">
-          <div className="section-heading">
-            <h2>{t("미팅 시간 조율")}</h2>
-            <Button variant="outline" onClick={() => setPollOpen(true)}>
-              {t("시간 조율 시작")}
-            </Button>
-          </div>
-          <div className="experience-list">
-            {polls.map((p) => (
-              <Link
-                className="experience-list-row"
-                key={p.id}
-                to={`/schedule/${p.id}`}
-              >
-                <Icon name="calendar" size={20} />
-                <div>
-                  <strong>{p.title}</strong>
-                  <small>
-                    {t("후보 시간 {options}개 · 참석자 {participants}명", {
-                      options: p.options.length,
-                      participants: p.participants.length,
-                    })}
-                  </small>
-                </div>
-                <StatusBadge
-                  tone={
-                    p.status === "confirmed"
-                      ? "green"
-                      : p.status === "open"
-                        ? "blue"
-                        : "neutral"
-                  }
-                >
-                  {p.status === "confirmed"
-                    ? t("확정")
-                    : p.status === "open"
-                      ? t("조율 중")
-                      : t("취소")}
-                </StatusBadge>
-              </Link>
-            ))}
-          </div>
-          {!polls.length && (
-            <InlineEmpty variant="panel">
-              {t("아직 시간 조율이 없어요.")}
-            </InlineEmpty>
-          )}
-        </section>
-      )}
+      ) : null}
       <Dialog
         open={!!phase}
         onOpenChange={(v) => {
@@ -931,180 +885,7 @@ export function PlanningPage() {
           )}
         </DialogContent>
       </Dialog>
-      <PollCreate
-        open={pollOpen}
-        onClose={() => setPollOpen(false)}
-        researchId={researchId}
-      />
     </div>
-  );
-}
-function PollCreate({
-  open,
-  onClose,
-  researchId,
-}: {
-  open: boolean;
-  onClose: () => void;
-  researchId: string;
-}) {
-  const { action } = useExperience(),
-    navigate = useNavigate(),
-    [title, setTitle] = useState(""),
-    [emails, setEmails] = useState(""),
-    [options, setOptions] = useState([{ id: uid(), start: "", end: "" }]),
-    [busy, setBusy] = useState(false),
-    [error, setError] = useState("");
-  const optionLimitReason = useDisabledReason(
-    options.length >= POLL_OPTION_LIMIT &&
-      t("후보 시간은 {count}개까지 넣을 수 있어요.", {
-        count: POLL_OPTION_LIMIT,
-      }),
-  );
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        if (!v && !busy) onClose();
-      }}
-    >
-      <DialogContent className="rms-dialog">
-        <DialogHeader>
-          <DialogTitle>{t("미팅 시간 조율")}</DialogTitle>
-          <DialogDescription>
-            {t(
-              "입력한 계정에 마진 알림을 보내요. 이메일은 보내지 않아요. 공동연구자가 아닌 사람에게는 연구 이름, 미팅 제목, 후보 시간, 참여자별 응답만 보여요.",
-            )}
-          </DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setBusy(true);
-            setError("");
-            try {
-              const p = await action<MeetingPoll>("rms_poll_action", {
-                action: "create",
-                researchId,
-                title,
-                emails: emails.split(/[,;\s]+/).filter(Boolean),
-                options: options.map((o) => ({
-                  ...o,
-                  start: new Date(o.start).toISOString(),
-                  end: new Date(o.end).toISOString(),
-                })),
-              });
-              onClose();
-              navigate(`/schedule/${p.id}`);
-            } catch (e) {
-              setError((e as Error).message);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          <DialogBody>
-            <label className="field">
-              {t("미팅 제목")}
-              <Input
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={200}
-              />
-            </label>
-            <label className="field">
-              {t("참석자 이메일")}
-              <Input
-                required
-                value={emails}
-                onChange={(e) => setEmails(e.target.value)}
-                placeholder={t("쉼표로 구분해 입력")}
-              />
-              <small>
-                {t(
-                  "마진 계정이 있는 사람만 초대할 수 있어요. 이메일은 최대 20개예요.",
-                )}
-              </small>
-            </label>
-            {options.map((o, i) => (
-              <div className="schedule-option-input" key={o.id}>
-                <strong>{t("후보 {n}", { n: i + 1 })}</strong>
-                <div className="schedule-option-field">
-                  <span>{t("시작")}</span>
-                  <DateTimeField
-                    label={t("후보 {n} 시작", { n: i + 1 })}
-                    required
-                    value={o.start}
-                    onChange={(startValue) =>
-                      setOptions(
-                        options.map((v) =>
-                          v.id === o.id ? { ...v, start: startValue } : v,
-                        ),
-                      )
-                    }
-                  />
-                </div>
-                <div className="schedule-option-field">
-                  <span>{t("종료")}</span>
-                  <DateTimeField
-                    label={t("후보 {n} 종료", { n: i + 1 })}
-                    required
-                    value={o.end}
-                    onChange={(endValue) =>
-                      setOptions(
-                        options.map((v) =>
-                          v.id === o.id ? { ...v, end: endValue } : v,
-                        ),
-                      )
-                    }
-                  />
-                </div>
-                {options.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setOptions(options.filter((v) => v.id !== o.id))
-                    }
-                  >
-                    {t("후보 제거")}
-                  </Button>
-                )}
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              disabled={options.length >= POLL_OPTION_LIMIT}
-              aria-describedby={optionLimitReason.describedBy}
-              onClick={() =>
-                setOptions([...options, { id: uid(), start: "", end: "" }])
-              }
-            >
-              <Icon name="plus" size={16} />
-              {t("후보 추가")}
-            </Button>
-            {optionLimitReason.node}
-            {error && <p className="rms-error">{error}</p>}
-          </DialogBody>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={onClose}
-            >
-              {t("취소")}
-            </Button>
-            <Button type="submit" disabled={busy}>
-              {busy ? t("보내는 중") : t("응답 요청 보내기")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
   );
 }
 export function PollPage() {
@@ -1162,7 +943,7 @@ export function PollPage() {
       <TextLink
         to={
           data.researches.some((r) => r.id === p.researchId)
-            ? `/r/${p.researchId}/planning?tab=schedule`
+            ? `/r/${p.researchId}/meetings?type=poll`
             : "/r"
         }
       >

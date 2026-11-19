@@ -2,7 +2,7 @@ import { legacySettingsTarget } from "@/components/settings/settings-sections";
 
 // IA v2 예전 주소 이동(01 §3.3) 가운데 0단계에 옮길 수 있는 것만 둡니다.
 // 새 화면이 아직 없는 것(results·reviews, `new=` 값 바꾸기,
-// planning?tab=schedule → meetings?type=poll, plans·recordings 찾아가기)은 그 단계에서 더합니다.
+// plans·recordings 찾아가기)은 그 단계에서 더합니다.
 
 type Rule = (
   base: string,
@@ -13,6 +13,12 @@ type Rule = (
 function build(path: string, params: URLSearchParams): string {
   const query = params.toString();
   return query ? `${path}?${query}` : path;
+}
+
+function pollView(base: string, params: URLSearchParams): string {
+  params.delete("tab");
+  params.set("type", "poll");
+  return build(`${base}/meetings`, params);
 }
 
 const RULES: Record<string, Rule> = {
@@ -26,8 +32,13 @@ const RULES: Record<string, Rule> = {
     params.set("kind", "material");
     return build(`${base}/docs`, params);
   },
-  // 시간 조율 탭(`tab=schedule`)은 미팅 화면 단계 전까지 연구 흐름에 그대로 둡니다.
-  planning: (base, _rest, params) => build(`${base}/flow`, params),
+  planning: (base, _rest, params) =>
+    params.get("tab") === "schedule"
+      ? pollView(base, params)
+      : build(`${base}/flow`, params),
+  // 5단계: 연구 흐름의 시간 조율 탭은 미팅 목록의 '시간 조율' 보기로 옮겼습니다(07 §4).
+  flow: (base, _rest, params) =>
+    params.get("tab") === "schedule" ? pollView(base, params) : null,
   folders: (base, [id], params) => {
     if (!id) return null;
     params.set("folder", id);
@@ -121,6 +132,7 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/r/a/materials", "?folder=f"],
   ["/r/a/materials/m1", ""],
   ["/r/a/planning", "?tab=schedule"],
+  ["/r/a/flow", "?tab=schedule"],
   ["/r/a/folders/f", ""],
   ["/r/a/questions/q", ""],
   ["/r/a/decisions/d", ""],

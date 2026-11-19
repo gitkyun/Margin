@@ -1016,7 +1016,7 @@ export function ResearchSettingsPage({
               </div>
               <div className="bottom-actions">
                 <Button asChild>
-                  <Link to={`/r/${researchId}/planning`}>
+                  <Link to={`/r/${researchId}/flow`}>
                     {t("단계와 주요 목표 편집")}
                   </Link>
                 </Button>

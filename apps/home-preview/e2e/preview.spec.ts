@@ -101,6 +101,31 @@ test("할 일 추가는 예전 화면 없이 할 일 목록의 빠른 추가로,
   ).toBeVisible();
 });
 
+test("연구 흐름의 예전 시간 조율 탭은 미팅의 시간 조율 보기로 옮기고, 그 자리에서 조율 창을 연다(07 §4)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/r");
+  await page
+    .getByRole("link", { name: new RegExp(RESEARCH) })
+    .first()
+    .click();
+  const base = new URL(page.url()).pathname;
+
+  await page.goto(`${base}/flow`);
+  await expect(
+    page.getByRole("heading", { name: "연구 흐름", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("tab", { name: /시간 조율/ })).toHaveCount(0);
+
+  await page.goto(`${base}/flow?tab=schedule`);
+  await expect(page).toHaveURL(/\/meetings\?type=poll$/);
+  await page.getByRole("link", { name: "시간 조율 시작" }).click();
+  const dialog = page.getByRole("dialog", { name: "미팅 시간 조율" });
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(/\/meetings\?type=poll$/);
+});
+
 test("미리보기에서는 공동연구자 설정이 열리고, 메일 초대 대신 기존 안내를 보여 준다", async ({
   page,
 }) => {
