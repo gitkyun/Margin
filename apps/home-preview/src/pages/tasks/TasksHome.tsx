@@ -29,6 +29,7 @@ import {
 } from "@/lib/domain";
 import type { DetailHistoryState } from "@/lib/item-detail";
 import "@/components/tasks/tasks.css";
+import { handleListKeys } from "@/lib/list-keys";
 
 const DETAIL_STATE: DetailHistoryState = { layer: "detail", depth: 1 };
 
@@ -367,7 +368,7 @@ function TaskList({
         <QuickTaskInput onAdd={onAdd} onClose={onCloseAdd} note={addNote} />
       )}
       {groups.length ? (
-        <div className="tasks-groups">
+        <div className="tasks-groups" onKeyDown={handleListKeys}>
           {groups.map((group) => (
             <section
               key={group.key}
@@ -566,7 +567,7 @@ function FeedbackList({
         </label>
       </div>
       {groups.length ? (
-        <div className="tasks-groups">
+        <div className="tasks-groups" onKeyDown={handleListKeys}>
           {groups.map((group) => (
             <section
               key={group.key}
