@@ -118,9 +118,6 @@ function PollRoute() {
 const MeetingsPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.MeetingsPage })),
 );
-const FeedbackPage = lazy(() =>
-  import("@/pages/student").then((m) => ({ default: m.FeedbackPage })),
-);
 const TasksPage = lazy(() =>
   import("@/pages/student").then((m) => ({ default: m.TasksPage })),
 );
@@ -230,13 +227,10 @@ function WorkspaceRoutes() {
             path="/r/:researchId/meetings/:meetingId?"
             element={<MeetingsPage />}
           />
+          {/* 5단계: 피드백 목록·한 건·입력 창은 할 일 화면과 항목 상세, 그 자리의 창으로 옮겼습니다(01 §3.3). */}
           <Route
             path="/r/:researchId/feedback/:feedbackId?"
-            element={
-              <LegacyOr>
-                <FeedbackPage />
-              </LegacyOr>
-            }
+            element={<LegacyRedirect />}
           />
           <Route
             path="/r/:researchId/tasks/:taskId?"

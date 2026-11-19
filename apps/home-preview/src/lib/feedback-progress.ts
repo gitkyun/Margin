@@ -71,41 +71,6 @@ function reviewStep(input: FeedbackProgressInput): ProgressStep {
   return step(t("수정 내용 확인"), true);
 }
 
-export interface ProfessorSendTarget {
-  /** 검토 요청 만들기에 미리 골라 둘 수정 결과(아직 검토 요청에 넣지 않은 것) */
-  resultIds: string[];
-  /** 보낼 것이 없을 때 버튼 아래에 보여 줄 이유. 보낼 수 있으면 null */
-  reason: string | null;
-}
-
-/**
- * ‘교수 확인’ 칸의 ‘교수에게 보내기’가 미리 고를 수정 결과.
- * 이미 검토 요청에 넣은 결과는 빼요(그 결과의 재확인은 검토 요청 안에서 새 차수로 요청해요).
- * 버튼은 검토 요청 만들기로 이어 줄 뿐이고, 링크를 만들거나 보내지 않아요.
- */
-export function professorSendTarget(
-  results: readonly Pick<RevisionResult, "id">[],
-  reviewItems: readonly Pick<ReviewItem, "resultId">[],
-): ProfessorSendTarget {
-  if (!results.length)
-    return {
-      resultIds: [],
-      reason: t("수정 결과를 먼저 기록하면 보낼 수 있어요."),
-    };
-  const sent = new Set(reviewItems.map((item) => item.resultId));
-  const resultIds = results
-    .filter((result) => !sent.has(result.id))
-    .map((r) => r.id);
-  return resultIds.length
-    ? { resultIds, reason: null }
-    : {
-        resultIds,
-        reason: t(
-          "수정 결과를 모두 검토 요청에 넣었어요. 다시 확인은 검토 요청 화면에서 요청해요.",
-        ),
-      };
-}
-
 /**
  * 피드백 상세의 진행 줄. 받은 피드백 → 수정 방법 → 할 일 → 수정 결과 → 교수 확인.
  * 칸마다 자기 상태만 보여 주고 전체 완료율은 만들지 않습니다

@@ -47,10 +47,13 @@ const RULES: Record<string, Rule> = {
   },
   // 피드백 목록은 할 일 화면의 피드백 탭(T1)으로, 한 건은 그 위의 항목 상세로 엽니다.
   // 수정 방법 쓰기·제안받기와 본문·메모 편집이 상세로 옮겨 와 5단계부터 `full=1`도 상세로 엽니다.
-  // `new=1`(피드백 입력 창)만 지금 화면에 둡니다.
+  // 5단계: 피드백 입력 창(`new=1`)은 그 자리의 창(`new=feedback`)으로 옮겨 연구 홈 위에서 엽니다(01 §3.3).
   feedback: (base, [id], params) => {
-    if (params.get("new") === "1") return null;
     params.delete("full");
+    if (params.get("new") === "1") {
+      params.set("new", "feedback");
+      return build(base, params);
+    }
     params.set("view", "feedback");
     if (id) params.set("detail", `feedback:${id}`);
     return build(`${base}/tasks`, params);
@@ -119,6 +122,7 @@ export const LEGACY_SAMPLES: readonly [string, string][] = [
   ["/r/a/tasks/t", ""],
   ["/r/a/feedback/f", ""],
   ["/r/a/feedback", ""],
+  ["/r/a/feedback", "?new=1"],
   ["/r/a/settings", "?tab=lifecycle"],
   ["/r/a/settings", "?tab=phases"],
   ["/account", ""],

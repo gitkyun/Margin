@@ -43,8 +43,15 @@ const cases: {
       await page.goto(`${await openResearch(page)}/meetings?new=written`);
     },
   },
-  // 피드백 추가(`/feedback?new=1`)는 main(IA v2 1단계)에서 창이 열리자마자 `new`를 지운 주소가
-  // 할 일 화면으로 다시 이동해 창이 닫힙니다. 고친 뒤 이 자리에 다시 넣습니다.
+  {
+    name: "피드백 직접 추가",
+    async open(page) {
+      // IA v2 5단계: 피드백 입력은 어느 화면에서든 그 자리의 창(`new=feedback`)으로 엽니다.
+      await page.goto(
+        `${await openResearch(page)}/tasks?view=feedback&new=feedback`,
+      );
+    },
+  },
   {
     name: "자료 등록",
     async open(page) {

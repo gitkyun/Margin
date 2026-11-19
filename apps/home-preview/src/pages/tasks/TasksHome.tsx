@@ -111,7 +111,7 @@ export function TasksHome() {
             </Button>
           ) : (
             <Button asChild>
-              <Link to={`/r/${researchId}/feedback?new=1`}>
+              <Link to="?view=feedback&new=feedback">
                 <Icon name="plus" size={17} />
                 {t("피드백 추가")}
               </Link>
