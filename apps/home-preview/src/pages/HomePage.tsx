@@ -1,6 +1,7 @@
 import { dateLocale, t } from "@/lib/i18n";
 import { EXPANDING_CLASS } from "@/lib/expand-home";
 import { formatClock } from "@/lib/time-format";
+import { cadenceRule, nextCadenceDate, readCadence } from "@/lib/recurrence";
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -398,6 +399,10 @@ function NextMeetingCard({
     (poll) => poll.researchId === researchId && poll.status === "open",
   );
   const poll = polls[0];
+  // 미팅 주기가 있으면 '다음 미팅 잡기'에 채울 날을 미리 알려 줍니다(03 §4, 07 §1.3).
+  const cadence = readCadence(
+    data.researches.find((item) => item.id === researchId)?.meetingCadence,
+  );
   if (!next)
     return (
       <section className="hm-card hm-meeting" aria-labelledby="hm-next-heading">
@@ -407,6 +412,21 @@ function NextMeetingCard({
         <p className="hm-meeting-title">
           {hasRecords ? t("다음 미팅이 아직 없어요") : t("아직 기록이 없어요.")}
         </p>
+        {cadence && (
+          <p className="hm-summary">
+            {t("{rule} {time} 기준으로 {date}을 채워 둘게요.", {
+              rule: cadenceRule(cadence),
+              time: formatClock(cadence.time),
+              date: formatDate(
+                nextCadenceDate(
+                  cadence,
+                  data.meetings.filter((m) => m.researchId === researchId),
+                ),
+                { month: "long", day: "numeric" },
+              ),
+            })}
+          </p>
+        )}
         <div className="hm-actions">
           {cardHasLead ? (
             <LeadButton action={action} disabled={disabled} />

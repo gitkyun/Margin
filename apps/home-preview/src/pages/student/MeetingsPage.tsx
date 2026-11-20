@@ -21,6 +21,7 @@ import {
 } from "@/lib/recording-marks";
 import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { t } from "@/lib/i18n";
+import { nextCadenceDate, readCadence } from "@/lib/recurrence";
 import { isImeComposing } from "@/lib/ime";
 import {
   RecordingPanel,
@@ -154,8 +155,19 @@ export function MeetingsPage() {
   function openCreate() {
     createBase.current = recordBase(researchId);
     setTitle("");
-    setDate("");
-    setTime("");
+    // 미팅 주기가 있으면 다음 차례를 채워 둡니다(07 §1.3). 만들기는 사용자가 합니다.
+    const cadence = readCadence(
+      data.researches.find((item) => item.id === researchId)?.meetingCadence,
+    );
+    setDate(
+      cadence
+        ? nextCadenceDate(
+            cadence,
+            data.meetings.filter((m) => m.researchId === researchId),
+          )
+        : "",
+    );
+    setTime(cadence?.time ?? "");
     form.setError(null);
     setCreating(true);
   }

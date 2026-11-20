@@ -4,6 +4,7 @@ import { t } from "@/lib/i18n";
 import { AccountPage, ResearchSettingsPage } from "@/pages/SettingsPage";
 import { Icon } from "../icons";
 import { ShortcutList } from "../ShortcutHelp";
+import { MeetingCadenceSection } from "@/pages/settings/MeetingCadenceSection";
 import type { CSSProperties } from "react";
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import {
@@ -225,6 +226,16 @@ function SectionBody({
         <h2>{t("단축키")}</h2>
         <ShortcutList />
       </section>
+    );
+  if (section === "schedule")
+    return (
+      <div className="settings-page settings-embedded">
+        <div className="settings-layout">
+          <div className="settings-body">
+            <MeetingCadenceSection researchId={researchId} />
+          </div>
+        </div>
+      </div>
     );
   if (isResearchSection(section))
     return (

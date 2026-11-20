@@ -4,8 +4,8 @@ import { t } from "@/lib/i18n";
 
 export type AccountSection =
   "profile" | "display" | "notifications" | "assistant" | "usage" | "shortcuts";
-// 미팅 주기(`schedule`, 07 §1.3)는 Q7 확인 뒤 넣습니다. 그 전까지는 틀린 값처럼 지웁니다.
-export type ResearchSection = "research" | "people" | "danger";
+// 미팅 주기(`schedule`, 07 §1.3)는 Q7(2026-11-16 '넣는다')대로 2026-11-20에 넣었습니다.
+export type ResearchSection = "research" | "people" | "schedule" | "danger";
 export type SettingsSection = AccountSection | ResearchSection;
 
 export interface SettingsSectionInfo<S extends SettingsSection> {
@@ -28,6 +28,7 @@ export const RESEARCH_SECTIONS: readonly SettingsSectionInfo<ResearchSection>[] 
   [
     { id: "research", icon: "file", label: t("연구 정보") },
     { id: "people", icon: "users", label: t("함께하는 사람") },
+    { id: "schedule", icon: "calendar", label: t("미팅 주기") },
     { id: "danger", icon: "folder", label: t("보관·삭제") },
   ];
 
@@ -43,6 +44,7 @@ export const ACCOUNT_TAB: Record<AccountSection, string> = {
 export const RESEARCH_TAB: Record<ResearchSection, string> = {
   research: "basic",
   people: "members",
+  schedule: "schedule",
   danger: "lifecycle",
 };
 
