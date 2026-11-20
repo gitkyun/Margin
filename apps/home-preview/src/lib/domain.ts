@@ -1,6 +1,7 @@
 import { dateLocale, t } from "@/lib/i18n";
 import { timeParts } from "./time-format";
 import type { MeetingCadence } from "./recurrence";
+import type { MarkKind } from "./mark-kinds";
 export type ID = string;
 export type RecordOrigin = "manual" | "ai";
 export interface BaseRecord {
@@ -47,6 +48,8 @@ export interface TextMark {
   start: number;
   end: number;
   hash: string;
+  /** 형광펜 종류(lib/mark-kinds). 없으면 '중요'(기본) */
+  kind?: MarkKind;
 }
 export interface Meeting extends BaseRecord {
   title: string;
@@ -313,6 +316,8 @@ export interface TranscriptMark {
   start: number;
   end: number;
   hash: string;
+  /** 형광펜 종류(lib/mark-kinds). 없으면 '중요'(기본) */
+  kind?: MarkKind;
 }
 export interface AIContext {
   kind:

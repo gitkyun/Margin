@@ -69,6 +69,12 @@ const dictionary: Record<string, string> = {
   "AI 제안 {count}개": "AIの提案{count}件",
   "모두 선택": "すべて選択",
   "내 전사문": "自分の文字起こし",
+  // 형광펜 종류(IA v2 6단계, 2026-11-20)
+  "형광펜 {kind}": "マーカー {kind}",
+  "형광펜 {count}": "マーカー {count}",
+  "형광펜 종류 고르기": "マーカーの種類を選ぶ",
+  중요: "重要",
+  "인용할 곳": "引用する箇所",
 };
 
 export default dictionary;

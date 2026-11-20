@@ -233,6 +233,44 @@
     outline: 2px solid var(--primary);
     outline-offset: -2px;
   }
+  /* 형광펜 종류(6단계): [형광펜 H][▾] 한 묶음, 펼치면 종류 목록과 [‹] */
+  .selection-split {
+    display: inline-flex;
+  }
+  .selection-toolbar .selection-split > button:first-child {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+  .selection-toolbar .selection-split-more,
+  .selection-toolbar .selection-toolbar-back {
+    padding-inline: var(--spacing-4);
+    color: var(--text-secondary);
+  }
+  .selection-toolbar .selection-split-more {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+  .selection-toolbar button[aria-pressed="true"] {
+    background: var(--selected-fill);
+  }
+  /* 형광펜 종류 견본: 선택 막대(.selection-swatch)와 오른쪽 열 형광펜 줄(.mark-swatch) */
+  .selection-swatch,
+  .mark-swatch {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-4);
+    background: var(--mark-fill);
+  }
+  .selection-swatch[data-kind="check"],
+  .mark-swatch[data-kind="check"] {
+    background: var(--mark-fill-check);
+  }
+  .selection-swatch[data-kind="cite"],
+  .mark-swatch[data-kind="cite"] {
+    background: var(--mark-fill-cite);
+  }
   @keyframes selection-toolbar-in {
     from {
       opacity: 0;
@@ -253,6 +291,12 @@
     border-radius: var(--radius-4);
     background: var(--mark-fill);
     color: inherit;
+  }
+  .transcript-mark[data-kind="check"] {
+    background: var(--mark-fill-check);
+  }
+  .transcript-mark[data-kind="cite"] {
+    background: var(--mark-fill-cite);
   }
   /* 화면 낭독용 '형광펜' 글자. DOM 글자가 아니라 고른 범위의 글자 위치를 흔들지 않아요. */
   .transcript-mark::before {

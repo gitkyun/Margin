@@ -31,7 +31,9 @@ export function relocateMarks(
         best = at;
     }
     if (best === -1) return mark;
+    // 종류(`kind`)는 그대로 두고 자리만 옮깁니다.
     return {
+      ...mark,
       start: best,
       end: best + snippet.length,
       hash: textHash(snippet),
