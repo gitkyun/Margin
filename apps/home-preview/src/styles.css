@@ -481,6 +481,11 @@
   .preview-banner > a:hover {
     color: var(--brand);
   }
+  /* 새로 불러오기 실패 띠(02 §7 순서 1)의 [다시 불러오기] */
+  .refresh-banner > button {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
   /* 화면 머리(.page-header)·도구 줄(.page-toolbar) 배치는 reference.css의 "화면 틀"에 있습니다. */
   /* 빈 상태 부품(components/common.tsx EmptyState)의 아이콘과 요점 */
   .empty-state-icon {
