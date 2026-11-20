@@ -222,7 +222,7 @@
   }
   .memo-backdrop mark {
     border-radius: var(--radius-4);
-    background: var(--brand-soft);
+    background: var(--mark-fill);
     color: transparent;
   }
   /* 원문 표시(04 §5.3): 만든 곳은 2px 밑줄, 끝에 번호. 오른쪽 열에서 짚으면 바탕이 깔립니다. */

@@ -46,6 +46,9 @@
   --brand: var(--semantic-foreground-brand-primary);
   --primary: var(--semantic-surface-brand-primary);
   --brand-soft: var(--semantic-surface-brand-subtle);
+  /* 형광펜(IA v2 02 §2): Montage에 노랑 원자 색이 없어 lime에 투명도를 줘요.
+     투명도라 라이트·다크가 같은 정의를 써요. */
+  --mark-fill: rgba(var(--atomic-lime-80-rgb), var(--opacity-35));
 
   /* 상태 */
   --success: var(--semantic-foreground-positive-primary);
