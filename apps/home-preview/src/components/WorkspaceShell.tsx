@@ -66,6 +66,7 @@ import { useGoShortcuts } from "@/lib/use-go-shortcuts";
 import { Button } from "./ui/button";
 import { EmptyState, LoadingState } from "./common";
 import { useWorkspace } from "@/lib/workspace";
+import { useAnnounceShell } from "@/lib/shell-presence";
 import { friendlyError } from "@/lib/supabase";
 import { useExperience } from "@/lib/experience";
 import { queryDown } from "@/design/responsive";
@@ -741,7 +742,7 @@ function useOnline(): boolean {
   );
 }
 
-/** 상단 줄 아래 띠: 연결 끊김, 보관한 연구, 미리보기 모드(02 §7). */
+/** 상단 줄 아래 띠: 새로 불러오기 실패, 연결 끊김, 보관한 연구, 미리보기 모드(02 §7). */
 function ShellBanners({
   preview,
   archived,
@@ -752,7 +753,23 @@ function ShellBanners({
   researchId?: string;
 }) {
   const online = useOnline();
-  // 한 번에 띠 하나만(02 §7): 연결 끊김 → 보관한 연구 → 미리보기
+  const { refreshError, refresh } = useWorkspace();
+  useAnnounceShell();
+  // 한 번에 띠 하나만(02 §7): 새로 불러오기 실패 → 연결 끊김 → 보관한 연구 → 미리보기
+  if (refreshError)
+    return (
+      <div className="preview-banner refresh-banner" role="alert">
+        <Icon name="warning" size={15} />
+        <span>
+          {t(
+            "최신 기록을 불러오지 못했어요. 지금 화면과 작성 중인 내용은 그대로 있어요.",
+          )}
+        </span>
+        <Button variant="outline" size="sm" onClick={() => void refresh()}>
+          {t("다시 불러오기")}
+        </Button>
+      </div>
+    );
   if (!online)
     return (
       <div className="preview-banner offline-banner" role="status">

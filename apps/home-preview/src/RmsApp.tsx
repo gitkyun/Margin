@@ -4,7 +4,7 @@ import { InviteGate, InviteSignupPage } from "./pages/InvitePages";
 import { admit, finishSocialLogin } from "@/lib/social-login";
 import { JoinPage } from "./pages/JoinPage";
 import { INVITE_PARAM, inviteCodeFrom } from "./lib/invites";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import {
   Link,
   Navigate,
@@ -21,6 +21,7 @@ import { RecordingProvider } from "@/components/recording/RecordingProvider";
 import { Icon } from "@/components/icons";
 import { ErrorNotice, HomeSkeleton, LoadingState } from "@/components/common";
 import { WorkspaceShell as Shell } from "@/components/WorkspaceShell";
+import { ShellPresence } from "@/lib/shell-presence";
 import {
   LandingPage,
   SignupPage,
@@ -123,6 +124,12 @@ function InitialLoading() {
 }
 function WorkspaceRoutes() {
   const { loading, error, refreshError, refresh } = useWorkspace();
+  // 틀이 있으면 틀의 띠(02 §7 순서 1)가 같은 안내를 보여, 여기서는 틀 밖 화면에서만 띄웁니다.
+  const [shells, setShells] = useState(0);
+  const announceShell = useCallback(
+    (delta: 1 | -1) => setShells((count) => count + delta),
+    [],
+  );
   if (loading) return <InitialLoading />;
   if (error)
     return (
@@ -142,8 +149,8 @@ function WorkspaceRoutes() {
       </div>
     );
   return (
-    <>
-      {refreshError && (
+    <ShellPresence value={announceShell}>
+      {refreshError && shells === 0 && (
         <aside className="workspace-refresh-notice" role="alert">
           <Icon name="warning" size={19} />
           <div>
@@ -273,7 +280,7 @@ function WorkspaceRoutes() {
           }
         />
       </Routes>
-    </>
+    </ShellPresence>
   );
 }
 export function App() {
