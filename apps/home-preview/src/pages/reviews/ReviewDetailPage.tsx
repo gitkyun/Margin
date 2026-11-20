@@ -17,12 +17,7 @@ import {
   type ReactNode,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import {
-  Link,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -59,6 +54,10 @@ import {
   useDisabledReason,
 } from "@/components/common";
 import { SectionBoundary } from "@/components/SectionBoundary";
+import {
+  SettingsDialog,
+  useOpenSettings,
+} from "@/components/settings/SettingsDialog";
 import { Icon } from "@/components/icons";
 import { OverflowActions } from "@/components/OverflowActions";
 import {
@@ -473,7 +472,8 @@ function ProfessorProgress({
 export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
   const { requestId = "" } = useParams();
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
+  // 틀 밖 화면이라 설정 창을 이 화면이 직접 그립니다(IA v2 07 §5 X2).
+  const openSettings = useOpenSettings();
   const [confirmDialog, askConfirm] = useConfirm();
   const context = useWorkspace();
   const {
@@ -1063,9 +1063,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                   <span>{user.email}</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => navigate("/account?tab=appearance")}
-                >
+                <DropdownMenuItem onSelect={() => openSettings("display")}>
                   <Icon name="monitor" size={16} />
                   {t("화면 설정")}
                 </DropdownMenuItem>
@@ -1983,6 +1981,7 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
         </DialogContent>
       </Dialog>
       {confirmDialog}
+      {!embedded && <SettingsDialog />}
     </Root>
   );
   return (
