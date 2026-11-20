@@ -1,5 +1,6 @@
 import { dateLocale, t } from "@/lib/i18n";
 import { timeParts } from "./time-format";
+import type { MeetingCadence } from "./recurrence";
 export type ID = string;
 export type RecordOrigin = "manual" | "ai";
 export interface BaseRecord {
@@ -38,6 +39,8 @@ export interface Research {
   archivedAt?: string;
   /** 연구를 끝냈다고 표시한 시각. 내 연구의 ‘완료된 연구’에 모여요(보관·휴지통과 별개). */
   completedAt?: string;
+  /** 정해진 미팅 요일·시각·간격(IA v2 07 §1.3). 없으면 꺼짐. 읽을 때는 lib/recurrence의 readCadence */
+  meetingCadence?: MeetingCadence;
 }
 /** 메모 형광펜 한 칸. 전사 형광펜(TranscriptMark)과 같은 모양입니다(IA v2 08 §3.1). */
 export interface TextMark {
