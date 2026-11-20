@@ -251,8 +251,18 @@
   .transcript-mark {
     padding: 0;
     border-radius: var(--radius-4);
-    background: var(--brand-soft);
+    background: var(--mark-fill);
     color: inherit;
+  }
+  /* 화면 낭독용 '형광펜' 글자. DOM 글자가 아니라 고른 범위의 글자 위치를 흔들지 않아요. */
+  .transcript-mark::before {
+    content: attr(data-label) " ";
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .speech-uncertain {
     text-decoration: underline dotted var(--warning);

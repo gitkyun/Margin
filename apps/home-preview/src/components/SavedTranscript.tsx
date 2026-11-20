@@ -419,7 +419,11 @@ export function SavedTranscript({
               {value
                 ? markedPieces(value, marks).map((piece) =>
                     piece.marked ? (
-                      <mark key={piece.start} className="transcript-mark">
+                      <mark
+                        key={piece.start}
+                        className="transcript-mark"
+                        data-label={t("형광펜")}
+                      >
                         {piece.text}
                       </mark>
                     ) : (

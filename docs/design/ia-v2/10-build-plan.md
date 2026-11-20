@@ -116,7 +116,7 @@
 | V5 | `conversations` 저장 주체 | 화면 | `ResearchAssistant.tsx` 773·833행 부근 | [08](08-data.md) §5.4 |
 | V6 | 미팅 제목 서버 한도 | 200자 | r2 138행 `rms_required_text(v,'title',200)` | [04](04-meetings.md)·[09](09-states.md) §6 |
 | V7 | Kokonut `ai-prompt`가 안쪽 280px에서 넘치는지 | 넘치지 않음. 도구 줄이 3줄로 접힘(입력창 높이 180 → 252px). 안쪽 328px(창 360)과 408px(창 440)은 2줄 216px | 2026-11-17 측정: 가짜 서버 연결 빌드의 연구 도우미 화면에서 `.assistant-composer-wrap` 폭만 줄임(한국어, 모델 이름 'Gemini 3.8 Flash'). 일본어·더 긴 모델 이름은 재지 않음 | 기본 폭 312 유지([06](06-assistant.md) §1). 4단계에서 사이드 창 안에 넣은 뒤 다시 확인 |
-| V8 | 형광펜에 쓸 Montage 노랑 원자 토큰 | 없음(lime·orange 등만, `--opacity-*`는 있음) | `@montage-ui/core/dist/theme.css` | [02](02-shell.md) §2 `--mark-fill`(lime + 투명도). 다크 대비는 0단계에 확인 |
+| V8 | 형광펜에 쓸 Montage 노랑 원자 토큰 | 없음(lime·orange 등만, `--opacity-*`는 있음) | `@montage-ui/core/dist/theme.css` | [02](02-shell.md) §2 `--mark-fill`(lime + 투명도). [사실, 2026-11-20] `rgba(--atomic-lime-80-rgb, --opacity-35)`로 넣음. 미리보기에서 잰 글자 대비: 라이트 16.3:1, 다크 5.4:1(바탕 #212225, 글자 #F7F7F8) |
 | V9 | `--z-*` 토큰 값 | sticky 5, topbar 20, sidebar 30, sheet 40, toast 60, skip 100, tour 200. 대화상자·팝오버·녹음 줄 토큰은 없음 | `src/styles.css` 53~62행 | [02](02-shell.md) §8. Montage 포털 값은 0단계에 확인 |
 | V10 | 미팅 한 줄 1MB 안인지 | 충분함(메모 약 150KB + 표시 약 14KB + 요약 약 9KB) | 계산, r2 235행 | — |
 | V11 | 준비의 '보여 줄 결과'를 비우면 서버가 막는지 | 막지 않음(`goal` 선택, 5,000자). 화면만 막음 | r2 138행, `MeetingsPage.tsx` 742행 부근 | [04](04-meetings.md) §4.1 필수 해제 그대로 |
