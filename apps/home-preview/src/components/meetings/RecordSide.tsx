@@ -25,6 +25,16 @@ import {
 import type { DetailHistoryState } from "@/lib/item-detail";
 import "@/components/log/log.css";
 import "./record-side.css";
+import { markKindLabel, type MarkKind } from "@/lib/mark-kinds";
+
+/** 오른쪽 열 형광펜 줄 하나(메모) */
+export interface SideMark {
+  start: number;
+  end: number;
+  kind: MarkKind;
+  /** 칠한 글(줄이 길면 화면에서 두 줄로 자름) */
+  text: string;
+}
 import { SuggestionRows, SummaryBody, useOrganize } from "./OrganizeParts";
 
 const DETAIL_STATE: DetailHistoryState = { layer: "detail", depth: 1 };
@@ -169,6 +179,8 @@ export function RecordSide({
   onAddDecision,
   onAddQuestion,
   onShowPreparation,
+  marks = [],
+  onPickMark,
 }: {
   meeting: Meeting;
   /** 원문 표시 번호(04 §5.3). 원문 위치를 찾은 항목만 */
@@ -183,6 +195,10 @@ export function RecordSide({
   onAddDecision(): void;
   onAddQuestion(): void;
   onShowPreparation(): void;
+  /** 메모 형광펜(위치순). 색만으로 구분하지 않도록 종류 이름과 함께 보여요(02 §2, 6단계). */
+  marks?: readonly SideMark[];
+  /** 형광펜 줄을 누르면 메모의 그 자리를 골라 보여 줍니다. */
+  onPickMark?(mark: SideMark): void;
 }) {
   const { data, save, remove } = useWorkspace();
   const completion = useTaskCompletion(save);
@@ -363,6 +379,32 @@ export function RecordSide({
           {t("질문 추가")}
         </Button>
       </Fold>
+      {marks.length > 0 && (
+        <Fold
+          id="marks"
+          title={t("형광펜 {count}", { count: marks.length })}
+          defaultOpen={marks.length <= 5}
+        >
+          {marks.map((mark) => (
+            <button
+              key={`${mark.start}-${mark.end}`}
+              type="button"
+              className="record-side-line record-side-mark"
+              onClick={() => onPickMark?.(mark)}
+            >
+              <strong>
+                <span
+                  className="mark-swatch"
+                  data-kind={mark.kind}
+                  aria-hidden="true"
+                />
+                {markKindLabel(mark.kind)}
+              </strong>
+              <small>{mark.text}</small>
+            </button>
+          ))}
+        </Fold>
+      )}
       {!written && (
         <Fold id="prepared" title={t("준비한 것")} defaultOpen={false}>
           <p className="record-side-note">

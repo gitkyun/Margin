@@ -15,12 +15,15 @@ import type { Recording } from "@/lib/domain";
 import { isUncertain, timeRangeForSelection } from "@/lib/recording-timeline";
 import {
   addMark,
+  kindAt,
   markedPieces,
   overlapsMark,
   removeMarks,
   validMarks,
 } from "@/lib/recording-marks";
 import { isMarkKey } from "@/lib/mark-key";
+import { markKindLabel } from "@/lib/mark-kinds";
+import { markKindOptions } from "./recording/mark-kind-options";
 import {
   pickRange,
   sentenceAt,
@@ -264,6 +267,14 @@ export function SavedTranscript({
         label: marked ? t("형광펜 지우기") : t("형광펜"),
         shortcut: "H",
         onSelect: toggleMark,
+        // ▾: 종류를 골라 칠하거나, 칠한 곳의 종류를 바꿔요(6단계).
+        ...markKindOptions(
+          kindAt(marks, text, picked.start, picked.end),
+          (kind) =>
+            void changeMarks(
+              addMark(marks, text, picked.start, picked.end, kind),
+            ),
+        ),
       });
     }
     if (onPick) {
@@ -422,7 +433,11 @@ export function SavedTranscript({
                       <mark
                         key={piece.start}
                         className="transcript-mark"
-                        data-label={t("형광펜")}
+                        data-kind={piece.kind}
+                        data-label={t("형광펜 {kind}", {
+                          kind: markKindLabel(piece.kind),
+                        })}
+                        title={markKindLabel(piece.kind)}
                       >
                         {piece.text}
                       </mark>

@@ -49,6 +49,9 @@
   /* 형광펜(IA v2 02 §2): Montage에 노랑 원자 색이 없어 lime에 투명도를 줘요.
      투명도라 라이트·다크가 같은 정의를 써요. */
   --mark-fill: rgba(var(--atomic-lime-80-rgb), var(--opacity-35));
+  /* 형광펜 종류(6단계): 다시 확인 = 하늘(cyan), 인용할 곳 = 보라(violet). 같은 투명도 */
+  --mark-fill-check: rgba(var(--atomic-cyan-80-rgb), var(--opacity-35));
+  --mark-fill-cite: rgba(var(--atomic-violet-80-rgb), var(--opacity-35));
 
   /* 상태 */
   --success: var(--semantic-foreground-positive-primary);

@@ -28,6 +28,17 @@ export interface SelectionAction {
   icon?: string;
   /** 같은 일을 하는 단축키(예: "H"). 버튼 끝에 보이고 보조 기술에도 알려요. */
   shortcut?: string;
+  /** 형광펜 종류처럼 앞에 붙는 색 견본(`data-kind` 값) */
+  swatch?: string;
+  /** 지금 고른 값이면 true(눌린 버튼으로 알려요) */
+  pressed?: boolean;
+  /**
+   * 옆 ▾로 펼치는 고르기(예: 형광펜 종류). 누르면 막대가 이 목록으로 바뀌고,
+   * 고르면 그 일을 하고 닫혀요. 떠 있는 메뉴를 따로 띄우지 않아 고른 글이 풀리지 않아요.
+   */
+  options?: SelectionAction[];
+  /** ▾ 버튼의 접근성 이름 */
+  optionsLabel?: string;
   onSelect(): void;
 }
 
@@ -96,7 +107,49 @@ export function SelectionToolbar({
       },
     });
   }, [anchor, floating, setPositionReference]);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const bar = useRef<HTMLDivElement>(null);
+  const focusFirst = useRef(false);
+  // 고른 곳이 바뀌면 펼친 목록을 접어요.
+  useEffect(() => setExpanded(null), [anchor]);
+  // 펼치거나 접은 뒤(그려진 다음) 첫 버튼으로 초점을 옮겨 키보드로 이어 고르게 해요.
+  // 누른 ▾·‹ 버튼은 바뀐 막대에서 사라지므로, 그리기 전에 옮기면 초점이 문서로 빠져요.
+  useEffect(() => {
+    if (!focusFirst.current) return;
+    focusFirst.current = false;
+    bar.current?.querySelector<HTMLButtonElement>("button")?.focus();
+  }, [expanded]);
   if (!anchor || !actions.length) return null;
+  const open = actions.find((action) => action.key === expanded);
+  const shown = open?.options ?? actions;
+  const expand = (key: string | null) => {
+    focusFirst.current = true;
+    setExpanded(key);
+  };
+  const button = (action: SelectionAction) => (
+    <button
+      key={action.key}
+      type="button"
+      aria-keyshortcuts={action.shortcut}
+      aria-pressed={action.pressed}
+      onClick={() => {
+        action.onSelect();
+        onDismiss();
+      }}
+    >
+      {action.swatch ? (
+        <span
+          className="selection-swatch"
+          data-kind={action.swatch}
+          aria-hidden="true"
+        />
+      ) : (
+        action.icon && <Icon name={action.icon} size={14} />
+      )}
+      {action.label}
+      {action.shortcut && <kbd aria-hidden="true">{action.shortcut}</kbd>}
+    </button>
+  );
   return (
     <div
       ref={refs.setFloating}
@@ -107,32 +160,49 @@ export function SelectionToolbar({
       }}
     >
       <div
+        ref={bar}
         className="selection-toolbar"
         role="toolbar"
-        aria-label={label ?? t("고른 글로 만들기")}
+        aria-label={
+          (open && open.optionsLabel) ?? label ?? t("고른 글로 만들기")
+        }
         onMouseDown={(e) => e.preventDefault()}
         onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            e.stopPropagation();
-            onDismiss();
-          }
+          if (e.key !== "Escape") return;
+          e.stopPropagation();
+          // 펼친 목록이면 먼저 원래 막대로 돌아가요.
+          if (open) expand(null);
+          else onDismiss();
         }}
       >
-        {actions.map((action) => (
+        {open && (
           <button
-            key={action.key}
             type="button"
-            aria-keyshortcuts={action.shortcut}
-            onClick={() => {
-              action.onSelect();
-              onDismiss();
-            }}
+            className="selection-toolbar-back"
+            aria-label={t("뒤로")}
+            onClick={() => expand(null)}
           >
-            {action.icon && <Icon name={action.icon} size={14} />}
-            {action.label}
-            {action.shortcut && <kbd aria-hidden="true">{action.shortcut}</kbd>}
+            <Icon name="chevron-left" size={14} />
           </button>
-        ))}
+        )}
+        {shown.map((action) =>
+          !open && action.options?.length ? (
+            <span key={action.key} className="selection-split">
+              {button(action)}
+              <button
+                type="button"
+                className="selection-split-more"
+                aria-label={action.optionsLabel ?? t("더 보기")}
+                aria-haspopup="true"
+                onClick={() => expand(action.key)}
+              >
+                <Icon name="chevron-down" size={14} />
+              </button>
+            </span>
+          ) : (
+            button(action)
+          ),
+        )}
       </div>
     </div>
   );

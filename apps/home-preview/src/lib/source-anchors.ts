@@ -1,5 +1,6 @@
 import type { TextMark } from "./domain";
 import { validMarks } from "./recording-marks";
+import { DEFAULT_MARK_KIND, readMarkKind, type MarkKind } from "./mark-kinds";
 
 export type AnchorKind = "feedback" | "decision" | "question" | "task";
 
@@ -62,6 +63,8 @@ export interface MemoPiece {
   text: string;
   start: number;
   marked: boolean;
+  /** 칠한 조각의 종류(칠하지 않은 조각은 기본값) */
+  kind: MarkKind;
   /** 이 조각을 덮는 항목 id */
   anchors: string[];
   /** 이 조각 끝에서 끝나는 항목의 번호 */
@@ -86,10 +89,12 @@ export function memoPieces(
     const from = points[i]!,
       to = points[i + 1]!;
     if (from >= to) continue;
+    const mark = valid.find((item) => item.start < to && item.end > from);
     out.push({
       text: text.slice(from, to),
       start: from,
-      marked: valid.some((mark) => mark.start < to && mark.end > from),
+      marked: !!mark,
+      kind: mark ? readMarkKind(mark.kind) : DEFAULT_MARK_KIND,
       anchors: anchors
         .filter((anchor) => anchor.start < to && anchor.end > from)
         .map((anchor) => anchor.id),

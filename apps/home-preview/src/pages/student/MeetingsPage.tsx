@@ -15,6 +15,7 @@ import { relocateMarks } from "@/lib/memo-marks";
 import {
   MARK_LIMIT,
   addMark,
+  kindAt,
   overlapsMark,
   removeMarks,
   validMarks,
@@ -22,6 +23,8 @@ import {
 import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { t } from "@/lib/i18n";
 import { nextCadenceDate, readCadence } from "@/lib/recurrence";
+import { readMarkKind, type MarkKind } from "@/lib/mark-kinds";
+import { markKindOptions } from "@/components/recording/mark-kind-options";
 import { isImeComposing } from "@/lib/ime";
 import {
   RecordingPanel,
@@ -393,6 +396,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     y: number;
     start: number;
     end: number;
+    kind: MarkKind;
   } | null>(null);
   const sourceItems = recordItems(meeting, data);
   const anchors = sourceAnchors(memo, meeting.memoRevision, [
@@ -607,8 +611,11 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     label: t("미팅 메모"),
     onDiscard: loadSavedMemo,
   });
-  /** 고른 메모 글에 형광펜을 칠하거나(겹치면) 지웁니다(04 §5.2). 누르는 즉시 저장합니다. */
-  async function toggleMemoMark() {
+  /**
+   * 고른 메모 글에 형광펜을 칠하거나(겹치면) 지웁니다(04 §5.2). 누르는 즉시 저장합니다.
+   * 종류(`kind`)를 주면 지우지 않고 그 종류로 칠합니다(겹치면 종류가 바뀜, 6단계).
+   */
+  async function toggleMemoMark(kind?: MarkKind) {
     const field = memoField.current;
     if (!field) return;
     const start = field.selectionStart,
@@ -621,10 +628,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       base = saved;
     }
     if (base.memo !== draftMemo.current) return;
-    const marked = overlapsMark(base.memoMarks, base.memo, start, end);
+    const marked = !kind && overlapsMark(base.memoMarks, base.memo, start, end);
     const marks = marked
       ? removeMarks(base.memoMarks, base.memo, start, end)
-      : addMark(base.memoMarks, base.memo, start, end);
+      : addMark(base.memoMarks, base.memo, start, end, kind);
     if (
       !marked &&
       marks.length >= MARK_LIMIT &&
@@ -643,8 +650,8 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       toast.error(friendlyError(error));
     }
   }
-  /** 누른 형광펜 하나를 지웁니다(04 §5.3). */
-  async function eraseMark(start: number, end: number) {
+  /** 누른 형광펜 하나를 지우거나(종류 없이) 종류를 바꿉니다(04 §5.3, 6단계). */
+  async function eraseMark(start: number, end: number, kind?: MarkKind) {
     setEraseAt(null);
     let base = latest.current;
     if (draftMemo.current !== savedMemo.current) {
@@ -656,12 +663,25 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
     try {
       const stored = await save("meetings", {
         ...base,
-        memoMarks: removeMarks(base.memoMarks, base.memo, start, end),
+        memoMarks: kind
+          ? addMark(base.memoMarks, base.memo, start, end, kind)
+          : removeMarks(base.memoMarks, base.memo, start, end),
       });
       latest.current = stored;
     } catch (error) {
       toast.error(friendlyError(error));
     }
+  }
+  /** 메모에서 고른 범위와 겹치는 형광펜의 종류(▾ 목록에서 눌린 것으로 보여 줌) */
+  function memoPickedKind(): MarkKind | null {
+    const field = memoField.current;
+    if (!field || field.selectionStart === field.selectionEnd) return null;
+    return kindAt(
+      relocateMarks(meeting.memoMarks, meeting.memo, memo),
+      memo,
+      field.selectionStart,
+      field.selectionEnd,
+    );
   }
   /** 커서만 놓은 자리가 항목 없는 형광펜 안이면 지우기 메뉴를 띄웁니다. */
   function pickMarkAt(event: React.MouseEvent<HTMLTextAreaElement>) {
@@ -693,6 +713,7 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
       y: event.clientY - rect.top,
       start: mark.start,
       end: mark.end,
+      kind: readMarkKind(mark.kind),
     });
   }
   /**
@@ -1464,6 +1485,12 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                   actions={
                     eraseAt
                       ? [
+                          // 누른 형광펜의 종류를 바꾸거나 지웁니다(6단계).
+                          ...(markKindOptions(
+                            eraseAt.kind,
+                            (kind) =>
+                              void eraseMark(eraseAt.start, eraseAt.end, kind),
+                          ).options ?? []),
                           {
                             key: "erase",
                             icon: "close",
@@ -1485,6 +1512,10 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
                       icon: "edit",
                       label: t("형광펜"),
                       onSelect: () => void toggleMemoMark(),
+                      ...markKindOptions(
+                        memoPickedKind(),
+                        (kind) => void toggleMemoMark(kind),
+                      ),
                     },
                     {
                       key: "feedback",
@@ -1582,6 +1613,23 @@ function MeetingDetail({ meeting }: { meeting: Meeting }) {
               onAddDecision={() => openEntry("decision")}
               onAddQuestion={() => openEntry("question")}
               onShowPreparation={() => void changeTab("prepare")}
+              marks={validMarks(
+                relocateMarks(meeting.memoMarks, meeting.memo, memo),
+                memo,
+              ).map((mark) => ({
+                start: mark.start,
+                end: mark.end,
+                kind: readMarkKind(mark.kind),
+                text: memo.slice(mark.start, mark.end),
+              }))}
+              onPickMark={(mark) => {
+                // 메모 칸에서 그 자리를 골라 보이게 합니다(새 형광펜을 만들지 않음).
+                const field = memoField.current;
+                if (!field) return;
+                field.focus();
+                field.setSelectionRange(mark.start, mark.end);
+                field.scrollIntoView({ block: "nearest" });
+              }}
             />
           </div>
         </div>
@@ -2212,7 +2260,9 @@ function MemoPieceView({
     .filter(Boolean)
     .join(" ");
   const body = piece.marked ? (
-    <mark className={className || undefined}>{piece.text}</mark>
+    <mark className={className || undefined} data-kind={piece.kind}>
+      {piece.text}
+    </mark>
   ) : (
     <span className={className || undefined}>{piece.text}</span>
   );

@@ -149,6 +149,24 @@
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
   }
+  /* 형광펜 줄(6단계): 견본 + 종류 이름, 아래에 칠한 글 두 줄 */
+  .record-side-mark {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .record-side-mark strong {
+    align-items: center;
+  }
+  .record-side-mark small {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
   .record-side-empty {
     margin: 0;
     color: var(--text-tertiary);
@@ -216,7 +234,9 @@
     letter-spacing: var(--typography-body1-letterSpacing);
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    word-break: normal;
+    /* 글 칸은 본문의 줄바꿈 규칙(styles.css body)을 물려받습니다. 같은 규칙이어야 줄이 같은 곳에서 꺾여
+       형광펜·밑줄이 글자와 어긋나지 않아요(2026-11-20 확인: normal로 두면 몇 글자씩 밀림). */
+    word-break: var(--text-word-break, keep-all);
     scrollbar-gutter: stable;
     pointer-events: none;
   }
@@ -224,6 +244,12 @@
     border-radius: var(--radius-4);
     background: var(--mark-fill);
     color: transparent;
+  }
+  .memo-backdrop mark[data-kind="check"] {
+    background: var(--mark-fill-check);
+  }
+  .memo-backdrop mark[data-kind="cite"] {
+    background: var(--mark-fill-cite);
   }
   /* 원문 표시(04 §5.3): 만든 곳은 2px 밑줄, 끝에 번호. 오른쪽 열에서 짚으면 바탕이 깔립니다. */
   .memo-backdrop .memo-anchor {
