@@ -45,6 +45,8 @@
     position: sticky;
     top: 0;
     z-index: var(--z-topbar);
+    container-type: inline-size;
+    container-name: topbar;
     display: flex;
     align-items: center;
     gap: var(--spacing-8);
@@ -514,6 +516,46 @@
     .ia-shell .ia-search > span,
     .ia-shell .ia-search kbd {
       display: none;
+    }
+  }
+  /* 데스크톱에서도 사이드 패널 확장으로 상단 줄 가용 폭이 좁아지면 동일하게 축약(RQA-005). */
+  @container topbar (max-width: 900px) {
+    .app-shell.floating-workspace.ia-shell .ia-topbar .brand .margin-wordmark {
+      display: none;
+    }
+    .ia-shell .ia-topbar .ia-search {
+      flex: none;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+    }
+    .ia-shell .ia-topbar .ia-search > span,
+    .ia-shell .ia-topbar .ia-search kbd {
+      display: none;
+    }
+  }
+  @container topbar (max-width: 680px) {
+    .app-shell.floating-workspace.ia-shell .ia-topbar .ia-switch {
+      min-width: 72px;
+      padding: 0 var(--spacing-4) 0 var(--spacing-6);
+    }
+    .ia-shell .ia-topbar .ia-nav {
+      margin-left: var(--spacing-4);
+      gap: 0;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .ia-shell .ia-topbar .ia-nav-item {
+      padding: var(--spacing-6) var(--spacing-8);
+      font-size: var(--typography-label2-fontSize);
+    }
+    .ia-shell .ia-topbar .ia-nav-item.active::after {
+      left: var(--spacing-8);
+      right: var(--spacing-8);
     }
   }
 
