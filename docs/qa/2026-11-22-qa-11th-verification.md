@@ -64,12 +64,24 @@ P3 214건은 개별로 재현하지 않았다. 워커의 코드 대조 판정(�
 
 ## 6. 수정 단계
 
-모든 작업은 `main`이 아니라 작업별 브랜치와 PR로 한다. 변경마다 CHANGELOG Unreleased에 기록하고 typecheck·test·test:backend·test:sites·build를 돌린다. 시각 검증은 사용자가 한다.
+원래는 작업별 브랜치·PR을 계획했으나, 사용자 결정에 따라 로컬 `main`에서 직접 수정해 두었다(미커밋 상태, PR 번호 없음). 변경마다 `CHANGELOG.md` Unreleased에 기록했고 `typecheck`·`test`·`test:backend`·`test:sites`·`build`·`i18n-scan`을 모두 통과했다. 시각 검증은 사용자(또는 Chrome DevTools MCP)로 확인한다.
 
-1. **확정 결함(등급 A)**: U8-01 → U8-03 → U4-01 → U5-03 → U5-01 → U6-04 → U2-03/U2-04 → U1-P2-5 → U6-05(D2) → U1-P2-3/U9-01(D3).
-2. **날짜 UTC 절단**: `createdAt.slice(0,10)` 계열을 KST 날짜 유틸 하나로 교체(`DocsPage.tsx`, `lib/task-groups.ts`, `lib/home-action.ts`, `RecordList.tsx`, `DecisionLog.tsx`, `LogPanel.tsx`, `OrganizeParts.tsx`, `lib/decisions.ts`). 런타임 재현은 KST 00~09시에만 된다.
-3. **교수 응답 폼(U10-01)**: D1을 반영. `e04af59`의 판정 통일 작업과 함께 본다.
-4. **재확인 후 착수(등급 B·D)**: 먼저 재현을 확정한 뒤 고친다.
+1. **확정 결함(등급 A)** — 로컬 `main` 반영 완료(U6-05 제외):
+   - [x] **U8-01** (작업 1): `InlineEditBar` `focusPrompt={false}` 및 `⌘/`·`Ctrl+/` 진입 (`tests/inline-edit-bar.test.tsx`)
+   - [x] **U8-03** (작업 2): 선택 바·diff 미리보기 `scroll`/`resize`/`visualViewport` rAF 추적 (`tests/writing-review-position.test.tsx`)
+   - [x] **U4-01** (작업 3): `.meetings-layout` 왼쪽 열 `clamp(220px, 24cqi, 320px)`
+   - [x] **U5-03** (작업 4): `SuggestionRows` 기본 5개 제한 + `더 보기 ({count}개 더)`/`접기` (`tests/suggestion-rows.test.tsx`)
+   - [x] **U5-01·U5-02** (작업 5): `.memo-anchor-num-group` 위첨자 묶음 배치 및 줄 간격 `2.25`
+   - [x] **U6-04** (작업 6): 할 일 상세 연결 피드백 행 `min-width: 0`·2줄 말줄임·`title` 유지
+   - [x] **U2-03·U2-04** (작업 7): `EmailChips`/`TagChips` 오류 문구 + `aria-describedby` 연결, `.field small:not(.field-error)`로 `var(--danger)` 복원 (`tests/input-error-feedback.test.tsx`)
+   - [x] **U1-P2-5** (작업 8): 768px 이상 본문 판 내부 스크롤 + 하단 고정 푸터로 12px 바깥 스크롤 제거
+   - [–] **U6-05** (작업 9): **사용자 결정으로 미수정** — Montage 디자인 시스템(`var(--danger)`) 및 CSS 토큰 일관성 최우선 유지
+   - [x] **U1-P2-3 / U9-01** (작업 10): 연구 도우미 입력창 `+` Goo Menu·공통 `/` 선택자·`@container composer` 1줄 배치로 312px 3단 접힘 해소
+2. **날짜 UTC 절단(등급 C)** — 로컬 `main` 반영 완료:
+   - [x] **U7-02·U6-02·U5-10·U3-25** (작업 11·12): `lib/domain.ts`에 `kstDateKey`·`kstToday` 추가 후 `DocsPage.tsx`, `lib/docs-labels.ts`, `lib/task-groups.ts`, `lib/home-action.ts`, `RecordList.tsx`, `OrganizeParts.tsx`, `DecisionLog.tsx`, `LogPanel.tsx`, `lib/decisions.ts`, `HomePage.tsx`(알림 탭 날짜) 교체 (`tests/kst-date.test.ts`, 잔여 `createdAt`/`updatedAt` `.slice(0, 10)` 0건)
+3. **교수 응답 폼(U10-01, 등급 E)** — 로컬 `main` 반영 완료:
+   - [x] **U10-01** (작업 13): `e04af59`의 비관련 AI 정책 변경을 제외하고 `lib/review-permissions.ts`로 행동별 권한 판정만 최소 분리해 편집자 멤버 교수도 응답 폼이 보이도록 수정 (`tests/review-detail-permissions.test.tsx`, `test:backend` 67/67 통과)
+4. **재확인 후 착수(등급 B·D)**: 먼저 재현을 확정한 뒤 고친다(단, D 등급 중 U2-04는 코드 원인 확인 후 작업 7에서 수정 완료).
 5. **저장·AI가 필요한 항목(등급 E)**: 코드로 원인이 확인된 것만 테스트로 고정하고 사용자가 허락한 때 검수한다.
 6. **P3 공통 부품**: 접근 가능한 이름, 빈 상태, 문구 오류를 공통 부품에서 고친다(건수 미검증).
 

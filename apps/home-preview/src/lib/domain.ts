@@ -640,6 +640,30 @@ export function recordBase(researchId: string): BaseRecord {
   const stamp = now();
   return { id: uid(), researchId, createdAt: stamp, updatedAt: stamp };
 }
+const KST_DATE_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** 오늘 날짜(YYYY-MM-DD, 한국 시간 기준) */
+export function kstToday(now = new Date()): string {
+  return KST_DATE_FORMATTER.format(now);
+}
+
+/**
+ * UTC ISO 타임스탬프(또는 YYYY-MM-DD)를 한국 시간(Asia/Seoul) 날짜 키(YYYY-MM-DD)로 바꿉니다.
+ * 잘못된 입력은 빈 문자열을 돌려줍니다.
+ */
+export function kstDateKey(iso?: string | null): string {
+  if (!iso) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  const d = new Date(iso);
+  if (Number.isNaN(d.valueOf())) return "";
+  return KST_DATE_FORMATTER.format(d);
+}
+
 export function formatDate(
   date?: string | null,
   options?: Intl.DateTimeFormatOptions,

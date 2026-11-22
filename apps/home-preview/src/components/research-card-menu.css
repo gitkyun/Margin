@@ -72,9 +72,12 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* 아래 버튼 줄의 왼쪽 가장자리를 카드 안 글자와 맞춥니다. */
+  /* 아래 버튼 줄의 왼쪽 가장자리를 카드 안 글자와 맞추고 ⋯ 버튼은 오른쪽 끝에 둡니다. */
   .research-list-page .research-card-actions {
     padding: var(--spacing-12) var(--spacing-24);
+  }
+  .research-list-page .research-card-more {
+    margin-inline-start: auto;
   }
   @media (max-width: 767px) {
     .research-list-page .research-card-wrap > .research-card {

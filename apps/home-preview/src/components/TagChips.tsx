@@ -1,4 +1,9 @@
-import { useState, type ClipboardEvent, type KeyboardEvent } from "react";
+import {
+  useId,
+  useState,
+  type ClipboardEvent,
+  type KeyboardEvent,
+} from "react";
 import { t } from "@/lib/i18n";
 import { Icon } from "@/components/icons";
 
@@ -17,6 +22,8 @@ export interface TagChipsProps {
   separator: RegExp;
   /** 꽉 찼을 때 입력칸 대신 보여 줄 한 줄 */
   fullNote: string;
+  /** 형식이 틀린 입력을 넣으려 했을 때 입력칸 아래에 보여 줄 오류 문구 */
+  invalidMessage?: string;
   placeholder?: string;
   id?: string;
   inputMode?: "email" | "text";
@@ -40,6 +47,7 @@ export function TagChips({
   max,
   separator,
   fullNote,
+  invalidMessage,
   placeholder,
   id,
   inputMode = "text",
@@ -47,17 +55,27 @@ export function TagChips({
   "aria-label": ariaLabel,
   "aria-describedby": describedBy,
 }: TagChipsProps) {
+  const generatedId = useId();
   const [invalid, setInvalid] = useState(false);
   const full = values.length >= max;
   const valid = (part: string) => !!part.trim() && isValid(part.trim());
+  const errorId = `${id ?? generatedId}-error`;
+  const showError = invalid && !!invalidMessage;
+  const inputDescribedBy =
+    [showError ? errorId : undefined, describedBy].filter(Boolean).join(" ") ||
+    undefined;
 
   function commit(text: string): boolean {
     const value = text.trim();
-    if (!value) return true;
+    if (!value) {
+      setInvalid(false);
+      return true;
+    }
     if (!isValid(value)) {
       setInvalid(true);
       return false;
     }
+    setInvalid(false);
     onChange(add(values, value));
     onDraftChange("");
     return true;
@@ -99,38 +117,45 @@ export function TagChips({
     onDraftChange(rejected.join(" "));
   }
   return (
-    <div className="email-chips" data-invalid={invalid || undefined}>
-      {values.map((value) => (
-        <span key={value} className="email-chip">
-          {value}
-          <button
-            type="button"
-            aria-label={t("{email} 빼기", { email: value })}
-            onClick={() => onChange(values.filter((item) => item !== value))}
-          >
-            <Icon name="close" size={14} />
-          </button>
-        </span>
-      ))}
-      {!full && (
-        <input
-          id={id}
-          type="text"
-          inputMode={inputMode}
-          autoComplete="off"
-          value={draft}
-          maxLength={maxLength}
-          aria-label={ariaLabel}
-          aria-invalid={invalid || undefined}
-          aria-describedby={describedBy}
-          placeholder={values.length ? undefined : placeholder}
-          onChange={(event) => change(event.target.value)}
-          onKeyDown={keyDown}
-          onPaste={paste}
-          onBlur={() => commit(draft)}
-        />
+    <>
+      <div className="email-chips" data-invalid={invalid || undefined}>
+        {values.map((value) => (
+          <span key={value} className="email-chip">
+            {value}
+            <button
+              type="button"
+              aria-label={t("{email} 빼기", { email: value })}
+              onClick={() => onChange(values.filter((item) => item !== value))}
+            >
+              <Icon name="close" size={14} />
+            </button>
+          </span>
+        ))}
+        {!full && (
+          <input
+            id={id}
+            type="text"
+            inputMode={inputMode}
+            autoComplete="off"
+            value={draft}
+            maxLength={maxLength}
+            aria-label={ariaLabel}
+            aria-invalid={invalid || undefined}
+            aria-describedby={inputDescribedBy}
+            placeholder={values.length ? undefined : placeholder}
+            onChange={(event) => change(event.target.value)}
+            onKeyDown={keyDown}
+            onPaste={paste}
+            onBlur={() => commit(draft)}
+          />
+        )}
+        {full && <small>{fullNote}</small>}
+      </div>
+      {showError && (
+        <p id={errorId} className="field-error" role="alert">
+          {invalidMessage}
+        </p>
       )}
-      {full && <small>{fullNote}</small>}
-    </div>
+    </>
   );
 }

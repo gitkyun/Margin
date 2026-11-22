@@ -1,4 +1,4 @@
-import { dateLocale, t } from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import { EXPANDING_CLASS } from "@/lib/expand-home";
 import { formatClock } from "@/lib/time-format";
 import { cadenceRule, nextCadenceDate, readCadence } from "@/lib/recurrence";
@@ -10,6 +10,7 @@ import { useWorkspace } from "@/lib/workspace";
 import {
   formatDate,
   formatDateTime,
+  kstDateKey,
   recordBase,
   relativeDay,
   type Meeting,
@@ -836,15 +837,7 @@ function HomeLists({
                   <strong>
                     {event.actorName} · {event.title}
                   </strong>
-                  <small>
-                    {new Date(event.createdAt).toLocaleDateString(
-                      dateLocale(),
-                      {
-                        month: "numeric",
-                        day: "numeric",
-                      },
-                    )}
-                  </small>
+                  <small>{formatDate(kstDateKey(event.createdAt))}</small>
                 </span>
               </Link>
             ))}

@@ -17,6 +17,7 @@ import { decisionLog, REASON_MAX } from "@/lib/decisions";
 import { selectNextMeeting } from "@/lib/home-meeting";
 import {
   formatDate,
+  kstDateKey,
   recordBase,
   type Decision,
   type Question,
@@ -293,7 +294,7 @@ function Decisions({ researchId }: { researchId: string }) {
                 <small>
                   {meeting
                     ? `${meeting.title} · ${formatDate(meeting.date)}`
-                    : formatDate(decision.createdAt.slice(0, 10))}
+                    : formatDate(kstDateKey(decision.createdAt))}
                 </small>
               </Link>
             </li>

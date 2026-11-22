@@ -1,0 +1,258 @@
+@layer margin {
+  /* 연구 도우미 입력창 컨테이너 쿼리 기준점(사이드 패널 312px ~ 640px 및 모바일 390px 대응) */
+  .assistant-composer-wrap {
+    container-type: inline-size;
+    container-name: composer;
+  }
+
+  /* ── Goo Menu (+ 버튼에서 위~오른쪽 부채꼴로 펼쳐지는 액체 버블 메뉴) ── */
+  .composer-goo-root {
+    position: relative;
+    flex: none;
+    width: 32px;
+    height: 32px;
+  }
+  .composer-goo-svg {
+    position: absolute;
+    pointer-events: none;
+  }
+  .composer-goo-stage {
+    position: absolute;
+    left: -16px;
+    top: -112px;
+    width: 164px;
+    height: 160px;
+    pointer-events: none;
+    z-index: 30;
+  }
+  .composer-goo-root:not([data-open]) .composer-goo-layer {
+    opacity: 0;
+  }
+  .composer-goo-layer {
+    transition: opacity var(--motion-duration-micro) ease-out;
+  }
+  .composer-goo-blob {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: var(--radius-full);
+    background: var(--surface-muted);
+    will-change: transform, opacity;
+  }
+  .composer-goo-blob.is-main {
+    width: 32px;
+    height: 32px;
+  }
+  .composer-goo-blob.is-bubble {
+    width: 38px;
+    height: 38px;
+    opacity: 0;
+  }
+  .composer-goo-trigger {
+    position: relative;
+    z-index: 32;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-full);
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out,
+      border-color var(--motion-duration-micro) ease-out;
+  }
+  .composer-goo-trigger:hover:not(:disabled),
+  .composer-goo-root[data-open] .composer-goo-trigger {
+    background: var(--hover-fill);
+    color: var(--text);
+    border-color: var(--line-strong);
+  }
+  .composer-goo-trigger:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+  .composer-goo-trigger:disabled {
+    opacity: var(--opacity-43);
+    cursor: not-allowed;
+  }
+  .composer-goo-plus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+  }
+  .composer-goo-bubble {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface-raised);
+    color: var(--text);
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+    cursor: pointer;
+    opacity: 0;
+    will-change: transform, opacity;
+    transition:
+      background-color var(--motion-duration-micro) ease-out,
+      color var(--motion-duration-micro) ease-out,
+      border-color var(--motion-duration-micro) ease-out;
+  }
+  .composer-goo-bubble:hover,
+  .composer-goo-bubble:focus-visible {
+    background: var(--hover-fill);
+    border-color: var(--brand);
+    color: var(--brand);
+    outline: none;
+  }
+  .composer-goo-bubble.is-active {
+    background: var(--selected-fill);
+    border-color: var(--brand);
+    color: var(--brand);
+  }
+  .composer-goo-tip {
+    position: absolute;
+    left: calc(100% + 6px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.92);
+    padding: var(--spacing-4) var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-full);
+    background: var(--surface-raised);
+    color: var(--text);
+    font-size: var(--typography-caption2-fontSize);
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: var(--semantic-elevation-shadow-normal-small);
+    transition:
+      opacity var(--motion-duration-micro) ease-out,
+      transform var(--motion-duration-micro) ease-out;
+  }
+  .composer-goo-bubble:hover .composer-goo-tip,
+  .composer-goo-bubble:focus-visible .composer-goo-tip {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+
+  /* ── 공통 슬래시 명령 상단 띠 (웹 검색 선택자 스타일 통일) ── */
+  .composer-command-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    height: 36px;
+    padding: 0 var(--spacing-6) 0 var(--spacing-12);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .composer-command-header-icon {
+    display: inline-flex;
+    flex: none;
+    color: var(--brand);
+  }
+  .composer-command-header-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+  }
+  .composer-command-header-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    flex: none;
+    height: 24px;
+    padding: 0 var(--spacing-6) 0 var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface-raised);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-caption2-fontSize);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .composer-command-header-btn:hover {
+    background: var(--hover-fill);
+  }
+  .composer-command-header-btn kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-4);
+    background: var(--surface-muted);
+    color: var(--text-tertiary);
+    font-family: inherit;
+    font-size: 10px;
+  }
+
+  /* ── 컨테이너 폭별 브레이크포인트 (312px에서도 도구 줄 1줄 고정) ── */
+  .assistant-composer-wrap .ai-model-controls {
+    flex-wrap: nowrap;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .assistant-composer-wrap .ai-model-trigger {
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+  .assistant-composer-wrap .ai-depth-trigger {
+    flex: none;
+  }
+
+  /* 좁은 패널(< 360px, 기본 312px): 배너 설명 숨김 · 답변 깊이 아이콘화 · 모델 칩 말줄임 */
+  @container composer (max-width: 359px) {
+    .assistant-composer-wrap .composer-banner-note {
+      display: none;
+    }
+    .assistant-composer-wrap .ai-model-trigger {
+      padding-inline: var(--spacing-6);
+      gap: var(--spacing-4);
+    }
+    .assistant-composer-wrap .ai-depth-trigger {
+      padding-inline: var(--spacing-8);
+    }
+    .assistant-composer-wrap .ai-depth-trigger .composer-chip-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  /* 중간 패널(360~459px): 배너 한 줄 말줄임 유지, 도구 줄 간격만 살짝 정돈 */
+  @container composer (min-width: 360px) and (max-width: 459px) {
+    .assistant-composer-wrap .ai-model-trigger {
+      padding-inline: var(--spacing-8);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .composer-goo-layer {
+      filter: none !important;
+    }
+    .composer-goo-tip,
+    .composer-goo-bubble,
+    .composer-goo-trigger {
+      transition: none;
+    }
+  }
+}

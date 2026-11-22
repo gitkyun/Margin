@@ -75,6 +75,7 @@ import {
   type ReviewItem,
   type ReviewResponse,
 } from "@/lib/domain";
+import { reviewPermissions } from "@/lib/review-permissions";
 import {
   ResponseStatus,
   commentAnchor,
@@ -517,14 +518,13 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
     }
   }, [round?.id, params, setParams]);
   const response = latestResponse(data, round?.id);
-  const isOwner =
-    !!request && data.researches.some((r) => r.id === request.researchId);
-  const isProfessor = !!request && request.professorId === user.id && !isOwner;
-  const canRead =
-    !!request && (isOwner || (isProfessor && request.status === "shared"));
-  const canWrite = canRead && request?.status === "shared";
+  const permissions = reviewPermissions(request, user.id, data);
+  const isOwner = permissions.canManageResearch;
+  const isProfessor = permissions.isAssignedProfessor;
+  const canRead = permissions.canRead;
+  const canWrite = permissions.canWrite;
   const canRespond =
-    isProfessor && canWrite && !!round && isLatestRound(data, round);
+    permissions.canRespondLatest && !!round && isLatestRound(data, round);
   const version =
     request && round ? versionForRound(round, request, data) : undefined;
   const [mobilePanel, setMobilePanel] = useState<"document" | "response">(
@@ -1539,16 +1539,16 @@ export function ReviewDetailPage({ embedded = false }: { embedded?: boolean }) {
                     </form>
                   ) : (
                     <p className="review-response-help">
-                      {isOwner
-                        ? t("교수님 응답은 여기에 보여요.")
-                        : isProfessor && canWrite
-                          ? t(
-                              "이 항목은 {latest}차 검토가 있어 {current}차에는 응답할 수 없어요. 최신 검토에서 결과를 남겨 주세요.",
-                              {
-                                latest: rounds[0]?.number ?? round.number,
-                                current: round.number,
-                              },
-                            )
+                      {isProfessor && canWrite
+                        ? t(
+                            "이 항목은 {latest}차 검토가 있어 {current}차에는 응답할 수 없어요. 최신 검토에서 결과를 남겨 주세요.",
+                            {
+                              latest: rounds[0]?.number ?? round.number,
+                              current: round.number,
+                            },
+                          )
+                        : isOwner
+                          ? t("교수님 응답은 여기에 보여요.")
                           : t("공유 중일 때 응답할 수 있어요.")}
                     </p>
                   )}

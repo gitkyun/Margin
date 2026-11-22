@@ -10,6 +10,7 @@ import {
 } from "@/lib/ai-capabilities";
 import { AIModelSelector } from "@/components/ai/AIModelSelector";
 import { ComposerModelSettings } from "@/components/ai/ComposerModelSettings";
+import { ComposerGooMenu } from "@/components/ai/ComposerGooMenu";
 import {
   AIComposerBanner,
   AIComposerUsage,
@@ -239,6 +240,7 @@ export function ResearchAssistant({
     [commandIndex, setCommandIndex] = useState(0),
     [queue, setQueue] = useState<QueuedQuestion[]>([]),
     [voiceOpen, setVoiceOpen] = useState(false),
+    [sourcePickerOpen, setSourcePickerOpen] = useState(false),
     [webSearch, setWebSearch] = useState(false),
     [calendar, setCalendar] = useState(false),
     // 초안 쓰기(06 §2.3): 묻고 답하기에 정해 둔 지시문을 붙여 보냅니다.
@@ -319,16 +321,23 @@ export function ResearchAssistant({
     description: t("이 연구의 기록으로 글 초안을 써요"),
     icon: "edit",
   };
-  const activeCommand = calendar
+  const activeCommand = webSearch
     ? {
-        id: "calendar",
-        label: t("일정 확인"),
-        description: t("이 연구의 미팅·할 일·주요 목표 일정을 확인해요"),
-        icon: "calendar",
+        id: "web_search",
+        label: t("웹 검색"),
+        description: t("Google에서 공개 웹 근거를 찾아요"),
+        icon: "globe",
       }
-    : drafting
-      ? draftCommand
-      : findComposerCommand(task);
+    : calendar
+      ? {
+          id: "calendar",
+          label: t("일정 확인"),
+          description: t("이 연구의 미팅·할 일·주요 목표 일정을 확인해요"),
+          icon: "calendar",
+        }
+      : drafting
+        ? draftCommand
+        : findComposerCommand(task);
   const composerCommands = [
     ...COMPOSER_COMMANDS,
     draftCommand,
@@ -1844,340 +1853,213 @@ export function ResearchAssistant({
             disabled={unavailable || uploading}
             className="m-0 min-w-0 border-0 p-0"
           >
-            {webSearch ? (
-              <AIInputSearch
-                allowAttachments={false}
-                className="max-w-none py-0"
-                value={draft}
-                onValueChange={setDraft}
-                inputRef={composerRef}
-                models={models
-                  .filter(isAIModelAvailable)
-                  .map(researchModelLabel)}
-                selectedModel={
-                  models.find((model) => model.id === selection.model)
-                    ? researchModelLabel(
-                        models.find((model) => model.id === selection.model)!,
-                      )
-                    : ""
-                }
-                onModelChange={(label) => {
-                  const picked = models.find(
-                    (model) => researchModelLabel(model) === label,
-                  );
-                  if (picked) setModel(picked.id);
-                }}
-                modelControls={
-                  <ComposerModelSettings
-                    models={models}
-                    model={selection.model}
-                    thinking={selection.thinking}
-                    loading={caps.isPending}
-                    failed={caps.isError}
-                    disabled={unavailable || uploading || working}
-                    onChange={(next) => {
-                      setModel(next.model);
-                      setThinking(next.thinking);
-                    }}
-                  />
-                }
-                leadingControl={
-                  dictation.supported && !unavailable ? (
-                    <button
-                      type="button"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] hover:bg-[var(--hover-fill)]"
-                      disabled={working || uploading}
-                      aria-label={t("음성으로 질문 입력")}
-                      aria-pressed={voiceOpen}
-                      onClick={() => {
-                        if (voiceOpen) dictation.stop();
-                        setVoiceOpen((open) => !open);
-                      }}
-                    >
-                      <Mic className="size-4" />
-                    </button>
-                  ) : undefined
-                }
-                tools={composerCommands.map((command) => ({
-                  id: command.id,
-                  label: command.label,
-                  icon:
-                    command.id === "web_search"
-                      ? Globe
-                      : command.id === "calendar" ||
-                          command.id === "organize_meeting"
-                        ? CalendarDays
-                        : command.id === "read_material"
-                          ? FileText
-                          : command.id === "review_writing"
-                            ? Pencil
-                            : command.id === "plan_research"
-                              ? ListTodo
-                              : Sparkles,
-                  activity:
-                    command.id === "web_search"
-                      ? t("Google에서 웹 근거를 확인하고 있어요")
-                      : command.description,
-                  hint:
-                    command.id === "web_search"
-                      ? t("질문만 웹 검색에 사용해요")
-                      : command.description,
-                  placeholder:
-                    command.id === "web_search"
-                      ? t("웹에서 확인할 내용을 적어 주세요")
-                      : command.description,
-                  readsSources: command.id === "web_search",
-                  color: "var(--brand)",
-                }))}
-                selectedTool="web_search"
-                onToolChange={(id) => selectComposerCommand(id ?? undefined)}
-                disabled={unavailable || uploading}
-                busy={working}
-                placeholder={t("웹에서 확인할 내용을 적어 주세요")}
-                onStop={() => {
-                  if (abort.current && !abort.current.signal.aborted)
-                    void cancel();
-                }}
-                onQueue={(text) =>
-                  setQueue((prev) => [
-                    ...prev,
-                    {
-                      id: uid(),
-                      text: text.trim(),
-                      mode: "ask_research",
-                      webSearch: true,
-                      calendar: false,
-                      contexts: [],
-                    },
-                  ])
-                }
-                onSearch={async (query, options) => {
-                  const cancelSearch = () => {
-                    if (abort.current && !abort.current.signal.aborted)
-                      void cancel(true);
-                  };
-                  options.signal.addEventListener("abort", cancelSearch, {
-                    once: true,
-                  });
-                  try {
-                    const picked = models.find(
-                      (model) => researchModelLabel(model) === options.model,
-                    );
-                    const ok = await send(query, {
-                      mode: "ask_research",
-                      model: picked?.id,
-                      thinking: selection.thinking,
-                      webSearch: true,
-                      fromComposer: true,
-                      onWebSource: (source) => {
-                        try {
-                          const url = new URL(source.url);
-                          if (["https:", "http:"].includes(url.protocol))
-                            options.onSource({
-                              key: source.url,
-                              domain: url.hostname,
-                              title: source.title,
-                            });
-                        } catch {
-                          /* Invalid sources are not displayed. */
-                        }
-                      },
-                    });
-                    if (!ok) {
-                      setDraft((current) => current || query);
-                      throw new Error(
-                        t("웹 검색을 완료하지 못했어요. 질문은 그대로 있어요."),
-                      );
-                    }
-                  } finally {
-                    options.signal.removeEventListener("abort", cancelSearch);
-                  }
-                }}
-              />
-            ) : (
-              <>
-                <AIPrompt
-                  className="max-w-none py-0"
-                  modelControls={
-                    <ComposerModelSettings
-                      models={models}
-                      model={selection.model}
-                      thinking={selection.thinking}
-                      loading={caps.isPending}
-                      failed={caps.isError}
-                      disabled={unavailable || uploading || working}
-                      onChange={(next) => {
-                        setModel(next.model);
-                        setThinking(next.thinking);
-                      }}
-                    />
-                  }
-                  leadingControl={
-                    <>
-                      {!unavailable && (
-                        <button
-                          type="button"
-                          className="composer-chip"
-                          disabled={working || uploading}
-                          onClick={() => {
-                            setTask("ask_research");
-                            setWebSearch(true);
-                          }}
-                          aria-label={t("웹 검색 켜기")}
-                        >
-                          <Globe className="size-4" />
-                          {t("웹 검색")}
-                        </button>
-                      )}
-                      {dictation.supported && !unavailable ? (
-                        <button
-                          type="button"
-                          className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] hover:bg-[var(--hover-fill)]"
-                          disabled={working || uploading}
-                          aria-label={t("음성으로 질문 입력")}
-                          aria-pressed={voiceOpen}
-                          onClick={() => {
-                            if (voiceOpen) dictation.stop();
-                            setVoiceOpen((open) => !open);
-                          }}
-                        >
-                          <Mic className="size-4" />
-                        </button>
-                      ) : undefined}
-                    </>
-                  }
-                  value={draft}
-                  onValueChange={setDraft}
-                  inputRef={composerRef}
-                  selectedCommand={
-                    activeCommand
-                      ? {
-                          ...activeCommand,
-                          icon: <Icon name={activeCommand.icon} size={16} />,
-                        }
-                      : null
-                  }
-                  onCommandChange={(command) =>
-                    selectComposerCommand(command?.id)
-                  }
-                  commands={composerCommands.map((command) => ({
-                    ...command,
-                    icon: <Icon name={command.icon} size={16} />,
-                  }))}
-                  disabled={unavailable || uploading}
-                  busy={working}
-                  placeholder={t(
-                    "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
-                  )}
-                  models={models.filter(isAIModelAvailable).map((model) => ({
-                    name: researchModelLabel(model),
-                    description: model.description
-                      ? t(model.description)
-                      : undefined,
-                    efforts: model.thinking,
-                    defaultEffort: selection.thinking,
-                  }))}
-                  selectedModel={
-                    models.find((model) => model.id === selection.model)
-                      ? researchModelLabel(
-                          models.find((model) => model.id === selection.model)!,
-                        )
-                      : ""
-                  }
-                  selectedEffort={selection.thinking}
-                  onModelChange={(label) => {
-                    const picked = models.find(
-                      (model) => researchModelLabel(model) === label,
-                    );
-                    if (picked) setModel(picked.id);
-                  }}
-                  onEffortChange={setThinking}
-                  headerText=""
-                  header={
-                    !unavailable && recommendedModel ? (
-                      <AIComposerBanner
-                        usageHref="?settings=usage"
-                        promo={{
-                          label: researchModelLabel(recommendedModel),
-                          note: recommendedModel.description
-                            ? t(recommendedModel.description)
-                            : undefined,
-                          provider: recommendedModel.provider,
-                        }}
-                        onTryPromo={pickRecommended}
-                      />
-                    ) : null
-                  }
-                  tray={
-                    !calendar &&
-                    (contexts.length > 0 || uploading) && (
-                      <ComposerAttachmentCards
-                        contexts={contexts}
-                        data={data}
-                        uploading={uploading}
-                        uploadProgress={uploadProgress}
-                        disabled={working || uploading}
-                        onRemove={(index) => {
-                          // 사이드 창에서 '지금 보는 기록'을 ×로 빼면 이 창을 연 동안 다시 놓지 않습니다.
-                          const removed = contexts[index];
-                          if (
-                            removed &&
-                            contextKey(removed) === placedViewing.current
-                          )
-                            removedViewing.current.add(placedViewing.current);
-                          setContexts((items) =>
-                            items.filter((_, i) => i !== index),
-                          );
-                        }}
-                      />
-                    )
-                  }
-                  onAttach={(files) => {
-                    if (!working && !unavailable)
-                      void (async () => {
-                        for (const file of Array.from(files))
-                          await attach(file);
-                      })();
-                  }}
-                  onStop={() => void cancel()}
-                  onQueue={(text, command) =>
-                    setQueue((prev) => [
-                      ...prev,
-                      {
-                        id: uid(),
-                        text: text.trim(),
-                        mode: (command?.id === "calendar"
-                          ? "ask_research"
-                          : (command?.id ?? task)) as AIInput["mode"],
-                        webSearch: false,
-                        calendar: command?.id === "calendar" || calendar,
-                        contexts:
-                          command?.id === "calendar" || calendar
-                            ? []
-                            : [...effectiveContexts],
-                      },
-                    ])
-                  }
-                  onSubmit={async (text, label, options) => {
-                    const picked = models.find(
-                      (model) => researchModelLabel(model) === label,
-                    );
-                    const success = await send(text, {
-                      mode: (options.command?.id === "calendar"
-                        ? "ask_research"
-                        : (options.command?.id ??
-                          "ask_research")) as AIInput["mode"],
-                      model: picked?.id,
-                      thinking: options.effort ?? selection.thinking,
-                      fromComposer: true,
-                      webSearch: false,
-                      calendar: options.command?.id === "calendar" || calendar,
-                    });
-                    if (!success) setDraft((current) => current || text);
+            <AIPrompt
+              className="max-w-none py-0"
+              modelControls={
+                <ComposerModelSettings
+                  models={models}
+                  model={selection.model}
+                  thinking={selection.thinking}
+                  loading={caps.isPending}
+                  failed={caps.isError}
+                  disabled={unavailable || uploading || working}
+                  onChange={(next) => {
+                    setModel(next.model);
+                    setThinking(next.thinking);
                   }}
                 />
-              </>
-            )}
+              }
+              attachControl={
+                <ComposerGooMenu
+                  disabled={unavailable || uploading || working}
+                  voiceActive={voiceOpen}
+                  onAttachFile={() => openComposerFileDialog()}
+                  onAttachPhoto={() =>
+                    toast.info(
+                      t(
+                        "사진 첨부는 준비 중이에요. 지금은 PDF·TXT·MD 파일을 첨부할 수 있어요.",
+                      ),
+                    )
+                  }
+                  onToggleVoice={() => {
+                    if (!dictation.supported) {
+                      toast.info(
+                        t("이 브라우저에서는 음성 입력을 지원하지 않아요."),
+                      );
+                      return;
+                    }
+                    if (voiceOpen) dictation.stop();
+                    setVoiceOpen((open) => !open);
+                  }}
+                  onPickSource={() => setSourcePickerOpen(true)}
+                />
+              }
+              value={draft}
+              onValueChange={setDraft}
+              inputRef={composerRef}
+              selectedCommand={
+                activeCommand
+                  ? {
+                      ...activeCommand,
+                      icon: <Icon name={activeCommand.icon} size={14} />,
+                    }
+                  : null
+              }
+              onCommandChange={(command) => selectComposerCommand(command?.id)}
+              commands={composerCommands.map((command) => ({
+                ...command,
+                icon: <Icon name={command.icon} size={16} />,
+              }))}
+              disabled={unavailable || uploading}
+              busy={working}
+              placeholder={
+                webSearch
+                  ? t("웹에서 확인할 내용을 적어 주세요")
+                  : t(
+                      "질문을 적어 주세요 · / 를 치면 요청 종류를 고를 수 있어요",
+                    )
+              }
+              models={models.filter(isAIModelAvailable).map((model) => ({
+                name: researchModelLabel(model),
+                description: model.description
+                  ? t(model.description)
+                  : undefined,
+                efforts: model.thinking,
+                defaultEffort: selection.thinking,
+              }))}
+              selectedModel={
+                models.find((model) => model.id === selection.model)
+                  ? researchModelLabel(
+                      models.find((model) => model.id === selection.model)!,
+                    )
+                  : ""
+              }
+              selectedEffort={selection.thinking}
+              onModelChange={(label) => {
+                const picked = models.find(
+                  (model) => researchModelLabel(model) === label,
+                );
+                if (picked) setModel(picked.id);
+              }}
+              onEffortChange={setThinking}
+              headerText=""
+              header={
+                !unavailable && (activeCommand || recommendedModel) ? (
+                  <AIComposerBanner
+                    usageHref="?settings=usage"
+                    command={
+                      activeCommand
+                        ? {
+                            label: activeCommand.label,
+                            description: activeCommand.description,
+                            icon: activeCommand.icon,
+                            onChangeCommand: () => {
+                              selectComposerCommand(undefined);
+                              setDraft("/");
+                              requestAnimationFrame(() => {
+                                composerRef.current?.focus();
+                              });
+                            },
+                          }
+                        : undefined
+                    }
+                    promo={
+                      !activeCommand && recommendedModel
+                        ? {
+                            label: researchModelLabel(recommendedModel),
+                            note: recommendedModel.description
+                              ? t(recommendedModel.description)
+                              : undefined,
+                            provider: recommendedModel.provider,
+                          }
+                        : undefined
+                    }
+                    onTryPromo={pickRecommended}
+                  />
+                ) : null
+              }
+              tray={
+                !webSearch &&
+                !calendar &&
+                (contexts.length > 0 || uploading) && (
+                  <ComposerAttachmentCards
+                    contexts={contexts}
+                    data={data}
+                    uploading={uploading}
+                    uploadProgress={uploadProgress}
+                    disabled={working || uploading}
+                    onRemove={(index) => {
+                      // 사이드 창에서 '지금 보는 기록'을 ×로 빼면 이 창을 연 동안 다시 놓지 않습니다.
+                      const removed = contexts[index];
+                      if (
+                        removed &&
+                        contextKey(removed) === placedViewing.current
+                      )
+                        removedViewing.current.add(placedViewing.current);
+                      setContexts((items) =>
+                        items.filter((_, i) => i !== index),
+                      );
+                    }}
+                  />
+                )
+              }
+              onAttach={(files) => {
+                if (!working && !unavailable)
+                  void (async () => {
+                    for (const file of Array.from(files)) await attach(file);
+                  })();
+              }}
+              onStop={() => void cancel()}
+              onQueue={(text, command) => {
+                const isWeb = command?.id === "web_search" || webSearch;
+                const isCal =
+                  !isWeb && (command?.id === "calendar" || calendar);
+                const isDraft =
+                  !isWeb && !isCal && (command?.id === "draft" || drafting);
+                setQueue((prev) => [
+                  ...prev,
+                  {
+                    id: uid(),
+                    text: text.trim(),
+                    mode: (
+                      isWeb || isCal || isDraft
+                        ? "ask_research"
+                        : (command?.id ?? task)
+                    ) as AIInput["mode"],
+                    webSearch: isWeb,
+                    calendar: isCal,
+                    draft: isDraft,
+                    contexts: isWeb || isCal ? [] : [...effectiveContexts],
+                  },
+                ]);
+              }}
+              onSubmit={async (text, label, options) => {
+                const picked = models.find(
+                  (model) => researchModelLabel(model) === label,
+                );
+                const isWeb = options.command?.id === "web_search" || webSearch;
+                const isCal =
+                  !isWeb && (options.command?.id === "calendar" || calendar);
+                const isDraft =
+                  !isWeb &&
+                  !isCal &&
+                  (options.command?.id === "draft" || drafting);
+                const success = await send(text, {
+                  mode: (
+                    isWeb || isCal || isDraft
+                      ? "ask_research"
+                      : (options.command?.id ?? "ask_research")
+                  ) as AIInput["mode"],
+                  model: picked?.id,
+                  thinking: options.effort ?? selection.thinking,
+                  fromComposer: true,
+                  webSearch: isWeb,
+                  calendar: isCal,
+                  draft: isDraft,
+                });
+                if (!success) setDraft((current) => current || text);
+              }}
+            />
           </fieldset>
           {!webSearch &&
             !calendar &&
@@ -2320,6 +2202,105 @@ export function ResearchAssistant({
         source={draftSource}
         onClose={() => setDraftSource(null)}
       />
+      <Dialog
+        open={sourcePickerOpen}
+        onOpenChange={(open) => setSourcePickerOpen(open)}
+      >
+        <DialogContent className="rms-dialog">
+          <DialogHeader>
+            <DialogTitle>{t("자료 붙이기")}</DialogTitle>
+            <DialogDescription>
+              {t("이 연구의 글·자료·미팅 기록을 골라 먼저 읽게 할 수 있어요.")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody>
+            <div className="source-picker">
+              {[
+                ...data.documents
+                  .filter((d) => d.researchId === researchId && !d.archivedAt)
+                  .map((d) => ({
+                    kind: "documents" as const,
+                    id: d.id,
+                    title: d.title,
+                    icon: "file",
+                  })),
+                ...data.materials
+                  .filter((m) => m.researchId === researchId && !m.archivedAt)
+                  .map((m) => ({
+                    kind: "materials" as const,
+                    id: m.id,
+                    title: m.title,
+                    icon: "file",
+                  })),
+                ...data.meetings
+                  .filter((m) => m.researchId === researchId && !m.archivedAt)
+                  .map((m) => ({
+                    kind: "meetings" as const,
+                    id: m.id,
+                    title: m.title,
+                    icon: "calendar",
+                  })),
+              ].length ? (
+                [
+                  ...data.documents
+                    .filter((d) => d.researchId === researchId && !d.archivedAt)
+                    .map((d) => ({
+                      kind: "documents" as const,
+                      id: d.id,
+                      title: d.title,
+                      icon: "file",
+                    })),
+                  ...data.materials
+                    .filter((m) => m.researchId === researchId && !m.archivedAt)
+                    .map((m) => ({
+                      kind: "materials" as const,
+                      id: m.id,
+                      title: m.title,
+                      icon: "file",
+                    })),
+                  ...data.meetings
+                    .filter((m) => m.researchId === researchId && !m.archivedAt)
+                    .map((m) => ({
+                      kind: "meetings" as const,
+                      id: m.id,
+                      title: m.title,
+                      icon: "calendar",
+                    })),
+                ].map((item) => (
+                  <button
+                    key={`${item.kind}:${item.id}`}
+                    type="button"
+                    onClick={() => {
+                      void addContext({
+                        kind: item.kind,
+                        id: item.id,
+                        title: item.title,
+                      });
+                      setSourcePickerOpen(false);
+                    }}
+                  >
+                    <Icon name={item.icon} size={16} />
+                    <span>{item.title}</span>
+                  </button>
+                ))
+              ) : (
+                <p className="student-empty-inline">
+                  {t("붙일 수 있는 글이나 기록이 아직 없어요.")}
+                </p>
+              )}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSourcePickerOpen(false)}
+            >
+              {t("닫기")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={!!viewingSources}
         onOpenChange={(open) => {

@@ -16,7 +16,7 @@ import { useOptionalRecorder } from "@/components/recording/RecordingProvider";
 import { seoulToday, selectNextMeeting } from "@/lib/home-meeting";
 import { koreanScore } from "@/lib/hangul-search";
 import { formatClock } from "@/lib/time-format";
-import { formatDate, type Meeting } from "@/lib/domain";
+import { formatDate, kstDateKey, type Meeting } from "@/lib/domain";
 import { unreadReviewNotifications } from "@/lib/notifications";
 import {
   recordGroups,
@@ -460,7 +460,7 @@ function RecordLine({
         <span className="record-line-copy">
           <strong>{row.review.title}</strong>
           <small>
-            {formatDate(row.review.createdAt.slice(0, 10))} · {state}
+            {formatDate(kstDateKey(row.review.createdAt))} · {state}
           </small>
         </span>
         {unread && (

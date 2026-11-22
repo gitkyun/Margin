@@ -68,6 +68,7 @@ export interface PromptModel {
 interface AIPromptProps {
   modelControls?: React.ReactNode;
   leadingControl?: React.ReactNode;
+  attachControl?: React.ReactNode;
   header?: ReactNode;
   /** Extra chips drawn in the tray, e.g. records the page attached. */
   tray?: ReactNode;
@@ -447,7 +448,7 @@ function CommandPill({
   return (
     <motion.li
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      className="flex h-11 items-center gap-1.5 rounded-xl bg-[color-mix(in_srgb,var(--brand)_10%,transparent)] pr-1.5 pl-2.5 text-[var(--brand)] text-sm "
+      className="flex h-8 items-center gap-1.5 rounded-full bg-[color-mix(in_srgb,var(--brand)_10%,transparent)] pr-1.5 pl-2.5 font-medium text-[var(--brand)] text-xs ring-1 ring-[color-mix(in_srgb,var(--brand)_20%,transparent)]"
       exit={{
         opacity: 0,
         filter: "blur(2px)",
@@ -457,17 +458,23 @@ function CommandPill({
       layout="position"
       transition={{ duration: 0.2, ease: EASE_OUT }}
     >
-      <span aria-hidden="true" className="opacity-60">
-        /
-      </span>
-      {command.label}
+      {command.icon ? (
+        <span aria-hidden="true" className="flex size-3.5 shrink-0 items-center justify-center [&_svg]:size-3.5">
+          {command.icon}
+        </span>
+      ) : (
+        <span aria-hidden="true" className="opacity-60">
+          /
+        </span>
+      )}
+      <span className="truncate">{command.label}</span>
       <button
         aria-label={t("{label} 선택 해제", { label: command.label })}
-        className="flex size-6 items-center justify-center rounded-md transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--brand)_10%,transparent)] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--brand)]"
+        className="flex size-5 items-center justify-center rounded-full transition-colors duration-150 hover:bg-[color-mix(in_srgb,var(--brand)_12%,transparent)] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--brand)]"
         onClick={onRemove}
         type="button"
       >
-        <X aria-hidden="true" className="size-3.5" />
+        <X aria-hidden="true" className="size-3" />
       </button>
     </motion.li>
   );
@@ -536,7 +543,7 @@ export function PromoHeader({
   onAction,
 }: {
   model: string;
-  text: string;
+  text: ReactNode;
   action: string;
   /** False when the promoted model is not in the menu: no button then. */
   canSwitch: boolean;
@@ -767,6 +774,7 @@ function EffortMenu({
 export default function AI_Prompt({
   modelControls,
   leadingControl,
+  attachControl,
   header,
   tray,
   value: controlledValue,
@@ -1161,34 +1169,36 @@ export default function AI_Prompt({
             value={value}
           />
 
-          <div className="flex flex-wrap items-center gap-1 px-2.5 pt-1 pb-2.5">
+          <div className="flex flex-nowrap items-center gap-1 px-2.5 pt-1 pb-2.5">
             {leadingControl}
-            <label
-              className={cn(
-                "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)] ",
-                "text-[var(--text-secondary)] hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] hover:text-[var(--text)]   ",
-                "has-focus-visible:ring-2 has-focus-visible:ring-[color-mix(in_srgb,var(--brand)_60%,transparent)]",
-                "transition-[background-color,color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
-              )}
-              title={t("파일을 첨부하거나 끌어 놓으세요")}
-            >
-              <input
-                aria-label={t("파일 첨부")}
-                className="sr-only"
-                multiple
-                disabled={disabled}
-                accept=".pdf,.txt,.md"
-                onChange={(e) => {
-                  if (e.target.files?.length) {
-                    addFiles(e.target.files);
-                  }
-                  // Cleared so picking the same file again still fires.
-                  e.target.value = "";
-                }}
-                type="file"
-              />
-              <Plus aria-hidden="true" className="size-4" />
-            </label>
+            {attachControl ?? (
+              <label
+                className={cn(
+                  "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full ring-1 ring-[color-mix(in_srgb,var(--text)_10%,transparent)] ",
+                  "text-[var(--text-secondary)] hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] hover:text-[var(--text)]   ",
+                  "has-focus-visible:ring-2 has-focus-visible:ring-[color-mix(in_srgb,var(--brand)_60%,transparent)]",
+                  "transition-[background-color,color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                )}
+                title={t("파일을 첨부하거나 끌어 놓으세요")}
+              >
+                <input
+                  aria-label={t("파일 첨부")}
+                  className="sr-only"
+                  multiple
+                  disabled={disabled}
+                  accept=".pdf,.txt,.md"
+                  onChange={(e) => {
+                    if (e.target.files?.length) {
+                      addFiles(e.target.files);
+                    }
+                    // Cleared so picking the same file again still fires.
+                    e.target.value = "";
+                  }}
+                  type="file"
+                />
+                <Plus aria-hidden="true" className="size-4" />
+              </label>
+            )}
             {modelControls ?? (
               <>
                 <ModelMenu
@@ -1205,7 +1215,7 @@ export default function AI_Prompt({
                 )}
               </>
             )}
-            <div className="flex-1" />
+            <div className="min-w-0 flex-1" />
             <SendButton
               canSend={canSend}
               onSend={submit}

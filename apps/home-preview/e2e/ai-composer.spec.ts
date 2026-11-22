@@ -361,10 +361,11 @@ test("웹 검색은 질문만 보내고 실제 반환된 웹 출처를 표시한
       },
     };
   });
-  await composer(page).getByRole("button", { name: "웹 검색 켜기" }).click();
+  await input(page).fill("/웹");
+  await input(page).press("Enter");
   await expect(
-    composer(page).getByRole("button", { name: "파일 첨부" }),
-  ).toHaveCount(0);
+    composer(page).getByRole("button", { name: "웹 검색 선택 해제" }),
+  ).toBeVisible();
   await input(page).fill("최근 연구 동향을 확인해 줘");
   await shot(page, "web-search-input");
   await input(page).press("Enter");
@@ -402,17 +403,22 @@ test("웹 검색을 해제하면 기존 질문 입력으로 돌아오고 실패�
   page,
 }) => {
   const { server } = await open(page);
+  await input(page).fill("/웹");
+  await input(page).press("Enter");
+  await expect(
+    composer(page).getByRole("button", { name: "웹 검색 선택 해제" }),
+  ).toBeVisible();
   await input(page).fill("지우면 안 되는 질문");
-  await composer(page).getByRole("button", { name: "웹 검색 켜기" }).click();
-  await expect(input(page)).toHaveValue("지우면 안 되는 질문");
   await composer(page)
     .getByRole("button", { name: "웹 검색 선택 해제" })
     .click();
   await expect(
-    composer(page).getByRole("button", { name: "웹 검색 켜기" }),
-  ).toBeVisible();
+    composer(page).getByRole("button", { name: "웹 검색 선택 해제" }),
+  ).toHaveCount(0);
   await expect(input(page)).toHaveValue("지우면 안 되는 질문");
-  await composer(page).getByRole("button", { name: "웹 검색 켜기" }).click();
+  await input(page).fill("/웹");
+  await input(page).press("Enter");
+  await input(page).fill("지우면 안 되는 질문");
   server.fn("ai-assist", async (_body, route) =>
     route.request().method() === "GET"
       ? { models }

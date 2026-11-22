@@ -17,6 +17,7 @@ import {
 import { useAIUsage } from "@/lib/ai-usage";
 import {
   formatDate,
+  kstDateKey,
   uid,
   type Meeting,
   type SavedAICandidate,
@@ -298,7 +299,7 @@ export function SummaryBody({
             ) : null}
             <p className="record-side-note">
               {t("연구 도우미가 쓴 요약 · {date}", {
-                date: formatDate(saved.createdAt.slice(0, 10)),
+                date: formatDate(kstDateKey(saved.createdAt)),
               })}
               {saved.editedAt ? ` · ${t("고침")}` : ""}
             </p>
@@ -359,6 +360,9 @@ const KIND_LABEL = {
   task: () => t("할 일"),
 } as const;
 
+/** 기본으로 먼저 보여 주는 AI 제안 개수(초과분은 '더 보기'로 펼침) */
+export const SUGGESTION_PREVIEW_LIMIT = 5;
+
 /** ② AI 제안 줄: 점선 · 'AI 제안' · 종류 · 제목 · 근거 · [선택] [제안 닫기] */
 export function SuggestionRows({
   meeting,
@@ -369,8 +373,12 @@ export function SuggestionRows({
 }) {
   const w = useExperience();
   const [busy, setBusy] = useState<string | null>(null);
+  const [expandedFor, setExpandedFor] = useState<string | null>(null);
   const items = organize.suggestions;
   if (!items.length) return null;
+  const expanded = expandedFor === meeting.id;
+  const hiddenCount = Math.max(0, items.length - SUGGESTION_PREVIEW_LIMIT);
+  const visible = expanded ? items : items.slice(0, SUGGESTION_PREVIEW_LIMIT);
 
   async function adopt(c: SavedAICandidate) {
     const value = c.candidate;
@@ -475,7 +483,7 @@ export function SuggestionRows({
           </Button>
         )}
       </div>
-      {items.map((c) => {
+      {visible.map((c) => {
         const category = (c.candidate.category ??
           "feedback") as keyof typeof KIND_LABEL;
         return (
@@ -513,6 +521,20 @@ export function SuggestionRows({
           </div>
         );
       })}
+      {hiddenCount > 0 && (
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="organize-more-toggle"
+          aria-expanded={expanded}
+          onClick={() => setExpandedFor(expanded ? null : meeting.id)}
+        >
+          {expanded
+            ? t("접기")
+            : t("더 보기 ({count}개 더)", { count: hiddenCount })}
+        </Button>
+      )}
     </div>
   );
 }

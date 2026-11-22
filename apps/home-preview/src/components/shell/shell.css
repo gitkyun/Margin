@@ -29,6 +29,13 @@
     gap: 0;
     background: var(--canvas);
   }
+  /* 데스크톱·태블릿(768px 이상): 바깥 창 스크롤을 없애고 둥근 본문 판(.main-shell) 안에서만 스크롤합니다(토스증권 골조 + U1-P2-5 12px 스크롤 해결). */
+  @media (min-width: 768px) {
+    .app-shell.floating-workspace.ia-shell {
+      height: 100dvh;
+      overflow: hidden;
+    }
+  }
   .app-shell.floating-workspace.ia-shell.ia-panel-wide {
     --margin-panel-width: 440px;
   }
@@ -222,23 +229,49 @@
     align-items: flex-start;
     gap: var(--ia-gap);
     min-width: 0;
+    min-height: 0;
     padding: 0 0 calc(var(--ia-gap) + var(--dock-height, 0px)) var(--ia-gap);
   }
   .ia-shell.ia-shell-outside .ia-body {
     padding-right: var(--ia-gap);
   }
   .app-shell.floating-workspace.ia-shell .main-shell {
+    display: flex;
     flex: 1;
+    flex-direction: column;
     min-width: 0;
-    margin: 0;
     min-height: calc(
       100dvh - var(--ia-topbar-height) - var(--ia-gap) - var(--dock-height, 0px)
     );
+    margin: 0;
     border: 0;
     border-radius: var(--radius-16);
     background: var(--surface);
     box-shadow: var(--ia-pane-edge);
     overflow: clip;
+  }
+  @media (min-width: 768px) {
+    .ia-shell .ia-body {
+      align-items: stretch;
+    }
+    .app-shell.floating-workspace.ia-shell .main-shell {
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .app-shell.floating-workspace.ia-shell .main-shell > .workspace-content {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .app-shell.floating-workspace.ia-shell .main-shell > .workspace-footer {
+      flex: none;
+      margin-top: 0;
+      padding: var(--spacing-8) var(--spacing-24);
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+    }
   }
   /* 창을 접을 때 틀만 줄이고, 탭 내용은 원래 너비에서 잘립니다. */
   .ia-shell .ia-panel-frame {
