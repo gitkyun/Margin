@@ -32,6 +32,8 @@ function ThemedToaster() {
       position="bottom-right"
       closeButton
       theme={resolvedTheme}
+      offset={{ bottom: "calc(24px + var(--dock-height, 0px))" }}
+      mobileOffset={{ bottom: "calc(16px + var(--dock-height, 0px))" }}
       toastOptions={{ className: "margin-toast" }}
     />
   );

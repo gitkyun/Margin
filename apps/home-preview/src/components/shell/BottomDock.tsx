@@ -10,8 +10,11 @@ export function BottomDock({ children }: { children: ReactNode }) {
     const dock = ref.current;
     const root = dock?.closest<HTMLElement>(".ia-shell");
     if (!dock || !root) return;
-    const sync = () =>
-      root.style.setProperty("--dock-height", `${dock.offsetHeight}px`);
+    const sync = () => {
+      const height = `${dock.offsetHeight}px`;
+      root.style.setProperty("--dock-height", height);
+      document.documentElement.style.setProperty("--dock-height", height);
+    };
     sync();
     if (typeof ResizeObserver !== "function") return;
     const observer = new ResizeObserver(sync);
@@ -19,6 +22,7 @@ export function BottomDock({ children }: { children: ReactNode }) {
     return () => {
       observer.disconnect();
       root.style.removeProperty("--dock-height");
+      document.documentElement.style.removeProperty("--dock-height");
     };
   }, []);
   return (
