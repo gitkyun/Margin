@@ -1,5 +1,6 @@
 # 문서
 
+- [처음 시작하는 사람을 위한 안내](start-here.md): 비개발자·AI 작업용. 브랜치·PR 개념과 AI에게 보낼 말
 - [작업 지침](working-guide.md): 사람·AI 공통. 요청 해석·판단·사실 확인·수정·보고 방식
 - [개발](development.md): 실행·검사·폴더
 - [구조와 권한](architecture.md): 저장·공유·서버 경계

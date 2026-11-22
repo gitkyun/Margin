@@ -44,7 +44,7 @@ P3 214건은 개별로 재현하지 않았다. 워커의 코드 대조 판정(�
 - 검토 요청만 받은 **지도교수(advisor)**: 연구 멤버 행이 없어 서버가 저장을 막는다(`rms_save_research`가 42501).
 - 프로젝트 초대로 **편집자(editor)**가 된 교수: 초대 수락 때 `editor / active` 멤버 행이 생기고(`supabase/migrations/20261111150000_project_invites.sql:200`), `rms_can_edit_research`가 참이 되어 서버가 쓰기를 허용한다. U10-01(검토 응답 폼 소실)은 이 경로에서 일어난다.
 - 그래서 앞선 워커 문서의 "서버가 이미 모두 차단한다"는 틀렸다.
-- 로컬에만 있던 커밋 `e04af59`(교수 검토 행동별 권한 판정 통일, AI 입력 범위·비용 안내 단일화)가 이 영역과 겹친다. main 위로 옮기면 4개 파일이 충돌해(`ReviewDetailPage.tsx`, `backend.test.mjs` 포함) 합치지 않고 GitHub의 `backup/review-action-permissions-20261119` 브랜치로만 보존했다.
+- 로컬에만 있던 커밋 `e04af59`(교수 검토 행동별 권한 판정 통일, AI 입력 범위·비용 안내 단일화)가 이 영역과 겹친다. main 위로 옮기면 4개 파일이 충돌해(`ReviewDetailPage.tsx`, `backend.test.mjs` 포함) 합치지 않고 GitHub의 `archive/review-action-permissions-20261119` 태그로만 보존했다(`git fetch origin --tags` 후 `git show e04af59`).
 
 ## 4. 결정 (사용자, 2026-11-22)
 

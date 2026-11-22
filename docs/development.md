@@ -25,5 +25,5 @@ npm run dev
 - 같은 제목의 PR이 이미 병합됐다면 오래된 중복 PR은 닫고 브랜치도 지운다.
 - Dependabot PR이 오래돼(몇 주) 큰 버전 변경을 담고 있으면 닫는다. 필요하면 Dependabot이 최신 상태로 다시 연다.
 - 작업 폴더(`git worktree`)는 작업이 끝나면 `git worktree remove`로 치운다. 각 폴더의 `node_modules`가 약 600MB라 쌓이면 용량이 크다. 커밋 안 된 변경이 있는 폴더는 지우기 전에 `git diff`와 추가된 파일을 따로 백업한다.
-- 병합되지 않은 로컬 작업은 지우지 말고 `backup/…` 이름으로 GitHub에 올려 둔다(예: `backup/review-action-permissions-20261119`).
+- 병합되지 않았지만 남기고 싶은 작업은 브랜치로 두지 말고 `archive/…` **태그**로 GitHub에 올려 둔 뒤 브랜치를 지운다(예: `archive/review-action-permissions-20261119`). 태그는 브랜치 목록에 안 보여 브랜치는 `main`과 진행 중인 PR만 남는다. 태그 만들기: `git tag -a archive/<이름>-<날짜> <커밋> -m "설명" && git push origin archive/<이름>-<날짜>`.
 

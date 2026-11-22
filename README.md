@@ -2,7 +2,7 @@
 
 논문 지도 기록, 수정 작업, 원고 버전과 교수 검토를 이어 보는 연구 공간.
 
-[서비스](https://margin-research.pages.dev) · [개발 시작](docs/development.md) · [작업 규칙](CONTRIBUTING.md) · [변경 내역](CHANGELOG.md)
+[서비스](https://margin-research.pages.dev) · [처음이라면](docs/start-here.md) · [개발 시작](docs/development.md) · [작업 규칙](CONTRIBUTING.md) · [변경 내역](CHANGELOG.md)
 
 ## 실행
 
