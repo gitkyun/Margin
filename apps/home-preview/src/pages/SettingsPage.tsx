@@ -56,10 +56,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogBody,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { Switch } from "@montage-ui/core";
 import {
   DisabledReason,
@@ -1072,12 +1070,7 @@ export function ResearchSettingsPage({
         open={!!confirmAction}
         onOpenChange={(v) => !v && !busy && setConfirmAction(null)}
       >
-        <DialogContent
-          className="rms-dialog"
-          showCloseButton={!busy}
-          disableEscapeKeyDownClose={busy}
-          disableOutsideClickClose={busy}
-        >
+        <DialogContent className="rms-dialog">
           <DialogHeader>
             <DialogTitle>
               {confirmAction === "trash"
@@ -1098,27 +1091,6 @@ export function ResearchSettingsPage({
                   : t("진행 중인 연구 목록에 다시 보여요.")}
             </DialogDescription>
           </DialogHeader>
-          {confirmAction === "trash" && (
-            <DialogBody>
-              <SlideToConfirm
-                tone="danger"
-                label={t("밀어서 휴지통으로 옮기기")}
-                confirmLabel={t("옮기는 중")}
-                disabled={busy}
-                onConfirm={() =>
-                  perform(async () => {
-                    await saveResearch({
-                      ...research,
-                      archivedAt: undefined,
-                      deletedAt: new Date().toISOString(),
-                    });
-                    guard.clear();
-                    navigate("/r?view=trash");
-                  })
-                }
-              />
-            </DialogBody>
-          )}
           <DialogFooter>
             <Button
               variant="outline"
@@ -1127,36 +1099,45 @@ export function ResearchSettingsPage({
             >
               {t("취소")}
             </Button>
-            {confirmAction !== "trash" && (
-              <Button
-                variant="default"
-                disabled={busy}
-                onClick={() =>
-                  void perform(async () => {
-                    await saveResearch({
-                      ...research,
-                      archivedAt:
-                        confirmAction === "archive"
-                          ? new Date().toISOString()
-                          : undefined,
-                      deletedAt: undefined,
-                    });
-                    guard.clear();
-                    navigate(
-                      confirmAction === "archive" ? "/r?view=archived" : "/r",
-                    );
-                  })
-                }
-              >
-                {confirmAction === "archive"
+            <Button
+              variant={confirmAction === "trash" ? "destructive" : "default"}
+              disabled={busy}
+              onClick={() =>
+                void perform(async () => {
+                  await saveResearch({
+                    ...research,
+                    archivedAt:
+                      confirmAction === "archive"
+                        ? new Date().toISOString()
+                        : undefined,
+                    deletedAt:
+                      confirmAction === "trash"
+                        ? new Date().toISOString()
+                        : undefined,
+                  });
+                  guard.clear();
+                  navigate(
+                    confirmAction === "trash"
+                      ? "/r?view=trash"
+                      : confirmAction === "archive"
+                        ? "/r?view=archived"
+                        : "/r",
+                  );
+                })
+              }
+            >
+              {confirmAction === "trash"
+                ? busy
+                  ? t("옮기는 중")
+                  : t("휴지통으로 옮기기")
+                : confirmAction === "archive"
                   ? busy
                     ? t("보관하는 중")
                     : t("보관")
                   : busy
                     ? t("복원하는 중")
                     : t("복원")}
-              </Button>
-            )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

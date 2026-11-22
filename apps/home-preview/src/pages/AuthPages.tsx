@@ -3,7 +3,6 @@ import {
   PermanentResearchDelete,
   PendingResearchDeletions,
 } from "@/components/PermanentResearchDelete";
-import { SlideToConfirm } from "@/components/SlideToConfirm";
 import { PublicFrame } from "./PublicPages";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
 export { ThemeSwitch } from "@/components/ThemeSwitch";
@@ -41,6 +40,7 @@ import {
   PageHeader,
   EmptyState,
   StatusBadge,
+  useDisabledReason,
 } from "@/components/common";
 import { Icon } from "@/components/icons";
 import { t } from "@/lib/i18n";
@@ -274,8 +274,15 @@ export function ResearchSelectPage() {
   const [trashTarget, setTrashTarget] = useState<
     (typeof data.researches)[number] | null
   >(null);
+  const [trashName, setTrashName] = useState("");
   const navigate = useNavigate();
   const [pending, setPending] = useState(false);
+  const trashReason = useDisabledReason(
+    !!trashTarget &&
+      !pending &&
+      trashName !== trashTarget.name &&
+      t("연구 이름을 똑같이 입력하면 옮길 수 있어요."),
+  );
   // 연구 만들기는 온보딩 화면(/r/new)이 맡습니다. 예전 주소(?new=1)도 그리로 보냅니다.
   const wantsNew = creationParams.get("new") === "1";
   const noResearchYet =
@@ -308,6 +315,7 @@ export function ResearchSelectPage() {
     else if (id === "settings") navigate(`/r/${research.id}?settings=research`);
     else if (id === "trash") {
       setTrashTarget(research);
+      setTrashName("");
     } else if (id === "complete")
       void changeResearch(
         { ...research, completedAt: new Date().toISOString() },
@@ -652,56 +660,67 @@ export function ResearchSelectPage() {
           if (!pending && !open) setTrashTarget(null);
         }}
       >
-        <DialogContent
-          className="rms-dialog"
-          showCloseButton={!pending}
-          disableEscapeKeyDownClose={pending}
-          disableOutsideClickClose={pending}
-        >
+        <DialogContent className="rms-dialog">
           <DialogHeader>
             <DialogTitle>{t("연구를 휴지통으로 옮길까요?")}</DialogTitle>
             <DialogDescription>
               {t(
-                "공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 휴지통에서 복원할 수 있지만, 검토 요청 공유는 자동으로 다시 시작되지 않아요.",
+                "옮기면 공동연구자가 이 연구에 접근할 수 없고, 공유 중인 검토 요청이 중지돼 교수님도 볼 수 없어요. 휴지통에서 복원할 수 있지만, 검토 요청 공유는 자동으로 다시 시작되지 않아요. 확인을 위해 연구 이름을 입력해 주세요.",
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogBody>
-            <SlideToConfirm
-              tone="danger"
-              label={t("밀어서 휴지통으로 옮기기")}
-              confirmLabel={t("옮기는 중")}
-              disabled={pending}
-              onConfirm={async () => {
-                if (!trashTarget || pending) return;
-                setPending(true);
-                try {
-                  await saveResearch({
-                    ...trashTarget,
-                    deletedAt: new Date().toISOString(),
-                  });
-                  setTrashTarget(null);
-                  toast.success(
-                    t("휴지통으로 옮겼어요. 휴지통에서 복원할 수 있어요."),
-                  );
-                } catch (e) {
-                  toast.error(friendlyError(e));
-                } finally {
-                  setPending(false);
-                }
-              }}
-            />
-          </DialogBody>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={pending}
-              onClick={() => setTrashTarget(null)}
-            >
-              {t("취소")}
-            </Button>
-          </DialogFooter>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!trashTarget || pending || trashName !== trashTarget.name)
+                return;
+              setPending(true);
+              try {
+                await saveResearch({
+                  ...trashTarget,
+                  deletedAt: new Date().toISOString(),
+                });
+                setTrashTarget(null);
+                toast.success(
+                  t("휴지통으로 옮겼어요. 휴지통에서 복원할 수 있어요."),
+                );
+              } catch (e) {
+                toast.error(friendlyError(e));
+              } finally {
+                setPending(false);
+              }
+            }}
+          >
+            <DialogBody>
+              <label className="field">
+                {trashTarget?.name}
+                <Input
+                  value={trashName}
+                  onChange={(e) => setTrashName(e.target.value)}
+                  autoComplete="off"
+                />
+              </label>
+              {trashReason.node}
+            </DialogBody>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={pending}
+                onClick={() => setTrashTarget(null)}
+              >
+                {t("취소")}
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={pending || trashName !== trashTarget?.name}
+                aria-describedby={trashReason.describedBy}
+              >
+                {t("휴지통으로 옮기기")}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       {trashView && <PendingResearchDeletions />}

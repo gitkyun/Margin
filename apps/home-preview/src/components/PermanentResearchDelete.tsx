@@ -1,11 +1,10 @@
 import { t } from "@/lib/i18n";
 import { useState } from "react";
+import { SlideToConfirm } from "./SlideToConfirm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/lib/workspace";
 import { assertConnected, friendlyError } from "@/lib/supabase";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { useDisabledReason } from "./common";
 import {
   Dialog,
   DialogContent,
@@ -31,22 +30,14 @@ export function PermanentResearchDelete({
   const w = useWorkspace();
   const client = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [confirmName, setConfirmName] = useState("");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
-  const nameMatches = confirmName === name;
-  const deleteReason = useDisabledReason(
-    open &&
-      !busy &&
-      !nameMatches &&
-      t("연구 이름을 똑같이 입력하면 삭제할 수 있어요."),
-  );
   /**
-   * 연구 이름을 똑같이 입력해 제출하면 서버에서 완전히 삭제합니다.
-   * 서버는 소유자·휴지통 상태와 confirmationName을 다시 확인합니다.
+   * 슬라이드를 끝까지 밀면 서버에서 삭제합니다. 서버는 소유자·휴지통 상태를 다시 확인하고
+   * 확인 값으로 연구 이름을 받으므로, 화면에 보이는 이 연구의 이름을 그대로 넘겨요.
    */
   async function remove() {
-    if (busy || !nameMatches) return;
+    if (busy) return;
     setBusy(true);
     setError("");
     try {
@@ -54,7 +45,7 @@ export function PermanentResearchDelete({
         throw new Error(t("미리보기에서는 완전히 삭제할 수 없어요."));
       const { data, error } = await assertConnected().functions.invoke(
         "delete-research",
-        { body: { researchId: id, confirmationName: confirmName } },
+        { body: { researchId: id, confirmationName: name } },
       );
       if (error) {
         let message = t("삭제하지 못했어요. 다시 시도해 주세요.");
@@ -75,7 +66,6 @@ export function PermanentResearchDelete({
         );
       await w.refresh();
       setOpen(false);
-      setConfirmName("");
       toast.success(t("연구와 올린 파일을 완전히 삭제했어요."));
     } catch (e) {
       setError(friendlyError(e));
@@ -93,7 +83,6 @@ export function PermanentResearchDelete({
         variant="ghost"
         onClick={() => {
           setOpen(true);
-          setConfirmName("");
           setError("");
         }}
       >
@@ -103,10 +92,7 @@ export function PermanentResearchDelete({
       <Dialog
         open={open}
         onOpenChange={(v) => {
-          if (!busy) {
-            setOpen(v);
-            if (!v) setConfirmName("");
-          }
+          if (!busy) setOpen(v);
         }}
       >
         <DialogContent
@@ -124,56 +110,30 @@ export function PermanentResearchDelete({
               )}
             </DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void remove();
-            }}
-          >
-            <DialogBody>
-              <label className="field">
-                {t("확인을 위해 연구 이름을 입력하세요")}
-                <Input
-                  value={confirmName}
-                  onChange={(e) => setConfirmName(e.target.value)}
-                  placeholder={name}
-                  autoComplete="off"
-                  disabled={busy}
-                />
-              </label>
-              {deleteReason.node}
-              {error && (
-                <p className="form-error" role="alert">
-                  {error}
-                </p>
-              )}
-            </DialogBody>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy}
-                onClick={() => {
-                  setOpen(false);
-                  setConfirmName("");
-                }}
-              >
-                {t("취소")}
-              </Button>
-              <Button
-                type="submit"
-                variant="destructive"
-                disabled={busy || !nameMatches}
-                aria-describedby={deleteReason.describedBy}
-              >
-                {busy
-                  ? t("삭제 중")
-                  : retry
-                    ? t("삭제 마무리")
-                    : t("완전히 삭제")}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogBody>
+            <SlideToConfirm
+              tone="danger"
+              label={t("밀어서 완전히 삭제")}
+              confirmLabel={t("삭제 중")}
+              disabled={busy}
+              onConfirm={remove}
+            />
+            {error && (
+              <p className="form-error" role="alert">
+                {error}
+              </p>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setOpen(false)}
+            >
+              {t("취소")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
