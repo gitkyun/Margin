@@ -53,6 +53,31 @@ describe("QA Fix Batch 01 regression (RQA-001 · RQA-002 · RQA-004 · RQA-005)"
     );
   });
 
+  it("RQA-001: BottomDock cleans up document-level --dock-height even without ResizeObserver", () => {
+    const RO = globalThis.ResizeObserver;
+    // @ts-expect-error: 테스트에서 ResizeObserver 부재 환경을 흉내 냅니다.
+    globalThis.ResizeObserver = undefined;
+    try {
+      const { container, unmount } = render(
+        <div className="ia-shell">
+          <BottomDock>
+            <div>dock content</div>
+          </BottomDock>
+        </div>,
+      );
+      expect(
+        document.documentElement.style.getPropertyValue("--dock-height"),
+      ).toMatch(/^\d+px$/);
+      unmount();
+      expect(
+        document.documentElement.style.getPropertyValue("--dock-height"),
+      ).toBe("");
+      expect(container.querySelector(".ia-shell")).toBeNull();
+    } finally {
+      globalThis.ResizeObserver = RO;
+    }
+  });
+
   it("RQA-002: margin-panel uses flex column and ia-panel-tab takes remaining height below mobile layer head", () => {
     expect(shellCss).toMatch(
       /\.ia-shell\s+\.margin-panel\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s,

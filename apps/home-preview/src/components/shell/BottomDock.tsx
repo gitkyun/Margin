@@ -16,11 +16,12 @@ export function BottomDock({ children }: { children: ReactNode }) {
       document.documentElement.style.setProperty("--dock-height", height);
     };
     sync();
-    if (typeof ResizeObserver !== "function") return;
-    const observer = new ResizeObserver(sync);
-    observer.observe(dock);
+    // 정리 함수는 ResizeObserver 유무와 관계없이 항상 등록합니다.
+    const observer =
+      typeof ResizeObserver === "function" ? new ResizeObserver(sync) : null;
+    observer?.observe(dock);
     return () => {
-      observer.disconnect();
+      observer?.disconnect();
       root.style.removeProperty("--dock-height");
       document.documentElement.style.removeProperty("--dock-height");
     };
