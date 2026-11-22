@@ -1,7 +1,9 @@
 @layer margin {
   /* 사이드 창의 연구 도우미(IA v2 06 §2.1). 창 높이를 다 쓰고, 대화만 스크롤합니다. */
   .margin-panel > div:has(> .assistant-side-panel) {
-    height: 100%;
+    flex: 1;
+    min-height: 0;
+    height: auto;
   }
   .assistant-side-panel {
     display: flex;

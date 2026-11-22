@@ -304,6 +304,8 @@
   }
   .ia-shell .margin-panel {
     position: static;
+    display: flex;
+    flex-direction: column;
     width: var(--ia-panel-actual);
     height: 100%;
     border: 0;
@@ -320,8 +322,9 @@
     }
   }
   .ia-shell .ia-panel-tab {
-    height: 100%;
+    flex: 1;
     min-width: 0;
+    min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -660,6 +663,7 @@
     position: sticky;
     top: 0;
     z-index: 1;
+    flex: none;
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
