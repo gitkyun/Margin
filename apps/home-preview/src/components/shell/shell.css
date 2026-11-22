@@ -260,6 +260,7 @@
       overflow: hidden;
     }
     .app-shell.floating-workspace.ia-shell .main-shell > .workspace-content {
+      position: relative;
       flex: 1;
       min-height: 0;
       overflow-y: auto;
