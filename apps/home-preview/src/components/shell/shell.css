@@ -547,11 +547,16 @@
       gap: 0;
       min-width: 0;
       overflow-x: auto;
-      scrollbar-width: none;
+      /* 숨긴 항목이 있으면 스크롤바로 드러나게 둡니다(숨기지 않음). */
+      scrollbar-width: thin;
     }
     .ia-shell .ia-topbar .ia-nav-item {
       padding: var(--spacing-6) var(--spacing-8);
       font-size: var(--typography-label2-fontSize);
+    }
+    /* 일본어는 메뉴 이름이 길어 좁은 상단 줄에서 여백을 한 단계 더 줄입니다. */
+    :root:lang(ja) .ia-shell .ia-topbar .ia-nav-item {
+      padding: var(--spacing-6) var(--spacing-4);
     }
     .ia-shell .ia-topbar .ia-nav-item.active::after {
       left: var(--spacing-8);
