@@ -62,10 +62,37 @@ export function AIComposerBanner({
       : usage.isPending
         ? t("크레딧 불러오는 중")
         : t("크레딧 정보는 서버 연결 후 표시돼요.");
+  if (command) {
+    return (
+      <div className="composer-command-header">
+        <span className="composer-command-header-icon" aria-hidden="true">
+          <Icon name={command.icon} size={14} />
+        </span>
+        <span className="composer-command-header-text">
+          {command.description || command.label}
+        </span>
+        <button
+          type="button"
+          className="composer-command-header-btn"
+          onClick={command.onChangeCommand}
+        >
+          {t("바꾸기")}
+          <kbd>/</kbd>
+        </button>
+      </div>
+    );
+  }
   return promo ? (
     <PromoHeader
       model={promo.label}
-      text={`${t("추천")} · ${promo.label}${promo.note ? " · " + promo.note : ""}`}
+      text={
+        <>
+          {t("추천")} · {promo.label}
+          {promo.note ? (
+            <span className="composer-banner-note"> · {promo.note}</span>
+          ) : null}
+        </>
+      }
       action={t("시도하기")}
       canSwitch={!!onTryPromo}
       inUse={false}

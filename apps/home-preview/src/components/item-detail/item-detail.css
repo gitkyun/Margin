@@ -171,6 +171,24 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
+    min-width: 0;
+  }
+  .item-detail-task > .item-detail-row {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+  .item-detail-task > .item-detail-row > svg,
+  .item-detail-task > :not(.item-detail-row) {
+    flex: none;
+  }
+  .item-detail-task > .item-detail-row span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
   .item-detail-link {
     display: inline-flex;

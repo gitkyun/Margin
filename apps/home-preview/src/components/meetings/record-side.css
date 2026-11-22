@@ -223,6 +223,11 @@
     z-index: 1;
     scrollbar-gutter: stable;
   }
+  /* 원문 번호 배지가 있을 때만 글 칸과 뒤 그림의 줄 높이를 함께 넓혀 배지가 앞·뒤 줄 글자를 덮지 않게 합니다. */
+  .memo-marked:has(.memo-overlay) .meeting-memo,
+  .memo-marked:has(.memo-overlay) .memo-backdrop {
+    line-height: 2.25;
+  }
   .memo-backdrop {
     position: absolute;
     inset: 12px 0 0 0;
@@ -260,17 +265,28 @@
     border-radius: var(--radius-4);
     background: var(--selected-fill);
   }
-  /* 번호는 글자 폭을 차지하지 않게 겹쳐 놓습니다(뒤 그림과 글 칸 글자가 어긋나지 않도록). */
+  /* 번호는 글자 폭을 차지하지 않고 줄 사이 여백 위로 올려 글자와 겹치지 않게 둡니다(뒤 그림과 글 칸 정렬 유지). */
   .memo-anchor-num {
     position: relative;
     display: inline-block;
     width: 0;
+    vertical-align: baseline;
+  }
+  .memo-anchor-num-group {
+    position: absolute;
+    bottom: 1.18em;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    pointer-events: auto;
   }
   .memo-anchor-num button {
-    position: absolute;
-    bottom: 0.7em;
-    left: 1px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
     border: 0;
+    font-size: 10px;
     cursor: pointer;
     pointer-events: auto;
   }
@@ -327,6 +343,9 @@
     font-size: var(--typography-caption1-fontSize);
     text-decoration: underline;
     cursor: pointer;
+  }
+  .organize-more-toggle {
+    align-self: flex-start;
   }
   .organize-saved,
   .organize-edit,

@@ -75,13 +75,14 @@ export function ResearchCardMoreMenu({
         <Button
           variant="ghost"
           size="icon"
+          className="research-card-more"
           disabled={disabled}
           aria-label={t("{name} 더보기", { name })}
         >
           <Icon name="more" size={18} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
+      <DropdownMenuContent align="end">
         {actions.map((action) => (
           <Fragment key={action.id}>
             {action.separated && <DropdownMenuSeparator />}

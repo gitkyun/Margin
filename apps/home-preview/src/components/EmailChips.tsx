@@ -31,6 +31,7 @@ export function EmailChips({ emails, ...props }: EmailChipsProps) {
       separator={SEPARATOR}
       inputMode="email"
       fullNote={t("{count}명까지 등록할 수 있어요.", { count: MAX_ADVISORS })}
+      invalidMessage={t("이메일 주소 형식을 확인해 주세요.")}
     />
   );
 }

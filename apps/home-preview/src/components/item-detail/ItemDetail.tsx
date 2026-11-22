@@ -696,7 +696,7 @@ function TaskBody({ researchId, task }: { researchId: string; task: Task }) {
           <div key={item.id} className="item-detail-task">
             <DetailRow target={{ kind: "feedback", id: item.id }}>
               <Icon name="feedback" size={16} />
-              <span>{item.title}</span>
+              <span title={item.title}>{item.title}</span>
             </DetailRow>
             <Button
               variant="ghost"

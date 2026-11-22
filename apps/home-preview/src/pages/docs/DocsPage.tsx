@@ -20,7 +20,12 @@ import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
 import { useWorkspace } from "@/lib/workspace";
 import { koreanScore } from "@/lib/hangul-search";
 import { friendlyError } from "@/lib/supabase";
-import { formatDate, type DocumentRecord, type Material } from "@/lib/domain";
+import {
+  formatDate,
+  kstDateKey,
+  type DocumentRecord,
+  type Material,
+} from "@/lib/domain";
 import {
   documentTypeLabel,
   domainOf,
@@ -509,14 +514,14 @@ function RowBody({ row }: { row: DocRow }) {
           {m.externalUrl
             ? [
                 t("링크"),
-                formatDate(m.createdAt.slice(0, 10)),
+                formatDate(kstDateKey(m.createdAt)),
                 domainOf(m.externalUrl),
               ]
                 .filter(Boolean)
                 .join(" · ")
             : [
                 materialTypeLabel(m.type),
-                formatDate((row.latest?.createdAt ?? m.createdAt).slice(0, 10)),
+                formatDate(kstDateKey(row.latest?.createdAt ?? m.createdAt)),
                 row.latest ? `v${row.latest.number}` : t("파일 없음"),
               ].join(" · ")}
         </small>
@@ -591,7 +596,7 @@ function DocPreview({ row, href }: { row: DocRow; href: string }) {
       <ul className="docs-preview-versions">
         {versions.map((v) => (
           <li key={v.id}>
-            v{v.number} · {formatDate(v.createdAt.slice(0, 10))} ·{" "}
+            v{v.number} · {formatDate(kstDateKey(v.createdAt))} ·{" "}
             {(v.size / 1048576).toFixed(1)}MB
           </li>
         ))}

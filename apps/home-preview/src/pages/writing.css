@@ -434,7 +434,7 @@
   .writing-review > button {
     justify-self: start;
   }
-  .writing-apply .field small {
+  .writing-apply .field small:not(.field-error) {
     color: var(--text-secondary);
     font-size: var(--typography-caption1-fontSize);
     letter-spacing: var(--typography-caption1-letterSpacing);

@@ -1352,6 +1352,7 @@ export function InlineEditBar({
   label,
   error,
   position,
+  focusPrompt = true,
 }: {
   phase: "prompt" | "thinking" | "review";
   instruction: string;
@@ -1364,30 +1365,59 @@ export function InlineEditBar({
   label: string;
   error?: string;
   position: { x: number; y: number; width: number };
+  /** false이면 prompt 단계에서 자동으로 입력칸에 포커스하지 않고 ⌘/(Ctrl+/)로 진입합니다. */
+  focusPrompt?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const acceptRef = useRef<HTMLButtonElement>(null);
   const discardRef = useRef<HTMLButtonElement>(null);
   const mod = useModKey();
   useEffect(() => {
-    if (phase === "prompt") inputRef.current?.focus({ preventScroll: true });
-    else if (phase === "review")
-      acceptRef.current?.focus({ preventScroll: true });
-  }, [phase]);
+    if (phase === "prompt") {
+      if (focusPrompt) inputRef.current?.focus({ preventScroll: true });
+    } else if (phase === "review") {
+      const accept = acceptRef.current;
+      const target = accept && !accept.disabled ? accept : discardRef.current;
+      target?.focus({ preventScroll: true });
+    }
+  }, [phase, focusPrompt]);
+  useEffect(() => {
+    if (focusPrompt || phase !== "prompt") return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        !event.altKey &&
+        !event.shiftKey &&
+        event.key === "/"
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        inputRef.current?.focus({ preventScroll: true });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusPrompt, phase]);
   return (
     <MotionConfig reducedMotion="user">
       <motion.div
-        animate={{ opacity: 1, scale: 1, x: position.x, y: position.y }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        aria-keyshortcuts={!focusPrompt ? "Meta+/ Control+/" : undefined}
         aria-label={t("AI로 고쳐 쓰기")}
-        className="fixed top-0 left-0 z-[100] origin-top-left overflow-hidden rounded-xl bg-[var(--surface-raised)] shadow-[0_12px_32px_-12px_rgb(var(--semantic-foreground-neutral-primary-rgb)/0.25)] ring-1 ring-[var(--line)]"
+        className="fixed z-[100] origin-top-left overflow-hidden rounded-xl bg-[var(--surface-raised)] shadow-[0_12px_32px_-12px_rgb(var(--semantic-foreground-neutral-primary-rgb)/0.25)] ring-1 ring-[var(--line)]"
         exit={{
           opacity: 0,
           scale: 0.98,
           transition: { duration: 0.12, ease: EASE_OUT },
         }}
-        initial={{ opacity: 0, scale: 0.97, x: position.x, y: position.y - 4 }}
+        initial={{ opacity: 0, scale: 0.97, y: -4 }}
         role="group"
-        style={{ width: position.width }}
+        style={{
+          left: position.x,
+          top: position.y,
+          width: position.width,
+        }}
         transition={{ duration: 0.2, ease: EASE_OUT }}
         onKeyDown={(event) => {
           if (event.nativeEvent.isComposing) return;

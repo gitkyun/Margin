@@ -1,4 +1,4 @@
-import type { Decision, Meeting } from "./domain";
+import { kstDateKey, type Decision, type Meeting } from "./domain";
 
 /** 결정의 이유 한 칸의 글자 한도 */
 export const REASON_MAX = 500;
@@ -16,7 +16,7 @@ export interface DecisionEntry {
 type MeetingRef = Pick<Meeting, "id" | "title" | "date">;
 
 function decidedAt(decision: Decision, meeting?: MeetingRef): string {
-  return meeting?.date ?? decision.createdAt.slice(0, 10);
+  return meeting?.date ?? kstDateKey(decision.createdAt);
 }
 
 /**

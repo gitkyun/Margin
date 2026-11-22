@@ -1,5 +1,5 @@
 import { t } from "./i18n";
-import type { Feedback, Meeting, Task } from "./domain";
+import { kstDateKey, kstToday, type Feedback, type Meeting, type Task } from "./domain";
 
 export type TaskGroupKey = "overdue" | "today" | "week" | "later" | "undated";
 
@@ -62,10 +62,10 @@ export function groupTasks(tasks: Task[], today: string): TaskGroup[] {
   })).filter((group) => group.tasks.length > 0);
 }
 
-/** 오늘 끝낸 할 일(마지막으로 고친 날이 오늘인 완료 할 일) */
-export function doneToday(tasks: Task[], today: string): Task[] {
+/** 오늘 끝낸 할 일(마지막으로 고친 날이 오늘인 완료 할 일, KST 기준) */
+export function doneToday(tasks: Task[], today = kstToday()): Task[] {
   return tasks.filter(
-    (task) => task.status === "done" && task.updatedAt.slice(0, 10) === today,
+    (task) => task.status === "done" && kstDateKey(task.updatedAt) === today,
   );
 }
 

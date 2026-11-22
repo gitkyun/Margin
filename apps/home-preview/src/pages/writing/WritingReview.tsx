@@ -92,6 +92,7 @@ export function useWritingReview({
   const aiOptions = useAIRequestOptions();
   const aiNotConfigured = useAINotConfigured();
   const [inlineInstruction, setInlineInstruction] = useState("");
+  const [, setPositionTick] = useState(0);
   const [inlineEdit, setInlineEdit] = useState<{
     range: DocRange;
     original: string;
@@ -545,6 +546,33 @@ export function useWritingReview({
     mode === "preview" ||
     aiNotConfigured ||
     !!inlineEdit?.busy;
+  const barVisible = !!(inlineEdit || (selectedText && !inlineDisabled));
+  useEffect(() => {
+    if (!barVisible) return;
+    let raf = 0;
+    const schedule = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        setPositionTick((n) => n + 1);
+      });
+    };
+    // capture: true로 window뿐 아니라 .workspace-content 등 스크롤 가능한 모든 조상의 스크롤을 받습니다.
+    window.addEventListener("scroll", schedule, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("resize", schedule, { passive: true });
+    window.visualViewport?.addEventListener("resize", schedule, {
+      passive: true,
+    });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule, true);
+      window.removeEventListener("resize", schedule);
+      window.visualViewport?.removeEventListener("resize", schedule);
+    };
+  }, [barVisible]);
   let toolbarPosition = { x: 16, y: 80, width: 420 };
   if (editor && !editor.isDestroyed) {
     const range = inlineEdit?.range ?? editor.state.selection;
@@ -590,6 +618,7 @@ export function useWritingReview({
                   </div>
                 )}
                 <InlineEditBar
+                  focusPrompt={false}
                   phase={
                     inlineEdit?.busy
                       ? "thinking"

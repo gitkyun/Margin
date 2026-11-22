@@ -2269,19 +2269,22 @@ function MemoPieceView({
   return (
     <>
       {body}
-      {piece.numbers.map((number) => (
-        <span key={number} className="memo-anchor-num">
-          {onOpen ? (
-            <button
-              type="button"
-              aria-label={t("원문 {number}번 항목 열기", { number })}
-              onClick={() => onOpen(number)}
-            >
-              {number}
-            </button>
-          ) : null}
+      {onOpen && piece.numbers.length > 0 ? (
+        <span className="memo-anchor-num">
+          <span className="memo-anchor-num-group">
+            {piece.numbers.map((number) => (
+              <button
+                key={number}
+                type="button"
+                aria-label={t("원문 {number}번 항목 열기", { number })}
+                onClick={() => onOpen(number)}
+              >
+                {number}
+              </button>
+            ))}
+          </span>
         </span>
-      ))}
+      ) : null}
     </>
   );
 }

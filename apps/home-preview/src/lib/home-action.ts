@@ -1,5 +1,5 @@
 import { t } from "./i18n";
-import type { Feedback, Meeting } from "./domain";
+import { kstDateKey, type Feedback, type Meeting } from "./domain";
 
 export type HomeActionKind =
   | "return_to_recording"
@@ -174,7 +174,7 @@ export function selectHomeAction({
     .filter(
       (meeting) =>
         meeting.status === "recorded" &&
-        meeting.updatedAt.slice(0, 10) >= since7 &&
+        kstDateKey(meeting.updatedAt) >= since7 &&
         !sorted.has(meeting.id),
     )
     .sort(byLatest)[0];

@@ -1,7 +1,7 @@
 import { t } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 import type { DecisionEntry } from "@/lib/decisions";
-import { formatDate } from "@/lib/domain";
+import { formatDate, kstDateKey } from "@/lib/domain";
 import { InlineEmpty } from "@/components/common";
 
 interface DecisionLogProps {
@@ -64,7 +64,7 @@ export function DecisionLog({ entries, researchId }: DecisionLogProps) {
               </Link>
             ) : (
               <time dateTime={decision.createdAt}>
-                {formatDate(decision.createdAt.slice(0, 10))}
+                {formatDate(kstDateKey(decision.createdAt))}
               </time>
             )}
           </small>
