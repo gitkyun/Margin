@@ -27,7 +27,7 @@ export default defineConfig({
     {
       name: "preview",
       testMatch:
-        /(preview|dialog-layout|home-layout|docs-layout|shell-quick-layout)\.spec\.ts/,
+        /(preview|dialog-layout|home-layout|docs-layout|shell-quick-layout|shell-hardening)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         baseURL: `http://127.0.0.1:${PREVIEW_PORT}`,
@@ -36,7 +36,7 @@ export default defineConfig({
     {
       name: "connected",
       testMatch:
-        /(project-invite|open-signup|ai-composer|account-menu)\.spec\.ts/,
+        /(project-invite|open-signup|ai-composer|ai-composer-mobile|account-menu)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         baseURL: `http://127.0.0.1:${CONNECTED_PORT}`,
