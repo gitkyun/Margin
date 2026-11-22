@@ -45,6 +45,8 @@
     position: sticky;
     top: 0;
     z-index: var(--z-topbar);
+    container-type: inline-size;
+    container-name: topbar;
     display: flex;
     align-items: center;
     gap: var(--spacing-8);
@@ -260,6 +262,7 @@
       overflow: hidden;
     }
     .app-shell.floating-workspace.ia-shell .main-shell > .workspace-content {
+      position: relative;
       flex: 1;
       min-height: 0;
       overflow-y: auto;
@@ -304,6 +307,8 @@
   }
   .ia-shell .margin-panel {
     position: static;
+    display: flex;
+    flex-direction: column;
     width: var(--ia-panel-actual);
     height: 100%;
     border: 0;
@@ -320,8 +325,9 @@
     }
   }
   .ia-shell .ia-panel-tab {
-    height: 100%;
+    flex: 1;
     min-width: 0;
+    min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
@@ -512,6 +518,51 @@
       display: none;
     }
   }
+  /* 데스크톱에서도 사이드 패널 확장으로 상단 줄 가용 폭이 좁아지면 동일하게 축약(RQA-005). */
+  @container topbar (max-width: 900px) {
+    .app-shell.floating-workspace.ia-shell .ia-topbar .brand .margin-wordmark {
+      display: none;
+    }
+    .ia-shell .ia-topbar .ia-search {
+      flex: none;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+    }
+    .ia-shell .ia-topbar .ia-search > span,
+    .ia-shell .ia-topbar .ia-search kbd {
+      display: none;
+    }
+  }
+  @container topbar (max-width: 680px) {
+    .app-shell.floating-workspace.ia-shell .ia-topbar .ia-switch {
+      min-width: 72px;
+      padding: 0 var(--spacing-4) 0 var(--spacing-6);
+    }
+    .ia-shell .ia-topbar .ia-nav {
+      margin-left: var(--spacing-4);
+      gap: 0;
+      min-width: 0;
+      overflow-x: auto;
+      /* 숨긴 항목이 있으면 스크롤바로 드러나게 둡니다(숨기지 않음). */
+      scrollbar-width: thin;
+    }
+    .ia-shell .ia-topbar .ia-nav-item {
+      padding: var(--spacing-6) var(--spacing-8);
+      font-size: var(--typography-label2-fontSize);
+    }
+    /* 일본어는 메뉴 이름이 길어 좁은 상단 줄에서 여백을 한 단계 더 줄입니다. */
+    :root:lang(ja) .ia-shell .ia-topbar .ia-nav-item {
+      padding: var(--spacing-6) var(--spacing-4);
+    }
+    .ia-shell .ia-topbar .ia-nav-item.active::after {
+      left: var(--spacing-8);
+      right: var(--spacing-8);
+    }
+  }
 
   @media (max-width: 1199px) {
     .ia-shell .ia-panel-frame {
@@ -660,6 +711,7 @@
     position: sticky;
     top: 0;
     z-index: 1;
+    flex: none;
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
