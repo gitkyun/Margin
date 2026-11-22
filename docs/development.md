@@ -17,3 +17,13 @@ npm run dev
 `npm run test:e2e`는 Playwright로 실제 브라우저 흐름을 봅니다(처음 한 번 `npx playwright install chromium`). 서버 설정 없이 빌드한 미리보기 모드와, 가짜 서버 주소로 빌드하고 응답을 테스트가 정하는 연결 모드 두 가지로 실행하므로 운영 DB와 실제 계정을 쓰지 않습니다. 서버 쪽 권한 규칙은 `test:backend`가 검증합니다.
 
 `public/pdfjs`는 설치 패키지에서 빌드 전에 생성하며 커밋하지 않습니다. `dist`, 업로드·녹음·실제 연구 자료·캐시·로컬 비밀값도 제외합니다. Sites용 worker와 테스트는 호환용으로 유지하며 실제 운영 배포는 Cloudflare Pages입니다.
+
+## 브랜치·PR 정리
+
+- 작업은 `main`이 아니라 목적별 브랜치와 PR로 한다. 브랜치 이름은 `fix/…`, `feat/…`, `docs/…`, `chore/…`.
+- PR이 병합되면 GitHub의 브랜치와 로컬 브랜치를 지운다. 이 저장소는 squash 병합이라 `git branch -d`가 "병합 안 됨"이라고 할 수 있다. 지우기 전에 `git cherry origin/main <브랜치>`로 `+`(main에 없는 커밋)가 없는지, 또는 PR이 MERGED인지 확인한다.
+- 같은 제목의 PR이 이미 병합됐다면 오래된 중복 PR은 닫고 브랜치도 지운다.
+- Dependabot PR이 오래돼(몇 주) 큰 버전 변경을 담고 있으면 닫는다. 필요하면 Dependabot이 최신 상태로 다시 연다.
+- 작업 폴더(`git worktree`)는 작업이 끝나면 `git worktree remove`로 치운다. 각 폴더의 `node_modules`가 약 600MB라 쌓이면 용량이 크다. 커밋 안 된 변경이 있는 폴더는 지우기 전에 `git diff`와 추가된 파일을 따로 백업한다.
+- 병합되지 않았지만 남기고 싶은 작업은 브랜치로 두지 말고 `archive/…` **태그**로 GitHub에 올려 둔 뒤 브랜치를 지운다(예: `archive/review-action-permissions-20261119`). 태그는 브랜치 목록에 안 보여 브랜치는 `main`과 진행 중인 PR만 남는다. 태그 만들기: `git tag -a archive/<이름>-<날짜> <커밋> -m "설명" && git push origin archive/<이름>-<날짜>`.
+
