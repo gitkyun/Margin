@@ -19,6 +19,8 @@ interface TaskRowFrameProps {
   swipeable: boolean;
   done: boolean;
   onSwipe(): void;
+  /** 왼쪽으로 밀었을 때의 동작(예: 내일로 미루기). 없으면 왼쪽 밀기는 꺼져요. */
+  swipeEnd?: { label: string; icon: string; onSwipe(): void };
   children: ReactNode;
 }
 
@@ -33,10 +35,12 @@ export function TaskRowFrame({
   swipeable,
   done,
   onSwipe,
+  swipeEnd,
   children,
 }: TaskRowFrameProps) {
   const x = useMotionValue(0);
   const hintOpacity = useTransform(x, [0, 72], [0, 1]);
+  const endOpacity = useTransform(x, [-72, 0], [1, 0]);
   const dragged = useRef(false);
   if (!swipeable)
     return (
@@ -54,13 +58,24 @@ export function TaskRowFrame({
         <Icon name={done ? "undo" : "check"} size={16} />
         {done ? t("완료 취소") : t("완료")}
       </motion.span>
+      {swipeEnd && (
+        <motion.span
+          className="task-swipe-hint"
+          data-side="end"
+          aria-hidden="true"
+          style={{ opacity: endOpacity }}
+        >
+          {swipeEnd.label}
+          <Icon name={swipeEnd.icon} size={16} />
+        </motion.span>
+      )}
       <motion.div
         className={className}
         style={{ x }}
         drag="x"
         dragDirectionLock
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={{ left: 0, right: 0.6 }}
+        dragElastic={{ left: swipeEnd ? 0.6 : 0, right: 0.6 }}
         dragSnapToOrigin
         onPointerDown={() => {
           dragged.current = false;
@@ -74,6 +89,11 @@ export function TaskRowFrame({
               ?.clientWidth ?? 0;
           if (shouldToggleOnSwipe(info.offset.x, info.velocity.x, width))
             onSwipe();
+          else if (
+            swipeEnd &&
+            shouldToggleOnSwipe(-info.offset.x, -info.velocity.x, width)
+          )
+            swipeEnd.onSwipe();
         }}
         onClickCapture={(event) => {
           if (!dragged.current) return;

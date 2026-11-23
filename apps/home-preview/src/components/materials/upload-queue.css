@@ -19,50 +19,6 @@
     margin-top: 2px;
   }
 
-  /* 방금 올린 자료 일괄 정리 바 */
-  .batch-actions-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-8);
-    padding: var(--spacing-10) var(--spacing-12);
-    border: 1px solid color-mix(in srgb, var(--brand) 38%, var(--line));
-    border-radius: var(--radius-10);
-    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
-    animation: margin-batch-enter 180ms cubic-bezier(0.2, 0, 0, 1);
-  }
-  .batch-actions-summary {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--spacing-6);
-    font-size: var(--typography-label2-fontSize);
-  }
-  .batch-actions-summary svg {
-    color: var(--brand);
-  }
-  .batch-actions-summary span {
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-  }
-  .batch-actions-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--spacing-6);
-  }
-  .batch-actions-select {
-    min-height: 32px;
-    padding: 0 var(--spacing-8);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-8);
-    background: var(--surface);
-    color: var(--text);
-    font: inherit;
-    font-size: var(--typography-caption1-fontSize);
-  }
-
   /* 전역 비차단 업로드 진행 트레이 */
   .upload-tray {
     position: fixed;
@@ -201,35 +157,43 @@
     background: var(--danger);
   }
 
-  /* 정보 먼저 확인하기 시트 */
+  /* 파일 추가 창: 모두에 적용 줄 + 파일 줄 목록 */
+  .staging-dialog {
+    max-width: min(640px, calc(100vw - 32px));
+  }
+  .staging-apply {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--spacing-8);
+    padding-bottom: var(--spacing-12);
+    border-bottom: 1px solid var(--line);
+  }
   .staging-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-12);
-    max-height: 55vh;
+    max-height: 50vh;
+    margin: 0;
+    padding: 0;
     overflow-y: auto;
+    list-style: none;
   }
-  .staging-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-8);
-    padding: var(--spacing-12);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-10);
-    background: var(--surface-muted);
-  }
-  .staging-card-file {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-8);
-    color: var(--text-secondary);
-    font-size: var(--typography-caption1-fontSize);
-  }
-  .staging-card-grid {
+  .staging-row {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 16px minmax(0, 1fr) auto auto;
+    align-items: center;
     gap: var(--spacing-8);
+    padding: var(--spacing-8) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .staging-row > svg {
+    color: var(--text-tertiary);
+  }
+  .staging-row-size {
+    min-width: 48px;
+    color: var(--text-tertiary);
+    font-size: var(--typography-caption1-fontSize);
+    text-align: right;
   }
 
   /* 방금 추가된 목록 행 하이라이트 */
@@ -247,19 +211,9 @@
       transform: translateY(0);
     }
   }
-  @keyframes margin-batch-enter {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
   @keyframes margin-row-fresh {
     0% {
-      background: color-mix(in srgb, var(--brand) 16%, transparent);
+      background: color-mix(in srgb, var(--text) 7%, transparent);
     }
     100% {
       background: transparent;
@@ -275,25 +229,16 @@
       width: auto;
       max-width: none;
     }
-    .staging-card-grid {
-      grid-template-columns: minmax(0, 1fr);
+    .staging-row {
+      grid-template-columns: 16px minmax(0, 1fr) auto;
     }
-    .batch-actions-bar {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .batch-actions-controls {
-      width: 100%;
-    }
-    .batch-actions-select {
-      flex: 1;
-      min-height: 40px;
+    .staging-row > .rms-choice {
+      grid-column: 2 / -1;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .upload-tray,
-    .batch-actions-bar,
     .docs-row[data-fresh] {
       animation: none;
     }

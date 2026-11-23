@@ -1,0 +1,38 @@
+@layer margin {
+  /* 모바일 스와이프 행: 밀면 아래에 동작 이름이 드러나요. */
+  .row-swipe {
+    position: relative;
+    overflow: hidden;
+  }
+  .row-swipe-surface {
+    position: relative;
+    background: var(--surface);
+    touch-action: pan-y;
+    user-select: none;
+  }
+  /* 링크·그림의 기본 끌기(파일처럼 끌어 놓기)가 밀기 손짓을 가로채지 않게 */
+  .row-swipe-surface a,
+  .row-swipe-surface img {
+    -webkit-user-drag: none;
+  }
+  .row-swipe-hint {
+    position: absolute;
+    inset-block: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding-inline: var(--spacing-16);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-weight: 600;
+  }
+  .row-swipe-hint[data-side="start"] {
+    left: 0;
+  }
+  .row-swipe-hint[data-side="end"] {
+    right: 0;
+  }
+  .row-swipe-hint[data-danger] {
+    color: var(--danger);
+  }
+}

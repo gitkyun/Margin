@@ -1,5 +1,6 @@
 import { DialogBody } from "@/components/ui/dialog";
 import { RecordList } from "@/components/meetings/RecordList";
+import { NextMeetingPreview } from "@/components/meetings/NextMeetingPreview";
 import { RecordListToggle } from "@/components/meetings/RecordListToggle";
 import { RecordHeader } from "@/components/meetings/RecordHeader";
 import { PrepareSide, RecordSide } from "@/components/meetings/RecordSide";
@@ -246,9 +247,7 @@ export function MeetingsPage() {
               </>
             )
           ) : (
-            <p className="meetings-placeholder">
-              {t("왼쪽 목록에서 기록을 고르거나 새 기록을 추가해 주세요.")}
-            </p>
+            <NextMeetingPreview researchId={researchId} />
           )}
         </div>
       </div>

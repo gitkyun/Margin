@@ -1,4 +1,5 @@
 import { t } from "@/lib/i18n";
+import { RowContextMenu } from "@/components/row-actions/RowActions";
 import { useState, type DragEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -123,61 +124,94 @@ export function MaterialFolders({
     const childListId = `folder-children-${f.id}`;
     return (
       <li key={f.id} className="folder-node">
-        <div
-          className="folder-tree-row"
-          style={{ paddingLeft: depth * 14 }}
-          {...dropProps(f.id, f.id)}
+        <RowContextMenu
+          actions={[
+            {
+              id: "open",
+              label: t("열기"),
+              icon: "folder",
+              onSelect: () => onChange(f.id),
+            },
+            {
+              id: "edit",
+              label: t("이름·위치 바꾸기"),
+              icon: "edit",
+              onSelect: () => {
+                setDraft({ ...f });
+                setError("");
+              },
+            },
+            {
+              id: "child",
+              label: t("하위 폴더 만들기"),
+              icon: "plus",
+              onSelect: () => {
+                setDraft({
+                  ...recordBase(researchId),
+                  title: "",
+                  parentId: f.id,
+                });
+                setError("");
+              },
+            },
+          ]}
         >
-          {children.length > 0 ? (
+          <div
+            className="folder-tree-row"
+            style={{ paddingLeft: depth * 14 }}
+            {...dropProps(f.id, f.id)}
+          >
+            {children.length > 0 ? (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="folder-toggle"
+                aria-expanded={open}
+                aria-controls={childListId}
+                aria-label={
+                  open
+                    ? t("{title} 하위 폴더 접기", { title: f.title })
+                    : t("{title} 하위 폴더 펼치기", { title: f.title })
+                }
+                onClick={() => toggle(f.id)}
+              >
+                <Icon name="chevron-right" size={14} />
+              </Button>
+            ) : (
+              <span className="folder-toggle-space" aria-hidden="true" />
+            )}
+            <button
+              type="button"
+              className="folder-select"
+              aria-pressed={value === f.id}
+              onClick={() => onChange(f.id)}
+            >
+              <Icon name="folder" size={16} />
+              <span>{f.title}</span>
+              <small>
+                {data.materials.filter(
+                  (m) => m.folderId === f.id && !m.archivedAt,
+                ).length +
+                  (embedded
+                    ? data.documents.filter(
+                        (d) => d.folderId === f.id && !d.archivedAt,
+                      ).length
+                    : 0)}
+              </small>
+            </button>
             <Button
               variant="ghost"
               size="icon-xs"
-              className="folder-toggle"
-              aria-expanded={open}
-              aria-controls={childListId}
-              aria-label={
-                open
-                  ? t("{title} 하위 폴더 접기", { title: f.title })
-                  : t("{title} 하위 폴더 펼치기", { title: f.title })
-              }
-              onClick={() => toggle(f.id)}
+              aria-label={t("{title} 폴더 편집", { title: f.title })}
+              onClick={() => {
+                setDraft({ ...f });
+                setError("");
+              }}
             >
-              <Icon name="chevron-right" size={14} />
+              <Icon name="more" size={16} />
             </Button>
-          ) : (
-            <span className="folder-toggle-space" aria-hidden="true" />
-          )}
-          <button
-            type="button"
-            className="folder-select"
-            aria-pressed={value === f.id}
-            onClick={() => onChange(f.id)}
-          >
-            <Icon name="folder" size={16} />
-            <span>{f.title}</span>
-            <small>
-              {data.materials.filter(
-                (m) => m.folderId === f.id && !m.archivedAt,
-              ).length +
-                (embedded
-                  ? data.documents.filter(
-                      (d) => d.folderId === f.id && !d.archivedAt,
-                    ).length
-                  : 0)}
-            </small>
-          </button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label={t("{title} 폴더 편집", { title: f.title })}
-            onClick={() => {
-              setDraft({ ...f });
-              setError("");
-            }}
-          >
-            <Icon name="more" size={16} />
-          </Button>
-        </div>
+          </div>
+        </RowContextMenu>
         {children.length > 0 && open && (
           <ul id={childListId} className="folder-children">
             {children.map((c) => node(c, depth + 1))}

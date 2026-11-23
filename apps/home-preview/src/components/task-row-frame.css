@@ -77,6 +77,15 @@
     font-size: var(--typography-caption1-fontSize);
     font-weight: 600;
   }
+  /* 링크의 기본 끌기가 밀기 손짓을 가로채지 않게 */
+  .task-swipe a {
+    -webkit-user-drag: none;
+  }
+  .task-swipe-hint[data-side="end"] {
+    right: 0;
+    left: auto;
+    color: var(--text-secondary);
+  }
   .task-swipe > .task-line {
     position: relative;
     border-bottom: 0;

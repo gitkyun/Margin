@@ -1,4 +1,10 @@
 import { t } from "@/lib/i18n";
+import {
+  RowContextMenu,
+  RowMoreMenu,
+  rowMenuLabel,
+  type RowAction,
+} from "@/components/row-actions/RowActions";
 import { useRef } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -354,33 +360,52 @@ export function RecordList({
             <section key={group.key} aria-label={groupLabel(group, today)}>
               <h3>{groupLabel(group, today)}</h3>
               <ul>
-                {group.rows.map((row) => (
-                  <li key={`${row.kind}:${row.id}`} className="record-line-row">
-                    <RecordLine
-                      row={row}
-                      base={base}
-                      selected={row.kind === "meeting" && row.id === meetingId}
-                      isNext={row.kind === "meeting" && row.id === next?.id}
-                      unread={row.kind === "review" && unread.has(row.id)}
-                      data={data}
-                    />
-                    {row.kind === "meeting" && (
-                      <RowMenu
-                        meeting={row.meeting}
-                        href={`${base}/meetings/${row.meeting.id}`}
-                        onOpen={() =>
-                          navigate(`${base}/meetings/${row.meeting.id}`)
-                        }
-                        onEdit={() =>
-                          navigate(
-                            `${base}/meetings/${row.meeting.id}?edit=info`,
-                          )
-                        }
-                        onArchive={() => void archive(row.meeting)}
-                      />
-                    )}
-                  </li>
-                ))}
+                {group.rows.map((row) => {
+                  const actions =
+                    row.kind === "meeting"
+                      ? meetingRowActions({
+                          href: `${base}/meetings/${row.meeting.id}`,
+                          onOpen: () =>
+                            navigate(`${base}/meetings/${row.meeting.id}`),
+                          onEdit: () =>
+                            navigate(
+                              `${base}/meetings/${row.meeting.id}?edit=info`,
+                            ),
+                          onArchive: () => void archive(row.meeting),
+                          onPrepare: () =>
+                            navigate(
+                              `${base}/meetings/${row.meeting.id}?tab=prepare`,
+                            ),
+                        })
+                      : [];
+                  return (
+                    <RowContextMenu
+                      key={`${row.kind}:${row.id}`}
+                      actions={actions}
+                    >
+                      <li className="record-line-row">
+                        <RecordLine
+                          row={row}
+                          base={base}
+                          selected={
+                            row.kind === "meeting" && row.id === meetingId
+                          }
+                          isNext={row.kind === "meeting" && row.id === next?.id}
+                          unread={row.kind === "review" && unread.has(row.id)}
+                          data={data}
+                        />
+                        {row.kind === "meeting" && (
+                          <span className="record-line-menu">
+                            <RowMoreMenu
+                              label={rowMenuLabel(row.meeting.title)}
+                              actions={actions}
+                            />
+                          </span>
+                        )}
+                      </li>
+                    </RowContextMenu>
+                  );
+                })}
               </ul>
             </section>
           ))}
@@ -557,44 +582,46 @@ function RecordLine({
 }
 
 /** 줄 메뉴(04 §2.2): 열기 / 새 탭에서 열기 / 기록 정보 편집 / 보관 */
-function RowMenu({
-  meeting,
+function meetingRowActions({
   href,
   onOpen,
   onEdit,
   onArchive,
+  onPrepare,
 }: {
-  meeting: Meeting;
   href: string;
+  onPrepare(): void;
   onOpen(): void;
   onEdit(): void;
   onArchive(): void;
-}) {
-  return (
-    <span className="record-line-menu">
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label={t("{title} 메뉴", { title: meeting.title })}
-          >
-            <Icon name="more" size={16} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={onOpen}>{t("열기")}</DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={() => window.open(href, "_blank", "noopener")}
-          >
-            {t("새 탭에서 열기")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={onEdit}>
-            {t("기록 정보 편집")}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={onArchive}>{t("보관")}</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </span>
-  );
+}): RowAction[] {
+  return [
+    { id: "open", label: t("열기"), icon: "calendar", onSelect: onOpen },
+    {
+      id: "open-tab",
+      label: t("새 탭에서 열기"),
+      icon: "external",
+      onSelect: () => window.open(href, "_blank", "noopener"),
+    },
+    {
+      id: "prepare",
+      label: t("미팅 준비하기"),
+      icon: "check",
+      onSelect: onPrepare,
+    },
+    {
+      id: "edit",
+      label: t("일정·정보 바꾸기"),
+      icon: "edit",
+      separated: true,
+      onSelect: onEdit,
+    },
+    {
+      id: "archive",
+      label: t("보관"),
+      icon: "trash",
+      separated: true,
+      onSelect: onArchive,
+    },
+  ];
 }

@@ -29,12 +29,12 @@ export function ResearchDirection({
     return (
       <div className="rh-direction is-empty">
         <span>{t("연구 목적과 질문을 아직 적지 않았어요.")}</span>
-        <Button asChild variant="link" size="sm">
+        <Button asChild variant="ghost" size="sm">
           <Link to={settingsHref}>{t("적어 두기")}</Link>
         </Button>
         {planExcerpt && (
           <Button
-            variant="link"
+            variant="ghost"
             size="sm"
             disabled={busy}
             onClick={() => onImport(planExcerpt)}
@@ -48,7 +48,7 @@ export function ResearchDirection({
     <section className="rh-direction" aria-label={t("연구 방향")}>
       <div className="rh-direction-head">
         <h2>{t("연구 방향")}</h2>
-        <Button asChild variant="link" size="sm">
+        <Button asChild variant="ghost" size="sm">
           <Link to={settingsHref}>{t("고치기")}</Link>
         </Button>
       </div>
