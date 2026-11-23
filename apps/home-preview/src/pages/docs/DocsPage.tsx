@@ -1,5 +1,5 @@
 import { t } from "@/lib/i18n";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -13,22 +13,21 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MaterialFolders } from "@/components/MaterialFolders";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
+import { BatchActionsBar } from "@/components/materials/BatchActionsBar";
 import { useWorkspace } from "@/lib/workspace";
+import { useUploadQueue } from "@/lib/upload-queue";
 import { koreanScore } from "@/lib/hangul-search";
 import { friendlyError } from "@/lib/supabase";
-import {
-  formatDate,
-  kstDateKey,
-  type DocumentRecord,
-  type Material,
-} from "@/lib/domain";
+import { formatDate, kstDateKey } from "@/lib/domain";
 import {
   documentTypeLabel,
   domainOf,
+  materialDisplayTypeLabel,
   materialTypeLabel,
   sinceLabel,
 } from "@/lib/docs-labels";
@@ -58,15 +57,19 @@ const MATERIAL_TYPES = [
 ] as const;
 
 /**
- * 글·자료 목록(IA v2 05 §2, W1). 글과 자료를 한 목록에서 찾고, 만들고, 올리고, 폴더로 정리합니다.
- * 주소: kind=writing|material, folder=<id>|archived, type(자료 종류), q, sort=name.
+ * 글·자료 목록(IA v2 05 §2, W1 + Wave 2 Slice 1 다중 수집).
+ * 글과 자료를 한 목록에서 찾고, 만들고, 여러 PDF를 올리고, 폴더로 정리합니다.
  */
 export function DocsPage() {
   const { researchId = "" } = useParams();
-  const { data, save, remove } = useWorkspace();
+  const { data, user, save, remove } = useWorkspace();
+  const uploadQueue = useUploadQueue();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputReviewRef = useRef<HTMLInputElement>(null);
+
   const rawKind = params.get("kind");
   const kind: DocsKind =
     rawKind === "writing" || rawKind === "material" ? rawKind : "all";
@@ -89,25 +92,41 @@ export function DocsPage() {
   const folderTitle =
     folder && !archivedView ? folderPath(data.folders, folder) : "";
   const preview = rows.find((row) => `${row.kind}:${row.id}` === selected);
-  // 줄 메뉴의 폴더로 옮기기·정보 편집, 머리의 [새 글](05 §2.3, §2.4)
   const [moving, setMoving] = useState<DocRow | null>(null);
   const [editing, setEditing] = useState<DocRow | null>(null);
   const [creating, setCreating] = useState(false);
   const folders = data.folders.filter(
     (f) => f.researchId === researchId && !f.archivedAt,
   );
-  // 올리기 창(05 §2.5): [올리기]로 열거나, 판 어디에든 PDF를 끌어 오면 그 파일이 든 채로 엽니다.
+  const hasCollaborators =
+    data.members.filter(
+      (m) => m.researchId === researchId && m.status === "active",
+    ).length > 1;
+  const recentIds = uploadQueue.recentUploadedByResearch[researchId] ?? [];
+
+  // 링크 추가 및 레거시 폴백용 기존 업로더(PDF 다중 업로드는 uploadQueue가 담당)
   const uploader = useMaterialUpload(researchId);
   const uploadFolder = folder && !archivedView ? folder : undefined;
+
   const drop = useFileDrop({
+    maxFiles: 20,
     noClick: true,
     noKeyboard: true,
-    onSelect: (file) => uploader.start({ file, folderId: uploadFolder }),
+    onSelect: (file) =>
+      uploadQueue.enqueueCapture([file], {
+        researchId,
+        folderId: uploadFolder,
+      }),
+    onSelectMultiple: (files) =>
+      uploadQueue.enqueueCapture(files, {
+        researchId,
+        folderId: uploadFolder,
+      }),
     onError: (message) => {
       if (message) toast.error(message);
     },
   });
-  // 열어 둔 탭 줄의 [+]는 ?new=1로 와서 새 글 창을 엽니다.
+
   useEffect(() => {
     if (params.get("new") !== "1") return;
     setCreating(true);
@@ -138,7 +157,7 @@ export function DocsPage() {
       toast.error(friendlyError(error));
     }
   }
-  /** 글·자료의 폴더를 바꿉니다. 지금 기록을 다시 읽어 다른 칸을 덮지 않습니다. */
+
   async function moveTo(row: DocRow, folderId: string | undefined) {
     try {
       if (row.kind === "writing") {
@@ -165,6 +184,7 @@ export function DocsPage() {
       toast.error(friendlyError(error));
     }
   }
+
   async function restore(row: DocRow) {
     try {
       if (row.kind === "writing") {
@@ -197,10 +217,53 @@ export function DocsPage() {
       data-dropping={drop.isDragActive ? "" : undefined}
     >
       <input {...drop.getInputProps()} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        multiple
+        className="sr-only"
+        aria-label={t("PDF 파일 여러 개 선택")}
+        onChange={(event) => {
+          const picked = Array.from(event.target.files ?? []);
+          event.target.value = "";
+          if (picked.length) {
+            uploadQueue.enqueueCapture(picked, {
+              researchId,
+              folderId: uploadFolder,
+            });
+          }
+        }}
+      />
+      <input
+        ref={fileInputReviewRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        multiple
+        className="sr-only"
+        aria-label={t("정보 확인 후 올릴 PDF 선택")}
+        onChange={(event) => {
+          const picked = Array.from(event.target.files ?? []);
+          event.target.value = "";
+          if (picked.length) {
+            uploadQueue.enqueueCapture(picked, {
+              researchId,
+              folderId: uploadFolder,
+              forceReview: true,
+            });
+          }
+        }}
+      />
       {drop.isDragActive && (
         <div className="docs-drop-hint" aria-hidden>
           <Icon name="upload" size={20} />
-          {t("놓으면 올리기 창이 열려요")}
+          {uploadQueue.captureMode === "review"
+            ? t("놓으면 정보를 확인한 뒤 올려요")
+            : folderTitle
+              ? t("여기에 놓아 ‘{folder}’ 폴더에 바로 올리기", {
+                  folder: folderTitle,
+                })
+              : t("놓으면 여러 PDF를 바로 올려요 (기본 나만 보기)")}
         </div>
       )}
       <div className="docs-layout" data-preview={preview ? "" : undefined}>
@@ -251,20 +314,74 @@ export function DocsPage() {
           <div className="docs-head">
             <h1>{heading}</h1>
             <div className="docs-head-actions">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => uploader.start({ folderId: uploadFolder })}
+              <div
+                className="docs-capture-mode"
+                role="group"
+                aria-label={t("자료 올리기 방식")}
               >
-                <Icon name="upload" size={16} />
-                {t("올리기")}
-              </Button>
+                <button
+                  type="button"
+                  aria-pressed={uploadQueue.captureMode === "instant"}
+                  onClick={() => uploadQueue.setCaptureMode("instant")}
+                >
+                  {t("바로 올리기")}
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={uploadQueue.captureMode === "review"}
+                  onClick={() => uploadQueue.setCaptureMode("review")}
+                >
+                  {t("정보 먼저 확인하기")}
+                </button>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Button variant="outline" size="sm">
+                    <Icon name="upload" size={16} />
+                    {t("올리기")}
+                    <Icon name="chevron-down" size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onSelect={() => fileInputRef.current?.click()}
+                  >
+                    <Icon name="upload" size={15} />
+                    {uploadQueue.captureMode === "review"
+                      ? t("PDF 선택 (정보 확인 후 올리기)")
+                      : t("PDF 여러 개 바로 올리기")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => fileInputReviewRef.current?.click()}
+                  >
+                    <Icon name="edit" size={15} />
+                    {t("정보 확인하며 PDF 올리기")}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      uploader.start({ folderId: uploadFolder, mode: "link" })
+                    }
+                  >
+                    <Icon name="link" size={15} />
+                    {t("웹 링크 추가")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button size="sm" onClick={() => setCreating(true)}>
                 <Icon name="plus" size={16} />
                 {t("새 글")}
               </Button>
             </div>
           </div>
+          {!archivedView && recentIds.length > 0 && (
+            <BatchActionsBar
+              researchId={researchId}
+              materialIds={recentIds}
+              folders={folders}
+              onDismiss={() => uploadQueue.dismissRecent(researchId)}
+            />
+          )}
           <div className="docs-filters">
             <input
               className="docs-search"
@@ -303,11 +420,14 @@ export function DocsPage() {
           <ul className="docs-rows">
             {rows.map((row) => {
               const key = `${row.kind}:${row.id}`;
+              const isFresh =
+                row.kind === "material" && recentIds.includes(row.id);
               return (
                 <li
                   key={key}
                   className="docs-row"
                   data-selected={selected === key ? "" : undefined}
+                  data-fresh={isFresh ? "" : undefined}
                 >
                   {archivedView ? (
                     <span className="docs-row-link">
@@ -337,7 +457,6 @@ export function DocsPage() {
                     </Button>
                   ) : (
                     <span className="docs-row-tools">
-                      {/* 레이어 밖 Button의 display가 숨김 규칙을 이기므로 감싼 span을 숨깁니다(docs.css 폭 단계). */}
                       <span className="docs-row-peek">
                         <Button
                           variant="ghost"
@@ -456,6 +575,11 @@ export function DocsPage() {
           material={
             data.materials.find((m) => m.id === editing.id) ?? editing.material
           }
+          canEditVisibility={
+            !editing.material.createdBy ||
+            editing.material.createdBy === user.id
+          }
+          hasCollaborators={hasCollaborators}
           typeOptions={(
             ["draft", "reference", "analysis", "other"] as const
           ).map((value) => ({ value, label: materialTypeLabel(value) }))}
@@ -509,6 +633,12 @@ function RowBody({ row }: { row: DocRow }) {
       <span className="docs-row-copy">
         <strong>
           <span className="docs-row-title">{m.title}</span>
+          {m.visibility === "private" && (
+            <span className="docs-row-lock">
+              <Icon name="lock" size={13} />
+              <span className="sr-only">{t("나만 보기")}</span>
+            </span>
+          )}
         </strong>
         <small>
           {m.externalUrl
@@ -520,7 +650,7 @@ function RowBody({ row }: { row: DocRow }) {
                 .filter(Boolean)
                 .join(" · ")
             : [
-                materialTypeLabel(m.type),
+                materialDisplayTypeLabel(m),
                 formatDate(kstDateKey(row.latest?.createdAt ?? m.createdAt)),
                 row.latest ? `v${row.latest.number}` : t("파일 없음"),
               ].join(" · ")}
@@ -590,6 +720,10 @@ function DocPreview({ row, href }: { row: DocRow; href: string }) {
   return (
     <>
       <h2>{m.title}</h2>
+      <p className="docs-preview-meta">
+        {materialDisplayTypeLabel(m)} ·{" "}
+        {m.visibility === "private" ? t("나만 보기") : t("함께 보기")}
+      </p>
       {versions[0] && (
         <MaterialPreviewBadge version={versions[0]} size="large" />
       )}

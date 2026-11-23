@@ -352,18 +352,22 @@ export function MoveFolderDialog({
   );
 }
 
-/** 줄 메뉴 › 정보 편집(05 §2.3, §4 ⋯): 이름·종류·링크. 폴더는 '폴더로 옮기기'에서 바꿉니다. */
+/** 줄 메뉴 › 정보 편집(05 §2.3, §4 ⋯): 이름·종류·공개 범위·링크. 폴더는 '폴더로 옮기기'에서 바꿉니다. */
 export function MaterialInfoDialog({
   open,
   onOpenChange,
   material,
   typeOptions,
+  canEditVisibility = true,
+  hasCollaborators = false,
   onSave,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   material: Material;
   typeOptions: { value: Material["type"]; label: string }[];
+  canEditVisibility?: boolean;
+  hasCollaborators?: boolean;
   onSave: (next: Material) => Promise<void>;
 }) {
   const [draft, setDraft] = useState(material);
@@ -423,13 +427,48 @@ export function MaterialInfoDialog({
               <span>{t("자료 종류")}</span>
               <Choice
                 label={t("자료 종류")}
-                value={draft.type}
+                value={draft.typeExplicit ? draft.type : "__unset__"}
                 onChange={(v) =>
-                  setDraft({ ...draft, type: v as Material["type"] })
+                  v === "__unset__"
+                    ? setDraft({ ...draft, type: "other", typeExplicit: false })
+                    : setDraft({
+                        ...draft,
+                        type: v as Material["type"],
+                        typeExplicit: true,
+                      })
                 }
-                options={typeOptions}
+                options={[{ value: "__unset__", label: t("미분류") }, ...typeOptions]}
               />
             </label>
+            <div className="field">
+              <span>{t("공개 범위")}</span>
+              <Choice
+                label={t("공개 범위")}
+                disabled={!canEditVisibility}
+                value={draft.visibility ?? "shared"}
+                onChange={(v) =>
+                  setDraft({ ...draft, visibility: v as "private" | "shared" })
+                }
+                options={[
+                  { value: "private", label: t("나만 보기") },
+                  { value: "shared", label: t("함께 보기") },
+                ]}
+              />
+              {!canEditVisibility && (
+                <small className="material-info-note">
+                  {t("작성자만 공개 범위를 바꿀 수 있어요.")}
+                </small>
+              )}
+              {canEditVisibility &&
+                hasCollaborators &&
+                draft.visibility === "private" && (
+                  <small className="material-info-note">
+                    {t(
+                      "나만 볼 수 있어요. 공동연구자와 함께 보려면 ‘함께 보기’로 바꿔 주세요.",
+                    )}
+                  </small>
+                )}
+            </div>
             {material.externalUrl !== undefined && (
               <label className="field">
                 <span>{t("링크")}</span>

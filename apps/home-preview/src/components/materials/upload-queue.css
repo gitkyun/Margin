@@ -1,0 +1,333 @@
+@layer margin {
+  /* 공개 범위 선택 */
+  .visibility-control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+  .visibility-control-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-6);
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: 1.45;
+  }
+  .visibility-control-hint svg {
+    flex: none;
+    margin-top: 2px;
+  }
+
+  /* 방금 올린 자료 일괄 정리 바 */
+  .batch-actions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    padding: var(--spacing-10) var(--spacing-12);
+    border: 1px solid color-mix(in srgb, var(--brand) 38%, var(--line));
+    border-radius: var(--radius-10);
+    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+    animation: margin-batch-enter 180ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .batch-actions-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-6);
+    font-size: var(--typography-label2-fontSize);
+  }
+  .batch-actions-summary svg {
+    color: var(--brand);
+  }
+  .batch-actions-summary span {
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .batch-actions-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-6);
+  }
+  .batch-actions-select {
+    min-height: 32px;
+    padding: 0 var(--spacing-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+  }
+
+  /* 전역 비차단 업로드 진행 트레이 */
+  .upload-tray {
+    position: fixed;
+    right: 76px;
+    bottom: var(--spacing-16);
+    z-index: var(--z-sticky);
+    width: 348px;
+    max-width: calc(100vw - 32px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-12);
+    background: var(--surface);
+    box-shadow: 0 12px 32px color-mix(in srgb, #000 28%, transparent);
+    overflow: hidden;
+    animation: margin-tray-enter 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .upload-tray-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    min-height: 44px;
+    padding: var(--spacing-8) var(--spacing-12);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-muted);
+  }
+  .upload-tray-toggle {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--spacing-8);
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+  .upload-tray-toggle span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .upload-tray-head-actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--spacing-4);
+  }
+  .upload-tray-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .upload-tray[data-collapsed] .upload-tray-body {
+    grid-template-rows: 0fr;
+  }
+  .upload-tray-body-inner {
+    overflow: hidden;
+  }
+  .upload-tray-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    max-height: 260px;
+    margin: 0;
+    padding: var(--spacing-8);
+    overflow-y: auto;
+    list-style: none;
+  }
+  .upload-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    padding: var(--spacing-8) var(--spacing-10);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+  }
+  .upload-item[data-status="failed_upload"],
+  .upload-item[data-status="failed_register"] {
+    border-left: 3px solid var(--danger);
+  }
+  .upload-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+  .upload-item-name {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    color: var(--text);
+    font-size: var(--typography-label2-fontSize);
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .upload-item-meta {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--spacing-6);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+    font-variant-numeric: tabular-nums;
+  }
+  .upload-item-error {
+    margin: 0;
+    color: var(--danger);
+    font-size: var(--typography-caption1-fontSize);
+    line-height: 1.4;
+  }
+  .upload-item-track {
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: var(--line);
+    overflow: hidden;
+  }
+  .upload-item-fill {
+    width: 100%;
+    height: 100%;
+    transform-origin: left;
+    background: var(--brand);
+    transition: transform 140ms linear;
+  }
+  .upload-item[data-status="done"] .upload-item-fill {
+    background: var(--semantic-foreground-positive-primary, #2ea043);
+  }
+  .upload-item[data-status="failed_upload"] .upload-item-fill,
+  .upload-item[data-status="failed_register"] .upload-item-fill {
+    background: var(--danger);
+  }
+
+  /* 정보 먼저 확인하기 시트 */
+  .staging-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-12);
+    max-height: 55vh;
+    overflow-y: auto;
+  }
+  .staging-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-10);
+    background: var(--surface-muted);
+  }
+  .staging-card-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+    color: var(--text-secondary);
+    font-size: var(--typography-caption1-fontSize);
+  }
+  .staging-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-8);
+  }
+
+  /* 방금 추가된 목록 행 하이라이트 */
+  .docs-row[data-fresh] {
+    animation: margin-row-fresh 1.6s ease-out;
+  }
+
+  /* 수집 방식 선택 칩(바로 올리기 / 정보 먼저 확인하기) */
+  .docs-capture-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: 2px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-8);
+    background: var(--surface-muted);
+  }
+  .docs-capture-mode button {
+    min-height: 28px;
+    padding: 0 var(--spacing-8);
+    border: 0;
+    border-radius: var(--radius-6);
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--typography-caption1-fontSize);
+    cursor: pointer;
+  }
+  .docs-capture-mode button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 1px 2px color-mix(in srgb, #000 12%, transparent);
+  }
+
+  @keyframes margin-tray-enter {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes margin-batch-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes margin-row-fresh {
+    0% {
+      background: color-mix(in srgb, var(--brand) 16%, transparent);
+    }
+    100% {
+      background: transparent;
+    }
+  }
+
+  /* 모바일: 하단 BottomDock 위로 배치해 겹침 방지 */
+  @media (max-width: 767px) {
+    .upload-tray {
+      right: var(--spacing-8);
+      left: var(--spacing-8);
+      bottom: calc(var(--dock-height, 56px) + var(--spacing-8));
+      width: auto;
+      max-width: none;
+    }
+    .staging-card-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .batch-actions-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .batch-actions-controls {
+      width: 100%;
+    }
+    .batch-actions-select {
+      flex: 1;
+      min-height: 40px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .upload-tray,
+    .batch-actions-bar,
+    .docs-row[data-fresh] {
+      animation: none;
+    }
+    .upload-tray-body,
+    .upload-item-fill {
+      transition: none;
+    }
+  }
+}

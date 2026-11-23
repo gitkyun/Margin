@@ -225,7 +225,7 @@ export function MaterialFolders({
       {folders.length > 0 && (
         <p className="folder-drop-hint">
           {t(
-            "자료를 폴더로 끌어 놓거나, 자료의 ‘폴더로 옮기기’ 메뉴로 옮길 수 있어요.",
+            "글이나 자료를 폴더로 끌어 놓거나, 메뉴의 ‘폴더로 옮기기’로 옮길 수 있어요.",
           )}
         </p>
       )}

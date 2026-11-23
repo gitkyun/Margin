@@ -17,6 +17,8 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase, configured } from "@/lib/supabase";
 import { previewUser } from "@/lib/demo";
 import { WorkspaceProvider, useWorkspace } from "@/lib/workspace";
+import { UploadQueueProvider } from "@/lib/upload-queue";
+import { UploadQueueTray } from "@/components/materials/UploadQueueTray";
 import { RecordingProvider } from "@/components/recording/RecordingProvider";
 import { Icon } from "@/components/icons";
 import { ErrorNotice, HomeSkeleton, LoadingState } from "@/components/common";
@@ -473,10 +475,13 @@ export function App() {
     : previewUser;
   return (
     <WorkspaceProvider user={user} mode={configured ? "connected" : "preview"}>
-      {/* 녹음은 화면을 옮겨도 이어져요(상단 미니 녹음 컨트롤). */}
-      <RecordingProvider>
-        <WorkspaceRoutes />
-      </RecordingProvider>
+      <UploadQueueProvider>
+        {/* 녹음과 자료 업로드는 화면을 옮겨도 이어져요. */}
+        <RecordingProvider>
+          <WorkspaceRoutes />
+          <UploadQueueTray />
+        </RecordingProvider>
+      </UploadQueueProvider>
     </WorkspaceProvider>
   );
 }
