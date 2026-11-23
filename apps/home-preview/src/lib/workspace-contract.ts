@@ -26,6 +26,7 @@ export interface WorkspaceContextValue {
   save<K extends EntityKind>(
     kind: K,
     value: EntityMap[K],
+    options?: { skipRefresh?: boolean },
   ): Promise<EntityMap[K]>;
   remove(kind: EntityKind, id: string): Promise<void>;
   saveResearch(value: Research): Promise<Research>;

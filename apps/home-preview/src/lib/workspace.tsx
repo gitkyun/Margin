@@ -71,10 +71,11 @@ export function WorkspaceProvider({
   async function save<K extends EntityKind>(
     kind: K,
     value: EntityMap[K],
+    options?: { skipRefresh?: boolean },
   ): Promise<EntityMap[K]> {
     if (mode === "connected") {
       const result = await saveRecord(kind, value);
-      await refresh();
+      if (!options?.skipRefresh) await refresh();
       return result;
     }
     const updated = {
