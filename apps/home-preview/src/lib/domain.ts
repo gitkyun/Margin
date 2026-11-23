@@ -166,8 +166,15 @@ export interface Decision extends BaseRecord {
 export interface Material extends BaseRecord {
   title: string;
   type: "draft" | "reference" | "analysis" | "other";
+  /** 사용자가 유형을 직접 골랐는지 여부. 미지정(false/undefined)이면 목록에서 '기타' 대신 '미분류'로 표시합니다. */
+  typeExplicit?: boolean;
   externalUrl?: string;
   folderId?: ID;
+  /** 원고에서 검토용 PDF로 생성한 경우 원본 글 추적 */
+  sourceDocumentId?: ID;
+  sourceDocumentVersionId?: ID;
+  /** 연구 도우미 첨부에서 영구 저장으로 승격된 경우 출처 추적 */
+  promotedFromAttachmentId?: ID;
 }
 export interface MaterialVersion extends BaseRecord {
   materialId: ID;
@@ -176,6 +183,14 @@ export interface MaterialVersion extends BaseRecord {
   storagePath: string;
   size: number;
   mimeType: string;
+  /** 향후 중복 확정 판정용(선택) */
+  sha256?: string;
+  /** 향후 비동기 PDF 본문 추출 확장 슬롯(Wave 2 Slice 1에서는 미사용) */
+  textExtraction?: {
+    status: "pending" | "ready" | "empty_scan" | "failed";
+    pageCount?: number;
+    updatedAt: string;
+  };
 }
 export interface RevisionResult extends BaseRecord {
   title: string;

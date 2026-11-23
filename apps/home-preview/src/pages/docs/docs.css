@@ -101,13 +101,24 @@
     flex-wrap: wrap;
     gap: var(--spacing-8);
   }
+  .docs-filters select,
+  .batch-actions-select {
+    appearance: none;
+    min-width: 120px;
+    padding-right: var(--spacing-32);
+    /* 앱의 chevron-down 아이콘(lucide)과 같은 모양. select는 부품을 못 넣어 같은 선으로 그린 그림을 씁니다. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b919a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right var(--spacing-8) center;
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+  }
   .docs-search,
   .docs-filters select {
     min-height: var(--field-height-toolbar);
     padding: 0 var(--spacing-12);
     border: 1px solid var(--line);
     border-radius: var(--field-radius-toolbar);
-    background: var(--surface);
+    background-color: var(--surface);
     color: var(--text);
     font: inherit;
     font-size: var(--typography-label2-fontSize);
@@ -267,7 +278,10 @@
     height: 40px;
   }
   .docs-row .material-preview-badge canvas,
-  .docs-row .material-preview-badge .preview-fallback {
+  .docs-row .material-preview-badge .preview-fallback,
+  .docs-row .material-preview-badge .preview-shimmer {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 32px;
     height: 40px;
@@ -275,6 +289,23 @@
     border: 1px solid var(--line);
     border-radius: var(--radius-4);
     background: var(--semantic-static-white);
+  }
+  /* 첫 쪽을 못 읽은 PDF: 그림 칸 안에 아이콘과 글자를 가운데로 모읍니다. */
+  .docs-row .material-preview-badge .preview-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    overflow: hidden;
+    background: var(--surface-muted);
+    color: var(--text-secondary);
+    font-size: 10px;
+    line-height: 1;
+  }
+  .docs-row .material-preview-badge .preview-fallback svg {
+    width: 14px;
+    height: 14px;
   }
   /* 열어 둔 탭 줄(05 §3.2): 높이 36, 탭 최소 96, 넘치면 가로 스크롤과 양 끝 흐림 */
   .doc-tabs {

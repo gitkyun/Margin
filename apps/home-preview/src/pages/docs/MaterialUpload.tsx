@@ -44,6 +44,8 @@ export interface UploadStart {
   file?: File;
   /** 새 자료가 들어갈 폴더(폴더 안에서 열었을 때) */
   folderId?: string;
+  /** 시작 탭(file | link) */
+  mode?: "file" | "link";
 }
 
 /** 받는 형식·크기 한도와 문구는 예전 올리기 양식 그대로입니다. */
@@ -91,7 +93,12 @@ export function useMaterialUpload(researchId: string) {
     (f) => f.researchId === researchId && !f.archivedAt,
   );
 
-  function start({ material, file: dropped, folderId }: UploadStart = {}) {
+  function start({
+    material,
+    file: dropped,
+    folderId,
+    mode: startMode,
+  }: UploadStart = {}) {
     if (pending) {
       setError(
         t(
@@ -110,13 +117,15 @@ export function useMaterialUpload(researchId: string) {
             title:
               dropped && !problem ? dropped.name.replace(/\.pdf$/i, "") : "",
             type: "other",
+            typeExplicit: false,
+            visibility: "private",
             folderId,
           },
     );
     setFile(dropped && !problem ? dropped : null);
     setProgress(null);
     setError(problem);
-    setMode("file");
+    setMode(startMode ?? "file");
     setOpen(true);
   }
   function selectFile(chosen: File | undefined) {
@@ -203,8 +212,12 @@ export function useMaterialUpload(researchId: string) {
         });
         setDraft(material);
         setOpen(false);
-        go(viewHref(material.id));
-        toast.success(t("링크를 등록했어요"));
+        toast.success(t("링크를 등록했어요"), {
+          action: {
+            label: t("열기"),
+            onClick: () => go(viewHref(material.id)),
+          },
+        });
       } else {
         setProgress(0);
         const { material, version } = await registerPdf(
@@ -223,9 +236,14 @@ export function useMaterialUpload(researchId: string) {
         );
         setDraft(material);
         setOpen(false);
-        go(viewHref(material.id, version.id));
         toast.success(
           target ? t("새 버전을 추가했어요") : t("PDF를 등록했어요"),
+          {
+            action: {
+              label: t("열기"),
+              onClick: () => go(viewHref(material.id, version.id)),
+            },
+          },
         );
       }
     } catch (e) {

@@ -19,6 +19,15 @@ export function materialTypeLabel(type: Material["type"] | "link"): string {
     link: t("링크"),
   }[type];
 }
+
+/** 목록 표시용 자료 유형 라벨. 사용자가 유형을 고르지 않은 기본 'other'는 '미분류'로 표시합니다. */
+export function materialDisplayTypeLabel(
+  material: Pick<Material, "type" | "typeExplicit" | "externalUrl">,
+): string {
+  if (material.externalUrl) return t("링크");
+  if (material.type === "other" && !material.typeExplicit) return t("미분류");
+  return materialTypeLabel(material.type);
+}
 export function sinceLabel(at: string): string {
   const diff = Date.now() - new Date(at).getTime();
   if (!Number.isFinite(diff)) return "";
