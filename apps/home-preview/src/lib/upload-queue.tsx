@@ -638,7 +638,7 @@ export function UploadQueueProvider({ children }: { children: ReactNode }) {
 export function useUploadQueue() {
   const ctx = useContext(UploadQueueContext);
   if (!ctx) {
-    throw new Error("UploadQueueProvider 안에서만 사용할 수 있어요.");
+    throw new Error("useUploadQueue must be used inside UploadQueueProvider");
   }
   return ctx;
 }
