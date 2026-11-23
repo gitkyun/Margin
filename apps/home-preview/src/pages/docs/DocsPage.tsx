@@ -68,7 +68,6 @@ export function DocsPage() {
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const fileInputReviewRef = useRef<HTMLInputElement>(null);
 
   const rawKind = params.get("kind");
   const kind: DocsKind =
@@ -231,25 +230,7 @@ export function DocsPage() {
             uploadQueue.enqueueCapture(picked, {
               researchId,
               folderId: uploadFolder,
-            });
-          }
-        }}
-      />
-      <input
-        ref={fileInputReviewRef}
-        type="file"
-        accept=".pdf,application/pdf"
-        multiple
-        className="sr-only"
-        aria-label={t("정보 확인 후 올릴 PDF 선택")}
-        onChange={(event) => {
-          const picked = Array.from(event.target.files ?? []);
-          event.target.value = "";
-          if (picked.length) {
-            uploadQueue.enqueueCapture(picked, {
-              researchId,
-              folderId: uploadFolder,
-              forceReview: true,
+              forceReview: false,
             });
           }
         }}
@@ -257,13 +238,11 @@ export function DocsPage() {
       {drop.isDragActive && (
         <div className="docs-drop-hint" aria-hidden>
           <Icon name="upload" size={20} />
-          {uploadQueue.captureMode === "review"
-            ? t("놓으면 정보를 확인한 뒤 올려요")
-            : folderTitle
-              ? t("여기에 놓아 ‘{folder}’ 폴더에 바로 올리기", {
-                  folder: folderTitle,
-                })
-              : t("놓으면 여러 PDF를 바로 올려요 (기본 나만 보기)")}
+          {folderTitle
+            ? t("여기에 놓아 ‘{folder}’ 폴더에 바로 올리기", {
+                folder: folderTitle,
+              })
+            : t("놓으면 여러 PDF를 바로 올려요 (기본 나만 보기)")}
         </div>
       )}
       <div className="docs-layout" data-preview={preview ? "" : undefined}>
@@ -314,26 +293,6 @@ export function DocsPage() {
           <div className="docs-head">
             <h1>{heading}</h1>
             <div className="docs-head-actions">
-              <div
-                className="docs-capture-mode"
-                role="group"
-                aria-label={t("자료 올리기 방식")}
-              >
-                <button
-                  type="button"
-                  aria-pressed={uploadQueue.captureMode === "instant"}
-                  onClick={() => uploadQueue.setCaptureMode("instant")}
-                >
-                  {t("바로 올리기")}
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={uploadQueue.captureMode === "review"}
-                  onClick={() => uploadQueue.setCaptureMode("review")}
-                >
-                  {t("정보 먼저 확인하기")}
-                </button>
-              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Button variant="outline" size="sm">
@@ -347,15 +306,7 @@ export function DocsPage() {
                     onSelect={() => fileInputRef.current?.click()}
                   >
                     <Icon name="upload" size={15} />
-                    {uploadQueue.captureMode === "review"
-                      ? t("PDF 선택 (정보 확인 후 올리기)")
-                      : t("PDF 여러 개 바로 올리기")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => fileInputReviewRef.current?.click()}
-                  >
-                    <Icon name="edit" size={15} />
-                    {t("정보 확인하며 PDF 올리기")}
+                    {t("PDF 여러 개 바로 올리기")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

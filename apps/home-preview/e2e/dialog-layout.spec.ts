@@ -55,12 +55,13 @@ const cases: {
   {
     name: "자료 등록",
     async open(page) {
-      // IA v2 3a: 글·자료 목록의 [올리기]가 목록 위에 올리기 창을 엽니다(05 §2.5).
+      // PDF는 바로 올라가므로(Wave 2 Slice 1) 등록 창은 [올리기] › [웹 링크 추가]로 엽니다.
       await page.goto(`${await openResearch(page)}/docs`);
       await page
         .getByRole("button", { name: "올리기", exact: true })
         .first()
         .click();
+      await page.getByRole("menuitemradio", { name: "웹 링크 추가" }).click();
     },
   },
   {

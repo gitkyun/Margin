@@ -87,39 +87,28 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
     await expect(batchBar).toBeVisible();
     await maybeShot(page, "desktop-1440-light-batch5.png");
 
-    await batchBar
-      .getByLabel("일괄 자료 유형 지정")
-      .selectOption("reference");
+    await batchBar.getByLabel("일괄 자료 유형 지정").selectOption("reference");
     await expect(
       page.locator(".docs-row", { hasText: "Smith 2025 Workflows" }).first(),
     ).toContainText("참고");
   });
 
-  test("시나리오 2: 정보 먼저 확인하기 → 제목·유형·공개 범위 수정 후 저장 + 중복 파일 안내", async ({
+  test("시나리오 2: 바로 올린 자료의 유형·공개 범위를 띠에서 바꾸고, 같은 파일은 중복 안내", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1200, height: 800 });
     await openDemoDocs(page);
 
-    await page.getByRole("button", { name: "정보 먼저 확인하기" }).click();
+    // 올리는 방식 토글은 없고 바로 올라갑니다.
+    await expect(
+      page.getByRole("button", { name: "정보 먼저 확인하기" }),
+    ).toHaveCount(0);
     const paper = pdfPayload("2305_10403v2.pdf", "single-review");
     await page
       .locator('input[aria-label="PDF 파일 여러 개 선택"]')
       .setInputFiles([paper]);
-
-    const dialog = page.getByRole("dialog", {
-      name: "자료 정보 확인 후 올리기",
-    });
-    await expect(dialog).toBeVisible();
-    await maybeShot(page, "desktop-1200-staging-dialog.png");
-
-    const titleInput = dialog.getByLabel("자료 이름");
-    await titleInput.fill("대학원생 피드백 루프 핵심 논문");
-    await dialog.getByRole("button", { name: "자료 올리기" }).click();
-
-    await expect(dialog).toBeHidden();
     await expect(
-      page.locator(".docs-row", { hasText: "대학원생 피드백 루프 핵심 논문" }),
+      page.locator(".docs-row", { hasText: "2305 10403v2" }),
     ).toBeVisible({ timeout: 10000 });
     expect(page.url()).not.toContain("/docs/m/");
 
@@ -131,10 +120,12 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
       name: /같은 이름·크기의 파일이 이미 있어요/,
     });
     await expect(dupDialog).toBeVisible();
-    await dupDialog.getByRole("button", { name: "새 버전(v2)으로 올리기" }).click();
+    await dupDialog
+      .getByRole("button", { name: "새 버전(v2)으로 올리기" })
+      .click();
     await expect(dupDialog).toBeHidden();
     await expect(
-      page.locator(".docs-row", { hasText: "대학원생 피드백 루프 핵심 논문" }),
+      page.locator(".docs-row", { hasText: "2305 10403v2" }),
     ).toContainText("v2", { timeout: 10000 });
   });
 
@@ -151,14 +142,16 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
         pdfPayload("Nav_Keep_Paper_2.pdf", "nav2"),
       ]);
 
-    // 바로 미팅 화면으로 이동
-    await page.goto(`${base}/meetings`);
+    // 바로 미팅 화면으로 이동(새로고침이 아니라 앱 안 메뉴 이동. 새로고침은 메모리의 업로드 큐를 비웁니다.)
+    await page.getByRole("link", { name: /^미팅/ }).first().click();
+    await page.waitForURL("**/meetings**");
     const tray = page.getByRole("region", { name: "자료 올리기 진행 상태" });
     await expect(tray).toBeVisible();
     await expect(tray).toContainText("2개 자료 저장 완료", { timeout: 15000 });
 
     // 다시 글·자료로 복귀하면 두 자료가 목록에 있어야 함
-    await page.goto(`${base}/docs`);
+    await page.getByRole("link", { name: /^글/ }).first().click();
+    await page.waitForURL("**/docs**");
     await expect(
       page.locator(".docs-row", { hasText: "Nav Keep Paper 1" }),
     ).toBeVisible();
@@ -220,5 +213,51 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
         false,
       );
     }
+  });
+
+  test("드래그 앤 드롭 업로드·기존 자료 검색·열기, 320px 가로 넘침 없음", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openDemoDocs(page);
+
+    // 드래그 앤 드롭: 파일을 끌어다 화면에 놓습니다.
+    const dt = await page.evaluateHandle(() => {
+      const d = new DataTransfer();
+      const body = "%PDF-1.4\n% drop\n%%EOF\n";
+      d.items.add(
+        new File([body], "Dropped_Paper.pdf", { type: "application/pdf" }),
+      );
+      return d;
+    });
+    await page.dispatchEvent(".docs-layout", "dragenter", { dataTransfer: dt });
+    await page.dispatchEvent(".docs-layout", "dragover", { dataTransfer: dt });
+    await page.dispatchEvent(".docs-layout", "drop", { dataTransfer: dt });
+    await expect(
+      page.getByRole("region", { name: "자료 올리기 진행 상태" }),
+    ).toContainText("저장 완료", { timeout: 15000 });
+    await expect(
+      page.locator(".docs-row", { hasText: "Dropped Paper" }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/docs/);
+
+    // 기존 자료 검색
+    await page.getByPlaceholder("글·자료에서 찾기").fill("선행연구");
+    await expect(page.locator(".docs-row")).toHaveCount(1);
+    await expect(page.locator(".docs-row")).toContainText("선행연구");
+    await maybeShot(page, "desktop-1440-search.png");
+    // 기존 PDF 열기
+    await page.locator(".docs-row a").first().click();
+    await expect(page).toHaveURL(/\/docs\//);
+    await maybeShot(page, "desktop-1440-open-existing.png");
+
+    // 320px에서 가로 스크롤이 생기지 않는지
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.goBack();
+    await page.waitForTimeout(300);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
   });
 });
