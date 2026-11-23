@@ -793,3 +793,77 @@ test('credits: one-trip start and complete keep the same rules as the separate c
  await start(e,10);const big=await complete(e,1,{answer:'x'.repeat(300000)})
  assert.deepEqual([big.closed,big.accepted,big.finish_error],[true,false,'22023']);await as(ids.student);assert.equal((await call('rms_ai_run_result',[e])).status,'running')
 })
+
+test('Wave 2 Slice 1: new materials default to private, keep existing shared visibility, and enforce role-based file access',async()=>{
+ const coauthor='d1111111-1111-4111-8111-111111111111'
+ await db.exec('reset role')
+ await db.query('insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values($1,$2,now(),$3)',[coauthor,'coauthor-w2@example.test',JSON.stringify({name:'coauthor'})])
+ await db.query('insert into public.rms_demo_accounts(user_id) values($1)',[coauthor])
+ await as(ids.student)
+ await inputCall('rms_member_action',{action:'invite',researchId:ids.research,email:'coauthor-w2@example.test'})
+ await as(coauthor)
+ await inputCall('rms_member_action',{action:'accept',researchId:ids.research})
+
+ // 1) 신규 Material은 visibility 미지정 시 private로 저장되고, 버전도 부모 private를 상속한다
+ await as(ids.student)
+ const privMatId='d2222222-2222-4222-8222-222222222222'
+ const privVerId='d3333333-3333-4333-8333-333333333333'
+ const privPath=`${ids.student}/${ids.research}/${privVerId}.pdf`
+ const privMat=await save('materials',{...base(privMatId),title:'비공개 선행연구',type:'reference',typeExplicit:true})
+ assert.equal(privMat.visibility,'private')
+ await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3)',['research-files',privPath,JSON.stringify({size:2048,mimetype:'application/pdf'})])
+ const privVer=await save('versions',{...base(privVerId),materialId:privMatId,number:0,fileName:'private_paper.pdf',storagePath:privPath,size:2048,mimeType:'application/pdf'})
+ assert.equal(privVer.number,1)
+
+ // 2) 명시적으로 shared로 저장한 Material은 수정 시 visibility 생략해도 shared를 유지한다
+ const sharedMatId='d4444444-4444-4444-8444-444444444444'
+ const sharedVerId='d5555555-5555-4555-8555-555555555555'
+ const sharedPath=`${ids.student}/${ids.research}/${sharedVerId}.pdf`
+ let sharedMat=await save('materials',{...base(sharedMatId),title:'기존 공유 자료',type:'reference',visibility:'shared'})
+ assert.equal(sharedMat.visibility,'shared')
+ await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3)',['research-files',sharedPath,JSON.stringify({size:2048,mimetype:'application/pdf'})])
+ await save('versions',{...base(sharedVerId),materialId:sharedMatId,number:0,fileName:'shared_paper.pdf',storagePath:sharedPath,size:2048,mimeType:'application/pdf'})
+ const updatedShared=await save('materials',{...sharedMat,title:'기존 공유 자료 (제목 수정)',visibility:undefined})
+ assert.equal(updatedShared.visibility,'shared')
+
+ // 3) 공동연구자는 shared 자료(메타+파일)만 읽을 수 있고, 타인의 private 자료(메타+파일)는 차단되며 visibility 변경도 거부된다
+ await as(coauthor)
+ assert.equal(await call('rms_can_read_record',[privMatId]),false)
+ assert.equal(await call('rms_can_read_record',[privVerId]),false)
+ assert.equal(await call('rms_can_read_file',[privPath]),false)
+ assert.equal(await call('rms_can_read_record',[sharedMatId]),true)
+ assert.equal(await call('rms_can_read_record',[sharedVerId]),true)
+ assert.equal(await call('rms_can_read_file',[sharedPath]),true)
+ await failure(()=>save('materials',{...updatedShared,visibility:'private'}),'42501')
+
+ // 4) 공유 미팅에 private 자료 버전을 연결해도 공동연구자의 파일 접근 권한은 확대되지 않는다
+ await as(ids.student)
+ const sharedMeetingId='d6666666-6666-4666-8666-666666666666'
+ await save('meetings',{...base(sharedMeetingId),title:'공유 미팅',date:null,time:null,status:'preparing',goal:'',memo:'',memoRevision:1,visibility:'shared',taskIds:[],versionIds:[privVerId],questionIds:[]})
+ await as(coauthor)
+ assert.equal(await call('rms_can_read_record',[sharedMeetingId]),true)
+ assert.equal(await call('rms_can_read_record',[privVerId]),false)
+ assert.equal(await call('rms_can_read_file',[privPath]),false)
+
+ // 5) private 자료로 교수 검토 스냅샷을 공유해도 지정 교수만 스냅샷 파일을 읽을 수 있고, 원본 Material은 private 유지
+ await as(ids.student)
+ const privResId='d7777777-7777-4777-8777-777777777777'
+ await save('results',{...base(privResId),title:'비공개 자료 검토 제출',description:'제출 본문',feedbackIds:[],taskIds:[],kind:'document',versionId:privVerId,location:'1쪽'})
+ await inputCall('rms_create_review',{researchId:ids.research,title:'비공개 자료 검토 요청',professorEmail:'professor@example.test',resultIds:[privResId]})
+ await as(ids.professor)
+ assert.equal(await call('rms_can_read_file',[privPath]),true)
+ assert.equal(await call('rms_can_read_record',[privMatId]),false)
+ await as(coauthor)
+ assert.equal(await call('rms_can_read_record',[privMatId]),false)
+ assert.equal(await call('rms_can_read_file',[privPath]),false)
+
+ // 6) 동시 수정 낙관적 잠금(40001)과 동일 버전 재시도 멱등성 확인
+ await as(ids.student)
+ const staleMat=updatedShared
+ const newerMat=await save('materials',{...staleMat,title:'최신 제목'})
+ assert.equal(newerMat.title,'최신 제목')
+ await failure(()=>save('materials',{...staleMat,title:'오래된 창의 제목'}),'40001')
+ const retryVer=await save('versions',{...privVer,createdAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-01T00:00:00Z'})
+ assert.equal(retryVer.id,privVer.id)
+ assert.equal(retryVer.number,1)
+})
