@@ -27,7 +27,7 @@ export default defineConfig({
     {
       name: "preview",
       testMatch:
-        /(preview|dialog-layout|home-layout|docs-layout|shell-quick-layout|shell-hardening|wave2-slice1-capture)\.spec\.ts/,
+        /(preview|dialog-layout|home-layout|docs-layout|shell-quick-layout|shell-hardening|wave2-slice1-capture|row-actions)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         baseURL: `http://127.0.0.1:${PREVIEW_PORT}`,

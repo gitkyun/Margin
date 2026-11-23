@@ -261,6 +261,13 @@ export function WorkspaceShell({
     if (!overlayPanel) return;
     setRailTab(null);
   }, [location.pathname, overlayPanel]);
+  // 할 일 화면에서 사이드 창도 '할 일'이면 같은 목록이 두 번 보여요. 할 일 화면에 들어올 때 결정·질문으로 바꿔 보여 줍니다
+  // (들어온 뒤 사람이 다시 '할 일'을 고르면 그대로 둬요. 고른 탭 기억은 바꾸지 않아요).
+  const onTasksPage = /^\/r\/[^/]+\/tasks\/?$/.test(location.pathname);
+  useEffect(() => {
+    if (onTasksPage && railTab === "tasks") setRailTab("log");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onTasksPage]);
   // 주소의 ?panel=(예전 /assistant 주소, 홈·명령·단축키)로 사이드 창 탭을 엽니다(01 §3.3).
   // 겹쳐 뜬 창이 화면 이동으로 닫힌 뒤에 열도록 위 효과 다음에 둡니다. 연 뒤 주소에서 값을 지웁니다.
   const [assistantRequest, setAssistantRequest] =

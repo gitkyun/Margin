@@ -129,7 +129,7 @@ describe("Wave 2 Slice 1 DocsPage UI integration", () => {
       );
   });
 
-  it("uploads 5 PDFs in instant mode without navigating away, defaults to private + 미분류, and supports batch type update", async () => {
+  it("adds 5 PDFs through one add dialog without navigating away, defaults to private + 미분류", async () => {
     const { rerender } = renderDocs();
 
     const input = screen.getByLabelText("PDF 파일 여러 개 선택");
@@ -142,10 +142,12 @@ describe("Wave 2 Slice 1 DocsPage UI integration", () => {
     ];
     fireEvent.change(input, { target: { files } });
 
+    // 고른 파일을 한 창에서 확인하고 한 번에 추가
+    expect(screen.getByText("파일 5개 추가")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "5개 추가" }));
+
     await waitFor(() => {
-      expect(screen.getAllByText("5개 자료 저장 완료").length).toBeGreaterThan(
-        0,
-      );
+      expect(screen.getAllByText("5개 자료 추가됨").length).toBeGreaterThan(0);
     });
 
     // 강제 이동 없이 글·자료 화면 유지
@@ -173,7 +175,7 @@ describe("Wave 2 Slice 1 DocsPage UI integration", () => {
     expect(screen.getAllByText(/미분류/).length).toBeGreaterThanOrEqual(5);
   });
 
-  it("has no capture-mode toggle and uploads straight away as private", async () => {
+  it("has no capture-mode toggle; picked file opens the add dialog and saves the edited name as private", async () => {
     renderDocs();
 
     expect(
@@ -184,12 +186,15 @@ describe("Wave 2 Slice 1 DocsPage UI integration", () => {
       target: { files: [makePdf("2305_10403.pdf", "%PDF-1.4 single")] },
     });
 
-    expect(screen.queryByText("자료 정보 확인 후 올리기")).toBeNull();
-    await waitFor(() => {
-      expect(screen.getAllByText("1개 자료 저장 완료").length).toBeGreaterThan(
-        0,
-      );
+    expect(screen.getByText("파일 추가")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("2305_10403.pdf 자료 이름"), {
+      target: { value: "핵심 선행연구 논문" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "추가" }));
+    await waitFor(() => {
+      expect(screen.getAllByText("1개 자료 추가됨").length).toBeGreaterThan(0);
+    });
+    expect(workspaceState.materials[0]?.title).toBe("핵심 선행연구 논문");
     expect(workspaceState.materials[0]?.visibility).toBe("private");
   });
 });

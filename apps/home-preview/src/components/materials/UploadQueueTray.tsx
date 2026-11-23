@@ -71,6 +71,13 @@ export function UploadQueueTray() {
       j.status === "registering",
   ).length;
 
+  // 모두 끝나고 실패가 없으면 3초 뒤 머리줄만 남겨 접어요(완료 알림을 한 번만 보여 주기).
+  useEffect(() => {
+    if (activeCount > 0 || failedCount > 0 || doneCount === 0) return;
+    const timer = window.setTimeout(() => setCollapsed(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, [activeCount, failedCount, doneCount, setCollapsed]);
+
   const sortedJobs = [...visibleJobs].sort((a, b) => {
     const rank = (s: UploadJob["status"]) =>
       s === "failed_upload" || s === "failed_register"
@@ -93,7 +100,7 @@ export function UploadQueueTray() {
             done: doneCount,
             total: visibleJobs.length,
           })
-        : t("{count}개 자료 저장 완료", { count: doneCount });
+        : t("{count}개 자료 추가됨", { count: doneCount });
 
   return (
     <>
@@ -138,7 +145,9 @@ export function UploadQueueTray() {
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                aria-label={collapsed ? t("진행 목록 펼치기") : t("진행 목록 접기")}
+                aria-label={
+                  collapsed ? t("진행 목록 펼치기") : t("진행 목록 접기")
+                }
                 onClick={() => setCollapsed(!collapsed)}
               >
                 <Icon
@@ -301,22 +310,35 @@ function MetadataReviewDialog({
       prev.map((item) => (item.id === id ? { ...item, ...patch } : item)),
     );
   }
+  function updateAll(patch: Partial<StagedUploadFile>) {
+    setDrafts((prev) => prev.map((item) => ({ ...item, ...patch })));
+  }
+  const typeValue = (draft: StagedUploadFile) =>
+    draft.typeExplicit ? draft.type : "__unset__";
+  const typePatch = (val: string): Partial<StagedUploadFile> =>
+    val === "__unset__"
+      ? { type: "other", typeExplicit: false }
+      : { type: val as Material["type"], typeExplicit: true };
+  // '모두에 적용' 칸은 모든 파일이 같은 값일 때만 그 값을 보여 줘요.
+  const same = <T,>(pick: (d: StagedUploadFile) => T) =>
+    drafts.every((d) => pick(d) === pick(drafts[0]))
+      ? pick(drafts[0])
+      : undefined;
+  const allType = same(typeValue);
+  const allFolder = same((d) => d.folderId ?? "__none__");
+  const allVisibility = same((d) => d.visibility) ?? "private";
 
   return (
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="rms-dialog">
+      <DialogContent className="rms-dialog staging-dialog">
         <DialogHeader>
           <DialogTitle>
             {drafts.length === 1
-              ? t("자료 정보 확인 후 올리기")
-              : t("자료 {count}개 정보 확인 후 올리기", {
-                  count: drafts.length,
-                })}
+              ? t("파일 추가")
+              : t("파일 {count}개 추가", { count: drafts.length })}
           </DialogTitle>
           <DialogDescription>
-            {t(
-              "제목·유형·폴더·공개 범위를 확인하고 올릴 수 있어요. 올려도 현재 화면에 그대로 머물러요.",
-            )}
+            {t("이름과 정보를 확인하고 추가하세요. 나중에 바꿀 수도 있어요.")}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -326,74 +348,77 @@ function MetadataReviewDialog({
           }}
         >
           <DialogBody>
-            <div className="staging-list">
+            <div
+              className="staging-apply"
+              role="group"
+              aria-label={t("모든 파일에 적용")}
+            >
+              <Choice
+                compact
+                label={t("자료 유형")}
+                value={allType ?? ""}
+                onChange={(val) => updateAll(typePatch(val))}
+                options={[
+                  ...(allType === undefined
+                    ? [{ value: "", label: t("유형 여러 개") }]
+                    : []),
+                  ...TYPE_OPTIONS,
+                ]}
+              />
+              <Choice
+                compact
+                label={t("폴더")}
+                value={allFolder ?? ""}
+                onChange={(val) =>
+                  updateAll({ folderId: val === "__none__" ? undefined : val })
+                }
+                options={[
+                  ...(allFolder === undefined
+                    ? [{ value: "", label: t("폴더 여러 개") }]
+                    : []),
+                  { value: "__none__", label: t("폴더 없음") },
+                  ...folders,
+                ]}
+              />
+              <VisibilityControl
+                compact
+                value={allVisibility}
+                hasCollaborators={hasCollaborators}
+                onChange={(visibility) => updateAll({ visibility })}
+              />
+            </div>
+            <ul className="staging-list">
               {drafts.map((draft) => (
-                <div key={draft.id} className="staging-card">
-                  <div className="staging-card-file">
-                    <span>{draft.file.name}</span>
-                    <span>{formatSize(draft.file.size)}</span>
-                  </div>
-                  <label className="field">
-                    <span>{t("자료 이름")}</span>
-                    <Input
-                      required
-                      maxLength={200}
-                      value={draft.title}
-                      onChange={(e) =>
-                        updateDraft(draft.id, { title: e.target.value })
-                      }
-                    />
-                  </label>
-                  <div className="staging-card-grid">
-                    <label className="field">
-                      <span>{t("자료 유형")}</span>
-                      <Choice
-                        compact
-                        label={t("자료 유형")}
-                        value={draft.typeExplicit ? draft.type : "__unset__"}
-                        onChange={(val) =>
-                          val === "__unset__"
-                            ? updateDraft(draft.id, {
-                                type: "other",
-                                typeExplicit: false,
-                              })
-                            : updateDraft(draft.id, {
-                                type: val as Material["type"],
-                                typeExplicit: true,
-                              })
-                        }
-                        options={TYPE_OPTIONS}
-                      />
-                    </label>
-                    <label className="field">
-                      <span>{t("폴더")}</span>
-                      <Choice
-                        compact
-                        label={t("폴더")}
-                        value={draft.folderId ?? "__none__"}
-                        onChange={(val) =>
-                          updateDraft(draft.id, {
-                            folderId: val === "__none__" ? undefined : val,
-                          })
-                        }
-                        options={[
-                          { value: "__none__", label: t("폴더 없음") },
-                          ...folders,
-                        ]}
-                      />
-                    </label>
-                  </div>
-                  <VisibilityControl
-                    compact
-                    value={draft.visibility}
-                    hasCollaborators={hasCollaborators}
-                    onChange={(visibility) =>
-                      updateDraft(draft.id, { visibility })
+                <li key={draft.id} className="staging-row">
+                  <Icon name="file" size={16} />
+                  <Input
+                    required
+                    maxLength={200}
+                    aria-label={t("{fileName} 자료 이름", {
+                      fileName: draft.file.name,
+                    })}
+                    value={draft.title}
+                    onChange={(e) =>
+                      updateDraft(draft.id, { title: e.target.value })
                     }
                   />
-                </div>
+                  {drafts.length > 1 && (
+                    <Choice
+                      compact
+                      label={t("{fileName} 자료 유형", {
+                        fileName: draft.file.name,
+                      })}
+                      value={typeValue(draft)}
+                      onChange={(val) => updateDraft(draft.id, typePatch(val))}
+                      options={TYPE_OPTIONS}
+                    />
+                  )}
+                  <span className="staging-row-size">
+                    {formatSize(draft.file.size)}
+                  </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </DialogBody>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel}>
@@ -401,8 +426,8 @@ function MetadataReviewDialog({
             </Button>
             <Button type="submit">
               {drafts.length === 1
-                ? t("자료 올리기")
-                : t("{count}개 자료 올리기", { count: drafts.length })}
+                ? t("추가")
+                : t("{count}개 추가", { count: drafts.length })}
             </Button>
           </DialogFooter>
         </form>
@@ -462,10 +487,7 @@ function DuplicateDialog({
           >
             {t("별도 자료로 추가")}
           </Button>
-          <Button
-            type="button"
-            onClick={() => onResolve("new_version")}
-          >
+          <Button type="button" onClick={() => onResolve("new_version")}>
             {t("새 버전(v{next})으로 올리기", {
               next: candidate.existingVersion.number + 1,
             })}

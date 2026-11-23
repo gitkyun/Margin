@@ -1,6 +1,7 @@
 import { t } from "@/lib/i18n";
 import { useState, type KeyboardEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Checkbox } from "@montage-ui/core";
 import { DrawnCheck } from "@/components/DrawnCheck";
 import { RowUndoButton, TaskRowFrame } from "@/components/TaskRowFrame";
@@ -9,7 +10,22 @@ import type { useTaskCompletion } from "@/lib/use-task-completion";
 import type { DetailHistoryState } from "@/lib/item-detail";
 import { dueLabel } from "@/lib/task-groups";
 import type { Task } from "@/lib/domain";
+import {
+  RowContextMenu,
+  RowMoreMenu,
+  rowMenuLabel,
+  type RowAction,
+} from "@/components/row-actions/RowActions";
+import { useWorkspace } from "@/lib/workspace";
+import { friendlyError } from "@/lib/supabase";
 import "./tasks.css";
+
+/** YYYY-MM-DD에 날짜를 더해요(달력 날짜만, 시간대 영향 없음). */
+export function addDays(day: string, days: number): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
 
 type Completion = ReturnType<typeof useTaskCompletion>;
 
@@ -40,57 +56,188 @@ export function TaskRow({
   const due = dueLabel(task.dueDate, today);
   const busy = completion.busy.has(task.id);
   const recent = completion.recent.get(task.id);
+  const { save, remove } = useWorkspace();
+  const navigate = useNavigate();
+
+  async function update(patch: Partial<Task>, message: string) {
+    const before = task;
+    try {
+      await save("tasks", { ...task, ...patch });
+      toast.success(message, {
+        duration: 6000,
+        action: {
+          label: t("되돌리기"),
+          onClick: () => void save("tasks", before).catch(() => {}),
+        },
+      });
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+  async function archive() {
+    try {
+      await remove("tasks", task.id);
+      toast.success(t("보관했어요."), {
+        duration: 6000,
+        action: {
+          label: t("되돌리기"),
+          onClick: () =>
+            void save("tasks", { ...task, archivedAt: undefined }).catch(
+              () => {},
+            ),
+        },
+      });
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+  const postpone = (days: number, label: string) =>
+    void update(
+      {
+        dueDate: addDays(
+          task.dueDate && task.dueDate > today ? task.dueDate : today,
+          days,
+        ),
+      },
+      label,
+    );
+  const actions: RowAction[] = task.archivedAt
+    ? []
+    : [
+        {
+          id: "toggle",
+          label: done ? t("완료 취소") : t("완료"),
+          icon: done ? "undo" : "check",
+          onSelect: () => void completion.toggle(task),
+        },
+        ...(done
+          ? []
+          : [
+              {
+                id: "tomorrow",
+                label: t("내일로 미루기"),
+                icon: "clock",
+                swipe: "end" as const,
+                onSelect: () => postpone(1, t("내일로 미뤘어요.")),
+              },
+              {
+                id: "next-week",
+                label: t("다음 주로 미루기"),
+                icon: "calendar",
+                onSelect: () => postpone(7, t("다음 주로 미뤘어요.")),
+              },
+            ]),
+        {
+          id: "priority",
+          label:
+            task.priority === "high"
+              ? t("우선순위 낮추기")
+              : t("우선순위 높이기"),
+          icon: "flag",
+          separated: true,
+          onSelect: () =>
+            void update(
+              { priority: task.priority === "high" ? "normal" : "high" },
+              task.priority === "high"
+                ? t("우선순위를 낮췄어요.")
+                : t("우선순위를 높였어요."),
+            ),
+        },
+        {
+          id: "open",
+          label: t("마감일·내용 고치기"),
+          icon: "edit",
+          onSelect: () =>
+            navigate(
+              { search: detailSearch(task.id) },
+              { state: DETAIL_STATE },
+            ),
+        },
+        {
+          id: "archive",
+          label: t("보관"),
+          icon: "trash",
+          separated: true,
+          onSelect: () => void archive(),
+        },
+      ];
+  const postponeAction = actions.find((a) => a.swipe === "end");
   return (
-    <TaskRowFrame
-      rowMotion={rowMotion}
-      className={`task-line ${done ? "is-complete" : ""}`}
-      swipeable={swipeable && !task.archivedAt && !busy}
-      done={done}
-      onSwipe={() => void completion.toggle(task)}
-    >
-      <Checkbox
-        checked={done}
-        onCheckedChange={() => void completion.toggle(task)}
-        disabled={!!task.archivedAt || busy}
-        icon={<DrawnCheck />}
-        className={recent ? "task-check-draw" : undefined}
-        aria-label={t("{title} 완료", { title: task.title })}
-      />
-      <Link
-        className="task-line-text"
-        to={{ search: detailSearch(task.id) }}
-        state={DETAIL_STATE}
-      >
-        <strong>
-          {task.priority === "high" && (
-            <span
-              className="priority-dot"
-              role="img"
-              aria-label={t("우선순위 높음")}
+    <RowContextMenu actions={actions}>
+      <div className="task-row-ctx">
+        <TaskRowFrame
+          rowMotion={rowMotion}
+          className={`task-line ${done ? "is-complete" : ""}`}
+          swipeable={swipeable && !task.archivedAt && !busy}
+          done={done}
+          onSwipe={() => void completion.toggle(task)}
+          swipeEnd={
+            postponeAction
+              ? {
+                  label: postponeAction.label,
+                  icon: postponeAction.icon,
+                  onSwipe: postponeAction.onSelect,
+                }
+              : undefined
+          }
+        >
+          <Checkbox
+            checked={done}
+            onCheckedChange={() => void completion.toggle(task)}
+            disabled={!!task.archivedAt || busy}
+            icon={<DrawnCheck />}
+            className={recent ? "task-check-draw" : undefined}
+            aria-label={t("{title} 완료", { title: task.title })}
+          />
+          <Link
+            className="task-line-text"
+            to={{ search: detailSearch(task.id) }}
+            state={DETAIL_STATE}
+          >
+            <strong>
+              {task.priority === "high" && (
+                <span
+                  className="priority-dot"
+                  role="img"
+                  aria-label={t("우선순위 높음")}
+                />
+              )}
+              {task.title}
+            </strong>
+            {(due || source) && (
+              <small>
+                {due && (
+                  <span
+                    className={due.overdue ? "task-line-overdue" : undefined}
+                  >
+                    {due.text}
+                  </span>
+                )}
+                {due && source && " · "}
+                {source}
+              </small>
+            )}
+          </Link>
+          <span className="task-line-cols" aria-hidden="true">
+            <span>{source ?? ""}</span>
+            <span>{task.priority === "high" ? t("높음") : ""}</span>
+            <span className={due?.overdue ? "task-line-overdue" : undefined}>
+              {due?.text ?? ""}
+            </span>
+          </span>
+          {recent !== undefined && (
+            <RowUndoButton
+              title={task.title}
+              completedAt={recent}
+              onUndo={() => void completion.undo(task.id)}
             />
           )}
-          {task.title}
-        </strong>
-        {(due || source) && (
-          <small>
-            {due && (
-              <span className={due.overdue ? "task-line-overdue" : undefined}>
-                {due.text}
-              </span>
-            )}
-            {due && source && " · "}
-            {source}
-          </small>
-        )}
-      </Link>
-      {recent !== undefined && (
-        <RowUndoButton
-          title={task.title}
-          completedAt={recent}
-          onUndo={() => void completion.undo(task.id)}
-        />
-      )}
-    </TaskRowFrame>
+          <span className="task-line-more">
+            <RowMoreMenu label={rowMenuLabel(task.title)} actions={actions} />
+          </span>
+        </TaskRowFrame>
+      </div>
+    </RowContextMenu>
   );
 }
 

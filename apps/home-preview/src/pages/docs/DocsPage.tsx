@@ -16,9 +16,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  RowContextMenu,
+  RowMoreMenu,
+  SwipeRow,
+  rowMenuLabel,
+  type RowAction,
+} from "@/components/row-actions/RowActions";
 import { MaterialFolders } from "@/components/MaterialFolders";
 import { MaterialPreviewBadge } from "@/components/MaterialPreviewBadge";
-import { BatchActionsBar } from "@/components/materials/BatchActionsBar";
 import { useWorkspace } from "@/lib/workspace";
 import { useUploadQueue } from "@/lib/upload-queue";
 import { koreanScore } from "@/lib/hangul-search";
@@ -62,7 +68,7 @@ const MATERIAL_TYPES = [
  */
 export function DocsPage() {
   const { researchId = "" } = useParams();
-  const { data, user, save, remove } = useWorkspace();
+  const { data, user, save, remove, openFile } = useWorkspace();
   const uploadQueue = useUploadQueue();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -115,11 +121,13 @@ export function DocsPage() {
       uploadQueue.enqueueCapture([file], {
         researchId,
         folderId: uploadFolder,
+        forceReview: true,
       }),
     onSelectMultiple: (files) =>
       uploadQueue.enqueueCapture(files, {
         researchId,
         folderId: uploadFolder,
+        forceReview: true,
       }),
     onError: (message) => {
       if (message) toast.error(message);
@@ -201,6 +209,94 @@ export function DocsPage() {
     }
   }
 
+  async function download(row: DocRow) {
+    if (row.kind !== "material" || !row.latest) return;
+    try {
+      const blob = await openFile(row.latest);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = row.latest.fileName;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      toast.error(friendlyError(error));
+    }
+  }
+
+  /** 한 행의 동작 목록. ⋯ 메뉴·우클릭·길게 누르기·모바일 스와이프가 함께 씁니다. */
+  function rowActions(row: DocRow): RowAction[] {
+    if (archivedView)
+      return [
+        {
+          id: "restore",
+          label: t("되살리기"),
+          icon: "undo",
+          onSelect: () => void restore(row),
+        },
+      ];
+    const list: RowAction[] = [
+      {
+        id: "open",
+        label: t("열기"),
+        icon: "file",
+        onSelect: () => navigate(hrefOf(row)),
+      },
+      {
+        id: "open-tab",
+        label: t("새 탭에서 열기"),
+        icon: "external",
+        onSelect: () => window.open(hrefOf(row), "_blank", "noopener"),
+      },
+      {
+        id: "edit",
+        label: t("이름·정보 바꾸기"),
+        icon: "edit",
+        separated: true,
+        onSelect: () => setEditing(row),
+      },
+      {
+        id: "move",
+        label: t("폴더로 옮기기"),
+        icon: "folder",
+        onSelect: () => setMoving(row),
+      },
+    ];
+    if (rowFolder(row))
+      list.push({
+        id: "unfolder",
+        label: t("폴더에서 빼기"),
+        icon: "folder",
+        onSelect: () => void moveTo(row, undefined),
+      });
+    if (row.kind === "material" && row.latest && !row.material.externalUrl)
+      list.push({
+        id: "download",
+        label: t("내려받기"),
+        icon: "download",
+        onSelect: () => void download(row),
+      });
+    if (row.kind === "material" && row.material.externalUrl)
+      list.push({
+        id: "copy-link",
+        label: t("링크 복사"),
+        icon: "copy",
+        onSelect: () =>
+          void navigator.clipboard
+            .writeText(row.material.externalUrl!)
+            .then(() => toast.success(t("링크를 복사했어요."))),
+      });
+    list.push({
+      id: "archive",
+      label: t("보관"),
+      icon: "trash",
+      separated: true,
+      swipe: "end",
+      onSelect: () => void archive(row),
+    });
+    return list;
+  }
+
   const heading = archivedView
     ? t("보관함")
     : folderTitle ||
@@ -230,7 +326,7 @@ export function DocsPage() {
             uploadQueue.enqueueCapture(picked, {
               researchId,
               folderId: uploadFolder,
-              forceReview: false,
+              forceReview: true,
             });
           }
         }}
@@ -239,10 +335,10 @@ export function DocsPage() {
         <div className="docs-drop-hint" aria-hidden>
           <Icon name="upload" size={20} />
           {folderTitle
-            ? t("여기에 놓아 ‘{folder}’ 폴더에 바로 올리기", {
+            ? t("놓으면 ‘{folder}’ 폴더에 추가할 PDF를 확인해요", {
                 folder: folderTitle,
               })
-            : t("놓으면 여러 PDF를 바로 올려요 (기본 나만 보기)")}
+            : t("놓으면 추가할 PDF를 확인해요")}
         </div>
       )}
       <div className="docs-layout" data-preview={preview ? "" : undefined}>
@@ -306,7 +402,7 @@ export function DocsPage() {
                     onSelect={() => fileInputRef.current?.click()}
                   >
                     <Icon name="upload" size={15} />
-                    {t("PDF 여러 개 바로 올리기")}
+                    {t("PDF 고르기")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -325,14 +421,6 @@ export function DocsPage() {
               </Button>
             </div>
           </div>
-          {!archivedView && recentIds.length > 0 && (
-            <BatchActionsBar
-              researchId={researchId}
-              materialIds={recentIds}
-              folders={folders}
-              onDismiss={() => uploadQueue.dismissRecent(researchId)}
-            />
-          )}
           <div className="docs-filters">
             <input
               className="docs-search"
@@ -368,105 +456,85 @@ export function DocsPage() {
             </select>
           </div>
           {uploader.node}
+          {rows.length > 0 && (
+            <div className="docs-cols-head" aria-hidden="true">
+              <span>{t("이름")}</span>
+              <span>{t("종류")}</span>
+              <span className="docs-col-folder">{t("폴더")}</span>
+              <span>{t("공개 범위")}</span>
+              <span>{t("버전")}</span>
+              <span>{t("고친 날")}</span>
+            </div>
+          )}
           <ul className="docs-rows">
             {rows.map((row) => {
               const key = `${row.kind}:${row.id}`;
               const isFresh =
                 row.kind === "material" && recentIds.includes(row.id);
+              const actions = rowActions(row);
               return (
-                <li
-                  key={key}
-                  className="docs-row"
-                  data-selected={selected === key ? "" : undefined}
-                  data-fresh={isFresh ? "" : undefined}
-                >
-                  {archivedView ? (
-                    <span className="docs-row-link">
-                      <RowBody row={row} />
-                    </span>
-                  ) : (
-                    <Link
-                      className="docs-row-link"
-                      to={hrefOf(row)}
-                      onKeyDown={(event) => {
-                        if (event.key === " ") {
-                          event.preventDefault();
-                          setSelected(selected === key ? null : key);
-                        }
-                      }}
-                    >
-                      <RowBody row={row} />
-                    </Link>
-                  )}
-                  {archivedView ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void restore(row)}
-                    >
-                      {t("복원")}
-                    </Button>
-                  ) : (
-                    <span className="docs-row-tools">
-                      <span className="docs-row-peek">
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          aria-pressed={selected === key}
-                          aria-label={t("{title} 미리보기", {
-                            title: row.title,
-                          })}
-                          onClick={() =>
-                            setSelected(selected === key ? null : key)
-                          }
-                        >
-                          <Icon name="eye" size={16} />
-                        </Button>
-                      </span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
+                <RowContextMenu key={key} actions={actions}>
+                  <li
+                    className="docs-row"
+                    data-selected={selected === key ? "" : undefined}
+                    data-fresh={isFresh ? "" : undefined}
+                  >
+                    <SwipeRow actions={actions} className="docs-row-swipe">
+                      <div className="docs-row-inner">
+                        {archivedView ? (
+                          <span className="docs-row-link">
+                            <RowBody row={row} />
+                          </span>
+                        ) : (
+                          <Link
+                            className="docs-row-link"
+                            to={hrefOf(row)}
+                            draggable={false}
+                            onKeyDown={(event) => {
+                              if (event.key === " ") {
+                                event.preventDefault();
+                                setSelected(selected === key ? null : key);
+                              }
+                            }}
+                          >
+                            <RowBody row={row} folders={data.folders} />
+                          </Link>
+                        )}
+                        {archivedView ? (
                           <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            aria-label={t("{title} 메뉴", { title: row.title })}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void restore(row)}
                           >
-                            <Icon name="more" size={16} />
+                            {t("복원")}
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onSelect={() => navigate(hrefOf(row))}
-                          >
-                            {t("열기")}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onSelect={() =>
-                              window.open(hrefOf(row), "_blank", "noopener")
-                            }
-                          >
-                            {t("새 탭에서 열기")}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => setMoving(row)}>
-                            {t("폴더로 옮기기")}
-                          </DropdownMenuItem>
-                          {rowFolder(row) && (
-                            <DropdownMenuItem
-                              onSelect={() => void moveTo(row, undefined)}
-                            >
-                              {t("폴더에서 빼기")}
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem onSelect={() => setEditing(row)}>
-                            {t("정보 편집")}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => void archive(row)}>
-                            {t("보관")}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </span>
-                  )}
-                </li>
+                        ) : (
+                          <span className="docs-row-tools">
+                            <span className="docs-row-peek">
+                              <Button
+                                variant="ghost"
+                                size="icon-xs"
+                                aria-pressed={selected === key}
+                                aria-label={t("{title} 미리보기", {
+                                  title: row.title,
+                                })}
+                                onClick={() =>
+                                  setSelected(selected === key ? null : key)
+                                }
+                              >
+                                <Icon name="eye" size={16} />
+                              </Button>
+                            </span>
+                            <RowMoreMenu
+                              label={rowMenuLabel(row.title)}
+                              actions={actions}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    </SwipeRow>
+                  </li>
+                </RowContextMenu>
               );
             })}
           </ul>
@@ -548,12 +616,47 @@ function rowFolder(row: DocRow): string | undefined {
   return row.kind === "writing" ? row.document.folderId : row.material.folderId;
 }
 
-function RowBody({ row }: { row: DocRow }) {
+/** 넓은 본문(1080px 이상)에서 요약 한 줄 대신 보여 주는 열. 좁으면 CSS가 숨겨요. */
+function RowCols({
+  kindLabel,
+  folderLabel,
+  visibility,
+  version,
+  date,
+}: {
+  kindLabel: string;
+  folderLabel: string;
+  visibility?: "private" | "shared";
+  version: string;
+  date: string;
+}) {
+  return (
+    <span className="docs-row-cols">
+      <span>{kindLabel}</span>
+      <span className="docs-col-folder">{folderLabel || "—"}</span>
+      <span>{visibility === "private" ? t("나만 보기") : t("함께 보기")}</span>
+      <span>{version}</span>
+      <span>{date}</span>
+    </span>
+  );
+}
+
+function RowBody({
+  row,
+  folders = [],
+}: {
+  row: DocRow;
+  folders?: Parameters<typeof folderPath>[0];
+}) {
+  const folderId = rowFolder(row);
+  const folderLabel = folderId ? folderPath(folders, folderId) : "";
   if (row.kind === "writing") {
     const d = row.document;
     return (
       <>
-        <Icon name="edit" size={18} />
+        <span className="docs-row-icon">
+          <Icon name="edit" size={18} />
+        </span>
         <span className="docs-row-copy">
           <strong>
             <span className="docs-row-title">{d.title}</span>
@@ -568,19 +671,29 @@ function RowBody({ row }: { row: DocRow }) {
             {[documentTypeLabel(d.type), sinceLabel(d.updatedAt)].join(" · ")}
           </small>
         </span>
+        <RowCols
+          kindLabel={documentTypeLabel(d.type)}
+          folderLabel={folderLabel}
+          visibility={d.visibility}
+          version="—"
+          date={sinceLabel(d.updatedAt)}
+        />
       </>
     );
   }
   const m = row.material;
+  const date = formatDate(kstDateKey(row.latest?.createdAt ?? m.createdAt));
   return (
     <>
-      {m.externalUrl ? (
-        <Icon name="link" size={18} />
-      ) : row.latest ? (
-        <MaterialPreviewBadge version={row.latest} />
-      ) : (
-        <Icon name="file" size={18} />
-      )}
+      <span className="docs-row-icon">
+        {m.externalUrl ? (
+          <Icon name="link" size={18} />
+        ) : row.latest ? (
+          <MaterialPreviewBadge version={row.latest} />
+        ) : (
+          <Icon name="file" size={18} />
+        )}
+      </span>
       <span className="docs-row-copy">
         <strong>
           <span className="docs-row-title">{m.title}</span>
@@ -602,11 +715,18 @@ function RowBody({ row }: { row: DocRow }) {
                 .join(" · ")
             : [
                 materialDisplayTypeLabel(m),
-                formatDate(kstDateKey(row.latest?.createdAt ?? m.createdAt)),
+                date,
                 row.latest ? `v${row.latest.number}` : t("파일 없음"),
               ].join(" · ")}
         </small>
       </span>
+      <RowCols
+        kindLabel={m.externalUrl ? t("링크") : materialDisplayTypeLabel(m)}
+        folderLabel={folderLabel}
+        visibility={m.visibility}
+        version={row.latest ? `v${row.latest.number}` : "—"}
+        date={date}
+      />
     </>
   );
 }

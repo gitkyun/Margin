@@ -30,6 +30,19 @@ async function openDemoDocs(page: Page) {
   return base;
 }
 
+/** 고른 파일을 확인하는 '파일 추가' 창에서 [추가]를 눌러요. */
+async function addInDialog(page: Page, count: number) {
+  const dialog = page.getByRole("dialog", { name: /^파일( \d+개)? 추가$/ });
+  await expect(dialog).toBeVisible();
+  await dialog
+    .getByRole("button", {
+      name: count === 1 ? "추가" : `${count}개 추가`,
+      exact: true,
+    })
+    .click();
+  await expect(dialog).toBeHidden();
+}
+
 async function maybeShot(page: Page, filename: string) {
   if (!SHOULD_CAPTURE) return;
   mkdirSync(SHOT_DIR, { recursive: true });
@@ -57,10 +70,12 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
     await page
       .locator('input[aria-label="PDF 파일 여러 개 선택"]')
       .setInputFiles(files);
+    await maybeShot(page, "desktop-1440-add-dialog.png");
+    await addInDialog(page, 5);
 
     const tray = page.getByRole("region", { name: "자료 올리기 진행 상태" });
     await expect(tray).toBeVisible();
-    await expect(tray).toContainText("5개 자료 저장 완료", { timeout: 15000 });
+    await expect(tray).toContainText("5개 자료 추가됨", { timeout: 15000 });
 
     // 강제 PDF 뷰어 이동이 일어나지 않고 /docs에 머물러야 함
     expect(page.url()).toContain("/docs");
@@ -80,17 +95,11 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
       await expect(row.locator(".docs-row-lock")).toBeVisible();
     }
 
-    // 일괄 정리 바 확인 및 유형 일괄 지정
-    const batchBar = page.getByRole("region", {
-      name: "방금 올린 자료 일괄 정리",
-    });
-    await expect(batchBar).toBeVisible();
-    await maybeShot(page, "desktop-1440-light-batch5.png");
-
-    await batchBar.getByLabel("일괄 자료 유형 지정").selectOption("reference");
+    // 완료 알림은 진행 창 하나뿐(예전 '방금 올린 자료' 띠 없음)
     await expect(
-      page.locator(".docs-row", { hasText: "Smith 2025 Workflows" }).first(),
-    ).toContainText("참고");
+      page.getByRole("region", { name: "방금 올린 자료 일괄 정리" }),
+    ).toHaveCount(0);
+    await maybeShot(page, "desktop-1440-light-batch5.png");
   });
 
   test("시나리오 2: 바로 올린 자료의 유형·공개 범위를 띠에서 바꾸고, 같은 파일은 중복 안내", async ({
@@ -107,6 +116,7 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
     await page
       .locator('input[aria-label="PDF 파일 여러 개 선택"]')
       .setInputFiles([paper]);
+    await addInDialog(page, 1);
     await expect(
       page.locator(".docs-row", { hasText: "2305 10403v2" }),
     ).toBeVisible({ timeout: 10000 });
@@ -141,13 +151,14 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
         pdfPayload("Nav_Keep_Paper_1.pdf", "nav1"),
         pdfPayload("Nav_Keep_Paper_2.pdf", "nav2"),
       ]);
+    await addInDialog(page, 2);
 
     // 바로 미팅 화면으로 이동(새로고침이 아니라 앱 안 메뉴 이동. 새로고침은 메모리의 업로드 큐를 비웁니다.)
     await page.getByRole("link", { name: /^미팅/ }).first().click();
     await page.waitForURL("**/meetings**");
     const tray = page.getByRole("region", { name: "자료 올리기 진행 상태" });
     await expect(tray).toBeVisible();
-    await expect(tray).toContainText("2개 자료 저장 완료", { timeout: 15000 });
+    await expect(tray).toContainText("2개 자료 추가됨", { timeout: 15000 });
 
     // 다시 글·자료로 복귀하면 두 자료가 목록에 있어야 함
     await page.getByRole("link", { name: /^글/ }).first().click();
@@ -177,10 +188,11 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
     await page
       .locator('input[aria-label="PDF 파일 여러 개 선택"]')
       .setInputFiles([pdfPayload("Mobile_Check_Paper.pdf", "mob1")]);
+    await addInDialog(page, 1);
 
     const tray = page.getByRole("region", { name: "자료 올리기 진행 상태" });
     await expect(tray).toBeVisible();
-    await expect(tray).toContainText("1개 자료 저장 완료", { timeout: 10000 });
+    await expect(tray).toContainText("1개 자료 추가됨", { timeout: 10000 });
 
     // 모바일 390x844에서 UploadTray가 BottomDock(존재 시)과 겹치지 않는지 좌표 검증
     const overlap = await page.evaluate(() => {
@@ -233,9 +245,10 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
     await page.dispatchEvent(".docs-layout", "dragenter", { dataTransfer: dt });
     await page.dispatchEvent(".docs-layout", "dragover", { dataTransfer: dt });
     await page.dispatchEvent(".docs-layout", "drop", { dataTransfer: dt });
+    await addInDialog(page, 1);
     await expect(
       page.getByRole("region", { name: "자료 올리기 진행 상태" }),
-    ).toContainText("저장 완료", { timeout: 15000 });
+    ).toContainText("추가됨", { timeout: 15000 });
     await expect(
       page.locator(".docs-row", { hasText: "Dropped Paper" }),
     ).toBeVisible();
@@ -259,5 +272,27 @@ test.describe("Wave 2 Slice 1 — 글·자료 다중 수집 경험", () => {
       () => document.documentElement.scrollWidth - window.innerWidth,
     );
     expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test("행 우클릭 메뉴와 ⋯ 메뉴가 같은 동작을 주고, 보관은 되돌릴 수 있다", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openDemoDocs(page);
+    const row = page.locator(".docs-row", { hasText: "연구계획서" }).first();
+    await row.click({ button: "right" });
+    const menu = page.getByRole("menu");
+    await expect(menu).toBeVisible();
+    for (const name of ["열기", "이름·정보 바꾸기", "폴더로 옮기기", "보관"])
+      await expect(
+        menu.getByRole("menuitem", { name, exact: true }),
+      ).toBeVisible();
+    await maybeShot(page, "desktop-1440-context-menu.png");
+    await menu.getByRole("menuitem", { name: "보관" }).click();
+    await expect(row).toBeHidden();
+    await page.getByRole("button", { name: "되돌리기" }).click();
+    await expect(
+      page.locator(".docs-row", { hasText: "연구계획서" }).first(),
+    ).toBeVisible();
   });
 });

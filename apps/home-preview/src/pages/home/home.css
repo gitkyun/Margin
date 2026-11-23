@@ -136,15 +136,17 @@
       order: 6;
     }
   }
+  /* 구역은 상자 대신 여백과 아래 선으로 나눠요(테두리는 의미 있는 알림 줄에만). */
   .hm-card {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-8);
     min-width: 0;
-    padding: var(--spacing-16) var(--spacing-20);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-16);
-    background: var(--surface);
+    padding: var(--spacing-4) 0 var(--spacing-20);
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
   }
   .hm-card-head {
     display: flex;
@@ -217,7 +219,7 @@
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-2);
-    color: var(--brand);
+    color: var(--text-secondary);
     font-size: var(--typography-label2-fontSize);
     text-decoration: none;
   }
@@ -332,5 +334,10 @@
   }
   .hm-phase-track {
     margin: 0;
+  }
+
+  .hm-text-links a:hover,
+  .hm-more:hover {
+    color: var(--text);
   }
 }

@@ -112,10 +112,23 @@ export function TasksHome() {
         title={t("할 일")}
         actions={
           view === "tasks" ? (
-            <Button onClick={() => setAdding(true)}>
-              <Icon name="plus" size={17} />
-              {t("할 일 추가")}
-            </Button>
+            <>
+              <span className="page-action-wide">
+                <Button onClick={() => setAdding(true)}>
+                  <Icon name="plus" size={17} />
+                  {t("할 일 추가")}
+                </Button>
+              </span>
+              <span className="page-action-narrow">
+                <Button
+                  size="icon"
+                  aria-label={t("할 일 추가")}
+                  onClick={() => setAdding(true)}
+                >
+                  <Icon name="plus" size={18} />
+                </Button>
+              </span>
+            </>
           ) : (
             <Button asChild>
               <Link to="?view=feedback&new=feedback">

@@ -1,11 +1,60 @@
 @layer margin {
   /* 할 일 화면(T1)·할 일 창(P2)의 공통 줄(IA v2 06 §3) */
+  /* 목록형 화면: 사이드 창을 접어 넓어지면 폭을 그대로 쓰고 열을 더 보여 줘요(최대 1200). */
   .tasks-home {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-16);
-    max-width: 880px;
+    max-width: 1200px;
     margin: 0;
+    container: tasks / inline-size;
+  }
+  .tasks-home .rh-week {
+    padding: 0 0 var(--spacing-12);
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+  }
+  .tasks-home .rh-week-day {
+    min-height: 56px;
+  }
+  .task-row-ctx {
+    display: contents;
+  }
+  .task-line-more {
+    flex: none;
+    color: var(--text-tertiary);
+  }
+  @media (hover: hover) {
+    .task-line-more {
+      opacity: 0;
+    }
+    .task-line:hover .task-line-more,
+    .task-line:focus-within .task-line-more,
+    .task-line-more:has([aria-expanded="true"]) {
+      opacity: 1;
+    }
+  }
+  .task-line-cols {
+    display: none;
+  }
+  @container tasks (min-width: 960px) {
+    .tasks-home .task-line-cols {
+      display: grid;
+      flex: none;
+      grid-template-columns: 160px 48px 96px;
+      gap: var(--spacing-16);
+      color: var(--text-secondary);
+      font-size: var(--typography-caption1-fontSize);
+      white-space: nowrap;
+    }
+    .tasks-home .task-line-cols > * {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tasks-home .task-line-text small {
+      display: none;
+    }
   }
   .tasks-filters {
     display: flex;
@@ -198,5 +247,35 @@
   }
   .tasks-panel .task-line {
     padding-inline: 0;
+  }
+
+  /* 휴대폰: 주 행동을 가로 꽉 찬 버튼 대신 제목 오른쪽 + 아이콘으로(첫 할 일이 더 위로 올라와요). */
+  .tasks-home .page-action-wide {
+    display: contents;
+  }
+  .tasks-home .page-action-narrow {
+    display: none;
+  }
+  @media (max-width: 767px) {
+    .tasks-home .page-header {
+      flex-wrap: nowrap;
+      align-items: center;
+    }
+    .tasks-home .page-heading {
+      flex: 1 1 auto;
+    }
+    .tasks-home .page-actions {
+      flex: none;
+      margin-left: auto;
+    }
+    .tasks-home .page-action-wide {
+      display: none;
+    }
+    .tasks-home .page-action-narrow {
+      display: contents;
+    }
+    .tasks-home .rh-week-day {
+      min-height: 48px;
+    }
   }
 }
