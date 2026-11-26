@@ -1,0 +1,453 @@
+[
+  {
+    "file": "github-review-entry.png",
+    "label": "GitHub 웹 › 변경 검토 진입",
+    "observation": "변경 파일 탭의 Review changes 버튼과 Viewed 구분.",
+    "viewport": {
+      "w": 2114,
+      "h": 416
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/reviewing-proposed-changes-in-a-pull-request"
+  },
+  {
+    "file": "github-review-decisions-vscode.png",
+    "label": "GitHub Codespaces › 검토 판정 3종",
+    "observation": "검토 의견, 승인, 변경 요청을 다른 버튼으로 제출. Codespaces UI이며 브라우저 풀 리퀘스트 판정 폼을 캡처한 것은 아님.",
+    "viewport": {
+      "w": 1124,
+      "h": 806
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/reviewing-proposed-changes-in-a-pull-request"
+  },
+  {
+    "file": "github-comment-pin.png",
+    "label": "GitHub 웹 › 특정 변경 줄에 의견 달기",
+    "observation": "파일 비교에서 줄 번호 옆의 +로 문맥을 가진 의견을 시작.",
+    "viewport": {
+      "w": 980,
+      "h": 608
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/commenting-on-a-pull-request"
+  },
+  {
+    "file": "github-conversation-states.png",
+    "label": "GitHub 웹 › 대화 상태와 해당 변경으로 이동",
+    "observation": "Conversations 메뉴의 미해결과 해결 묶음 및 Outdated 라벨. 버튼을 눌러 해결하는 순간은 공식 문서 본문에 설명됨.",
+    "viewport": {
+      "w": 872,
+      "h": 401
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/commenting-on-a-pull-request"
+  },
+  {
+    "file": "github-rerequest.png",
+    "label": "GitHub 웹 › 변경 요청 뒤 검토 다시 요청",
+    "observation": "Reviewers 섹션의 변경 요청 아이콘과 재요청 아이콘. 전체 검토 판정 옆에서 재요청하며 댓글별 해결 버튼과 별도.",
+    "viewport": {
+      "w": 642,
+      "h": 214
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/requesting-a-pull-request-review"
+  },
+  {
+    "file": "github-apply-suggestion.png",
+    "label": "GitHub 웹 › 줄 단위 변경 제안 반영",
+    "observation": "커밋으로 변경안을 적용하거나 여러 안을 묶는 화면. 변경 반영과 검토 판정은 별도.",
+    "viewport": {
+      "w": 1324,
+      "h": 454
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/incorporating-feedback-in-your-pull-request"
+  },
+  {
+    "file": "opensurvey-comment-and-status.png",
+    "label": "오픈서베이 › 설문 미리보기에서 코멘트 열기",
+    "observation": "미리보기 상단 오른쪽의 코멘트 진입. 문항별·전체 코멘트와 해결 필터는 같은 가이드의 별도 시연에서 확인.",
+    "viewport": {
+      "w": 3200,
+      "h": 200
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://support.opensurvey.io/ko/articles/8595907-%EC%84%A4%EB%AC%B8-%EB%AF%B8%EB%A6%AC%EB%B3%B4%EA%B8%B0"
+  },
+  {
+    "file": "opensurvey-sharing.png",
+    "label": "오픈서베이 › 설문 미리보기 공유 진입",
+    "observation": "미리보기 우측 상단 공유 버튼. 공개 링크의 코멘트 노출 옵션은 별도 시연에서 확인.",
+    "viewport": {
+      "w": 3200,
+      "h": 200
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://support.opensurvey.io/ko/articles/8595907-%EC%84%A4%EB%AC%B8-%EB%AF%B8%EB%A6%AC%EB%B3%B4%EA%B8%B0"
+  },
+  {
+    "file": "opensurvey-question-nav.png",
+    "label": "오픈서베이 › 설문 미리보기의 문항 위치 이동",
+    "observation": "검수자 모드에서 원하는 문항 위치로 이동하거나 맨 처음으로 돌아가는 빠른 이동.",
+    "viewport": {
+      "w": 1600,
+      "h": 100
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://support.opensurvey.io/ko/articles/8595907-%EC%84%A4%EB%AC%B8-%EB%AF%B8%EB%A6%AC%EB%B3%B4%EA%B8%B0"
+  },
+  {
+    "file": "doodle-vote-options.png",
+    "label": "Doodle › 참가자의 후보 비교와 선택",
+    "observation": "가능/필요 시 가능 표시, 날짜·인기순 정렬, 이전 옵션 숨김, 거절·계속 버튼.",
+    "viewport": {
+      "w": 1522,
+      "h": 1550
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.doodle.com/en/articles/9457279-how-do-i-participate-in-a-group-poll"
+  },
+  {
+    "file": "doodle-submit-vote.png",
+    "label": "Doodle › 제출 전 선택 내역 확인",
+    "observation": "선택한 후보와 참가자 정보 입력, 이전 단계와 최종 제출 버튼. 공식 예시 화면.",
+    "viewport": {
+      "w": 1624,
+      "h": 1534
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.doodle.com/en/articles/9457279-how-do-i-participate-in-a-group-poll"
+  },
+  {
+    "file": "doodle-participant-edit-entry.png",
+    "label": "Doodle › 응답 제출 뒤 수정 진입",
+    "observation": "응답 확인 화면 상단 Edit response와 각 후보의 가능 여부.",
+    "viewport": {
+      "w": 1612,
+      "h": 1312
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.doodle.com/en/articles/9457279-how-do-i-participate-in-a-group-poll"
+  },
+  {
+    "file": "zotero-annotation-and-note.jpg",
+    "label": "Zotero › PDF와 위치 주석, 편집 노트",
+    "observation": "가운데 PDF를 읽으며 왼쪽 위치 주석과 오른쪽 노트를 함께 살핌. Zotero 6 공식 이미지.",
+    "viewport": {
+      "w": 1602,
+      "h": 1044
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://www.zotero.org/support/pdf_reader"
+  },
+  {
+    "file": "zotero-note-from-annotations.png",
+    "label": "Zotero › 주석에서 노트 추가",
+    "observation": "문헌 항목 메뉴의 Add Note from Annotations. PDF 표시를 노트로 옮기는 다른 진입 방법.",
+    "viewport": {
+      "w": 620,
+      "h": 600
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://www.zotero.org/support/pdf_reader"
+  },
+  {
+    "file": "doodle-candidate-dates.png",
+    "label": "Doodle › 주최자가 제안할 후보 추가",
+    "observation": "월별 달력에서 여러 날을 선택하고 날짜별 시작 시각·길이를 입력하거나 시간을 추가.",
+    "viewport": {
+      "w": 1250,
+      "h": 1078
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.doodle.com/en/articles/9457353-how-do-i-create-a-group-poll"
+  },
+  {
+    "file": "doodle-organizer-edit.png",
+    "label": "Doodle › 열린 조율의 주최자 수정",
+    "observation": "시간대별 응답 현황 표 위의 Edit 진입.",
+    "viewport": {
+      "w": 1001,
+      "h": 650
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.doodle.com/en/articles/9457348-how-do-i-edit-my-group-poll"
+  },
+  {
+    "file": "doodle-closed-open-again.png",
+    "label": "Doodle › 날짜 확정 후 닫힌 조율",
+    "observation": "확정 일정과 참가 정보, 주최자 Reopen을 보여 주는 닫힌 상태. 참가자 수정 잠김은 공식 본문의 설명.",
+    "viewport": {
+      "w": 998,
+      "h": 484
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.doodle.com/en/articles/9457348-how-do-i-edit-my-group-poll"
+  },
+  {
+    "file": "liner-theme-menu.png",
+    "label": "라이너 › 프로필 아래 화면 모드",
+    "observation": "Appearance 하위 메뉴의 시스템, 라이트, 다크. 라이트의 선택 강조가 보이는 영문 공식 그림.",
+    "viewport": {
+      "w": 417,
+      "h": 186
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://support.liner.com/hc/ko-kr/articles/36612158008217-%EB%8B%A4%ED%81%AC-%EB%9D%BC%EC%9D%B4%ED%8A%B8-%EB%AA%A8%EB%93%9C-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0"
+  },
+  {
+    "file": "liner-pdf-summary.png",
+    "label": "라이너 › 첨부 PDF의 요약과 원본 표시",
+    "observation": "요약 본문 오른쪽에 원본 파일과 요약 길이 옵션. 문장별 인용의 펼친 상태는 별도 공식 시연.",
+    "viewport": {
+      "w": 1920,
+      "h": 1080
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://support.liner.com/hc/ko-kr/articles/36369697715225-%EB%9D%BC%EC%9D%B4%EB%84%88%EB%A1%9C-%EB%AC%B4%EC%97%87%EC%9D%84-%ED%95%A0-%EC%88%98-%EC%9E%88%EB%82%98%EC%9A%94"
+  },
+  {
+    "file": "otter-highlight-button.png",
+    "label": "Otter › 발화의 문장을 선택해 하이라이트",
+    "observation": "스피커·시간이 있는 발화의 선택 영역 위에서 형광펜 아이콘을 고름.",
+    "viewport": {
+      "w": 1600,
+      "h": 519
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.otter.ai/hc/en-us/articles/21557292299287-Add-highlights-to-your-conversation"
+  },
+  {
+    "file": "otter-highlight-filter.png",
+    "label": "Otter › 하이라이트만 보기와 위치 재생",
+    "observation": "한 화면에서 선택된 발화 구간, 하이라이트 필터, 하단 음성 재생 조작을 확인.",
+    "viewport": {
+      "w": 796,
+      "h": 599
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.otter.ai/hc/en-us/articles/5093228433687-Conversation-Page-Overview"
+  },
+  {
+    "file": "otter-action-items.jpg",
+    "label": "Otter › 전체 미팅에서 받은 할 일",
+    "observation": "홈 달력 옆 Action Items에 여러 미팅에서 배정된 할 일이 모임.",
+    "viewport": {
+      "w": 3454,
+      "h": 2088
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.otter.ai/hc/en-us/articles/25983095114519-Action-Items-Overview"
+  },
+  {
+    "file": "otter-action-jump-to-transcript.jpg",
+    "label": "Otter › 할 일의 출처 발화로 이동",
+    "observation": "행 메뉴에서 View in transcript로 원문 이동, 담당자·삭제는 별도. 자동 생성 할 일에 원문 연결이 표시됨.",
+    "viewport": {
+      "w": 1034,
+      "h": 718
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.otter.ai/hc/en-us/articles/25983095114519-Action-Items-Overview"
+  },
+  {
+    "file": "otter-completed-actions.jpg",
+    "label": "Otter › 할 일 완료와 미완료 상태",
+    "observation": "체크한 항목이 Completed 묶음에 취소선으로 나타남.",
+    "viewport": {
+      "w": 1008,
+      "h": 1240
+    },
+    "mode": "공개 공식 문서 원본 그림",
+    "source": "https://help.otter.ai/hc/en-us/articles/25983095114519-Action-Items-Overview"
+  },
+  {
+    "file": "opensurvey-comment-unresolved.png",
+    "label": "오픈서베이 › 문항 코멘트 해결하기",
+    "observation": "공식 시연 정지 화면. 특정 문항의 코멘트 목록 위 체크 조작. 표시 이름·이메일이 있는 본문은 제외.",
+    "viewport": {
+      "w": 584,
+      "h": 87
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://support.opensurvey.io/ko/articles/8595907-%EC%84%A4%EB%AC%B8-%EB%AF%B8%EB%A6%AC%EB%B3%B4%EA%B8%B0"
+  },
+  {
+    "file": "opensurvey-comment-resolved.png",
+    "label": "오픈서베이 › 문항 코멘트 해결 후",
+    "observation": "공식 시연 정지 화면. 같은 위치가 해결됨으로 바뀜. 공식 본문에 조건 충족 시 해결 취소가 설명됨.",
+    "viewport": {
+      "w": 584,
+      "h": 87
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://support.opensurvey.io/ko/articles/8595907-%EC%84%A4%EB%AC%B8-%EB%AF%B8%EB%A6%AC%EB%B3%B4%EA%B8%B0"
+  },
+  {
+    "file": "opensurvey-comment-deeplink.png",
+    "label": "오픈서베이 › 코멘트 위치 링크 복사",
+    "observation": "공식 시연 정지 화면. 문항 코멘트의 메뉴에서 위치 링크 복사 조작만 발췌.",
+    "viewport": {
+      "w": 253,
+      "h": 64
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://support.opensurvey.io/ko/articles/8595907-%EC%84%A4%EB%AC%B8-%EB%AF%B8%EB%A6%AC%EB%B3%B4%EA%B8%B0"
+  },
+  {
+    "file": "opensurvey-sharing-comment-switch.png",
+    "label": "오픈서베이 › 공개 링크에서 코멘트 노출",
+    "observation": "공식 시연 정지 화면. 로그인 없이 열람 가능한 미리보기에서 미해결 코멘트 노출 스위치가 켜진 상태. 주소 값은 가림.",
+    "viewport": {
+      "w": 481,
+      "h": 247
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://support.opensurvey.io/ko/articles/8595907-%EC%84%A4%EB%AC%B8-%EB%AF%B8%EB%A6%AC%EB%B3%B4%EA%B8%B0"
+  },
+  {
+    "file": "liner-citation-sources.png",
+    "label": "라이너 › AI 답변과 출처 목록",
+    "observation": "공식 시연 정지 화면. 답변 옆 관련 출처 카드와 원문 출처로 가는 위치.",
+    "viewport": {
+      "w": 1920,
+      "h": 1080
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://support.liner.com/hc/ko-kr/articles/36369697715225-%EB%9D%BC%EC%9D%B4%EB%84%88%EB%A1%9C-%EB%AC%B4%EC%97%87%EC%9D%84-%ED%95%A0-%EC%88%98-%EC%9E%88%EB%82%98%EC%9A%94"
+  },
+  {
+    "file": "liner-citation-fact-check.png",
+    "label": "라이너 › 인용을 펼친 답변 문장과 원문 발췌",
+    "observation": "공식 시연 정지 화면. 번호가 달린 답변 문장을 선택했을 때 Fact Check 오른쪽에 근거 원문 발췌가 열림. 외부 원문 사이트 이동까지 찍힌 화면은 아님.",
+    "viewport": {
+      "w": 1920,
+      "h": 1080
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://support.liner.com/hc/ko-kr/articles/36369697715225-%EB%9D%BC%EC%9D%B4%EB%84%88%EB%A1%9C-%EB%AC%B4%EC%97%87%EC%9D%84-%ED%95%A0-%EC%88%98-%EC%9E%88%EB%82%98%EC%9A%94"
+  },
+  {
+    "file": "doodle-organizer-selected.png",
+    "label": "Doodle › 주최자 최종 후보를 고르고 확정 직전",
+    "observation": "공식 시연 정지 화면. 참가자 응답 표 위 별로 하나의 후보를 고르고 Book it으로 확정.",
+    "viewport": {
+      "w": 600,
+      "h": 338
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://help.doodle.com/en/articles/9457342-how-do-i-select-the-final-option-for-my-group-poll"
+  },
+  {
+    "file": "doodle-organizer-booked.png",
+    "label": "Doodle › 주최자 확정 결과",
+    "observation": "공식 시연 정지 화면. Booked 안내, 확정 날짜, 참가자와 Reopen 버튼.",
+    "viewport": {
+      "w": 600,
+      "h": 338
+    },
+    "mode": "공개 공식 시연 정지 프레임",
+    "source": "https://help.doodle.com/en/articles/9457342-how-do-i-select-the-final-option-for-my-group-poll"
+  },
+  {
+    "file": "manyfast-ai-chat.png",
+    "label": "매니패스트 › 작업 공간의 AI 대화와 처리 내역",
+    "observation": "예시 대화 사이에 AI가 읽고 쓴 작업이 줄 단위로 보이고, 다음 선택은 질문 카드로 이어짐. 마진 실행 이력과 달리 이 화면은 대화 안의 작업 표시.",
+    "viewport": {
+      "w": 2880,
+      "h": 1800
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/ai/chat"
+  },
+  {
+    "file": "manyfast-ai-question-card.png",
+    "label": "매니패스트 › AI가 사용자 판단을 기다리는 질문 카드",
+    "observation": "선택지·직접 입력, 진행 위치, AI에 맡기기와 다음 버튼.",
+    "viewport": {
+      "w": 784,
+      "h": 746
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/ai/chat"
+  },
+  {
+    "file": "manyfast-ai-mention-context.png",
+    "label": "매니패스트 › 대화 입력에서 참조할 항목 선택",
+    "observation": "@를 입력한 뒤 요구사항·노트 등 이 프로젝트의 참조를 검색. 마진의 가용 문맥 안내·자료 첨부와 대응.",
+    "viewport": {
+      "w": 864,
+      "h": 1800
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/ai/chat"
+  },
+  {
+    "file": "manyfast-ai-proposal.png",
+    "label": "매니패스트 › 문서 변경 제안의 승인·거절",
+    "observation": "바뀐 부분을 문맥 안에서 확인. 아래 검토 막대에서 순차 검토하고 거절·승인 조작을 구분.",
+    "viewport": {
+      "w": 2880,
+      "h": 1800
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/ai/suggestions"
+  },
+  {
+    "file": "manyfast-ai-version-history.png",
+    "label": "매니패스트 › 결과 문서의 버전 기록",
+    "observation": "이름 있는 버전과 자동 저장 버전에 작성 시점, 사람, 변경 요약이 붙음. AI 실행 자체의 이력은 아님.",
+    "viewport": {
+      "w": 2880,
+      "h": 1800
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/plan/versions"
+  },
+  {
+    "file": "manyfast-ai-credit-popover.png",
+    "label": "매니패스트 › 상단 빠른 잔액과 종류별 크레딧",
+    "observation": "남은 합계와 월간·일간·구매를 분리. 입력의 조건부 퍼센트는 문서 본문에 별도 설명.",
+    "viewport": {
+      "w": 576,
+      "h": 774
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/account/credits"
+  },
+  {
+    "file": "manyfast-ai-credit-ledger.png",
+    "label": "매니패스트 › 지급·사용 상세 이력",
+    "observation": "상단 지급 크레딧과 구매 잔여, 아래 날짜·분류·프로젝트·사용 내역.",
+    "viewport": {
+      "w": 2880,
+      "h": 1800
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/account/credits"
+  },
+  {
+    "file": "manyfast-ai-review-result.png",
+    "label": "매니패스트 › AI 기획 검토의 진행·결과",
+    "observation": "관점별 검토와 중요도가 붙은 의견을 문서 곁에 표시.",
+    "viewport": {
+      "w": 2880,
+      "h": 1800
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/ai/plan-review"
+  },
+  {
+    "file": "manyfast-ai-custom-instructions.png",
+    "label": "매니패스트 › AI가 따르는 프로젝트 설정",
+    "observation": "출력 언어, 대화 말투, 기획서 문체, 용어를 별도 필드로 정하는 화면.",
+    "viewport": {
+      "w": 640,
+      "h": 1800
+    },
+    "mode": "공개 공식 문서 WebP의 PNG 변환",
+    "source": "https://manyfast.io/docs/ai/customize"
+  }
+]

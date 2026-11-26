@@ -1,0 +1,511 @@
+{
+  "sites": {
+    "tossinvest": {
+      "captures": [
+        {
+          "file": "ti01_home_default.png",
+          "note": "토스증권 홈 기본 화면 (우측 사이드 레일 및 본문 밀도)",
+          "url": "https://www.tossinvest.com/signin?redirectUrl=%2F"
+        }
+      ],
+      "metrics": {
+        "home": {
+          "url": "https://www.tossinvest.com/signin?redirectUrl=%2F",
+          "title": "토스증권 | 로그인",
+          "bodyBg": "rgb(255, 255, 255)",
+          "bodyFont": "\"Toss Product Sans\", Tossface, -apple-system, \"system-ui\", \"Bazier Square\", \"Not",
+          "h1": null,
+          "h2": null,
+          "navButtons": [
+            "휴대폰 번호로 로그인",
+            "QR코드로 로그인",
+            "로그인",
+            "토스 앱 없이 로그인하기"
+          ],
+          "links": [
+            {
+              "text": "크롬 다운로드",
+              "href": "https://www.google.com/chrome/"
+            },
+            {
+              "text": "OS 업데이트",
+              "href": "https://support.apple.com/ko-kr/guide/ipad/ipad9a74c576/ipados"
+            },
+            {
+              "text": "가입하기",
+              "href": "/signup?redirectUrl=%2F"
+            }
+          ]
+        },
+        "rightRail": [
+          {
+            "text": "",
+            "x": 1370,
+            "y": 14,
+            "w": 32,
+            "h": 32,
+            "bg": "rgba(0, 0, 0, 0)",
+            "radius": "8px"
+          }
+        ]
+      }
+    },
+    "opensurvey": {
+      "captures": [
+        {
+          "file": "os01_home.png",
+          "note": "오픈서베이 데이터스페이스 홈",
+          "url": "https://app.opensurvey.io/dataspace/a01m33tzdj5q3agas66wbbxnvvw"
+        }
+      ],
+      "metrics": {
+        "home": {
+          "url": "https://app.opensurvey.io/dataspace/a01m33tzdj5q3agas66wbbxnvvw",
+          "title": "홈 | 데이터스페이스",
+          "bodyBg": "rgba(0, 0, 0, 0)",
+          "bodyFont": "\"Noto Sans KR\", -apple-system, sans-serif",
+          "h1": {
+            "text": "김기현님, 무엇부터 시작해볼까요?",
+            "size": "22px",
+            "weight": "600"
+          },
+          "h2": {
+            "text": "최근 작업",
+            "size": "16px",
+            "weight": "600"
+          },
+          "navButtons": [
+            "새로 만들기",
+            "충전하기",
+            "Dataspace AI",
+            "합성 페르소나 대화",
+            "이전 기록",
+            "업그레이드하고 이어 쓰기",
+            "전체 데이터",
+            "AI에게 다음 액션 추천받기",
+            "All",
+            "설문 만들기",
+            "합성 페르소나 만들기",
+            "보고서 만들기",
+            "신제품 컨셉 시장성 검증 설문 설계 출시 전 신제품 컨셉이 시장에서 통할지, 검증 대상과 ",
+            "신제품 컨셉 시장성 검증 보고서 컨셉 테스트 결과를 종합해 시장 수용 가능성을 판단하고 G",
+            "신제품 수용 고객 페르소나와 대화 신제품에 호의적인 얼리어답터 페르소나와 대화해 초기 수용",
+            "Product Market Fit 검증 설문 설계 Sean Ellis 방법론 기반으로 제품",
+            "Product Market Fit 진단 보고서 PMF 설문 결과를 분석해 현재 제품의 시장",
+            "핏이 맞는 고객 페르소나와 대화 제품에 핏이 맞는 이상적 고객을 합성 페르소나로 구현해 니",
+            "신제품 초기 반응 검증 설문 설계 출시 직후 초기 사용자의 만족도와 불만 요인을 파악하는 ",
+            "신제품 초기 반응 진단 보고서 초기 반응 데이터를 분석해 제품 개선이 시급한 영역의 우선순",
+            "더 보기",
+            "시원하게 제로 탄산을 즐기는 직장인 - 도윤",
+            "추석에 강원도 가족 여행가는 아빠 - 박준호",
+            "헤이차/차지/차백도 티카페 탐색러 - 이윤희",
+            "더 많은 합성 페르소나",
+            "전기차 전략 인사이트 2026 — 체험을 신뢰와 구매로 전환하는 조건",
+            "뷰티 시술 전략 인사이트 — 첫 시술 전환과 사후관리 확장",
+            "국내여행 전략 인사이트 — 여행 설계·채널 전환·체류 경험의 기회",
+            "더 많은 트렌드 인사이트",
+            "Dataspace AI에서 이런 것도 가능하다는 사실, 알고 계셨나요?"
+          ],
+          "links": [
+            {
+              "text": "홈",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw"
+            },
+            {
+              "text": "Dataspace AI",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/dataspace-ai"
+            },
+            {
+              "text": "합성 페르소나 인터뷰 New",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/persona-interview"
+            },
+            {
+              "text": "프로젝트",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/projects"
+            },
+            {
+              "text": "대시보드",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/dashboards"
+            },
+            {
+              "text": "라이브러리",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/library"
+            },
+            {
+              "text": "MY패널",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/mypanel"
+            },
+            {
+              "text": "마켓플레이스",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/marketplace"
+            },
+            {
+              "text": "플랜 업그레이드",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/settings/payment/plan"
+            },
+            {
+              "text": "국내 여행에서의 숙소 선택에 관한 설문조사",
+              "href": "/dataspace/surveys/a01m33v2s35v6fhykys88ewwg2k/edit"
+            },
+            {
+              "text": "작성 중",
+              "href": "/dataspace/surveys/a01m33v2s35v6fhykys88ewwg2k/edit"
+            },
+            {
+              "text": "목적형여행",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/projects/a01m33v2haztmfczhhexwq7wchx"
+            },
+            {
+              "text": "설문 편집",
+              "href": "/dataspace/surveys/a01m33v2s35v6fhykys88ewwg2k/edit"
+            },
+            {
+              "text": "에이전틱 솔루션 출시 고민은 짧게, 결정은 확실하게",
+              "href": "/dataspace/a01m33tzdj5q3agas66wbbxnvvw/marketplace/solutions"
+            }
+          ]
+        }
+      }
+    },
+    "liner": {
+      "captures": [
+        {
+          "file": "ln01_home.png",
+          "note": "Liner AI 홈 (추천 프롬프트·입력창·사이드바)",
+          "url": "https://app.liner.com/ko"
+        },
+        {
+          "file": "ln03_library_or_thread.png",
+          "note": "Liner 세부 화면 (소스 컬렉션)",
+          "url": "https://app.liner.com/ko/workspace/collections"
+        }
+      ],
+      "metrics": {
+        "home": {
+          "url": "https://app.liner.com/ko",
+          "title": "Liner",
+          "bodyBg": "rgb(255, 255, 255)",
+          "bodyFont": "\"Pretendard JP Variable\", \"Pretendard Variable\", sans-serif",
+          "h1": {
+            "text": "김기현님, 무엇을 정확하게 찾아드릴까요?",
+            "size": "16px",
+            "weight": "400"
+          },
+          "h2": null,
+          "navButtons": [
+            "김",
+            "친구 초대하고 리워드 받기 최대 1,000크레딧을 받으세요",
+            "김 김기현 Free",
+            "Liner 제품 탐색",
+            "라이너 검색 API",
+            "크레딧 충전하기",
+            "크레딧 추가하기",
+            "Liner"
+          ],
+          "links": [
+            {
+              "text": "새 질문",
+              "href": "/ko"
+            },
+            {
+              "text": "소스 컬렉션",
+              "href": "/ko/workspace/collections"
+            },
+            {
+              "text": "즐겨찾기",
+              "href": "/ko/workspace/starred"
+            },
+            {
+              "text": "🎓 학술 연구 AI",
+              "href": "https://scholar.liner.com/"
+            },
+            {
+              "text": "✍️ 글쓰기 AI",
+              "href": "https://write.liner.com/"
+            }
+          ]
+        }
+      }
+    },
+    "modulify": {
+      "captures": [
+        {
+          "file": "md01_dashboard.png",
+          "note": "Modulify 대시보드 홈",
+          "url": "https://modulify.ai/dashboard"
+        },
+        {
+          "file": "md02_workspace_or_templates.png",
+          "note": "Modulify 프로젝트/템플릿 화면 (Projects)",
+          "url": "https://modulify.ai/dashboard/projects"
+        },
+        {
+          "file": "md03_settings_or_plan.png",
+          "note": "Modulify 설정/플랜 화면 (Settings)",
+          "url": "https://modulify.ai/dashboard/affiliates/settings"
+        }
+      ],
+      "metrics": {
+        "home": {
+          "url": "https://modulify.ai/dashboard",
+          "title": "Home - Modulify",
+          "bodyBg": "rgb(245, 245, 245)",
+          "bodyFont": "Inter, serif",
+          "h1": {
+            "text": "Ready to wow them, ‍김기현(대학원생-스마트경험디자인학과)?",
+            "size": "32px",
+            "weight": "400"
+          },
+          "h2": {
+            "text": "Linear Template",
+            "size": "16px",
+            "weight": "600"
+          },
+          "navButtons": [
+            "Search ⌘K",
+            "New folder",
+            "Spread the word and earn free credits",
+            "Resources",
+            "Follow us",
+            "Connect all your tools",
+            "+",
+            "Build",
+            "Create blank site",
+            "My projects",
+            "Modulify templates",
+            "Need a hand? Our support team is just a message aw"
+          ],
+          "links": [
+            {
+              "text": "Home",
+              "href": "/dashboard"
+            },
+            {
+              "text": "Projects",
+              "href": "/dashboard/projects"
+            },
+            {
+              "text": "Archive",
+              "href": "/dashboard/archive"
+            },
+            {
+              "text": "Recently deleted",
+              "href": "/dashboard/recently-deleted"
+            },
+            {
+              "text": "Templates",
+              "href": "/dashboard/templates"
+            },
+            {
+              "text": "Domains",
+              "href": "/dashboard/domains"
+            },
+            {
+              "text": "Connectors",
+              "href": "/dashboard/connectors"
+            },
+            {
+              "text": "Skills",
+              "href": "/dashboard/skills"
+            },
+            {
+              "text": "Dashboard",
+              "href": "/dashboard/affiliates"
+            },
+            {
+              "text": "Settings",
+              "href": "/dashboard/affiliates/settings"
+            },
+            {
+              "text": "Settings",
+              "href": "/dashboard/settings"
+            },
+            {
+              "text": "Members",
+              "href": "/dashboard/members"
+            },
+            {
+              "text": "Plans",
+              "href": "/dashboard/plans"
+            },
+            {
+              "text": "Spending",
+              "href": "/dashboard/spending"
+            },
+            {
+              "text": "Upgrade to Pro Unlock more features",
+              "href": "/dashboard/plans"
+            },
+            {
+              "text": "Contact support",
+              "href": "/contact"
+            },
+            {
+              "text": "View all",
+              "href": "/dashboard/templates"
+            },
+            {
+              "text": "Linear Template",
+              "href": "/dashboard/templates/linear-template"
+            },
+            {
+              "text": "Forge AI",
+              "href": "/dashboard/templates/forge-template"
+            },
+            {
+              "text": "Sales CRM SaaS & App",
+              "href": "/dashboard/templates/sales-crm-template"
+            },
+            {
+              "text": "Onda Studio Agency & Services",
+              "href": "/dashboard/templates/onda-template"
+            },
+            {
+              "text": "NORRVIK Architecture",
+              "href": "/dashboard/templates/norrvik-template"
+            },
+            {
+              "text": "AERIVE Travel & Hospitality",
+              "href": "/dashboard/templates/aerive-template"
+            },
+            {
+              "text": "Black Plus SaaS & App",
+              "href": "/dashboard/templates/blackplus-template"
+            },
+            {
+              "text": "Moments Template Portfolio & Personal",
+              "href": "/dashboard/templates/moments-template"
+            }
+          ]
+        }
+      }
+    },
+    "toss_im": {
+      "captures": [
+        {
+          "file": "ts01_hero.png",
+          "note": "toss.im 히어로 (타이포·시선 유도·좌측 스크롤 인디케이터)",
+          "url": "https://toss.im/"
+        },
+        {
+          "file": "ts02_section_value.png",
+          "note": "toss.im 섹션 2 — 핵심 가치·타이포 리듬",
+          "url": "https://toss.im/"
+        },
+        {
+          "file": "ts03_section_product.png",
+          "note": "toss.im 섹션 3 — 제품 기능 쇼케이스",
+          "url": "https://toss.im/"
+        },
+        {
+          "file": "ts04_section_trust.png",
+          "note": "toss.im 섹션 4 — 신뢰·하단 마무리",
+          "url": "https://toss.im/"
+        }
+      ],
+      "metrics": {
+        "home": {
+          "url": "https://toss.im/",
+          "title": "토스",
+          "bodyBg": "rgba(0, 0, 0, 0)",
+          "bodyFont": "\"Toss Product Sans OTF\", sans-serif",
+          "h1": null,
+          "h2": {
+            "text": "금융부터 일상까지\n마침내\n토스 하나로",
+            "size": "80px",
+            "weight": "700"
+          },
+          "navButtons": [
+            "서비스",
+            "비즈니스",
+            "KOR",
+            "앱 다 운 로 드 앱 다 운 로 드"
+          ],
+          "links": [
+            {
+              "text": "회사소개",
+              "href": "/company"
+            },
+            {
+              "text": "뉴스룸",
+              "href": "/newsroom"
+            },
+            {
+              "text": "채용",
+              "href": "https://toss.im/career/jobs"
+            }
+          ]
+        },
+        "scrollHeight": 50964
+      }
+    },
+    "manyfast": {
+      "captures": [
+        {
+          "file": "mf01_hero.png",
+          "note": "매니패스트 히어로 (AI 기획 워크스페이스 포지셔닝)",
+          "url": "https://manyfast.io/ko/"
+        },
+        {
+          "file": "mf02_workspace_preview.png",
+          "note": "매니패스트 워크스페이스·기능 프리뷰",
+          "url": "https://manyfast.io/ko/"
+        },
+        {
+          "file": "mf03_ai_workflow.png",
+          "note": "매니패스트 AI 협업·문서 흐름",
+          "url": "https://manyfast.io/ko/"
+        },
+        {
+          "file": "mf04_pricing_or_cta.png",
+          "note": "매니패스트 하단 신뢰·CTA 구간",
+          "url": "https://manyfast.io/ko/"
+        }
+      ],
+      "metrics": {
+        "home": {
+          "url": "https://manyfast.io/ko/",
+          "title": "매니패스트 | AI와 개발하는 팀을 위한 기획 워크스페이스",
+          "bodyBg": "rgba(0, 0, 0, 0)",
+          "bodyFont": "\"Pretendard Variable\", Pretendard, -apple-system, \"system-ui\", system-ui, Roboto",
+          "h1": {
+            "text": "김기현님, 오늘은 어디까지 기획해 볼까요?",
+            "size": "28px",
+            "weight": "400"
+          },
+          "h2": {
+            "text": "기능 체험하기",
+            "size": "13px",
+            "weight": "400"
+          },
+          "navButtons": [
+            "플랜 업그레이드",
+            "그룹 관리",
+            "멤버 초대",
+            "결제 관리",
+            "김기현의 그룹",
+            "플랜 업그레이드 팀원들과의 협업, 더 많은 크레딧",
+            "업데이트 노트 새 소식 있음",
+            "김기현",
+            "프로젝트·기록 검색 ⌘ K",
+            "피드백",
+            "STARTER 1명",
+            "내 AI 도구 연결하기",
+            "아이디어",
+            "자료 분석",
+            "예시 프로젝트로 둘러보기 세 가지 예시 중 하나를 골라 기획서가 만들어지는 과정을 따라가 ",
+            "기존 자료로 기획서 만들기 PDF를 올리면 내용을 읽고, 근거를 인용하며 초안을 써요",
+            "기록에서 결정사항 추출하기 회의 내용을 자료실에 올리면 결정을 뽑아 기획서에 반영해요",
+            "최근 프로젝트",
+            "최근 기록",
+            "새 프로젝트",
+            "모두 보기",
+            "취향 기반 베이커리 탐색 앱",
+            "Gluten 베이커리 취향 탐색 앱"
+          ],
+          "links": []
+        }
+      }
+    }
+  }
+}
