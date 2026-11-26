@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>시안 02 — 연구 전환기(Sticky) · 휴지통(1클릭+Undo) · 완전 삭제(이름입력) · 공유 중지</title>
+<style>
+  :root {
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --border: #e5e8ee;
+    --text: #191f28;
+    --sub: #4e5968;
+    --mute: #8b95a1;
+    --blue: #3182f6;
+    --blue-soft: #e8f3ff;
+    --red: #e03131;
+    --red-soft: #fff5f5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .banner {
+    background: #191f28; color: #fff; padding: 12px 24px;
+    font-size: 13px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .banner strong { color: #90c2ff; }
+  .wrap { max-width: 1200px; margin: 28px auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .card h2 { font-size: 16px; margin: 0; }
+  .desc { font-size: 13px; color: var(--sub); margin: 0; }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--blue-soft); color: var(--blue); width: fit-content; }
+  .badge.red { background: var(--red-soft); color: var(--red); }
+
+  /* 1. Sticky Switcher */
+  .switcher-pop {
+    width: 320px; border: 1px solid var(--border); border-radius: 14px;
+    background: #fff; box-shadow: 0 12px 28px rgba(15,23,42,0.08); overflow: hidden;
+  }
+  .sw-head { padding: 10px 14px; font-size: 11.5px; font-weight: 700; color: var(--mute); border-bottom: 1px solid var(--border); }
+  .sw-list { max-height: 176px; overflow-y: auto; padding: 6px; }
+  .sw-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 9px 10px; border-radius: 9px; font-size: 13px; cursor: pointer;
+  }
+  .sw-item:hover { background: var(--bg); }
+  .sw-item.on { background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+  .sw-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sw-foot {
+    position: sticky; bottom: 0; background: #fff;
+    border-top: 1px solid var(--border); padding: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .sw-foot button {
+    border: none; background: transparent; padding: 6px 10px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 600; color: var(--sub); cursor: pointer;
+  }
+  .sw-foot button:hover { background: var(--bg); color: var(--text); }
+
+  /* 2. Trash Card (좌우 분리 + 위험 톤) */
+  .trash-card {
+    border: 1px solid var(--border); border-radius: 14px; padding: 16px; background: #fff;
+  }
+  .tc-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 8px 13px; border-radius: 9px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text);
+  }
+  .btn-blue { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn-danger { background: var(--red-soft); border-color: #ffc9c9; color: var(--red); }
+  .btn-danger:hover { background: #ffe3e3; }
+  .btn-danger-solid { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn-danger-solid:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+    display: none; align-items: center; justify-content: center; z-index: 80; padding: 20px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; width: 100%; max-width: 440px;
+    padding: 22px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+  }
+  .impact-box {
+    background: var(--red-soft); border: 1px solid #ffd8d8; border-radius: 10px;
+    padding: 10px 12px; font-size: 12.5px; color: #c92a2a; margin: 12px 0;
+  }
+  .name-copy-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+    padding: 8px 10px; font-size: 12.5px; font-weight: 600; margin-bottom: 10px;
+  }
+  .txt-in {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 9px; font-size: 13.5px; font-family: inherit;
+  }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .toast {
+    position: fixed; right: 24px; bottom: 24px; background: #191f28; color: #fff;
+    padding: 12px 16px; border-radius: 10px; font-size: 13px; display: none;
+    align-items: center; gap: 12px; z-index: 90;
+  }
+  .toast.show { display: flex; }
+  .toast button { background: rgba(255,255,255,0.18); border: none; color: #fff; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="banner">
+  <div><strong>시안 02 · 위험 동작 확인 규칙(RC-2) & 연구 전환기(P02-3)</strong> — 사용자 결정(휴지통 1클릭+Undo · 완전 삭제 이름 입력 · 공유 중지 일반 버튼) 반영</div>
+</div>
+
+<div class="wrap">
+  <!-- 1. 연구 전환기 -->
+  <section class="card">
+    <span class="badge">P02-3 개선</span>
+    <h2>1. 연구 전환기 — 1줄 말줄임 + 하단 Sticky 고정</h2>
+    <p class="desc">긴 연구 제목이 4줄로 늘어나 '모든 연구 보기'를 밀어내던 문제를 1줄 말줄임과 sticky 푸터로 해결했습니다.</p>
+    <div class="switcher-pop">
+      <div class="sw-head">연구 전환</div>
+      <div class="sw-list">
+        <div class="sw-item on"><span class="sw-name">[QA 검증] 단위2 연구 생성·관리 정밀 확인 — 아주 긴 연구 이름이 카드에서 두 줄로 잘리는지 확인하는 테스트</span><span>✓</span></div>
+        <div class="sw-item"><span class="sw-name">대학원생 연구 기록 경험</span></div>
+        <div class="sw-item"><span class="sw-name">[검증 전용] AI 첨부·검색·일정 2026-11-16</span></div>
+        <div class="sw-item"><span class="sw-name">R2 업로드 테스트(삭제해도 돼요)</span></div>
+        <div class="sw-item"><span class="sw-name">안녕하세요</span></div>
+        <div class="sw-item"><span class="sw-name">논문 테스트</span></div>
+      </div>
+      <div class="sw-foot">
+        <button onclick="alert('/r 내 연구 허브로 이동')">모든 연구 보기 ›</button>
+        <button style="color:var(--blue);" onclick="alert('/r/new 연구 만들기')">+ 새 연구</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 휴지통 이동 통일 -->
+  <section class="card">
+    <span class="badge">사용자 확정: 휴지통 1클릭 + 되돌리기</span>
+    <h2>2. 휴지통 이동 — 카드 메뉴·설정 모두 1클릭 + 6초 Undo 통일</h2>
+    <p class="desc">복원 가능한 휴지통 이동에서 긴 이름 입력을 제거하고, 두 진입점 모두 즉시 이동 + 6초 되돌리기 토스트로 통일합니다.</p>
+    <div class="trash-card" id="activeCard">
+      <div style="font-size:15px;font-weight:700;">대학원생 연구 기록 경험</div>
+      <div style="font-size:12.5px;color:var(--sub);margin-top:4px;">미팅 5개 · 남은 할 일 3개 · PDF 6개</div>
+      <div class="tc-foot">
+        <button class="btn">연구 설정</button>
+        <button class="btn btn-danger" onclick="moveToTrash()">휴지통으로 옮기기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 휴지통 카드 & 완전 삭제 -->
+  <section class="card">
+    <span class="badge red">사용자 재검토: 완전 삭제 → 이름 입력</span>
+    <h2>3. 휴지통 카드 좌우 분리 & 완전 삭제(영향 요약 + NFC/trim 검증)</h2>
+    <p class="desc">복원(좌측)과 완전히 삭제(우측·빨간 톤)를 분리하고, 완전 삭제 시 삭제 영향 요약 + 복사 버튼 + 한글 NFC/공백 정규화 이름 입력으로 안전하게 확인합니다.</p>
+    <div class="trash-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="font-size:15px;">AI 연결 확인용 임시 연구 2026-11-15</strong>
+        <span class="badge red">휴지통</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--sub);margin-top:4px;">복원하면 기록을 다시 볼 수 있어요.</div>
+      <div class="tc-foot">
+        <button class="btn btn-blue" onclick="showToast('연구를 복원했어요.')">복원</button>
+        <button class="btn btn-danger" onclick="openPermModal()">🗑 완전히 삭제</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 공유 중지 일반 확인 버튼 -->
+  <section class="card">
+    <span class="badge">사용자 확정: 공유 중지 → 일반 확인 버튼</span>
+    <h2>4. 검토 공유 설정 — 슬라이더 제거 & 일반 버튼 전환</h2>
+    <p class="desc">다시 공유할 수 있는 ‘공유 중지’에서 슬라이더를 빼고 일반 확인 버튼으로 단순화해 저장 버튼과의 혼동을 없앱니다.</p>
+    <div class="trash-card">
+      <div style="font-size:13.5px;font-weight:700;margin-bottom:6px;">professor@margin.com에게 공유 중</div>
+      <div style="font-size:12.5px;color:var(--sub);">공유를 중지해도 보낸 응답과 파일은 유지되며 언제든 다시 공유할 수 있어요.</div>
+      <div class="tc-foot">
+        <button class="btn btn-danger" onclick="if(confirm('검토 공유를 중지할까요? 나중에 다시 켤 수 있어요.')) showToast('공유를 중지했어요.')">공유 중지</button>
+        <button class="btn btn-blue" onclick="showToast('공유 설정을 저장했어요.')">설정 저장</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 완전 삭제 모달 (주 버튼 있으므로 X 생략, 2줄 압축) -->
+<div class="modal-bg" id="permModal">
+  <div class="modal">
+    <h3 style="margin:0 0 6px;font-size:17px;">연구를 완전히 삭제할까요?</h3>
+    <p class="desc">삭제하면 복구할 수 없으며 공동연구자 기록도 함께 지워져요.</p>
+    <div class="impact-box">
+      <strong>영구 삭제 대상:</strong> 미팅 5건 · 원고 3건 · PDF 자료 6개 · 검토 기록 2건
+    </div>
+    <div class="name-copy-row">
+      <span id="targetName" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">AI 연결 확인용 임시 연구 2026-11-15</span>
+      <button class="btn" style="padding:4px 8px;font-size:11.5px;" onclick="copyTargetName()">복사</button>
+    </div>
+    <input id="confirmInput" class="txt-in" placeholder="위 연구 이름을 똑같이 입력해 주세요" />
+    <div style="font-size:11.5px;color:var(--mute);margin-top:6px;">앞뒤 공백과 한글 자소 분리(NFC/NFD)는 자동으로 보정해 비교해요.</div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closePermModal()">취소</button>
+      <button id="btnRealDelete" class="btn btn-danger-solid" disabled onclick="closePermModal();showToast('영구 삭제 완료 (서버 이름 대조 통과)')">완전히 삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastText"></span>
+  <button id="toastUndo" onclick="undoTrash()">되돌리기</button>
+</div>
+
+<script>
+const TARGET = "AI 연결 확인용 임시 연구 2026-11-15";
+const normalize = s => s.normalize('NFC').trim();
+const input = document.getElementById('confirmInput');
+const delBtn = document.getElementById('btnRealDelete');
+input.addEventListener('input', () => {
+  delBtn.disabled = normalize(input.value) !== normalize(TARGET);
+});
+function openPermModal() { input.value = ''; delBtn.disabled = true; document.getElementById('permModal').classList.add('open'); input.focus(); }
+function closePermModal() { document.getElementById('permModal').classList.remove('open'); }
+function copyTargetName() {
+  navigator.clipboard?.writeText(TARGET).catch(()=>{});
+  input.value = TARGET;
+  input.dispatchEvent(new Event('input'));
+}
+let timer;
+function showToast(msg, withUndo = false) {
+  document.getElementById('toastText').textContent = msg;
+  document.getElementById('toastUndo').style.display = withUndo ? 'inline-block' : 'none';
+  document.getElementById('toast').classList.add('show');
+  clearTimeout(timer);
+  timer = setTimeout(() => document.getElementById('toast').classList.remove('show'), 6000);
+}
+function moveToTrash() {
+  document.getElementById('activeCard').style.opacity = '0.45';
+  showToast("'대학원생 연구 기록 경험'을 휴지통으로 옮겼어요.", true);
+}
+function undoTrash() {
+  document.getElementById('activeCard').style.opacity = '1';
+  document.getElementById('toast').classList.remove('show');
+}
+</script>
+</body>
+</html>

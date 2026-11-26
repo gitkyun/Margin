@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 06 · 공개·온보딩</title>
+<style>
+:root {
+  --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+  --text: #171719; --sub: #46474c; --mute: #686b73;
+  --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+  --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+    --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+    --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); }
+:root { color-scheme: light dark; }
+section.scene { display: none; }
+section.scene.on { display: block; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 20px; }
+h2 { font-size: 18px; }
+h3 { font-size: 15px; }
+.top { padding: 16px 0; border-bottom: 1px solid var(--line); background: var(--surface); }
+.top > *, main { width: min(100% - 32px, 980px); margin-inline: auto; }
+.top p { margin-top: 4px; color: var(--sub); }
+main { padding-block: 20px 36px; }
+.scene { margin-bottom: 20px; padding: clamp(12px, 3vw, 24px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.scene:last-child { margin-bottom: 0; }
+.desc { display: grid; gap: 4px; margin: 8px 0 16px; color: var(--sub); }
+.mock { border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--sunken); }
+.mock + .mock { margin-top: 10px; }
+.pane { padding: clamp(12px, 3vw, 24px); }
+.paper { background: var(--surface); }
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.flow li { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.flow li p { margin-top: 3px; color: var(--sub); }
+.headline { font-size: clamp(18px, 3vw, 28px); font-weight: 700; text-align: center; margin-bottom: 14px; }
+.bar, .app-nav, .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; min-width: 0; }
+.bar { justify-content: space-between; padding: 9px 12px; background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; border-bottom: 1px solid var(--line); }
+.app-nav { gap: 4px 12px; color: var(--sub); }
+.app-nav [aria-current] { font-weight: 700; color: var(--text); border-bottom: 2px solid var(--text); }
+.wordmark { font-size: 16px; font-weight: 800; color: var(--text); }
+.stack { display: grid; gap: 8px; min-width: 0; }
+.columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 14px; }
+.card { padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-width: 0; }
+.plan { max-width: 360px; margin-inline: auto; background: var(--brand-soft); }
+.small-print { color: var(--mute); }
+.label { font-weight: 650; }
+.note { padding: 10px 12px; border: 1px solid var(--line); border-left: 3px solid var(--brand); border-radius: 8px; background: var(--surface); }
+.group { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.center { text-align: center; }
+.blank-space { padding-block: 34px; }
+.form-field { display: grid; gap: 5px; min-width: 0; }
+.form-field :is(input, textarea) { display: block; width: 100%; min-width: 0; min-height: 38px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 10px; font: inherit; }
+.form-field :is(input, textarea)::placeholder { color: var(--mute); opacity: 1; }
+.form-field textarea { resize: vertical; }
+.fixed-word { white-space: nowrap; }
+@media (max-width: 620px) {
+  .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .columns { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 06 · 공개·온보딩</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+<main>
+<section class="scene on" id="06-pub-01">
+  <h2>서비스 소개 랜딩 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 랜딩과 기능 페이지에 같은 목업 문구가 반복되고 320px 탭 라벨이 두 줄로 꺾여요</span><span><strong>바뀐 점:</strong> (토스 공식 홈 기준은 결정, 장면 구성은 제안) 합성 연구 한 건으로 미팅 → 할 일 → 원고 → 교수 확인 장면</span></p>
+  <div class="mock pane">
+    <p class="headline">흩어진 기록을 모아, 다음 연구가 되도록</p>
+    <h3>대학원생 연구 기록 경험</h3>
+    <ol class="flow" aria-label="미팅에서 교수 확인까지">
+      <li><h3>미팅</h3><p>비교 기준을 더 분명히 해볼까요?</p></li>
+      <li><h3>할 일</h3><p>선행연구 비교 기준 정리</p></li>
+      <li><h3>원고</h3><p>비교 기준을 원고에 반영</p></li>
+      <li><h3>교수 확인</h3><p>수정 내용 확인</p></li>
+    </ol>
+  </div>
+</section>
+<section class="scene on" id="06-pub-02">
+  <h2>기능 둘러보기</h2>
+  <p class="desc"><span><strong>지금:</strong> 목업의 상단 메뉴가 실제 앱과 다르고 하단이 회색 스켈레톤 막대 5줄이며, 명령형 문구와 전사 처리 경로 불명확 문제가 있어요</span><span><strong>바뀐 점:</strong> 실시간 전사는 브라우저의 음성 인식 기능을 쓰고 녹음 파일만 Margin 저장소에 올라간다고 안내해요. 제안: 실제 앱 화면에 맞춰 목업을 교체하고 해요체로 고쳐요</span></p>
+  <div class="mock">
+    <div class="bar">
+      <strong class="wordmark">margin</strong>
+      <span class="label">대학원생 연구 기록 경험</span>
+      <div class="app-nav" aria-label="앱 상단 메뉴"><span>홈</span><span aria-current="page">미팅</span><span>할 일</span><span>글·자료</span></div>
+    </div>
+    <div class="pane stack">
+      <h3>미팅 기록 <span class="proposal">제안</span></h3>
+      <p>녹음과 전사로 미팅을 남기고, 피드백과 결정·질문을 정리해요.</p>
+      <div class="card stack">
+        <span class="small-print">미팅 원문</span>
+        <p class="label">비교 기준을 더 분명히 해볼까요?</p>
+        <p>연구 목적, 자료 수집 방법, 분석 관점을 나누어 비교해요.</p>
+      </div>
+    </div>
+  </div>
+  <div class="mock pane paper"><p class="note">실시간 전사는 브라우저의 음성 인식 기능을 쓰고, 녹음 파일은 Margin 저장소에만 올라가요</p></div>
+</section>
+<section class="scene on" id="06-pub-03">
+  <h2>플랜 안내</h2>
+  <p class="desc"><span><strong>지금:</strong> Free 카드에 D13 결정과 모순되는 &#x27;선택한 기록으로 AI 실행&#x27; 문구가 남아 있고 Pro·Team 카드 여백과 영어 플랜명이 있어요</span><span><strong>바뀐 점:</strong> D13 결정에 맞춰 Free 카드의 &#x27;선택한 기록으로 AI 실행&#x27; 문구를 연구 기록 기준에 맞게 고쳐요</span></p>
+  <div class="mock pane">
+    <div class="card plan stack">
+      <h3>Free</h3>
+      <p class="small-print">논문 지도 기록을 시작할 때</p>
+      <p class="label">✓ 모든 연구 기록으로 AI 실행</p>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="06-pub-04">
+  <h2>사용 안내 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 본문에 존재하지 않는 화면(&#x27;검토 요청 보기&#x27;)과 다른 메뉴 이름(&#x27;[검토 요청 만들기]&#x27;)이 적혀 있고 제목 굵기가 기능·플랜 페이지와 달라요</span><span><strong>바뀐 점:</strong> 제안: 안내 본문의 화면·메뉴 이름을 실제 화면(&#x27;교수님께 검토 요청&#x27;)과 맞추고 제목 굵기를 통일해요</span></p>
+  <div class="mock pane paper stack">
+    <h3 class="group">마진 사용 안내</h3>
+    <p class="label">교수님께 검토 요청하기</p>
+    <p>수정 결과에서 <strong>교수님께 검토 요청</strong>을 눌러요. 수정 설명, 파일, 먼저 볼 위치를 담아 검토 링크를 만든 뒤 교수님께 전달해요.</p>
+  </div>
+</section>
+<section class="scene on" id="06-pub-05">
+  <h2>자료와 개인정보 안내</h2>
+  <p class="desc"><span><strong>지금:</strong> &#x27;녹음과 전사문은 보내지 않아요&#x27; 안내가 기능 소개의 전사 설명과 처리 경로가 불명확하고, 연구 목적·방향 용어와 제목 굵기가 달라요</span><span><strong>바뀐 점:</strong> &#x27;녹음과 전사문은 보내지 않아요&#x27;를 &#x27;실시간 전사는 브라우저의 음성 인식 기능을 쓰고, 녹음 파일은 Margin 저장소에만 올라가요&#x27;로 바꿔요. 제안: 연구 목적·방향 용어와 제목 굵기를 통일해요</span></p>
+  <div class="mock pane paper stack">
+    <h3 class="group">자료와 개인정보 <span class="proposal">제안</span></h3>
+    <p>교수님께는 검토 요청에 넣은 항목과 파일, 연구 이름과 <strong>연구 목적</strong>·질문이 공개돼요. <span class="proposal">제안</span></p>
+  </div>
+  <div class="mock pane paper stack">
+    <h3>AI 처리</h3>
+    <p class="note">실시간 전사는 브라우저의 음성 인식 기능을 쓰고, 녹음 파일은 Margin 저장소에만 올라가요</p>
+  </div>
+</section>
+<section class="scene on" id="06-pub-06">
+  <h2>404 안내 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 404 안내는 정상 표시되지만 상단 머리에 일본어 전환과 국기 이모지 사이 공백 없는 표기가 함께 노출돼요</span><span><strong>바뀐 점:</strong> 제안: 404 안내 본문은 유지하고 상단 언어 선택 표기 공백과 노출 여부를 점검해요</span></p>
+  <div class="mock">
+    <div class="bar">
+      <strong class="wordmark">margin</strong>
+      <div class="actions" role="group" aria-label="언어 선택">
+        <button type="button" class="btn" aria-pressed="true"><span aria-hidden="true">🇰🇷</span> 한국어</button>
+        <button type="button" class="btn" aria-pressed="false"><span aria-hidden="true">🇯🇵</span> 日本語</button>
+      </div>
+    </div>
+    <div class="pane center blank-space stack">
+      <h3>페이지를 찾을 수 없어요</h3>
+      <p class="small-print">주소가 맞는지 확인해 주세요.</p>
+      <div><button type="button" class="btn primary">첫 화면으로</button></div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="06-onb-01">
+  <h2>로그인 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 안내 문구에 명령형(&#x27;로그인하세요&#x27;)이 쓰였고 상단에 언어 전환 토글이 보여요</span><span><strong>바뀐 점:</strong> 제안: 안내 문구를 해요체로 고치고 로그인 화면 언어 전환 토글 노출 규칙을 정리해요</span></p>
+  <div class="mock">
+    <div class="bar"><strong class="wordmark">margin</strong><span>로그인</span></div>
+    <div class="pane columns">
+      <div class="stack">
+        <h3>지난 기록이 그대로 있어요</h3>
+        <p>미팅 기록, 피드백, 검토 요청을 로그인하면 바로 볼 수 있어요.</p>
+      </div>
+      <div class="card stack">
+        <h3>로그인</h3>
+        <p>가입한 이메일로 로그인해요.</p>
+        <label class="form-field"><span class="label">이메일</span><input type="email" autocomplete="off"></label>
+        <label class="form-field"><span class="label">비밀번호</span><input type="password" autocomplete="off"></label>
+        <button type="button" class="btn primary">로그인</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene on" id="06-onb-04">
+  <h2>온보딩 소개 화면 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 오른쪽 예시 그림의 앱 머리가 아이콘 6개 줄로 그려져 실제 상단 4개 메뉴와 달라요</span><span><strong>바뀐 점:</strong> 제안: 오른쪽 예시 그림의 앱 머리를 실제 상단 메뉴(&#x27;홈·미팅·할 일·글·자료&#x27;) 구조에 맞게 고쳐요</span></p>
+  <div class="mock pane columns">
+    <div class="stack">
+      <h3>마진에 오신 걸 환영해요</h3>
+      <p>지도 미팅에서 나온 말, 받은 피드백, 고친 원고를 연구 하나에 모아 둬요.</p>
+    </div>
+    <div class="mock">
+      <div class="bar"><strong class="wordmark">margin</strong><div class="app-nav" aria-label="앱 상단 메뉴"><span aria-current="page">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span></div></div>
+      <div class="pane stack">
+        <p class="label">내 연구</p>
+        <div class="card">미팅 메모</div>
+        <div class="card">받은 피드백</div>
+        <div class="card">고친 원고</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene on" id="06-onb-05">
+  <h2>온보딩 1단계 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 지도교수 이메일 예시 글자가 위 입력칸보다 진해 입력된 값처럼 보이고, &#x27;한 줄 설명&#x27;이 높이 약 95px 여러 줄 입력칸으로 나와요</span><span><strong>바뀐 점:</strong> 제안: 이메일 예시 글자 톤을 다른 입력칸과 맞추고 &#x27;한 줄 설명&#x27; 라벨이나 입력칸 높이를 일치시켜요</span></p>
+  <div class="mock pane columns">
+    <div class="card stack">
+      <p class="small-print">1 / 4</p>
+      <h3>어떤 연구를 하고 있나요?</h3>
+      <label class="form-field"><span class="label">연구 이름 <span class="small-print">필수</span></span><input type="text" placeholder="예: 대학원생 연구 기록 경험" required></label>
+      <label class="form-field"><span class="label">한 줄 설명</span><input type="text" placeholder="예: 지도 미팅 기록 경험 살피기"></label>
+      <label class="form-field"><span class="label">지도교수 이메일</span><input type="email" placeholder="예: professor@example.com" autocomplete="off"></label>
+    </div>
+        <div class="mock">
+          <div class="bar"><strong class="wordmark">margin</strong><div class="app-nav" aria-label="앱 상단 메뉴"><span aria-current="page">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span></div></div>
+          <div class="pane stack">
+            <p class="label">대학원생 연구 기록 경험</p>
+            <div class="card">다음 미팅</div>
+            <div class="card">할 일</div>
+          </div>
+        </div>
+  </div>
+</section>
+
+<section class="scene on" id="06-onb-07">
+  <h2>온보딩 3단계 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 투고·제출 목표일 도움말 폭이 약 215px 입력칸에 묶여 &#x27;D-Day&#x27;가 줄 중간에서 끊겨요</span><span><strong>바뀐 점:</strong> 제안: 도움말 폭을 넓히거나 줄바꿈 방지 처리로 &#x27;D-Day&#x27;가 끊기지 않게 해요</span></p>
+  <div class="mock pane columns">
+    <div class="card stack">
+      <p class="small-print">3 / 4</p>
+      <h3>다음 지도 미팅은 언제인가요?</h3>
+      <div class="stack" role="group" aria-label="다음 지도 미팅">
+        <button type="button" class="btn">날짜를 정했어요</button>
+        <button type="button" class="btn">아직 안 잡혔어요</button>
+        <button type="button" class="btn">방금 미팅을 마쳤어요</button>
+      </div>
+      <label class="form-field"><span class="label">투고·제출 목표일</span><input type="text" inputmode="numeric" placeholder="YYYY.MM.DD" aria-describedby="06-onb-07-help" style="max-width: 215px;"></label>
+      <p class="small-print" id="06-onb-07-help">정하지 않았으면 비워 두세요. 연구 홈에 <span class="fixed-word">D-Day</span>로 보여요.</p>
+    </div>
+        <div class="mock">
+          <div class="bar"><strong class="wordmark">margin</strong><div class="app-nav" aria-label="앱 상단 메뉴"><span aria-current="page">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span></div></div>
+          <div class="pane stack">
+            <p class="label">대학원생 연구 기록 경험</p>
+            <div class="card">다음 미팅</div>
+            <div class="card">할 일</div>
+          </div>
+        </div>
+  </div>
+</section>
+
+<section class="scene on" id="06-onb-08">
+  <h2>온보딩 4단계 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 1~3단계를 입력한 뒤에도 &#x27;건너뛰고 빈 연구로 시작&#x27; 링크가 남아 누르면 앞 단계 입력 내용이 사라져요</span><span><strong>바뀐 점:</strong> 제안: 앞 단계 입력이 있을 때는 건너뛰기 링크를 숨기거나 입력이 초기화됨을 분명히 알려요</span></p>
+  <div class="mock pane columns">
+    <div class="card stack">
+      <div class="group stack">
+        <p>✓ 대학원생 연구 기록 경험</p>
+        <p>✓ 나중에 정할게요</p>
+        <p>✓ 미팅은 나중에 만들게요</p>
+      </div>
+      <p class="small-print">4 / 4</p>
+      <h3>이 연구로 무엇을 밝히려 하나요?</h3>
+      <label class="form-field"><span class="label">연구 목적</span><textarea rows="2" placeholder="예: 지도 미팅 뒤 기록이 어떻게 쓰이는지 살펴요"></textarea></label>
+      <label class="form-field"><span class="label">연구 질문</span><textarea rows="2" placeholder="예: 미팅에서 받은 피드백은 어떻게 남나요?"></textarea></label>
+      <div><button type="button" class="btn primary">계속 →</button></div>
+    </div>
+        <div class="mock">
+          <div class="bar"><strong class="wordmark">margin</strong><div class="app-nav" aria-label="앱 상단 메뉴"><span aria-current="page">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span></div></div>
+          <div class="pane stack">
+            <p class="label">대학원생 연구 기록 경험</p>
+            <div class="card">다음 미팅</div>
+            <div class="card">할 일</div>
+          </div>
+        </div>
+  </div>
+</section>
+</main>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

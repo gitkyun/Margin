@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MARGIN Phase 3 — 스크린샷 중심 10개 영역 종합 제품 평가 탐색기</title>
+<style>
+  :root {
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --surface-muted: #f1f3f6;
+    --border: #e5e8ee;
+    --text: #191f28;
+    --text-sub: #4e5968;
+    --text-mute: #8b95a1;
+    --primary: #3182f6;
+    --primary-soft: #e8f3ff;
+    --green: #0ca678;
+    --green-soft: #e6fcf5;
+    --red: #e03131;
+    --red-soft: #fff5f5;
+    --amber: #d9480f;
+    --amber-soft: #fff4e6;
+    --purple: #6741d9;
+    --purple-soft: #f3f0ff;
+    --blue-soft: #edf2ff;
+    --radius: 14px;
+    --shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .wrap {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0 12px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--primary);
+  }
+  h1 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin: 2px 0 0;
+  }
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .search-input {
+    width: 260px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+  }
+  .search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+  .toggle-18 {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text-sub);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .toggle-18.active {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+  }
+  .filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 0 14px;
+  }
+  .pill-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .pill {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-sub);
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .pill:hover { border-color: #cbd5e1; color: var(--text); }
+  .pill.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .pill .cnt {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin: 20px 0 18px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+  }
+  .stat-card:hover { transform: translateY(-1px); border-color: #cbd5e1; }
+  .stat-card.active { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-soft); }
+  .stat-label { font-size: 12px; font-weight: 600; color: var(--text-sub); }
+  .stat-val { font-size: 22px; font-weight: 700; margin-top: 2px; letter-spacing: -0.02em; }
+  .c-strength { color: var(--green); }
+  .c-usability { color: var(--amber); }
+  .c-defect { color: var(--red); }
+  .c-taste { color: var(--purple); }
+  .c-design { color: var(--primary); }
+
+  .result-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    padding-bottom: 64px;
+  }
+  @media (max-width: 1180px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; }
+    .stats-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    border-color: #cbd5e1;
+  }
+  .thumb-wrap {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: var(--surface-muted);
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top left;
+    display: block;
+  }
+  .img-count {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background: rgba(25, 31, 40, 0.78);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .card-body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    line-height: 1.3;
+  }
+  .b-strength { background: var(--green-soft); color: var(--green); }
+  .b-usability { background: var(--amber-soft); color: var(--amber); }
+  .b-defect { background: var(--red-soft); color: var(--red); }
+  .b-taste { background: var(--purple-soft); color: var(--purple); }
+  .b-design { background: var(--blue-soft); color: var(--primary); }
+  .b-domain { background: var(--surface-muted); color: var(--text-sub); font-weight: 600; }
+  .b-18 { background: #191f28; color: #fff; }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .code-path {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    color: var(--text-mute);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Lightbox Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 18px;
+    width: 100%;
+    max-width: 1360px;
+    height: min(88vh, 860px);
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  }
+  @media (max-width: 980px) {
+    .modal { grid-template-columns: 1fr; height: 92vh; overflow-y: auto; }
+  }
+  .modal-left {
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-img-stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 16px;
+  }
+  .modal-img-stage img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .modal-thumbs {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #1e293b;
+    overflow-x: auto;
+    align-items: center;
+  }
+  .modal-thumb-btn {
+    border: 2px solid transparent;
+    border-radius: 6px;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+    height: 48px;
+    width: 76px;
+  }
+  .modal-thumb-btn.active { border-color: var(--primary); }
+  .modal-thumb-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .modal-img-caption {
+    color: #cbd5e1;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    margin-left: auto;
+    padding-left: 12px;
+    white-space: nowrap;
+  }
+  .modal-right {
+    padding: 22px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .modal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .modal-close {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .modal-title { font-size: 19px; font-weight: 700; margin: 4px 0 0; letter-spacing: -0.02em; }
+  .detail-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .detail-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .detail-text { font-size: 13.5px; color: var(--text); margin: 0; }
+  .modal-nav {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .nav-btn {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .nav-btn:hover { background: var(--surface-muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="header-row">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <div>
+          <h1>MARGIN Phase 3 — 스크린샷 중심 10개 영역 종합 제품 평가</h1>
+          <p class="subtitle">기준선: margin-research.pages.dev (학생·교수·공동연구자) + 격리 프리뷰 · 총 154개 증거 중 핵심 실증 카드 탐색</p>
+        </div>
+      </div>
+      <div class="search-box">
+        <input id="searchInput" class="search-input" type="search" placeholder="화면·컴포넌트·코드 경로 검색..." />
+        <button id="toggle18" class="toggle-18" type="button">18개 문제의식만 보기</button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <div id="domainPills" class="pill-row"></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="statsStrip" class="stats-strip"></section>
+  <div class="result-meta">
+    <span id="resultCount"></span>
+    <span>카드를 클릭하면 원본 해상도 스크린샷과 상세 근거를 볼 수 있습니다 (키보드 ← / → / Esc)</span>
+  </div>
+  <section id="cardGrid" class="grid"></section>
+</main>
+
+<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-left">
+      <div class="modal-img-stage"><img id="modalMainImg" src="" alt="" /></div>
+      <div class="modal-thumbs" id="modalThumbs"></div>
+    </div>
+    <div class="modal-right">
+      <div class="modal-top">
+        <div>
+          <div id="modalBadges" class="badges"></div>
+          <h2 id="modalTitle" class="modal-title"></h2>
+        </div>
+        <button id="modalClose" class="modal-close" type="button" aria-label="닫기">✕</button>
+      </div>
+      <div class="detail-box">
+        <div class="detail-label">사용자 맥락</div>
+        <p id="modalContext" class="detail-text"></p>
+      </div>
+      <div class="detail-box">
+        <div class="detail-label">독립 판단 근거</div>
+        <p id="modalRationale" class="detail-text"></p>
+      </div>
+      <div class="detail-box">
+        <div class="detail-label">관련 구현 (코드 경로)</div>
+        <p id="modalCode" class="detail-text" style="font-family: ui-monospace, monospace; font-size: 12px;"></p>
+      </div>
+      <div class="modal-nav">
+        <button id="prevBtn" class="nav-btn" type="button">← 이전 항목</button>
+        <button id="nextBtn" class="nav-btn" type="button">다음 항목 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DOMAINS = [
+  "전체",
+  "01. 제품 기획",
+  "02. 정보 구조",
+  "03. 사용자 경험",
+  "04. 인터랙션 설계",
+  "05. 마이크로 인터랙션·모션",
+  "06. 시각 디자인",
+  "07. 디자인 시스템·컴포넌트",
+  "08. UX 라이팅",
+  "09. 반응형·접근성·환경",
+  "10. 코드·기술 구현"
+];
+
+const CAT_META = {
+  strength: { label: "유지·강점", badge: "b-strength", color: "c-strength" },
+  usability: { label: "사용성 문제", badge: "b-usability", color: "c-usability" },
+  defect: { label: "기술적 결함", badge: "b-defect", color: "c-defect" },
+  taste: { label: "디자인 취향", badge: "b-taste", color: "c-taste" },
+  design: { label: "의도된 설계 차이", badge: "b-design", color: "c-design" }
+};
+
+const ITEMS = [
+  // 01. 제품 기획
+  {
+    id: "P01-S1", domain: "01. 제품 기획", cat: "strength", issue18: null,
+    title: "연구 순환 루프(미팅→피드백→할 일→검토 스냅샷)",
+    context: "대학원생이 지도 미팅 후 피드백을 반영해 PDF 버전과 함께 교수에게 검토를 요청하고 응답을 받는 핵심 여정.",
+    rationale: "검토 요청 시 '먼저 볼 위치(1페이지 · 비교 기준 표)'와 '보낸 당시 파일'을 스냅샷으로 고정한 기획은 마진의 가장 강력한 차별화 자산이며 반드시 유지해야 한다.",
+    code: "lib/domain.ts, pages/ReviewDetailPage.tsx",
+    images: ["assets/live-professor-editor/p09_prof_only_review_detail.png", "assets/live-desktop/19_meeting_detail_1440.png"]
+  },
+  {
+    id: "P01-S2", domain: "01. 제품 기획", cat: "design", issue18: null,
+    title: "5개 독립 상태 비혼합 원칙 (댓글 해결 ≠ 교수 응답)",
+    context: "학생과 교수가 검토 화면에서 댓글을 해결로 표시하거나 수정본을 올릴 때 상태가 자동 전이되지 않도록 보호.",
+    rationale: "'해결로 표시해도 교수 응답은 바뀌지 않아요.'처럼 학술 지도 맥락의 오해를 막는 의도된 설계 차이로, 단순화를 명목으로 합치면 안 된다.",
+    code: "AGENTS.md, pages/ReviewDetailPage.tsx",
+    images: ["assets/live-professor-editor/p06_prof_review_pin_mode.png"]
+  },
+  {
+    id: "P01-1", domain: "01. 제품 기획", cat: "usability", issue18: "#12",
+    title: "연구 도우미 '제안' · '실행 내역' 별도 탭의 맥락 단절",
+    context: "사용자가 AI와 대화한 뒤 채택할 제안을 확인하거나 실행 기록을 추적하는 흐름.",
+    rationale: "대화 탭을 벗어나 별도 탭으로 이동해야 하므로 인지 단절이 발생한다. Phase 5에서 대화 내 인라인 카드 통합 vs 접기 드로어 대안을 비교 검토할 필요가 있다.",
+    code: "components/assistant/AssistantSidePanel.tsx",
+    images: ["assets/live-desktop/13_assistant_suggestions_1440.png", "assets/live-desktop/13_assistant_runs_1440.png"]
+  },
+  {
+    id: "P01-2", domain: "01. 제품 기획", cat: "usability", issue18: "#15",
+    title: "우측 레일 하단 '의견' 클릭 시 외부 mailto: 이탈",
+    context: "사용자가 작업 중 버그나 개선 의견을 빠르게 전달하려는 상황.",
+    rationale: "mailto:admin@margin.com은 OS 메일 앱을 강제 실행시켜 이탈률이 높다. 현재 라우트·화면 컨텍스트를 자동 첨부하는 인앱 피드백 모달 전환을 검토해야 한다.",
+    code: "components/shell/SideRail.tsx (FEEDBACK_MAIL)",
+    images: ["assets/live-desktop/14_home_main_1440.png"]
+  },
+  {
+    id: "P01-3", domain: "01. 제품 기획", cat: "usability", issue18: null,
+    title: "교수 계정 /r 상단의 '+ 연구 만들기' 파란 CTA 강조",
+    context: "지도교수가 학생의 검토 요청이나 일정 조율을 확인하기 위해 /r에 진입한 상황.",
+    rationale: "주 사용자는 학생이고 교수는 검토·조율 중심이라는 제품 불변 조건과 달리, 교수 화면 최상단에서도 '+ 연구 만들기'가 가장 강한 프라이머리 버튼으로 시선을 끈다.",
+    code: "pages/AuthPages.tsx (ResearchSelectPage)",
+    images: ["assets/live-professor-editor/p01_prof_r_home.png"]
+  },
+
+  // 02. 정보 구조
+  {
+    id: "P02-S1", domain: "02. 정보 구조", cat: "strength", issue18: null,
+    title: "단독 교수 전용 검토 셸 & 공동연구자 비공개 격리",
+    context: "교수가 검토 링크로 진입하거나 공동연구자(편집자)가 공유 연구에 들어온 상황.",
+    rationale: "단독 교수에게는 학생 크롬을 완전히 제거한 간소 헤더를 제공하고, 편집자에게는 소유자의 비공개 미팅 5건과 비공개 원고를 철저히 격리해 프라이버시 신뢰를 지킨다.",
+    code: "pages/ReviewDetailPage.tsx, pages/MeetingsPage.tsx, pages/DocsPage.tsx",
+    images: ["assets/live-professor-editor/p09_prof_only_review_detail.png", "assets/live-professor-editor/e03_editor_meetings.png", "assets/live-professor-editor/e06_editor_docs.png"]
+  },
+  {
+    id: "P02-1", domain: "02. 정보 구조", cat: "usability", issue18: "#2",
+    title: "홈 하단 '할 일' ↔ 우측 사이드 패널 '할 일' 중복 및 정렬 불일치",
+    context: "1440px 데스크톱에서 연구 홈에 진입했을 때(사이드 패널 기본 열림 상태).",
+    rationale: "좌측 홈 '할 일 3'과 우측 패널 '할 일'에 완전히 동일한 3개 항목이 서로 다른 순서(홈: 11/27→11/28→5일 지남 / 패널: 5일 지남→11/27→11/28)로 동시에 노출된다.",
+    code: "pages/HomePage.tsx, lib/side-panel.ts",
+    images: ["assets/isolated-local/07_offline_banner_1440.png", "assets/live-desktop/14_home_main_1440.png"]
+  },
+  {
+    id: "P02-2", domain: "02. 정보 구조", cat: "defect", issue18: null,
+    title: "교수 + 공동연구자(편집자) 겸임 시 검토 화면 역할 충돌",
+    context: "지도교수가 해당 연구의 편집자 권한을 함께 가진 상태에서 검토 요청을 열었을 때.",
+    rationale: "학생 발신 UI('공유 설정', '교수님께 메일로도 알리기', '다시 확인 요청')와 교수 수신 UI('내가 남긴 응답', '내 응답 변경')가 한 화면에 동시 노출된다.",
+    code: "pages/ReviewDetailPage.tsx",
+    images: ["assets/live-professor-editor/p04_prof_review_detail.png", "assets/live-professor-editor/p05_prof_review_need_revision_ui.png"]
+  },
+  {
+    id: "P02-3", domain: "02. 정보 구조", cat: "usability", issue18: "#1",
+    title: "연구 전환기(ResearchSwitcher) 하단 잘림 및 '새 연구 만들기' 중복",
+    context: "긴 연구 제목이 여러 개 있는 상태에서 상단 좌측 연구 전환 드롭다운을 열었을 때.",
+    rationale: "긴 제목이 3~4줄로 줄바꿈되며 '모든 연구 보기'가 스크롤 아래로 밀린다. 하단 고정(sticky)이 필요하며, '새 연구 만들기'의 드롭다운 내 배치 필요성도 재검토 대상이다.",
+    code: "components/shell/TopBar.tsx",
+    images: ["assets/live-desktop/07_research_switcher_1440.png"]
+  },
+  {
+    id: "P02-4", domain: "02. 정보 구조", cat: "usability", issue18: "#3",
+    title: "우측 레일 하단 '화면 배치' · '설정'과 계정 메뉴 중복",
+    context: "설정 또는 화면 배치를 바꾸기 위해 진입점을 찾는 상황.",
+    rationale: "우측 레일 하단 '설정', '화면 배치 → 화면 설정 모두 보기', 계정 메뉴 '프로필 설정' 등 진입점이 3곳 이상으로 분산되어 레일의 목적이 흐려진다.",
+    code: "components/shell/SideRail.tsx",
+    images: ["assets/live-desktop/11_rail_layout_menu_1440.png", "assets/live-desktop/10_account_menu_1440.png"]
+  },
+  {
+    id: "P02-5", domain: "02. 정보 구조", cat: "usability", issue18: "#18",
+    title: "'+ 기록 추가' 드롭다운에 6개 이질 워크플로우 평면 혼재",
+    context: "미팅 화면에서 새 기록·일정·검토 요청을 추가하려는 상황.",
+    rationale: "녹음 시작(즉시 실행), 서면 붙여넣기(기록), 미팅 잡기(일정), 시간 조율(투표), 검토 요청(제출)이 그룹 구분 없이 한 목록에 섞여 있다.",
+    code: "pages/MeetingsPage.tsx, components/shell/TopBar.tsx",
+    images: ["assets/live-desktop/18_meetings_add_menu_1440.png", "assets/live-desktop-deep/d11_dialog_new_review.png"]
+  },
+
+  // 03. 사용자 경험
+  {
+    id: "P03-S1", domain: "03. 사용자 경험", cat: "strength", issue18: null,
+    title: "빈 연구 홈 '시작하기 1 / 4' 체크리스트 & ⌘K 한글 초성 검색",
+    context: "신규 연구 생성 직후 첫 행동을 시작하거나, 한글 초성('ㅁㅌ')으로 빠르게 항목을 검색할 때.",
+    rationale: "콜드 스타트 안내와 한글 초성 검색('ㅁㅌ' → 미팅 즉시 매칭)·빈 상태 안내 모두 실제 한국 대학원생의 작업 습관에 잘 맞는다.",
+    code: "components/home/StartChecklist.tsx, components/shell/CommandPalette.tsx",
+    images: ["assets/live-desktop-deep/d40_empty_research_home.png", "assets/live-desktop-deep/d38_cmdk_chosung_search.png", "assets/live-desktop-deep/d39_cmdk_empty_state.png"]
+  },
+  {
+    id: "P03-S2", domain: "03. 사용자 경험", cat: "strength", issue18: null,
+    title: "PDF v2 상세의 맥락 맞춤 AI 시작 칩 3종 & 페이지 텍스트 추출",
+    context: "PDF 자료를 열람하면서 AI에게 질문하거나 표/본문 텍스트를 복사하려는 상황.",
+    rationale: "보고 있는 PDF를 자동으로 컨텍스트에 연결하고 3개의 맞춤 시작 칩과 깔끔한 텍스트 추출을 제공해 학술 독해 경험이 우수하다.",
+    code: "pages/MaterialsPage.tsx, lib/assistant-starters.ts",
+    images: ["assets/live-desktop-deep/d19_pdf_v2_detail.png", "assets/live-desktop-deep/d20_pdf_text_view.png"]
+  },
+  {
+    id: "P03-1", domain: "03. 사용자 경험", cat: "usability", issue18: "#13",
+    title: "연구 도우미 홈 빈 상태 추천 프롬프트 빈약 (단일 칩 1개)",
+    context: "연구 홈에서 우측 도우미 패널을 처음 열었을 때.",
+    rationale: "PDF 상세(3개)와 달리 홈에서는 '이번 주 할 일 정리하기' 1개만 노출되어 도우미가 할 수 있는 연구 지원 범위가 좁아 보인다.",
+    code: "lib/assistant-starters.ts, pages/assistant/AssistantPanel.tsx",
+    images: ["assets/live-desktop/12_assistant_chat_1440.png"]
+  },
+  {
+    id: "P03-2", domain: "03. 사용자 경험", cat: "defect", issue18: null,
+    title: "공동연구자 홈에 이미 진행 중인 연구의 '시작하기 3 / 4' 재노출",
+    context: "5차 미팅까지 진행된 연구에 공동연구자(편집자)가 진입했을 때.",
+    rationale: "편집자에게 보이는 공유 미팅이 0건이라는 이유로 '미팅 기록 남기기' 온보딩 카드가 다시 떠서 진행 중인 연구 상태를 오인하게 만든다.",
+    code: "components/home/StartChecklist.tsx",
+    images: ["assets/live-professor-editor/e01_editor_home.png"]
+  },
+  {
+    id: "P03-3", domain: "03. 사용자 경험", cat: "usability", issue18: "#18",
+    title: "일정 조율(/schedule/:pollId) 상하 중복 및 우측 70% 공백",
+    context: "1440px 데스크톱에서 학생·교수가 미팅 가능 시간을 응답하는 화면.",
+    rationale: "상단 타임라인 카드가 좌측 ~360px에만 갇혀 우측 70%가 비어 있고, 바로 아래에 같은 3개 날짜 체크박스가 전체 폭으로 중복 배치되어 조작 대상이 혼란스럽다.",
+    code: "pages/PollPage.tsx, components/poll/AvailabilityGrid.tsx",
+    images: ["assets/live-professor-editor/p08_prof_schedule_poll.png", "assets/live-desktop/29_schedule_poll_1440.png"]
+  },
+  {
+    id: "P03-4", domain: "03. 사용자 경험", cat: "usability", issue18: "#16",
+    title: "설정 모달 전반의 정보 밀도·컨트롤 완성도 부족",
+    context: "계정·화면·알림·사용량·연구 설정 10개 탭을 탐색하며 옵션을 변경할 때.",
+    rationale: "10개 탭 분류는 체계적이나 우측 본문이 단조로운 폼과 긴 설명 위주라 사용량·화면·알림의 핵심 상태를 한눈에 스캔하기 어렵다.",
+    code: "components/settings/SettingsDialog.tsx, pages/settings/*",
+    images: ["assets/live-desktop/31_settings_usage_1440.png", "assets/live-desktop/31_settings_display_1440.png", "assets/live-desktop/31_settings_notifications_1440.png"]
+  },
+
+  // 04. 인터랙션 설계
+  {
+    id: "P04-S1", domain: "04. 인터랙션 설계", cat: "strength", issue18: null,
+    title: "할 일 완료 6초 되돌리기 토스트 & 소유자 전용 설정 가드",
+    context: "할 일을 실수로 완료하거나, 공동연구자가 보관·삭제 탭에 접근했을 때.",
+    rationale: "가벼운 액션은 즉시 실행+Undo 토스트로 매끄럽게 처리하고, 소유자 전용 액션은 비활성화+명확한 사유 안내로 안전하게 보호한다.",
+    code: "pages/TasksHome.tsx, pages/settings/DangerTab.tsx",
+    images: ["assets/isolated-local/01_task_done_toast_1440.png", "assets/live-professor-editor/e09_editor_settings_danger.png", "assets/live-professor-editor/e08_editor_settings_people.png"]
+  },
+  {
+    id: "P04-1", domain: "04. 인터랙션 설계", cat: "usability", issue18: "#5",
+    title: "휴지통 이동(긴 연구명 타이핑) vs 완전 삭제(슬라이더) 마찰 역전",
+    context: "연구를 휴지통으로 옮기거나 휴지통에서 영구 삭제하려는 상황.",
+    rationale: "복원 가능한 휴지통 이동에 40자 연구명 타이핑(복사 버튼 없음)을 요구하고, 복원 불가능한 완전 삭제에는 슬라이더 1회만 요구해 위험도와 마찰이 정반대다.",
+    code: "pages/AuthPages.tsx, components/PermanentResearchDelete.tsx",
+    images: ["assets/live-desktop/03_modal_permanent_delete_1440.png", "assets/live-desktop/02_r_trash_1440.png"]
+  },
+  {
+    id: "P04-2", domain: "04. 인터랙션 설계", cat: "usability", issue18: null,
+    title: "공유 설정 다이얼로그 내 SlideToConfirm과 일반 저장 버튼 혼재",
+    context: "검토 요청의 공유 설정을 열었을 때.",
+    rationale: "'설정 저장'/'취소'/'✕'와 즉시 실행되는 '밀어서 공유 중지' 슬라이더가 한 모달에 혼재해 저장 시점과 중지 시점이 모호하다.",
+    code: "components/reviews/ReviewShareDialog.tsx",
+    images: ["assets/live-desktop-deep/d26_review_share_dialog.png"]
+  },
+  {
+    id: "P04-3", domain: "04. 인터랙션 설계", cat: "usability", issue18: "#18",
+    title: "계정 메뉴 '로그아웃 길게 누르기'의 데스크톱 마찰",
+    context: "데스크톱에서 계정 전환이나 로그아웃을 위해 클릭했을 때.",
+    rationale: "가역 액션인 로그아웃이 일반 클릭에 반응하지 않고 ~1.8초 길게 눌러야 작동해 발견성과 예측 가능성이 떨어진다.",
+    code: "components/kokonut/profile-dropdown.tsx",
+    images: ["assets/live-desktop/10_account_menu_1440.png"]
+  },
+  {
+    id: "P04-4", domain: "04. 인터랙션 설계", cat: "usability", issue18: "#8",
+    title: "모달 우상단 '✕' 닫기와 하단 '취소' 버튼 중복",
+    context: "완전 삭제 슬라이더 모달이나 미팅 생성 모달을 열었을 때.",
+    rationale: "특히 주 확인 버튼이 없는 슬라이더 모달에 '✕'와 '취소'가 동시에 존재해 시각적 군더더기를 만든다.",
+    code: "components/PermanentResearchDelete.tsx, components/ui/dialog.tsx",
+    images: ["assets/live-desktop/03_modal_permanent_delete_1440.png", "assets/isolated-local/04_recording_ui_preview_1440.png"]
+  },
+
+  // 05. 마이크로 인터랙션·모션
+  {
+    id: "P05-S1", domain: "05. 마이크로 인터랙션·모션", cat: "strength", issue18: null,
+    title: "TopBar 탭 호버 툴팁 · 패널 리사이즈 · 모바일 스와이프",
+    context: "상단 탭 호버, 우측 패널 폭 드래그(450→600px), 모바일 할 일 스와이프(90px) 조작 시.",
+    rationale: "단축키·다음 미팅 맥락을 보여주는 호버 툴팁과 부드러운 리사이즈·스와이프 응답성은 마이크로 인터랙션 강점으로 유지할 가치가 크다.",
+    code: "components/shell/TopBar.tsx, PanelResizer.tsx, lib/swipe.ts",
+    images: ["assets/live-desktop-deep/d37_topbar_nav_hover_hint.png", "assets/motion/panel_resize_450.png", "assets/motion/panel_resize_600.png", "assets/motion/swipe_task_90px.png"]
+  },
+  {
+    id: "P05-1", domain: "05. 마이크로 인터랙션·모션", cat: "defect", issue18: "#7",
+    title: "SlideToConfirm 드래그 채움 직선 끊김 & 중앙 라벨 겹침",
+    context: "완전 삭제 슬라이더를 25% → 50% → 72%로 드래그하는 도중.",
+    rationale: "연속 프레임 실측 결과 원형 썸 뒤 채움 영역 끝단이 직선으로 끊기고, 배경 텍스트('밀어서 완전히 삭제')가 페이드아웃되지 않아 썸과 겹쳐 보인다.",
+    code: "components/SlideToConfirm.tsx",
+    images: ["assets/motion/slide_delete_25.png", "assets/motion/slide_delete_50.png", "assets/motion/slide_delete_72.png"]
+  },
+  {
+    id: "P05-2", domain: "05. 마이크로 인터랙션·모션", cat: "defect", issue18: null,
+    title: "Montage UI 드롭다운 with-interaction 오버레이 포인터 가로채기",
+    context: "원고 에디터 버전 드롭다운 등 Montage 메뉴 항목 내부 텍스트 클릭 시.",
+    rationale: "내부 <div data-component='with-interaction'> 오버레이가 자식 <span>의 포인터 이벤트를 가로채 자동화·접근성·특정 클릭 좌표에서 상호작용 실패를 유발한다.",
+    code: "components/docs/*, @montage-ui/core 래퍼",
+    images: ["assets/live-desktop-deep/d16_editor_versions_menu.png", "assets/live-desktop-deep/d18_editor_compare_worddiff.png"]
+  },
+
+  // 06. 시각 디자인
+  {
+    id: "P06-S1", domain: "06. 시각 디자인", cat: "strength", issue18: null,
+    title: "원고 WordDiff 비교 화면 & `/` 슬래시·4모델 선택 팝오버",
+    context: "원고 v1과 현재 버전을 비교하거나, 도우미 입력창에서 `/` 명령·모델을 고를 때.",
+    rationale: "라이트 모드 표면 대비, 한글 가독성, 팝오버 밀도와 키보드 힌트 정렬이 깔끔해 집중도 높은 작업 환경을 제공한다.",
+    code: "components/docs/WordDiff.tsx, SlashCommandMenu.tsx, ModelSelector.tsx",
+    images: ["assets/live-desktop-deep/d18_editor_compare_worddiff.png", "assets/live-desktop-deep/d23_assistant_slash_commands.png", "assets/live-desktop-deep/d24_assistant_model_selector.png"]
+  },
+  {
+    id: "P06-1", domain: "06. 시각 디자인", cat: "taste", issue18: "#3",
+    title: "우측 SideRail 선택 상태의 옹졸함 & 하단 32×32 박스 비대칭",
+    context: "데스크톱 워크스페이스 우측 64px 레일을 상시 바라볼 때.",
+    rationale: "상단 탭(60×58px)은 선형 아이콘에 작은 회색 사각형만 들어가 활성감이 약하고, 하단 '화면 배치'·'설정'만 32×32px 회색 박스로 처리돼 시각 문법이 깨진다.",
+    code: "components/shell/SideRail.tsx, components/shell/shell.css",
+    images: ["assets/live-desktop/14_home_main_1440.png", "assets/live-desktop/15_home_panel_closed_1440.png"]
+  },
+  {
+    id: "P06-2", domain: "06. 시각 디자인", cat: "taste", issue18: "#9",
+    title: "홈 상단 알림 카드 좌측 파란 띠(border-left)의 'AI 티'",
+    context: "연구 홈 최상단 액션 배너를 처음 마주했을 때.",
+    rationale: "카드 좌측에 두꺼운 파란 선을 세우는 패턴은 전형적인 AI 생성 대시보드 느낌을 주며, 절제된 학술 워크스페이스 톤과 이질적이다.",
+    code: "pages/HomePage.tsx",
+    images: ["assets/live-desktop/06_home_long_1440.png", "assets/isolated-local/07_offline_banner_1440.png"]
+  },
+  {
+    id: "P06-3", domain: "06. 시각 디자인", cat: "defect", issue18: "#10",
+    title: "'투고까지 D-83' 칩 내부 텍스트 수직 중앙 정렬 이탈",
+    context: "연구 홈 헤더 우측의 투고 카운트다운 배지를 볼 때.",
+    rationale: "pill 내부 텍스트가 수직 중앙에서 미세하게 어긋나 보여 픽셀 단위 완성도를 떨어뜨린다.",
+    code: "components/home/SubmissionCountdown.tsx",
+    images: ["assets/live-desktop/06_home_long_1440.png"]
+  },
+  {
+    id: "P06-4", domain: "06. 시각 디자인", cat: "usability", issue18: "#6",
+    title: "휴지통 카드 '복원' · '완전히 삭제' 인접 배치 및 위험 위계 부족",
+    context: "/r 휴지통 탭에서 연구를 복원하거나 영구 삭제하려는 상황.",
+    rationale: "복원과 완전 삭제 버튼이 바짝 붙어 있고 완전 삭제가 회색 텍스트라 실수 클릭 위험과 위험도 구분 부족 문제가 동시에 발생한다.",
+    code: "pages/AuthPages.tsx, components/PermanentResearchDelete.tsx",
+    images: ["assets/live-desktop/02_r_trash_1440.png"]
+  },
+  {
+    id: "P06-5", domain: "06. 시각 디자인", cat: "taste", issue18: "#17",
+    title: "공개 랜딩·기능·플랜 페이지 브랜드 완성도",
+    context: "비로그인 사용자가 마진을 처음 탐색할 때.",
+    rationale: "정보 구성은 정돈돼 있으나 히어로 타이포 리듬, 시선 유도, 실제 제품 신뢰감 연출은 레퍼런스 대비 평면적이다.",
+    code: "pages/PublicPages.tsx, components/marketing/*",
+    images: ["assets/live-desktop/33_public_landing_1440.png", "assets/live-desktop/33_public_features_1440.png", "assets/live-desktop/33_public_pricing_1440.png"]
+  },
+
+  // 07. 디자인 시스템·컴포넌트
+  {
+    id: "P07-S1", domain: "07. 디자인 시스템·컴포넌트", cat: "strength", issue18: null,
+    title: "#184 목록 행 공통 동작(RowActions: 우클릭·⋯·스와이프)",
+    context: "연구 카드, 글·자료, 미팅, 할 일 목록에서 보조 액션을 호출할 때.",
+    rationale: "모든 목록에 동일한 우클릭/⋯ 인터랙션 규칙을 적용해 학습 비용을 낮춘 좋은 시스템화 사례다.",
+    code: "components/RowActions.tsx",
+    images: ["assets/live-desktop/23_docs_context_menu_1440.png", "assets/live-desktop/04_research_card_menu_1440.png"]
+  },
+  {
+    id: "P07-1", domain: "07. 디자인 시스템·컴포넌트", cat: "defect", issue18: "#4",
+    title: "페이지 제목(h1) 타이포그래피 4갈래 파편화",
+    context: "홈·미팅·할 일·글·자료·연구 흐름 탭을 오갈 때.",
+    rationale: "/tasks·/flow 28px/700, 홈 20px/700, /docs 20px/400, /meetings h1 없음으로 제각각이라 제품 일관성이 크게 훼손된다.",
+    code: "각 페이지 CSS + design/styles.css",
+    images: ["assets/live-desktop/20_tasks_1440.png", "assets/live-desktop/14_home_main_1440.png", "assets/live-desktop/22_docs_list_1440.png", "assets/live-desktop/17_meetings_list_1440.png"]
+  },
+  {
+    id: "P07-2", domain: "07. 디자인 시스템·컴포넌트", cat: "defect", issue18: null,
+    title: "항목 상세(?detail=) 및 미팅 필터의 브라우저 기본 <select> 노출",
+    context: "우측 상세 패널에서 할 일 상태·우선순위를 바꾸거나 미팅 유형을 필터링할 때.",
+    rationale: "Montage UI 디자인 시스템 위에 OS 기본 <select> 화살표가 그대로 노출돼 컴포넌트 완성도가 떨어진다.",
+    code: "components/detail/ItemDetailPanel.tsx, pages/MeetingsPage.tsx",
+    images: ["assets/live-desktop-deep/d01_itemdetail_task.png", "assets/live-professor-editor/e03_editor_meetings.png"]
+  },
+  {
+    id: "P07-3", domain: "07. 디자인 시스템·컴포넌트", cat: "defect", issue18: null,
+    title: "312px 피드백 상세 오디오 트리머 라벨 겹침 & 상태 도트 라벨 부재",
+    context: "음성 클립이 연결된 피드백의 상세 패널(?detail=feedback:...)을 열었을 때.",
+    rationale: "312px 폭에서 90s105s120s135s150s 라벨이 서로 겹쳐 판독이 불가하며, 상단 5개 상태 도트도 텍스트가 없어 의미를 즉각 알 수 없다.",
+    code: "components/kokonut/clip-trimmer.tsx, components/detail/ItemDetailPanel.tsx",
+    images: ["assets/live-desktop-deep/d02_itemdetail_feedback.png"]
+  },
+  {
+    id: "P07-4", domain: "07. 디자인 시스템·컴포넌트", cat: "defect", issue18: null,
+    title: "녹음 미팅 카드 '음성 공유' 잘림 & 오류 토스트 SideRail 겹침",
+    context: "녹음된 미팅을 열람하거나 글·자료에 비지원 파일을 올렸을 때.",
+    rationale: "음성 카드 우측 '음성 공유' 텍스트가 경계에서 잘리며, 우하단 오류 토스트가 우측 SideRail의 '화면 배치'·'설정' 버튼을 그대로 가린다.",
+    code: "components/meetings/MeetingAudioCard.tsx, main.tsx (Toaster)",
+    images: ["assets/live-desktop-deep/d07_meeting_recorded_audio.png", "assets/isolated-local/06_upload_invalid_or_error_1440.png"]
+  },
+
+  // 08. UX 라이팅
+  {
+    id: "P08-S1", domain: "08. UX 라이팅", cat: "strength", issue18: null,
+    title: "검토 요청 프라이버시 고지 & 재확인 체크박스 문구",
+    context: "학생이 교수에게 검토 요청을 보내거나 재확인을 요청할 때.",
+    rationale: "'개인 메모·할 일·AI 대화 미포함'과 명시적 확인 체크박스는 학술 협업에서 사용자가 느끼는 노출 불안을 정확히 해소한다.",
+    code: "components/reviews/ReviewCreateHost.tsx, RecheckDialog.tsx",
+    images: ["assets/live-desktop-deep/d11_dialog_new_review.png", "assets/live-desktop-deep/d27_review_recheck_dialog.png"]
+  },
+  {
+    id: "P08-1", domain: "08. UX 라이팅", cat: "usability", issue18: "#11",
+    title: "홈 상단 배너 '[기록 정리하기]' 문구 모호성",
+    context: "지난 미팅에서 나온 할 일을 아직 정리하지 않았을 때 홈 상단 배너를 보고 클릭할지 판단하는 순간.",
+    rationale: "'기록 정리하기'만으로는 미팅 메모를 다듬는 것인지, 할 일을 추출하는 것인지 행동 결과가 직관적이지 않다.",
+    code: "lib/home-action.ts, pages/HomePage.tsx",
+    images: ["assets/live-desktop/06_home_long_1440.png"]
+  },
+  {
+    id: "P08-2", domain: "08. UX 라이팅", cat: "usability", issue18: "#14",
+    title: "잔액 크레딧 표기 ('19,190크레딧' vs '%' 전환 미반영)",
+    context: "연구 도우미 하단과 설정 사용량 탭에서 남은 AI 한도를 확인할 때.",
+    rationale: "원시 숫자 '19,190크레딧'은 체감 잔여량을 직관적으로 전달하지 못한다. 잔여 % 주 표기 + 상세 크레딧 병기 여부를 검토해야 한다.",
+    code: "components/ai/AICreditStatus.tsx, pages/settings/UsageMeters.tsx",
+    images: ["assets/live-desktop/12_assistant_chat_1440.png", "assets/live-desktop/31_settings_usage_1440.png"]
+  },
+  {
+    id: "P08-3", domain: "08. UX 라이팅", cat: "defect", issue18: null,
+    title: "빈 미팅 화면 모순 문구 & 교수 알림 학생 시점 문구",
+    context: "기록이 0건인 연구의 /meetings 진입 시 및 교수 계정 알림 모달 오픈 시.",
+    rationale: "목록이 0건인데 '왼쪽 목록에서 기록을 고르거나...'를 출력하고, 교수 알림 모달 부제에 학생 시점('교수 응답과 댓글...')이 남아 있다.",
+    code: "pages/MeetingsPage.tsx, components/shell/NotificationModal.tsx",
+    images: ["assets/live-desktop-deep/d42_empty_research_meetings.png", "assets/live-professor-editor/p03_prof_notifications.png"]
+  },
+
+  // 09. 반응형·접근성·환경
+  {
+    id: "P09-S1", domain: "09. 반응형·접근성·환경", cat: "strength", issue18: null,
+    title: "모바일 390px 검토 2탭 전환 & ShellBanners 오프라인 우선순위",
+    context: "모바일에서 교수 검토를 보거나, 네트워크가 오프라인으로 끊겼을 때.",
+    rationale: "390px 2탭 분리와 오프라인 시 하위 배너를 덮는 단일 배너 우선순위 규칙이 안정적으로 작동한다.",
+    code: "pages/ReviewDetailPage.tsx, components/shell/ShellBanners.tsx",
+    images: ["assets/live-professor-editor/p07_prof_review_390.png", "assets/isolated-local/07_offline_banner_1440.png"]
+  },
+  {
+    id: "P09-1", domain: "09. 반응형·접근성·환경", cat: "defect", issue18: null,
+    title: "DocsPage 3단 미리보기(👁) 시 넓은 화면 메타 열 붕괴",
+    context: "1440px 데스크톱 글·자료 목록에서 미리보기(👁) 패널을 열었을 때.",
+    rationale: "#184의 넓은 화면 열 표시가 미리보기 오픈 순간 2줄 행으로 무너지며 시각 밀도가 급격히 나빠진다.",
+    code: "pages/DocsPage.tsx",
+    images: ["assets/live-desktop-deep/d12_docs_3col_preview.png", "assets/live-desktop/22_docs_list_1440.png"]
+  },
+  {
+    id: "P09-2", domain: "09. 반응형·접근성·환경", cat: "defect", issue18: "#18",
+    title: "전역 11px 스크롤 거터 · 지연 텍스트 대비 · 320px 밀집 구간",
+    context: "데스크톱 우측 가장자리, 다크 모드 할 일, 320px 소형 모바일 환경.",
+    rationale: "html scrollbar-gutter: stable에 따른 11px 거터, 라이트 지연 텍스트(#FF4242) 및 다크 모드 보조 배지 대비 약화가 유지되고 있다.",
+    code: "design/styles.css:84, design/tokens.css",
+    images: ["assets/dark-mode/dark_tasks_1440.png", "assets/live-mobile/docs_320.png"]
+  },
+
+  // 10. 코드·기술 구현
+  {
+    id: "P10-S1", domain: "10. 코드·기술 구현", cat: "strength", issue18: null,
+    title: "URL 쿼리 기반 오버레이(?detail=, ?settings=) 상태 설계",
+    context: "어느 화면에서나 상세 패널·설정을 열고 브라우저 뒤로가기로 복귀할 때.",
+    rationale: "오버레이 상태를 URL 쿼리에 매핑해 딥링크·새로고침·뒤로가기 일관성이 매우 깔끔하다.",
+    code: "components/shell/WorkspaceShell.tsx",
+    images: ["assets/live-desktop-deep/d01_itemdetail_task.png", "assets/live-desktop/31_settings_profile_1440.png"]
+  },
+  {
+    id: "P10-1", domain: "10. 코드·기술 구현", cat: "defect", issue18: null,
+    title: "삭제된 검토 댓글 하단에 '답글' · '해결로 표시' 버튼 활성 잔존",
+    context: "검토 요청 화면에서 이미 삭제된 댓글('삭제한 댓글이에요.')을 볼 때.",
+    rationale: "소프트 삭제 본문 치환 후 액션 버튼 렌더링 조건(!comment.deletedAt)을 누락해 삭제된 댓글에도 답글·해결 버튼이 그대로 노출된다.",
+    code: "pages/ReviewDetailPage.tsx",
+    images: ["assets/live-professor-editor/p06_prof_review_pin_mode.png"]
+  }
+];
+
+let state = { domain: "전체", cat: "all", only18: false, q: "" };
+let filtered = [...ITEMS];
+let modalIdx = 0;
+let modalImgIdx = 0;
+
+function renderDomainPills() {
+  const el = document.getElementById("domainPills");
+  el.innerHTML = DOMAINS.map(d => {
+    const count = d === "전체" ? ITEMS.length : ITEMS.filter(i => i.domain === d).length;
+    return `<button type="button" class="pill ${state.domain === d ? "active" : ""}" data-domain="${d}">${d} <span class="cnt">${count}</span></button>`;
+  }).join("");
+  el.querySelectorAll(".pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.domain = btn.dataset.domain;
+      renderAll();
+    });
+  });
+}
+
+function renderStats() {
+  const base = ITEMS.filter(i => (state.domain === "전체" || i.domain === state.domain) && (!state.only18 || i.issue18));
+  const cats = ["strength", "usability", "defect", "taste", "design"];
+  const el = document.getElementById("statsStrip");
+  el.innerHTML = cats.map(c => {
+    const cnt = base.filter(i => i.cat === c).length;
+    const m = CAT_META[c];
+    return `<div class="stat-card ${state.cat === c ? "active" : ""}" data-cat="${c}">
+      <div class="stat-label">${m.label}</div>
+      <div class="stat-val ${m.color}">${cnt}</div>
+    </div>`;
+  }).join("");
+  el.querySelectorAll(".stat-card").forEach(card => {
+    card.addEventListener("click", () => {
+      state.cat = state.cat === card.dataset.cat ? "all" : card.dataset.cat;
+      renderAll();
+    });
+  });
+}
+
+function applyFilter() {
+  const q = state.q.trim().toLowerCase();
+  filtered = ITEMS.filter(i => {
+    if (state.domain !== "전체" && i.domain !== state.domain) return false;
+    if (state.cat !== "all" && i.cat !== state.cat) return false;
+    if (state.only18 && !i.issue18) return false;
+    if (q) {
+      const hay = `${i.id} ${i.domain} ${i.title} ${i.context} ${i.rationale} ${i.code} ${i.issue18 || ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderGrid() {
+  applyFilter();
+  document.getElementById("resultCount").textContent = `표시 중: ${filtered.length}개 / 전체 ${ITEMS.length}개 평가 카드`;
+  const grid = document.getElementById("cardGrid");
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--text-mute);background:#fff;border:1px solid var(--border);border-radius:14px;">조건에 맞는 평가 항목이 없습니다. 필터를 초기화해 보세요.</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map((item, idx) => {
+    const cm = CAT_META[item.cat];
+    return `<article class="card" data-idx="${idx}">
+      <div class="thumb-wrap">
+        <img src="${item.images[0]}" alt="${item.title}" loading="lazy" />
+        ${item.images.length > 1 ? `<span class="img-count">스크린샷 ${item.images.length}장</span>` : ""}
+      </div>
+      <div class="card-body">
+        <div class="badges">
+          <span class="badge ${cm.badge}">${cm.label}</span>
+          <span class="badge b-domain">${item.domain}</span>
+          ${item.issue18 ? `<span class="badge b-18">문제의식 ${item.issue18}</span>` : ""}
+        </div>
+        <h3 class="card-title">${item.id} · ${item.title}</h3>
+        <p class="card-desc">${item.rationale}</p>
+        <div class="code-path">${item.code}</div>
+      </div>
+    </article>`;
+  }).join("");
+  grid.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", () => openModal(Number(card.dataset.idx)));
+  });
+}
+
+function openModal(idx) {
+  modalIdx = idx;
+  modalImgIdx = 0;
+  renderModal();
+  document.getElementById("modalBackdrop").classList.add("open");
+}
+
+function renderModal() {
+  const item = filtered[modalIdx];
+  if (!item) return;
+  const cm = CAT_META[item.cat];
+  document.getElementById("modalBadges").innerHTML = `
+    <span class="badge ${cm.badge}">${cm.label}</span>
+    <span class="badge b-domain">${item.domain}</span>
+    ${item.issue18 ? `<span class="badge b-18">디자이너 문제의식 ${item.issue18}</span>` : ""}
+  `;
+  document.getElementById("modalTitle").textContent = `${item.id} · ${item.title}`;
+  document.getElementById("modalContext").textContent = item.context;
+  document.getElementById("modalRationale").textContent = item.rationale;
+  document.getElementById("modalCode").textContent = item.code;
+
+  const imgSrc = item.images[modalImgIdx] || item.images[0];
+  const mainImg = document.getElementById("modalMainImg");
+  mainImg.src = imgSrc;
+  mainImg.alt = item.title;
+
+  const thumbs = document.getElementById("modalThumbs");
+  thumbs.innerHTML = item.images.map((src, i) => `
+    <button type="button" class="modal-thumb-btn ${i === modalImgIdx ? "active" : ""}" data-i="${i}">
+      <img src="${src}" alt="" />
+    </button>
+  `).join("") + `<span class="modal-img-caption">${imgSrc}</span>`;
+  thumbs.querySelectorAll(".modal-thumb-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      modalImgIdx = Number(b.dataset.i);
+      renderModal();
+    });
+  });
+
+  document.getElementById("prevBtn").disabled = modalIdx <= 0;
+  document.getElementById("nextBtn").disabled = modalIdx >= filtered.length - 1;
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.remove("open");
+}
+
+function renderAll() {
+  renderDomainPills();
+  renderStats();
+  renderGrid();
+}
+
+document.getElementById("searchInput").addEventListener("input", e => {
+  state.q = e.target.value;
+  renderGrid();
+});
+document.getElementById("toggle18").addEventListener("click", e => {
+  state.only18 = !state.only18;
+  e.currentTarget.classList.toggle("active", state.only18);
+  renderAll();
+});
+document.getElementById("modalClose").addEventListener("click", closeModal);
+document.getElementById("modalBackdrop").addEventListener("click", e => {
+  if (e.target.id === "modalBackdrop") closeModal();
+});
+document.getElementById("prevBtn").addEventListener("click", () => {
+  if (modalIdx > 0) { modalIdx--; modalImgIdx = 0; renderModal(); }
+});
+document.getElementById("nextBtn").addEventListener("click", () => {
+  if (modalIdx < filtered.length - 1) { modalIdx++; modalImgIdx = 0; renderModal(); }
+});
+document.addEventListener("keydown", e => {
+  const open = document.getElementById("modalBackdrop").classList.contains("open");
+  if (!open) return;
+  if (e.key === "Escape") closeModal();
+  if (e.key === "ArrowLeft" && modalIdx > 0) { modalIdx--; modalImgIdx = 0; renderModal(); }
+  if (e.key === "ArrowRight" && modalIdx < filtered.length - 1) { modalIdx++; modalImgIdx = 0; renderModal(); }
+});
+
+renderAll();
+</script>
+</body>
+</html>

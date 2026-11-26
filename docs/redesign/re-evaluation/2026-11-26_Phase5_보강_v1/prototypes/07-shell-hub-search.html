@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 07 · 연구 목록·알림·검색·화면 틀</title>
+<style>
+:root {
+  --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+  --text: #171719; --sub: #46474c; --mute: #686b73;
+  --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+  --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+    --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+    --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); }
+
+section.scene { display: none; }
+section.scene.on { display: block; }
+:root { color-scheme: light dark; }
+body { overflow-wrap: anywhere; }
+p, h1, h2, h3 { margin: 0; }
+.top { padding: 16px max(16px, calc((100% - 980px) / 2)); background: var(--surface); border-bottom: 1px solid var(--line); }
+.top h1 { font-size: 20px; }
+.top p { margin-top: 4px; color: var(--sub); }
+main { width: min(100%, 1012px); margin: auto; padding: 16px 16px 56px; }
+.scene { margin-block: 14px 28px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: clamp(12px, 2.7vw, 24px); }
+.scene h2 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 0; font-size: 18px; }
+.desc { display: grid; gap: 4px; color: var(--sub); margin-block: 8px 14px; }
+.mock { display: grid; gap: 12px; justify-items: center; padding: clamp(10px, 2.3vw, 24px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--sunken); }
+.mock > * { min-width: 0; max-width: 100%; }
+.mock h3 { font-size: 15px; font-weight: 700; }
+.mock p + p { margin-top: 4px; }
+.subtle { color: var(--sub); }
+.line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.between { justify-content: space-between; }
+.stack { display: grid; min-width: 0; gap: 10px; }
+.duo { display: grid; width: 100%; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.panel { width: min(100%, 560px); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.duo > .panel { width: 100%; }
+.pad { padding: clamp(10px, 2.3vw, 18px); }
+.app-head { border-bottom: 1px solid var(--line); background: var(--sunken); border-radius: 11px 11px 0 0; padding: 10px 12px; }
+.app-mark { font-weight: 750; color: var(--brand); }
+.hub-main { padding: clamp(12px, 3vw, 22px); display: grid; gap: 14px; }
+.hub-main .list-card { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.list-card header { padding: 14px 12px; }
+.list-card footer { padding: 8px 12px; border-top: 1px solid var(--line); background: var(--sunken); }
+.app-foot { padding: 8px 12px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13px; }
+.pill { background: var(--sunken); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--sub); font-size: 12px; font-weight: 650; }
+.pill.active { color: var(--text); background: var(--brand-soft); border-color: var(--brand); }
+.pill.ongoing { background: var(--ok-soft); color: var(--text); }
+.segment { background: var(--sunken); border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 3px; }
+.segment .btn { border-color: transparent; background: transparent; }
+.segment .btn[aria-pressed="true"] { border-color: var(--line); background: var(--surface); font-weight: 700; }
+button.btn:disabled { color: var(--mute); border-color: var(--line); background: var(--sunken); cursor: default; }
+button.btn.icon-btn { padding: 4px; width: 36px; height: 36px; display: grid; place-items: center; }
+.menu { display: grid; margin: 0; padding: 6px; list-style: none; gap: 2px; }
+.menu li + .break { margin-top: 5px; padding-top: 7px; border-top: 1px solid var(--line); }
+.menu button, .dock button { width: 100%; border: 0; min-height: 36px; padding: 7px; font: inherit; cursor: pointer; border-radius: 7px; background: transparent; color: var(--text); }
+.menu button { display: flex; gap: 8px; align-items: center; text-align: left; }
+.menu button:hover, .menu button:focus-visible { background: var(--sunken); }
+.menu button:focus-visible { outline-offset: -2px; }
+.menu button.is-key { background: var(--brand-soft); }
+.icon { display: inline-grid; place-items: center; width: 18px; height: 18px; flex: 0 0 18px; color: var(--sub); line-height: 1; }
+.icon.gear { font: bold 18px/1 system-ui, sans-serif; }
+.icon.flag { height: 16px; border-left: 1.5px solid currentColor; width: 14px; flex-basis: 14px; margin-inline: 2px; position: relative; }
+.icon.flag::before { content: ""; position: absolute; inset: 1px 1px auto 0; height: 7px; border: 1.5px solid currentColor; border-left: 0; border-radius: 0 3px 3px 0; }
+.icon.file { width: 13px; height: 16px; margin-inline: 2px; flex-basis: 13px; border: 1.5px solid currentColor; border-radius: 2px; font-size: 11px; }
+.icon.file::before { content: "≡"; }
+.icon.layout { border: 1.5px solid currentColor; border-radius: 2px; height: 13px; width: 16px; flex-basis: 16px; margin-inline: 1px; position: relative; }
+.icon.layout::after { content: ""; border-left: 1.5px solid currentColor; position: absolute; inset: 0 4px 0 auto; }
+.icon.calendar { border: 1.5px solid currentColor; border-radius: 3px; height: 15px; width: 15px; flex-basis: 15px; margin-inline: 1px; position: relative; }
+.icon.calendar::after { content: ""; border-top: 1.5px solid currentColor; position: absolute; inset: 4px 0 auto; }
+.icon.talk { border: 1.5px solid currentColor; border-radius: 50%; height: 15px; width: 16px; flex-basis: 16px; margin-inline: 1px; font-size: 12px; }
+.icon.talk::before { content: "···"; }
+.icon.search { width: 12px; height: 12px; flex-basis: 12px; border: 1.5px solid currentColor; border-radius: 50%; position: relative; margin-inline-end: 3px; }
+.icon.search::after { position: absolute; content: ""; width: 6px; border-top: 1.5px solid currentColor; top: 10px; left: 8px; transform: rotate(45deg); }
+.icon.folder { width: 16px; height: 12px; flex-basis: 16px; border: 1.5px solid currentColor; border-radius: 3px; position: relative; }
+.icon.folder::before { content: ""; position: absolute; width: 6px; left: 0; bottom: 100%; height: 3px; border: 1.5px solid currentColor; border-bottom: 0; border-radius: 2px 2px 0 0; }
+.notice-list { padding: 0; margin: 0; list-style: none; display: grid; }
+.notice-list li { display: flex; gap: 9px; align-items: flex-start; border-top: 1px solid var(--line); padding: 10px 2px; }
+.notice-list li:last-child { padding-bottom: 5px; }
+.notice-list time { display: block; font-size: 12px; color: var(--sub); }
+.search-head { display: flex; align-items: center; gap: 10px; padding: 12px; border-bottom: 1px solid var(--line); }
+.field { display: block; width: 100%; min-width: 0; min-height: 36px; padding: 6px 9px; font: inherit; color: var(--text); border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); }
+.field::placeholder { color: var(--mute); }
+.search-head .field { border-color: transparent; }
+kbd { font: 12px/1.35 system-ui, sans-serif; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 4px; padding: 2px 5px; }
+.search-item-type { margin-left: auto; flex: none; }
+.format-grid { width: 100%; display: grid; gap: 8px; grid-template-columns: 1.4fr 1fr 1fr; }
+.format-grid > .panel { width: 100%; }
+.rule-list { display: grid; gap: 7px; margin: 0; }
+.rule-list > div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 8px; }
+.rule-list dt { color: var(--sub); }
+.rule-list dd { font-weight: 650; margin: 0; }
+.rail-frame { width: min(100%, 390px); display: grid; grid-template-columns: minmax(0, 1fr) 60px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.rail-content { padding: clamp(9px, 2vw, 16px); min-width: 0; display: grid; align-content: start; gap: 10px; }
+.rail { display: grid; align-content: start; justify-items: center; padding: 8px 0; gap: 6px; border-left: 1px solid var(--line); }
+.rail .icon-btn { background: transparent; border-color: transparent; }
+.rail .icon-btn[aria-pressed="true"] { background: var(--brand-soft); color: var(--text); border-color: var(--brand); }
+.rail .rail-last { margin-top: 18px; }
+.rail-tip-anchor { position: relative; }
+.rail-tip { position: absolute; right: calc(100% + 6px); padding: 3px 8px; border: 1px solid var(--line-strong); border-radius: 6px; width: max-content; background: var(--surface); color: var(--text); font-size: 12px; }
+.choice { width: 100%; min-width: 0; }
+.choice > summary { min-height: 36px; display: flex; gap: 6px; align-items: center; justify-content: space-between; padding: 6px 9px; border: 1px solid var(--line-strong); border-radius: 7px; cursor: pointer; list-style: none; font: inherit; }
+.choice > summary::-webkit-details-marker { display: none; }
+.choice > summary::after { content: "⌄"; }
+.choice[open] > summary::after { content: "⌃"; }
+.choice .menu { margin-top: 4px; border: 1px solid var(--line); border-radius: 8px; }
+.menu-scroll { max-height: 248px; overflow-y: scroll; scrollbar-gutter: stable; margin: 4px; padding-bottom: 14px; }
+.menu-scroll::-webkit-scrollbar { width: 9px; }
+.menu-scroll::-webkit-scrollbar-track { background: var(--sunken); border-radius: 7px; }
+.menu-scroll::-webkit-scrollbar-thumb { background: var(--line-strong); border: 2px solid var(--sunken); border-radius: 7px; }
+.menu-group + .menu-group { border-top: 1px solid var(--line); }
+.menu-group h3 { margin: 0 0 4px 7px; font-size: 14px; }
+.upload-frame { width: min(100%, 660px); display: grid; grid-template-columns: minmax(0, 1fr) 60px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.upload-main { display: grid; gap: 14px; min-width: 0; padding: 12px; align-content: end; }
+.upload-main .panel { justify-self: end; width: min(100%, 320px); }
+.upload-frame .app-foot { grid-column: 1; grid-row: 2; }
+.upload-frame .rail { grid-column: 2; grid-row: 1 / 3; }
+.banner { width: min(100%, 660px); padding: 10px 12px; border: 1px solid var(--warn); border-radius: 9px; background: var(--warn-soft); color: var(--text); }
+.mobile-preview { width: min(100%, 380px); }
+.mobile-head { padding: 14px 12px; background: var(--surface); border-radius: 11px 11px 0 0; }
+.dock { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--line); padding: 5px 4px; margin: 0; list-style: none; background: var(--sunken); border-radius: 0 0 11px 11px; }
+.dock button { display: grid; justify-items: center; align-content: center; gap: 2px; padding: 4px 1px; min-height: 48px; font-size: 11.5px; color: var(--sub); }
+.dock button[aria-current="page"] { color: var(--text); background: var(--brand-soft); box-shadow: inset 0 2px var(--brand); font-weight: 750; }
+.dock button[aria-pressed="true"] { color: var(--text); font-weight: 700; }
+.dock button[aria-pressed="true"] .dock-glyph { border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); }
+.dock-glyph { display: grid; width: 28px; min-height: 23px; place-items: center; font-size: 15px; }
+@media (max-width: 620px) {
+  .duo, .format-grid { grid-template-columns: minmax(0, 1fr); }
+  .mock > .duo { max-width: 390px; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 07 · 연구 목록·알림·검색·화면 틀</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+<main>
+<section class="scene on" id="07-hub-01">
+  <h2>진행 중인 연구 목록 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 겸임 교수에게 &#x27;+ 연구 만들기&#x27; 파란 버튼이 가장 강조되고 900px 높이에서 카드 하단 버튼이 고정 푸터에 가리며 시험 데이터가 보여요</span><span><strong>바뀐 점:</strong> 겸임 교수 화면에서는 연구 만들기를 보조 버튼으로 두고, 고정 푸터와 카드 하단 버튼 사이에 여백을 둬요.</span></p>
+  <div class="mock">
+    <div class="panel">
+      <div class="app-head line between"><span class="app-mark">Margin</span><span class="pill">지도교수</span></div>
+      <div class="hub-main">
+        <div class="line between"><h3>내 연구</h3><button type="button" class="btn">＋ 연구 만들기</button></div>
+        <div class="line"><span class="pill active">진행 중인 연구</span><span class="pill">완료된 연구</span><span class="pill">보관함</span></div>
+        <article class="list-card">
+          <header class="stack">
+            <div class="line between"><span class="icon file" aria-hidden="true"></span><span class="pill ongoing">진행 중</span></div>
+            <strong>대학원생 연구 기록 경험</strong>
+            <p class="subtle">지도 미팅 뒤 기록을 정리하는 경험을 살펴보는 가상 연구예요.</p>
+          </header>
+          <footer class="line between"><button type="button" class="btn">연구 설정</button><button type="button" class="btn icon-btn" aria-label="연구 더보기">⋯</button></footer>
+        </article>
+      </div>
+      <div class="app-foot line between"><span>마진</span><span>자료·개인정보 안내</span></div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-hub-06">
+  <h2>연구 카드 ⋯ 메뉴 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 메뉴 항목 중 &#x27;연구 설정&#x27;에 &#x27;화면 설정 모두 보기&#x27;·&#x27;공유 설정&#x27;과 같은 서랍 모양 아이콘이 혼용돼요</span><span><strong>바뀐 점:</strong> 연구 설정을 톱니바퀴 아이콘으로 구분해요.</span></p>
+  <div class="mock">
+    <div class="panel">
+      <div class="app-head line between">
+        <h3>대학원생 연구 기록 경험</h3>
+        <button type="button" class="btn icon-btn" aria-label="연구 카드 더보기" aria-expanded="true">⋯</button>
+      </div>
+      <ul class="menu" aria-label="연구 카드 메뉴">
+        <li><button type="button"><span class="icon" aria-hidden="true">→</span> 열기</button></li>
+        <li><button type="button"><span class="icon" aria-hidden="true">↗</span> 새 탭에서 열기</button></li>
+        <li><button type="button" class="is-key"><span class="icon gear" aria-hidden="true">⚙</span> 연구 설정</button></li>
+        <li class="break"><button type="button"><span class="icon" aria-hidden="true">✓</span> 완료로 표시</button></li>
+        <li><button type="button"><span class="icon folder" aria-hidden="true"></span> 보관</button></li>
+        <li><button type="button"><span class="icon" aria-hidden="true">⌫</span> 휴지통으로 옮기기</button></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-src-01">
+  <h2>알림 창 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 겸임 교수에게 학생 시점·명령형 부제가 보이고 읽지 않음 0건에도 &#x27;모두 읽음&#x27; 버튼이 활성 모양이며 마지막 날짜 잘림과 아이콘 중복·시험 데이터가 보여요</span><span><strong>바뀐 점:</strong> 역할별 알림 부제를 해요체로 구분하고, 읽지 않음이 0건이면 모두 읽음 버튼을 비활성화해요. 유형마다 아이콘을 나누고 날짜 아래 여백을 둬요.</span></p>
+  <div class="mock">
+    <div class="duo">
+      <div class="panel pad stack">
+        <div class="line between"><h3>알림</h3><span class="pill">겸임 교수</span></div>
+        <p class="subtle">검토 요청과 댓글, 미팅 일정, 공동연구 소식을 확인할 수 있어요.</p>
+        <div class="line between">
+          <div class="segment line"><button type="button" class="btn" aria-pressed="true">읽지 않음 <span class="pill">0</span></button><button type="button" class="btn">전체</button></div>
+          <button type="button" class="btn" disabled>검토 알림 빼고 모두 읽음</button>
+        </div>
+        <p class="subtle">확인할 새 알림이 없어요.</p>
+      </div>
+      <div class="panel pad stack">
+        <div class="line between"><h3>알림</h3><span class="pill">학생</span></div>
+        <p class="subtle">교수 응답과 댓글, 담당 할 일, 미팅 일정, 공동연구 소식을 확인할 수 있어요.</p>
+        <ul class="notice-list" aria-label="알림 목록 예시">
+          <li><span class="icon talk" aria-hidden="true"></span><div>교수 응답<time datetime="2026-11-21">2026. 11. 21.</time></div></li>
+          <li><span class="icon calendar" aria-hidden="true"></span><div>미팅 일정<time datetime="2026-11-18">2026. 11. 18.</time></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-src-02">
+  <h2>⌘K 검색 팔레트 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 한글 초성 검색과 빈 상태 안내는 잘 동작하나 목록에서 결정이 체크(✓)로, 자료가 폴더 아이콘으로 표시돼 다른 화면과 아이콘이 어긋나요</span><span><strong>바뀐 점:</strong> 한글 초성 검색을 유지하면서 결정에는 깃발, 자료에는 문서 아이콘을 사용해요.</span></p>
+  <div class="mock">
+    <div class="panel">
+      <div class="search-head">
+        <span class="icon search" aria-hidden="true"></span>
+        <input class="field" aria-label="이 연구에서 찾기" value="ㅁㅌ" readonly>
+        <kbd>esc</kbd>
+      </div>
+      <div class="pad">
+        <h3>검색 결과</h3>
+        <ul class="menu">
+          <li><button type="button"><span class="icon flag" aria-hidden="true"></span><span>다음 미팅에서는 비교표와 수정한 연구 질문을 함께 살펴본다.</span><span class="pill search-item-type">결정</span></button></li>
+          <li><button type="button"><span class="icon file" aria-hidden="true"></span><span>지도 미팅 메모</span><span class="pill search-item-type">자료</span></button></li>
+        </ul>
+      </div>
+      <div class="app-foot line"><kbd>↑</kbd><kbd>↓</kbd><span>이동</span><kbd>Enter</kbd><span>열기</span><span>초성으로도 찾아요 (ㅁㅌ → 미팅)</span></div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-01">
+  <h2>상단 줄 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 전 화면에서 같은 동작 이름·필수 표시(5종)·날짜 형식이 다르고, 상단 &#x27;미팅&#x27; 탭 빨간 점 등 점·배지 뜻이 어디에도 설명되지 않아요</span><span><strong>바뀐 점:</strong> 같은 동작의 세 진입점에 미팅 만들기라는 이름을 쓰고, 필수 표시와 날짜 형식도 통일해요.</span></p>
+  <div class="mock">
+    <div class="format-grid">
+      <div class="panel pad stack">
+        <h3>같은 동작 이름</h3>
+        <dl class="rule-list">
+          <div><dt>＋ 메뉴</dt><dd>미팅 만들기</dd></div>
+          <div><dt>미팅 ＋ 기록 추가</dt><dd>미팅 만들기</dd></div>
+          <div><dt>창 제목</dt><dd>미팅 만들기</dd></div>
+        </dl>
+      </div>
+      <div class="panel pad stack">
+        <h3>필수 표시</h3>
+        <label for="07-sample-title">미팅 이름 <span class="pill">필수</span></label>
+        <input class="field" id="07-sample-title" placeholder="미팅 이름">
+      </div>
+      <div class="panel pad stack">
+        <h3>날짜 형식</h3>
+        <label for="07-sample-date">미팅 날짜</label>
+        <input class="field" id="07-sample-date" value="2026. 11. 21." readonly>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-06">
+  <h2>사이드 창 결정·질문 탭 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 필터 등에 브라우저 기본 &lt;select&gt;가 쓰이고, &#x27;결정&#x27; 탭에는 숫자 배지가 없어요(질문 미해결 수 배지는 정책 유지)</span><span><strong>바뀐 점:</strong> 결정·질문 필터를 공통 선택 상자로 표시해요.</span></p>
+  <div class="mock">
+    <div class="rail-frame">
+      <div class="rail-content">
+        <h3>결정·질문</h3>
+        <div class="segment line"><button type="button" class="btn" aria-pressed="true">결정</button><button type="button" class="btn">질문 <span class="pill" aria-label="미해결 질문 2개">2</span></button></div>
+        <details class="choice" open>
+          <summary aria-label="결정·질문 필터">전체</summary>
+          <ul class="menu" aria-label="공통 선택 항목">
+            <li><button type="button" class="is-key">전체 <span aria-hidden="true">✓</span></button></li>
+            <li><button type="button">미팅</button></li>
+            <li><button type="button">서면 기록</button></li>
+          </ul>
+        </details>
+      </div>
+      <div class="rail" aria-label="사이드 창 도구 모음">
+        <button type="button" class="btn icon-btn" aria-label="사이드 창 접기">≫</button>
+        <button type="button" class="btn icon-btn" aria-label="연구 도우미">✧</button>
+        <button type="button" class="btn icon-btn" aria-label="할 일">☑</button>
+        <button type="button" class="btn icon-btn" aria-label="결정·질문" aria-pressed="true"><span class="icon flag" aria-hidden="true"></span></button>
+        <button type="button" class="btn icon-btn" aria-label="자료"><span class="icon folder" aria-hidden="true"></span></button>
+        <button type="button" class="btn icon-btn rail-last" aria-label="화면 설정"><span class="icon layout" aria-hidden="true"></span></button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-07">
+  <h2>사이드 창 자료 탭 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 오른쪽 레일 버튼 이름은 &#x27;자료&#x27;인데 열린 사이드 창 제목은 &#x27;글·자료&#x27;로 서로 달라요</span><span><strong>바뀐 점:</strong> 레일 버튼 이름과 사이드 창 제목을 자료로 통일해요.</span></p>
+  <div class="mock">
+    <div class="rail-frame">
+      <div class="rail-content">
+        <h3>자료</h3>
+        <input class="field" aria-label="자료에서 찾기" placeholder="자료에서 찾기">
+        <ul class="menu">
+          <li><button type="button"><span class="icon file" aria-hidden="true"></span> 인터뷰 질문지 메모</button></li>
+          <li><button type="button"><span class="icon file" aria-hidden="true"></span> 연구계획서</button></li>
+        </ul>
+      </div>
+      <div class="rail" aria-label="사이드 창 도구 모음">
+        <button type="button" class="btn icon-btn" aria-label="사이드 창 접기">≫</button>
+        <button type="button" class="btn icon-btn" aria-label="연구 도우미">✧</button>
+        <button type="button" class="btn icon-btn" aria-label="할 일">☑</button>
+        <button type="button" class="btn icon-btn" aria-label="결정·질문"><span class="icon flag" aria-hidden="true"></span></button>
+        <button type="button" class="btn icon-btn rail-tip-anchor" aria-label="자료" aria-pressed="true"><span class="icon folder" aria-hidden="true"></span><span class="rail-tip" aria-hidden="true">자료</span></button>
+        <button type="button" class="btn icon-btn rail-last" aria-label="화면 설정"><span class="icon layout" aria-hidden="true"></span></button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-09">
+  <h2>+ 만들기 메뉴 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 맨 아래 7번째 항목 &#x27;새 연구 만들기&#x27;가 하단 여백 없이 끝에 붙어 있고 항목 이름이 미팅 화면의 추가 메뉴와 달라요</span><span><strong>바뀐 점:</strong> 목록 아래에 여백을 두고 스크롤 위치가 보이게 해요. 생성 항목 이름은 다른 진입점의 표기와 맞춰요.</span></p>
+  <div class="mock">
+    <div class="panel">
+      <div class="app-head line between"><h3>새로 만들기</h3><button type="button" class="btn icon-btn" aria-label="만들기 메뉴" aria-expanded="true">＋</button></div>
+      <ul class="menu menu-scroll" aria-label="새로 만들기 항목">
+        <li><button type="button"><span class="icon calendar" aria-hidden="true"></span>미팅 만들기</button></li>
+        <li><button type="button"><span class="icon talk" aria-hidden="true"></span>피드백 추가</button></li>
+        <li><button type="button"><span class="icon" aria-hidden="true">☑</span>할 일 추가</button></li>
+        <li><button type="button"><span class="icon" aria-hidden="true">✓</span>수정 결과 만들기</button></li>
+        <li><button type="button"><span class="icon" aria-hidden="true">↗</span>검토 요청 만들기</button></li>
+        <li><button type="button"><span class="icon file" aria-hidden="true"></span>새 글</button></li>
+        <li><button type="button"><span class="icon" aria-hidden="true">＋</span>연구 만들기</button></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-10">
+  <h2>화면 배치 드롭다운 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> &#x27;화면 설정 모두 보기&#x27;에 다른 설정 메뉴와 같은 서랍 모양 아이콘이 쓰였고 설정 창과 진입점이 겹쳐요</span><span><strong>바뀐 점:</strong> 창 위치를 고르는 곳과 화면 설정으로 이동하는 곳을 나누고 아이콘을 다르게 써요.</span></p>
+  <div class="mock">
+    <div class="rail-frame">
+      <div class="rail-content">
+        <div class="menu menu-group" aria-label="사이드 창 위치">
+          <h3>사이드 창 위치</h3>
+          <button type="button" class="is-key between" aria-pressed="true">
+            <span class="line"><span class="icon layout" aria-hidden="true"></span>오른쪽</span><span aria-hidden="true">✓</span>
+          </button>
+          <button type="button" aria-pressed="false"><span class="icon layout" style="transform: scaleX(-1)" aria-hidden="true"></span>왼쪽</button>
+        </div>
+        <div class="menu menu-group">
+          <h3>설정</h3>
+          <button type="button" class="between"><span>화면 설정 모두 보기</span><span class="icon" aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+      <div class="rail" aria-label="사이드 창 도구 모음">
+        <button type="button" class="btn icon-btn" aria-label="사이드 창 접기">≫</button>
+        <button type="button" class="btn icon-btn" aria-label="연구 도우미">✧</button>
+        <button type="button" class="btn icon-btn" aria-label="할 일">☑</button>
+        <button type="button" class="btn icon-btn" aria-label="결정·질문"><span class="icon flag" aria-hidden="true"></span></button>
+        <button type="button" class="btn icon-btn" aria-label="자료"><span class="icon folder" aria-hidden="true"></span></button>
+        <button type="button" class="btn icon-btn rail-last" aria-label="화면 배치" aria-expanded="true" aria-pressed="true"><span class="icon layout" aria-hidden="true"></span></button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-13">
+  <h2>업로드 결과 트레이 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 우하단 업로드 진행·결과 트레이가 하단 푸터의 &#x27;자료·개인정보 안내&#x27; 링크와 레일 영역을 덮어요</span><span><strong>바뀐 점:</strong> 트레이를 본문 아래쪽에 두어 오른쪽 레일과 하단 자료·개인정보 안내를 가리지 않아요.</span></p>
+  <div class="mock">
+    <div class="upload-frame">
+      <div class="upload-main">
+        <div class="line"><strong>글·자료</strong></div>
+        <div class="panel" style="margin-top: 22px" aria-label="업로드 결과 트레이">
+          <div class="app-head line between"><h3>자료 올리기 (1/2) · 1개 실패</h3><button type="button" class="btn icon-btn" aria-label="트레이 닫기">×</button></div>
+          <div class="pad stack">
+            <div class="line between"><span>선행연구 비교표</span><button type="button" class="btn">재시도</button></div>
+            <div class="line between"><span>연구계획서</span><span class="pill ongoing">저장됨</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="app-foot line between"><span>마진</span><span>자료·개인정보 안내</span></div>
+      <div class="rail" aria-label="사이드 창 도구 모음">
+        <button type="button" class="btn icon-btn" aria-label="사이드 창 접기">≫</button>
+        <button type="button" class="btn icon-btn" aria-label="연구 도우미">✧</button>
+        <button type="button" class="btn icon-btn" aria-label="할 일">☑</button>
+        <button type="button" class="btn icon-btn" aria-label="결정·질문"><span class="icon flag" aria-hidden="true"></span></button>
+        <button type="button" class="btn icon-btn" aria-label="자료"><span class="icon folder" aria-hidden="true"></span></button>
+        <button type="button" class="btn icon-btn rail-last" aria-label="화면 배치"><span class="icon layout" aria-hidden="true"></span></button>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-15">
+  <h2>오프라인 배너 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 오프라인 배너가 미리보기 안내 배너와 같은 회색 톤이라 구분이 약하고 저장 안 된 항목 수와 &#x27;다시 시도&#x27; 버튼이 없어요</span><span><strong>바뀐 점:</strong> 경고 배경에 저장 안 된 항목 수와 다시 시도 버튼을 함께 보여 줘요.</span></p>
+  <div class="mock">
+    <div class="banner line between" role="status">
+      <div class="line">
+        <span class="icon" aria-hidden="true">⚠</span>
+        <div><h3>인터넷 연결이 끊겼어요.</h3><p>저장 안 된 항목 1개</p></div>
+      </div>
+      <button type="button" class="btn">다시 시도</button>
+    </div>
+  </div>
+</section>
+<section class="scene on" id="07-shl-18">
+  <h2>하단 독(모바일) <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 모바일에서 연구 도우미를 열면 하단 독의 &#x27;홈&#x27;과 &#x27;연구 도우미&#x27; 두 탭이 동시에 같은 파란색 활성 상태로 보여요</span><span><strong>바뀐 점:</strong> 현재 이동 탭인 홈과 열려 있는 연구 도우미를 각각 다른 모양으로 표시해요.</span></p>
+  <div class="mock">
+    <div class="panel mobile-preview" style="width: min(100%, 375px)">
+      <div class="app-head"><strong>대학원생 연구 기록 경험</strong></div>
+      <div class="mobile-head stack">
+        <div class="line"><span class="pill active">연구 도우미</span><span class="pill">결정·질문</span><span class="pill">자료</span></div>
+        <h3>연구 도우미</h3>
+      </div>
+      <nav aria-label="모바일 하단 메뉴">
+        <ul class="dock">
+          <li><button type="button" aria-current="page"><span class="dock-glyph" aria-hidden="true">⌂</span>홈</button></li>
+          <li><button type="button"><span class="dock-glyph" aria-hidden="true"><span class="icon calendar"></span></span>미팅</button></li>
+          <li><button type="button"><span class="dock-glyph" aria-hidden="true">☑</span>할 일</button></li>
+          <li><button type="button"><span class="dock-glyph" aria-hidden="true"><span class="icon file"></span></span>글·자료</button></li>
+          <li><button type="button" aria-pressed="true"><span class="dock-glyph" aria-hidden="true">✧</span>연구 도우미</button></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</section>
+</main>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

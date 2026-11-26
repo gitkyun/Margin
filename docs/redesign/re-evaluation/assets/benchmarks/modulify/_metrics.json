@@ -1,0 +1,44 @@
+{
+  "captures": [
+    {
+      "name": "01_dashboard.png",
+      "note": "Modulify 대시보드 홈",
+      "url": "https://modulify.ai/dashboard"
+    },
+    {
+      "name": "02_build_dropdown.png",
+      "note": "Modulify AI 입력창 Build 드롭다운",
+      "url": "https://modulify.ai/dashboard"
+    },
+    {
+      "name": "03_command_palette.png",
+      "note": "Modulify Search ⌘K 커맨드 팔레트",
+      "url": "https://modulify.ai/dashboard"
+    },
+    {
+      "name": "04_projects.png",
+      "note": "Modulify Projects 목록",
+      "url": "https://modulify.ai/dashboard/projects"
+    },
+    {
+      "name": "05_archive.png",
+      "note": "Modulify Archive (보관함)",
+      "url": "https://modulify.ai/dashboard/archive"
+    },
+    {
+      "name": "06_recently_deleted.png",
+      "note": "Modulify Recently deleted (휴지통)",
+      "url": "https://modulify.ai/dashboard/recently-deleted"
+    },
+    {
+      "name": "07_settings.png",
+      "note": "Modulify Settings 화면",
+      "url": "https://modulify.ai/dashboard/settings"
+    },
+    {
+      "name": "08_members.png",
+      "note": "Modulify Members (팀원·초대·권한)",
+      "url": "https://modulify.ai/dashboard/members"
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>시안 04 — 설정 모달 재정돈(토스+Modulify) & 미팅 시간 조율(2줄 입력·2열 응답)</title>
+<style>
+  :root {
+    --bg: #f8f9fb; --surface: #ffffff; --border: #e5e8ee;
+    --text: #191f28; --sub: #4e5968; --mute: #8b95a1;
+    --blue: #3182f6; --blue-soft: #e8f3ff;
+    --red: #e03131; --red-soft: #fff5f5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+  .banner {
+    background: #191f28; color: #fff; padding: 10px 22px; font-size: 12.5px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .banner strong { color: #90c2ff; }
+  .sw-btns { display: flex; gap: 6px; }
+  .sbtn { border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.08); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .sbtn.on { background: var(--blue); border-color: var(--blue); }
+
+  .wrap { max-width: 1120px; margin: 28px auto; padding: 0 24px; }
+  /* Settings Dialog Prototype */
+  .settings-box {
+    background: #fff; border: 1px solid var(--border); border-radius: 18px;
+    display: grid; grid-template-columns: 220px 1fr; min-height: 580px;
+    overflow: hidden; box-shadow: 0 12px 32px rgba(15,23,42,0.06);
+  }
+  .st-side { background: var(--bg); border-right: 1px solid var(--border); padding: 20px 12px; }
+  .st-group { font-size: 11px; font-weight: 700; color: var(--mute); padding: 8px 10px 4px; }
+  .st-tab {
+    display: block; width: 100%; text-align: left; border: none; background: transparent;
+    padding: 8px 10px; border-radius: 9px; font-size: 13.5px; font-weight: 600; color: var(--sub); cursor: pointer;
+  }
+  .st-tab.on { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .st-main { padding: 26px 30px; overflow-y: auto; }
+  .row-card { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 14px; }
+  .row-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+    padding: 16px 18px; border-bottom: 1px solid var(--border);
+  }
+  .row-item:last-child { border-bottom: none; }
+  .row-lbl { font-size: 13.5px; font-weight: 700; }
+  .row-sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+
+  /* IA v2 Accurate Theme Thumbnails (fixing old left-sidebar bug!) */
+  .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .t-card {
+    border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; cursor: pointer; text-align: center;
+  }
+  .t-card.on { border-color: var(--blue); background: #f8fbff; }
+  .mini-ui {
+    height: 62px; border-radius: 8px; border: 1px solid var(--border); overflow: hidden;
+    display: grid; grid-template-rows: 12px 1fr; margin-bottom: 6px;
+  }
+  .mini-ui.dark { background: #1c1d20; border-color: #333; }
+  .mini-top { background: #f1f3f6; border-bottom: 1px solid var(--border); }
+  .mini-ui.dark .mini-top { background: #26282c; border-color: #333; }
+  .mini-body { display: grid; grid-template-columns: 1fr 14px; }
+  .mini-rail { background: #f7f8fa; border-left: 1px solid var(--border); }
+  .mini-ui.dark .mini-rail { background: #222428; border-color: #333; }
+
+  .btn { padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; border: 1px solid var(--border); background: #fff; cursor: pointer; }
+  .btn-blue { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .kbd { display: inline-block; padding: 2px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); font-size: 11.5px; font-weight: 700; font-family: ui-monospace, monospace; }
+
+  /* Poll Prototype (2-row inputs + 2-column response) */
+  .poll-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 860px) { .poll-grid { grid-template-columns: 1fr; } }
+  .p-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+  .slot-box { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--bg); margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .slot-row { display: grid; grid-template-columns: 44px 1fr 110px; gap: 8px; align-items: center; }
+  .inp { padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 13px; width: 100%; }
+  .opt-card {
+    border: 1.5px solid var(--border); border-radius: 12px; padding: 13px 15px;
+    display: flex; justify-content: space-between; align-items: center; margin-top: 10px; cursor: pointer;
+  }
+  .opt-card.on { border-color: var(--blue); background: #f8fbff; }
+</style>
+</head>
+<body>
+<div class="banner">
+  <div><strong>시안 04 · 설정 모달 재정돈(토스+Modulify) & 미팅 시간 조율(4칸 잘림·70% 공백 해소)</strong></div>
+  <div class="sw-btns">
+    <button class="sbtn on" id="vSettings">설정 모달 시안</button>
+    <button class="sbtn" id="vPoll">미팅 시간 조율 시안</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- View 1: Settings -->
+  <div id="settingsView" class="settings-box">
+    <aside class="st-side">
+      <div class="st-group">내 계정</div>
+      <button class="st-tab on" data-t="display">화면</button>
+      <button class="st-tab" data-t="ai">연구 도우미</button>
+      <button class="st-tab" data-t="shortcuts">단축키</button>
+      <button class="st-tab" data-t="profile">프로필</button>
+    </aside>
+
+    <main class="st-main">
+      <!-- Display Tab -->
+      <div id="tab-display">
+        <h2 style="margin:0;font-size:18px;">화면 설정</h2>
+        <p style="font-size:13px;color:var(--sub);margin:4px 0 0;">실제 IA v2(상단 메뉴 + 우측 레일) 썸네일과 3단 테마(라이트·다크·시스템)를 일치시켰습니다.</p>
+        <div class="theme-grid">
+          <div class="t-card on" onclick="pickTheme(this)">
+            <div class="mini-ui"><div class="mini-top"></div><div class="mini-body"><div></div><div class="mini-rail"></div></div></div>
+            <strong style="font-size:12.5px;">라이트</strong>
+          </div>
+          <div class="t-card" onclick="pickTheme(this)">
+            <div class="mini-ui dark"><div class="mini-top"></div><div class="mini-body"><div></div><div class="mini-rail"></div></div></div>
+            <strong style="font-size:12.5px;">다크</strong>
+          </div>
+          <div class="t-card" onclick="pickTheme(this)">
+            <div class="mini-ui" style="background:linear-gradient(135deg,#fff 50%,#1c1d20 50%);"><div class="mini-top"></div><div class="mini-body"><div></div><div class="mini-rail"></div></div></div>
+            <strong style="font-size:12.5px;">시스템 설정 따르기</strong>
+          </div>
+        </div>
+        <div class="row-card">
+          <div class="row-item">
+            <div><div class="row-lbl">언어</div><div class="row-sub">기록 원문은 번역하지 않고 UI 문구만 바꿉니다.</div></div>
+            <div style="display:flex;gap:6px;"><button class="btn btn-blue">한국어</button><button class="btn">日本語</button></div>
+          </div>
+          <div class="row-item">
+            <div><div class="row-lbl">시각 표기</div><div class="row-sub">미리보기: 제6차 논문 지도 · <strong>14:00</strong></div></div>
+            <div style="display:flex;gap:6px;"><button class="btn btn-blue">24시간제</button><button class="btn">12시간제</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Tab -->
+      <div id="tab-ai" style="display:none;">
+        <h2 style="margin:0;font-size:18px;">연구 도우미 설정</h2>
+        <p style="font-size:13px;color:var(--sub);margin:4px 0 0;">D13 결정에 맞춰 구형 문구(“사용할 기록을 확인해요”)를 정정하고, 탭 중간의 중복 저장 버튼을 하단 1개로 통합했습니다.</p>
+        <div class="row-card">
+          <div class="row-item">
+            <div><div class="row-lbl">기본 모델</div><div class="row-sub">연구 도우미는 현재 연구에서 내가 볼 수 있는 모든 기록을 자동으로 읽어요.</div></div>
+            <select class="inp" style="width:200px;"><option>Gemini 3.8 Flash · 간단히</option><option>Gemini 3.8 Pro · 깊게</option></select>
+          </div>
+          <div class="row-item">
+            <div><div class="row-lbl">도우미 이름 · 말투</div><div class="row-sub">나에게만 적용되는 개인 지침</div></div>
+            <input class="inp" style="width:200px;" placeholder="예: 콩이 · 간결하게" />
+          </div>
+          <div class="row-item" style="background:var(--bg);justify-content:flex-end;">
+            <button class="btn btn-blue" onclick="alert('연구 도우미 설정을 한 번에 저장했습니다.')">변경 내용 저장</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shortcuts Tab -->
+      <div id="tab-shortcuts" style="display:none;">
+        <h2 style="margin:0;font-size:18px;">단축키 (카테고리 그룹화)</h2>
+        <div class="row-card">
+          <div class="row-item" style="background:var(--bg);padding:8px 16px;font-size:12px;font-weight:700;color:var(--mute);">화면 이동</div>
+          <div class="row-item"><span>찾기와 바로 하기</span><span><span class="kbd">⌘</span> <span class="kbd">K</span></span></div>
+          <div class="row-item"><span>홈 / 미팅 / 할 일 / 글·자료</span><span><span class="kbd">G</span> <span class="kbd">H/M/T/D</span></span></div>
+          <div class="row-item" style="background:var(--bg);padding:8px 16px;font-size:12px;font-weight:700;color:var(--mute);">작업·편집</div>
+          <div class="row-item"><span>사이드 창 열기·닫기</span><span><span class="kbd">]</span></span></div>
+          <div class="row-item"><span>전사문에서 고른 글에 형광펜</span><span><span class="kbd">H</span></span></div>
+        </div>
+      </div>
+
+      <!-- Profile Tab -->
+      <div id="tab-profile" style="display:none;">
+        <h2 style="margin:0;font-size:18px;">프로필 및 계정</h2>
+        <p style="font-size:13px;color:var(--sub);margin:4px 0 0;">내부 상태 배지(‘연결됨’) 제거, 소셜 로그인 시 비밀번호 칸 숨김, 데이터 내보내기·계정 탈퇴 경로를 추가했습니다.</p>
+        <div class="row-card">
+          <div class="row-item">
+            <div><div class="row-lbl">이름 · 역할</div><div class="row-sub">김학생 · student@margin.com</div></div>
+            <button class="btn">이름 바꾸기</button>
+          </div>
+          <div class="row-item">
+            <div><div class="row-lbl">내 데이터 내보내기</div><div class="row-sub">모든 연구 기록과 원고를 ZIP으로 내려받아요.</div></div>
+            <button class="btn">내보내기</button>
+          </div>
+          <div class="row-item">
+            <div><div class="row-lbl" style="color:var(--red);">계정 탈퇴</div><div class="row-sub">소유한 연구와 개인 기록을 영구 삭제합니다.</div></div>
+            <button class="btn" style="color:var(--red);border-color:#ffc9c9;background:var(--red-soft);">탈퇴 진행</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- View 2: Poll Modal & 2-Column Response -->
+  <div id="pollView" class="poll-grid" style="display:none;">
+    <section class="p-card">
+      <h2 style="margin:0 0 6px;font-size:17px;">미팅 시간 조율 만들기 (4칸 잘림 해소)</h2>
+      <p style="font-size:12.5px;color:var(--sub);margin:0;">시작·종료를 2줄로 분리해 날짜(YYYY.MM.DD)와 시각(00:00)이 잘리지 않게 개선했습니다.</p>
+      <div class="slot-box">
+        <strong style="font-size:12.5px;">후보 1</strong>
+        <div class="slot-row"><span style="font-size:12px;color:var(--sub);">시작</span><input class="inp" value="2026.11.27" /><input class="inp" value="14:00" /></div>
+        <div class="slot-row"><span style="font-size:12px;color:var(--sub);">종료</span><input class="inp" value="2026.11.27" /><input class="inp" value="15:00" /></div>
+      </div>
+    </section>
+
+    <section class="p-card">
+      <h2 style="margin:0 0 6px;font-size:17px;">시간 조율 응답 (상하 중복 제거 · 단일 선택)</h2>
+      <p style="font-size:12.5px;color:var(--sub);margin:0;">상단 좁은 타임라인과 하단 중복 체크박스를 하나의 인터랙티브 카드로 통합해 70% 공백을 없앴습니다.</p>
+      <div class="opt-card" onclick="this.classList.toggle('on')">
+        <div><strong>11월 25일 (수) 14:00 – 15:00</strong><div style="font-size:12px;color:var(--sub);">김학생 가능 · 지도교수 미응답</div></div>
+        <span style="font-size:12px;font-weight:700;color:var(--mute);">1/2명</span>
+      </div>
+      <div class="opt-card on" onclick="this.classList.toggle('on')">
+        <div><strong>11월 27일 (금) 14:00 – 15:00</strong><div style="font-size:12px;color:var(--blue);">김학생 가능 · 지도교수 가능 ✓</div></div>
+        <span style="font-size:12px;font-weight:700;color:var(--blue);">2/2명 모두 가능</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.st-tab').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.st-tab').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    ['display','ai','shortcuts','profile'].forEach(k => {
+      document.getElementById('tab-' + k).style.display = b.dataset.t === k ? 'block' : 'none';
+    });
+  };
+});
+function pickTheme(el) {
+  document.querySelectorAll('.t-card').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+}
+document.getElementById('vSettings').onclick = e => {
+  e.target.classList.add('on'); document.getElementById('vPoll').classList.remove('on');
+  document.getElementById('settingsView').style.display = 'grid';
+  document.getElementById('pollView').style.display = 'none';
+};
+document.getElementById('vPoll').onclick = e => {
+  e.target.classList.add('on'); document.getElementById('vSettings').classList.remove('on');
+  document.getElementById('settingsView').style.display = 'none';
+  document.getElementById('pollView').style.display = 'grid';
+};
+</script>
+</body>
+</html>

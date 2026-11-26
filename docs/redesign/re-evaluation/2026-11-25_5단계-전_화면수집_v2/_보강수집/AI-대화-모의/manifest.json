@@ -1,0 +1,200 @@
+[
+  {
+    "file": "web-search-input.png",
+    "label": "웹 검색으로 전환",
+    "observation": "일반 입력창에서 /웹을 고르면 웹 검색 선택 표시가 붙음.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:336"
+  },
+  {
+    "file": "web-search-sources.png",
+    "label": "웹 검색 응답과 근거 펼치기",
+    "observation": "응답 본문과 근거 버튼, 펼친 뒤 모의 문서 링크 표시. 요청 본문에서 질문만 보내고 연구 기록과 대화 내역 배열은 비어 있음을 검사.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:336"
+  },
+  {
+    "file": "web-search-error-retained.png",
+    "label": "웹 검색 실패에서 질문 보존",
+    "observation": "모의 검색 실패 메시지와 보낸 질문이 입력창에 남음. 검색 모드 해제 때 질문 유지도 별도 검사.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:402"
+  },
+  {
+    "file": "pdf-sent-linked-sources.png",
+    "label": "PDF 요약 메시지와 연결된 자료",
+    "observation": "기존에 표지만 읽었던 가상 PDF 2쪽을 모두 추출해 2쪽의 고유 문장을 확인. 첨부 파일이 전송 메시지로 옮겨지고, 그 대화의 참고 기록 1개가 표시됨.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:469"
+  },
+  {
+    "file": "pdf-link-removed-follow-up.png",
+    "label": "기록 연결 해제 후 일반 질문",
+    "observation": "앞선 후속 요청은 PDF를 포함하며, 연결 해제 뒤 요청에는 해당 자료가 빠짐. 마지막 메시지에도 파일 첨부 표시가 없음.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:469"
+  },
+  {
+    "file": "pdf-reextract-error-retained.png",
+    "label": "기존 대화 PDF 재추출 실패",
+    "observation": "기존 대화에서 PDF 본문을 준비하지 못한다고 표시. 질문은 복구되며 이 시점에 AI 요청 또는 기록 저장은 발생하지 않음.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:571"
+  },
+  {
+    "file": "pdf-reextract-retry-success.png",
+    "label": "PDF 재추출 재시도 성공",
+    "observation": "파일 재선택 없이 재시도해 전체 본문 추출, 기존 메시지의 표지 인용 보존, 최신 연결과 요청에는 재추출 본문이 들어감을 검사.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:571"
+  },
+  {
+    "file": "panel-views-runs.png",
+    "label": "실행 내역에서 돌아갈 답 찾기",
+    "observation": "완료·실패 실행 2개 중 답이 남은 줄만 이동 가능. 완료 줄의 1,234크레딧은 모의값. 탭을 오가도 미완성 질문 보존.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:818"
+  },
+  {
+    "file": "run-to-existing-answer.png",
+    "label": "실행 내역에서 기존 답으로 이동",
+    "observation": "갈 수 있는 실행 줄을 클릭하면 대화 탭으로 바뀌고 그 실행의 기존 답이 보임.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:818"
+  },
+  {
+    "file": "two-task-suggestions.png",
+    "label": "답변에서 할 일 제안 2개 펼치기",
+    "observation": "첫 답변 아래 할 일 추가 버튼을 눌러 제안 두 개를 보고 각 줄을 선택할 수 있는 상태.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:940"
+  },
+  {
+    "file": "one-task-suggestion-saved.png",
+    "label": "고른 제안 1건만 할 일로 저장",
+    "observation": "선택한 한 줄만 AI 출처·나만 보기·미완료 할 일로 저장하는 요청 1건 발생. 나머지 줄은 계속 선택 가능하고 대화에는 추가 내역 1개만 남음.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:940"
+  },
+  {
+    "file": "cancel-in-flight.png",
+    "label": "전송 후 답변 중단 버튼",
+    "observation": "전송하면 입력창이 비고 응답 대기 중에는 답변 중단 버튼을 쓸 수 있음.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:148"
+  },
+  {
+    "file": "cancel-question-restored.png",
+    "label": "중단 후 질문 복구",
+    "observation": "답변 중단을 누르면 같은 질문이 다시 입력창에 들어옴.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:148"
+  },
+  {
+    "file": "queued-second-question.png",
+    "label": "응답 중 보낸 두 번째 질문 대기",
+    "observation": "첫 질문을 처리하는 동안 둘째 질문이 대기 줄에 쌓이고 대기 삭제 버튼이 보임.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:220"
+  },
+  {
+    "file": "queue-processed.png",
+    "label": "대기 질문이 순서대로 전송",
+    "observation": "모의 네트워크 호출 본문과 대화 순서로 첫째→둘째 순서를 대조. 두 답변 표시와 대기 삭제 버튼이 사라진 것을 확인.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer.spec.ts:220"
+  },
+  {
+    "file": "mobile-model.png",
+    "label": "390px 모바일 모델 메뉴",
+    "observation": "390×844에서 모델 선택 버튼을 포인터로 누르면 목록이 열림. 표시된 모델명은 검사용 가상값.",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer-mobile.spec.ts:112"
+  },
+  {
+    "file": "mobile-attachment.png",
+    "label": "390px 모바일 첨부 메뉴",
+    "observation": "390×844에서 첨부 및 입력 도구 버튼을 포인터로 눌러 파일·사진·음성·자료 붙이기 네 항목을 확인.",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer-mobile.spec.ts:112"
+  },
+  {
+    "file": "mobile-short-reply.png",
+    "label": "390×500에서 3줄 입력·응답",
+    "observation": "작은 화면에서 세 줄 질문을 입력해도 전송 버튼이 가려지지 않음. 실제 좌표 클릭 후 모의 답을 받고 입력창 비움.",
+    "viewport": {
+      "w": 390,
+      "h": 500
+    },
+    "mode": "로컬 실제 마진 화면 · 가상 연구·가상 AI 응답 · 외부 요청 차단",
+    "source": "/Users/kyun/Downloads/스튜디오26-2/신정훈 교수님/Margin-repo/apps/home-preview/e2e/ai-composer-mobile.spec.ts:133"
+  }
+]

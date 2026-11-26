@@ -1,0 +1,129 @@
+{
+  "ts": "2026-11-24T15:04:15.358Z",
+  "liveUrl": "https://margin-research.pages.dev",
+  "homeLong": {
+    "innerW": 1440,
+    "clientW": 1440,
+    "bodyW": 1440,
+    "gutter": "stable",
+    "h1Text": "[QA 검증] 단위2 연구 생성·관리 정밀 확인 — 아주 긴 연구 이름이 카드에서 두 줄로 잘리는지 확인하는 테스트",
+    "h1FontSize": "20px",
+    "h1FontWeight": "700",
+    "ddayRect": null,
+    "ddayStyle": null,
+    "railItems": [
+      {
+        "txt": "사이드 창 접기",
+        "cls": "ia-rail-item ia-rail-push-button",
+        "r": {
+          "x": 1400,
+          "y": 10,
+          "width": 20,
+          "height": 32,
+          "top": 10,
+          "right": 1420,
+          "bottom": 42,
+          "left": 1400
+        }
+      },
+      {
+        "txt": "도우미",
+        "cls": "ia-rail-item ",
+        "r": {
+          "x": 1380,
+          "y": 52,
+          "width": 60,
+          "height": 58,
+          "top": 52,
+          "right": 1440,
+          "bottom": 110,
+          "left": 1380
+        }
+      },
+      {
+        "txt": "할 일",
+        "cls": "ia-rail-item on",
+        "r": {
+          "x": 1380,
+          "y": 112,
+          "width": 60,
+          "height": 58,
+          "top": 112,
+          "right": 1440,
+          "bottom": 170,
+          "left": 1380
+        }
+      },
+      {
+        "txt": "결정·질문",
+        "cls": "ia-rail-item ",
+        "r": {
+          "x": 1380,
+          "y": 172,
+          "width": 60,
+          "height": 58,
+          "top": 172,
+          "right": 1440,
+          "bottom": 230,
+          "left": 1380
+        }
+      },
+      {
+        "txt": "자료",
+        "cls": "ia-rail-item ",
+        "r": {
+          "x": 1380,
+          "y": 232,
+          "width": 60,
+          "height": 58,
+          "top": 232,
+          "right": 1440,
+          "bottom": 290,
+          "left": 1380
+        }
+      },
+      {
+        "txt": "의견",
+        "cls": "ia-rail-item",
+        "r": {
+          "x": 1380,
+          "y": 742,
+          "width": 60,
+          "height": 58,
+          "top": 742,
+          "right": 1440,
+          "bottom": 800,
+          "left": 1380
+        }
+      },
+      {
+        "txt": "화면 배치",
+        "cls": "ia-rail-item ia-rail-square",
+        "r": {
+          "x": 1394,
+          "y": 816,
+          "width": 32,
+          "height": 32,
+          "top": 816,
+          "right": 1426,
+          "bottom": 848,
+          "left": 1394
+        }
+      },
+      {
+        "txt": "설정",
+        "cls": "ia-rail-item ia-rail-square ",
+        "r": {
+          "x": 1394,
+          "y": 852,
+          "width": 32,
+          "height": 32,
+          "top": 852,
+          "right": 1426,
+          "bottom": 884,
+          "left": 1394
+        }
+      }
+    ]
+  }
+}

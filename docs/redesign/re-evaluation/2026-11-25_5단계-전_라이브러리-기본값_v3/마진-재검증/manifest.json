@@ -1,0 +1,222 @@
+[
+  {
+    "file": "01-panel-fresh-1440.png",
+    "label": "마진 › 새 방문의 1440px 패널",
+    "observation": "저장된 선택 없는 상태. 기본 옆 창이 열리고 시작 탭은 할 일이다.",
+    "source": "Margin-repo/apps/home-preview/src/lib/side-panel.ts",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "02-panel-remembered-1440.png",
+    "label": "마진 › 1440px에서 다시 방문",
+    "observation": "같은 폭에서 새로 열어도 사용자가 닫은 상태를 기억했다.",
+    "source": "Margin-repo/apps/home-preview/src/lib/side-panel.ts",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "03-settings-appearance-1440.png",
+    "label": "마진 › 설정의 내 계정·이 연구 구획",
+    "observation": "열었던 연구 위에 설정이 겹친다. 왼쪽 선택 화면, 오른쪽 모드 전환 예시를 봤다.",
+    "source": "Margin-repo/apps/home-preview/src/components/settings/SettingsDialog.tsx",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "04-settings-escape-1440.png",
+    "label": "마진 › Esc로 설정을 닫고 복귀",
+    "observation": "설정 주소만 없어지고 바탕 연구가 유지됐다. 키보드 초점은 같은 설정 버튼으로 돌아왔다.",
+    "source": "Margin-repo/apps/home-preview/src/components/settings/SettingsDialog.tsx",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "05-panel-keyboard-resized.png",
+    "label": "마진 › 손잡이 방향키로 넓히기",
+    "observation": "오른쪽 패널 312px → 328px. 본문을 함께 밀지만 현재 연구와 패널 내용은 유지된다.",
+    "source": "Margin-repo/apps/home-preview/src/components/margin-panel/PanelResizer.tsx",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "06-settings-mobile-content.png",
+    "label": "마진 › 390px 설정 내용",
+    "observation": "화면 설정 본문을 한 화면에서 본다. 모바일 모형은 Chromium 화면 폭 조절이다.",
+    "source": "Margin-repo/apps/home-preview/src/components/settings/SettingsDialog.tsx",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "file": "07-settings-mobile-list.png",
+    "label": "마진 › 390px 설정 목록으로 한 단계 돌아감",
+    "observation": "내 계정과 이 연구가 같은 항목 목록 안에서 구분된다.",
+    "source": "Margin-repo/apps/home-preview/src/components/settings/SettingsDialog.tsx",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "file": "08-sharing-stop-copy.png",
+    "label": "학생 › 겸임 교수 대상 공유 중지 안내",
+    "observation": "화면에 공유를 중지하면 교수님이 열 수 없다고 표시된다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx:1826",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "09-overlap-stopped-still-reads.png",
+    "label": "겸임 교수 › 공유 중지 뒤 같은 URL 본문",
+    "observation": "교수 응답은 사라졌다. 공동편집 권한으로 연구와 검토 본문은 남았다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql:29",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "10-overlap-reopened-response.png",
+    "label": "겸임 교수 › 공유 재개 뒤 응답 복귀",
+    "observation": "같은 URL에서 다시 공유하자 지정 교수 응답을 다시 할 수 있다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "11-sharing-reassign-copy.png",
+    "label": "학생 › 교수 재지정 전 안내",
+    "observation": "이전에 지정된 계정이 열 수 없다는 문구와 새 수신 계정 입력을 확인했다. 외부 메일을 보내지 않는다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "12-former-professor-editor-reads.png",
+    "label": "예전 지정 교수 › 재지정 뒤에도 공동 편집 권한으로 열림",
+    "observation": "본문 열람과 공유 설정이 유지됐다. 지정 교수로서 응답하는 양식은 사라졌다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "13-new-professor-can-respond.png",
+    "label": "새 지정 교수 › 해당 검토만 응답",
+    "observation": "연구 편집 권한 없이 검토 응답을 할 수 있다. 이 장면에서는 실제 답을 전송하지 않았다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "14-ai-input-owner-materials.png",
+    "label": "학생 › 같은 합성 연구의 원본 범위",
+    "observation": "학생 자료 목록에는 개인 자료와 공동 자료가 있다. 모델 응답은 이 장면에서 실행하지 않았다.",
+    "source": "Margin-repo/apps/home-preview/supabase/functions/ai-assist/index.ts:480",
+    "mode": "격리 SQL · AI 호출 없음",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "15-ai-input-editor-materials.png",
+    "label": "편집자 › 같은 합성 연구의 원본 범위",
+    "observation": "이전 장면과 같은 연구에서 개인 자료의 제목·본문을 제외한다. 해당 모델 출력까지 확인하려면 운영 질문이 필요하다.",
+    "source": "Margin-repo/apps/home-preview/supabase/functions/ai-assist/index.ts:480",
+    "mode": "격리 SQL · AI 호출 없음",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "16-trash-warning.png",
+    "label": "학생 › 연구 휴지통 이동 확인",
+    "observation": "휴지통 이동 시 공유 중 교수 링크가 멈추고 연구를 복원해도 링크는 자동 재개되지 않는다는 안내.",
+    "source": "Margin-repo/apps/home-preview/src/pages/SettingsPage.tsx:1085",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "17-trash-card.png",
+    "label": "학생 › 휴지통 카드에 복원과 완전히 삭제",
+    "observation": "완전히 삭제는 버튼과 확인창 열기·취소만 봤다. 데이터 검증은 가상 DB에서 했다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/AuthPages.tsx:580",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "18-permanent-confirm.png",
+    "label": "학생 › 완전히 삭제 확인창",
+    "observation": "영구 삭제는 별도 창에 안내와 슬라이더가 나온다. 이 창에서는 취소했다.",
+    "source": "Margin-repo/apps/home-preview/src/components/PermanentResearchDelete.tsx:104",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "19-restored-request-remains-stopped.png",
+    "label": "학생 › 연구 복원 뒤 기존 공유 링크는 중지",
+    "observation": "원래 공유 중이던 A와 원래 중지된 B 모두 중지 상태였다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261107001631_restore_research_references.sql:21",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "20-restored-professor-cannot-open.png",
+    "label": "지정 교수 › 연구 복원 뒤 같은 링크는 안 열림",
+    "observation": "연구 복원으로 이전 교수 링크가 재개되지 않았다.",
+    "source": "Margin-repo/apps/home-preview/supabase/tests/backend.test.mjs:220",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  }
+]

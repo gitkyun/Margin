@@ -1,0 +1,145 @@
+[
+  {
+    "label": "AI Elements › 문장 옆 인용 버튼",
+    "observation": "공식 Base UI 데모. React 문장 끝 인용 버튼을 눌러서 출처를 표시하는 조작과 본문 위치를 확인했다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://ui.shadcn.com/docs/ai-elements/base/inline-citation",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "shadcn-ui",
+    "file": "21-inline-citation.jpg",
+    "captured_at": "2026-11-25T22:26:55+09:00"
+  },
+  {
+    "label": "AI Elements › 실제 도구 상태를 설명하는 접힘 행",
+    "observation": "공식 예제의 성공 행을 펼쳤다. 성공과 실패를 항목별로 담으며 예시 숫자는 마진 모델 사용량과 무관하다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://ui.shadcn.com/docs/ai-elements/base/tool",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "shadcn-ui",
+    "file": "22-tool-disclosure.jpg",
+    "captured_at": "2026-11-25T22:26:55+09:00"
+  },
+  {
+    "label": "PDF.js › 여러 페이지 본문에서 검색",
+    "observation": "공식 샘플 PDF의 검색 UI에 trace 입력 후 결과 이동을 눌렀다. 마진 PDF 엔진 재활용 시 비교할 기능이다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://mozilla.github.io/pdf.js/web/viewer.html",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "pdf-js",
+    "file": "24-pdf-find.jpg",
+    "captured_at": "2026-11-25T22:27:19+09:00"
+  },
+  {
+    "label": "EasyUI › 삼단 버전 목록에서 변경 전후 펼치기",
+    "observation": "공식 Recovery Ledger 샘플에서 이전 버전을 눌러 같은 자리에서 변경 전후를 읽었다. 브라우저의 제품 데이터는 수정되지 않는다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://easyui.site/components/recovery-ledger",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "easyui",
+    "file": "25-recovery-ledger.jpg",
+    "captured_at": "2026-11-25T22:27:25+09:00"
+  },
+  {
+    "label": "Streamdown › 같은 합성 값의 한국어 표·수식",
+    "observation": "공식 예제에 한국어 긴 행과 수식을 넣어 결과를 확인했다. 이 예제에는 마진 인용 객체나 모델 호출을 연결하지 않았다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://streamdown.ai/playground",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "streamdown",
+    "file": "26-streamdown-korean.jpg",
+    "captured_at": "2026-11-25T22:27:37+09:00"
+  },
+  {
+    "label": "EasyUI › 선택을 해제한 뒤 모두 고르기",
+    "observation": "공식 샘플에서 선택을 해제하고 전체 4건을 골랐다. 표시되는 일괄 이동·공유·삭제 막대의 위치를 확인했다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://easyui.site/components/selection-basket",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "easyui",
+    "file": "27-selection-basket.jpg",
+    "captured_at": "2026-11-25T22:27:52+09:00"
+  },
+  {
+    "label": "ReUI › 조건을 하나 더 넣는 필터 선택",
+    "observation": "공식 Base UI 샘플에서 Add filter를 눌러 조건 필드 선택 UI를 확인했다. 예시 규칙은 마진 데이터와 연결되어 있지 않다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://reui.io/docs/components/base/filters",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "reui",
+    "file": "28-reui-filter-field.jpg",
+    "captured_at": "2026-11-25T22:27:53+09:00"
+  },
+  {
+    "label": "Kokonut › 저장 상태 공식 예제에서 오프라인 입력",
+    "observation": "공식 샘플의 Go offline을 누르고 합성 원고를 입력했다. 예제는 저장 상태를 보여 주며 마진의 저장이나 동기화를 실행하지 않는다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://kokonutui.com/docs/feedback/save-status",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "kokonut-ui",
+    "file": "29-kokonut-offline.jpg",
+    "captured_at": "2026-11-25T22:27:59+09:00"
+  },
+  {
+    "label": "ReUI › 담당자 여러 명의 현재 선택과 미지정",
+    "observation": "담당자 값 버튼을 실제로 눌러 검색과 선택된 담당자를 확인했다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://reui.io/docs/components/base/filters",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "reui",
+    "file": "30-reui-assignee.jpg",
+    "captured_at": "2026-11-25T22:28:08+09:00"
+  },
+  {
+    "label": "Kokonut › 온라인 복귀 후 샘플 저장 상태",
+    "observation": "가상 편집기를 다시 온라인으로 전환해 Saved just now를 확인했다. 실제 마진 데이터 저장과는 별도다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://kokonutui.com/docs/feedback/save-status",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "kokonut-ui",
+    "file": "31-kokonut-resaved.jpg",
+    "captured_at": "2026-11-25T22:28:11+09:00"
+  },
+  {
+    "label": "affectUI › 다크 모드 댓글 스레드",
+    "observation": "공식 예제에서 다크 모드와 완료 내역 접기 전후를 눌렀다. 한 스레드의 시각 레퍼런스다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://www.affectui.com/components/comment-thread",
+    "mode": "라이브러리 · 공식 데모 직접 조작",
+    "product": "affectui",
+    "file": "33-affect-thread.jpg",
+    "captured_at": "2026-11-25T22:28:42+09:00"
+  }
+]

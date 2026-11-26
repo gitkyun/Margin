@@ -1,0 +1,54 @@
+[
+  {
+    "label": "매니패스트 › 체험 채팅에서 선택지 누르기",
+    "observation": "온보딩 데모에서 POS 연동을 눌러 선택 상태와 선택 완료 버튼 활성화를 확인했다. 사용자 입력이 제한된 공개 체험이다.",
+    "viewport": {
+      "h": 772,
+      "w": 896
+    },
+    "source": "https://manyfast.io/dev/onboarding-demo?case=b",
+    "mode": "참고 서비스 · 공개 상호작용",
+    "product": "manyfast",
+    "file": "12-manyfast-selected-option.jpg",
+    "captured_at": "2026-11-25T22:25:17+09:00"
+  },
+  {
+    "label": "매니패스트 › 선택을 확정한 후 사용자 답변 표시",
+    "observation": "선택 완료가 답변을 추가했다. 공개 체험에서 안내하는 제한된 선택 플로우를 직접 눌렀다.",
+    "viewport": {
+      "h": 772,
+      "w": 896
+    },
+    "source": "https://manyfast.io/dev/onboarding-demo?case=b",
+    "mode": "참고 서비스 · 공개 상호작용",
+    "product": "manyfast",
+    "file": "13-manyfast-after-option.jpg",
+    "captured_at": "2026-11-25T22:25:25+09:00"
+  },
+  {
+    "label": "AI 검색 결과 검증 › 답변에 적힌 Zotero 주소 열기",
+    "observation": "마진 웹 검색 답변 본문의 주소를 독립해서 열었을 때 Zotero 공식 사이트의 Page not found가 표시됐다. 공식 PDF Reader 주소는 /support/pdf_reader이다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://www.zotero.org/support/pdf_reader_and_note_editor",
+    "mode": "참고 서비스 · 운영 AI 출처 검증",
+    "product": "zotero",
+    "file": "23-zotero-not-found.jpg",
+    "captured_at": "2026-11-25T22:27:09+09:00"
+  },
+  {
+    "label": "AI 검색 근거 검증 › Google 인용에서 Zotero 공식 문서로 도착",
+    "observation": "마진 근거 목록의 첫 인용을 실제로 눌렀더니 공식 PDF Reader 주소를 열었다. 답변 본문에 적힌 404 주소와 도착지가 달랐다.",
+    "viewport": {
+      "h": 772,
+      "w": 896
+    },
+    "source": "https://www.zotero.org/support/pdf_reader",
+    "mode": "참고 서비스 · 운영 AI 출처 검증",
+    "product": "zotero",
+    "file": "32-zotero-citation-resolved.jpg",
+    "captured_at": "2026-11-25T22:28:36+09:00"
+  }
+]

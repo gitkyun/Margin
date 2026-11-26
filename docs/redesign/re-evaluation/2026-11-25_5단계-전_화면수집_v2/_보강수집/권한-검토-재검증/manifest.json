@@ -1,0 +1,233 @@
+[
+  {
+    "file": "01-student-two-items.png",
+    "label": "학생 › PDF가 붙은 두 항목 선택",
+    "observation": "두 수정 결과를 골랐다. 같은 가상 PDF의 1쪽·2쪽이다.",
+    "source": "Margin-repo/apps/home-preview/src/components/reviews/ReviewComposeDialog.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "02-student-share-preview.png",
+    "label": "학생 › 공개 범위 확인",
+    "observation": "링크 만들기 전에 연구 방향, 지정 교수, 설명과 첨부 파일의 범위를 본다. 메일 발송은 실행하지 않았다.",
+    "source": "Margin-repo/apps/home-preview/src/components/reviews/ReviewComposeDialog.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "03-student-request-saved.png",
+    "label": "학생 › 저장된 두 항목과 발신 조작",
+    "observation": "공유 설정과 다시 확인은 보인다. 교수 응답 양식은 표시되지 않는다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "04-professor-only.png",
+    "label": "지정 교수 › 단독 검토 화면",
+    "observation": "같은 주소에서 최신 차수에 응답할 수 있다. 연구 관리 메뉴와 비공개 가상 PDF는 열리지 않는다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "05-editor-no-response.png",
+    "label": "공동연구자 › 편집자지만 지정 교수는 아닌 경우",
+    "observation": "공유 설정은 표시되고 교수 응답 양식은 표시되지 않는다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "06-outside-denied.png",
+    "label": "다른 계정 › 같은 검토 링크의 접근 거절",
+    "observation": "본문과 공유 파일, 응답 조작을 볼 수 없다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "07-signed-out.png",
+    "label": "비로그인 › 검토 링크에서 로그인 안내",
+    "observation": "로그인 전에는 검토 내용이 표시되지 않는다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "08-professor-reason-required.png",
+    "label": "교수 › 수정 요청 사유 입력 전",
+    "observation": "사유 없이 저장을 눌렀다. 해당 항목의 SQL 응답은 0건이다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "09-professor-changes-saved.png",
+    "label": "교수 › A에 추가 수정 필요 저장",
+    "observation": "수정 요청과 사유가 저장된 뒤 다시 표시된다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "10-professor-item-b-confirmed.png",
+    "label": "교수 › B에 수정 내용 확인 저장",
+    "observation": "두 항목의 응답은 독립적으로 저장된다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "11-professor-pin-posted.png",
+    "label": "교수 › 같은 PDF 페이지에 위치 댓글 저장",
+    "observation": "가상 PDF에 직접 누른 좌표와 댓글 내용이 함께 저장된다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "12-student-recheck-confirm.png",
+    "label": "학생 › 항목 하나의 2차 재확인 확인창",
+    "observation": "두 항목 중 A만 새 차수로 올린다. 이전 설명·첨부·응답은 기록으로 남는다고 보여 준다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "13-student-recheck-created.png",
+    "label": "학생 › A는 2차, B는 1차 유지",
+    "observation": "데이터베이스에서 A의 PDF v2가 새로 고정되고 B의 1차 확인이 유지됨을 확인했다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "14-professor-old-round-readonly.png",
+    "label": "교수 › 지나간 1차 다시 보기",
+    "observation": "이전 원본과 응답 기록은 표시된다. 최신 A 2차가 있어 이전 차수 응답 버튼은 없다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "15-professor-mobile-document.png",
+    "label": "교수 › 390px 문서 보기",
+    "observation": "모바일 검토 화면을 역할과 같은 주소로 열었다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "file": "16-professor-mobile-response.png",
+    "label": "교수 › 390px 응답·댓글 탭",
+    "observation": "문서 보기와 응답·댓글을 화면 내에서 전환했다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    }
+  },
+  {
+    "file": "17-professor-after-stop.png",
+    "label": "지정 교수 › 공유 중지 뒤 같은 주소",
+    "observation": "학생의 공유 중지 후 지정 교수에게도 검토 본문과 파일이 열리지 않는다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "18-teacher-editor-invite.png",
+    "label": "학생 › 지정 교수에게 공동연구 초대 만들기",
+    "observation": "가상 링크를 만들었고 메일 전송은 모의 실패로 처리했다.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "19-teacher-editor-join.png",
+    "label": "지정 교수 › 공동연구자 초대 수락 전",
+    "observation": "초대받은 테스트 계정에서 공동연구자 초대를 연 화면.",
+    "source": "Margin-repo/apps/home-preview/supabase/migrations/20261104131740_experience_expansion.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "20-professor-editor-overlap.png",
+    "label": "지정 교수와 편집자 겸임 › 두 역할의 버튼이 동시에 열림",
+    "observation": "같은 검토·PDF에 교수 응답, 공유 설정, 다시 확인 요청이 함께 표시된다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "21-professor-editor-share.png",
+    "label": "겸임 교수 › 자기 검토의 공유 설정을 열었을 때",
+    "observation": "가상 검토에서도 공유 화면이 열렸다. 수신자 변경은 하지 않았다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/reviews/ReviewDetailPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  }
+]

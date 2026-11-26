@@ -1,0 +1,57 @@
+[
+  {
+    "file": "01-home-owner.png",
+    "label": "학생 › 내 할 일과 다음 미팅 묶음",
+    "observation": "기한이 더 늦은 미팅 초안이 첫 묶음에 온다. 둘째 묶음은 이름이 있고 ‘내 할 일’에도 미담당이 들어온다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/HomePage.tsx:562",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "02-home-editor.png",
+    "label": "공동편집자 › 같은 연구의 내 할 일",
+    "observation": "편집자가 맡은 일과 미담당이 남는다. 학생의 미팅 초안은 이 탭에서 빠졌다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/HomePage.tsx:748",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "03-home-all.png",
+    "label": "공동편집자 › 모두로 전환",
+    "observation": "같은 미팅 초안과 세 할 일이 모두 나온다. 선택 범위와 우선순위를 독립해서 설계할 수 있다.",
+    "source": "Margin-repo/apps/home-preview/src/lib/home-lists.ts:41",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "04-docs-scope-wide.png",
+    "label": "마진 › 넓은 목록에 공개 범위 열",
+    "observation": "함께 보기와 나만 보기 열이 표시된다. 합성 자료의 공개 범위는 서로 다르다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/docs/docs.css:446",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1760,
+      "h": 990
+    }
+  },
+  {
+    "file": "05-docs-scope-preview.png",
+    "label": "마진 › 같은 표를 미리보기로 열었을 때",
+    "observation": "오른쪽 미리보기와 함께 목록 열이 줄었다. 개인 자료 자물쇠는 남았지만 공동 자료의 함께 보기 열은 화면에서 빠졌다.",
+    "source": "Margin-repo/apps/home-preview/src/pages/docs/DocsPage.tsx:634",
+    "mode": "격리 마진 실화면",
+    "viewport": {
+      "w": 1760,
+      "h": 990
+    }
+  }
+]

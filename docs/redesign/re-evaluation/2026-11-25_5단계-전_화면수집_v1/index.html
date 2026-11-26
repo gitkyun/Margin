@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마진 화면 비교 갤러리</title>
+<style>
+:root{color-scheme:light;font:16px/1.55 system-ui,sans-serif;color:#152530;background:#f2f5f7}
+*,*::before,*::after{box-sizing:border-box}body{margin:0}a{color:#13566a}
+:focus-visible{outline:3px solid #177989;outline-offset:3px}[hidden]{display:none!important}
+main{max-width:1480px;margin:auto;padding:28px clamp(15px,4vw,56px) 64px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px 28px;margin-bottom:19px}
+h1{font-size:clamp(1.65rem,4vw,2.6rem);line-height:1.16;margin:0;font-weight:740;letter-spacing:-.045em}
+header a{font-weight:660;text-underline-offset:.23em}label{display:grid;max-width:32rem;gap:5px;font-weight:650}
+input,button{font:inherit}input{width:100%;min-height:46px;padding:8px 12px;background:white;color:inherit;border:1px solid #82939b;border-radius:8px}
+nav{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}.count{color:#4b5d65;font-size:.94rem}
+button{padding:7px 12px;min-height:44px;border:1px solid #84989e;border-radius:8px;background:#fff;color:inherit;cursor:pointer}
+button[aria-pressed="true"]{background:#16454d;color:white;border-color:#16454d;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,305px),1fr));gap:16px}
+.card{background:#fff;border:1px solid #d4dfe3;border-radius:11px;overflow:hidden;min-width:0}
+.thumb{display:block;width:100%;aspect-ratio:16/10;background:#e7edf0;border-bottom:1px solid #dce3e5}
+.thumb img{display:block;width:100%;height:100%;object-fit:contain}.card-body{padding:12px 14px 16px;overflow-wrap:anywhere}
+.product{font-size:.83rem;color:#13586c;font-weight:710}h2{margin:.25em 0 .34em;font-size:1.1rem;line-height:1.35}
+.card p{margin:.2em 0 .65em;font-size:.92rem;color:#253943}small{color:#50626b;font-size:.76rem}
+dialog{width:min(1220px,calc(100% - 18px));max-width:none;max-height:94dvh;padding:15px;border:1px solid #cad9df;border-radius:12px;color:#152530}
+dialog::backdrop{background:#152530bc}.viewer-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:7px}
+.viewer-actions{display:flex;gap:6px}.viewer img{display:block;max-height:69dvh;max-width:100%;margin:10px auto;object-fit:contain}
+.viewer p{margin:8px 0}.viewer a{text-underline-offset:.25em}
+@media (max-width:460px){main{padding-top:18px}button{padding-inline:.64em}}
+</style></head>
+<body><main>
+<header><h1>마진 화면 비교 갤러리</h1><a href="README.md">화면별 1:1 대조표</a></header>
+<label for="search">화면 이름 또는 조작 검색<input id="search" type="search" placeholder="예: 화면 모드, 원고 버전, 검토 요청"></label>
+<nav aria-label="제품 필터"><button type="button" data-filter="all" aria-pressed="true">전체 <span>125</span></button><button type="button" data-filter="toss-securities" aria-pressed="false">토스증권 <span>17</span></button><button type="button" data-filter="liner" aria-pressed="false">라이너 <span>12</span></button><button type="button" data-filter="manyfast" aria-pressed="false">매니패스트 <span>29</span></button><button type="button" data-filter="margin" aria-pressed="false">마진 <span>63</span></button><button type="button" data-filter="opensurvey" aria-pressed="false">오픈서베이 <span>1</span></button><button type="button" data-filter="modulify" aria-pressed="false">Modulify <span>3</span></button></nav><p id="result" class="count" role="status">125장</p>
+<section class="grid" aria-label="수집 화면"><article class="card" data-product="toss-securities" data-keywords="toss-securities/01-theme-light.jpg 토스증권">
+<a class="thumb" href="toss-securities/01-theme-light.jpg"><img src="toss-securities/01-theme-light.jpg" alt="설정 › 색상 모드 라이트 선택" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>설정 › 색상 모드 라이트 선택</h2><p>라이트·다크 미리보기 카드 2종. 라이트 선택 시 즉시 반영.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:28:07</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/02-theme-dark.jpg 토스증권">
+<a class="thumb" href="toss-securities/02-theme-dark.jpg"><img src="toss-securities/02-theme-dark.jpg" alt="설정 › 색상 모드 다크 선택" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>설정 › 색상 모드 다크 선택</h2><p>바꾸면 열린 설정과 뒤 배경이 함께 바뀜.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:28:31</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/03-rail-left.jpg 토스증권">
+<a class="thumb" href="toss-securities/03-rail-left.jpg"><img src="toss-securities/03-rail-left.jpg" alt="설정 › 리모콘 왼쪽" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>설정 › 리모콘 왼쪽</h2><p>연구 도구 사이드 창 위치와 대응. 왼쪽을 선택한 상태.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:28:31</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/04-rail-right.jpg 토스증권">
+<a class="thumb" href="toss-securities/04-rail-right.jpg"><img src="toss-securities/04-rail-right.jpg" alt="설정 › 리모콘 오른쪽" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>설정 › 리모콘 오른쪽</h2><p>같은 카드 안에서 현재 위치를 확인하고 즉시 바꿈.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:28:32</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/05-shortcuts.jpg 토스증권">
+<a class="thumb" href="toss-securities/05-shortcuts.jpg"><img src="toss-securities/05-shortcuts.jpg" alt="설정 › 단축키" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>설정 › 단축키</h2><p>켜기·끄기를 포함한 키 조작 설정.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:29:42</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/06-notification-settings.jpg 토스증권">
+<a class="thumb" href="toss-securities/06-notification-settings.jpg"><img src="toss-securities/06-notification-settings.jpg" alt="설정 › 알림" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>설정 › 알림</h2><p>앱 사용·거래에 반영되는 설정은 읽음만. 조작은 표시를 확인.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:29:43</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/08-feedback-ready.jpg 토스증권">
+<a class="thumb" href="toss-securities/08-feedback-ready.jpg"><img src="toss-securities/08-feedback-ready.jpg" alt="의견 › 점수·문장 입력" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>의견 › 점수·문장 입력</h2><p>제출 가능 상태까지. 운영 서비스로 의견은 보내지 않음.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:31:11</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/80-market-calendar.jpg 토스증권">
+<a class="thumb" href="toss-securities/80-market-calendar.jpg"><img src="toss-securities/80-market-calendar.jpg" alt="토스증권 › 증시 캘린더" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>토스증권 › 증시 캘린더</h2><p>날짜 선택과 시장 일정을 비교할 공개 화면.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:53:01</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/81-screener-main.jpg 토스증권">
+<a class="thumb" href="toss-securities/81-screener-main.jpg"><img src="toss-securities/81-screener-main.jpg" alt="토스증권 › 주식 골라보기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>토스증권 › 주식 골라보기</h2><p>조건을 선택해 목록을 좁히는 탐색 화면.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:53:02</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/82-calendar-next.jpg 토스증권">
+<a class="thumb" href="toss-securities/82-calendar-next.jpg"><img src="toss-securities/82-calendar-next.jpg" alt="증시 캘린더 › 다음 달 이동" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>증시 캘린더 › 다음 달 이동</h2><p>이전·다음 달 조작 뒤 날짜 내용이 바뀜.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:59</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/83-screener-filters.jpg 토스증권">
+<a class="thumb" href="toss-securities/83-screener-filters.jpg"><img src="toss-securities/83-screener-filters.jpg" alt="주식 골라보기 › 필터 추가" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>주식 골라보기 › 필터 추가</h2><p>조건을 추가하는 선택 목록. 주문 조작은 수행하지 않음.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:59</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/84-screener-country-filter.jpg 토스증권">
+<a class="thumb" href="toss-securities/84-screener-country-filter.jpg"><img src="toss-securities/84-screener-country-filter.jpg" alt="주식 골라보기 › 국가 필터" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>주식 골라보기 › 국가 필터</h2><p>국가·시장·산업을 독립적으로 좁히는 UI.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:58:13</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/85-home-industries.jpg 토스증권">
+<a class="thumb" href="toss-securities/85-home-industries.jpg"><img src="toss-securities/85-home-industries.jpg" alt="홈 › 지금 뜨는 산업" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>홈 › 지금 뜨는 산업</h2><p>공개 시세 영역의 보기 전환.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:58:49</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/86-home-market-flow.jpg 토스증권">
+<a class="thumb" href="toss-securities/86-home-market-flow.jpg"><img src="toss-securities/86-home-market-flow.jpg" alt="홈 › 외국인·기관 매매 동향" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>홈 › 외국인·기관 매매 동향</h2><p>공개 시세 영역의 보기 전환.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:58:49</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/87-home-realtime.jpg 토스증권">
+<a class="thumb" href="toss-securities/87-home-realtime.jpg"><img src="toss-securities/87-home-realtime.jpg" alt="홈 › 실시간 차트" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>홈 › 실시간 차트</h2><p>공개 시세 영역의 보기 전환.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:58:50</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/88-rail-close.jpg 토스증권">
+<a class="thumb" href="toss-securities/88-rail-close.jpg"><img src="toss-securities/88-rail-close.jpg" alt="토스증권 › 리모콘 접기 후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>토스증권 › 리모콘 접기 후</h2><p>리모콘이 닫히고 본문이 넓어지는 상태.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:58:50</small></div></article>
+<article class="card" data-product="toss-securities" data-keywords="toss-securities/89-rail-open.jpg 토스증권">
+<a class="thumb" href="toss-securities/89-rail-open.jpg"><img src="toss-securities/89-rail-open.jpg" alt="토스증권 › 리모콘 다시 열기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">토스증권</span><h2>토스증권 › 리모콘 다시 열기</h2><p>오른쪽 레일의 재진입과 본문 폭 변화. 보유·주문 영역 제외.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:58:50</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/02-personal-ai-settings.jpg 라이너">
+<a class="thumb" href="liner/02-personal-ai-settings.jpg"><img src="liner/02-personal-ai-settings.jpg" alt="설정 › AI 설정" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>설정 › AI 설정</h2><p>답변 언어 등 연구 도우미 개인 설정과 대응.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:30:12</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/03-highlight-settings.jpg 라이너">
+<a class="thumb" href="liner/03-highlight-settings.jpg"><img src="liner/03-highlight-settings.jpg" alt="설정 › 하이라이트 설정" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>설정 › 하이라이트 설정</h2><p>브라우저 확장에서 쓸 하이라이트 옵션과 설정 진입.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:30:15</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/06-collections.jpg 라이너">
+<a class="thumb" href="liner/06-collections.jpg"><img src="liner/06-collections.jpg" alt="라이너 › 소스 컬렉션" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>라이너 › 소스 컬렉션</h2><p>공용 자료와 개인 데스크톱 메뉴의 관계.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:34:58</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/07-collection-create-input.jpg 라이너">
+<a class="thumb" href="liner/07-collection-create-input.jpg"><img src="liner/07-collection-create-input.jpg" alt="소스 컬렉션 › 이름 입력" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>소스 컬렉션 › 이름 입력</h2><p>새로운 비교용 항목만 입력.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:35:01</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/80-collection-sharing.jpg 라이너">
+<a class="thumb" href="liner/80-collection-sharing.jpg"><img src="liner/80-collection-sharing.jpg" alt="소스 컬렉션 › 함께 작업할 사람과 링크" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>소스 컬렉션 › 함께 작업할 사람과 링크</h2><p>테스트 모음에 대해 공유 폼만 열어 봄.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:54:59</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/81-question-home.jpg 라이너">
+<a class="thumb" href="liner/81-question-home.jpg"><img src="liner/81-question-home.jpg" alt="라이너 › 질문 홈" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>라이너 › 질문 홈</h2><p>개인 사이드바를 제외한 검색·작업 시작 화면.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:55:24</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/82-model-select.jpg 라이너">
+<a class="thumb" href="liner/82-model-select.jpg"><img src="liner/82-model-select.jpg" alt="질문 홈 › 모델 선택 메뉴" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>질문 홈 › 모델 선택 메뉴</h2><p>현재 플랜에서 선택 가능한 모델과 잠긴 항목이 구분되는 화면.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:55:56</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/83-notifications.jpg 라이너">
+<a class="thumb" href="liner/83-notifications.jpg"><img src="liner/83-notifications.jpg" alt="라이너 › 알림 패널" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>라이너 › 알림 패널</h2><p>계정 식별 없이 알림 구조와 빈 상태를 봄.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:57:37</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/84-source-after-reload.jpg 라이너">
+<a class="thumb" href="liner/84-source-after-reload.jpg"><img src="liner/84-source-after-reload.jpg" alt="새로고침 후 › 컬렉션과 가상 메모" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>새로고침 후 › 컬렉션과 가상 메모</h2><p>브라우저를 다시 열어도 업로드한 텍스트가 보임.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:04:41</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/85-source-reader-active.jpg 라이너">
+<a class="thumb" href="liner/85-source-reader-active.jpg"><img src="liner/85-source-reader-active.jpg" alt="라이너 컬렉션 › 문서 행 선택 직후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>라이너 컬렉션 › 문서 행 선택 직후</h2><p>자체 테스트 메모 행을 눌렀을 때 목록에 표시된 상태. 별도 뷰어 화면은 포함하지 않았다.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:04:41</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/86-collection-question-scope.jpg 라이너">
+<a class="thumb" href="liner/86-collection-question-scope.jpg"><img src="liner/86-collection-question-scope.jpg" alt="라이너 › 컬렉션 자료로 질문하기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>라이너 › 컬렉션 자료로 질문하기</h2><p>다음 질문에 컬렉션을 붙이는 경로. 요청은 보내지 않음.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:05:20</small></div></article>
+<article class="card" data-product="liner" data-keywords="liner/87-credits-exhausted.jpg 라이너">
+<a class="thumb" href="liner/87-credits-exhausted.jpg"><img src="liner/87-credits-exhausted.jpg" alt="라이너 › 크레딧 부족 안내" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">라이너</span><h2>라이너 › 크레딧 부족 안내</h2><p>컬렉션을 걸고 질문 창까지 진입. 충전이나 결제 없이 보이는 상태.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:05:47</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/01-general-dark.jpg 매니패스트">
+<a class="thumb" href="manyfast/01-general-dark.jpg"><img src="manyfast/01-general-dark.jpg" alt="일반 설정 › 테마와 언어" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>일반 설정 › 테마와 언어</h2><p>프로필 빠른 전환에서 다크를 선택한 결과가 일반 설정에 표시됨.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:28:30</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/04-profile-quick-tools.jpg 매니패스트">
+<a class="thumb" href="manyfast/04-profile-quick-tools.jpg"><img src="manyfast/04-profile-quick-tools.jpg" alt="프로필 › 빠른 설정" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>프로필 › 빠른 설정</h2><p>계정 식별 영역 아래 테마·언어·튜토리얼.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:32:02</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/05-theme-quick-dialog.jpg 매니패스트">
+<a class="thumb" href="manyfast/05-theme-quick-dialog.jpg"><img src="manyfast/05-theme-quick-dialog.jpg" alt="프로필 › 테마 빠른 선택" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>프로필 › 테마 빠른 선택</h2><p>세 선택지를 계정 빠른 메뉴에서 바꾸는 화면.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:34:58</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/06-search-start.jpg 매니패스트">
+<a class="thumb" href="manyfast/06-search-start.jpg"><img src="manyfast/06-search-start.jpg" alt="프로젝트·기록 검색 › 시작" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>프로젝트·기록 검색 › 시작</h2><p>검색 진입 시 입력에 초점.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:34:59</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/07-tutorial-choice.jpg 매니패스트">
+<a class="thumb" href="manyfast/07-tutorial-choice.jpg"><img src="manyfast/07-tutorial-choice.jpg" alt="기능 체험하기 › 고객사 예시 선택" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>기능 체험하기 › 고객사 예시 선택</h2><p>실제 업무 자료 없이 크레딧을 쓰지 않는 공식 예시.</p>
+<small>1139×772 · 전체 화면 · 2026-11-25 14:35:00</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/08-tutorial-step-01.jpg 매니패스트">
+<a class="thumb" href="manyfast/08-tutorial-step-01.jpg"><img src="manyfast/08-tutorial-step-01.jpg" alt="공식 예시 › 01 RFP로 초안 만들기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>공식 예시 › 01 RFP로 초안 만들기</h2><p>고객사 샘플 자료만 사용한 화면.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:35:01</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/09-tutorial-step-02.jpg 매니패스트">
+<a class="thumb" href="manyfast/09-tutorial-step-02.jpg"><img src="manyfast/09-tutorial-step-02.jpg" alt="고객사 예시 › 요청서 올리기 안내" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 요청서 올리기 안내</h2><p>첫 단계에서 예시 파일을 올리도록 안내하는 화면.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:35:01</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/10-tutorial-attachment.jpg 매니패스트">
+<a class="thumb" href="manyfast/10-tutorial-attachment.jpg"><img src="manyfast/10-tutorial-attachment.jpg" alt="고객사 예시 › 제안요청서가 채워진 상태" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 제안요청서가 채워진 상태</h2><p>공식 예시 파일과 프롬프트 자동 입력. 기본화면에 일반 크레딧 문구도 보이는 상태.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:35:01</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/80-tutorial-prd.jpg 매니패스트">
+<a class="thumb" href="manyfast/80-tutorial-prd.jpg"><img src="manyfast/80-tutorial-prd.jpg" alt="고객사 예시 › 제품 요구사항" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 제품 요구사항</h2><p>공식 고객사 샘플에서 직접 열어 봄.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:52:39</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/81-tutorial-spec.jpg 매니패스트">
+<a class="thumb" href="manyfast/81-tutorial-spec.jpg"><img src="manyfast/81-tutorial-spec.jpg" alt="고객사 예시 › 기능명세서" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 기능명세서</h2><p>공식 고객사 샘플에서 직접 열어 봄.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:52:39</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/82-tutorial-user-flow.jpg 매니패스트">
+<a class="thumb" href="manyfast/82-tutorial-user-flow.jpg"><img src="manyfast/82-tutorial-user-flow.jpg" alt="고객사 예시 › 유저플로우" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 유저플로우</h2><p>공식 고객사 샘플에서 직접 열어 봄.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:52:39</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/83-tutorial-next-05.jpg 매니패스트">
+<a class="thumb" href="manyfast/83-tutorial-next-05.jpg"><img src="manyfast/83-tutorial-next-05.jpg" alt="고객사 예시 › 다음 단계 안내" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 다음 단계 안내</h2><p>공식 고객사 샘플에서 직접 열어 봄.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:55:00</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/84-tutorial-meeting-prep-action.jpg 매니패스트">
+<a class="thumb" href="manyfast/84-tutorial-meeting-prep-action.jpg"><img src="manyfast/84-tutorial-meeting-prep-action.jpg" alt="고객사 예시 › 미팅 준비하기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 미팅 준비하기</h2><p>일반 예시 첫 미팅 준비 화면과 버튼.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:55:24</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/85-tutorial-meeting-send.jpg 매니패스트">
+<a class="thumb" href="manyfast/85-tutorial-meeting-send.jpg"><img src="manyfast/85-tutorial-meeting-send.jpg" alt="고객사 예시 › 미팅 안건 요청을 보낸 뒤" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 미팅 안건 요청을 보낸 뒤</h2><p>샘플의 준비된 회의 안건 프롬프트를 실행.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:55:56</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/86-tutorial-prep-outcome.jpg 매니패스트">
+<a class="thumb" href="manyfast/86-tutorial-prep-outcome.jpg"><img src="manyfast/86-tutorial-prep-outcome.jpg" alt="고객사 예시 › 미팅 준비 결과와 다음 작업" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 미팅 준비 결과와 다음 작업</h2><p>공식 샘플의 미팅 안건 결과 또는 그 다음 단계 안내.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:56:28</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/87-tutorial-meeting-record-entry.jpg 매니패스트">
+<a class="thumb" href="manyfast/87-tutorial-meeting-record-entry.jpg"><img src="manyfast/87-tutorial-meeting-record-entry.jpg" alt="고객사 예시 › 회의록 업로드 단계" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 회의록 업로드 단계</h2><p>샘플 회의록으로 문서를 갱신하는 도중 화면.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:57:09</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/88-tutorial-document-drawer.jpg 매니패스트">
+<a class="thumb" href="manyfast/88-tutorial-document-drawer.jpg"><img src="manyfast/88-tutorial-document-drawer.jpg" alt="고객사 예시 › 문서함 열기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 문서함 열기</h2><p>자료를 문맥 안에서 함께 보는 조작.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:57:37</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/89-tutorial-record-upload-menu.jpg 매니패스트">
+<a class="thumb" href="manyfast/89-tutorial-record-upload-menu.jpg"><img src="manyfast/89-tutorial-record-upload-menu.jpg" alt="고객사 예시 › 파일 올리기 조작" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 파일 올리기 조작</h2><p>기록 추가 드롭다운에서 업로드 방식 선택.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:58:13</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/90-tutorial-record-file-picker.jpg 매니패스트">
+<a class="thumb" href="manyfast/90-tutorial-record-file-picker.jpg"><img src="manyfast/90-tutorial-record-file-picker.jpg" alt="고객사 예시 › 회의록 업로드 창" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 회의록 업로드 창</h2><p>개인 파일 대신 준비된 샘플 회의록.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:58:48</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/92-tutorial-record-current.jpg 매니패스트">
+<a class="thumb" href="manyfast/92-tutorial-record-current.jpg"><img src="manyfast/92-tutorial-record-current.jpg" alt="고객사 예시 › 문서함의 회의록 입력 상태" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 문서함의 회의록 입력 상태</h2><p>첨부 진행 중 볼 수 있는 저장 방식과 대상.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:04:01</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/93-tutorial-record-created.jpg 매니패스트">
+<a class="thumb" href="manyfast/93-tutorial-record-created.jpg"><img src="manyfast/93-tutorial-record-created.jpg" alt="고객사 예시 › 회의록 저장 후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 회의록 저장 후</h2><p>본문 미리보기 확인 뒤 샘플 회의록을 기록으로 추가.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:04:41</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/94-tutorial-extract-decisions.jpg 매니패스트">
+<a class="thumb" href="manyfast/94-tutorial-extract-decisions.jpg"><img src="manyfast/94-tutorial-extract-decisions.jpg" alt="고객사 예시 › 회의록에서 결정 추출" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 회의록에서 결정 추출</h2><p>원문 기록에서 기획 산출물로 이어지는 결정 추출 조작.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:05:20</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/95-tutorial-decision-choice.jpg 매니패스트">
+<a class="thumb" href="manyfast/95-tutorial-decision-choice.jpg"><img src="manyfast/95-tutorial-decision-choice.jpg" alt="고객사 예시 › 추출된 결정 중 고르기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 추출된 결정 중 고르기</h2><p>회의록에서 뽑은 후보를 문서에 반영하기 전.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:05:47</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/96-tutorial-before-after.jpg 매니패스트">
+<a class="thumb" href="manyfast/96-tutorial-before-after.jpg"><img src="manyfast/96-tutorial-before-after.jpg" alt="고객사 예시 › 결정 반영 전후 비교" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 결정 반영 전후 비교</h2><p>정식 팀 기능을 공식 예시에서 눌러 본 장면. 결제 없음.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:06:24</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/97-tutorial-apply-outcome.jpg 매니패스트">
+<a class="thumb" href="manyfast/97-tutorial-apply-outcome.jpg"><img src="manyfast/97-tutorial-apply-outcome.jpg" alt="고객사 예시 › 수정안 승인 직후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 수정안 승인 직후</h2><p>선택된 수정안을 확인하고 승인 버튼을 실행.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:06:45</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/98-tutorial-decisions-review.jpg 매니패스트">
+<a class="thumb" href="manyfast/98-tutorial-decisions-review.jpg"><img src="manyfast/98-tutorial-decisions-review.jpg" alt="고객사 예시 › 남은 수정안 판정" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 남은 수정안 판정</h2><p>선택과 승인 결과·남은 상태를 확인.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:07:13</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/99-tutorial-after-approval.jpg 매니패스트">
+<a class="thumb" href="manyfast/99-tutorial-after-approval.jpg"><img src="manyfast/99-tutorial-after-approval.jpg" alt="고객사 예시 › 승인 절차 다음 화면" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 승인 절차 다음 화면</h2><p>가상 회의록 변경안 적용 뒤 이어지는 단계.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:07:27</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/100-tutorial-sync.jpg 매니패스트">
+<a class="thumb" href="manyfast/100-tutorial-sync.jpg"><img src="manyfast/100-tutorial-sync.jpg" alt="공식 예시 › 기능명세서와 사용자 흐름 동기화" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>공식 예시 › 기능명세서와 사용자 흐름 동기화</h2><p>같은 프로젝트에서 바뀐 내용이 다른 보기로 갈 때의 선택 화면.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:07:50</small></div></article>
+<article class="card" data-product="manyfast" data-keywords="manyfast/101-tutorial-sync-result.jpg 매니패스트">
+<a class="thumb" href="manyfast/101-tutorial-sync-result.jpg"><img src="manyfast/101-tutorial-sync-result.jpg" alt="고객사 예시 › 동기화 시작 직후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">매니패스트</span><h2>고객사 예시 › 동기화 시작 직후</h2><p>기능명세서에서 유저플로우로 동기화 시작을 눌렀다. 이 프레임은 실행 직후다.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 15:08:30</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/01-home-default.jpg 마진">
+<a class="thumb" href="margin/01-home-default.jpg"><img src="margin/01-home-default.jpg" alt="마진 › 연구 홈" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 연구 홈</h2><p>가상 연구의 다음 미팅, 할 일, 연구 방향.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:28:56</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/02-docs-library.jpg 마진">
+<a class="thumb" href="margin/02-docs-library.jpg"><img src="margin/02-docs-library.jpg" alt="마진 › 글·자료 목록" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 글·자료 목록</h2><p>폴더·자료·문서 목록과 올리기·새 글.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:28:57</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/03-research-switcher.jpg 마진">
+<a class="thumb" href="margin/03-research-switcher.jpg"><img src="margin/03-research-switcher.jpg" alt="마진 › 연구 전환기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 연구 전환기</h2><p>현재 연구와 모든 연구 보기·새 연구 만들기.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:28:57</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/04-display-settings.jpg 마진">
+<a class="thumb" href="margin/04-display-settings.jpg"><img src="margin/04-display-settings.jpg" alt="마진 › 화면 설정 기본 상태" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 화면 설정 기본 상태</h2><p>색상 모드·언어·시각 표시·사이드 창 위치·효과음.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:28:57</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/05-home-alerts.jpg 마진">
+<a class="thumb" href="margin/05-home-alerts.jpg"><img src="margin/05-home-alerts.jpg" alt="마진 홈 › 최근 알림" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 홈 › 최근 알림</h2><p>같은 홈에서 목록만 바뀜.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:28:57</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/06-assistant-chat.jpg 마진">
+<a class="thumb" href="margin/06-assistant-chat.jpg"><img src="margin/06-assistant-chat.jpg" alt="마진 › 연구 도우미 대화" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 연구 도우미 대화</h2><p>현재 연구를 떠나지 않고 사이드 창으로 열림.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:28:58</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/07-home-recent-meetings.jpg 마진">
+<a class="thumb" href="margin/07-home-recent-meetings.jpg"><img src="margin/07-home-recent-meetings.jpg" alt="마진 홈 › 최근 미팅" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 홈 › 최근 미팅</h2><p>같은 홈에서 목록만 바뀜.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:28:58</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/08-home-recent-docs.jpg 마진">
+<a class="thumb" href="margin/08-home-recent-docs.jpg"><img src="margin/08-home-recent-docs.jpg" alt="마진 홈 › 최근 글·자료" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 홈 › 최근 글·자료</h2><p>같은 홈에서 목록만 바뀜.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:28:58</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/09-meetings-list.jpg 마진">
+<a class="thumb" href="margin/09-meetings-list.jpg"><img src="margin/09-meetings-list.jpg" alt="마진 › 미팅 목록" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 미팅 목록</h2><p>녹음·서면·검토·시간 조율 같은 기록 유형과 예정 미팅.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:40</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/10-search-initial.jpg 마진">
+<a class="thumb" href="margin/10-search-initial.jpg"><img src="margin/10-search-initial.jpg" alt="마진 › 검색 열기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 검색 열기</h2><p>입력 초성과 빠른 이동이 있는 명령 팔레트.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:40</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/11-docs-upload-menu.jpg 마진">
+<a class="thumb" href="margin/11-docs-upload-menu.jpg"><img src="margin/11-docs-upload-menu.jpg" alt="마진 › 글·자료 올리기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 글·자료 올리기</h2><p>PDF 올리기와 웹 링크 추가 선택.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:41</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/12-assistant-suggestions.jpg 마진">
+<a class="thumb" href="margin/12-assistant-suggestions.jpg"><img src="margin/12-assistant-suggestions.jpg" alt="마진 연구 도우미 › 제안" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 연구 도우미 › 제안</h2><p>가상 연구의 제안 대기 목록.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:41</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/13-display-theme-choices.jpg 마진">
+<a class="thumb" href="margin/13-display-theme-choices.jpg"><img src="margin/13-display-theme-choices.jpg" alt="마진 설정 › 라이트·다크 전환 버튼" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 라이트·다크 전환 버튼</h2><p>화면 설정은 한 버튼으로 라이트·다크를 전환한다. 시스템 선택은 계정 메뉴에 있다.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:29:41</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/14-meeting-create-menu.jpg 마진">
+<a class="thumb" href="margin/14-meeting-create-menu.jpg"><img src="margin/14-meeting-create-menu.jpg" alt="마진 › 기록 추가 메뉴" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 기록 추가 메뉴</h2><p>전역 새로 만들기와 별개.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:43</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/15-search-results.jpg 마진">
+<a class="thumb" href="margin/15-search-results.jpg"><img src="margin/15-search-results.jpg" alt="마진 › 검색 결과" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 검색 결과</h2><p>가상 자료·할 일이 검색됨.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:43</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/16-assistant-history.jpg 마진">
+<a class="thumb" href="margin/16-assistant-history.jpg"><img src="margin/16-assistant-history.jpg" alt="마진 연구 도우미 › 실행 내역" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 연구 도우미 › 실행 내역</h2><p>같은 패널의 별도 이력 탭.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:43</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/17-search-no-results.jpg 마진">
+<a class="thumb" href="margin/17-search-no-results.jpg"><img src="margin/17-search-no-results.jpg" alt="마진 › 검색 결과 없음" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 검색 결과 없음</h2><p>없는 이름을 넣어 빈 결과를 확인.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:29:44</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/18-onboarding-start.jpg 마진">
+<a class="thumb" href="margin/18-onboarding-start.jpg"><img src="margin/18-onboarding-start.jpg" alt="마진 › 새 연구 화면을 불러오는 중" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 새 연구 화면을 불러오는 중</h2><p>연구 전환기에서 새 연구 만들기를 눌렀을 때 입력 화면으로 전환되는 중간 상태.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:30:41</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/19-written-new.jpg 마진">
+<a class="thumb" href="margin/19-written-new.jpg"><img src="margin/19-written-new.jpg" alt="마진 › 서면 피드백 입력" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 서면 피드백 입력</h2><p>붙여넣기 방식의 미팅 기록 진입.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:30:41</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/20-global-create-menu.jpg 마진">
+<a class="thumb" href="margin/20-global-create-menu.jpg"><img src="margin/20-global-create-menu.jpg" alt="마진 › 전역 새로 만들기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 전역 새로 만들기</h2><p>어느 연구 화면에서나 들어오는 생성 메뉴.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:30:42</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/21-onboarding-preview-name.jpg 마진">
+<a class="thumb" href="margin/21-onboarding-preview-name.jpg"><img src="margin/21-onboarding-preview-name.jpg" alt="마진 › 온보딩 이름·설명 반영" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 온보딩 이름·설명 반영</h2><p>오른쪽 미리보기에 입력값 표시.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:31:10</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/22-doc-new.jpg 마진">
+<a class="thumb" href="margin/22-doc-new.jpg"><img src="margin/22-doc-new.jpg" alt="마진 › 새 글" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 새 글</h2><p>문서 제목과 공개 범위 입력 창.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:31:11</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/23-written-saved.jpg 마진">
+<a class="thumb" href="margin/23-written-saved.jpg"><img src="margin/23-written-saved.jpg" alt="마진 › 서면 피드백 저장 완료" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 서면 피드백 저장 완료</h2><p>가상 제목과 내용 저장 뒤 미팅 기록에 진입.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:31:12</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/24-writer-opened.jpg 마진">
+<a class="thumb" href="margin/24-writer-opened.jpg"><img src="margin/24-writer-opened.jpg" alt="마진 › 가상 원고 생성 후 작성 화면" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 가상 원고 생성 후 작성 화면</h2><p>실제 저장 뒤 새 원고 페이지.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:31:35</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/25-profile-theme.jpg 마진">
+<a class="thumb" href="margin/25-profile-theme.jpg"><img src="margin/25-profile-theme.jpg" alt="마진 › 계정 메뉴 화면 모드" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 계정 메뉴 화면 모드</h2><p>가상 계정. 설정창 밖에서 직접 전환하는 조작.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:31:35</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/26-onboarding-stage.jpg 마진">
+<a class="thumb" href="margin/26-onboarding-stage.jpg"><img src="margin/26-onboarding-stage.jpg" alt="마진 › 온보딩 현재 단계" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 온보딩 현재 단계</h2><p>선행연구를 직접 고른 뒤 다음 질문.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:34:58</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/27-onboarding-schedule.jpg 마진">
+<a class="thumb" href="margin/27-onboarding-schedule.jpg"><img src="margin/27-onboarding-schedule.jpg" alt="마진 › 온보딩 미팅·투고 목표일" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 온보딩 미팅·투고 목표일</h2><p>다음 미팅과 목표일을 입력하는 구간.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:34:59</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/28-writer-version-menu.jpg 마진">
+<a class="thumb" href="margin/28-writer-version-menu.jpg"><img src="margin/28-writer-version-menu.jpg" alt="마진 › 새 원고 본문 입력" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 새 원고 본문 입력</h2><p>가상 원고를 작성한 화면. 저장한 버전과 비교한 장면은 뒤에 따로 있다.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:34:59</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/29-feedback-input.jpg 마진">
+<a class="thumb" href="margin/29-feedback-input.jpg"><img src="margin/29-feedback-input.jpg" alt="마진 › 직접 피드백 입력" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 직접 피드백 입력</h2><p>가상 제목·내용 저장 직전.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:35:00</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/30-feedback-linked.jpg 마진">
+<a class="thumb" href="margin/30-feedback-linked.jpg"><img src="margin/30-feedback-linked.jpg" alt="마진 › 피드백이 미팅 기록에 연결됨" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 피드백이 미팅 기록에 연결됨</h2><p>미팅 원문 옆의 피드백·할 일에 새로 저장.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:35:00</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/80-settings-profile.jpg 마진">
+<a class="thumb" href="margin/80-settings-profile.jpg"><img src="margin/80-settings-profile.jpg" alt="마진 설정 › 프로필" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 프로필</h2><p>표시 이름, 로그인 이메일, 비밀번호 변경 폼</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:06</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin-live/80-assistant-live-result.jpg 마진">
+<a class="thumb" href="margin-live/80-assistant-live-result.jpg"><img src="margin-live/80-assistant-live-result.jpg" alt="운영 마진 › 빈 테스트 연구의 실제 AI 응답" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 운영</span><h2>운영 마진 › 빈 테스트 연구의 실제 AI 응답</h2><p>가상 문장 한 건만 요청. 현재 사용량과 응답 화면.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:56:27</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/81-settings-appearance.jpg 마진">
+<a class="thumb" href="margin/81-settings-appearance.jpg"><img src="margin/81-settings-appearance.jpg" alt="마진 설정 › 화면" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 화면</h2><p>색상 모드, 언어, 시각, 사운드, 창 위치</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:07</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/82-settings-notifications.jpg 마진">
+<a class="thumb" href="margin/82-settings-notifications.jpg"><img src="margin/82-settings-notifications.jpg" alt="마진 설정 › 알림" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 알림</h2><p>검토·할 일·일정·공동연구 알림 선택</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:07</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/83-settings-assistant.jpg 마진">
+<a class="thumb" href="margin/83-settings-assistant.jpg"><img src="margin/83-settings-assistant.jpg" alt="마진 설정 › 연구 도우미" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 연구 도우미</h2><p>기본 모델·답변 깊이, 개인 지침</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:07</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/84-settings-usage.jpg 마진">
+<a class="thumb" href="margin/84-settings-usage.jpg"><img src="margin/84-settings-usage.jpg" alt="마진 설정 › 사용량·플랜" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 사용량·플랜</h2><p>잔액·이력·공개 플랜 안내</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:07</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/85-settings-shortcuts.jpg 마진">
+<a class="thumb" href="margin/85-settings-shortcuts.jpg"><img src="margin/85-settings-shortcuts.jpg" alt="마진 설정 › 단축키" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 단축키</h2><p>현재 앱의 단축키 표</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:08</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/86-settings-research-info.jpg 마진">
+<a class="thumb" href="margin/86-settings-research-info.jpg"><img src="margin/86-settings-research-info.jpg" alt="마진 설정 › 연구 정보" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 연구 정보</h2><p>연구 질문·투고·지도교수와 저장 조작</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:08</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/87-settings-people.jpg 마진">
+<a class="thumb" href="margin/87-settings-people.jpg"><img src="margin/87-settings-people.jpg" alt="마진 설정 › 함께하는 사람" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 함께하는 사람</h2><p>초대 폼과 역할·상태</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:08</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/88-settings-cadence.jpg 마진">
+<a class="thumb" href="margin/88-settings-cadence.jpg"><img src="margin/88-settings-cadence.jpg" alt="마진 설정 › 미팅 주기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 미팅 주기</h2><p>요일·시각·반복과 다음 일정</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:09</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/89-settings-danger.jpg 마진">
+<a class="thumb" href="margin/89-settings-danger.jpg"><img src="margin/89-settings-danger.jpg" alt="마진 설정 › 보관·삭제" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 설정 › 보관·삭제</h2><p>보관, 휴지통 이동과 설명</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:54:09</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/90-notification-inbox.jpg 마진">
+<a class="thumb" href="margin/90-notification-inbox.jpg"><img src="margin/90-notification-inbox.jpg" alt="마진 › 가상 알림 목록" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 가상 알림 목록</h2><p>읽음 처리와 교수 응답 알림을 확인하는 진입점.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:55:25</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/91-notification-all.jpg 마진">
+<a class="thumb" href="margin/91-notification-all.jpg"><img src="margin/91-notification-all.jpg" alt="마진 › 알림 전체 필터" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 알림 전체 필터</h2><p>가상 알림의 전부·미확인 조작.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:55:56</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/92-notification-mark-read.jpg 마진">
+<a class="thumb" href="margin/92-notification-mark-read.jpg"><img src="margin/92-notification-mark-read.jpg" alt="마진 › 일반 알림 읽음 처리" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 일반 알림 읽음 처리</h2><p>검토 알림을 제외하고 읽음 처리하는 버튼을 실제 클릭.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:55:57</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/93-flow-timeline.jpg 마진">
+<a class="thumb" href="margin/93-flow-timeline.jpg"><img src="margin/93-flow-timeline.jpg" alt="마진 › 연구 흐름 시간순" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 연구 흐름 시간순</h2><p>단계 카드와 주요 목표. 가상 연구.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:57:07</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/94-flow-monthly.jpg 마진">
+<a class="thumb" href="margin/94-flow-monthly.jpg"><img src="margin/94-flow-monthly.jpg" alt="마진 연구 흐름 › 월별" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 연구 흐름 › 월별</h2><p>같은 가상 연구의 로드맵 보기.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:57:07</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/95-flow-map.jpg 마진">
+<a class="thumb" href="margin/95-flow-map.jpg"><img src="margin/95-flow-map.jpg" alt="마진 연구 흐름 › 관계도" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 연구 흐름 › 관계도</h2><p>같은 가상 연구의 로드맵 보기.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:57:07</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/96-flow-calendar.jpg 마진">
+<a class="thumb" href="margin/96-flow-calendar.jpg"><img src="margin/96-flow-calendar.jpg" alt="마진 연구 흐름 › 달력" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 연구 흐름 › 달력</h2><p>단계 보기에서 달력 탭으로 전환.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:57:08</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/97-review-owner.jpg 마진">
+<a class="thumb" href="margin/97-review-owner.jpg"><img src="margin/97-review-owner.jpg" alt="마진 › 학생의 검토 상세" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 학생의 검토 상세</h2><p>검토 항목, 두 사람이 보는 원고, 교수 응답과 댓글이 각 열에 있음.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:57:08</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/98-review-pin-mode.jpg 마진">
+<a class="thumb" href="margin/98-review-pin-mode.jpg"><img src="margin/98-review-pin-mode.jpg" alt="마진 검토 › PDF에 위치 핀 찍기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 검토 › PDF에 위치 핀 찍기</h2><p>본문 PDF에서 댓글 위치를 정하는 모드.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:57:08</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/99-appearance-toggle-result.jpg 마진">
+<a class="thumb" href="margin/99-appearance-toggle-result.jpg"><img src="margin/99-appearance-toggle-result.jpg" alt="마진 화면 설정 › 색상 선택 직후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 화면 설정 › 색상 선택 직후</h2><p>버튼 자체는 라이트·다크 2단 전환. 시스템은 계정 메뉴에서 별도 선택.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:57:09</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/100-review-share-options.jpg 마진">
+<a class="thumb" href="margin/100-review-share-options.jpg"><img src="margin/100-review-share-options.jpg" alt="마진 검토 › 공유 설정" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 검토 › 공유 설정</h2><p>학생이 공유 상태·수신자·메일 알림 등을 확인하는 단계. 가상 데이터.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:57:36</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/101-review-recheck-form.jpg 마진">
+<a class="thumb" href="margin/101-review-recheck-form.jpg"><img src="margin/101-review-recheck-form.jpg" alt="마진 검토 › 다시 확인 요청" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 검토 › 다시 확인 요청</h2><p>이전 차수와 새 수정 결과/파일/설명 관련 입력을 확인. 가상 자료.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 14:57:36</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/102-review-recheck-result.jpg 마진">
+<a class="thumb" href="margin/102-review-recheck-result.jpg"><img src="margin/102-review-recheck-result.jpg" alt="마진 검토 › 새 2차 요청 상태" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 검토 › 새 2차 요청 상태</h2><p>가상 검토 한 항목에 새 차수 추가. 공개 상대와 메일은 실제 외부가 아닌 로컬 미리보기.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 14:58:13</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/103-pdf-two-ready.jpg 마진">
+<a class="thumb" href="margin/103-pdf-two-ready.jpg"><img src="margin/103-pdf-two-ready.jpg" alt="마진 › PDF 2개 업로드 전" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › PDF 2개 업로드 전</h2><p>자료별 이름·유형과 기본 나만 보기. 모두 가상 PDF.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 15:04:40</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/104-pdf-two-saved.jpg 마진">
+<a class="thumb" href="margin/104-pdf-two-saved.jpg"><img src="margin/104-pdf-two-saved.jpg" alt="마진 › 다중 자료 추가 완료" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 다중 자료 추가 완료</h2><p>가상 PDF 2개가 목록에 표시됨. 추가 후 원래 목록에서 계속 작업.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 15:04:40</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/105-pdf-preview.jpg 마진">
+<a class="thumb" href="margin/105-pdf-preview.jpg"><img src="margin/105-pdf-preview.jpg" alt="마진 › 목록에서 PDF 미리보기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 목록에서 PDF 미리보기</h2><p>합성 파일을 목록 위에서 열어 문맥과 이동 버튼 확인.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 15:05:20</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/106-pdf-reader.jpg 마진">
+<a class="thumb" href="margin/106-pdf-reader.jpg"><img src="margin/106-pdf-reader.jpg" alt="마진 › 목록에서 PDF 미리보기 렌더링 완료" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 목록에서 PDF 미리보기 렌더링 완료</h2><p>합성 PDF의 첫 페이지가 옆 미리보기 창에 나타난 상태.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 15:05:47</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/107-pdf-file-view-current.jpg 마진">
+<a class="thumb" href="margin/107-pdf-file-view-current.jpg"><img src="margin/107-pdf-file-view-current.jpg" alt="마진 › 가상 PDF 실제 읽기 화면" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 › 가상 PDF 실제 읽기 화면</h2><p>자료 목록 밖의 PDF 뷰어.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 15:06:24</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/108-pdf-file-text.jpg 마진">
+<a class="thumb" href="margin/108-pdf-file-text.jpg"><img src="margin/108-pdf-file-text.jpg" alt="마진 PDF › 페이지 텍스트 보기 직후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 PDF › 페이지 텍스트 보기 직후</h2><p>텍스트 보기 버튼을 눌렀다. 이 프레임은 전환 직후 화면이다.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 15:06:24</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/109-pdf-version-form.jpg 마진">
+<a class="thumb" href="margin/109-pdf-version-form.jpg"><img src="margin/109-pdf-version-form.jpg" alt="마진 PDF › 새 파일 버전 추가" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 PDF › 새 파일 버전 추가</h2><p>현재 버전을 보면서 다음 버전을 준비하는 대화상자.</p>
+<small>1280×720 · 영역 캡처 · 2026-11-25 15:06:45</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/110-pdf-v2-saved.jpg 마진">
+<a class="thumb" href="margin/110-pdf-v2-saved.jpg"><img src="margin/110-pdf-v2-saved.jpg" alt="마진 PDF › 새 버전 저장 후" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 PDF › 새 버전 저장 후</h2><p>가상 파일로 다음 버전 추가. 이전 버전과 함께 볼 수 있는 상태.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 15:07:13</small></div></article>
+<article class="card" data-product="margin" data-keywords="margin/111-pdf-v1-back.jpg 마진">
+<a class="thumb" href="margin/111-pdf-v1-back.jpg"><img src="margin/111-pdf-v1-back.jpg" alt="마진 PDF › 이전 파일 버전 다시 열기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">마진 미리보기</span><h2>마진 PDF › 이전 파일 버전 다시 열기</h2><p>새 v2를 만든 다음 기존 v1을 골라서 원래 파일을 읽음.</p>
+<small>1280×720 · 전체 화면 · 2026-11-25 15:07:51</small></div></article>
+<article class="card" data-product="opensurvey" data-keywords="opensurvey/01-profile-usage.jpg 오픈서베이">
+<a class="thumb" href="opensurvey/01-profile-usage.jpg"><img src="opensurvey/01-profile-usage.jpg" alt="프로필 메뉴 › 잔여와 총 크레딧" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">오픈서베이</span><h2>프로필 메뉴 › 잔여와 총 크레딧</h2><p>계정 식별 부분을 제외한 사용량·설정 메뉴. 테마 항목은 여기서 미관찰.</p>
+<small>1139×772 · 영역 캡처 · 2026-11-25 14:30:12</small></div></article>
+<article class="card" data-product="modulify" data-keywords="modulify/01-search.jpg Modulify">
+<a class="thumb" href="modulify/01-search.jpg"><img src="modulify/01-search.jpg" alt="Modulify › 검색 초기" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">Modulify</span><h2>Modulify › 검색 초기</h2><p>⌘K 검색 입력과 초기 추천.</p>
+<small>901×772 · 영역 캡처 · 2026-11-25 14:29:42</small></div></article>
+<article class="card" data-product="modulify" data-keywords="modulify/02-search-results.jpg Modulify">
+<a class="thumb" href="modulify/02-search-results.jpg"><img src="modulify/02-search-results.jpg" alt="검색 › archive 결과" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">Modulify</span><h2>검색 › archive 결과</h2><p>메뉴·프로젝트가 나뉘는 검색 결과.</p>
+<small>901×772 · 영역 캡처 · 2026-11-25 14:30:11</small></div></article>
+<article class="card" data-product="modulify" data-keywords="modulify/03-search-empty.jpg Modulify">
+<a class="thumb" href="modulify/03-search-empty.jpg"><img src="modulify/03-search-empty.jpg" alt="검색 › 결과 없음" loading="lazy" decoding="async"></a>
+<div class="card-body"><span class="product">Modulify</span><h2>검색 › 결과 없음</h2><p>없는 검색어에 초기 상태와 구분되는 결과 없음.</p>
+<small>901×772 · 영역 캡처 · 2026-11-25 14:30:12</small></div></article></section>
+<p id="empty" hidden>검색어와 일치하는 화면이 없어요.</p>
+</main>
+<dialog id="viewer" aria-labelledby="viewer-title" class="viewer">
+<div class="viewer-head"><div><span id="viewer-product" class="product"></span><h2 id="viewer-title"></h2></div>
+<div class="viewer-actions" aria-label="이미지 이동"><button type="button" id="previous">이전</button>
+<button type="button" id="next">다음</button><button type="button" id="close">닫기</button></div></div>
+<img id="viewer-image" alt=""><p id="viewer-note"></p><a id="original">원본 이미지 열기</a>
+</dialog>
+<script>
+const all=[...document.querySelectorAll('.card')], filters=[...document.querySelectorAll('[data-filter]')];
+const $=id=>document.getElementById(id);
+let selected='all', visible=all, current=-1, focused=null;
+function apply(){
+  const terms=$('search').value.toLocaleLowerCase('ko').trim().split(/\s+/).filter(Boolean);
+  visible=all.filter(card=>{
+    const matches=(selected==='all'||card.dataset.product===selected)&&
+      terms.every(term=>(card.textContent+' '+card.dataset.keywords).toLocaleLowerCase('ko').includes(term));
+    card.hidden=!matches;return matches;
+  });
+  for(const button of filters)button.setAttribute('aria-pressed', String(button.dataset.filter===selected));
+  $('result').textContent=visible.length+'장 표시 · 전체 '+all.length+'장';
+  $('empty').hidden=visible.length!==0;
+}
+for(const button of filters)button.addEventListener('click',()=>{selected=button.dataset.filter;apply();});
+$('search').addEventListener('input',apply);
+function show(i){
+  const card=visible[i];if(!card)return;current=i;
+  const label=card.querySelector('h2').textContent;
+  const src=card.querySelector('.thumb').getAttribute('href');
+  $('viewer-product').textContent=card.querySelector('.product').textContent;
+  $('viewer-title').textContent=label;
+  $('viewer-image').src=src;$('viewer-image').alt=label;$('viewer-note').textContent=card.querySelector('p').textContent;
+  $('original').href=src;$('previous').disabled=i===0;$('next').disabled=i===visible.length-1;
+}
+for(const card of all)card.querySelector('a').addEventListener('click',e=>{
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  e.preventDefault();focused=e.currentTarget;show(visible.indexOf(card));$('viewer').showModal();$('close').focus();
+});
+$('previous').addEventListener('click',()=>show(current-1));$('next').addEventListener('click',()=>show(current+1));
+$('close').addEventListener('click',()=>$('viewer').close());
+$('viewer').addEventListener('close',()=>{if(focused)focused.focus();});
+$('viewer').addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'){e.preventDefault();show(current-1);}
+  if(e.key==='ArrowRight'){e.preventDefault();show(current+1);}
+});
+apply();
+</script></body></html>

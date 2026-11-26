@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>원고 화면</title>
+<link rel="stylesheet" href="app.css">
+<style>
+.app .main { position: absolute; left: 20px; top: 64px; width: 980px; bottom: 20px; display: flex; overflow: hidden; }
+.app .toc { width: 210px; border-right: 1px solid #f0f0f2; padding: 22px 14px; flex: none; }
+.app .toc .it { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: #46474c; }
+.app .toc .it.on { background: #f2f3f5; color: #171719; font-weight: 700; }
+.app .toc .n { margin-left: auto; min-width: 20px; height: 20px; border-radius: 10px; background: #fff0e0; color: #a35a00; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.app .toc .sub { padding-left: 22px; font-size: 13px; color: #686b73; min-height: 30px; }
+.app .ed { flex: 1; padding: 26px 48px; overflow: hidden; }
+.app .doc { font-size: 16px; line-height: 1.95; color: #2b2c30; }
+.app .doc p { margin: 0 0 16px; }
+.app .hl { background: #fff1c2; border-bottom: 2px solid #f5b400; }
+.app .hl2 { background: #fdecec; border-bottom: 2px solid #e5484d; }
+.app .pin { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: #a35a00; color: #fff; font-size: 11px; font-weight: 700; align-items: center; justify-content: center; vertical-align: 2px; margin-left: 3px; }
+.app .fix { border-top: 1px solid #f0f0f2; padding: 14px 0; }
+.app .fix.cur { background: #fffaeb; margin: 0 -20px; padding: 14px 20px; border-top-color: #f7e3a8; }
+.app .src { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.app .s-meet { background: #eaf2fe; color: #0052cc; } .app .s-kakao { background: #fff6cc; color: #6b5200; } .app .s-hwp { background: #fdecec; color: #b4232a; }
+.app .dim { position: absolute; inset: 0; background: rgba(23,23,25,.38); }
+.app .modal { position: absolute; left: 50%; top: 60px; transform: translateX(-50%); width: 680px; background: #fff; border-radius: 20px; padding: 28px 30px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.app .row { display: flex; gap: 14px; align-items: flex-start; padding: 13px 0; border-top: 1px solid #f0f0f2; }
+.app .red { color: #d61f1f; }
+.app .tool { display: flex; gap: 6px; align-items: center; color: #686b73; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>원고는 쓰는 곳 옆에 '고칠 것'이 붙어 있어요</h1>
+  <p class="lead">교수님이 미팅에서 한 말, 카톡, 한글 파일 빨간 글씨가 따로 놀지 않고 원고 옆 한 목록에 모여요. 항목을 누르면 해당 문장으로 가고, 고치면 체크해요.</p>
+
+  <div class="switch" role="group" aria-label="보기">
+    <button type="button" data-s="now" aria-pressed="false">지금 · 원고 편집기</button>
+    <button type="button" data-s="write" aria-pressed="true">바뀐 뒤 · 쓰면서 고치기</button>
+    <button type="button" data-s="hwp" aria-pressed="false">바뀐 뒤 · 빨간 글씨 가져오기</button>
+  </div>
+
+  <div class="frame"><div class="stage" id="stage">
+    <div class="screen" data-screen="now"><img src="../assets/live-desktop/25_writing_editor_1440.png" alt="지금 원고 편집기" style="width:1440px;height:900px;display:block"></div>
+
+    <!-- 쓰면서 고치기 -->
+    <div class="screen on" data-screen="write"><div class="app">
+      <div class="top" style="right:420px"><span class="logo">margin</span><span class="rname">대학원생 연구 기록 경험 ▾</span><span class="tabs"><span>홈</span><span>미팅</span><span class="on">원고</span></span><span class="search">이 연구에서 찾기 ⌘K</span><span class="send">교수님께 보내기</span><span class="av">김</span></div>
+      <div class="main card">
+        <div class="toc">
+          <div class="small muted b" style="padding:0 10px 8px">내 논문</div>
+          <div class="it">1장 서론</div>
+          <div class="it on">2장 이론적 배경 <span class="n">3</span></div>
+          <div class="it sub">2.1 연구 기록의 개념</div>
+          <div class="it sub">2.2 지도 미팅 연구</div>
+          <div class="it sub" style="color:#171719; font-weight:600">2.3 선행연구 비교 기준</div>
+          <div class="it">3장 연구 방법 <span class="n">1</span></div>
+          <div class="it">4장 결과</div>
+          <div class="it">5장 논의</div>
+          <div class="it">참고문헌</div>
+          <div class="it muted" style="margin-top:10px">+ 장 추가</div>
+          <div class="small muted b" style="padding:18px 10px 8px">메모</div>
+          <div class="it">인터뷰 질문지 메모</div>
+        </div>
+        <div class="ed">
+          <div style="display:flex; align-items:center; justify-content:space-between">
+            <div><div style="font-size:26px; font-weight:800">2장 이론적 배경</div><div class="small muted" style="margin-top:2px">저장됨 · 방금 · 지난번 교수님께 보낸 뒤 12문장 고침</div></div>
+            <div class="tool"><span class="btn">이전 본 보기</span><span class="btn">⋯</span></div>
+          </div>
+          <div class="doc" style="margin-top:22px">
+            <p><b>2.3 선행연구 비교 기준</b></p>
+            <p>선행연구는 연구 목적, 자료 수집 방식, 분석 관점에 따라 서로 다른 결론에 이른다. <span class="hl">본 연구는 비교 기준을 연구 목적·자료·분석 관점의 세 가지로 정하고</span><span class="pin">1</span>, 각 기준을 고른 이유를 표 2-1에 정리하였다.</p>
+            <p>표 2-1의 연구는 <span class="hl2">2015년부터 2022년 사이에 발표된 것으로</span><span class="pin">2</span>, 국내 대학원생을 대상으로 한 질적 연구를 중심으로 골랐다.</p>
+            <p>특히 지도 미팅 기록을 다룬 연구는 기록의 주체를 학생으로 보는 관점과 교수로 보는 관점으로 나뉜다<span class="pin">3</span>. 본 연구는 학생이 기록을 남기고 교수가 확인하는 흐름에 초점을 둔다.</p>
+            <p class="muted">|</p>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <div style="display:flex; align-items:center; justify-content:space-between"><span style="font-weight:800; font-size:16px">고칠 것 <span style="color:#a35a00">3</span></span><span class="small muted">2장 · 전체 4</span></div>
+        <div class="small muted" style="margin:4px 0 12px">미팅·카톡·한글 파일에서 모았어요</div>
+        <div class="fix cur">
+          <div style="display:flex; gap:6px; align-items:center"><span class="pin" style="margin:0">1</span><span class="src s-meet">제6차 미팅에서</span></div>
+          <div style="font-size:14px; margin-top:8px; line-height:1.55">"비교 기준이 다섯 개면 많아요. 세 개로 줄여 보세요."</div>
+          <div style="display:flex; gap:8px; margin-top:10px"><span class="btn pri" style="height:32px">고쳤어요</span><span class="btn" style="height:32px">교수님께 여쭤보기</span></div>
+        </div>
+        <div class="fix">
+          <div style="display:flex; gap:6px; align-items:center"><span class="pin" style="margin:0">2</span><span class="src s-hwp">한글 파일 빨간 글씨</span></div>
+          <div style="font-size:14px; margin-top:8px; line-height:1.55">"최근 연구가 비어 있어요. 2023년 이후도 찾아 보세요."</div>
+        </div>
+        <div class="fix">
+          <div style="display:flex; gap:6px; align-items:center"><span class="pin" style="margin:0">3</span><span class="src s-kakao">카톡 11월 24일</span></div>
+          <div style="font-size:14px; margin-top:8px; line-height:1.55">"관점 두 개 나눈 근거 논문 하나씩 달아 주세요."</div>
+        </div>
+        <div class="fix muted small" style="display:flex; justify-content:space-between"><span>고친 것 5개</span><span>펼치기 ▾</span></div>
+        <div class="ask"><div class="muted" style="font-size:13px">도우미에게: 이 문단 더 짧게, 근거 논문 찾아줘…</div></div>
+      </div>
+      <div class="rail"><span style="font-size:16px">»</span><span class="ri on"><span class="ic"></span>고칠 것</span><span class="ri"><span class="ic"></span>도우미</span><span class="ri"><span class="ic"></span>자료</span></div>
+    </div></div>
+
+    <!-- 빨간 글씨 가져오기 -->
+    <div class="screen" data-screen="hwp"><div class="app">
+      <div class="top" style="right:420px"><span class="logo">margin</span><span class="rname">대학원생 연구 기록 경험 ▾</span><span class="tabs"><span>홈</span><span>미팅</span><span class="on">원고</span></span><span class="search">이 연구에서 찾기 ⌘K</span><span class="send">교수님께 보내기</span><span class="av">김</span></div>
+      <div class="main card"></div><div class="side"></div><div class="rail"></div>
+      <div class="dim"></div>
+      <div class="modal">
+        <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-size:22px; font-weight:800">빨간 글씨 4개를 찾았어요</span><span style="font-size:22px; color:#686b73">×</span></div>
+        <div class="small muted" style="margin-top:4px">2장_이론적배경_교수님수정.hwp · 내 원고의 어느 문장인지 맞춰 뒀어요</div>
+        <div style="margin-top:16px">
+          <div class="row"><span class="ck" style="background:#0066ff; border-color:#0066ff"></span><div style="flex:1"><div class="red" style="font-size:14px; font-weight:600">최근 연구가 비어 있어요. 2023년 이후도 찾아 보세요.</div><div class="small muted" style="margin-top:3px">→ 2.3 · "2015년부터 2022년 사이에 발표된 것으로"</div></div></div>
+          <div class="row"><span class="ck" style="background:#0066ff; border-color:#0066ff"></span><div style="flex:1"><div class="red" style="font-size:14px; font-weight:600">'기록 주체' 용어를 1장과 맞추세요.</div><div class="small muted" style="margin-top:3px">→ 2.2 · "기록을 남기는 사람을 주체로 볼 때"</div></div></div>
+          <div class="row"><span class="ck" style="background:#0066ff; border-color:#0066ff"></span><div style="flex:1"><div class="red" style="font-size:14px; font-weight:600">표 2-1 출처 표기 형식 통일</div><div class="small muted" style="margin-top:3px">→ 2.3 · 표 2-1</div></div></div>
+          <div class="row"><span class="ck"></span><div style="flex:1"><div class="red" style="font-size:14px; font-weight:600">문장 너무 길어요 (밑줄만, 고친 문장 없음)</div><div class="small muted" style="margin-top:3px">→ 맞는 문장을 못 찾았어요 · <span style="color:#0066ff; font-weight:600">직접 고르기</span></div></div></div>
+        </div>
+        <div style="margin-top:14px; padding:12px 14px; background:#f7f7f8; border-radius:10px" class="small">교수님이 직접 고쳐 쓴 문장 2개도 있어요. <span style="color:#0066ff; font-weight:600">내 원고와 나란히 보기</span></div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px"><span class="btn">취소</span><span class="btn pri" style="padding:0 22px">고칠 것에 3개 넣기</span></div>
+      </div>
+    </div></div>
+  </div></div>
+
+  <div class="panel" data-p="now"><div class="why"><div><b>지금 · 원고 편집기</b><p>상단 메뉴가 '글·자료'이고, 글 하나를 열면 탭으로 열려요. 제목 아래 '메모' 종류 표시, '나만 보기' 공개 범위, '버전', '문장 점검', 서식 도구 막대, 비어 있는 목차 칸이 먼저 보여요. 교수님 피드백은 오른쪽 레일의 '의견', '할 일', '결정·질문'에 흩어져 있어서 쓰다가 찾아가야 해요.</p></div></div></div>
+  <div class="panel on" data-p="write"><div class="why">
+    <div><b>쓰면서 고치기 — 피드백이 문장 옆에</b><p>왼쪽은 내 논문 장 목록(장마다 남은 '고칠 것' 개수), 가운데는 원고, 오른쪽은 고칠 것 목록이에요. 각 항목에 어디서 온 피드백인지(미팅·카톡·한글 파일) 표시되고, 누르면 원고의 해당 문장이 칠해져요. 고치면 '고쳤어요'를 눌러 아래로 내려요. 홈의 할 일에도 같은 항목이 보여요.</p></div>
+    <div><b>없어지거나 안쪽으로 가는 것</b><p>'글·자료' 탭 이름 → '원고'. 글 탭 열기, '메모' 종류 표시, '나만 보기'(원고는 내 것이고 보낼 땐 보내기 창에서 고름), 서식 도구 막대(글자를 고르면 작게 뜸), '문장 점검'(도우미에게 말로), 레일 5개 → 3개(고칠 것·도우미·자료). '버전'은 '이전 본 보기' 하나로.</p></div>
+    <div><b>확정 / 제안</b><p>확정(사용자 답): 메뉴 홈·미팅·원고, 할 일과 피드백 하나로, 피드백은 대면 말·카톡·한글 빨간 글씨. 제안: 왼쪽 장 목록, 문장에 피드백 번호 붙이기, 서식 막대 숨기기.</p></div>
+  </div></div>
+  <div class="panel" data-p="hwp"><div class="why">
+    <div><b>빨간 글씨 가져오기 — 한글 파일을 넣으면 끝</b><p>교수님이 빨간 글씨로 고친 한글 파일을 원고 화면에 끌어다 놓으면, 빨간 글씨만 골라 내 원고의 어느 문장인지 맞춰 줘요. 맞는 문장을 못 찾은 것만 직접 고르면 돼요. 넣은 항목은 '고칠 것'에 '한글 파일 빨간 글씨'로 들어가요.</p></div>
+    <div><b>제안 · 기술 확인 필요</b><p>지금 앱 코드에는 한글(hwp) 파일을 읽는 부분이 없어요(앱 화면 코드에서 'hwp'를 찾아봤을 때 0건). 빨간 글씨를 정확히 뽑을 수 있는지는 hwp·hwpx 형식별로 따로 확인해야 해요. 안 되면 '빨간 글씨 부분 캡처 올리기'로 대신할 수 있어요.</p></div>
+  </div></div>
+  <p class="note">설명용 가상 데이터예요. 원고 문장, 교수님 말, 파일 이름은 예시로 지은 것이에요.</p>
+
+  <h2>참고한 화면</h2>
+  <div class="refs">
+    <figure><img src="../assets/benchmarks/liner/01_home.png" alt="라이너 홈"><figcaption><b>라이너</b> → 왼쪽 목록 · 가운데 글 · 오른쪽 도우미, 세 칸 구성.</figcaption></figure>
+    <figure><img src="../assets/benchmarks/tossinvest/01_home_panel_open.png" alt="토스증권 패널 열린 홈"><figcaption><b>토스증권</b> → 오른쪽 레일로 여닫는 사이드 창(여기선 '고칠 것').</figcaption></figure>
+    <figure><img src="../assets/benchmarks/manyfast/08_project_workspace.png" alt="매니패스트 작업 공간"><figcaption><b>매니패스트</b> → 문서 옆에서 바로 항목을 처리하는 작업 공간.</figcaption></figure>
+  </div>
+</main>
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  function fit() { var s = stage.clientWidth / 1440; document.querySelectorAll('.screen').forEach(function (el) { el.style.transform = 'scale(' + s + ')'; }); }
+  window.addEventListener('resize', fit); fit();
+  document.querySelectorAll('[data-s]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.s;
+      document.querySelectorAll('[data-s]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      document.querySelectorAll('.screen').forEach(function (el) { el.classList.toggle('on', el.dataset.screen === k); });
+      document.querySelectorAll('.panel').forEach(function (el) { el.classList.toggle('on', el.dataset.p === k); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

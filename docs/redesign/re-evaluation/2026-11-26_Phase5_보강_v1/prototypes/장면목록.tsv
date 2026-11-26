@@ -1,0 +1,95 @@
+시안 파일	장면 id	보여 주는 것	쟁점	원본과 달라진 점
+05-data-integrity_v2.html	05-restore	원고 복원(제목·공개 범위·본문 구조 비교 및 서버 일괄 처리)	1	장면 주소만 추가
+05-data-integrity_v2.html	05-conflict	동시 수정 충돌 창(고른 쪽 바로 저장 및 상대 내용 버전 보존)	1	장면 주소만 추가
+05-data-integrity_v2.html	05-visibility	본문 저장 중 원고 공개 범위 변경 즉시 따로 저장	1	장면 주소만 추가
+05-data-integrity_v2.html	05-source	할 일 목록의 기록 출처·가져감 칩·필터 및 비공개 기록 표시	2	장면 주소만 추가
+05-data-integrity_v2.html	05-next	목표만 적은 다음 미팅 카드(목표 첫 줄 · 준비 수 따로 · 지정 버튼 숨김)	2	장면 주소만 추가
+05-data-integrity_v2.html	05-undo	완료한 할 일을 다시 풀 때 직전 상태(시작 전/진행 중)로 복원	2	장면 주소만 추가
+03-review-role-boundary_v2.html	03-review	검토 상세 화면의 역할별 버튼·응답·공유 중지 확인과 권한 비교표	4	장면 주소만 추가
+03-review-role-boundary_v2.html	03-research-info	설정 › 연구 정보의 소유자 전용 편집과 편집자 읽기 전용 잠금	4	장면 주소만 추가
+02-trash-delete-switcher_v2.html	02-switcher	상단 연구 전환기(한 줄 말줄임·전체 이름 말풍선·모든 연구 보기 하단 고정·7개 목록 스크롤, 제안)	—	원본 토스 색을 Montage 색으로 교체, 임시 제목을 가상 연구명 7개로 교체, 영어(Sticky) 제거, 전체 제안 표시 및 지금 동작 비교 추가
+02-trash-delete-switcher_v2.html	02-trash-move	연구 카드 ⋯ 메뉴와 설정 보관·삭제 두 진입점의 확인 창 없는 1클릭 휴지통 이동과 되돌리기 토스트	—	원본 1개 진입점을 두 진입점 나란히 배치로 보강, 영어(Undo) 제거 및 6초에 제안 표시, 토스트 문구를 확정안으로 통일하고 지금 동작 비교 추가
+02-trash-delete-switcher_v2.html	02-delete	휴지통 카드와 완전 삭제 확인 창(영향 요약·이름 표시 및 복사·공백/한글 정규화 입력 확인·안내 문구)	6	원본 임시 연구명과 영구 삭제 수치를 명세(미팅 6·원고 3·PDF 4)로 통일, 좌우 분리 배치에 제안 표시, 입력칸 아래 회색 안내 문구 보강 및 지금 동작 비교 추가
+02-trash-delete-switcher_v2.html	02-share-stop	검토 상세의 공유 중지 일반 확인 창과 중지 후 배지 전환·다시 공유 토스트	4	원본 브라우저 confirm()을 확정 문구 일반 확인 창으로 교체, 중지 후 배지 '공유 중지' 전환과 '다시 공유' 토스트 구현, 지금 동작 비교 추가
+04-settings-and-modals_v2.html	04-settings-nav	설정 창 왼쪽 두 묶음(내 계정/이 연구)·오른쪽 제목 일치 및 편집자 보관·삭제 숨김	8	원본은 내 계정 4탭만 표시 → 내 계정/이 연구 두 묶음, 오른쪽 제목 일치, 편집자 전환 시 보관·삭제 숨김 추가
+04-settings-and-modals_v2.html	04-display	라이트·다크·시스템 3단 선택과 계정 메뉴 동기 안내, IA v2 썸네일 및 시각 표기 정렬	8	원본의 토스 색과 단순 테마 카드를 Montage 변수와 라디오 3단 선택, 계정 메뉴 안내, 시각 표기 미리보기 정렬로 보완
+04-settings-and-modals_v2.html	04-assistant-settings	Google 기본 모델 선택(Gemini 3.8 Flash/Pro)과 나만의 연구 도우미, 하단 저장 버튼 1개	5	원본의 토스 색을 제거하고 D13 문구·말투·개인 지침을 반영해 하단 저장 버튼 1개로 통일
+04-settings-and-modals_v2.html	04-usage	이번 달 남은 양 96% 막대와 4개 이름 값(남은 양·이번 달 지급·사용·예약), 현행 한도 문구, 날짜만 표기	5	원본에 없던 사용량 장면을 새로 만들고 원가·정산 단위·시각 표기를 뺀 퍼센트(%)·명칭 기반 화면으로 구성
+04-settings-and-modals_v2.html	04-shortcuts	화면 이동·목록과 작업·편집과 녹음 그룹 표와 현행 G W·G F·G R·G P 단축키 유지	—	원본의 일부 단축키만 둔 표를 현행 전체 단축키 18종 그룹 표(08-#5 정정 반영)와 잘림 비교로 보완
+04-settings-and-modals_v2.html	04-research-info	연구 이름·설명·목적·질문·목표일 5칸과 소유자 편집/편집자 읽기 전용 잠금·안내	4 · 8	원본에 없던 연구 정보 장면을 새로 추가해 소유자만 수정·저장하고 편집자는 읽기 전용과 이유 한 줄을 보게 구성
+04-settings-and-modals_v2.html	04-profile	표시 이름·읽기 전용 이메일·하위 3경로(로그인 수단/내보내기/탈퇴)와 계정 메뉴 3단 테마·로그아웃 바로 실행(제안) 모형	8	원본의 프로필 탭에서 토스 색·연결됨 배지를 제거하고 하위 계정 경로 3개와 계정 메뉴 모형(3단 테마·로그아웃 제안)을 추가
+04-settings-and-modals_v2.html	04-login-methods	가입 방식(이메일/카카오/LINE) 전환에 따른 비밀번호 바꾸기 표시·숨김과 소셜 로그인 안내	8	원본에 없던 로그인 수단 장면을 새로 추가해 소셜 가입자에게 비밀번호 칸을 숨기고 연결 수단 안내를 표시
+04-settings-and-modals_v2.html	04-export	연구별 내보내기 요청, 2초 준비 막대, 완료 토스트와 ZIP 묶음 제안	8	원본의 단일 버튼만 있던 내보내기 행을 연구별 진행 상태·완료 토스트·ZIP 형식 제안이 있는 전용 화면으로 확장
+04-settings-and-modals_v2.html	04-delete-account	7일 유예 안내·소유 연구별 넘기기/삭제 선택·이메일 확인·완료 안내의 3단계 탈퇴 흐름	8	원본의 단일 버튼만 있던 탈퇴 행을 3단계 흐름(연구 소유권 이전/삭제 선택, 이메일 입력 확인, 7일 유예 완료)으로 구체화
+01-home-rail-assistant_v2.html	01-home	연구 홈(다음 미팅 목표 첫 줄·준비 수, 할 일 첫 묶음·출처 칩, 연구 흐름 4단계, 지금/바뀐 뒤 비교)	2 · 3	원본의 미확정 배너 문구 제거, 다음 미팅 목표 첫 줄·준비 수 분리 및 지정 버튼 숨김, 할 일 출처 칩과 연구 흐름 4단계 완료·줄바꿈 표시 추가, 지금/바뀐 뒤 전환과 Montage 색 적용
+01-home-rail-assistant_v2.html	01-rail-panel	60px 레일과 사이드 창(D17 기본 열림, 본문 화면별 탭 중복 방지 자동 전환 및 제안 매핑 표)	3	원본은 홈 한 화면 기준 정적 안내만 있었으나 홈·할 일·글·자료 화면 전환과 지금/바뀐 뒤 비교, 제안 매핑 표, 레일 활성 구분 제안을 추가하고 Montage 색 적용
+01-home-rail-assistant_v2.html	01-panel-closed	사이드 창을 닫았을 때 본문 최대폭 가운데 정렬과 상단 줄 정렬선 맞춤(제안)	3	원본에는 없던 사이드 창 닫힘 전용 비교 장면을 새로 추가해 왼쪽 치우침(약 260px 빈 여백)과 가운데 정렬 제안을 비교
+01-home-rail-assistant_v2.html	01-toast	할 일 완료 토스트 위치(60px 레일과 여백 16px 안쪽 배치, 지금/바뀐 뒤 비교)	3	원본 토스트의 토스 색(#191f28)과 임의 문구 제거, 확정 문구('선행연구 비교표 보완' 완료했어요.)·되돌리기·지금/바뀐 뒤 비교 및 여백 16px 제안 표시 추가
+04-settings-and-modals_v2.html	04-poll-create	미팅 시간 조율 만들기(날짜·시작·끝 잘림 해소 및 좁은 화면 2줄 배치, 후보 추가·만들기·취소, 제안)	—	원본의 토스 색을 Montage 변수로 교체하고 좁은 폭 2줄 반응형 입력·후보 추가/빼기·한국 시간 기준 안내 및 장면 제목 제안 표시 추가
+04-settings-and-modals_v2.html	04-poll-respond	시간 조율 응답(가능/불가 단일 입력, 한국 시간 표기, 오른쪽 한 열 확정 버튼, 구별되는 범례 색, 제안)	—	원본의 토스 색을 Montage 변수로 교체하고 가능/불가 단일 토글·한국 시간 표기·오른쪽 한 열 이 시간으로 확정 버튼·범례 색 구분 및 제안 표시 추가
+01-home-rail-assistant_v2.html	01-assistant-start	도우미 첫 화면(대화·제안·실행 내역 탭 유지, 홈/원고/PDF 맥락별 시작 카드 항상 3개, 맥락 칩)	5	원본의 토스 색을 제거하고 홈·원고·PDF 화면 전환에 따른 맥락 우선 시작 카드 3개 고정(예시 제안 표시)과 원고·PDF 맥락 칩을 구현
+01-home-rail-assistant_v2.html	01-suggestions	제안 정리(제안 카드 6개, 일괄 정리 막대, 오래된 제안 비우기 토스트·되돌리기, 상단 1회 안내)	5	원본에 없던 제안 일괄 정리 막대와 상단 1회 안내 문구, 비우기 되돌리기 토스트를 추가
+01-home-rail-assistant_v2.html	01-credit	크레딧 표시(입력창 아래 남은 양 96% 막대, 4개 이름 값 팝오버, 현행 한도 문구, 수정 제안받기 통일)	5	원가·토큰 용어와 3갈래 기능명을 제거하고 퍼센트(%)·4개 이름 값·현행 한도 문구·수정 제안받기로 통일
+01-home-rail-assistant_v2.html	01-feedback	의견 보내기(오른쪽 아래 작은 창, 1~5점·유형 칩·한 줄 입력·동의 체크 기본 꺼짐·보내기 토스트)	7	원본의 의견 창을 Montage 색으로 재구성하고 동의 체크 기본 꺼짐·체크 시 전송값 미리보기·저장 위치 제안 표시를 추가
+06-public-onboarding.html	06-pub-01	서비스 소개 랜딩	—	새 시안(2단계)
+06-public-onboarding.html	06-pub-02	기능 둘러보기	—	새 시안(2단계)
+06-public-onboarding.html	06-pub-03	플랜 안내	—	새 시안(2단계)
+06-public-onboarding.html	06-pub-04	사용 안내	—	새 시안(2단계)
+06-public-onboarding.html	06-pub-05	자료와 개인정보 안내	—	새 시안(2단계)
+06-public-onboarding.html	06-pub-06	404 안내	—	새 시안(2단계)
+06-public-onboarding.html	06-onb-01	로그인	—	새 시안(2단계)
+06-public-onboarding.html	06-onb-04	온보딩 소개 화면	—	새 시안(2단계)
+06-public-onboarding.html	06-onb-05	온보딩 1단계	—	새 시안(2단계)
+06-public-onboarding.html	06-onb-07	온보딩 3단계	—	새 시안(2단계)
+06-public-onboarding.html	06-onb-08	온보딩 4단계	—	새 시안(2단계)
+07-shell-hub-search.html	07-hub-01	진행 중인 연구 목록	—	새 시안(2단계)
+07-shell-hub-search.html	07-hub-06	연구 카드 ⋯ 메뉴	—	새 시안(2단계)
+07-shell-hub-search.html	07-src-01	알림 창	—	새 시안(2단계)
+07-shell-hub-search.html	07-src-02	⌘K 검색 팔레트	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-01	상단 줄	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-06	사이드 창 결정·질문 탭	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-07	사이드 창 자료 탭	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-09	+ 만들기 메뉴	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-10	화면 배치 드롭다운	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-13	업로드 결과 트레이	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-15	오프라인 배너	—	새 시안(2단계)
+07-shell-hub-search.html	07-shl-18	하단 독(모바일)	—	새 시안(2단계)
+08-home-flow-tasks.html	08-hom-07	홈 상단 알림 배너	—	새 시안(2단계)
+08-home-flow-tasks.html	08-hom-09	시작하기 체크리스트	—	새 시안(2단계)
+08-home-flow-tasks.html	08-hom-11	연구 방향 카드	—	새 시안(2단계)
+08-home-flow-tasks.html	08-flw-01	단계·주요 목표 시간순 보기	—	새 시안(2단계)
+08-home-flow-tasks.html	08-flw-05	달력 보기	—	새 시안(2단계)
+08-home-flow-tasks.html	08-tsk-02	피드백 목록	—	새 시안(2단계)
+08-home-flow-tasks.html	08-tsk-07	피드백 추가 창	—	새 시안(2단계)
+08-home-flow-tasks.html	08-tsk-08	수정 결과 만들기 창	—	새 시안(2단계)
+08-home-flow-tasks.html	08-det-01	할 일 상세	—	새 시안(2단계)
+08-home-flow-tasks.html	08-det-02	피드백 상세	—	새 시안(2단계)
+08-home-flow-tasks.html	08-det-03	결정 상세	—	새 시안(2단계)
+08-home-flow-tasks.html	08-det-04	질문 상세	—	새 시안(2단계)
+08-home-flow-tasks.html	08-det-05	수정 결과 상세	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-01	미팅 목록	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-02	기록 추가 메뉴	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-04	다음 미팅 준비 화면	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-05	미팅 상세(기록 탭)	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-07	피드백·할 일 오른쪽 열	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-09	서면 기록	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-10	새 미팅 잡기 창	—	새 시안(2단계)
+09-meetings-recording.html	09-mtg-11	서면 피드백 붙여넣기 창	—	새 시안(2단계)
+09-meetings-recording.html	09-rec-01	녹음 패널	—	새 시안(2단계)
+09-meetings-recording.html	09-rec-02	음성 공유 버튼	—	새 시안(2단계)
+09-meetings-recording.html	09-rec-04	오디오 클립(피드백 상세 안)	—	새 시안(2단계)
+10-docs-materials.html	10-doc-01	글·자료 목록	—	새 시안(2단계)
+10-docs-materials.html	10-doc-03	폴더	—	새 시안(2단계)
+10-docs-materials.html	10-doc-04	행 메뉴(⋯·우클릭)	—	새 시안(2단계)
+10-docs-materials.html	10-doc-05	파일 추가 창	—	새 시안(2단계)
+10-docs-materials.html	10-doc-06	새 글 창	—	새 시안(2단계)
+10-docs-materials.html	10-mat-01	PDF 상세	—	새 시안(2단계)
+10-docs-materials.html	10-mat-02	새 버전 올리기 창	—	새 시안(2단계)
+10-docs-materials.html	10-mat-03	텍스트 보기	—	새 시안(2단계)
+11-review-assistant-account.html	11-rev-01	검토 요청 만들기 창	—	새 시안(2단계)
+11-review-assistant-account.html	11-rev-08	핀 찍기 모드	—	새 시안(2단계)
+11-review-assistant-account.html	11-rev-09	댓글	—	새 시안(2단계)
+11-review-assistant-account.html	11-ast-03	실행 내역 탭	—	새 시안(2단계)
+11-review-assistant-account.html	11-ast-04	대화 기록 메뉴	—	새 시안(2단계)
+11-review-assistant-account.html	11-ast-05	/ 명령 메뉴	—	새 시안(2단계)
+11-review-assistant-account.html	11-acc-04	계정 전환 보기	—	새 시안(2단계)

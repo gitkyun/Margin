@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>교수님께 보내기</title>
+<link rel="stylesheet" href="app.css">
+<style>
+.app .dim { position: absolute; inset: 0; background: rgba(23,23,25,.38); }
+.app .modal { position: absolute; left: 50%; top: 70px; transform: translateX(-50%); width: 600px; background: #fff; border-radius: 20px; padding: 28px 30px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.app .lab { font-size: 13px; font-weight: 700; color: #46474c; margin: 18px 0 8px; }
+.app .pick { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid #f0f0f2; }
+.app .on-ck { background: #0066ff; border-color: #0066ff; }
+.app .msg { border: 1px solid #e1e2e4; border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.6; }
+.app .how { display: flex; gap: 8px; }
+.app .how span { flex: 1; height: 44px; border: 1px solid #e1e2e4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.app .how .sel { border: 2px solid #0066ff; color: #0066ff; background: #eaf2fe; }
+.app .trk { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.app .trk .d { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+.app .trk .y { background: #0066ff; color: #fff; } .app .trk .n { border: 1.5px solid #c2c4c8; color: #686b73; }
+.app .trk .ln { width: 40px; height: 1.5px; background: #c2c4c8; }
+.app .toast { position: absolute; left: 50%; bottom: 36px; transform: translateX(-50%); background: #171719; color: #fff; border-radius: 12px; padding: 12px 18px; font-size: 14px; font-weight: 600; display: flex; gap: 16px; align-items: center; }
+.app .doc { font-size: 15px; line-height: 1.9; color: #2b2c30; }
+.app mark { background: #fff1c2; padding: 0 2px; }
+.app .red { color: #d61f1f; }
+</style>
+</head>
+<body>
+<main>
+  <h1>교수님께 보내기는 버튼 하나예요</h1>
+  <p class="lead">어느 화면에서든 맨 위 <b>교수님께 보내기</b>를 누르면 같은 창이 떠요. 보낼 것은 미리 골라져 있고, 한마디도 도우미가 먼저 써 둬요. 교수님은 받은 링크에서 바로 읽고 답해요.</p>
+
+  <div class="switch" role="group" aria-label="보기">
+    <button type="button" data-s="now1" aria-pressed="false">지금 · 만들기 창</button>
+    <button type="button" data-s="now2" aria-pressed="false">지금 · 보낸 뒤</button>
+    <button type="button" data-s="send" aria-pressed="true">바뀐 뒤 · 보내기 창</button>
+    <button type="button" data-s="sent" aria-pressed="false">바뀐 뒤 · 보낸 뒤</button>
+    <button type="button" data-s="prof" aria-pressed="false">바뀐 뒤 · 교수님 화면</button>
+  </div>
+
+  <div class="frame"><div class="stage" id="stage">
+    <div class="screen" data-screen="now1"><img src="../assets/live-desktop-deep/d11_dialog_new_review.png" alt="지금 검토 요청 만들기 창" style="width:1440px;height:900px;display:block"></div>
+    <div class="screen" data-screen="now2"><img src="../assets/live-desktop/30_review_detail_1440.png" alt="지금 검토 요청 상세" style="width:1440px;height:900px;display:block"></div>
+
+    <!-- 보내기 창 -->
+    <div class="screen on" data-screen="send"><div class="app">
+      <div class="top" style="right:420px"><span class="logo">margin</span><span class="rname">대학원생 연구 기록 경험 ▾</span><span class="tabs"><span class="on">홈</span><span>미팅</span><span>원고</span></span><span class="search">이 연구에서 찾기 ⌘K</span><span class="send">교수님께 보내기</span><span class="av">김</span></div>
+      <div style="position:absolute; left:20px; top:64px; width:980px; height:300px" class="card"></div>
+      <div class="side"></div><div class="rail"></div>
+      <div class="dim"></div>
+      <div class="modal">
+        <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-size:22px; font-weight:800">교수님께 보내기</span><span style="font-size:22px; color:#686b73">×</span></div>
+        <div class="lab">받는 사람</div>
+        <div style="display:flex; align-items:center; gap:10px"><span class="av" style="background:#e9eaec; color:#171719">지</span><div><div class="b">지도교수</div><div class="small muted">professor@margin.com</div></div><span class="small" style="margin-left:auto; color:#0066ff; font-weight:600">바꾸기</span></div>
+        <div class="lab">보낼 것 <span class="muted" style="font-weight:400">· 다음 미팅에 맞춰 골라 뒀어요</span></div>
+        <div class="pick"><span class="ck on-ck"></span><div style="flex:1"><div class="b">2장 이론적 배경</div><div class="small muted">원고 · 11월 26일에 고친 본 · 지난번보다 바뀐 곳 표시</div></div></div>
+        <div class="pick"><span class="ck on-ck"></span><div style="flex:1"><div class="b">제7차 미팅에서 여쭤볼 것 1개</div><div class="small muted">비교 기준을 3개로 줄여도 되는지</div></div></div>
+        <div class="pick"><span class="ck"></span><div style="flex:1"><div class="b">제6차 미팅 정리</div><div class="small muted">결정 1 · 할 일 3</div></div></div>
+        <div class="lab">한마디 <span class="chip" style="margin-left:6px">도우미가 먼저 써 뒀어요</span></div>
+        <div class="msg">교수님, 2장 초안 보내드려요. 지난번 말씀대로 비교 기준을 3개로 줄였는데, 이렇게 가도 될지 봐 주시면 좋겠어요. 금요일 미팅 전에 보시기 편하게 바뀐 곳만 표시해 뒀어요.</div>
+        <div class="lab">어떻게 보낼까요</div>
+        <div class="how"><span class="sel">메일로</span><span>카톡용 링크 복사</span></div>
+        <div class="small muted" style="margin-top:12px">교수님은 링크를 열어 바로 읽고 답할 수 있어요. 내 메모, 할 일, 도우미와 나눈 대화는 가지 않아요.</div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px"><span class="btn">취소</span><span class="btn pri" style="padding:0 22px">보내기</span></div>
+      </div>
+    </div></div>
+
+    <!-- 보낸 뒤 -->
+    <div class="screen" data-screen="sent"><div class="app">
+      <div class="top" style="right:420px"><span class="logo">margin</span><span class="rname">대학원생 연구 기록 경험 ▾</span><span class="tabs"><span class="on">홈</span><span>미팅</span><span>원고</span></span><span class="search">이 연구에서 찾기 ⌘K</span><span class="send">교수님께 보내기</span><span class="av">김</span></div>
+      <div style="position:absolute; left:20px; top:64px; width:980px; bottom:20px; display:flex; flex-direction:column; gap:14px">
+        <div class="card" style="padding:22px 28px">
+          <div style="display:flex; align-items:center; justify-content:space-between">
+            <div><div class="small muted b">교수님께 보낸 것</div><div style="font-size:19px; font-weight:800; margin-top:2px">2장 이론적 배경 + 여쭤볼 것 1개</div><div class="small muted">11월 26일 오후 9:14 · 메일로 보냄</div></div>
+            <div class="trk"><span class="d y">✓</span>보냄<span class="ln"></span><span class="d y">✓</span>열어 보심<span class="ln"></span><span class="d n">3</span>답장</div>
+          </div>
+          <div style="margin-top:14px; padding:12px 14px; background:#f7f7f8; border-radius:10px" class="small">교수님이 11월 27일 오전 8:02에 열어 보셨어요. 답장이 오면 할 일로 나눠서 여기와 미팅 페이지에 보여 드려요.</div>
+        </div>
+        <div class="card" style="padding:26px 28px">
+          <div class="muted small b" style="color:#0066ff">다음 미팅 · 11월 28일(금) 오후 2시 · 2일 남음</div>
+          <div style="font-size:24px; font-weight:800; margin:4px 0 2px">제7차 논문 지도</div>
+          <div class="muted">목표: 2장 비교 기준을 교수님과 확정하기</div>
+          <div class="b" style="margin-top:16px">가져갈 것 <span class="muted">3 / 3 준비됨 · 교수님께 미리 보냄</span></div>
+        </div>
+        <div class="card" style="padding:22px 28px; flex:1"><span style="font-size:17px; font-weight:800">할 일</span><div class="muted small" style="margin-top:8px">…</div></div>
+      </div>
+      <div class="side"><div style="font-weight:800; font-size:16px">연구 도우미</div><div class="muted small" style="margin:14px 0 2px">지금 하면 좋은 것</div><div class="sug"><span class="ic2"></span>답장 기다리는 동안 3장 개요 잡기</div></div>
+      <div class="rail"><span style="font-size:16px">»</span><span class="ri on"><span class="ic"></span>도우미</span><span class="ri"><span class="ic"></span>할 일</span><span class="ri"><span class="ic"></span>자료</span></div>
+      <div class="toast">교수님께 보냈어요 <span style="color:#5c9dff">보낸 것 보기</span></div>
+    </div></div>
+
+    <!-- 교수님 화면 -->
+    <div class="screen" data-screen="prof"><div class="app" style="background:#f4f5f7">
+      <div class="top" style="background:#fff; border-bottom:1px solid #e9eaec"><span class="logo">margin</span><span class="muted" style="font-size:14px">김학생님이 보낸 것 · 대학원생 연구 기록 경험</span><span style="margin-left:auto" class="small muted">로그인 없이 보는 중</span></div>
+      <div style="position:absolute; left:20px; top:72px; width:900px; bottom:20px" class="card">
+        <div style="padding:26px 36px; border-bottom:1px solid #f0f0f2; display:flex; align-items:center; justify-content:space-between"><div><div style="font-size:22px; font-weight:800">2장 이론적 배경</div><div class="small muted">11월 26일에 고친 본 · 지난번보다 바뀐 곳 노란색</div></div><span class="btn">한글 파일로 받기</span></div>
+        <div class="doc" style="padding:24px 36px">
+          <p style="margin:0 0 14px"><b>2.3 선행연구 비교 기준</b></p>
+          <p style="margin:0 0 14px">선행연구는 연구 목적, 자료 수집 방식, 분석 관점에 따라 서로 다른 결론에 이른다. <mark>본 연구는 비교 기준을 연구 목적·자료·분석 관점의 세 가지로 정하고, 각 기준을 고른 이유를 표 2-1에 정리하였다.</mark></p>
+          <p style="margin:0 0 14px">표 2-1의 연구는 2015년부터 2022년 사이에 발표된 것으로, <span class="red">[교수님 메모: 최근 연구가 비어 있어요]</span> 국내 대학원생을 대상으로 한 질적 연구를 중심으로 골랐다.</p>
+          <p class="muted" style="margin:0">… (이하 생략)</p>
+        </div>
+      </div>
+      <div style="position:absolute; left:936px; right:20px; top:72px; bottom:20px; display:flex; flex-direction:column; gap:14px">
+        <div class="card" style="padding:20px 22px"><div class="small muted b">김학생님의 한마디</div><div style="margin-top:6px; font-size:14px; line-height:1.6">교수님, 2장 초안 보내드려요. 지난번 말씀대로 비교 기준을 3개로 줄였는데, 이렇게 가도 될지 봐 주시면 좋겠어요.</div></div>
+        <div class="card" style="padding:20px 22px"><div class="small muted b">여쭤본 것</div><div class="b" style="margin-top:6px">비교 기준을 3개로 줄여도 될까요?</div><div style="display:flex; gap:8px; margin-top:12px"><span class="btn pri">네, 좋아요</span><span class="btn">미팅 때 얘기해요</span></div></div>
+        <div class="card" style="padding:20px 22px; flex:1; display:flex; flex-direction:column"><div class="small muted b">답장</div><div class="msg muted" style="flex:1; margin-top:8px">여기에 쓰거나, 원고 문장을 눌러 바로 메모를 남겨 주세요. 빨간 글씨 한글 파일을 올려도 돼요.</div><div style="display:flex; gap:8px; margin-top:12px"><span class="btn">한글 파일 올리기</span><span class="btn pri" style="margin-left:auto">답장 보내기</span></div></div>
+      </div>
+    </div></div>
+  </div></div>
+
+  <div class="panel" data-p="now1"><div class="why"><div><b>지금 · 검토 요청 만들기</b><p>제목을 직접 쓰고, 교수를 고르고, '검토받을 수정 결과'를 미리 따로 만들어 둬야 보낼 수 있어요. '수정 결과', '공유할 내용 확인' 같은 말이 낯설어요. 그다음 화면에서 또 '링크 복사'와 '메일로도 알리기'를 눌러야 실제로 가요.</p></div></div></div>
+  <div class="panel" data-p="now2"><div class="why"><div><b>지금 · 보낸 뒤 화면</b><p>새로고침·공유 설정·링크 복사·다시 확인 요청 버튼, 검토 항목, 교수 응답, 응답 변경 이력, 댓글이 한 화면에 있어요. 교수님이 봤는지, 답했는지가 한눈에 안 보여요.</p></div></div></div>
+  <div class="panel on" data-p="send"><div class="why">
+    <div><b>보내기 창 — 고를 것만 고르면 끝</b><p>받는 사람은 지도교수로 정해져 있고, 보낼 것(최근 고친 원고, 여쭤볼 것)은 다음 미팅에 맞춰 미리 체크돼 있어요. 한마디는 도우미가 먼저 써 두고, 나는 고치기만 해요. 메일로 보내거나 카톡에 붙일 링크를 복사해요.</p></div>
+    <div><b>없어지는 것</b><p>검토 요청 제목 쓰기, '수정 결과'를 따로 만드는 단계, '공유할 내용 확인' 다음 단계, 보낸 뒤 '메일로도 알리기'를 또 누르는 것.</p></div>
+  </div></div>
+  <div class="panel" data-p="sent"><div class="why"><div><b>보낸 뒤 — 봤는지, 답했는지만</b><p>홈 맨 위에 '보냄 → 열어 보심 → 답장' 세 칸이 보여요. 답장이 오면 미팅 후 화면처럼 할 일로 나눠서 보여 줘요.</p></div></div></div>
+  <div class="panel" data-p="prof"><div class="why">
+    <div><b>교수님 화면 — 읽고, 답하고, 끝</b><p>링크를 열면 원고(바뀐 곳은 노란색)와 학생의 한마디, 여쭤본 것이 보여요. 질문에는 '네, 좋아요' 한 번으로 답하고, 원고 문장에 바로 메모를 남기거나 지금처럼 빨간 글씨 한글 파일을 올려도 돼요.</p></div>
+    <div><b>정하실 것</b><p>교수님이 로그인 없이 링크로 볼 수 있게 할지(지금은 링크를 열면 로그인 화면으로 가요. 교수님도 계정이 있어야 해요). 편하지만 링크가 퍼지면 누구나 볼 수 있어서, 기간 제한이나 이메일 확인 같은 장치가 필요해요.</p></div>
+  </div></div>
+  <p class="note">설명용 가상 데이터예요. 원고 문장, 교수님 메모, 시각은 예시로 지은 것이에요.</p>
+
+  <h2>참고한 화면</h2>
+  <div class="refs">
+    <figure><img src="../assets/benchmarks/manyfast/05_feedback_modal.png" alt="매니패스트 피드백 창"><figcaption><b>매니패스트</b> → 한 창 안에서 고르고 쓰고 보내는 짧은 흐름.</figcaption></figure>
+    <figure><img src="../assets/benchmarks/tossinvest/04_feedback_dialog.png" alt="토스증권 의견 창"><figcaption><b>토스증권</b> → 버튼 한 번으로 답하는 선택지(교수님 화면의 '네, 좋아요').</figcaption></figure>
+  </div>
+</main>
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  function fit() { var s = stage.clientWidth / 1440; document.querySelectorAll('.screen').forEach(function (el) { el.style.transform = 'scale(' + s + ')'; }); }
+  window.addEventListener('resize', fit); fit();
+  document.querySelectorAll('[data-s]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.s;
+      document.querySelectorAll('[data-s]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      document.querySelectorAll('.screen').forEach(function (el) { el.classList.toggle('on', el.dataset.screen === k); });
+      document.querySelectorAll('.panel').forEach(function (el) { el.classList.toggle('on', el.dataset.p === k); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

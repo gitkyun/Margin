@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>시안 05 · 원고 저장과 할 일 연결</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+    --text: #171719; --sub: #46474c; --mute: #686b73;
+    --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #e52222; --danger-soft: #feecec;
+    --ok: #00a84e; --ok-soft: #e6f8ee; --warn: #c26b00; --warn-soft: #fff4e5;
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+      --text: #f4f4f5; --sub: #c2c4c8; --mute: #8a8c93; --brand: #3385ff; --brand-soft: #14233d;
+      --danger: #ff6363; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  header.top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px; }
+  header.top h1 { margin: 0 0 2px; font-size: 20px; }
+  header.top p { margin: 0; color: var(--sub); font-size: 12.5px; }
+  nav.tabs { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  nav.tabs button { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--sub); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  nav.tabs button[aria-selected="true"] { background: var(--text); color: var(--surface); border-color: var(--text); }
+  main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 60px; }
+  section.scene { display: none; }
+  section.scene.on { display: block; }
+  .intro { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .intro h2 { margin: 0 0 6px; font-size: 18px; }
+  .intro p { margin: 4px 0; color: var(--sub); }
+  .tag { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; margin-right: 4px; vertical-align: 1px; }
+  .tag.now { background: var(--danger-soft); color: var(--danger); }
+  .tag.a { background: var(--brand-soft); color: var(--brand); }
+  .tag.b { background: var(--warn-soft); color: var(--warn); }
+  .seg { display: inline-flex; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; margin: 6px 0 12px; flex-wrap: wrap; }
+  .seg button { border: 0; background: transparent; color: var(--sub); padding: 6px 12px; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .card h3 { margin: 0 0 10px; font-size: 14px; color: var(--sub); font-weight: 600; }
+  .doc-title { font-size: 18px; font-weight: 700; margin: 0 0 6px; border: 0; background: transparent; color: var(--text); width: 100%; font-family: inherit; padding: 0; }
+  .doc-body { min-height: 70px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--sunken); }
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  /* 흰 글자 대비를 위해 주 버튼은 두 모드 모두 #0066ff(약 5:1) */
+  button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+  button.btn:disabled { opacity: .45; cursor: default; }
+  button.btn:focus-visible, .seg button:focus-visible, nav.tabs button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .status { font-size: 12.5px; color: var(--mute); }
+  .status.ok { color: var(--ok); } .status.bad { color: var(--danger); } .status.wait { color: var(--warn); }
+  ul.versions { list-style: none; margin: 0; padding: 0; }
+  ul.versions li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; }
+  ul.versions li.dup { border-color: var(--danger); background: var(--danger-soft); }
+  ul.versions small { color: var(--mute); }
+  .server { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--sunken); border: 1px dashed var(--line-strong); border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; }
+  .mismatch { color: var(--danger); font-weight: 600; }
+  label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sub); }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--text); color: var(--surface); padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none; gap: 12px; align-items: center; max-width: calc(100% - 32px); z-index: 10; }
+  .toast.on { display: flex; }
+  .toast button { white-space: nowrap; flex: none; background: transparent; border: 0; color: #7fb2ff; font: inherit; font-weight: 600; cursor: pointer; }
+  .task { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .task:last-child { border-bottom: 0; }
+  .task input { margin-top: 3px; width: 18px; height: 18px; }
+  .chip { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--sunken); border: 1px solid var(--line); color: var(--sub); margin: 3px 4px 0 0; }
+  .chip.src { background: var(--brand-soft); border-color: transparent; color: var(--brand); }
+  .chip.bad { background: var(--danger-soft); border-color: transparent; color: var(--danger); }
+  .pill { font-size: 12px; padding: 1px 8px; border-radius: 6px; }
+  .pill.todo { background: var(--sunken); color: var(--sub); } .pill.doing { background: var(--warn-soft); color: var(--warn); } .pill.done { background: var(--ok-soft); color: var(--ok); }
+  select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); }
+  .note { font-size: 12.5px; color: var(--sub); margin-top: 8px; }
+  .modal { border: 1px solid var(--line-strong); border-radius: 12px; padding: 14px; background: var(--surface); }
+  .modal h3 { margin: 0 0 6px; font-size: 15px; color: var(--text); }
+  .empty { color: var(--mute); font-size: 13px; padding: 10px 0; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 05 v2 · 원고 저장과 할 일 연결 (Phase 5 쟁점 1·2)</h1>
+  <p>가상 데이터로 지금 동작과 대안을 눌러 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요.</p>
+</header>
+<nav class="tabs" role="tablist" aria-label="장면">
+  <button role="tab" aria-selected="true" data-scene="05-restore">원고 복원</button>
+  <button role="tab" aria-selected="false" data-scene="05-conflict">두 사람이 같이 저장</button>
+  <button role="tab" aria-selected="false" data-scene="05-visibility">저장 중 공개 범위</button>
+  <button role="tab" aria-selected="false" data-scene="05-source">할 일이 나온 곳</button>
+  <button role="tab" aria-selected="false" data-scene="05-next">다음 미팅 요약</button>
+  <button role="tab" aria-selected="false" data-scene="05-undo">완료 풀기</button>
+</nav>
+<main>
+
+<!-- 1. 원고 복원 -->
+<section class="scene on" id="05-restore" role="tabpanel">
+  <div class="intro">
+    <h2>원고 복원: 제목·굵기만 바꾼 뒤 v1로 되돌리기</h2>
+    <p>v1을 남긴 뒤 제목과 굵기만 바꿔 저장했어요. 이제 v1로 되돌려요. 복원 전 상태가 이력에 남는지, 중간에 실패하면 어떻게 되는지 봐 주세요.</p>
+    <div class="seg" role="group" aria-label="방식">
+      <button aria-pressed="true" data-mode="now">지금 동작</button>
+      <button aria-pressed="false" data-mode="a">대안 A 서버에서 한 번에</button>
+      <button aria-pressed="false" data-mode="b">대안 B 순서대로 + 되돌리기</button>
+    </div>
+    <p id="restore-desc"></p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>원고 화면</h3>
+      <p class="doc-title" id="r-title"></p>
+      <div class="doc-body" id="r-body"></div>
+      <div class="row">
+        <button class="btn primary" id="r-go">v1로 되돌리기</button>
+        <label class="chk"><input type="checkbox" id="r-fail" /> 마지막 저장 요청을 실패시키기</label>
+        <button class="btn" id="r-reset">처음으로</button>
+      </div>
+      <p class="status" id="r-status" role="status"></p>
+    </div>
+    <div class="card">
+      <h3>버전 기록</h3>
+      <ul class="versions" id="r-versions"></ul>
+      <h3 style="margin-top:12px">서버에 저장된 문서</h3>
+      <div class="server" id="r-server"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 충돌 -->
+<section class="scene" id="05-conflict" role="tabpanel">
+  <div class="intro">
+    <h2>두 사람이 같은 원고를 저장했을 때</h2>
+    <p>공동연구자가 먼저 저장했고, 나는 같은 문단을 다르게 고친 상태예요. 충돌 창에서 <b>내가 쓴 내용 유지</b>를 눌러 보세요.</p>
+    <div class="seg" role="group" aria-label="방식">
+      <button aria-pressed="true" data-mode="now">지금 동작</button>
+      <button aria-pressed="false" data-mode="a">대안 (A·B 공통) 바로 저장 + 상대 내용 보존</button>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="modal" id="c-modal">
+        <h3>다른 사람이 먼저 저장했어요</h3>
+        <p class="note">공동연구자 이연구 · 방금 전<br />상대: "비교 기준을 <b>세 가지</b>로 나눴다."<br />나: "비교 기준을 <b>목적·자료·분석</b>으로 나눴다."</p>
+        <div class="row">
+          <button class="btn" id="c-theirs">상대 내용 받기</button>
+          <button class="btn primary" id="c-mine">내가 쓴 내용 유지</button>
+        </div>
+      </div>
+      <p class="status" id="c-status" role="status"></p>
+    </div>
+    <div class="card">
+      <h3>서버에 저장된 문서</h3>
+      <div class="server" id="c-server"></div>
+      <h3 style="margin-top:12px">버전 기록</h3>
+      <ul class="versions" id="c-versions"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 공개 범위 -->
+<section class="scene" id="05-visibility" role="tabpanel">
+  <div class="intro">
+    <h2>본문 저장 중에 <b>나만 보기</b>로 바꾸기</h2>
+    <p>공유 중인 원고의 본문 저장이 느리게 진행되는 동안 공개 범위를 <b>나만 보기</b>로 바꿔요.</p>
+    <div class="seg" role="group" aria-label="방식">
+      <button aria-pressed="true" data-mode="now">지금 동작</button>
+      <button aria-pressed="false" data-mode="a">대안 (A·B 공통) 공개 범위는 바로 따로 저장</button>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h3>원고 머리</h3>
+      <div class="row" style="margin-top:0">
+        <select id="v-select" aria-label="공개 범위"><option value="shared">공동연구자와 공유</option><option value="private">나만 보기</option></select>
+        <span class="status" id="v-save" role="status"></span>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="v-type">본문 고치기 (저장 3초 걸림)</button>
+        <button class="btn" id="v-reset">처음으로</button>
+      </div>
+      <p class="note">순서: ① 본문 고치기 → ② 저장 중에 위 선택을 <b>나만 보기</b>로 → ③ 결과 비교</p>
+    </div>
+    <div class="card">
+      <h3>서버</h3>
+      <div class="server" id="v-server"></div>
+      <p class="note" id="v-who"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. 출처 -->
+<section class="scene" id="05-source" role="tabpanel">
+  <div class="intro">
+    <h2>기록에서 만든 할 일이 목록에서 어떻게 보이나</h2>
+    <p>'제5차 논문 지도' 기록에서 할 일 두 개를 만들었고, 하나는 '제6차'에 가져갔어요. 할 일 목록에서 출처와 기록 필터를 확인해 보세요.</p>
+    <div class="seg" role="group" aria-label="방식">
+      <button aria-pressed="true" data-mode="now">지금 동작</button>
+      <button aria-pressed="false" data-mode="a">대안 A 읽는 함수 하나</button>
+    </div>
+    <div class="seg" role="group" aria-label="보는 사람">
+      <button aria-pressed="true" data-who="owner">학생(소유자)</button>
+      <button aria-pressed="false" data-who="editor">공동연구자(비공개 기록 못 봄)</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="margin-top:0">
+      <label for="s-filter" class="status">기록 필터</label>
+      <select id="s-filter"><option value="all">전체</option><option value="m5">제5차 논문 지도</option><option value="m6">제6차 논문 지도</option></select>
+    </div>
+    <div id="s-list"></div>
+  </div>
+</section>
+
+<!-- 5. 다음 미팅 -->
+<section class="scene" id="05-next" role="tabpanel">
+  <div class="intro">
+    <h2>목표만 적은 다음 미팅</h2>
+    <p>'제7차 논문 지도'에 목표 한 줄만 적었어요. 가져갈 할 일과 질문은 아직 없어요.</p>
+    <div class="seg" role="group" aria-label="방식">
+      <button aria-pressed="true" data-mode="now">지금 동작</button>
+      <button aria-pressed="false" data-mode="a">권고: 목표 첫 줄 + 준비 수 따로</button>
+    </div>
+  </div>
+  <div class="card" id="n-card"></div>
+</section>
+
+<!-- 6. 완료 풀기 -->
+<section class="scene" id="05-undo" role="tabpanel">
+  <div class="intro">
+    <h2>완료한 할 일을 다시 풀기 <span class="tag a">결정: 직전 상태로</span></h2>
+    <p>'시작 전'인 할 일과 '진행 중'인 할 일을 완료한 뒤, 홈과 항목 상세에서 각각 풀어 보세요. 6초가 지난 뒤에 풀면 어떻게 되는지도 봐 주세요.</p>
+    <div class="seg" role="group" aria-label="방식">
+      <button aria-pressed="true" data-mode="now">지금 동작</button>
+      <button aria-pressed="false" data-mode="a">대안 A 완료 전 상태 저장</button>
+      <button aria-pressed="false" data-mode="b">대안 B 되돌리기 6초 안에서만</button>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>홈 (공통 함수 사용)</h3><div id="u-home"></div></div>
+    <div class="card"><h3>항목 상세 · 원고 여백 (지금은 따로 처리)</h3><div id="u-detail"></div></div>
+  </div>
+  <div class="row"><button class="btn" id="u-expire">6초 지남으로 만들기</button><button class="btn" id="u-reset">처음으로</button></div>
+</section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-text"></span><button id="toast-undo" hidden>되돌리기</button></div>
+
+<script>
+(function () {
+  // 공통: 탭과 토스트
+  const tabs = document.querySelectorAll('nav.tabs button');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    history.replaceState(null, '', '#' + t.dataset.scene);
+    tabs.forEach(x => x.setAttribute('aria-selected', String(x === t)));
+    document.querySelectorAll('section.scene').forEach(s => s.classList.toggle('on', s.id === t.dataset.scene));
+  }));
+  const toastEl = document.getElementById('toast'), toastText = document.getElementById('toast-text'), toastUndo = document.getElementById('toast-undo');
+  let toastTimer;
+  function toast(msg, undo) {
+    toastText.textContent = msg; toastEl.classList.add('on');
+    toastUndo.hidden = !undo; toastUndo.onclick = () => { undo && undo(); toastEl.classList.remove('on'); };
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('on'), 6000);
+  }
+  function segment(section, attr, onChange) {
+    const btns = section.querySelectorAll('.seg button[data-' + attr + ']');
+    btns.forEach(b => b.addEventListener('click', () => {
+      btns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      onChange(b.dataset[attr]);
+    }));
+  }
+  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+  // 1. 원고 복원
+  (function () {
+    const sec = document.getElementById('05-restore');
+    const desc = {
+      now: '<span class="tag now">지금</span>백업 조건이 본문 글자만 비교해요. 제목·굵기만 바뀌면 직전 상태를 남기지 않아요. 요청 네 번이 따로 가서 마지막만 실패하면 화면과 서버가 갈려요.',
+      a: '<span class="tag a">대안 A</span>제목·공개 범위·본문 구조를 함께 비교해요. 서버 함수 하나가 백업·복원·새 버전을 한 번에 처리해서, 실패하면 아무것도 바뀌지 않아요.',
+      b: '<span class="tag b">대안 B</span>비교 기준은 A와 같아요. 요청은 순서대로 보내고, 실패하면 이미 바꾼 문서를 원래대로 되돌리는 요청을 한 번 더 보내요. 그 요청까지 실패하면 여전히 갈릴 수 있어요.'
+    };
+    let mode = 'now', st;
+    const v1 = { title: '2장 이론적 배경', body: '선행연구를 연구 목적·자료·분석 관점으로 나눴다.' };
+    function reset() {
+      st = { screen: { title: '2장 이론적 배경과 비교 기준', body: '선행연구를 <b>연구 목적·자료·분석</b> 관점으로 나눴다.' },
+        server: { title: '2장 이론적 배경과 비교 기준', body: '선행연구를 <b>연구 목적·자료·분석</b> 관점으로 나눴다.' },
+        versions: [{ n: 1, ...v1, note: '처음 남긴 버전' }], status: '', cls: '' };
+      render();
+    }
+    function render() {
+      document.getElementById('restore-desc').innerHTML = desc[mode];
+      document.getElementById('r-title').textContent = st.screen.title;
+      document.getElementById('r-body').innerHTML = st.screen.body;
+      const nums = st.versions.map(v => v.n);
+      document.getElementById('r-versions').innerHTML = st.versions.slice().reverse().map(v =>
+        `<li class="${nums.filter(n => n === v.n).length > 1 ? 'dup' : ''}"><span><b>v${v.n}</b> ${esc(v.title)}<br><small>${v.note}</small></span></li>`).join('');
+      const same = st.server.title === st.screen.title && st.server.body === st.screen.body;
+      document.getElementById('r-server').innerHTML = `제목: ${esc(st.server.title)}\n본문: ${st.server.body}` + (same ? '' : '\n<span class="mismatch">⚠ 화면과 다름 — 새로고침하면 이 내용이 보여요</span>');
+      const s = document.getElementById('r-status'); s.textContent = st.status; s.className = 'status ' + st.cls;
+    }
+    document.getElementById('r-go').onclick = () => {
+      const fail = document.getElementById('r-fail').checked;
+      const before = { ...st.server };
+      const textChanged = before.body.replace(/<[^>]+>/g, '') !== v1.body; // 지금: 글자만 비교
+      if (mode === 'now') {
+        // 본문 글자가 v1과 같으면(굵기만 다름) 백업을 건너뜀
+        if (textChanged) st.versions.push({ n: st.versions.length + 1, title: before.title, note: '복원 전 상태' });
+        st.server = { ...v1 };
+        if (fail) { st.status = '버전을 남기지 못했어요. 다시 시도해 주세요.'; st.cls = 'bad'; render(); return; }
+        st.versions.push({ n: st.versions.length + 1, ...v1, note: 'v1 내용으로 되돌림' });
+        st.screen = { ...v1 }; st.status = 'v1 내용으로 되돌리고 새 버전으로 남겼어요.'; st.cls = 'ok';
+        if (!textChanged) st.status += ' (직전 제목·굵기는 이력에 없음)';
+      } else if (mode === 'a') {
+        if (fail) { st.status = '되돌리지 못했어요. 원고는 그대로예요. 다시 시도해 주세요.'; st.cls = 'bad'; render(); return; }
+        st.versions.push({ n: st.versions.length + 1, title: before.title, note: '복원 전 상태 (제목·서식 포함)' });
+        st.versions.push({ n: st.versions.length + 1, ...v1, note: 'v1 내용으로 되돌림' });
+        st.server = { ...v1 }; st.screen = { ...v1 };
+        st.status = 'v1로 되돌렸어요. 직전 상태는 v2로 남겼어요.'; st.cls = 'ok';
+        toast('v1로 되돌렸어요.', () => { st.server = { ...before }; st.screen = { ...before }; st.versions.push({ n: st.versions.length + 1, title: before.title, note: '되돌리기 취소' }); st.status = '복원을 취소했어요.'; render(); });
+      } else {
+        st.versions.push({ n: st.versions.length + 1, title: before.title, note: '복원 전 상태 (제목·서식 포함)' });
+        st.server = { ...v1 };
+        if (fail) { st.server = { ...before }; st.status = '되돌리지 못해서 원래 원고로 돌려놨어요. 복원 전 상태는 v2로 남았어요.'; st.cls = 'wait'; render(); return; }
+        st.versions.push({ n: st.versions.length + 1, ...v1, note: 'v1 내용으로 되돌림' });
+        st.screen = { ...v1 }; st.status = 'v1로 되돌렸어요. 직전 상태는 v2로 남겼어요.'; st.cls = 'ok';
+      }
+      render();
+    };
+    document.getElementById('r-reset').onclick = reset;
+    segment(sec, 'mode', m => { mode = m; reset(); });
+    reset();
+  })();
+
+  // 2. 충돌
+  (function () {
+    const sec = document.getElementById('05-conflict');
+    let mode = 'now', st;
+    function reset() { st = { server: '비교 기준을 세 가지로 나눴다.', author: '이연구', versions: [{ n: 3, t: '이연구가 저장', s: '세 가지' }], status: '', open: true }; render(); }
+    function render() {
+      document.getElementById('c-server').textContent = `본문: ${st.server}\n마지막 저장: ${st.author}`;
+      document.getElementById('c-versions').innerHTML = st.versions.slice().reverse().map(v => `<li><span><b>v${v.n}</b> ${v.t}<br><small>${v.s}</small></span></li>`).join('');
+      document.getElementById('c-modal').style.display = st.open ? '' : 'none';
+      const s = document.getElementById('c-status'); s.innerHTML = st.status;
+    }
+    document.getElementById('c-mine').onclick = () => {
+      st.open = false;
+      if (mode === 'now') {
+        st.status = '<span class="status wait">화면: 내 내용 · 저장되지 않은 변경</span><br><span class="mismatch">서버는 아직 상대 내용이에요. 다음 자동 저장 때 덮어써요.</span>';
+      } else {
+        st.versions.push({ n: 4, t: '상대가 저장한 내용 (보존)', s: '세 가지' });
+        st.versions.push({ n: 5, t: '내가 저장', s: '목적·자료·분석' });
+        st.server = '비교 기준을 목적·자료·분석으로 나눴다.'; st.author = '나';
+        st.status = '<span class="status ok">내 내용으로 저장했어요. 이연구님 내용은 v4로 남겼어요.</span>';
+      }
+      render();
+    };
+    document.getElementById('c-theirs').onclick = () => { st.open = false; st.status = '<span class="status ok">상대 내용을 받았어요. 내가 쓰던 내용은 v4로 남겼어요.</span>'; if (mode === 'now') st.status = '<span class="status ok">상대 내용을 받았어요.</span> <span class="mismatch">내가 쓰던 내용은 사라져요.</span>'; render(); };
+    segment(sec, 'mode', m => { mode = m; reset(); });
+    reset();
+  })();
+
+  // 3. 공개 범위
+  (function () {
+    const sec = document.getElementById('05-visibility');
+    let mode = 'now', st, timer;
+    const sel = document.getElementById('v-select');
+    function reset() { clearTimeout(timer); st = { server: 'shared', saving: false, label: '저장됨' }; sel.value = 'shared'; render(); }
+    function render() {
+      const map = { shared: '공동연구자와 공유', private: '나만 보기' };
+      document.getElementById('v-server').innerHTML = `공개 범위: ${map[st.server]}` + (st.server !== sel.value && !st.saving ? '\n<span class="mismatch">⚠ 화면과 다름 — 공동연구자가 계속 볼 수 있어요</span>' : '');
+      const el = document.getElementById('v-save'); el.textContent = st.label; el.className = 'status ' + (st.saving ? 'wait' : 'ok');
+      document.getElementById('v-who').textContent = st.server === 'shared' ? '공동연구자 이연구: 이 원고를 볼 수 있음' : '공동연구자 이연구: 볼 수 없음';
+    }
+    document.getElementById('v-type').onclick = () => {
+      st.saving = true; st.label = '저장 중…'; const sent = sel.value; render();
+      timer = setTimeout(() => {
+        st.saving = false;
+        if (mode === 'now') { st.server = sent; st.label = (sel.value === 'private' ? '나만 보기 · ' : '') + '저장됨'; }
+        else { st.label = '본문 저장됨'; }
+        render();
+      }, 3000);
+    };
+    sel.onchange = () => {
+      if (mode === 'a') { st.server = sel.value; toast(sel.value === 'private' ? '나만 보기로 바꿨어요. 공동연구자는 더 볼 수 없어요.' : '공동연구자와 공유해요.'); }
+      render();
+    };
+    document.getElementById('v-reset').onclick = reset;
+    segment(sec, 'mode', m => { mode = m; reset(); });
+    reset();
+  })();
+
+  // 4. 출처
+  (function () {
+    const sec = document.getElementById('05-source');
+    let mode = 'now', who = 'owner';
+    const meetings = { m5: { title: '제5차 논문 지도', private: true, taskIds: [] }, m6: { title: '제6차 논문 지도', private: false, taskIds: ['t2'] } };
+    const tasks = [
+      { id: 't1', title: '원고 2장 표의 출처 추가', sourceRecordId: 'm5', feedbackIds: [] },
+      { id: 't2', title: '비교 기준 한 문장 정의', sourceRecordId: 'm5', feedbackIds: [] },
+      { id: 't3', title: '인터뷰 질문지 보완', feedbackIds: [] }
+    ];
+    const visible = id => who === 'owner' || !meetings[id].private;
+    function originNow(t) { // 지금: feedback → meeting.taskIds 만 봄
+      const m = Object.entries(meetings).find(([id, m]) => m.taskIds.includes(t.id) && visible(id));
+      return { label: m ? m[1].title : '직접 추가', carried: null, ids: m ? [m[0]] : [] };
+    }
+    function originA(t) {
+      const src = t.sourceRecordId;
+      const carried = Object.entries(meetings).find(([id, m]) => m.taskIds.includes(t.id));
+      const label = src ? (visible(src) ? meetings[src].title + '에서' : '비공개 기록에서') : '직접 추가';
+      return { label, carried: carried && carried[0] !== src && visible(carried[0]) ? meetings[carried[0]].title : null, ids: [src, carried && carried[0]].filter(Boolean) };
+    }
+    function render() {
+      const f = document.getElementById('s-filter').value;
+      const list = tasks.map(t => ({ t, o: mode === 'now' ? originNow(t) : originA(t) })).filter(x => f === 'all' || x.o.ids.includes(f));
+      const wrong = x => x.t.sourceRecordId && x.o.label === '직접 추가';
+      document.getElementById('s-list').innerHTML = list.length ? list.map(x => `<div class="task"><input type="checkbox" aria-label="완료" /><div><div>${x.t.title}</div>
+        <span class="chip ${wrong(x) ? 'bad' : (x.o.label === '직접 추가' ? '' : 'src')}">${x.o.label}${wrong(x) ? ' ← 실제로는 제5차에서 나옴' : ''}</span>${x.o.carried ? `<span class="chip">→ ${x.o.carried}에 가져감</span>` : ''}</div></div>`).join('')
+        : `<p class="empty">이 기록에서 나온 할 일이 없어요.${mode === 'now' && f === 'm5' ? ' <span class="mismatch">← 실제로는 2개가 이 기록에서 나왔어요</span>' : ''}</p>`;
+    }
+    document.getElementById('s-filter').onchange = render;
+    segment(sec, 'mode', m => { mode = m; render(); });
+    segment(sec, 'who', w => { who = w; render(); });
+    render();
+  })();
+
+  // 5. 다음 미팅
+  (function () {
+    const sec = document.getElementById('05-next');
+    function render(mode) {
+      document.getElementById('n-card').innerHTML = mode === 'now'
+        ? `<h3>다음 미팅</h3><p class="status">11월 28일 (토) 14:00 · 2일 뒤 <span class="chip">다음</span></p><p style="font-weight:700;margin:4px 0">제7차 논문 지도</p>
+           <p class="status">아직 준비한 내용이 없어요.</p><div class="row"><button class="btn">미팅 준비하기</button><button class="btn">홈의 다음 미팅으로 지정</button></div>
+           <p class="note"><span class="mismatch">목표가 저장돼 있는데 '준비 없음'으로 보이고, 이미 '다음'인데 지정 버튼이 있어요.</span></p>`
+        : `<h3>다음 미팅</h3><p class="status">11월 28일 (토) 14:00 · 2일 뒤 <span class="chip">다음</span></p><p style="font-weight:700;margin:4px 0">제7차 논문 지도</p>
+           <p style="margin:4px 0">목표: 2장 비교 기준을 교수님과 확정하기</p><p class="status">가져갈 할 일 0 · 보여 줄 글·자료 0 · 질문 0</p>
+           <div class="row"><button class="btn primary">미팅 준비하기</button></div><p class="note">자동으로 정해진 다음 미팅이라 지정 버튼은 숨겨요. 다른 미팅을 다음으로 고르려면 그 미팅의 메뉴에서 해요.</p>`;
+    }
+    segment(sec, 'mode', render);
+    render('now');
+  })();
+
+  // 6. 완료 풀기
+  (function () {
+    const sec = document.getElementById('05-undo');
+    let mode = 'now', st;
+    const label = { todo: '시작 전', doing: '진행 중', done: '완료' };
+    function reset() { st = { tasks: [{ id: 'a', title: '선행연구 비교표 보완', status: 'todo' }, { id: 'b', title: '인터뷰 질문지 보완', status: 'doing' }], expired: false }; render(); }
+    function toggle(t, where) {
+      if (t.status !== 'done') {
+        t.before = t.status; t.status = 'done';
+        toast(`'${t.title}' 완료했어요.`, () => { t.status = t.before; render(); });
+      } else {
+        let back;
+        if (mode === 'now') back = where === 'home' ? 'doing' : 'todo';
+        else if (mode === 'a') back = t.before || 'doing';
+        else back = st.expired ? 'doing' : t.before;
+        t.status = back;
+      }
+      render();
+    }
+    function list(where) {
+      return st.tasks.map(t => {
+        const expected = t.status !== 'done' && t.before && t.status !== t.before;
+        return `<div class="task"><input type="checkbox" ${t.status === 'done' ? 'checked' : ''} data-id="${t.id}" data-where="${where}" aria-label="${t.title} 완료" />
+        <div><div>${t.title}</div><span class="pill ${t.status}">${label[t.status]}</span>${t.before ? ` <span class="status">완료 전: ${label[t.before]}</span>` : ''}${expected ? ' <span class="mismatch">직전 상태와 다름</span>' : ''}</div></div>`;
+      }).join('');
+    }
+    function render() {
+      document.getElementById('u-home').innerHTML = list('home');
+      document.getElementById('u-detail').innerHTML = list('detail');
+      sec.querySelectorAll('input[data-id]').forEach(i => i.onchange = () => toggle(st.tasks.find(t => t.id === i.dataset.id), i.dataset.where));
+    }
+    document.getElementById('u-expire').onclick = () => { st.expired = true; toastEl.classList.remove('on'); toast('6초가 지났어요. 되돌리기 알림이 사라졌어요.'); };
+    document.getElementById('u-reset').onclick = reset;
+    segment(sec, 'mode', m => { mode = m; reset(); });
+    reset();
+  })();
+})();
+</script>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

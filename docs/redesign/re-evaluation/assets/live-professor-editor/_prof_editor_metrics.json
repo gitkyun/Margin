@@ -1,0 +1,177 @@
+{
+  "captured": [
+    "p00_login_screen.png",
+    "p01_prof_r_home.png",
+    "p03_prof_notifications.png",
+    "p04_prof_review_detail.png",
+    "p05_prof_review_need_revision_ui.png",
+    "p06_prof_review_pin_mode.png",
+    "p07_prof_review_390.png",
+    "p08_prof_schedule_poll.png",
+    "e01_editor_home.png",
+    "e02_editor_switcher.png",
+    "e03_editor_meetings.png",
+    "e05_editor_tasks.png",
+    "e06_editor_docs.png",
+    "e07_editor_settings_research.png",
+    "e08_editor_settings_people.png",
+    "e09_editor_settings_danger.png",
+    "e10_editor_settings_profile.png"
+  ],
+  "notes": {
+    "p00_login_screen.png": "로그인 화면 (로그아웃 상태)",
+    "postLoginUrl": "https://margin-research.pages.dev/r",
+    "p01_prof_r_home.png": "교수 /r 메인 화면 (수신 검토 요청 및 함께하는 연구)",
+    "p03_prof_notifications.png": "교수 알림 팝오버",
+    "p04_prof_review_detail.png": "교수 검토 상세 (/reviews/d9e66d11-b2d1-49e2-9c3c-cc8befc3dca5)",
+    "p05_prof_review_need_revision_ui.png": "교수 검토 — 추가 수정 필요 사유 입력 UI (미제출)",
+    "p06_prof_review_pin_mode.png": "교수 검토 — PDF 위치 핀 찍기 모드",
+    "p07_prof_review_390.png": "교수 검토 상세 모바일 390px",
+    "p08_prof_schedule_poll.png": "교수 일정 조율 응답 화면 (/schedule/48871122-c956-4eca-a10e-f116ba829eff)",
+    "e01_editor_home.png": "공동연구자(편집자) 연구 홈 (/r/7f09c2a1-3676-46c7-9a01-1e61cd60fe64)",
+    "e02_editor_switcher.png": "편집자 연구 전환 드롭다운",
+    "e03_editor_meetings.png": "편집자 미팅 목록·상세",
+    "e05_editor_tasks.png": "편집자 할 일 화면",
+    "e06_editor_docs.png": "편집자 글·자료 화면",
+    "e07_editor_settings_research.png": "편집자 설정 모달 — 연구 정보 탭",
+    "e08_editor_settings_people.png": "편집자 설정 — 함께하는 사람 탭",
+    "e09_editor_settings_danger.png": "편집자 설정 — 보관·삭제 탭",
+    "e10_editor_settings_profile.png": "편집자 설정 — 프로필 탭"
+  },
+  "links": {
+    "profR": {
+      "url": "https://margin-research.pages.dev/r",
+      "h1": {
+        "text": "내 연구",
+        "size": "28px",
+        "weight": "700"
+      },
+      "text": "본문으로 이동\n연구 찾기\n⌘ K\n지\n내 연구\n연구 만들기\n받은 검토 요청\n선행연구·연구 질문 수정 결과\n김학생 · 대학원생 연구 기록 경험 · 검토 항목 2개 · 11월 18일 (수)\n모두 응답함\n[QA-2026-11-10] 비교표 기준 추가 검토\n김학생 · [QA-2026-11-10] 회귀 점검 <b>굵게</b> 😀 · 검토 항목 1개 · 11월 10일 (화)\n모두 응답함\n제7차 논문 지도\n\n미팅 시간 조율 · 가능한 시간을 알려 주세요.\n\n진행 중인 연구\n1\n완료된 연구\n0\n보관함\n0\n휴지통\n0\n진행 중\n대학원생 연구 기록 경험\n\n지도 미팅 뒤 기록을 정리하는 경험을 살펴보는 가상 연구예요.\n\n미팅 0개 · 남은 할 일 3개\n연구 설정\n마진\n문의 admin@margin.com\n자료·개인정보 안내",
+      "links": [
+        {
+          "text": "본문으로 이동",
+          "href": "#main-content"
+        },
+        {
+          "text": "",
+          "href": "/r"
+        },
+        {
+          "text": "선행연구·연구 질문 수정 결과 김학생 · 대학원생 연구 기록 경험 · 검토 항목 2개 · 11월 18일 (수) 모두 응답함",
+          "href": "/reviews/d9e66d11-b2d1-49e2-9c3c-cc8befc3dca5"
+        },
+        {
+          "text": "[QA-2026-11-10] 비교표 기준 추가 검토 김학생 · [QA-2026-11-10] 회귀 점검 <b>굵게</b> 😀 · 검토 항목 1개 · 11월 10일 (화) 모두 응답함",
+          "href": "/reviews/0994717f-cb37-4229-a952-e40399ebce54"
+        },
+        {
+          "text": "제7차 논문 지도 미팅 시간 조율 · 가능한 시간을 알려 주세요.",
+          "href": "/schedule/48871122-c956-4eca-a10e-f116ba829eff"
+        },
+        {
+          "text": "진행 중 대학원생 연구 기록 경험 지도 미팅 뒤 기록을 정리하는 경험을 살펴보는 가상 연구예요. 미팅 0개 · 남은 할 일 3개",
+          "href": "/r/7f09c2a1-3676-46c7-9a01-1e61cd60fe64"
+        },
+        {
+          "text": "연구 설정",
+          "href": "/r/7f09c2a1-3676-46c7-9a01-1e61cd60fe64?settings=research"
+        },
+        {
+          "text": "문의 admin@margin.com",
+          "href": "mailto:admin@margin.com"
+        },
+        {
+          "text": "자료·개인정보 안내",
+          "href": "/privacy"
+        }
+      ],
+      "buttons": [
+        "연구 찾기 ⌘ K",
+        "지",
+        "연구 만들기"
+      ]
+    },
+    "profReview": {
+      "url": "https://margin-research.pages.dev/reviews/d9e66d11-b2d1-49e2-9c3c-cc8befc3dca5?item=6c4bf938-9e72-48a3-8925-5709ce5a40f3&round=5809ba22-173b-4f14-a895-eb141f021026",
+      "h1": {
+        "text": "선행연구·연구 질문 수정 결과",
+        "size": "28px",
+        "weight": "700"
+      },
+      "buttons": [
+        "대학원생 연구 기록 경험",
+        "이 연구에서 찾기 ⌘ K",
+        "지",
+        "새로고침",
+        "공유 설정",
+        "링크 복사",
+        "교수님께 메일로도 알리기",
+        "01 선행연구 비교표 보완 추가 수정 필요 1차 검토 · 선행연구_비교표_v2.pdf",
+        "02 연구 질문 구체화 수정 내용 확인 1차 검토 · 연구계획서_v1.pdf",
+        "다시 확인 요청",
+        "수정 내용·파일",
+        "교수 응답·댓글",
+        "1페이지",
+        "이 페이지 텍스트 보기",
+        "변경 내용 저장",
+        "응답 변경 이력 보기",
+        "답글",
+        "해결로 표시",
+        "PDF 위치 핀 찍기",
+        "댓글 남기기",
+        "도우미",
+        "할 일",
+        "결정·질문",
+        "자료",
+        "연구 도우미"
+      ],
+      "canvases": [
+        {
+          "w": 504,
+          "h": 652
+        }
+      ],
+      "text": "본문으로 이동\n대학원생 연구 기록 경험\n홈\n미팅\n할 일\n글·자료\n이 연구에서 찾기\n⌘ K\n지\n검토 요청 목록\n선행연구·연구 질문 수정 결과\n공유 중\n\nprofessor@margin.com에게 공유 · 11월 18일 00:03\n\n새로고침\n공유 설정\n링크 복사\n\n검토 링크는 아직 보내지 않았어요.\nprofessor@margin.com에게 제목과 링크만 메일로 보내요.\n\n교수님께 메일로도 알리기\n검토 항목\n2\n01\n선행연구 비교표 보완\n추가 수정 필요\n1차 검토 · 선행연구_비교표_v2.pdf\n02\n연구 질문 구체화\n수정 내용 확인\n1차 검토 · 연구계획서_v1.pdf\n\n이 요청에 담긴 내용만 공개돼요. 학생의 개인 기록은 공유되지 않아요.\n\n항목 1 / 2\n선행연구 비교표 보완\n검토\n1차 검토 · 최신\n다시 확인 요청\n1차 검토 · 보낸 당시 내용\n11월 18일 00:03\n김학생 · 보냄\n연결된 피드백\n\n선행연구 비교 기준 보완\n선행연구를 나열하기보다 연구 목적에 맞는 비교 기준이 드러나도록 표를 보완하세요.\n\n수정한 내용\n\n선행연구를 연구 목적·자료 수집·분석 관점으로 나누어 비교했습니다. 기존 표에 비교 기준 열과 기준 선정 이유를 추가했습니다.\n\n먼저 볼 위치\n1페이지 · 비교 기준 표\n선행연구_비교표_v2.pdf\n보낸 당시 파일\n선행연구_비교표_v2.pdf\n1 / 1\n100%\n이 페이지 텍스트 보기\n\n먼저 볼 위치뿐 아니라 PDF 전체를 볼 수 있어요.\n\n교수 응답\n추가 수정 필요\n내가 남긴 응답 · 11월 18일 00:03\n\n연구 목적에 맞는 비교 기준을 하나 더 보완해 주세요.\n\n수정 결과에서 고치기\n내 응답 변경\n수정 내용 확인\n추가 수정 필요\n추가로 수정할 내용\n필수\n\n무엇을 더 고쳐야 하는지 알려 주세요.\n\n변경 내용 저장\n\n바뀐 내용이 없어요.\n\n이 요청의 모든 항목에 결과를 남겼어요. 학생에게 알림으로 보여요.\n\n응답 변경 이력 보기\n댓글\n3\n지\n지도교수\n11월 18일 00:03\n\n비교 기준 열은 좋아요. 분석 관점 열만 정의를 보완해 주세요.\n\n답글\n해결로 표시\n김\n김학생\n11월 18일 00:03\n\n네, 다음 버전에 정의를 덧붙일게요.\n\n지\n지도교수\n11월 22일 04:17\n\n삭제한 댓글이에요.\n\n답글\n해결로 표시\nPDF 위치 핀 찍기\n검토 댓글\n댓글 남기기\n\n해결로 표시해도 교수 응답은 바뀌지 않아요.\n\n마진\n문의 admin@margin.com\n자료·개인정보 안내\n도우미\n할 일\n결정·질문\n자료\n의견"
+    },
+    "editorHome": {
+      "url": "https://margin-research.pages.dev/r/7f09c2a1-3676-46c7-9a01-1e61cd60fe64",
+      "text": "본문으로 이동\n대학원생 연구 기록 경험\n홈\n미팅\n할 일\n글·자료\n이 연구에서 찾기\n⌘ K\n지\n대학원생 연구 기록 경험\n\n지도 미팅 뒤 기록을 정리하는 경험을 살펴보는 가상 연구예요.\n\n현재 단계 연구 설계\n공동연구자 2명\n다음 미팅\n\n아직 기록이 없어요.\n\n다음 미팅 잡기\n녹음 시작\n·\n서면 피드백 붙여넣기\n‘제7차 논문 지도’ 조율 중 · 2명 중 2명 응답\n할 일\n3\n알림\n6\n최근 미팅\n최근 글·자료\n내 할 일\n모두\n선행연구 비교 기준 정리\n5일 지남 · 직접 추가\n인터뷰 질문지 보완\n4일 지남 · 직접 추가\n분석 관점 기준의 정의 한 문장 쓰기\n2일 지남 · 직접 추가\n할 일 추가\n할 일 전체 보기\n시작하기\n3 / 4\n미팅 기록 남기기\n녹음하거나 메모를 붙여 넣어요.\n피드백 한 건 정리하기\n끝냈어요\n할 일 추가\n끝냈어요\n원고나 자료 올리기\n끝냈어요\n연구 흐름\n열기\n문헌 검토\n02\n연구 설계\n현재 단계\n03\n자료 수집\n04\n논문 작성\n\n다음 목표 · 연구계획서 심사 · 11월 28일 (토)\n\n연구 방향\n고치기\n\n대학원생이 지도 미팅 뒤 기록을 정리해 다음 연구로 잇는 경험을 이해한다.\n\n대학원생은 미팅 기록을 정리하며 어떤 어려움을 겪는가?\n기록 정리 방식은 다음 미팅 준비에 어떤 영향을 주는가?\n마진\n문의 admin@margin.com\n자료·개인정보 안내\n도우미\n할 일\n결정·질문\n자료\n의견",
+      "buttons": [
+        "대학원생 연구 기록 경험",
+        "이 연구에서 찾기 ⌘ K",
+        "지",
+        "할 일 3",
+        "알림 6",
+        "최근 미팅",
+        "최근 글·자료",
+        "할 일 추가",
+        "도우미",
+        "할 일",
+        "결정·질문",
+        "자료",
+        "연구 도우미"
+      ]
+    },
+    "editorSettingsTabs": [
+      "프로필",
+      "화면",
+      "알림",
+      "연구 도우미",
+      "사용량·플랜",
+      "단축키",
+      "연구 정보",
+      "함께하는 사람",
+      "미팅 주기",
+      "보관·삭제",
+      "설정",
+      "기본 정보",
+      "공동연구자",
+      "연구 단계",
+      "보관·삭제",
+      "취소",
+      "저장",
+      "초대 링크 복사"
+    ]
+  },
+  "verifiedEmail": "professor@margin.com"
+}

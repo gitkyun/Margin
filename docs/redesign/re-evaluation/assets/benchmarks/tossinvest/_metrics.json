@@ -1,0 +1,119 @@
+{
+  "captures": [
+    {
+      "name": "01_home_panel_open.png",
+      "note": "토스증권 홈 (우측 내 투자 패널 열림 + 우측 레일)",
+      "url": "https://www.tossinvest.com/"
+    },
+    {
+      "name": "02_rail_watchlist.png",
+      "note": "우측 레일 관심 탭 활성화 (Fill 아이콘 전환)",
+      "url": "https://www.tossinvest.com/"
+    },
+    {
+      "name": "03_rail_closed.png",
+      "note": "우측 사이드 패널 접힘 시 본문 폭 확장",
+      "url": "https://www.tossinvest.com/"
+    },
+    {
+      "name": "04_feedback_dialog.png",
+      "note": "우측 레일 하단 의견 클릭 → 인앱 의견 수집 다이얼로그",
+      "url": "https://www.tossinvest.com/"
+    },
+    {
+      "name": "05_settings_dialog.png",
+      "note": "우측 레일 하단 설정 열기 → 토스증권 설정 화면",
+      "url": "https://www.tossinvest.com/"
+    },
+    {
+      "name": "07_stock_detail.png",
+      "note": "종목 상세 화면 (고밀도 정보·차트·탭 구조)",
+      "url": "https://www.tossinvest.com/"
+    }
+  ],
+  "railMetrics": {
+    "navWidth": 56,
+    "buttons": [
+      {
+        "text": "",
+        "w": 32,
+        "h": 32,
+        "x": 1385,
+        "y": 10,
+        "radius": "8px",
+        "bg": "rgba(0, 0, 0, 0)",
+        "fontSize": "16px"
+      },
+      {
+        "text": "내 투자",
+        "w": 42,
+        "h": 58,
+        "x": 1380,
+        "y": 52,
+        "radius": "0px",
+        "bg": "rgba(0, 0, 0, 0)",
+        "fontSize": "16px"
+      },
+      {
+        "text": "관심",
+        "w": 40,
+        "h": 58,
+        "x": 1381,
+        "y": 110,
+        "radius": "0px",
+        "bg": "rgba(0, 0, 0, 0)",
+        "fontSize": "16px"
+      },
+      {
+        "text": "최근 본",
+        "w": 42,
+        "h": 58,
+        "x": 1380,
+        "y": 168,
+        "radius": "0px",
+        "bg": "rgba(0, 0, 0, 0)",
+        "fontSize": "16px"
+      },
+      {
+        "text": "실시간",
+        "w": 40,
+        "h": 58,
+        "x": 1381,
+        "y": 241,
+        "radius": "0px",
+        "bg": "rgba(0, 0, 0, 0)",
+        "fontSize": "16px"
+      },
+      {
+        "text": "의견",
+        "w": 40,
+        "h": 58,
+        "x": 1381,
+        "y": 742,
+        "radius": "0px",
+        "bg": "rgba(0, 0, 0, 0)",
+        "fontSize": "16px"
+      },
+      {
+        "text": "",
+        "w": 32,
+        "h": 32,
+        "x": 1385,
+        "y": 816,
+        "radius": "8px",
+        "bg": "rgba(7, 25, 76, 0.04)",
+        "fontSize": "16px"
+      },
+      {
+        "text": "",
+        "w": 32,
+        "h": 32,
+        "x": 1385,
+        "y": 852,
+        "radius": "8px",
+        "bg": "rgba(7, 25, 76, 0.04)",
+        "fontSize": "16px"
+      }
+    ]
+  }
+}

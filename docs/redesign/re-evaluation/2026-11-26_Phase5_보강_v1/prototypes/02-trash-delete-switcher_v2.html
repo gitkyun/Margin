@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>시안 02 v2 · 연구 전환기 · 휴지통 · 완전 삭제 · 공유 중지</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+    --text: #171719; --sub: #46474c; --mute: #686b73;
+    --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+    --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+      --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+      --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-weight: 600; vertical-align: middle; }
+
+  header.top { background: var(--surface); border-bottom: 1px solid var(--line); padding: 14px 16px; }
+  header.top h1 { margin: 0 0 4px; font-size: 20px; line-height: 1.35; }
+  header.top p { margin: 0; color: var(--sub); font-size: 13px; }
+
+  nav.tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  nav.tabs button { border: 1px solid var(--line); background: var(--surface); color: var(--sub); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  nav.tabs button[aria-selected="true"] { background: var(--text); color: var(--surface); border-color: var(--text); font-weight: 600; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 80px; display: flex; flex-direction: column; gap: 20px; }
+  section.scene { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 16px; scroll-margin-top: 16px; }
+
+  .scene-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .scene-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .scene-title h2 { margin: 0; font-size: 18px; line-height: 1.35; }
+  .scene-desc { margin: 0 0 12px; color: var(--sub); font-size: 13.5px; }
+
+  .seg { display: inline-flex; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; margin-bottom: 14px; }
+  .seg button { border: 0; background: transparent; color: var(--sub); padding: 6px 12px; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+  @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--sunken); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; min-width: 0; }
+  .panel h3 { margin: 0 0 10px; font-size: 14.5px; color: var(--text); }
+
+  .card-box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; min-width: 0; }
+  .card-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; min-width: 0; }
+  .card-name { font-size: 15px; font-weight: 700; margin: 0; word-break: keep-all; }
+  .card-meta { font-size: 12.5px; color: var(--sub); margin-top: 4px; }
+
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--brand-soft); color: var(--brand); }
+  .badge.danger { background: var(--danger-soft); color: var(--danger); }
+  .badge.mute { background: var(--sunken); border: 1px solid var(--line); color: var(--sub); }
+
+  button.btn.danger { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+  button.btn.danger-solid { background: var(--danger); border-color: var(--danger); color: #fff; }
+  @media (prefers-color-scheme: dark) {
+    button.btn.danger-solid { color: var(--bg); font-weight: 600; }
+  }
+  button.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.btn.icon-btn { min-width: 34px; padding: 6px 10px; line-height: 1; }
+
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tc-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .note { font-size: 12.5px; color: var(--sub); margin: 10px 0 0; }
+  .hint-mute { font-size: 12px; color: var(--mute); margin: 6px 0 0; }
+  .status-line { font-size: 12.5px; color: var(--sub); margin-top: 10px; }
+  .status-line.ok { color: var(--ok); }
+  .status-line.bad { color: var(--danger); }
+
+  /* 1. 연구 전환기 */
+  .mock-topbar { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; min-width: 0; }
+  .mock-brand { font-weight: 700; font-size: 13.5px; color: var(--sub); flex-shrink: 0; }
+  .sw-trigger { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; border: 1px solid var(--line-strong); background: var(--sunken); color: var(--text); border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; min-height: 34px; }
+  .sw-trigger-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+  .switcher-pop { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: 0 10px 24px rgba(0, 0, 0, .08); overflow: hidden; }
+  .switcher-pop.now-scroll { max-height: 224px; overflow-y: auto; }
+  .sw-head { padding: 10px 12px; font-size: 12px; font-weight: 700; color: var(--mute); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .sw-list { padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+  .sw-list.bounded { max-height: 204px; overflow-y: auto; }
+  .sw-item { width: 100%; min-width: 0; border: 0; background: transparent; color: var(--text); border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; min-height: 36px; }
+  .sw-item:hover { background: var(--sunken); }
+  .sw-item.on { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+  .sw-name { min-width: 0; flex: 1; }
+  .sw-name.ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sw-name.wrap { white-space: normal; line-height: 1.4; }
+  .sw-foot { background: var(--surface); border-top: 1px solid var(--line); padding: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .sw-foot.sticky { position: sticky; bottom: 0; }
+  .sw-foot button { border: 0; background: transparent; color: var(--sub); border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; min-height: 34px; }
+  .sw-foot button:hover { background: var(--sunken); color: var(--text); }
+  .sw-foot button.accent { color: var(--brand); }
+
+  /* 2. 카드 메뉴 */
+  .menu-wrap { position: relative; flex-shrink: 0; }
+  .menu-pop { margin-top: 6px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; padding: 4px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 8px 20px rgba(0, 0, 0, .08); }
+  .menu-item { width: 100%; border: 0; background: transparent; color: var(--text); text-align: left; padding: 7px 10px; border-radius: 7px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  .menu-item:hover { background: var(--sunken); }
+  .menu-item.danger { color: var(--danger); font-weight: 600; }
+
+  .empty-state { background: var(--surface); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 14px; color: var(--sub); font-size: 13px; }
+
+  /* 3·4. 확인 창 */
+  .dialog { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 16px; min-width: 0; transition: box-shadow 0.2s ease; }
+  .dialog.pulse { box-shadow: 0 0 0 3px var(--brand-soft); }
+  .dialog h3 { margin: 0 0 6px; font-size: 15px; color: var(--text); }
+  .impact-box { background: var(--danger-soft); border: 1px solid var(--danger); border-radius: 9px; padding: 10px 12px; font-size: 13px; color: var(--danger); margin: 10px 0; }
+  .name-copy-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--sunken); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; font-size: 13px; font-weight: 600; margin-bottom: 10px; min-width: 0; }
+  .name-copy-text { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .txt-in { width: 100%; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 8px; font: inherit; font-size: 13.5px; background: var(--surface); color: var(--text); min-height: 38px; }
+  .txt-in::placeholder { color: var(--mute); }
+  .dialog-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+  .slider-box { margin-top: 12px; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .slider-box label { display: block; font-size: 12.5px; color: var(--sub); margin-bottom: 6px; }
+  .slider-box input[type="range"] { width: 100%; min-height: 32px; accent-color: var(--danger); cursor: pointer; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+
+  /* 토스트 */
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--text); color: var(--surface); padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none; gap: 12px; align-items: center; max-width: calc(100% - 32px); z-index: 30; box-shadow: 0 10px 24px rgba(0, 0, 0, .18); flex-wrap: wrap; }
+  .toast.on { display: flex; }
+  .toast button { white-space: nowrap; flex: none; background: transparent; border: 0; color: var(--brand-soft); font: inherit; font-weight: 700; cursor: pointer; padding: 4px 6px; min-height: 32px; border-radius: 6px; }
+  @media (prefers-color-scheme: dark) {
+    .toast { background: var(--sunken); color: var(--text); border: 1px solid var(--line-strong); }
+    .toast button { color: var(--brand); }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 02 v2 · 연구 전환기 · 휴지통 · 완전 삭제 · 공유 중지</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="장면 바로가기">
+  <button type="button" role="tab" aria-selected="true" data-scene="02-switcher">1. 연구 전환기</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="02-trash-move">2. 휴지통으로 옮기기</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="02-delete">3. 완전 삭제</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="02-share-stop">4. 검토 공유 중지</button>
+</nav>
+
+<main>
+  <!-- 1. 연구 전환기 -->
+  <section class="card scene on" id="02-switcher" aria-label="연구 전환기">
+    <div class="scene-head">
+      <div class="scene-title">
+        <h2>연구 전환기</h2>
+        <span class="proposal">제안</span>
+      </div>
+    </div>
+    <p class="scene-desc">지금: 긴 연구 이름이 목록 안에서 여러 줄로 늘어나 '모든 연구 보기'가 스크롤 아래로 밀려요. 바뀐 점: 한 줄 말줄임(마우스를 올리면 전체 이름 표시)과 하단 고정 막대로 '모든 연구 보기'가 항상 보여요.</p>
+    <div class="seg" role="group" aria-label="연구 전환기 보기 방식" id="sw-mode">
+      <button type="button" aria-pressed="true" data-mode="after">바뀐 뒤 (제안)</button>
+      <button type="button" aria-pressed="false" data-mode="now">지금 동작</button>
+    </div>
+
+    <div class="panel">
+      <h3>상단 연구 이름과 전환 목록</h3>
+      <div class="mock-topbar">
+        <span class="mock-brand">Margin</span>
+        <button type="button" class="sw-trigger" id="sw-trigger" aria-expanded="true" title="대학원생 연구 기록 경험">
+          <span class="sw-trigger-name" id="sw-trigger-label">대학원생 연구 기록 경험</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+      </div>
+      <div id="sw-pop-host"></div>
+      <p class="status-line" id="sw-status">상단 연구 이름을 눌러 목록을 열거나 닫을 수 있어요. 긴 이름 위에 마우스를 올리면 전체 이름을 볼 수 있어요.</p>
+    </div>
+    <p class="note">목록에는 연구 7개를 넣어 스크롤을 확인할 수 있어요. 이 장면 전체가 확정 쟁점이 아닌 <span class="proposal">제안</span>이에요.</p>
+  </section>
+
+  <!-- 2. 휴지통으로 옮기기 -->
+  <section class="card scene on" id="02-trash-move" aria-label="휴지통으로 옮기기">
+    <div class="scene-head">
+      <div class="scene-title">
+        <h2>휴지통으로 옮기기</h2>
+      </div>
+    </div>
+    <p class="scene-desc">지금: 연구 카드 ⋯ 메뉴는 긴 연구 이름을 직접 적게 하고, 설정 화면은 일반 확인 창을 띄워 진입점마다 방식이 달라요. 바뀐 점: 두 진입점 모두 확인 창 없이 버튼 한 번으로 옮기고 되돌리기 토스트를 띄워요.</p>
+    <div class="seg" role="group" aria-label="휴지통 이동 보기 방식" id="tm-mode">
+      <button type="button" aria-pressed="true" data-mode="after">바뀐 뒤 (확정)</button>
+      <button type="button" aria-pressed="false" data-mode="now">지금 동작</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel" id="tm-card-host"></div>
+      <div class="panel" id="tm-settings-host"></div>
+    </div>
+    <div id="tm-now-dialog"></div>
+    <p class="note">토스트 유지 시간 <span class="proposal">제안: 6초</span> · 두 진입점 중 어느 버튼을 눌러도 같은 토스트가 뜨고, '되돌리기'를 누르면 카드가 돌아와요.</p>
+  </section>
+
+  <!-- 3. 완전 삭제 -->
+  <section class="card scene on" id="02-delete" aria-label="완전 삭제">
+    <div class="scene-head">
+      <div class="scene-title">
+        <h2>완전 삭제</h2>
+      </div>
+    </div>
+    <p class="scene-desc">지금: 휴지통에서 완전히 삭제할 때 지워지는 자료 수를 보여 주지 않고 슬라이더만 밀어 확인해요. 바뀐 점: 영구 삭제되는 미팅·원고·PDF 수를 먼저 보이고, 연구 이름을 똑같이 적어야 빨간 삭제 버튼이 켜져요.</p>
+    <div class="seg" role="group" aria-label="완전 삭제 보기 방식" id="del-mode">
+      <button type="button" aria-pressed="true" data-mode="after">바뀐 뒤 (확정)</button>
+      <button type="button" aria-pressed="false" data-mode="now">지금 동작</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel" id="del-card-host"></div>
+      <div class="panel" id="del-dialog-host"></div>
+    </div>
+    <p class="note">앞뒤 공백을 넣거나 한글 자모가 나뉘어 있어도 이름이 같으면 빨간 '완전히 삭제' 버튼이 켜져요.</p>
+  </section>
+
+  <!-- 4. 검토 공유 중지 -->
+  <section class="card scene on" id="02-share-stop" aria-label="검토 공유 중지">
+    <div class="scene-head">
+      <div class="scene-title">
+        <h2>검토 공유 중지</h2>
+      </div>
+    </div>
+    <p class="scene-desc">지금: 다시 공유할 수 있는 공유 중지에도 밀어서 확인하는 슬라이더를 써요. 바뀐 점: 일반 확인 창과 버튼으로 단순하게 바꾸고, 공동편집자인 교수에게 남는 권한을 함께 알려 줘요.</p>
+    <div class="seg" role="group" aria-label="공유 중지 보기 방식" id="sh-mode">
+      <button type="button" aria-pressed="true" data-mode="after">바뀐 뒤 (확정)</button>
+      <button type="button" aria-pressed="false" data-mode="now">지금 동작</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel" id="sh-card-host"></div>
+      <div class="panel" id="sh-dialog-host"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toastText"></span>
+  <button type="button" id="toastAction" hidden></button>
+</div>
+
+<script>
+(function () {
+  var toastEl = document.getElementById('toast');
+  var toastText = document.getElementById('toastText');
+  var toastBtn = document.getElementById('toastAction');
+  var toastTimer = null;
+  var toastHandler = null;
+
+  function hideToast() {
+    toastEl.classList.remove('on');
+    clearTimeout(toastTimer);
+    toastHandler = null;
+  }
+
+  function showToast(msg, actionLabel, onAction, durationMs) {
+    toastText.textContent = msg;
+    if (actionLabel && typeof onAction === 'function') {
+      toastBtn.textContent = actionLabel;
+      toastBtn.hidden = false;
+      toastHandler = onAction;
+    } else {
+      toastBtn.hidden = true;
+      toastHandler = null;
+    }
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, durationMs || 6000);
+  }
+
+  toastBtn.addEventListener('click', function () {
+    var fn = toastHandler;
+    hideToast();
+    if (fn) fn();
+  });
+
+  function bindSeg(groupId, onChange) {
+    var btns = document.querySelectorAll('#' + groupId + ' button');
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        btns.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        onChange(b.dataset.mode);
+      });
+    });
+  }
+
+  /* 1. 연구 전환기 */
+  (function () {
+    var researches = [
+      '대학원생 연구 기록 경험',
+      '대학원생 연구 기록 경험: 지도 미팅·피드백·원고 수정 순환과 협업 역할 경계에 관한 종단 사례 연구',
+      '생성형 AI 기반 문헌 검토 보조 도구의 신뢰성 검증',
+      '학술 원고 버전 비교와 공동편집 충돌 예방 설계',
+      '초보 연구자의 질적 코딩 워크플로우 탐색',
+      '비동기 피드백 환경에서의 교수-학생 소통 패턴',
+      '학위논문 작성 단계별 자료 관리 습관 조사'
+    ];
+    var mode = 'after';
+    var open = true;
+    var active = 1; // 긴 이름이 바로 보이도록 두 번째 항목을 기본 선택
+
+    var trigger = document.getElementById('sw-trigger');
+    var triggerLabel = document.getElementById('sw-trigger-label');
+    var host = document.getElementById('sw-pop-host');
+    var status = document.getElementById('sw-status');
+
+    function render() {
+      var currentName = researches[active];
+      triggerLabel.textContent = currentName;
+      trigger.title = mode === 'after' ? currentName : '';
+      trigger.setAttribute('aria-expanded', String(open));
+
+      if (!open) {
+        host.innerHTML = '';
+        return;
+      }
+
+      var isAfter = mode === 'after';
+      var itemsHtml = researches.map(function (name, idx) {
+        var onCls = idx === active ? ' on' : '';
+        var nameCls = isAfter ? 'sw-name ellipsis' : 'sw-name wrap';
+        var titleAttr = isAfter ? ' title="' + name.replace(/"/g, '&quot;') + '"' : '';
+        var check = idx === active ? '<span aria-hidden="true">✓</span>' : '';
+        return '<button type="button" class="sw-item' + onCls + '" data-idx="' + idx + '"' + titleAttr + '><span class="' + nameCls + '">' + name + '</span>' + check + '</button>';
+      }).join('');
+
+      var popCls = isAfter ? 'switcher-pop' : 'switcher-pop now-scroll';
+      var listCls = isAfter ? 'sw-list bounded' : 'sw-list';
+      var footCls = isAfter ? 'sw-foot sticky' : 'sw-foot';
+      var extraFootBtn = isAfter ? '' : '<button type="button" class="accent" id="sw-new-btn">+ 새 연구</button>';
+
+      host.innerHTML =
+        '<div class="' + popCls + '">' +
+          '<div class="sw-head"><span>연구 전환</span>' + (isAfter ? '<span class="proposal">제안</span>' : '') + '</div>' +
+          '<div class="' + listCls + '">' + itemsHtml + '</div>' +
+          '<div class="' + footCls + '"><button type="button" id="sw-all-btn">모든 연구 보기 ›</button>' + extraFootBtn + '</div>' +
+        '</div>';
+
+      host.querySelectorAll('.sw-item').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          active = Number(btn.dataset.idx);
+          status.textContent = "'" + researches[active] + "' 연구로 바꿨어요.";
+          render();
+        });
+      });
+
+      document.getElementById('sw-all-btn').addEventListener('click', function () {
+        status.textContent = '내 연구 목록 화면으로 이동해요.';
+        showToast('내 연구 목록으로 이동해요.');
+      });
+
+      var newBtn = document.getElementById('sw-new-btn');
+      if (newBtn) {
+        newBtn.addEventListener('click', function () {
+          status.textContent = '지금은 목록 바닥에 새 연구 버튼이 같이 붙어 있어요.';
+        });
+      }
+    }
+
+    trigger.addEventListener('click', function () {
+      open = !open;
+      render();
+    });
+
+    bindSeg('sw-mode', function (m) {
+      mode = m;
+      open = true;
+      status.textContent = m === 'after'
+        ? '목록을 아래로 내려도 "모든 연구 보기"가 바닥에 고정돼 있어요. 긴 이름에 마우스를 올리면 전체 이름이 보여요.'
+        : '지금 동작: 긴 연구 이름이 여러 줄로 늘어나 "모든 연구 보기"가 스크롤 아래로 밀려요.';
+      render();
+    });
+
+    render();
+  })();
+
+  /* 2. 휴지통으로 옮기기 */
+  (function () {
+    var RESEARCH = '대학원생 연구 기록 경험';
+    var mode = 'after';
+    var trashed = false;
+    var menuOpen = true;
+    var nowDialogType = null; // 'card' | 'settings' | null
+
+    var cardHost = document.getElementById('tm-card-host');
+    var settingsHost = document.getElementById('tm-settings-host');
+    var nowDialogHost = document.getElementById('tm-now-dialog');
+
+    function moveNowConfirmed() {
+      trashed = true;
+      nowDialogType = null;
+      render();
+    }
+
+    function moveInstant() {
+      trashed = true;
+      nowDialogType = null;
+      render();
+      showToast("'" + RESEARCH + "'을 휴지통으로 옮겼어요.", '되돌리기', function () {
+        trashed = false;
+        render();
+      }, 6000);
+    }
+
+    function render() {
+      if (!trashed) {
+        cardHost.innerHTML =
+          '<h3>① 연구 카드 ⋯ 메뉴</h3>' +
+          '<div class="card-box">' +
+            '<div class="card-row">' +
+              '<div>' +
+                '<p class="card-name">' + RESEARCH + '</p>' +
+                '<div class="card-meta">미팅 6건 · 원고 3건 · PDF 4개</div>' +
+              '</div>' +
+              '<div class="menu-wrap">' +
+                '<button type="button" class="btn icon-btn" id="tm-menu-toggle" aria-label="연구 카드 메뉴" aria-expanded="' + String(menuOpen) + '">⋯</button>' +
+              '</div>' +
+            '</div>' +
+            (menuOpen
+              ? '<div class="menu-pop" role="menu" aria-label="연구 작업">' +
+                  '<button type="button" class="menu-item" role="menuitem" id="tm-menu-edit">연구 정보 보기</button>' +
+                  '<button type="button" class="menu-item danger" role="menuitem" id="tm-menu-trash">휴지통으로 옮기기</button>' +
+                '</div>'
+              : '') +
+          '</div>';
+
+        settingsHost.innerHTML =
+          '<h3>② 설정 › 이 연구 › 보관·삭제</h3>' +
+          '<div class="card-box">' +
+            '<p class="card-name">이 연구 보관 및 삭제</p>' +
+            '<div class="card-meta">휴지통으로 옮겨도 나중에 다시 복원할 수 있어요.</div>' +
+            '<div class="tc-foot">' +
+              '<span class="hint-mute" style="margin:0">' + (mode === 'after' ? '확인 창 없이 바로 옮겨요.' : '일반 확인 창을 띄워요.') + '</span>' +
+              '<button type="button" class="btn danger" id="tm-settings-trash">휴지통으로 옮기기</button>' +
+            '</div>' +
+          '</div>';
+
+        document.getElementById('tm-menu-toggle').addEventListener('click', function () {
+          menuOpen = !menuOpen;
+          render();
+        });
+
+        var editBtn = document.getElementById('tm-menu-edit');
+        if (editBtn) {
+          editBtn.addEventListener('click', function () {
+            showToast('이 장면에서는 휴지통으로 옮기기만 동작해요.');
+          });
+        }
+
+        var cardTrashBtn = document.getElementById('tm-menu-trash');
+        if (cardTrashBtn) {
+          cardTrashBtn.addEventListener('click', function () {
+            if (mode === 'after') {
+              moveInstant();
+            } else {
+              nowDialogType = 'card';
+              render();
+            }
+          });
+        }
+
+        document.getElementById('tm-settings-trash').addEventListener('click', function () {
+          if (mode === 'after') {
+            moveInstant();
+          } else {
+            nowDialogType = 'settings';
+            render();
+          }
+        });
+      } else {
+        cardHost.innerHTML =
+          '<h3>① 연구 카드 ⋯ 메뉴</h3>' +
+          '<div class="empty-state">' +
+            '<p style="margin:0 0 8px;">\'' + RESEARCH + '\'을 휴지통으로 옮겼어요.</p>' +
+            '<div class="row">' +
+              '<button type="button" class="btn primary" id="tm-card-undo">카드로 되돌리기</button>' +
+            '</div>' +
+          '</div>';
+
+        settingsHost.innerHTML =
+          '<h3>② 설정 › 이 연구 › 보관·삭제</h3>' +
+          '<div class="empty-state">' +
+            '<p style="margin:0 0 8px;">이 연구는 지금 휴지통에 있어요.</p>' +
+            '<button type="button" class="btn" disabled>휴지통으로 옮기기</button>' +
+          '</div>';
+
+        document.getElementById('tm-card-undo').addEventListener('click', function () {
+          trashed = false;
+          hideToast();
+          render();
+        });
+      }
+
+      if (mode === 'now' && nowDialogType === 'card') {
+        nowDialogHost.innerHTML =
+          '<div class="dialog" style="margin-top:12px" role="dialog" aria-label="지금 카드 메뉴 확인 창">' +
+            '<h3>휴지통으로 옮기려면 연구 이름을 적어 주세요</h3>' +
+            '<p class="scene-desc" style="margin-bottom:8px;">지금은 복원 가능한 휴지통 이동인데도 카드 메뉴에서는 긴 이름을 직접 입력해야 해요.</p>' +
+            '<input class="txt-in" id="tm-now-in" placeholder="' + RESEARCH + '" />' +
+            '<div class="dialog-foot">' +
+              '<button type="button" class="btn" id="tm-now-cancel">취소</button>' +
+              '<button type="button" class="btn danger-solid" id="tm-now-confirm" disabled>휴지통으로 옮기기</button>' +
+            '</div>' +
+          '</div>';
+        var nowIn = document.getElementById('tm-now-in');
+        var nowConfirm = document.getElementById('tm-now-confirm');
+        nowIn.addEventListener('input', function () {
+          nowConfirm.disabled = nowIn.value !== RESEARCH;
+        });
+        document.getElementById('tm-now-cancel').addEventListener('click', function () { nowDialogType = null; render(); });
+        nowConfirm.addEventListener('click', moveNowConfirmed);
+      } else if (mode === 'now' && nowDialogType === 'settings') {
+        nowDialogHost.innerHTML =
+          '<div class="dialog" style="margin-top:12px" role="dialog" aria-label="지금 설정 확인 창">' +
+            '<h3>연구를 휴지통으로 옮길까요?</h3>' +
+            '<p class="scene-desc" style="margin-bottom:0;">설정 화면에서는 이름 입력 없이 일반 확인 창만 떠요.</p>' +
+            '<div class="dialog-foot">' +
+              '<button type="button" class="btn" id="tm-now-cancel">취소</button>' +
+              '<button type="button" class="btn primary" id="tm-now-confirm">옮기기</button>' +
+            '</div>' +
+          '</div>';
+        document.getElementById('tm-now-cancel').addEventListener('click', function () { nowDialogType = null; render(); });
+        document.getElementById('tm-now-confirm').addEventListener('click', moveNowConfirmed);
+      } else {
+        nowDialogHost.innerHTML = '';
+      }
+    }
+
+    bindSeg('tm-mode', function (m) {
+      mode = m;
+      trashed = false;
+      menuOpen = true;
+      nowDialogType = null;
+      hideToast();
+      render();
+    });
+
+    render();
+  })();
+
+  /* 3. 완전 삭제 */
+  (function () {
+    var TARGET_NAME = '대학원생 연구 기록 경험';
+    var mode = 'after';
+    var dialogOpen = true;
+    var deleted = false;
+    var inputValue = '';
+    var shouldPulse = false;
+
+    var cardHost = document.getElementById('del-card-host');
+    var dialogHost = document.getElementById('del-dialog-host');
+
+    function sameName(a, b) {
+      return a.trim().normalize('NFC') === b.trim().normalize('NFC');
+    }
+
+    function renderCard() {
+      if (deleted) {
+        cardHost.innerHTML =
+          '<h3>휴지통 탭</h3>' +
+          '<div class="empty-state">' +
+            '<p style="margin:0 0 8px;">\'' + TARGET_NAME + '\'을 완전히 삭제했어요. 휴지통이 비어 있어요.</p>' +
+            '<button type="button" class="btn" id="del-reset-btn">처음 상태로 되돌리기</button>' +
+          '</div>';
+        document.getElementById('del-reset-btn').addEventListener('click', function () {
+          deleted = false;
+          dialogOpen = true;
+          inputValue = '';
+          render();
+        });
+        return;
+      }
+
+      cardHost.innerHTML =
+        '<h3>휴지통 탭</h3>' +
+        '<div class="card-box">' +
+          '<div class="card-row">' +
+            '<div>' +
+              '<p class="card-name">' + TARGET_NAME + '</p>' +
+              '<div class="card-meta">미팅 6건 · 원고 3건 · PDF 4개</div>' +
+            '</div>' +
+            '<span class="badge danger">휴지통</span>' +
+          '</div>' +
+          '<div class="tc-foot">' +
+            '<button type="button" class="btn primary" id="del-restore-btn">복원</button>' +
+            '<span class="proposal">제안: 좌우 분리 배치</span>' +
+            '<button type="button" class="btn danger" id="del-open-btn">완전히 삭제</button>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('del-restore-btn').addEventListener('click', function () {
+        showToast("'" + TARGET_NAME + "'을 복원했어요.");
+      });
+
+      document.getElementById('del-open-btn').addEventListener('click', function () {
+        dialogOpen = true;
+        shouldPulse = true;
+        renderDialog();
+        var inputEl = document.getElementById('confirmInput');
+        if (inputEl) inputEl.focus();
+      });
+    }
+
+    function renderDialog() {
+      if (!dialogOpen || deleted) {
+        dialogHost.innerHTML =
+          '<h3>완전 삭제 확인 창</h3>' +
+          '<div class="empty-state">휴지통 카드에서 \'완전히 삭제\'를 누르면 확인 창이 열려요.</div>';
+        return;
+      }
+
+      if (mode === 'now') {
+        dialogHost.innerHTML =
+          '<h3>지금 동작: 슬라이더 확인</h3>' +
+          '<div class="dialog" role="dialog" aria-label="지금 완전 삭제 확인 창">' +
+            '<h3>연구를 완전히 삭제할까요?</h3>' +
+            '<p class="scene-desc" style="margin-bottom:8px;">지금은 영구 삭제되는 미팅·원고·PDF 수 요약이나 이름 확인 없이 슬라이더만 밀어 확인해요.</p>' +
+            '<div class="slider-box">' +
+              '<label for="del-now-slider">오른쪽 끝까지 밀어서 완전히 삭제 (<span id="del-now-pct">0</span>%)</label>' +
+              '<input type="range" id="del-now-slider" min="0" max="100" value="0" />' +
+            '</div>' +
+            '<div class="dialog-foot">' +
+              '<button type="button" class="btn" id="del-now-cancel">취소</button>' +
+            '</div>' +
+          '</div>';
+
+        var slider = document.getElementById('del-now-slider');
+        var pct = document.getElementById('del-now-pct');
+        slider.addEventListener('input', function () {
+          pct.textContent = slider.value;
+          if (Number(slider.value) === 100) {
+            deleted = true;
+            dialogOpen = false;
+            showToast("'" + TARGET_NAME + "'을 슬라이더로 완전히 삭제했어요.");
+            render();
+          }
+        });
+        document.getElementById('del-now-cancel').addEventListener('click', function () {
+          dialogOpen = false;
+          renderDialog();
+        });
+        return;
+      }
+
+      var pulseCls = shouldPulse ? ' pulse' : '';
+      shouldPulse = false;
+
+      dialogHost.innerHTML =
+        '<h3>완전 삭제 확인 창</h3>' +
+        '<div class="dialog' + pulseCls + '" role="dialog" aria-labelledby="del-dlg-title">' +
+          '<h3 id="del-dlg-title">연구를 완전히 삭제할까요?</h3>' +
+          '<div class="impact-box">미팅 6건 · 원고 3건 · PDF 4개가 영구 삭제돼요. 되돌릴 수 없어요.</div>' +
+          '<div class="name-copy-row">' +
+            '<span class="name-copy-text" id="targetName">' + TARGET_NAME + '</span>' +
+            '<button type="button" class="btn" id="copyNameBtn">이름 복사</button>' +
+          '</div>' +
+          '<label class="sr-only" for="confirmInput">연구 이름 입력</label>' +
+          '<input id="confirmInput" class="txt-in" type="text" autocomplete="off" placeholder="연구 이름을 입력해 주세요" />' +
+          '<p class="hint-mute">연구 이름을 똑같이 적어 주세요.</p>' +
+          '<p class="status-line" id="del-match-status"></p>' +
+          '<div class="dialog-foot">' +
+            '<button type="button" class="btn" id="del-cancel-btn">취소</button>' +
+            '<button type="button" class="btn danger-solid" id="btnRealDelete" disabled>완전히 삭제</button>' +
+          '</div>' +
+        '</div>';
+
+      var inputEl = document.getElementById('confirmInput');
+      var delBtn = document.getElementById('btnRealDelete');
+      var matchStatus = document.getElementById('del-match-status');
+      var copyBtn = document.getElementById('copyNameBtn');
+
+      inputEl.value = inputValue;
+
+      function syncMatch() {
+        inputValue = inputEl.value;
+        var matched = sameName(inputValue, TARGET_NAME);
+        delBtn.disabled = !matched;
+        if (!inputValue.trim()) {
+          matchStatus.textContent = '';
+          matchStatus.className = 'status-line';
+        } else if (matched) {
+          matchStatus.textContent = '이름이 일치해요. 이제 완전히 삭제할 수 있어요.';
+          matchStatus.className = 'status-line ok';
+        } else {
+          matchStatus.textContent = '입력한 이름이 달라요.';
+          matchStatus.className = 'status-line bad';
+        }
+      }
+
+      inputEl.addEventListener('input', syncMatch);
+      inputEl.addEventListener('compositionend', syncMatch);
+
+      copyBtn.addEventListener('click', function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(TARGET_NAME).catch(function () {});
+        } else {
+          var tmp = document.createElement('textarea');
+          tmp.value = TARGET_NAME;
+          tmp.setAttribute('readonly', '');
+          tmp.style.position = 'fixed';
+          tmp.style.opacity = '0';
+          document.body.appendChild(tmp);
+          tmp.select();
+          try { document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(tmp);
+        }
+        matchStatus.textContent = "'" + TARGET_NAME + "'을 복사했어요. 위 입력칸에 붙여넣을 수 있어요.";
+        matchStatus.className = 'status-line ok';
+        showToast('연구 이름을 복사했어요.');
+      });
+
+      document.getElementById('del-cancel-btn').addEventListener('click', function () {
+        inputValue = '';
+        dialogOpen = false;
+        renderDialog();
+      });
+
+      delBtn.addEventListener('click', function () {
+        if (!sameName(inputEl.value, TARGET_NAME)) return;
+        inputValue = '';
+        deleted = true;
+        dialogOpen = false;
+        showToast("'" + TARGET_NAME + "'을 완전히 삭제했어요.");
+        render();
+      });
+
+      syncMatch();
+    }
+
+    function render() {
+      renderCard();
+      renderDialog();
+    }
+
+    bindSeg('del-mode', function (m) {
+      mode = m;
+      deleted = false;
+      dialogOpen = true;
+      inputValue = '';
+      render();
+    });
+
+    render();
+  })();
+
+  /* 4. 검토 공유 중지 */
+  (function () {
+    var mode = 'after';
+    var sharing = true;
+    var dialogOpen = true;
+    var shouldPulse = false;
+
+    var cardHost = document.getElementById('sh-card-host');
+    var dialogHost = document.getElementById('sh-dialog-host');
+
+    function resumeSharing() {
+      sharing = true;
+      dialogOpen = false;
+      render();
+      showToast('검토 공유를 다시 켰어요.');
+    }
+
+    function renderCard() {
+      var badgeCls = sharing ? 'badge' : 'badge mute';
+      var badgeText = sharing ? '공유 중' : '공유 중지';
+      var metaText = sharing
+        ? 'professor@margin.com(지도교수)에게 공유 중 · 응답 1건'
+        : '공유를 중지했어요. 교수님 링크로는 더 볼 수 없어요.';
+
+      var actionsHtml = sharing
+        ? '<button type="button" class="btn" id="sh-setting-btn">공유 설정</button>' +
+          '<button type="button" class="btn danger" id="sh-stop-trigger">공유 중지</button>' +
+          '<button type="button" class="btn primary" id="sh-copy-btn">링크 복사</button>'
+        : '<button type="button" class="btn primary" id="sh-resume-btn">다시 공유</button>';
+
+      cardHost.innerHTML =
+        '<h3>검토 상세</h3>' +
+        '<div class="card-box">' +
+          '<div class="card-row">' +
+            '<div>' +
+              '<p class="card-name">선행연구·연구 질문 수정 결과</p>' +
+              '<div class="card-meta">' + metaText + '</div>' +
+            '</div>' +
+            '<span class="' + badgeCls + '" id="sh-badge">' + badgeText + '</span>' +
+          '</div>' +
+          '<div class="tc-foot">' +
+            '<div class="row">' + actionsHtml + '</div>' +
+          '</div>' +
+        '</div>';
+
+      if (sharing) {
+        document.getElementById('sh-setting-btn').addEventListener('click', function () {
+          showToast('공유 설정을 열었어요.');
+        });
+        document.getElementById('sh-copy-btn').addEventListener('click', function () {
+          showToast('검토 링크를 복사했어요.');
+        });
+        document.getElementById('sh-stop-trigger').addEventListener('click', function () {
+          dialogOpen = true;
+          shouldPulse = true;
+          renderDialog();
+        });
+      } else {
+        document.getElementById('sh-resume-btn').addEventListener('click', resumeSharing);
+      }
+    }
+
+    function renderDialog() {
+      if (!dialogOpen || !sharing) {
+        dialogHost.innerHTML =
+          '<h3>공유 중지 확인 창</h3>' +
+          '<div class="empty-state">' +
+            (sharing
+              ? "'공유 중지'를 누르면 일반 확인 창이 열려요."
+              : "공유가 중지된 상태예요. '다시 공유'를 누르면 바로 복구할 수 있어요.") +
+          '</div>';
+        return;
+      }
+
+      if (mode === 'now') {
+        dialogHost.innerHTML =
+          '<h3>지금 동작: 슬라이더 확인</h3>' +
+          '<div class="dialog" role="dialog" aria-label="지금 공유 중지 슬라이더 창">' +
+            '<h3>검토 공유를 중지할까요?</h3>' +
+            '<p class="scene-desc" style="margin-bottom:8px;">지금은 다시 켤 수 있는 공유 중지에도 밀어서 확인하는 슬라이더를 써요.</p>' +
+            '<div class="slider-box">' +
+              '<label for="sh-now-slider">오른쪽 끝까지 밀어서 공유 중지 (<span id="sh-now-pct">0</span>%)</label>' +
+              '<input type="range" id="sh-now-slider" min="0" max="100" value="0" />' +
+            '</div>' +
+            '<div class="dialog-foot">' +
+              '<button type="button" class="btn" id="sh-now-cancel">취소</button>' +
+            '</div>' +
+          '</div>';
+
+        var slider = document.getElementById('sh-now-slider');
+        var pct = document.getElementById('sh-now-pct');
+        slider.addEventListener('input', function () {
+          pct.textContent = slider.value;
+          if (Number(slider.value) === 100) {
+            sharing = false;
+            dialogOpen = false;
+            render();
+            showToast('공유를 중지했어요.', '다시 공유', resumeSharing, 6000);
+          }
+        });
+        document.getElementById('sh-now-cancel').addEventListener('click', function () {
+          dialogOpen = false;
+          renderDialog();
+        });
+        return;
+      }
+
+      var pulseCls = shouldPulse ? ' pulse' : '';
+      shouldPulse = false;
+
+      dialogHost.innerHTML =
+        '<h3>일반 확인 창</h3>' +
+        '<div class="dialog' + pulseCls + '" role="dialog" aria-labelledby="sh-dlg-title">' +
+          '<h3 id="sh-dlg-title">검토 공유를 중지할까요?</h3>' +
+          '<p class="scene-desc" style="margin-bottom:0;">교수님 링크로는 더 볼 수 없어요. 교수님이 공동편집자라면 연구 안에서는 계속 볼 수 있어요. 다시 공유하면 지금 응답은 그대로 남아요.</p>' +
+          '<div class="dialog-foot">' +
+            '<button type="button" class="btn" id="sh-cancel-btn">취소</button>' +
+            '<button type="button" class="btn primary" id="sh-confirm-btn">공유 중지</button>' +
+          '</div>' +
+        '</div>';
+
+      document.getElementById('sh-cancel-btn').addEventListener('click', function () {
+        dialogOpen = false;
+        renderDialog();
+      });
+
+      document.getElementById('sh-confirm-btn').addEventListener('click', function () {
+        sharing = false;
+        dialogOpen = false;
+        render();
+        showToast('공유를 중지했어요.', '다시 공유', resumeSharing, 6000);
+      });
+    }
+
+    function render() {
+      renderCard();
+      renderDialog();
+    }
+
+    bindSeg('sh-mode', function (m) {
+      mode = m;
+      sharing = true;
+      dialogOpen = true;
+      hideToast();
+      render();
+    });
+
+    render();
+  })();
+})();
+</script>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

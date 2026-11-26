@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미팅 한 페이지</title>
+<link rel="stylesheet" href="app.css">
+<style>
+.app .mstep { display: flex; gap: 6px; }
+.app .mstep span { height: 28px; padding: 0 12px; border-radius: 14px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; background: #f2f3f5; color: #686b73; }
+.app .mstep .done { background: #eaf2fe; color: #0066ff; }
+.app .mstep .now { background: #0066ff; color: #fff; }
+.app .sec { font-size: 17px; font-weight: 800; margin-bottom: 10px; display: flex; align-items: baseline; gap: 10px; }
+.app .li { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #f0f0f2; }
+.app .drop { border: 1.5px dashed #c2c4c8; border-radius: 14px; padding: 22px; text-align: center; }
+.app .found { border-top: 1px solid #f0f0f2; padding: 12px 0; display: flex; gap: 12px; align-items: flex-start; }
+.app .kind { flex: none; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; }
+.app .k-todo { background: #eaf2fe; color: #0055d4; } .app .k-q { background: #fff4e5; color: #8a4b00; } .app .k-dec { background: #e6f8ee; color: #006b32; }
+.app .quote { font-size: 12px; color: #686b73; margin-top: 2px; }
+.app .mini { height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #e1e2e4; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; background: #fff; }
+.app .mini.pri { background: #0066ff; border-color: #0066ff; color: #fff; }
+</style>
+</head>
+<body>
+<main>
+  <h1>미팅 하나가 한 페이지예요</h1>
+  <p class="lead">준비, 기록, 나온 할 일이 모두 미팅 한 페이지 안에 있어요. 위에서 아래로 내려가면 미팅 한 바퀴가 끝나요. 버튼으로 <b>미팅 전</b>과 <b>미팅 후(카톡을 넣은 뒤)</b>를 비교해 보세요.</p>
+
+  <div class="switch" role="group" aria-label="보기">
+    <button type="button" data-s="now" aria-pressed="false">지금</button>
+    <button type="button" data-s="before" aria-pressed="true">바뀐 뒤 · 미팅 전</button>
+    <button type="button" data-s="after" aria-pressed="false">바뀐 뒤 · 미팅 후</button>
+  </div>
+
+  <div class="frame"><div class="stage" id="stage">
+    <div class="screen" data-screen="now"><img src="../assets/live-desktop/19_meeting_detail_1440.png" alt="지금 미팅 상세" style="width:1440px;height:900px;display:block"></div>
+
+    <!-- 미팅 전 -->
+    <div class="screen on" data-screen="before"><div class="app">
+      <div class="top" style="right:420px">
+        <span class="logo">margin</span><span class="rname">대학원생 연구 기록 경험 ▾</span>
+        <span class="tabs"><span>홈</span><span class="on">미팅</span><span>원고</span></span>
+        <span class="search">이 연구에서 찾기 ⌘K</span><span class="send">교수님께 보내기</span><span class="av">김</span>
+      </div>
+      <div style="position:absolute; left:20px; top:64px; width:980px; bottom:20px; display:flex; flex-direction:column; gap:14px">
+        <div class="card" style="padding:22px 28px">
+          <div style="display:flex; align-items:center; justify-content:space-between">
+            <div class="small muted">← 미팅 목록 · 제6차 · <b style="color:#171719">제7차</b></div>
+            <div class="mstep"><span class="now">1 준비</span><span>2 미팅</span><span>3 기록</span><span>4 정리</span></div>
+          </div>
+          <div style="font-size:26px; font-weight:800; margin-top:10px">제7차 논문 지도</div>
+          <div class="muted">11월 28일(금) 오후 2시 · 연구실 · 2일 남음</div>
+          <div style="margin-top:12px; padding:12px 14px; background:#f7f7f8; border-radius:10px"><span class="small muted b">이번 목표</span><div class="b">2장 비교 기준을 교수님과 확정하기</div></div>
+        </div>
+        <div class="card" style="padding:22px 28px">
+          <div class="sec">가져갈 것 <span class="small muted">2 / 3 준비됨</span></div>
+          <div class="li"><span class="ck" style="background:#0066ff;border-color:#0066ff"></span><span class="muted" style="text-decoration:line-through; flex:1">선행연구 비교 기준 정리</span><span class="chip">할 일 · 제5차에서</span></div>
+          <div class="li"><span class="ck" style="background:#0066ff;border-color:#0066ff"></span><span class="muted" style="text-decoration:line-through; flex:1">2장 초안 보여 드리기</span><span class="chip">원고 · 2장 이론적 배경</span></div>
+          <div class="li"><span class="ck"></span><span style="flex:1">비교 기준을 3개로 줄여도 되는지 여쭤보기</span><span class="chip">질문</span></div>
+          <div class="li" style="color:#0066ff; font-weight:600">+ 가져갈 것 추가</div>
+          <div style="display:flex; gap:8px; margin-top:12px"><span class="btn">미리 보내 두기</span><span class="muted small" style="align-self:center">교수님께 미팅 전에 이 목록과 원고를 보내요</span></div>
+        </div>
+        <div class="card" style="padding:22px 28px; flex:1">
+          <div class="sec">미팅 기록 <span class="small muted">미팅이 끝나면 아무거나 하나 넣어 주세요</span></div>
+          <div class="drop">
+            <div class="b" style="font-size:15px">녹음하거나, 카톡을 붙여넣거나, 빨간 글씨 한글 파일을 올려 주세요</div>
+            <div class="muted small" style="margin-top:4px">교수님 말씀을 할 일·질문·결정으로 나눠 드려요. 나는 확인만 하면 돼요.</div>
+            <div class="srcs" style="justify-content:center; margin-top:14px"><span>녹음 시작</span><span>카톡 붙여넣기</span><span>한글·PDF 올리기</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <div style="font-weight:800; font-size:16px">연구 도우미</div>
+        <div class="muted small" style="margin:14px 0 2px">이 미팅 준비</div>
+        <div class="sug"><span class="ic2"></span>지난 미팅(제6차)에서 못 끝낸 것 보기</div>
+        <div class="sug"><span class="ic2"></span>여쭤볼 질문을 짧고 분명하게 다듬기</div>
+        <div class="sug"><span class="ic2"></span>2장 초안에서 교수님이 지난번 지적한 곳 다시 보기</div>
+        <div class="ask"><div class="muted">무엇이든 물어보세요</div></div>
+      </div>
+      <div class="rail"><span style="font-size:16px">»</span><span class="ri on"><span class="ic"></span>도우미</span><span class="ri"><span class="ic"></span>할 일</span><span class="ri"><span class="ic"></span>자료</span></div>
+    </div></div>
+
+    <!-- 미팅 후 -->
+    <div class="screen" data-screen="after"><div class="app">
+      <div class="top" style="right:420px">
+        <span class="logo">margin</span><span class="rname">대학원생 연구 기록 경험 ▾</span>
+        <span class="tabs"><span>홈</span><span class="on">미팅</span><span>원고</span></span>
+        <span class="search">이 연구에서 찾기 ⌘K</span><span class="send">교수님께 보내기</span><span class="av">김</span>
+      </div>
+      <div style="position:absolute; left:20px; top:64px; width:980px; bottom:20px; display:flex; flex-direction:column; gap:14px">
+        <div class="card" style="padding:18px 28px; display:flex; align-items:center; justify-content:space-between">
+          <div><div style="font-size:22px; font-weight:800">제7차 논문 지도</div><div class="muted small">11월 28일(금) 오후 2시 · 목표: 2장 비교 기준을 교수님과 확정하기</div></div>
+          <div class="mstep"><span class="done">1 준비 ✓</span><span class="done">2 미팅 ✓</span><span class="done">3 기록 ✓</span><span class="now">4 정리</span></div>
+        </div>
+        <div class="card" style="padding:22px 28px; flex:1">
+          <div class="sec">카톡에서 찾은 것 5개 <span class="small muted">확인하면 할 일·질문·결정으로 들어가요</span></div>
+          <div class="small muted" style="padding:10px 12px; background:#f7f7f8; border-radius:10px">붙여넣은 카톡 · 지도교수 · 11월 28일 오후 4:12 ~ 4:20 · 14줄</div>
+          <div class="found"><span class="kind k-dec">결정</span><div style="flex:1"><div class="b">비교 기준은 3개(목적·자료·분석 관점)로 간다</div><div class="quote">“그래 세 개로 가자. 대신 왜 세 개인지 한 문장 먼저.”</div></div><span class="mini pri">맞아요</span><span class="mini">빼기</span></div>
+          <div class="found"><span class="kind k-todo">할 일</span><div style="flex:1"><div class="b">세 기준을 고른 이유를 한 문장으로 쓰기</div><div class="quote">“왜 세 개인지 한 문장 먼저.” · 언제까지: 다음 미팅 전</div></div><span class="mini pri">추가</span><span class="mini">빼기</span></div>
+          <div class="found"><span class="kind k-todo">할 일</span><div style="flex:1"><div class="b">표 2-1에 2023년 이후 연구 2편 더 넣기</div><div class="quote">“표는 좋은데 최근 연구가 비어 있네.”</div></div><span class="mini pri">추가</span><span class="mini">빼기</span></div>
+          <div class="found"><span class="kind k-todo">할 일</span><div style="flex:1"><div class="b">연구 참여자 모집 문구 초안 만들기</div><div class="quote">“다음엔 모집 문구 초안 가져와.”</div></div><span class="mini pri">추가</span><span class="mini">빼기</span></div>
+          <div class="found"><span class="kind k-q">질문</span><div style="flex:1"><div class="b">IRB 서류는 언제 내야 하는지</div><div class="quote">“IRB는 학과 사무실에 다시 물어봐.” · 아직 답 없음</div></div><span class="mini pri">추가</span><span class="mini">빼기</span></div>
+          <div style="display:flex; gap:8px; margin-top:16px"><span class="btn pri">모두 확인</span><span class="btn">다음 미팅 잡기</span></div>
+        </div>
+      </div>
+      <div class="side">
+        <div style="font-weight:800; font-size:16px">연구 도우미</div>
+        <div class="muted small" style="margin:14px 0 2px">이 미팅 정리</div>
+        <div class="sug"><span class="ic2"></span>나온 할 일 3개로 다음 미팅 준비 목록 만들기</div>
+        <div class="sug"><span class="ic2"></span>교수님께 "이렇게 이해했어요" 요약 보내기</div>
+        <div class="sug"><span class="ic2"></span>표 2-1에 넣을 최근 연구 찾기</div>
+        <div class="ask"><div class="muted">무엇이든 물어보세요</div></div>
+      </div>
+      <div class="rail"><span style="font-size:16px">»</span><span class="ri on"><span class="ic"></span>도우미</span><span class="ri"><span class="ic"></span>할 일</span><span class="ri"><span class="ic"></span>자료</span></div>
+    </div></div>
+  </div></div>
+
+  <div class="panel" data-p="now"><div class="why">
+    <div><b>지금</b><p>미팅 상세 안에 준비·기록·결정·질문 탭 3개가 있고, 왼쪽엔 미팅 목록, 오른쪽엔 '지난 기록에서'가 따로 있어요. 할 일은 '할 일 고르기'로 다시 골라야 하고, 결정·질문은 다른 탭이에요. '홈의 다음 미팅으로 지정', '준비 편집', '나만 보기' 같은 버튼도 여러 개예요.</p></div>
+  </div></div>
+  <div class="panel on" data-p="before"><div class="why">
+    <div><b>미팅 전 — 위에서 아래로 한 번에</b><p>① 이번 목표 ② 가져갈 것(할 일·원고·질문이 한 목록) ③ 기록 넣는 칸. 위쪽의 '준비 → 미팅 → 기록 → 정리' 막대가 지금 어디쯤인지 알려 줘요. '미리 보내 두기'를 누르면 교수님께 가져갈 목록과 원고가 미리 가요.</p></div>
+    <div><b>없어지는 것</b><p>탭 3개(준비·기록·결정·질문), 왼쪽 미팅 목록(위쪽 '← 미팅 목록'으로), '홈의 다음 미팅으로 지정' 버튼(가장 가까운 미팅이 자동으로 다음 미팅), '나만 보기' 선택(기록은 기본으로 나만, 보낼 때만 고름).</p></div>
+  </div></div>
+  <div class="panel" data-p="after"><div class="why">
+    <div><b>미팅 후 — 카톡을 붙여넣으면 이렇게 나눠져요</b><p>도우미가 교수님 말을 결정·할 일·질문으로 나누고, 원래 말(따옴표)을 옆에 붙여 줘요. 나는 '추가'나 '빼기'만 누르면 돼요. 직접 적는 건 거의 없어요. 녹음이나 빨간 글씨 한글 파일도 같은 화면으로 와요.</p></div>
+    <div><b>새로 만들어야 하는 것</b><p>카톡·한글 파일·녹음에서 결정·할 일·질문을 뽑는 기능은 지금 제품에 없어요. 지금은 녹음 전사만 있어요.</p></div>
+  </div></div>
+  <p class="note">설명용 가상 데이터예요. 카톡 문장은 예시로 지은 것이에요.</p>
+
+  <h2>참고한 화면</h2>
+  <div class="refs">
+    <figure><img src="../assets/benchmarks/manyfast/08_project_workspace.png" alt="매니패스트 작업 화면"><figcaption><b>매니패스트</b> → 위쪽 진행 막대(완성도)와, 도우미가 다음에 할 것 3개를 먼저 제안하는 방식.</figcaption></figure>
+    <figure><img src="../assets/benchmarks/tossinvest/01_home_panel_open.png" alt="토스증권 홈"><figcaption><b>토스증권</b> → 본문은 넓게 한 줄기로, 보조(도우미)는 오른쪽 사이드 창에.</figcaption></figure>
+  </div>
+</main>
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  function fit() { var s = stage.clientWidth / 1440; document.querySelectorAll('.screen').forEach(function (el) { el.style.transform = 'scale(' + s + ')'; }); }
+  window.addEventListener('resize', fit); fit();
+  document.querySelectorAll('[data-s]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.s;
+      document.querySelectorAll('[data-s]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      document.querySelectorAll('.screen').forEach(function (el) { el.classList.toggle('on', el.dataset.screen === k); });
+      document.querySelectorAll('.panel').forEach(function (el) { el.classList.toggle('on', el.dataset.p === k); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

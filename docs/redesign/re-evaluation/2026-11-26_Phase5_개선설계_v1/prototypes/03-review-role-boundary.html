@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>시안 03 · 검토 역할 경계</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+    --text: #171719; --sub: #46474c; --mute: #686b73;
+    --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+    --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+      --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+      --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  header.top { background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px; }
+  header.top h1 { margin: 0 0 2px; font-size: 20px; }
+  header.top p { margin: 0; color: var(--sub); font-size: 12.5px; }
+  .controls { background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  .controls .label { font-size: 12.5px; color: var(--mute); margin-right: 4px; }
+  .seg { display: inline-flex; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+  .seg button { border: 0; background: transparent; color: var(--sub); padding: 6px 11px; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  main { max-width: 1120px; margin: 0 auto; padding: 18px 16px 60px; display: grid; grid-template-columns: 1fr 300px; gap: 14px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .card h3 { margin: 0 0 8px; font-size: 14px; color: var(--sub); font-weight: 600; }
+  .head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+  .head h2 { margin: 0; font-size: 19px; }
+  .badge { font-size: 12px; padding: 1px 8px; border-radius: 6px; background: var(--brand-soft); color: var(--brand); vertical-align: 3px; margin-left: 6px; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+  button.btn.danger { color: var(--danger); }
+  button.btn:focus-visible, .seg button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .banner { margin: 12px 0; padding: 10px 12px; border-radius: 10px; background: var(--sunken); color: var(--sub); font-size: 13px; }
+  .banner.bad { background: var(--danger-soft); color: var(--danger); }
+  .lock { font-size: 12.5px; color: var(--mute); margin-top: 6px; }
+  .flag { font-size: 12px; color: var(--danger); font-weight: 600; }
+  .response { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-top: 10px; }
+  .response label { display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+  .field { display: block; margin: 8px 0 4px; font-size: 12.5px; color: var(--sub); }
+  input.text, textarea { width: 100%; font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); }
+  input.text[readonly], textarea[readonly] { background: var(--sunken); color: var(--sub); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 6px 4px; text-align: left; vertical-align: top; }
+  td.y { color: var(--ok); } td.n { color: var(--mute); } td.risk { color: var(--danger); font-weight: 600; }
+  .dialog { border: 1px solid var(--line-strong); border-radius: 12px; padding: 14px; margin-top: 12px; background: var(--surface); }
+  .dialog h4 { margin: 0 0 6px; }
+  .hidden { display: none; }
+  .switch { display: inline-flex; gap: 2px; background: var(--sunken); border-radius: 8px; padding: 2px; margin-bottom: 10px; }
+  .switch button { border: 0; background: transparent; padding: 5px 10px; border-radius: 6px; font: inherit; font-size: 12.5px; color: var(--sub); cursor: pointer; }
+  .switch button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 03 · 검토 화면과 연구 정보의 역할 경계 (Phase 5 쟁점 4)</h1>
+  <p>같은 검토 요청을 네 사람이 열었을 때 보이는 버튼을 비교해요. 가상 데이터이고, 색은 Montage 근사값이에요.</p>
+</header>
+<div class="controls">
+  <div><span class="label">보는 사람</span>
+    <div class="seg" id="who" role="group" aria-label="보는 사람">
+      <button aria-pressed="true" data-v="owner">학생(소유자)</button>
+      <button aria-pressed="false" data-v="prof">지정 교수</button>
+      <button aria-pressed="false" data-v="dual">겸임 교수(지정 + 공동편집)</button>
+      <button aria-pressed="false" data-v="editor">공동연구자(편집자)</button>
+    </div></div>
+  <div><span class="label">방식</span>
+    <div class="seg" id="mode" role="group" aria-label="방식">
+      <button aria-pressed="true" data-v="now">지금 동작</button>
+      <button aria-pressed="false" data-v="a">대안 A 받는 사람 우선</button>
+      <button aria-pressed="false" data-v="b">대안 B 보기 전환</button>
+    </div></div>
+</div>
+<main>
+  <div>
+    <section class="card" aria-label="검토 상세">
+      <div id="switch-wrap"></div>
+      <div class="head">
+        <div><h2>선행연구·연구 질문 수정 결과<span class="badge">공유 중</span></h2>
+          <p class="lock" style="margin-top:4px">professor@margin.com에게 공유 · 11월 18일</p></div>
+        <div class="actions" id="send-actions"></div>
+      </div>
+      <div class="banner" id="banner"></div>
+      <div class="response" id="response"></div>
+      <div id="stop-dialog"></div>
+    </section>
+    <section class="card" style="margin-top:14px" aria-label="연구 정보 설정">
+      <h3>설정 › 연구 정보</h3>
+      <span class="field">연구 이름</span>
+      <input class="text" id="f-name" value="대학원생 연구 기록 경험" />
+      <span class="field">연구 질문</span>
+      <textarea id="f-q" rows="2">대학원생은 미팅 기록을 정리하며 어떤 어려움을 겪는가?</textarea>
+      <p class="lock" id="info-lock"></p>
+    </section>
+  </div>
+  <aside class="card" aria-label="한눈에 비교">
+    <h3>이 사람이 할 수 있는 것</h3>
+    <table><thead><tr><th>동작</th><th>화면</th><th>서버</th></tr></thead><tbody id="matrix"></tbody></table>
+    <p class="lock" id="note"></p>
+  </aside>
+</main>
+<script>
+(function () {
+  let who = 'owner', mode = 'now', dualView = 'prof';
+  const seg = (id, set) => document.querySelectorAll('#' + id + ' button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#' + id + ' button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    set(b.dataset.v); render();
+  }));
+  seg('who', v => { who = v; dualView = 'prof'; });
+  seg('mode', v => { mode = v; dualView = 'prof'; });
+
+  // 역할 계산
+  function perms() {
+    const isOwner = who === 'owner', isEditor = who === 'editor' || who === 'dual', isProf = who === 'prof' || who === 'dual';
+    const canManage = isOwner || isEditor; // 지금 코드: canManageResearch
+    let send, respond, info, serverSend;
+    if (mode === 'now') {
+      send = canManage; respond = isProf; info = canManage; serverSend = canManage;
+    } else if (mode === 'a') {
+      send = canManage && !isProf; respond = isProf; info = isOwner; serverSend = canManage && !isProf;
+    } else {
+      const asProf = who === 'dual' ? dualView === 'prof' : isProf;
+      send = canManage && !asProf; respond = asProf; info = isOwner; serverSend = canManage; // 서버는 그대로
+    }
+    return { isOwner, isEditor, isProf, send, respond, info, serverSend };
+  }
+
+  function render() {
+    const p = perms();
+    // 보기 전환(B, 겸임만)
+    document.getElementById('switch-wrap').innerHTML = (mode === 'b' && who === 'dual')
+      ? `<div class="switch" role="group" aria-label="보기"><button aria-pressed="${dualView === 'prof'}" data-d="prof">교수로 보기</button><button aria-pressed="${dualView === 'editor'}" data-d="editor">공동편집자로 보기</button></div>` : '';
+    document.querySelectorAll('#switch-wrap button').forEach(b => b.onclick = () => { dualView = b.dataset.d; render(); });
+
+    // 보내는 쪽 버튼
+    document.getElementById('send-actions').innerHTML = p.send
+      ? `<button class="btn">공유 설정</button><button class="btn" id="stop">공유 중지</button><button class="btn primary">링크 복사</button>` : '';
+    const stop = document.getElementById('stop');
+    if (stop) stop.onclick = () => {
+      const dlg = document.getElementById('stop-dialog');
+      dlg.innerHTML = mode === 'now'
+        ? `<div class="dialog"><h4>검토 공유를 중지할까요?</h4><p class="lock">밀어서 중지하기 ▸▸▸ (슬라이더)</p></div>`
+        : `<div class="dialog" role="dialog" aria-label="공유 중지 확인"><h4>검토 공유를 중지할까요?</h4>
+           <p style="margin:4px 0">교수님 링크로는 더 볼 수 없어요. 교수님이 공동편집자라면 연구 안에서는 계속 볼 수 있어요. 다시 공유하면 지금 응답은 그대로 남아요.</p>
+           <div class="actions" style="margin-top:8px"><button class="btn" id="cancel">취소</button><button class="btn primary">공유 중지</button></div></div>`;
+      const c = document.getElementById('cancel'); if (c) c.onclick = () => { dlg.innerHTML = ''; };
+    };
+
+    // 안내 띠
+    const banner = document.getElementById('banner');
+    if (mode === 'now') { banner.className = 'banner bad'; banner.textContent = '검토 링크는 아직 보내지 않았어요. (공유 중이고 응답도 있는데 이렇게 보여요)'; }
+    else { banner.className = 'banner'; banner.textContent = p.respond ? '학생이 11월 18일에 보낸 검토예요. 마지막 응답 11월 18일 00:03.' : '교수님이 11월 18일 00:03에 응답했어요.'; }
+
+    // 응답 영역
+    document.getElementById('response').innerHTML = p.respond
+      ? `<h3 style="margin:0 0 4px">내 응답</h3><label><input type="radio" name="r" checked /> 추가 수정 필요</label><label><input type="radio" name="r" /> 수정 내용 확인</label><button class="btn primary" style="margin-top:6px">응답 저장</button>`
+      : `<h3 style="margin:0 0 4px">교수 응답</h3><p style="margin:0">추가 수정 필요 · 연구 목적에 맞는 비교 기준을 하나 더 보완해 주세요.</p>`;
+
+    // 연구 정보
+    ['f-name', 'f-q'].forEach(id => document.getElementById(id).readOnly = !p.info);
+    document.getElementById('info-lock').textContent = p.info
+      ? (p.isOwner ? '소유자라서 고칠 수 있어요.' : '지금은 편집자도 고칠 수 있어요.')
+      : '연구 정보는 연구 소유자(김학생)만 고칠 수 있어요.';
+
+    // 비교표
+    const both = mode === 'now' && p.send && p.respond;
+    // 위험 표시(⚠)는 '받는 사람이 보내는 쪽 동작을 할 수 있는' 경우에만 붙인다.
+    const sendRisk = p.isProf && p.serverSend;
+    const rows = [
+      ['보내는 쪽 버튼(공유 설정·중지·링크·재확인)', p.send, p.serverSend, sendRisk],
+      ['교수 응답 저장', p.respond, p.isProf, false],
+      ['연구 정보 고치기', p.info, p.info, false]
+    ];
+    document.getElementById('matrix').innerHTML = rows.map(([n, ui, sv, risk]) =>
+      `<tr><td>${n}</td><td class="${ui ? 'y' : 'n'}">${ui ? '보임' : '숨김'}</td><td class="${risk ? 'risk' : (sv ? 'y' : 'n')}">${sv ? (risk ? '허용 ⚠' : '허용') : '막음'}</td></tr>`).join('');
+    const notes = {
+      now: both ? '지금: 겸임 교수에게 보내는 버튼과 받는 응답이 한 화면에 같이 보여요. 자기에게 온 검토의 받는 사람을 바꾸거나 재확인을 만들 수 있어요.' : '지금: 화면 권한은 "연구를 관리할 수 있나" 하나로 정해요.',
+      a: '대안 A: 지정 교수 본인이면 보내는 쪽 동작을 화면과 서버 모두에서 막아요. 연구 정보는 소유자만 고쳐요(위임 결정).',
+      b: '대안 B: 겸임 교수가 보기를 바꿀 수 있어요. 화면은 깔끔하지만 서버는 그대로라 ⚠ 표시된 동작이 요청으로는 여전히 가능해요.'
+    };
+    document.getElementById('note').textContent = notes[mode];
+    document.getElementById('stop-dialog').innerHTML = '';
+  }
+  render();
+})();
+</script>
+</body>
+</html>

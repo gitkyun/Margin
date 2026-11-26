@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 08 · 홈·연구 흐름·할 일·항목 상세</title>
+<style>
+:root {
+  --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+  --text: #171719; --sub: #46474c; --mute: #686b73;
+  --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+  --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+    --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+    --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); }
+section.scene { display: none; }
+section.scene.on { display: block; }
+:root { color-scheme: light dark; }
+.top { padding: 14px max(16px, calc((100vw - 1000px) / 2)); background: var(--surface); border-bottom: 1px solid var(--line); }
+.top h1 { font-size: 20px; margin: 0; }
+.top p { margin: 3px 0 0; color: var(--sub); }
+main { max-width: 1032px; margin: auto; padding: 20px 16px 48px; }
+.scene { margin-bottom: 28px; overflow-wrap: anywhere; }
+.scene h2 { margin: 0 0 4px; font-size: 18px; }
+.scene h2 .proposal { vertical-align: middle; margin-inline-start: 5px; }
+.desc { color: var(--sub); margin: 0 0 12px; }
+.desc span { display: block; }
+.mock { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(12px, 3vw, 24px); }
+.mock h3 { margin: 0; font-size: 15px; }
+.mock p { margin: 0; }
+.stack { display: grid; gap: 12px; }
+.stack > * { min-width: 0; }
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); align-items: start; }
+.spread, .lineup { display: flex; gap: 8px 12px; align-items: center; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+.card { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; min-width: 0; }
+.soft { background: var(--sunken); }
+.sub { color: var(--sub); }
+.mute { color: var(--mute); }
+.meta { font-size: 13px; }
+.rule { border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.chip { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--sub); background: var(--sunken); font-size: 12px; }
+.chip.done { color: var(--text); background: var(--ok-soft); border-color: transparent; }
+.chip.current { color: var(--text); background: var(--brand-soft); border-color: transparent; }
+.home-purpose { border-inline-start: 2px solid var(--line-strong); padding-inline-start: 14px; }
+.home-research .research-name { font-size: 20px; font-weight: 700; }
+.home-blocks { max-width: 710px; }
+.stage-list, .calendar { min-width: 0; }
+.stage-list .card { padding: 9px 12px; }
+.flow-nav { display: flex; flex-wrap: wrap; gap: 6px 16px; border-bottom: 1px solid var(--line); }
+.flow-nav span { padding: 6px 2px; }
+.flow-nav [aria-current="page"] { border-bottom: 2px solid var(--text); font-weight: 700; }
+.flow-form { max-width: 440px; }
+.label { display: grid; gap: 5px; font-weight: 600; }
+.field { width: 100%; min-height: 34px; padding: 6px 9px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; }
+.calendar { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.calendar-head { padding: 9px 12px; border-bottom: 1px solid var(--line); }
+.calendar table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; }
+.calendar th, .calendar td { border-inline-end: 1px solid var(--line); border-top: 1px solid var(--line); vertical-align: top; padding: 5px 7px; }
+.calendar :is(th, td):last-child { border-inline-end: 0; }
+.calendar th { color: var(--sub); background: var(--sunken); font-size: 12px; }
+.calendar td { height: clamp(29px, 4.8vw, 45px); font-variant-numeric: tabular-nums; }
+.calendar [aria-current="date"] { background: var(--brand-soft); font-weight: 700; box-shadow: inset 0 -2px var(--brand); }
+@media (max-width: 430px) { .calendar :is(th, td) { padding-inline: 5px; } }
+.mock .form-window { width: min(100%, 470px); margin-inline: auto; padding: 16px; background: var(--surface); }
+.form-window textarea { resize: vertical; min-height: 72px; }
+.form-window .actions { justify-content: flex-end; }
+button.btn:disabled { background: var(--sunken); color: var(--mute); border-color: var(--line-strong); cursor: default; }
+.detail-panel { width: min(100%, 312px); }
+.field-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+button.btn.picker { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding-inline: 9px; text-align: left; }
+button.btn.check { width: 34px; flex: none; padding-inline: 0; }
+.restore-preview { background: var(--sunken); }
+.progress { display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; padding: 8px 0 0; }
+.progress span { display: grid; place-items: center; position: relative; }
+.progress span::before { content: ""; position: absolute; inset: 50% 50% auto -50%; height: 1px; background: var(--line-strong); }
+.progress span:first-child::before { display: none; }
+.progress i { position: relative; width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+.progress .on i { width: 13px; height: 13px; background: var(--brand); }
+.count-tabs { display: inline-flex; align-items: center; gap: 4px; padding: 4px; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; }
+.count-tabs > span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 7px; }
+.count-tabs [aria-current="page"] { background: var(--surface); font-weight: 700; }
+.role-card { width: 100%; }
+.role-card .edit-area { display: grid; gap: 7px; }
+.history { border: 1px solid var(--line); border-radius: 8px; background: var(--sunken); }
+.history summary { cursor: pointer; min-height: 34px; padding: 6px 9px; font-weight: 600; }
+.history details { border-top: 1px solid var(--line); }
+.history details summary { padding-inline-start: 13px; font-weight: 400; color: var(--sub); }
+.history .previous { padding: 0 13px 10px; }
+.box-icon { display: inline-grid; place-items: center; flex: none; width: 18px; height: 18px; border: 1px solid var(--line-strong); border-radius: 5px; }
+.box-icon.checked { background: var(--brand-soft); color: var(--text); }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 08 · 홈·연구 흐름·할 일·항목 상세</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+<main>
+  <section class="scene on" id="08-hom-07">
+    <h2>홈 상단 알림 배너 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 알림 카드 왼쪽에 두꺼운 파란 강조 띠가 들어가고, 미정리 미팅 안내 버튼이 '기록 정리하기'로 되어 있어 무엇을 정리하는지 불명확해요.</span><span>바뀐 점: 왼쪽 파란 띠를 빼고 은은한 표면 카드로 바꾸며, 버튼 문구를 '미팅 할 일 정리하기'처럼 행동 대상이 드러나게 고쳐요.</span></p>
+    <div class="mock">
+      <div class="card soft spread">
+        <p>지난 미팅에서 나온 할 일을 아직 정리하지 않았어요.</p>
+        <button class="btn primary" type="button">미팅 할 일 정리하기</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-hom-09">
+    <h2>시작하기 체크리스트 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 사용자에게 보이는 미팅 수만으로 진행 여부를 판단해, 이미 미팅이 진행된 연구의 공동연구자 홈에도 '시작하기 3 / 4' 온보딩 카드가 다시 떠요.</span><span>바뀐 점: 연구 전체 진행도나 소유자 여부에 따라 온보딩 완료를 판별해 이미 진행 중인 연구의 공동연구자에게는 시작 안내를 띄우지 않아요.</span></p>
+    <div class="mock stack home-research">
+      <div class="spread rule">
+        <p class="research-name">대학원생 연구 기록 경험</p>
+        <span class="chip">공동연구자</span>
+      </div>
+      <div class="grid home-blocks">
+        <div class="card stack">
+          <h3>다음 미팅</h3>
+          <p>제7차 논문 지도</p>
+        </div>
+        <div class="card stack">
+          <h3>연구 흐름</h3>
+          <p><span class="chip current">현재 단계</span> 연구 설계</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-hom-11">
+    <h2>연구 방향 카드 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 설정·온보딩에서는 '연구 목적'이라고 부르는 항목을 홈 카드에서는 '연구 방향'으로 따로 부르고, 다크 모드에서는 세로 구분선이 배경에 묻혀 보여요.</span><span>바뀐 점: 홈 카드 제목을 용어표의 '연구 목적'으로 통일하고, 다크 모드 구분선 시인성을 살펴봐요(색 토큰 기본값 유지).</span></p>
+    <div class="mock">
+      <div class="home-purpose stack">
+        <div class="lineup">
+          <h3>연구 목적</h3>
+          <button class="btn" type="button">고치기</button>
+        </div>
+        <p>대학원생이 지도 미팅 뒤 기록을 정리해 다음 연구로 잇는 경험을 이해한다.</p>
+        <p class="sub">대학원생은 미팅 기록을 정리할 때 어떤 어려움을 겪는가?</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-flw-01">
+    <h2>단계·주요 목표 시간순 보기 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 현재 단계보다 앞선 단계 배지도 '예정'으로 표시되고, 단계 카드 여백이 크며 '+ 단계 추가'와 모달 제목·버튼 이름 및 날짜 입력 형식이 다르고 제목 시작 높이가 다른 화면과 달라요.</span><span>바뀐 점: 지난 단계는 '완료' 배지로 표시하고, 카드 내 빈 세로 여백과 단계 추가 버튼·모달 용어·필수 표시·날짜 형식·제목 위치를 정리해요.</span></p>
+    <div class="mock stack">
+      <div class="spread">
+        <h3>연구 흐름</h3>
+        <button class="btn primary" type="button">+ 단계 추가</button>
+      </div>
+      <div class="flow-nav" aria-label="연구 흐름 보기"><span aria-current="page">단계·주요 목표</span><span class="sub">달력</span></div>
+      <div class="grid">
+        <div class="stage-list stack" aria-label="단계·주요 목표 시간순 보기">
+          <p class="meta sub">시간순</p>
+          <div class="card spread"><strong>주제 정의</strong><span class="chip done">완료</span></div>
+          <div class="card spread"><strong>선행연구</strong><span class="chip done">완료</span></div>
+          <div class="card spread"><strong>연구 설계</strong><span class="chip current">현재 단계</span></div>
+        </div>
+        <div class="flow-form card soft stack" role="group" aria-labelledby="flow-add-title">
+          <h3 id="flow-add-title">단계 추가</h3>
+          <label class="label"><span>단계 이름 <small class="mute">필수</small></span><input class="field" type="text" value="연구 설계" required></label>
+          <label class="label"><span>날짜</span><input class="field" type="text" value="2026. 11. 26." inputmode="numeric"></label>
+          <div class="lineup"><button class="btn" type="button">취소</button><button class="btn primary" type="button">단계 추가</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-flw-05">
+    <h2>달력 보기 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 월 달력에서 오늘 날짜가 첫 화면 아래로 밀려 보이지 않고, 탭 전환 시 상단 주 버튼이 '+ 단계 추가'에서 '+ 미팅 만들기'로 예고 없이 바뀌며, 요일 머리와 날짜 숫자 왼쪽 정렬선이 어긋나요.</span><span>바뀐 점: 오늘 날짜가 첫 화면 안에 보이도록 높이를 조절하고, 요일과 날짜 숫자의 왼쪽 여백을 맞추며 상단 버튼 전환 규칙을 분명히 해요.</span></p>
+    <div class="mock stack">
+      <div class="spread">
+        <h3>연구 흐름</h3>
+        <button class="btn primary" type="button">+ 미팅 만들기</button>
+      </div>
+      <div class="flow-nav" aria-label="연구 흐름 보기"><span class="sub">단계·주요 목표</span><span aria-current="page">달력</span></div>
+      <p class="meta sub">단계·주요 목표에서는 단계를 추가하고, 달력에서는 미팅을 만들어요.</p>
+      <div class="calendar">
+        <div class="calendar-head spread"><strong>2026년 11월</strong><span class="chip">오늘 26일</span></div>
+        <table aria-label="2026년 11월 달력">
+          <thead><tr><th scope="col" abbr="일요일">일</th><th scope="col" abbr="월요일">월</th><th scope="col" abbr="화요일">화</th><th scope="col" abbr="수요일">수</th><th scope="col" abbr="목요일">목</th><th scope="col" abbr="금요일">금</th><th scope="col" abbr="토요일">토</th></tr></thead>
+          <tbody>
+          <tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
+          <tr><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td></tr>
+          <tr><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
+          <tr><td>22</td><td>23</td><td>24</td><td>25</td><td aria-current="date"><time datetime="2026-11-26" aria-label="11월 26일, 오늘">26</time></td><td>27</td><td>28</td></tr>
+          <tr><td>29</td><td>30</td><td></td><td></td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-tsk-02">
+    <h2>피드백 목록 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 960px 이상 넓은 피드백 목록에서 할 일 줄용 숨김 규칙이 함께 적용되어 피드백 상태와 연결된 할 일 수가 보이지 않아요.</span><span>바뀐 점: 피드백 행에는 숨김 규칙을 적용하지 않아 넓은 화면에서도 상태와 연결 할 일 수를 그대로 보여 줘요.</span></p>
+    <div class="mock stack">
+      <h3>할 일</h3>
+      <div class="flow-nav" aria-label="할 일 보기"><span class="sub">할 일</span><span aria-current="page">피드백</span></div>
+      <div class="card stack">
+        <p class="meta sub">제5차 논문 지도</p>
+        <div class="spread">
+          <strong>선행연구 비교 기준 보완</strong>
+          <div class="lineup">
+            <span class="chip current">진행 중</span>
+            <span class="chip">연결된 할 일 1개</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-tsk-07">
+    <h2>피드백 추가 창 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 필수 표시로 파란 별표(*)를 써서 다른 생성 창의 '필수' 표기와 다르고, 필수 칸 2개가 비어 있는데도 '저장' 버튼이 활성 모양으로 보여요.</span><span>바뀐 점: 필수 입력 표시를 전체 공통 규칙 1종으로 통일하고, 필수 칸이 비었을 때의 저장 버튼 활성 조건을 다른 생성 창과 맞춰요.</span></p>
+    <div class="mock soft">
+      <div class="card form-window stack" role="group" aria-labelledby="feedback-add-title">
+        <h3 id="feedback-add-title">피드백 직접 추가</h3>
+        <p class="sub">직접 작성한 피드백으로 저장돼요.</p>
+        <label class="label"><span>제목 <small class="mute">필수</small></span><input class="field" type="text" required></label>
+        <label class="label"><span>피드백 내용 <small class="mute">필수</small></span><textarea class="field" required></textarea></label>
+        <div class="lineup actions">
+          <button class="btn" type="button">취소</button>
+          <button class="btn" type="button" disabled>저장</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-tsk-08">
+    <h2>수정 결과 만들기 창 <span class="proposal">제안</span></h2>
+    <p class="desc"><span>지금: 필수 입력 표시로 파란 별표(*)를 사용해 다른 생성 창의 '필수'·'(필수)' 표기와 달라요.</span><span>바뀐 점: 필수 입력 표시를 전체 공통 규칙 1종으로 통일해요.</span></p>
+    <div class="mock soft">
+      <div class="card form-window stack" role="group" aria-labelledby="result-add-title">
+        <h3 id="result-add-title">수정 결과 작성</h3>
+        <p class="sub">저장해도 교수님께 공개되지 않아요.</p>
+        <label class="label"><span>제목 <small class="mute">필수</small></span><input class="field" type="text" required></label>
+        <label class="label"><span>실제로 수정한 내용 <small class="mute">필수</small></span><textarea class="field" required></textarea></label>
+        <div class="lineup actions">
+          <button class="btn" type="button">취소</button>
+          <button class="btn primary" type="button">수정 결과 저장</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-det-01">
+    <h2>할 일 상세</h2>
+    <p class="desc"><span>지금: 완료를 풀면 직전 상태와 무관하게 항상 '시작 전'으로 돌아가고, 브라우저 기본 선택 상자·날짜 입력·체크박스가 그대로 쓰이며 '고칠 글' 아래 '글' 라벨이 중복돼요.</span><span>바뀐 점: 완료 전 상태를 저장해 두고 공통 함수로 직전 상태 복원과 기록 관계 읽기를 처리해요. 제안: 기본 선택 상자·날짜 입력·체크박스를 공통 컴포넌트로 통합하고 날짜 형식과 중복 '글' 라벨을 정리해요.</span></p>
+    <div class="mock">
+      <div class="detail-panel card stack">
+        <div class="stack rule">
+          <p class="meta sub">할 일</p>
+          <h3>선행연구 비교 기준 정리</h3>
+          <div class="lineup">
+            <span class="chip">제5차 논문 지도에서</span>
+            <span class="chip">→ 제6차</span>
+          </div>
+        </div>
+        <div class="card restore-preview stack">
+          <p class="meta sub">완료 체크를 풀면</p>
+          <p class="lineup"><span class="chip done">완료</span><span aria-hidden="true">→</span><span class="chip current">진행 중</span></p>
+        </div>
+        <div class="stack" role="group" aria-label="입력 구성 제안">
+          <div><span class="proposal">제안</span></div>
+          <div class="lineup">
+            <button class="btn check" type="button" aria-label="할 일 완료" aria-pressed="false"><span aria-hidden="true">□</span></button>
+            <span>완료</span>
+          </div>
+          <div class="field-pair">
+            <div class="stack">
+              <span class="meta sub">상태</span>
+              <button class="btn picker" type="button" aria-label="상태: 진행 중">진행 중 <span aria-hidden="true">⌄</span></button>
+            </div>
+            <div class="stack">
+              <span class="meta sub">기한</span>
+              <button class="btn picker" type="button" aria-label="기한: 2026년 11월 20일">2026. 11. 20. <span aria-hidden="true">⌄</span></button>
+            </div>
+          </div>
+          <div class="stack">
+            <span class="meta sub">고칠 글</span>
+            <button class="btn picker" type="button" aria-label="고칠 글: 고르지 않음">고르지 않음 <span aria-hidden="true">⌄</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-det-02">
+    <h2>피드백 상세</h2>
+    <p class="desc"><span>지금: 기본 312px 폭에서 5단계 진행 점의 글자가 전부 숨어 점만 보이고, 상태 입력이 브라우저 기본 선택 상자이며, 연결된 할 일의 완료를 풀면 항상 '시작 전'으로 돌아가요.</span><span>바뀐 점: 연결된 할 일 완료 취소도 공통 함수로 직전 상태로 돌아가요. 제안: 좁은 폭에서도 현재 단계명 한 줄을 표시하고 상태 선택 상자를 공통 컴포넌트로 통합해요.</span></p>
+    <div class="mock">
+      <div class="detail-panel card stack">
+        <div class="stack rule">
+          <p class="meta sub">피드백</p>
+          <h3>선행연구 비교 기준 보완</h3>
+        </div>
+        <div class="stack rule" role="group" aria-label="상태 표시 제안">
+          <div class="spread"><span class="meta sub">상태</span><span class="proposal">제안</span></div>
+          <button class="btn picker" type="button" aria-label="상태: 진행 중">진행 중 <span aria-hidden="true">⌄</span></button>
+          <div class="progress" aria-hidden="true"><span><i></i></span><span class="on"><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span></div>
+          <p class="meta sub">현재 단계 · 진행 중</p>
+        </div>
+        <div class="card restore-preview stack">
+          <p class="meta sub">연결된 할 일</p>
+          <strong>선행연구 비교 기준 정리</strong>
+          <p class="meta sub">완료 체크를 풀면</p>
+          <p class="lineup"><span class="chip done">완료</span><span aria-hidden="true">→</span><span class="chip current">진행 중</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-det-03">
+    <h2>결정 상세</h2>
+    <p class="desc"><span>지금: 결정 상세의 본문과 이유가 읽기 전용으로만 표시되어 고칠 수 없고, 사이드 창의 '결정' 탭에는 개수 표시가 없어요.</span><span>바뀐 점: 소유자와 편집자가 결정의 본문과 이유를 고칠 수 있고, 고치기 전 내용은 이력으로 남겨요. 사이드 창 '결정' 탭에도 개수를 붙여요.</span></p>
+    <div class="mock stack">
+      <div class="spread rule">
+        <strong>결정·질문</strong>
+        <div class="count-tabs" aria-label="결정·질문 사이드 창 탭">
+          <span aria-current="page">결정 <span class="chip">2</span></span>
+          <span>질문 <span class="chip">2</span></span>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card role-card stack">
+          <h3 class="rule">소유자·편집자</h3>
+          <div class="edit-area">
+            <div class="spread">
+              <strong>본문·이유</strong>
+              <button class="btn" type="button" aria-label="결정 본문·이유 고치기">고치기</button>
+            </div>
+            <p>투고 학술지를 정한 뒤 참고문헌 형식을 맞춘다.</p>
+            <p class="sub"><strong>이유</strong> 학술지마다 참고문헌 규정이 다르다.</p>
+          </div>
+          <details class="history" open>
+            <summary>수정 이력</summary>
+            <details>
+              <summary>11월 26일 김학생이 고쳤어요 · 고치기 전 내용 보기</summary>
+              <div class="previous">
+                <p>참고문헌 형식은 다음 학기에 투고 학술지를 정한 뒤 맞춘다.</p>
+                <p class="sub"><strong>이유</strong> 투고 학술지가 아직 정해지지 않았다.</p>
+              </div>
+            </details>
+          </details>
+        </div>
+        <div class="card role-card stack">
+          <h3 class="rule">지도교수 <span class="chip">읽기 전용</span></h3>
+          <div class="edit-area">
+            <strong>본문·이유</strong>
+            <p>투고 학술지를 정한 뒤 참고문헌 형식을 맞춘다.</p>
+            <p class="sub"><strong>이유</strong> 학술지마다 참고문헌 규정이 다르다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-det-04">
+    <h2>질문 상세</h2>
+    <p class="desc"><span>지금: 질문 상세의 본문이 읽기 전용이라 잘못 적은 질문을 고칠 수 없고, 사이드 창의 '질문' 탭 배지는 미해결 질문 수만 세어요.</span><span>바뀐 점: 소유자와 편집자가 질문 본문을 고칠 수 있고, 고치기 전 내용은 이력으로 남겨요. 제안: '질문' 탭 배지가 해결하지 않은 질문 수라는 것을 안내해요.</span></p>
+    <div class="mock stack">
+      <div class="stack rule">
+        <div class="spread">
+          <strong>결정·질문</strong>
+          <div class="count-tabs" aria-label="결정·질문 사이드 창 탭">
+          <span>결정 <span class="chip">2</span></span>
+          <span aria-current="page">질문 <span class="chip">2</span></span>
+        </div>
+        </div>
+        <div class="lineup"><span class="meta sub">‘질문’ 옆 숫자는 해결하지 않은 질문 수예요.</span><span class="proposal">제안</span></div>
+      </div>
+      <div class="grid">
+        <div class="card role-card stack">
+          <h3 class="rule">소유자·편집자</h3>
+          <div class="edit-area">
+            <div class="spread">
+              <strong>본문</strong>
+              <button class="btn" type="button" aria-label="질문 본문 고치기">고치기</button>
+            </div>
+            <p>미팅 기록 정리 방식은 다음 미팅 준비에 어떤 영향을 주는가?</p>
+            
+          </div>
+          <details class="history" open>
+            <summary>수정 이력</summary>
+            <details>
+              <summary>11월 26일 김학생이 고쳤어요 · 고치기 전 내용 보기</summary>
+              <div class="previous">
+                <p>기록 정리 방식은 다음 미팅 준비에 어떤 영향을 주는가?</p>
+                
+              </div>
+            </details>
+          </details>
+        </div>
+        <div class="card role-card stack">
+          <h3 class="rule">지도교수 <span class="chip">읽기 전용</span></h3>
+          <div class="edit-area">
+            <strong>본문</strong>
+            <p>미팅 기록 정리 방식은 다음 미팅 준비에 어떤 영향을 주는가?</p>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene on" id="08-det-05">
+    <h2>수정 결과 상세</h2>
+    <p class="desc"><span>지금: 수정 결과 상세의 연결된 할 일 체크박스에서 완료를 풀면 공통 완료 함수를 쓰지 않고 항상 '시작 전'으로 돌아가요.</span><span>바뀐 점: 완료 전 상태를 저장해 두고, 어느 화면에서 풀어도 그 상태로 돌아가요.</span></p>
+    <div class="mock stack">
+      <div class="stack rule">
+        <p class="meta sub">수정 결과</p>
+        <h3>선행연구 비교표 보완</h3>
+      </div>
+      <div class="card restore-preview stack">
+        <p class="meta sub">연결된 할 일</p>
+        <strong>선행연구 비교 기준 정리</strong>
+        <div class="lineup">
+          <span class="lineup"><span class="box-icon checked" role="img" aria-label="체크됨">✓</span><span class="chip done">완료</span></span>
+          <span class="meta sub">체크 해제 →</span>
+          <span class="lineup"><span class="box-icon" role="img" aria-label="체크 해제됨"></span><span class="chip current">진행 중</span></span>
+        </div>
+        <p class="meta sub">완료 전에 저장된 상태로 돌아갔어요.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

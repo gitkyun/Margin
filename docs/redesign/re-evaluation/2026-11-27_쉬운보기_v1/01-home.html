@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>홈 화면 전후 보기</title>
+<style>
+:root {
+  --bg: #f4f5f7; --surface: #fff; --line: #e1e2e4; --text: #171719; --sub: #46474c; --mute: #686b73;
+  --brand: #0066ff; --brand-soft: #eaf2fe; --warn: #a35a00; --warn-soft: #fff4e5; --warn-line: #e08a00;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111214; --surface: #1b1c1e; --line: #2e2f33; --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3;
+    --brand: #5c9dff; --brand-soft: #14233d; --warn: #ffb347; --warn-soft: #3a2a12; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+main { max-width: 1240px; margin: 0 auto; padding: 28px 20px 80px; }
+h1 { font-size: 24px; margin: 0 0 6px; }
+.lead { color: var(--sub); margin: 0 0 24px; font-size: 16px; }
+h2 { font-size: 19px; margin: 36px 0 10px; }
+.note { color: var(--mute); font-size: 14px; margin: 0 0 12px; }
+
+/* 보기 전환 */
+.switch { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 12px; }
+.switch button { border: 0; background: transparent; color: var(--sub); font: inherit; font-weight: 600; padding: 8px 18px; border-radius: 7px; cursor: pointer; min-height: 40px; }
+.switch button[aria-pressed="true"] { background: #0066ff; color: #fff; }
+.legend { display: inline-flex; gap: 16px; margin-left: 16px; font-size: 14px; color: var(--sub); vertical-align: middle; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 18px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.legend .c { border: 2px solid #0066ff; }
+.legend .p { border: 2px dashed var(--warn-line); }
+
+/* 화면 (1440×900 캡처 위에 덮어 그리기) */
+.shot { position: relative; container-type: inline-size; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.06); }
+.shot img { display: block; width: 100%; height: auto; }
+.shot { --u: calc(100cqw / 1440); }
+.patch { position: absolute; background: #fff; color: #171719; font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; display: none; }
+.after .patch { display: block; }
+.patch.c { outline: calc(var(--u) * 3) solid #0066ff; outline-offset: calc(var(--u) * 2); }
+.patch.p { outline: calc(var(--u) * 3) dashed #e08a00; outline-offset: calc(var(--u) * 2); }
+.num { position: absolute; display: none; width: calc(var(--u) * 30); height: calc(var(--u) * 30); border-radius: 50%; background: #0066ff; color: #fff; font-weight: 700; font-size: calc(var(--u) * 16); align-items: center; justify-content: center; z-index: 3; }
+.num.p { background: #a35a00; }
+.after .num { display: flex; }
+
+/* 패치 안 글자 (캡처와 같은 크기) */
+.t12 { font-size: calc(var(--u) * 12); } .t13 { font-size: calc(var(--u) * 13); } .t14 { font-size: calc(var(--u) * 14); } .t17 { font-size: calc(var(--u) * 17); }
+.b { font-weight: 700; } .g { color: #686b73; } .r { color: #e53935; }
+.chip { display: inline-block; font-size: calc(var(--u) * 12); padding: 0 calc(var(--u) * 7); border-radius: calc(var(--u) * 6); background: #f2f3f5; color: #46474c; line-height: calc(var(--u) * 20); margin-left: calc(var(--u) * 6); }
+.row { position: absolute; left: calc(var(--u) * 12); right: 0; display: flex; align-items: flex-start; gap: calc(var(--u) * 16); }
+.box { width: calc(var(--u) * 18); height: calc(var(--u) * 18); border: calc(var(--u) * 1.5) solid #c2c4c8; border-radius: calc(var(--u) * 4); margin-top: calc(var(--u) * 4); flex: none; }
+.bar { height: calc(var(--u) * 4); background: #e1e2e4; border-radius: 9px; overflow: hidden; width: calc(var(--u) * 80); display: inline-block; vertical-align: middle; margin-left: calc(var(--u) * 8); }
+.bar span { display: block; height: 100%; width: 96%; background: #0066ff; }
+
+/* 바뀐 점 목록 */
+ol.changes { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
+ol.changes li { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 14px 56px; position: relative; }
+ol.changes li::before { content: attr(data-n); position: absolute; left: 16px; top: 14px; width: 28px; height: 28px; border-radius: 50%; background: #0066ff; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+ol.changes li.p::before { background: #a35a00; }
+ol.changes b { display: block; font-size: 16px; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 6px; margin-left: 6px; vertical-align: 1px; }
+.tag.c { background: var(--brand-soft); color: var(--brand); }
+.tag.p { background: var(--warn-soft); color: var(--warn); }
+.fromto { color: var(--sub); font-size: 14px; margin-top: 4px; }
+.fromto s { color: var(--mute); }
+
+/* 참고 */
+.ref { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.ref figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ref img { display: block; width: 100%; height: auto; }
+.ref figcaption { padding: 12px 16px; font-size: 14px; color: var(--sub); }
+.ref figcaption b { color: var(--text); }
+@media (max-width: 720px) { .legend { margin: 8px 0 0; display: flex; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>홈 화면은 이렇게 바뀌어요</h1>
+  <p class="lead">실제 지금 화면 위에 바뀌는 부분만 덮어 그렸어요. 위 버튼으로 <b>지금</b>과 <b>바뀐 뒤</b>를 번갈아 눌러 보면 달라진 곳이 바로 보여요.</p>
+
+  <div class="switch" role="group" aria-label="화면 보기">
+    <button type="button" data-view="before" aria-pressed="false">지금</button>
+    <button type="button" data-view="after" aria-pressed="true">바뀐 뒤</button>
+  </div>
+  <span class="legend"><span><i class="c"></i>정해진 것</span><span><i class="p"></i>아직 제안(정하실 것)</span></span>
+
+  <div class="shot after" id="shot">
+    <img src="../assets/live-desktop/14_home_main_1440.png" alt="마진 연구 홈 화면, 1440px">
+
+    <!-- ① 다음 미팅: 목표 첫 줄, 준비 수 따로 -->
+    <span class="num" style="left:calc(var(--u)*8); top:calc(var(--u)*296)">1</span>
+    <div class="patch c" style="left:calc(var(--u)*44); top:calc(var(--u)*268); width:calc(var(--u)*640); height:calc(var(--u)*86)">
+      <div class="t13 g" style="position:absolute; top:calc(var(--u)*2)">날짜 미정</div>
+      <div class="t17 b" style="position:absolute; top:calc(var(--u)*28)">제7차 논문 지도</div>
+      <div class="t14" style="position:absolute; top:calc(var(--u)*58)">목표: 2장 비교 기준을 교수님과 확정하기 <span class="g">· 가져갈 할 일 3 · 글·자료 0 · 질문 0</span></div>
+    </div>
+
+    <!-- ② 할 일: 첫 묶음 제목 + 출처 칩 -->
+    <span class="num" style="left:calc(var(--u)*8); top:calc(var(--u)*600)">2</span>
+    <div class="patch c" style="left:calc(var(--u)*44); top:calc(var(--u)*526); width:calc(var(--u)*640); height:calc(var(--u)*176)">
+      <div class="t12 b g" style="position:absolute; left:calc(var(--u)*12); top:calc(var(--u)*6)">다음 미팅에 가져갈 할 일</div>
+      <div class="row" style="top:calc(var(--u)*30)"><span class="box"></span><div><div class="t14 b">선행연구 비교 기준 정리 <span class="r">•</span></div><div class="t12"><span class="r">5일 지남</span><span class="chip">제5차 논문 지도에서</span></div></div></div>
+      <div class="row" style="top:calc(var(--u)*80)"><span class="box"></span><div><div class="t14 b">인터뷰 질문지 보완</div><div class="t12"><span class="r">4일 지남</span><span class="chip">제5차 논문 지도에서</span></div></div></div>
+      <div class="row" style="top:calc(var(--u)*130)"><span class="box"></span><div><div class="t14 b">분석 관점 기준의 정의 한 문장 쓰기</div><div class="t12"><span class="r">2일 지남</span><span class="chip">2장 초안 서면 의견에서</span></div></div></div>
+    </div>
+
+    <!-- ③ 크레딧 % -->
+    <span class="num" style="left:calc(var(--u)*1052); top:calc(var(--u)*862)">3</span>
+    <div class="patch c" style="left:calc(var(--u)*1086); top:calc(var(--u)*870); width:calc(var(--u)*200); height:calc(var(--u)*22)">
+      <span class="t12 g">남은 양 96%</span><span class="bar"><span></span></span>
+    </div>
+
+    <!-- ④ 공동연구자 칩 (제안) -->
+    <span class="num p" style="left:calc(var(--u)*1032); top:calc(var(--u)*86)">4</span>
+    <div class="patch p" style="left:calc(var(--u)*900); top:calc(var(--u)*102); width:calc(var(--u)*124); height:calc(var(--u)*30); border:1px solid #e1e2e4; border-radius:calc(var(--u)*16)">
+      <div class="t13" style="text-align:center; line-height:calc(var(--u)*28)">함께하는 사람 1명 ›</div>
+    </div>
+  </div>
+
+  <ol class="changes">
+    <li data-n="1"><b>다음 미팅 카드가 목표를 먼저 보여 줘요 <span class="tag c">정해짐 · 쟁점 2</span></b>
+      <div class="fromto"><s>아직 준비한 내용이 없어요.</s> → 첫 줄에 목표, 옆에 가져갈 할 일·글·자료·질문 수를 따로 세요. 목표만 적어도 '준비 없음'으로 보이던 문제를 없애요.</div></li>
+    <li data-n="2"><b>할 일이 어느 미팅에서 나왔는지 칩으로 보여요 <span class="tag c">정해짐 · 쟁점 2·3</span></b>
+      <div class="fromto"><s>· 제5차 논문 지도</s> → <code>제5차 논문 지도에서</code> 칩. 첫 묶음 위에 '다음 미팅에 가져갈 할 일' 제목이 붙어요. 순서(정렬)는 그대로예요.</div></li>
+    <li data-n="3"><b>크레딧을 숫자 대신 남은 비율로 보여요 <span class="tag c">정해짐 · 쟁점 5</span></b>
+      <div class="fromto"><s>내 잔액 · 19,190크레딧</s> → 남은 양 96% + 막대. 기준은 '이번 달 지급량 대비 남은 양'이에요.</div></li>
+    <li data-n="4" class="p"><b>'공동연구자 2명'을 '함께하는 사람 1명'으로 <span class="tag p">제안</span></b>
+      <div class="fromto">지금은 나까지 세어 2명이에요. 나를 빼고 세고, 설정 탭 이름과 같은 말을 쓰자는 제안이에요. 정하실 것이라 점선으로 표시했어요.</div></li>
+  </ol>
+  <p class="note">그대로인 것: 오른쪽 레일(폭·버튼 배치), 1440px에서 사이드 창이 처음부터 열려 있는 것, 연구 흐름 칩. 홈 본문과 같은 탭(할 일)이 사이드 창에 뜨지 않게 하는 규칙(쟁점 3)은 지금 이 화면에서는 이미 지켜지고 있어요(사이드 창이 '도우미').<br>예시 값: 목표 문장과 가져갈 할 일 수 3, 남은 양 96%는 설명용 가상 값이에요.</p>
+
+  <h2>참고한 화면: 토스증권</h2>
+  <p class="note">레일과 사이드 창의 골격을 이 화면에서 가져왔어요. 이 골격은 바꾸지 않기로 정했어요.</p>
+  <div class="ref">
+    <figure>
+      <img src="../assets/benchmarks/tossinvest/01_home_panel_open.png" alt="토스증권 홈, 오른쪽 사이드 창 열림">
+      <figcaption><b>가져온 것</b>: 오른쪽 끝 좁은 레일(아이콘 + 작은 이름), 그 옆 사이드 창이 처음부터 열려 있는 구조, 아래쪽 이름 없는 정사각 버튼 2개. <b>가져오지 않은 것</b>: 처음 들어왔을 때 파란 안내 말풍선 여러 개가 본문을 가리는 것.</figcaption>
+    </figure>
+  </div>
+</main>
+<script>
+(function () {
+  var shot = document.getElementById('shot');
+  document.querySelectorAll('[data-view]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var after = b.dataset.view === 'after';
+      shot.classList.toggle('after', after);
+      document.querySelectorAll('[data-view]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

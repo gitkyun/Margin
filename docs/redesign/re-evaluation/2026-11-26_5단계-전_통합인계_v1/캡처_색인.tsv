@@ -1,0 +1,504 @@
+묶음	번호	서비스	화면과 흐름	증거 종류	제목	화면 크기	자료 루트 기준 경로	관찰
+갤러리	1	toss	소개와 서비스 흐름	공식 사이트 열람	토스	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-home-01.jpg	토스 공식 홈페이지의 한국어 첫 화면. 대표 문장과 서비스 탐색, 앱으로 연결하는 행동이 함께 보인다.
+갤러리	2	margin	소개와 서비스 흐름	격리 마진 화면	흩어진 기록을 모아, 다음 연구가 되도록	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-home-01.jpg	마진 로컬 소개의 첫 화면. 가상 연구장의 기능 미리보기가 바로 아래에 있다.
+갤러리	3	toss	소개와 서비스 흐름	공식 사이트 · 실제 조작	토스	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-intro-story-send.jpg	아래로 내려갈 때 실제 앱 조작과 송금 결과를 한 장면에 보여 준다.
+갤러리	4	margin	소개와 서비스 흐름	격리 마진 화면	흩어진 기록을 모아, 다음 연구가 되도록 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-intro-professor-story.jpg	가상 연구 흐름에서 교수 검토 장면을 골랐다. 소개에서 본 버튼·상태를 실제 검토와 비교한다.
+갤러리	5	toss-securities	소개와 서비스 흐름	공식 서비스 · 실제 버튼	설정 일반	720 × 263 px	2026-11-25_5단계-전_라이브러리-기본값_v3/운영-참고/01-toss-invest-general.jpg	화면 모드와 리모콘 위치를 그림 카드로 고른다. 서비스 설정 창 부분만 담았다.
+갤러리	6	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 설정의 내 계정·이 연구 구획	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/03-settings-appearance-1440.png	열었던 연구 위에 설정이 겹친다. 왼쪽 선택 화면, 오른쪽 모드 전환 예시를 봤다.
+갤러리	7	margin	마진 실화면 재검증	실제 UI · 격리 SQL	겸임 교수 › 공유 중지 뒤 같은 URL 본문	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/09-overlap-stopped-still-reads.png	교수 응답은 사라졌다. 공동편집 권한으로 연구와 검토 본문은 남았다.
+갤러리	8	margin	마진 실화면 재검증	운영 마진 · 조회	운영 AI 예약과 확정 사용량	620 × 403 px	2026-11-25_5단계-전_라이브러리-기본값_v3/운영-참고/04-margin-live-reserved-credit.jpg	앞서 실패한 1건의 예약 36과 확정 사용 75가 여전히 따로 표시된다. 추가 AI 요청 없이 기존 계정 화면을 열었다.
+갤러리	9	margin	소개와 서비스 흐름	격리 마진 화면	로그인 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-intro-entry-login.jpg	가입·체험에서 기존 계정 로그인으로 이동했다.
+갤러리	10	margin	소개와 서비스 흐름	격리 마진 화면	가입 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-intro-entry-signup.jpg	시작하기에서 가입·체험 진입까지 들어왔다. 계정이나 가입 신청은 만들지 않았다.
+갤러리	11	margin	소개와 서비스 흐름	격리 마진 화면	흩어진 기록을 모아, 다음 연구가 되도록 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-intro-features.jpg	상단의 주요 기능 메뉴는 마진에서 처음 시작할 때의 빠른 탐색 경로다.
+갤러리	12	margin	소개와 서비스 흐름	격리 마진 화면	흩어진 기록을 모아, 다음 연구가 되도록 · 마진	390 × 844 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-intro-mobile-hero.jpg	390px에서 제목과 첫 두 행동을 확인했다. 움직임 줄이기를 켠 브라우저 조건.
+갤러리	13	margin	소개와 서비스 흐름	격리 마진 화면	흩어진 기록을 모아, 다음 연구가 되도록 · 마진	390 × 844 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-intro-mobile-menu.jpg	390px에서 공개 메뉴가 열린 상태.
+갤러리	14	margin	소개와 서비스 흐름	격리 마진 화면	흩어진 기록을 모아, 다음 연구가 되도록 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-intro-permission-faq.jpg	소개 하단에서 교수에게 보이는 범위를 펼쳤다. 겸임 편집자 사례는 실제 권한 흐름과 따로 대조한다.
+갤러리	15	margin	소개와 서비스 흐름	격리 마진 화면	코코넛 적용 부품 시연	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-kokonut-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	16	toss	소개와 서비스 흐름	공식 사이트 · 실제 조작	토스	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-intro-footer.jpg	홈 끝에 도달해 주요 회사 및 서비스 지원 링크를 확인했다.
+갤러리	17	toss	소개와 서비스 흐름	공식 사이트 · 실제 조작	토스	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-intro-install-entry.jpg	데스크톱에서 앱 다운로드 진입점을 열었다. 설치나 계정 등록 전 단계다.
+갤러리	18	toss	소개와 서비스 흐름	공식 사이트 · 실제 조작	토스	390 × 844 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-intro-mobile-hero.jpg	390px에서 소개 첫 화면과 메뉴를 확인했다. 움직임 줄이기를 켠 브라우저 조건.
+갤러리	19	toss	소개와 서비스 흐름	공식 사이트 · 실제 조작	토스	390 × 844 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-intro-mobile-menu.jpg	390px에서 서비스·비즈니스 분류, 회사소개와 뉴스룸, 앱 다운로드 메뉴를 열었다.
+갤러리	20	toss	소개와 서비스 흐름	공식 사이트 · 실제 조작	토스	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-intro-service-menu.jpg	상단 서비스 메뉴를 펼쳤다. 소개의 순서를 따라가지 않고도 원하는 서비스 분류를 찾아갈 수 있다.
+갤러리	21	toss	소개와 서비스 흐름	공식 사이트 · 실제 조작	토스	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-intro-story-next.jpg	같은 소개에서 다음 주제로 넘어가면 자산 관리를 보여 주는 설명과 앱 화면이 이어진다.
+갤러리	22	toss-securities	소개와 서비스 흐름	공식 사이트 열람	토스증권	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-invest-01.jpg	토스증권 공개 업무 화면의 차트 목록과 보조 열. 설정 비교는 로그인 후 확인한 장면을 함께 본다.
+갤러리	23	toss-securities	소개와 서비스 흐름	공식 서비스 · 실제 버튼	설정 단축키	720 × 560 px	2026-11-25_5단계-전_라이브러리-기본값_v3/운영-참고/02-toss-invest-shortcuts.jpg	화면 왼쪽의 고정 메뉴에서 단축키로 이동했다. 사용 여부와 입력 설명을 같은 본문에서 본다.
+갤러리	24	toss-securities	소개와 서비스 흐름	공식 서비스 · 실제 버튼	설정 알림	720 × 560 px	2026-11-25_5단계-전_라이브러리-기본값_v3/운영-참고/03-toss-invest-alerts.jpg	본문을 알림으로 바꿨다. 알림 종류와 알림음 항목의 관계를 확인했다.
+갤러리	25	margin	마진 실화면 재검증	격리 마진 실화면	학생 › 내 할 일과 다음 미팅 묶음	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-목록과-홈/01-home-owner.png	기한이 더 늦은 미팅 초안이 첫 묶음에 온다. 둘째 묶음은 이름이 있고 ‘내 할 일’에도 미담당이 들어온다.
+갤러리	26	margin	마진 실화면 재검증	격리 마진 실화면	공동편집자 › 같은 연구의 내 할 일	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-목록과-홈/02-home-editor.png	편집자가 맡은 일과 미담당이 남는다. 학생의 미팅 초안은 이 탭에서 빠졌다.
+갤러리	27	margin	마진 실화면 재검증	격리 마진 실화면	공동편집자 › 모두로 전환	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-목록과-홈/03-home-all.png	같은 미팅 초안과 세 할 일이 모두 나온다. 선택 범위와 우선순위를 독립해서 설계할 수 있다.
+갤러리	28	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 넓은 목록에 공개 범위 열	1760 × 990 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-목록과-홈/04-docs-scope-wide.png	함께 보기와 나만 보기 열이 표시된다. 합성 자료의 공개 범위는 서로 다르다.
+갤러리	29	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 같은 표를 미리보기로 열었을 때	1760 × 990 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-목록과-홈/05-docs-scope-preview.png	오른쪽 미리보기와 함께 목록 열이 줄었다. 개인 자료 자물쇠는 남았지만 공동 자료의 함께 보기 열은 화면에서 빠졌다.
+갤러리	30	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 새 방문의 1440px 패널	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/01-panel-fresh-1440.png	저장된 선택 없는 상태. 기본 옆 창이 열리고 시작 탭은 할 일이다.
+갤러리	31	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 1440px에서 다시 방문	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/02-panel-remembered-1440.png	같은 폭에서 새로 열어도 사용자가 닫은 상태를 기억했다.
+갤러리	32	margin	마진 실화면 재검증	격리 마진 실화면	마진 › Esc로 설정을 닫고 복귀	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/04-settings-escape-1440.png	설정 주소만 없어지고 바탕 연구가 유지됐다. 키보드 초점은 같은 설정 버튼으로 돌아왔다.
+갤러리	33	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 손잡이 방향키로 넓히기	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/05-panel-keyboard-resized.png	오른쪽 패널 312px → 328px. 본문을 함께 밀지만 현재 연구와 패널 내용은 유지된다.
+갤러리	34	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 390px 설정 내용	390 × 844 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/06-settings-mobile-content.png	화면 설정 본문을 한 화면에서 본다. 모바일 모형은 Chromium 화면 폭 조절이다.
+갤러리	35	margin	마진 실화면 재검증	격리 마진 실화면	마진 › 390px 설정 목록으로 한 단계 돌아감	390 × 844 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/07-settings-mobile-list.png	내 계정과 이 연구가 같은 항목 목록 안에서 구분된다.
+갤러리	36	margin	마진 실화면 재검증	실제 UI · 격리 SQL	학생 › 겸임 교수 대상 공유 중지 안내	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/08-sharing-stop-copy.png	화면에 공유를 중지하면 교수님이 열 수 없다고 표시된다.
+갤러리	37	margin	마진 실화면 재검증	실제 UI · 격리 SQL	겸임 교수 › 공유 재개 뒤 응답 복귀	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/10-overlap-reopened-response.png	같은 URL에서 다시 공유하자 지정 교수 응답을 다시 할 수 있다.
+갤러리	38	margin	마진 실화면 재검증	실제 UI · 격리 SQL	학생 › 교수 재지정 전 안내	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/11-sharing-reassign-copy.png	이전에 지정된 계정이 열 수 없다는 문구와 새 수신 계정 입력을 확인했다. 외부 메일을 보내지 않는다.
+갤러리	39	margin	마진 실화면 재검증	실제 UI · 격리 SQL	예전 지정 교수 › 재지정 뒤에도 공동 편집 권한으로 열림	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/12-former-professor-editor-reads.png	본문 열람과 공유 설정이 유지됐다. 지정 교수로서 응답하는 양식은 사라졌다.
+갤러리	40	margin	마진 실화면 재검증	실제 UI · 격리 SQL	새 지정 교수 › 해당 검토만 응답	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/13-new-professor-can-respond.png	연구 편집 권한 없이 검토 응답을 할 수 있다. 이 장면에서는 실제 답을 전송하지 않았다.
+갤러리	41	margin	마진 실화면 재검증	격리 SQL · AI 호출 없음	학생 › 같은 합성 연구의 원본 범위	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/14-ai-input-owner-materials.png	학생 자료 목록에는 개인 자료와 공동 자료가 있다. 모델 응답은 이 장면에서 실행하지 않았다.
+갤러리	42	margin	마진 실화면 재검증	격리 SQL · AI 호출 없음	편집자 › 같은 합성 연구의 원본 범위	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/15-ai-input-editor-materials.png	이전 장면과 같은 연구에서 개인 자료의 제목·본문을 제외한다. 해당 모델 출력까지 확인하려면 운영 질문이 필요하다.
+갤러리	43	margin	마진 실화면 재검증	실제 UI · 격리 SQL	학생 › 연구 휴지통 이동 확인	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/16-trash-warning.png	휴지통 이동 시 공유 중 교수 링크가 멈추고 연구를 복원해도 링크는 자동 재개되지 않는다는 안내.
+갤러리	44	margin	마진 실화면 재검증	실제 UI · 격리 SQL	학생 › 휴지통 카드에 복원과 완전히 삭제	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/17-trash-card.png	완전히 삭제는 버튼과 확인창 열기·취소만 봤다. 데이터 검증은 가상 DB에서 했다.
+갤러리	45	margin	마진 실화면 재검증	실제 UI · 격리 SQL	학생 › 완전히 삭제 확인창	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/18-permanent-confirm.png	영구 삭제는 별도 창에 안내와 슬라이더가 나온다. 이 창에서는 취소했다.
+갤러리	46	margin	마진 실화면 재검증	실제 UI · 격리 SQL	학생 › 연구 복원 뒤 기존 공유 링크는 중지	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/19-restored-request-remains-stopped.png	원래 공유 중이던 A와 원래 중지된 B 모두 중지 상태였다.
+갤러리	47	margin	마진 실화면 재검증	실제 UI · 격리 SQL	지정 교수 › 연구 복원 뒤 같은 링크는 안 열림	1440 × 900 px	2026-11-25_5단계-전_라이브러리-기본값_v3/마진-재검증/20-restored-professor-cannot-open.png	연구 복원으로 이전 교수 링크가 재개되지 않았다.
+갤러리	48	margin	마진 실화면 재검증	운영 마진 · 조회	다음 날에도 남은 AI 예약	620 × 403 px	2026-11-25_5단계-전_라이브러리-기본값_v3/운영-참고/05-margin-live-reserved-next-day.jpg	11월 26일 운영 조회에서도 확정 사용 75와 예약 36이 유지됐다. 같은 6건 중 성공 5·실패 1이었다. 이번 조회에서 새 AI 요청은 보내지 않았다.
+갤러리	49	montage-4-2-0-react-compare-slider-4-0-0	설치판 로컬 시연	설치판 · 합성 시연	마진 설치판 UI 기본값 확인	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/installed-baseline-dark.jpg	설치판의 다크 테마. 마진의 색·한글 글꼴이 적용되기 전 토큰과 배치 비교.
+갤러리	50	montage-4-2-0-react-compare-slider-4-0-0	설치판 로컬 시연	설치판 · 합성 시연	마진 설치판 UI 기본값 확인	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/installed-baseline-dialog.jpg	설치 원본의 수정하지 않은 팝업. 마진 설정 전체 틀은 별도의 제품 설계다.
+갤러리	51	montage-4-2-0-react-compare-slider-4-0-0	설치판 로컬 시연	설치판 · 합성 시연	마진 설치판 UI 기본값 확인	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/installed-baseline-light.jpg	마진의 잠금 버전에서 스타일 래퍼 없이 렌더한 버튼·필드·세그먼트·원고 비교. 배치와 문장은 합성 시연.
+갤러리	52	montage-4-2-0-react-compare-slider-4-0-0	설치판 로컬 시연	설치판 · 합성 시연	마진 설치판 UI 기본값 확인	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/installed-baseline-slider-key.jpg	React Compare Slider 4.0.0에서 방향키를 누르자 비교값이 50에서 65로 이동했다.
+갤러리	53	margin	설치판 로컬 시연	설치판 · 합성 시연	코코넛 적용 부품 시연 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-vendor-ai-effort.jpg	깊이 칩을 별도로 열고 현재 마진의 한국어 레이블을 확인했다.
+갤러리	54	margin	설치판 로컬 시연	설치판 · 합성 시연	코코넛 적용 부품 시연 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-vendor-ai-initial.jpg	저장소에 있는 Kokonut 로컬 시연. 한국어 안내, Gemini 모델, 깊이 두 칩을 확인한다.
+갤러리	55	margin	설치판 로컬 시연	설치판 · 합성 시연	코코넛 적용 부품 시연 · 마진	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/margin-vendor-ai-models.jpg	공식 원본의 모델 선택과 마진에서 연결한 Gemini 후보를 나란히 본다.
+갤러리	56	aceternity-ui	사용 중인 라이브러리	공식 사이트 · 실제 조작	Cloud Shader | Aceternity UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/aceternity-loaded-canvas.jpg	공식 Cloud Shader 예제 캔버스. 마진에서는 공개 소개 미리보기 배경에만 연결된다.
+갤러리	57	base-ui	사용 중인 라이브러리	공식 데모 기본	Drawer	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/base-drawer-01.jpg	공식 드로어 트리거. 예시 사이트가 스타일을 제공한다.
+갤러리	58	base-ui	사용 중인 라이브러리	공식 데모 조작	Drawer	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/base-drawer-02.jpg	드로어를 열어 배경과 조작부의 분리를 확인했다.
+갤러리	59	base-ui	사용 중인 라이브러리	공식 데모 조작	Drawer	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/base-drawer-03.jpg	Escape로 닫고 원래 버튼으로 초점이 돌아왔는지 확인했다.
+갤러리	60	base-ui	사용 중인 라이브러리	공식 데모 기본	Menu	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/base-menu-01.jpg	공식 메뉴 트리거. 이 기본 UI에는 데모 스타일이 포함된다.
+갤러리	61	base-ui	사용 중인 라이브러리	공식 데모 조작	Menu	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/base-menu-02.jpg	메뉴에서 키보드로 이동 가능한 작업 목록을 열었다.
+갤러리	62	cmdk	사용 중인 라이브러리	공식 사이트 열람	GitHub - dip/cmdk: Fast, unstyled command menu React component.	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/cmdk-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	63	react-compare-slider	사용 중인 라이브러리	공식 사이트 · 실제 조작	Demos - Keyboard Increment ⋅ Storybook	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/compare-story-default.jpg	공식 Storybook 문서의 기본 비교 손잡이.
+갤러리	64	react-compare-slider	사용 중인 라이브러리	공식 사이트 · 실제 조작	Demos - Keyboard Increment ⋅ Storybook	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/compare-story-keyboard.jpg	방향키로 공식 비교 위치가 바뀌었다.
+갤러리	65	coss-ui	사용 중인 라이브러리	공식 데모 기본	Tabs - coss ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/coss-tabs-01.jpg	기본 탭과 선택된 첫 번째 제목.
+갤러리	66	coss-ui	사용 중인 라이브러리	공식 데모 조작	Tabs - coss ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/coss-tabs-02.jpg	방향키를 눌러 두 번째 탭 쪽으로 초점을 이동했다.
+갤러리	67	coss-ui	사용 중인 라이브러리	공식 데모 조작	Tabs - coss ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/coss-tabs-03.jpg	Enter로 포커스된 두 번째 탭을 선택했다.
+갤러리	68	date-fns	사용 중인 라이브러리	공식 사이트 열람	date-fns - modern JavaScript date utility library	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/date-fns-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	69	disarto-icons	사용 중인 라이브러리	공식 사이트 열람	GitHub - Disarto/disarto-icons: 574 handcrafted MIT-licensed icons in Regular and Solid variants, on a 24×24 grid	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/disarto-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	70	react-dropzone	사용 중인 라이브러리	공식 데모 기본	Basic example	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/dropzone-01.jpg	공식 예제의 빈 파일 영역. 스타일은 예제에 붙은 것이다.
+갤러리	71	react-dropzone	사용 중인 라이브러리	공식 데모 조작	Basic example	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/dropzone-02.jpg	로컬 합성 TXT 한 건을 선택해 결과 목록에 파일명이 나타났다.
+갤러리	72	floating-ui	사용 중인 라이브러리	공식 사이트 열람	Popover	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/floating-popover-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	73	fullcalendar	사용 중인 라이브러리	공식 데모 기본	Demos	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/fullcalendar-01.jpg	공식 월 보기의 날짜·일정·다음 이동.
+갤러리	74	fullcalendar	사용 중인 라이브러리	공식 사이트 · 실제 조작	Demos | FullCalendar	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/fullcalendar-mode-list.jpg	List를 선택했다. 이벤트의 정보를 달력 칸에서 목록 행으로 바꿔 읽는다.
+갤러리	75	fullcalendar	사용 중인 라이브러리	공식 사이트 · 실제 조작	Demos | FullCalendar	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/fullcalendar-mode-week.jpg	공식 월 보기 예제에서 Week를 선택해 같은 달력 위치의 일주일로 전환했다.
+갤러리	76	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Attachment - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-attachment-01.jpg	공식 첨부 예제의 파일 유형과 처리 단계를 확인한다.
+갤러리	77	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Attachment - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-attachment-02.jpg	예제의 오류 재생을 눌러 실패 표시를 확인했다.
+갤러리	78	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Autocomplete - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-autocomplete-01.jpg	키보드로 제안을 수락하는 원본 샘플.
+갤러리	79	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Autocomplete - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-autocomplete-02.jpg	전체 제안을 수락하는 버튼을 눌렀다.
+갤러리	80	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Inline Citations - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-citation-01.jpg	문장 바로 옆 출처 칩이 보이는 기본 화면.
+갤러리	81	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Inline Citations - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-citation-02.jpg	출처에 마우스를 대니 짧은 출처 미리보기가 열렸다.
+갤러리	82	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Inline Citations - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-citation-03.jpg	답변 끝에서 모아 보는 출처를 눌렀다.
+갤러리	83	kokonut-ui	사용 중인 라이브러리	공식 사이트 열람	AI Components for React and Tailwind CSS	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-home-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	84	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Inline Edit - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-inline-01.jpg	선택 문장을 다듬는 공식 편집 도구의 초기 선택지.
+갤러리	85	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Inline Edit - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-inline-02.jpg	줄이기를 눌러 예제 변경 제안을 만들었다.
+갤러리	86	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI State Loading - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-loading-01.jpg	여러 단계를 보여 주는 공식 대기 샘플. 실제 모델 연결은 없다.
+갤러리	87	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Model Selector - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-model-01.jpg	공식 모델과 답변 깊이 조작부의 시작 상태.
+갤러리	88	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Model Selector - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-model-02.jpg	모델 목록과 깊이 조작부를 열었다.
+갤러리	89	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	Account Menu - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-profile-01.jpg	공식 예제 계정의 닫힌 메뉴. 가상 사용자가 표시된다.
+갤러리	90	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	Account Menu - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-profile-02.jpg	계정 카드를 눌러 계정 메뉴를 펼쳤다.
+갤러리	91	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Input Selector - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-prompt-01.jpg	공식 입력창 초기값. 모델과 답변 깊이가 별도 제어다.
+갤러리	92	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Input Selector - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-prompt-02.jpg	모델 목록을 펼쳤다.
+갤러리	93	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Input Selector - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-prompt-03.jpg	목록을 닫고 슬래시를 입력하니 명령 후보가 나타났다.
+갤러리	94	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Message Queue - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-queue-01.jpg	실행 중에 대기 질문이 쌓이는 시뮬레이션.
+갤러리	95	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Message Queue - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-queue-02.jpg	현재 작업이 진행 중인 채로 다음 질문을 입력했다.
+갤러리	96	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Schedule - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-schedule-01.jpg	공식 단일 시간 선택과 양쪽 일정의 겹침 보기.
+갤러리	97	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Schedule - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-schedule-02.jpg	데모에서 시간이 선택되는 버튼을 눌렀다.
+갤러리	98	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Send - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-send-01.jpg	발송 예약 전 공식 샘플. 샘플 발송은 외부 수신자에게 가지 않는다.
+갤러리	99	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Send - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-send-02.jpg	예제 전송을 눌렀다. 지금 취소할 수 있는 버튼이 보인다.
+갤러리	100	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Send - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-send-03.jpg	되돌리기를 눌렀다. 데모가 입력 상태로 돌아왔다.
+갤러리	101	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	Switch Button - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-switch-01.jpg	테마 스위치를 누르기 전.
+갤러리	102	kokonut-ui	사용 중인 라이브러리	공식 사이트 · 실제 조작	Switch Button - React Component | Kokonut UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-theme-dark.jpg	공식 스위치는 라이트와 다크를 왕복한다. 공식 Account Menu의 시스템 상태와 별도의 2상태 부품이다.
+갤러리	103	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Tool Calls - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-tool-01.jpg	도구 호출이 답변에서 한 줄씩 진행되는 샘플. 실제 검색은 없다.
+갤러리	104	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Tool Calls - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-tool-02.jpg	진행 줄을 눌러 펼치거나 접는 동작을 확인했다.
+갤러리	105	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	Clip Trimmer - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-trimmer-01.jpg	시작·끝 구간을 분리하는 공식 미디어 샘플.
+갤러리	106	kokonut-ui	사용 중인 라이브러리	공식 데모 기본	AI Voice - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-voice-01.jpg	공식 예제는 가상 음성 파형을 재생한다. 녹음 대기 상태의 안내와 시간 표시를 확인했다.
+갤러리	107	kokonut-ui	사용 중인 라이브러리	공식 데모 조작	AI Voice - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-voice-02.jpg	녹음 버튼을 눌러 공식 시뮬레이션의 녹음 상태를 확인했다. 실기기 마이크 검사는 별도다.
+갤러리	108	lucide	사용 중인 라이브러리	공식 사이트 열람	Icons	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/lucide-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	109	montage	사용 중인 라이브러리	공식 데모 기본	Button - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-button-01.jpg	기본·보조·위험 버튼이 같은 높이 안에서 다른 색과 위계로 제시된다.
+갤러리	110	montage	사용 중인 라이브러리	공식 데모 기본	Date picker - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-datepicker-01.jpg	포맷을 입력할 수 있는 시작 상태.
+갤러리	111	montage	사용 중인 라이브러리	공식 데모 조작	Date picker - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-datepicker-02.jpg	달력 열기 버튼을 눌렀다. 월과 날짜 선택을 한 자리에서 제공한다.
+갤러리	112	montage	사용 중인 라이브러리	공식 데모 기본	Text field - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-field-01.jpg	텍스트 필드의 비어 있는 기본 상태.
+갤러리	113	montage	사용 중인 라이브러리	공식 데모 조작	Text field - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-field-02.jpg	같은 입력란에 한국어 예시를 입력했다.
+갤러리	114	montage	사용 중인 라이브러리	공식 사이트 열람	Components - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-home-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	115	montage	사용 중인 라이브러리	공식 데모 기본	Menu - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-menu-01.jpg	보통 메뉴를 열기 전. 같은 페이지에 단일·복수 선택 예시도 있다.
+갤러리	116	montage	사용 중인 라이브러리	공식 데모 조작	Menu - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-menu-02.jpg	버튼 아래에서 보통 메뉴가 열린다.
+갤러리	117	montage	사용 중인 라이브러리	공식 데모 기본	Popup - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-popup-01.jpg	공식 중앙 팝업의 기본 진입점.
+갤러리	118	montage	사용 중인 라이브러리	공식 데모 조작	Popup - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-popup-02.jpg	팝업을 열어 입력 작업이 본문과 분리되는 상태를 확인했다.
+갤러리	119	montage	사용 중인 라이브러리	공식 데모 조작	Popup - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-popup-03.jpg	Escape를 누른 후 팝업이 닫혔는지 확인한다.
+갤러리	120	montage	사용 중인 라이브러리	공식 데모 기본	Segmented control - Montage	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/montage-segment-01.jpg	공식 기본 세그먼트 예시와 선택 표현. 설치 버전의 기본값은 로컬 시연을 함께 본다.
+갤러리	121	motion	사용 중인 라이브러리	공식 사이트 · 실제 조작	Layout animation — Motion for React Example	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/motion-toggle-changed.jpg	손잡이의 가로 이동이 확인됐다. 목록의 의미나 버튼 자체를 정하는 라이브러리와 역할이 다르다.
+갤러리	122	motion	사용 중인 라이브러리	공식 사이트 · 실제 조작	Layout animation — Motion for React Example	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/motion-toggle-initial.jpg	공식 Motion 예제의 스위치 기본 상태.
+갤러리	123	pdf-js	사용 중인 라이브러리	공식 데모 기본	compressed.tracemonkey-pldi-09.pdf	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/pdfjs-01.jpg	공식 뷰어의 페이지·확대·검색 시작 상태.
+갤러리	124	pdf-js	사용 중인 라이브러리	공식 데모 조작	compressed.tracemonkey-pldi-09.pdf	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/pdfjs-02.jpg	찾기 버튼에서 JavaScript를 입력했다. 일치 개수와 PDF 본문 강조를 확인했다.
+갤러리	125	radix-ui	사용 중인 라이브러리	공식 데모 기본	Context Menu	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/radix-context-01.jpg	우클릭으로 여는 영역.
+갤러리	126	radix-ui	사용 중인 라이브러리	공식 사이트 · 실제 조작	Context Menu – Radix Primitives	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/radix-context-pointer.jpg	공식 예제 우클릭으로 작업 메뉴가 열린 화면. 마진의 행 메뉴와 비교한다.
+갤러리	127	radix-ui	사용 중인 라이브러리	공식 데모 기본	Dropdown Menu	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/radix-menu-01.jpg	Radix 데모의 상단 메뉴 트리거.
+갤러리	128	radix-ui	사용 중인 라이브러리	공식 데모 조작	Dropdown Menu	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/radix-menu-02.jpg	목록과 단축키 표기를 확인했다.
+갤러리	129	react-flow	사용 중인 라이브러리	공식 데모 기본	Feature Overview - React Flow	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/react-flow-01.jpg	공식 관계도 예제. 노드·연결과 줌 컨트롤이 보인다.
+갤러리	130	react-flow	사용 중인 라이브러리	공식 데모 조작	Feature Overview - React Flow	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/react-flow-02.jpg	확대 한 번 후 뷰포트 변환이 바뀌었다.
+갤러리	131	react-markdown	사용 중인 라이브러리	공식 사이트 열람	react-markdown	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/react-markdown-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	132	react-pdf	사용 중인 라이브러리	공식 사이트 · 실제 조작	Playground | react-pdf	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/react-pdf-ready-generated.jpg	공식 문서 생성 작업대에서 코드와 렌더된 PDF 결과를 확인한다.
+갤러리	133	shadcn-ui	사용 중인 라이브러리	공식 데모 기본	Command - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/shadcn-command-01.jpg	cmdk 기반 공식 shadcn 예제의 초기 검색과 후보.
+갤러리	134	shadcn-ui	사용 중인 라이브러리	공식 데모 조작	Command - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/shadcn-command-02.jpg	검색 결과가 없을 때 나오는 문구를 확인했다.
+갤러리	135	shadcn-ui	사용 중인 라이브러리	공식 데모 기본	Dropdown Menu - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/shadcn-menu-01.jpg	마진의 Kokonut이 가져다 쓰는 Radix 기반 메뉴 부품과 같은 계열의 공식 예제.
+갤러리	136	shadcn-ui	사용 중인 라이브러리	공식 데모 조작	Dropdown Menu - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/shadcn-menu-02.jpg	계정 메뉴 예제를 열었다.
+갤러리	137	sonner	사용 중인 라이브러리	공식 데모 기본	Sonner	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/sonner-01.jpg	알림이 표시되기 전 기본 페이지.
+갤러리	138	sonner	사용 중인 라이브러리	공식 데모 조작	Sonner	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/sonner-02.jpg	버튼을 눌러 기본 토스트를 화면 아래에 띄웠다.
+갤러리	139	sonner	사용 중인 라이브러리	공식 데모 조작	Sonner	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/sonner-03.jpg	행동 버튼이 있는 토스트 샘플을 별도로 띄웠다.
+갤러리	140	tiptap	사용 중인 라이브러리	공식 사이트 열람	Get started	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/tiptap-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	141	tiptap	사용 중인 라이브러리	공식 데모 기본	Preview	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/tiptap-embed-01.jpg	기본 편집기 데모의 표준 문단과 편집 도구.
+갤러리	142	tiptap	사용 중인 라이브러리	공식 데모 조작	Preview	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/tiptap-embed-02.jpg	편집기 끝에 가상 한국어 문장을 입력하고 굵게 상태를 적용했다.
+갤러리	143	libraries-dev	사용 중인 라이브러리	공식 사이트 열람	Libraries.dev: Libraries and models for next-gen UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/voice-glow-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	144	affectui	추가 후보 사이트	공식 데모 기본	Comment Thread	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/affect-thread-01.jpg	공식 댓글 스레드의 원문 맥락과 답글 입력.
+갤러리	145	affectui	추가 후보 사이트	공식 데모 조작	Comment Thread	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/affect-thread-02.jpg	합성 답글을 보내고 같은 문단 아래에 쌓이는지 확인했다.
+갤러리	146	affectui	추가 후보 사이트	공식 사이트 · 실제 조작	Comment Thread – React component · affectUI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/affect-thread-dark-dark.jpg	공개 댓글 데모의 어두운 테마. 해소·미해결·작성 상태 구분을 비교한다.
+갤러리	147	shadcn-ui	추가 후보 사이트	공식 사이트 열람	Inline Citation - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/ai-elements-citation-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	148	shadcn-ui	추가 후보 사이트	공식 사이트 열람	Tool - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/ai-elements-tool-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	149	ant-design-x	추가 후보 사이트	공식 사이트 열람	Ant Design X - AI interface solution	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/antx-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	150	arc-ui	추가 후보 사이트	공식 사이트 열람	Arc UI: the React UI library your AI agents can build with	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/arc-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	151	assistant-ui	추가 후보 사이트	공식 사이트 열람	assistant-ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/assistant-ui-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	152	astryx	추가 후보 사이트	공식 사이트 열람	Astryx Design System	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/astryx-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	153	bencho	추가 후보 사이트	공식 사이트 열람	Bencho — Interactive React UI Components & Micro-interactions	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/bencho-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	154	beui	추가 후보 사이트	공식 데모 기본	Animated Context Menu for React (Right Click)	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/beui-01.jpg	공식 우클릭 애니메이션을 확인하는 공개 예제.
+갤러리	155	beui-pro	추가 후보 사이트	공식 사이트 열람	beUI Pro — Animated React & React Native Blocks and Templates	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/beui-pro-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	156	boardui	추가 후보 사이트	공식 사이트 열람	BoardUI - React Design System for Dashboards	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/boardui-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	157	copilotkit	추가 후보 사이트	공식 사이트 열람	CopilotKit	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/copilotkit-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	158	designbookmark	추가 후보 사이트	공식 사이트 열람	DesignBookmark, All-in-one design resources for designers	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/designbookmark-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	159	eased-ui	추가 후보 사이트	공식 사이트 열람	Components	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/eased-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	160	easyui	추가 후보 사이트	공식 사이트 · 실제 조작	Selection Basket React Component for Tailwind CSS | EasyUI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/easyui-selection-live-clear.jpg	선택을 직접 비웠다. 데이터 자체를 바꾸는 일괄 버튼과 분리돼 있다.
+갤러리	161	easyui	추가 후보 사이트	공식 사이트 · 실제 조작	Selection Basket React Component for Tailwind CSS | EasyUI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/easyui-selection-live-initial.jpg	기본 샘플의 선택 건수와 그 건에만 가능한 행동을 본다.
+갤러리	162	easyui	추가 후보 사이트	공식 사이트 · 실제 조작	Undo Toast React Component Library for Tailwind CSS | EasyUI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/easyui-undo-live-offered.jpg	공식 데모에 남은 시간과 Undo 선택이 보인다. 마진의 복원 범위나 적정 시간을 정의하지는 않는다.
+갤러리	163	easyui	추가 후보 사이트	공식 사이트 · 실제 조작	Undo Toast React Component Library for Tailwind CSS | EasyUI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/easyui-undo-live-undone.jpg	공식 Undo를 눌러 예제 상태를 되돌렸다.
+갤러리	164	interior-dev	추가 후보 사이트	공식 사이트 열람	React Micro-Interaction Components — interior.dev	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/interior-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	165	kokonut-ui	추가 후보 사이트	공식 사이트 · 실제 조작	AI Conversation Branches - React Component | Kokonut UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-branch-live.jpg	공개 데모에서 수정된 질문이 별도 대화 갈래로 이어지는 패턴을 확인했다.
+갤러리	166	kokonut-ui	추가 후보 사이트	공식 데모 기본	Slide to Confirm - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-confirm-01.jpg	실행을 의도했는지 확인하는 슬라이더의 공식 예제.
+갤러리	167	kokonut-ui	추가 후보 사이트	공식 데모 기본	Save Status - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-save-01.jpg	저장 전·저장 중·저장 완료를 문구로 표현하는 샘플.
+갤러리	168	kokonut-ui	추가 후보 사이트	공식 데모 기본	Synced Transcript - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-transcript-01.jpg	음성 시간과 원문 강조를 함께 보여 주는 공식 데모.
+갤러리	169	magic-ui	추가 후보 사이트	공식 사이트 열람	Magic UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/magicu-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	170	origin-ui-coss-ui	추가 후보 사이트	공식 사이트 열람	A modern React UI component library	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/origin-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	171	prompt-kit	추가 후보 사이트	공식 사이트 열람	prompt-kit	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/promptkit-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	172	react-bits-pro	추가 후보 사이트	공식 사이트 열람	React Bits Pro	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/reactbits-pro-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	173	react-bits	추가 후보 사이트	공식 사이트 · 실제 조작	Status Mark — React Micro Interaction | React Bits	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/reactbits-public-status.jpg	공개 Status Mark의 작은 상태 표현. 소스 사용 조건은 후보별 라이선스와 함께 판단한다.
+갤러리	174	retab-ui	추가 후보 사이트	공식 데모 기본	The Foundation for your Document Workflows - Retab UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/retab-01.jpg	공개 문서 데모에서 미리보기와 추출 결과 연결을 보는 후보.
+갤러리	175	retab-ui	추가 후보 사이트	공식 사이트 · 실제 조작	The Foundation for your Document Workflows - Retab UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/retab-block-origin.jpg	문서 분석 결과의 한 줄을 눌러 원본과 연결되는 영역을 확인했다. 논문 AI의 출처 복귀 배치에 참고할 수 있다.
+갤러리	176	reui	추가 후보 사이트	공식 데모 기본	Shadcn Filters (Base UI) - ReUI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/reui-filters-01.jpg	공식 초기 필터 예제. 필터가 표시될 자리가 목록과 구분된다.
+갤러리	177	reui	추가 후보 사이트	공식 데모 기본	Shadcn Data Grid (Base UI) - ReUI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/reui-grid-01.jpg	공식 자료 그리드의 기본 열과 선택 배치.
+갤러리	178	shadcn-ui	추가 후보 사이트	공식 사이트 · 실제 조작	Inline Citation - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/shadcn-citation-hover.jpg	문장 안 출처 칩을 손으로 가리키니 원문 제목과 링크가 열렸다.
+갤러리	179	shadcn-ui	추가 후보 사이트	공식 사이트 · 실제 조작	Tool - shadcn/ui	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/shadcn-tool-details.jpg	공식 샘플에서 실패한 도구 행을 눌렀다. 실패 이유는 시뮬레이션 데이터다.
+갤러리	180	streamdown	추가 후보 사이트	공식 데모 기본	Playground	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/streamdown-01.jpg	원본 입력과 출력이 함께 보이는 공식 작업대.
+갤러리	181	streamdown	추가 후보 사이트	공식 데모 조작	Playground	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/streamdown-02.jpg	같은 화면에 한국어 제목·표·수식을 입력해 렌더링을 비교했다.
+갤러리	182	other	추가 후보 사이트	공식 사이트 · 실제 조작	Toss Design System | Mobile	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/toss-design-system-docs.jpg	토스 공식 문서에 소개된 목적과 반복되는 화면 동작의 기준을 본다.
+갤러리	183	transitions-dev	추가 후보 사이트	공식 사이트 열람	Library - Transitions.dev	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/transitions-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	184	21st-dev	추가 후보 사이트	공식 사이트 열람	React Components, Templates & Themes — 12,000+ Crafted UI	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/twentyfirst-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	185	watermelon-ui	추가 후보 사이트	공식 사이트 열람	Watermelon UI: Free React Components, Blocks & Dashboards	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/watermelon-01.jpg	공식 소개·문서 페이지의 정적 화면. 부품 조작 결과는 별도 장면을 참고한다.
+갤러리	186	autoanimate	현재 화면에 미연결	공식 데모 기본	AutoAnimate - Add motion to your apps with a single line of code	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/autoanimate-01.jpg	설치 상태인 AutoAnimate의 공식 목록 비교. 실제 마진 알림 목록은 Motion으로 만든 별도 부품.
+갤러리	187	autoanimate	현재 화면에 미연결	공식 데모 조작	AutoAnimate - Add motion to your apps with a single line of code	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/autoanimate-02.jpg	공식 비교의 AutoAnimate 쪽에 가상 한 줄을 추가했다.
+갤러리	188	kokonut-ui	현재 화면에 미연결	공식 데모 기본	AI Context Meter - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-context-01.jpg	58%는 공식 데모의 예시 문맥 사용량이다.
+갤러리	189	kokonut-ui	현재 화면에 미연결	공식 데모 조작	AI Context Meter - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-context-02.jpg	입력·기록·도구별 문맥 사용량의 샘플을 열었다.
+갤러리	190	kokonut-ui	현재 화면에 미연결	공식 데모 기본	AI Handoff - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-handoff-01.jpg	담당자 넘김의 공식 예제. 현재 마진의 답변에는 이 버튼이 없다.
+갤러리	191	kokonut-ui	현재 화면에 미연결	공식 데모 기본	AI Input Search - React Component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/kokonut-search-01.jpg	검색 전의 웹 도구 칩이 붙는다. 마진 일반 대화의 입력창과 별도 예제다.
+갤러리	192	number-flow	현재 화면에 미연결	공식 데모 기본	NumberFlow for React - An animated number component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/number-flow-01.jpg	설치 상태인 NumberFlow의 초기 숫자. 실제 마진 사용량 화면에는 연결되어 있지 않다.
+갤러리	193	number-flow	현재 화면에 미연결	공식 데모 조작	NumberFlow for React - An animated number component	1440 × 960 px	2026-11-25_5단계-전_라이브러리-기본값_v3/캡처/number-flow-02.jpg	숫자를 갱신하는 예제를 눌러 바뀐 상태를 확인했다.
+갤러리	194	margin	이전 수집	격리 데이터베이스	학생 › PDF가 붙은 두 항목 선택	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/01-student-two-items.png	두 수정 결과를 골랐다. 같은 가상 PDF의 1쪽·2쪽이다.
+갤러리	195	margin	이전 수집	격리 데이터베이스	학생 › 공개 범위 확인	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/02-student-share-preview.png	링크 만들기 전에 연구 방향, 지정 교수, 설명과 첨부 파일의 범위를 본다. 메일 발송은 실행하지 않았다.
+갤러리	196	margin	이전 수집	격리 데이터베이스	학생 › 저장된 두 항목과 발신 조작	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/03-student-request-saved.png	공유 설정과 다시 확인은 보인다. 교수 응답 양식은 표시되지 않는다.
+갤러리	197	margin	이전 수집	격리 데이터베이스	지정 교수 › 단독 검토 화면	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/04-professor-only.png	같은 주소에서 최신 차수에 응답할 수 있다. 연구 관리 메뉴와 비공개 가상 PDF는 열리지 않는다.
+갤러리	198	margin	이전 수집	격리 데이터베이스	공동연구자 › 편집자지만 지정 교수는 아닌 경우	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/05-editor-no-response.png	공유 설정은 표시되고 교수 응답 양식은 표시되지 않는다.
+갤러리	199	margin	이전 수집	격리 데이터베이스	다른 계정 › 같은 검토 링크의 접근 거절	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/06-outside-denied.png	본문과 공유 파일, 응답 조작을 볼 수 없다.
+갤러리	200	margin	이전 수집	격리 데이터베이스	비로그인 › 검토 링크에서 로그인 안내	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/07-signed-out.png	로그인 전에는 검토 내용이 표시되지 않는다.
+갤러리	201	margin	이전 수집	격리 데이터베이스	교수 › 수정 요청 사유 입력 전	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/08-professor-reason-required.png	사유 없이 저장을 눌렀다. 해당 항목의 SQL 응답은 0건이다.
+갤러리	202	margin	이전 수집	격리 데이터베이스	교수 › A에 추가 수정 필요 저장	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/09-professor-changes-saved.png	수정 요청과 사유가 저장된 뒤 다시 표시된다.
+갤러리	203	margin	이전 수집	격리 데이터베이스	교수 › B에 수정 내용 확인 저장	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/10-professor-item-b-confirmed.png	두 항목의 응답은 독립적으로 저장된다.
+갤러리	204	margin	이전 수집	격리 데이터베이스	교수 › 같은 PDF 페이지에 위치 댓글 저장	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/11-professor-pin-posted.png	가상 PDF에 직접 누른 좌표와 댓글 내용이 함께 저장된다.
+갤러리	205	margin	이전 수집	격리 데이터베이스	학생 › PDF 위치 댓글에 답글 저장	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/12-student-comment-reply.png	답글이 같은 대화 아래에 표시되고 SQL에서도 부모 댓글을 가리킨다.
+갤러리	206	margin	이전 수집	격리 데이터베이스	학생 › 해결한 댓글이 기본 접힘	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/13-student-comment-folded.png	해결하자 해당 대화가 접히고 해결한 댓글 1개로 묶인다.
+갤러리	207	margin	이전 수집	격리 데이터베이스	학생 › 위치 댓글의 답글과 해결	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/14-student-comment-resolved.png	댓글은 해결됨으로 표시된다. 교수의 A 응답은 추가 수정 필요로 남는다.
+갤러리	208	margin	이전 수집	격리 데이터베이스	학생 › 해결한 대화 다시 열기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/15-student-comment-reopened.png	해결 취소 후 같은 위치·내용·답글이 남는다.
+갤러리	209	margin	이전 수집	격리 데이터베이스	학생 › 항목 하나의 2차 재확인 확인창	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/16-student-recheck-confirm.png	두 항목 중 A만 새 차수로 올린다. 이전 설명·첨부·응답은 기록으로 남는다고 보여 준다.
+갤러리	210	margin	이전 수집	격리 데이터베이스	학생 › A는 2차, B는 1차 유지	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/17-student-recheck-created.png	데이터베이스에서 A의 PDF v2가 새로 고정되고 B의 1차 확인이 유지됨을 확인했다.
+갤러리	211	margin	이전 수집	격리 데이터베이스	교수 › 지나간 1차 다시 보기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/18-professor-old-round-readonly.png	이전 원본과 응답 기록은 표시된다. 최신 A 2차가 있어 이전 차수 응답 버튼은 없다.
+갤러리	212	margin	이전 수집	격리 데이터베이스	교수 › 390px 문서 보기	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/19-professor-mobile-document.png	모바일 검토 화면을 역할과 같은 주소로 열었다.
+갤러리	213	margin	이전 수집	격리 데이터베이스	교수 › 390px 응답·댓글 탭	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/20-professor-mobile-response.png	문서 보기와 응답·댓글을 화면 내에서 전환했다.
+갤러리	214	margin	이전 수집	격리 데이터베이스	지정 교수 › 공유 중지 뒤 같은 주소	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/21-professor-after-stop.png	학생의 공유 중지 후 지정 교수에게도 검토 본문과 파일이 열리지 않는다.
+갤러리	215	margin	이전 수집	격리 데이터베이스	학생 › 지정 교수에게 공동연구 초대 만들기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/22-teacher-editor-invite.png	가상 링크를 만들었고 메일 전송은 모의 실패로 처리했다.
+갤러리	216	margin	이전 수집	격리 데이터베이스	지정 교수 › 공동연구자 초대 수락 전	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/23-teacher-editor-join.png	초대받은 테스트 계정에서 공동연구자 초대를 연 화면.
+갤러리	217	margin	이전 수집	격리 데이터베이스	지정 교수와 편집자 겸임 › 두 역할의 버튼이 동시에 열림	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/24-professor-editor-overlap.png	같은 검토·PDF에 교수 응답, 공유 설정, 다시 확인 요청이 함께 표시된다.
+갤러리	218	margin	이전 수집	격리 데이터베이스	겸임 교수 › 자기 검토의 공유 설정을 열었을 때	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/25-professor-editor-share.png	가상 검토에서도 공유 화면이 열렸다. 수신자 변경은 하지 않았다.
+갤러리	219	margin	이전 수집	격리 데이터베이스	겸임 교수 › 학생 전용 수정 결과에서는 재확인 단추가 비활성	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/26-professor-editor-private-block.png	PDF와 교수 응답은 열리지만 재확인 요청을 누를 수 없다. 별도의 격리 SQL에서도 연결할 기록을 찾을 수 없다는 응답과 차수 유지를 확인했다.
+갤러리	220	margin	이전 수집	격리 데이터베이스	겸임 교수 › 연구에 공유된 수정 결과는 재확인 창이 열림	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/27-professor-editor-shared-confirm.png	같은 PDF·항목에서 학생이 수정 결과를 연구에 공유한 뒤 재확인 요청을 눌러 공개 범위와 3차 요청을 확인했다.
+갤러리	221	margin	이전 수집	격리 데이터베이스	겸임 교수 › 연구에 공유된 수정 결과로 3차 재확인 생성	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/권한-검토-최종/28-professor-editor-recheck.png	학생 작성자가 같은 결과를 연구에 공유한 뒤 버튼을 눌렀다. SQL에서 3차 생성자가 지정 교수를 겸한 편집자이고 다른 항목은 1차 그대로다.
+갤러리	222	margin	이전 수집	가상 장치·모의 응답	녹음 시작 전 동의	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-01-consent.png	브라우저의 가상 마이크를 쓰고 실시간 전사 기능을 끈 상태에서 동의 선택 후 시작. 실제 음성·외부 인식 서버 미사용.
+갤러리	223	margin	이전 수집	가상 장치·모의 응답	가상 음성 녹음	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-02-recording.png	녹음 중에 일시정지와 마치기 버튼이 활성화됨.
+갤러리	224	margin	이전 수집	가상 장치·모의 응답	녹음 일시정지	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-03-paused.png	일시정지 후 같은 자리에 계속 녹음 버튼이 나타남.
+갤러리	225	margin	이전 수집	가상 장치·모의 응답	가상 음성 저장 전 검토	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-04-before-save.png	음성 녹음 중지 후 저장 전 검토가 열리고 전사 없음 안내가 표시됨.
+갤러리	226	margin	이전 수집	가상 장치·모의 응답	녹음 저장 뒤 다시 열기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-05-saved.png	같은 미팅의 기록 화면을 다시 열어 저장한 2초 음성을 재생했고, 음원 Blob 연결과 수기 전사문 23자 표시를 확인.
+갤러리	227	margin	이전 수집	로컬 화면	서면 원문 선택	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-06-select-source.png	입력한 테스트 서면 기록에서 문장을 키보드로 선택하면 형광펜·피드백·할 일을 고르는 도구 막대가 나타남.
+갤러리	228	margin	이전 수집	로컬 화면	피드백으로 바로 저장된 원문	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-07-feedback-link.png	선택한 문장에서 자동으로 피드백을 만들고 피드백 상세에 원문 인용과 기록에서 보기 링크가 나타남.
+갤러리	229	margin	이전 수집	로컬 화면	피드백에서 원문 기록 다시 열기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-08-reopened-source.png	기록에서 보기를 클릭해 같은 원문 메모가 열림. 링크 주소에 선택한 구절의 위치는 들어가지 않음.
+갤러리	230	margin	이전 수집	로컬 화면	원문 문장으로 만든 할 일	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-09-task.png	원문 선택에서 할 일 생성 후 상세를 다시 열었음.
+갤러리	231	margin	이전 수집	로컬 화면	원문에서 만든 할 일 완료	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/meeting-10-task-done.png	생성한 할 일에서 완료 버튼을 클릭해 체크 상태가 표시됨.
+갤러리	232	margin	이전 수집	가상 장치·모의 응답	같은 조율의 후보 추가	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/poll-01-create.png	주최자용 실제 조율 만들기 창에서 후보 2개와 참가자 이메일 입력. 날짜·시각 칸은 후보마다 시작·종료로 나뉨. 1440×900에서도 날짜 자리 일부가 잘려 보임.
+갤러리	233	margin	이전 수집	가상 장치·모의 응답	주최자의 조율 중 상태	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/poll-02-host-open.png	같은 시간 후보 2개가 조율 상세에 저장되고 주최자만 확정·취소 버튼을 봄.
+갤러리	234	margin	이전 수집	가상 장치·모의 응답	390px 참가자의 첫 응답	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/poll-03-guest-first.png	별도 참가자 계정으로 같은 조율 첫 후보 선택을 저장. 주최자 확정 버튼이 참가자에게 없음.
+갤러리	235	margin	이전 수집	가상 장치·모의 응답	390px 참가자의 응답 수정	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/poll-04-guest-revised.png	첫 번째 가능을 취소하고 두 번째 후보를 저장. 새로고침 후 두 번째만 선택 상태.
+갤러리	236	margin	이전 수집	가상 장치·모의 응답	주최자의 확정 및 미팅 연결	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/poll-05-host-confirmed.png	확정한 두 번째 후보가 다시 열어도 확정 배지와 미팅 링크로 표시됨. 응답 모의 환경.
+갤러리	237	margin	이전 수집	가상 장치·모의 응답	확정한 미팅 열기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/poll-06-linked-meeting.png	확정된 조율에서 같은 제목의 미팅으로 연결됨.
+갤러리	238	margin	이전 수집	가상 장치·모의 응답	390px 참가자의 확정 후 잠금	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/미팅-조율/poll-07-guest-locked.png	확정 뒤 참가자가 다시 열면 두 후보가 비활성이고 저장 버튼이 사라짐.
+갤러리	239	margin	이전 수집	로컬 화면	계정 메뉴 › 시스템 · 브라우저 라이트	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/01-theme-system-light.png	라이트 고정에서 시스템으로 바꿨습니다. 브라우저의 색 선호가 라이트일 때 본문이 라이트로 적용됩니다.
+갤러리	240	margin	이전 수집	로컬 화면	계정 메뉴 › 시스템 · 브라우저 다크 전환	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/02-theme-system-dark.png	계정 메뉴를 연 채 브라우저 색 선호를 다크로 변경하자 선택값 시스템을 유지하며 본문과 메뉴가 함께 바뀝니다.
+갤러리	241	margin	이전 수집	로컬 화면	화면 설정 › 리로드 뒤 시스템 유지	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/03-theme-system-settings-after-reload.png	리로드 뒤 계정 메뉴의 시스템 선택과 적용된 다크는 남았습니다. 화면 설정에는 시스템 설명이 있으나 시스템 선택 표시는 없고 다크 토글 하나만 있습니다.
+갤러리	242	margin	이전 수집	로컬 화면	계정 메뉴 › 화면 설정 변경값 반영	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/04-theme-menu-sync-after-settings.png	시스템 모드로 다크가 적용된 상태에서 화면 설정 토글을 한 번 눌렀더니 라이트 고정으로 변경되어 계정 메뉴에 반영됩니다.
+갤러리	243	margin	이전 수집	로컬 화면	PDF 자료 본문 390px	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/05-pdf-mobile-390.png	합성 선행연구 비교표 PDF를 모바일 폭에서 열어 PDF 렌더링과 상단 자료 조작을 확인했습니다.
+갤러리	244	margin	이전 수집	로컬 화면	PDF 속 텍스트 보기 390px	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/06-pdf-mobile-text-390.png	샘플 PDF에서 읽어 낸 실제 텍스트를 펼쳤습니다. 설명만 노출되는 화면과 구분됩니다.
+갤러리	245	margin	이전 수집	가상 장치·모의 응답	PDF 두 건 추가 › 한 건 성공·한 건 실패	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/07-upload-mixed-result.png	가상 PDF 두 건 중 한 건 저장에 일시 오류를 주입했습니다. 정상 건은 목록에 반영되고 실패 건은 재시도 버튼과 짧은 오류를 표시합니다.
+갤러리	246	margin	이전 수집	가상 장치·모의 응답	PDF 두 건 추가 › 실패한 항목만 재시도 후 완료	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/08-upload-recovered.png	실패 항목의 재시도를 눌렀습니다. 두 항목이 각각 한 번씩 목록에 나타났습니다. 운영 파일 서버 동작은 이 검증 범위 밖입니다.
+갤러리	247	margin	이전 수집	로컬 화면	자료 행 메뉴 › 보관 후 되돌리기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/09-material-archive-undo.png	자료 행 우클릭 메뉴에서 보관하자 목록에서 사라지고 되돌리기 알림이 뜹니다.
+갤러리	248	margin	이전 수집	로컬 화면	글·자료 › 보관함에서 복원	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/10-material-archive-restore.png	같은 자료를 다시 보관하고 보관함에서 복원이 제공되는 것을 확인했습니다.
+갤러리	249	margin	이전 수집	로컬 화면	내 연구 › 보관함에서 복원	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/11-research-archive-restore.png	연구 카드 메뉴에서 보관한 뒤 진행 목록에서 빠지고 보관함에 복원 버튼이 표시됩니다.
+갤러리	250	margin	이전 수집	로컬 화면	내 연구 › 진행 목록으로 복귀	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/12-research-restored.png	보관함의 복원을 누르고 진행 중인 연구 목록에서 가상 연구가 다시 보이는 것을 확인했습니다.
+갤러리	251	margin	이전 수집	로컬 화면	원고 버전 › 되살리기 전 비교	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/13-writing-restore-before.png	버전을 남긴 다음 합성 원고를 고쳤습니다. 비교 헤더가 이전 버전을 되살려도 지금 내용은 보존한다고 설명합니다.
+갤러리	252	margin	이전 수집	로컬 화면	원고 › 이전 버전 되살리기 완료	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/14-writing-restored.png	되살리기를 눌러 변경 문장이 사라지고 원고 본문이 보존해 둔 버전과 일치한 것을 확인했습니다.
+갤러리	253	margin	이전 수집	로컬 화면	원고 › 되살린 뒤 버전 기록	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/15-writing-restore-history.png	복원 뒤 버전 메뉴를 다시 열었습니다. 복원본과 복원 바로 전의 내용이 별도 버전으로 추가됩니다.
+갤러리	254	margin	이전 수집	가상 장치·모의 응답	원고 › 자동 저장 실패·작성한 문장 유지	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/16-writing-save-failed.png	합성 원고를 입력할 때 로컬 저장에 일시 오류를 주입했습니다. 저장 실패와 다시 시도 버튼을 보여주고 작성 문장을 유지합니다.
+갤러리	255	margin	이전 수집	가상 장치·모의 응답	원고 › 다시 시도 후 리로드	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/17-writing-save-recovered.png	다시 시도 후 저장됨 표시가 돌아왔고 페이지를 새로 불러와도 같은 문장이 남아 있습니다.
+갤러리	256	margin	이전 수집	로컬 화면	PDF › 새 버전 추가	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/18-pdf-version-add.png	기존 PDF에서 새 버전 올리기를 선택하고 공개 합성 파일을 지정한 장면입니다.
+갤러리	257	margin	이전 수집	로컬 화면	PDF › 새 버전을 올린 뒤 이전 버전 다시 열기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/19-pdf-original-version.png	버전 선택에서 이전 v2로 돌아오자 캔버스가 다시 렌더링됩니다. 이번에 올린 v3가 목록에 함께 남습니다.
+갤러리	258	margin	이전 수집	가상 장치·모의 응답	원고 › 먼저 저장된 내용과 내 작성본 비교	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/20-writing-conflict-options.png	가상 서버에서 다른 공동연구자가 먼저 저장한 충돌 응답을 재현했습니다. 두 내용을 비교하고 저장본 사용 또는 내 작성본 유지를 고릅니다.
+갤러리	259	margin	이전 수집	가상 장치·모의 응답	원고 충돌 › 내가 쓴 내용 유지 후 저장	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/21-writing-conflict-keep-mine.png	내가 쓴 내용 유지로 비교를 닫고 저장했습니다. 리로드 후 내 문장이 남는 것을 가상 서버 응답에서 확인했습니다.
+갤러리	260	margin	이전 수집	가상 장치·모의 응답	원고 충돌 › 저장된 내용으로 바꾸기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/원고-화면/22-writing-conflict-take-saved.png	저장된 내용으로 바꾸기를 선택하자 편집기가 먼저 저장된 문장으로 바뀝니다. 다른 브라우저·실제 협업 서버에서의 동시 편집은 이 시험에 포함되지 않습니다.
+갤러리	261	github	이전 수집	공식 문서·시연	GitHub 웹 › 변경 검토 진입	2114 × 416 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/github-review-entry.png	변경 파일 탭의 Review changes 버튼과 Viewed 구분.
+갤러리	262	github	이전 수집	공식 문서·시연	GitHub Codespaces › 검토 판정 3종	1124 × 806 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/github-review-decisions-vscode.png	검토 의견, 승인, 변경 요청을 다른 버튼으로 제출. Codespaces UI이며 브라우저 풀 리퀘스트 판정 폼을 캡처한 것은 아님.
+갤러리	263	github	이전 수집	공식 문서·시연	GitHub 웹 › 특정 변경 줄에 의견 달기	980 × 608 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/github-comment-pin.png	파일 비교에서 줄 번호 옆의 +로 문맥을 가진 의견을 시작.
+갤러리	264	github	이전 수집	공식 문서·시연	GitHub 웹 › 대화 상태와 해당 변경으로 이동	872 × 401 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/github-conversation-states.png	Conversations 메뉴의 미해결과 해결 묶음 및 Outdated 라벨. 버튼을 눌러 해결하는 순간은 공식 문서 본문에 설명됨.
+갤러리	265	github	이전 수집	공식 문서·시연	GitHub 웹 › 변경 요청 뒤 검토 다시 요청	642 × 214 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/github-rerequest.png	Reviewers 섹션의 변경 요청 아이콘과 재요청 아이콘. 전체 검토 판정 옆에서 재요청하며 댓글별 해결 버튼과 별도.
+갤러리	266	github	이전 수집	공식 문서·시연	GitHub 웹 › 줄 단위 변경 제안 반영	1324 × 454 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/github-apply-suggestion.png	커밋으로 변경안을 적용하거나 여러 안을 묶는 화면. 변경 반영과 검토 판정은 별도.
+갤러리	267	opensurvey	이전 수집	공식 문서·시연	오픈서베이 › 설문 미리보기에서 코멘트 열기	3200 × 200 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/opensurvey-comment-and-status.png	미리보기 상단 오른쪽의 코멘트 진입. 문항별·전체 코멘트와 해결 필터는 같은 가이드의 별도 시연에서 확인.
+갤러리	268	opensurvey	이전 수집	공식 문서·시연	오픈서베이 › 설문 미리보기 공유 진입	3200 × 200 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/opensurvey-sharing.png	미리보기 우측 상단 공유 버튼. 공개 링크의 코멘트 노출 옵션은 별도 시연에서 확인.
+갤러리	269	opensurvey	이전 수집	공식 문서·시연	오픈서베이 › 설문 미리보기의 문항 위치 이동	1600 × 100 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/opensurvey-question-nav.png	검수자 모드에서 원하는 문항 위치로 이동하거나 맨 처음으로 돌아가는 빠른 이동.
+갤러리	270	doodle	이전 수집	공식 문서·시연	Doodle › 참가자의 후보 비교와 선택	1522 × 1550 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-vote-options.png	가능/필요 시 가능 표시, 날짜·인기순 정렬, 이전 옵션 숨김, 거절·계속 버튼.
+갤러리	271	doodle	이전 수집	공식 문서·시연	Doodle › 제출 전 선택 내역 확인	1624 × 1534 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-submit-vote.png	선택한 후보와 참가자 정보 입력, 이전 단계와 최종 제출 버튼. 공식 예시 화면.
+갤러리	272	doodle	이전 수집	공식 문서·시연	Doodle › 응답 제출 뒤 수정 진입	1612 × 1312 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-participant-edit-entry.png	응답 확인 화면 상단 Edit response와 각 후보의 가능 여부.
+갤러리	273	zotero	이전 수집	공식 문서·시연	Zotero › PDF와 위치 주석, 편집 노트	1602 × 1044 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/zotero-annotation-and-note.jpg	가운데 PDF를 읽으며 왼쪽 위치 주석과 오른쪽 노트를 함께 살핌. Zotero 6 공식 이미지.
+갤러리	274	zotero	이전 수집	공식 문서·시연	Zotero › 주석에서 노트 추가	620 × 600 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/zotero-note-from-annotations.png	문헌 항목 메뉴의 Add Note from Annotations. PDF 표시를 노트로 옮기는 다른 진입 방법.
+갤러리	275	doodle	이전 수집	공식 문서·시연	Doodle › 주최자가 제안할 후보 추가	1250 × 1078 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-candidate-dates.png	월별 달력에서 여러 날을 선택하고 날짜별 시작 시각·길이를 입력하거나 시간을 추가.
+갤러리	276	doodle	이전 수집	공식 문서·시연	Doodle › 열린 조율의 주최자 수정	1001 × 650 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-organizer-edit.png	시간대별 응답 현황 표 위의 Edit 진입.
+갤러리	277	doodle	이전 수집	공식 문서·시연	Doodle › 날짜 확정 후 닫힌 조율	998 × 484 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-closed-open-again.png	확정 일정과 참가 정보, 주최자 Reopen을 보여 주는 닫힌 상태. 참가자 수정 잠김은 공식 본문의 설명.
+갤러리	278	liner	이전 수집	공식 문서·시연	라이너 › 프로필 아래 화면 모드	417 × 186 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/liner-theme-menu.png	Appearance 하위 메뉴의 시스템, 라이트, 다크. 라이트의 선택 강조가 보이는 영문 공식 그림.
+갤러리	279	liner	이전 수집	공식 문서·시연	라이너 › 첨부 PDF의 요약과 원본 표시	1920 × 1080 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/liner-pdf-summary.png	요약 본문 오른쪽에 원본 파일과 요약 길이 옵션. 문장별 인용의 펼친 상태는 별도 공식 시연.
+갤러리	280	otter	이전 수집	공식 문서·시연	Otter › 발화의 문장을 선택해 하이라이트	1600 × 519 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/otter-highlight-button.png	스피커·시간이 있는 발화의 선택 영역 위에서 형광펜 아이콘을 고름.
+갤러리	281	otter	이전 수집	공식 문서·시연	Otter › 하이라이트만 보기와 위치 재생	796 × 599 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/otter-highlight-filter.png	한 화면에서 선택된 발화 구간, 하이라이트 필터, 하단 음성 재생 조작을 확인.
+갤러리	282	otter	이전 수집	공식 문서·시연	Otter › 전체 미팅에서 받은 할 일	3454 × 2088 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/otter-action-items.jpg	홈 달력 옆 Action Items에 여러 미팅에서 배정된 할 일이 모임.
+갤러리	283	otter	이전 수집	공식 문서·시연	Otter › 할 일의 출처 발화로 이동	1034 × 718 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/otter-action-jump-to-transcript.jpg	행 메뉴에서 View in transcript로 원문 이동, 담당자·삭제는 별도. 자동 생성 할 일에 원문 연결이 표시됨.
+갤러리	284	otter	이전 수집	공식 문서·시연	Otter › 할 일 완료와 미완료 상태	1008 × 1240 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/otter-completed-actions.jpg	체크한 항목이 Completed 묶음에 취소선으로 나타남.
+갤러리	285	opensurvey	이전 수집	공식 문서·시연	오픈서베이 › 문항 코멘트 해결하기	584 × 87 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/opensurvey-comment-unresolved.png	공식 시연 정지 화면. 특정 문항의 코멘트 목록 위 체크 조작. 표시 이름·이메일이 있는 본문은 제외.
+갤러리	286	opensurvey	이전 수집	공식 문서·시연	오픈서베이 › 문항 코멘트 해결 후	584 × 87 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/opensurvey-comment-resolved.png	공식 시연 정지 화면. 같은 위치가 해결됨으로 바뀜. 공식 본문에 조건 충족 시 해결 취소가 설명됨.
+갤러리	287	opensurvey	이전 수집	공식 문서·시연	오픈서베이 › 코멘트 위치 링크 복사	253 × 64 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/opensurvey-comment-deeplink.png	공식 시연 정지 화면. 문항 코멘트의 메뉴에서 위치 링크 복사 조작만 발췌.
+갤러리	288	opensurvey	이전 수집	공식 문서·시연	오픈서베이 › 공개 링크에서 코멘트 노출	481 × 247 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/opensurvey-sharing-comment-switch.png	공식 시연 정지 화면. 로그인 없이 열람 가능한 미리보기에서 미해결 코멘트 노출 스위치가 켜진 상태. 주소 값은 가림.
+갤러리	289	liner	이전 수집	공식 문서·시연	라이너 › AI 답변과 출처 목록	1920 × 1080 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/liner-citation-sources.png	공식 시연 정지 화면. 답변 옆 관련 출처 카드와 원문 출처로 가는 위치.
+갤러리	290	liner	이전 수집	공식 문서·시연	라이너 › 인용을 펼친 답변 문장과 원문 발췌	1920 × 1080 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/liner-citation-fact-check.png	공식 시연 정지 화면. 번호가 달린 답변 문장을 선택했을 때 Fact Check 오른쪽에 근거 원문 발췌가 열림. 외부 원문 사이트 이동까지 찍힌 화면은 아님.
+갤러리	291	doodle	이전 수집	공식 문서·시연	Doodle › 주최자 최종 후보를 고르고 확정 직전	600 × 338 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-organizer-selected.png	공식 시연 정지 화면. 참가자 응답 표 위 별로 하나의 후보를 고르고 Book it으로 확정.
+갤러리	292	doodle	이전 수집	공식 문서·시연	Doodle › 주최자 확정 결과	600 × 338 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/doodle-organizer-booked.png	공식 시연 정지 화면. Booked 안내, 확정 날짜, 참가자와 Reopen 버튼.
+갤러리	293	manyfast	이전 수집	공식 문서·시연	매니패스트 › 작업 공간의 AI 대화와 처리 내역	2880 × 1800 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-chat.png	예시 대화 사이에 AI가 읽고 쓴 작업이 줄 단위로 보이고, 다음 선택은 질문 카드로 이어짐. 마진 실행 이력과 달리 이 화면은 대화 안의 작업 표시.
+갤러리	294	manyfast	이전 수집	공식 문서·시연	매니패스트 › AI가 사용자 판단을 기다리는 질문 카드	784 × 746 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-question-card.png	선택지·직접 입력, 진행 위치, AI에 맡기기와 다음 버튼.
+갤러리	295	manyfast	이전 수집	공식 문서·시연	매니패스트 › 대화 입력에서 참조할 항목 선택	864 × 1800 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-mention-context.png	@를 입력한 뒤 요구사항·노트 등 이 프로젝트의 참조를 검색. 마진의 가용 문맥 안내·자료 첨부와 대응.
+갤러리	296	manyfast	이전 수집	공식 문서·시연	매니패스트 › 문서 변경 제안의 승인·거절	2880 × 1800 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-proposal.png	바뀐 부분을 문맥 안에서 확인. 아래 검토 막대에서 순차 검토하고 거절·승인 조작을 구분.
+갤러리	297	manyfast	이전 수집	공식 문서·시연	매니패스트 › 결과 문서의 버전 기록	2880 × 1800 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-version-history.png	이름 있는 버전과 자동 저장 버전에 작성 시점, 사람, 변경 요약이 붙음. AI 실행 자체의 이력은 아님.
+갤러리	298	manyfast	이전 수집	공식 문서·시연	매니패스트 › 상단 빠른 잔액과 종류별 크레딧	576 × 774 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-credit-popover.png	남은 합계와 월간·일간·구매를 분리. 입력의 조건부 퍼센트는 문서 본문에 별도 설명.
+갤러리	299	manyfast	이전 수집	공식 문서·시연	매니패스트 › 지급·사용 상세 이력	2880 × 1800 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-credit-ledger.png	상단 지급 크레딧과 구매 잔여, 아래 날짜·분류·프로젝트·사용 내역.
+갤러리	300	manyfast	이전 수집	공식 문서·시연	매니패스트 › AI 기획 검토의 진행·결과	2880 × 1800 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-review-result.png	관점별 검토와 중요도가 붙은 의견을 문서 곁에 표시.
+갤러리	301	manyfast	이전 수집	공식 문서·시연	매니패스트 › AI가 따르는 프로젝트 설정	640 × 1800 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/참고-서비스/manyfast-ai-custom-instructions.png	출력 언어, 대화 말투, 기획서 문체, 용어를 별도 필드로 정하는 화면.
+갤러리	302	margin	이전 수집	가상 장치·모의 응답	웹 검색으로 전환	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/web-search-input.png	일반 입력창에서 /웹을 고르면 웹 검색 선택 표시가 붙음.
+갤러리	303	margin	이전 수집	가상 장치·모의 응답	웹 검색 응답과 근거 펼치기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/web-search-sources.png	응답 본문과 근거 버튼, 펼친 뒤 모의 문서 링크 표시. 요청 본문에서 질문만 보내고 연구 기록과 대화 내역 배열은 비어 있음을 검사.
+갤러리	304	margin	이전 수집	가상 장치·모의 응답	웹 검색 실패에서 질문 보존	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/web-search-error-retained.png	모의 검색 실패 메시지와 보낸 질문이 입력창에 남음. 검색 모드 해제 때 질문 유지도 별도 검사.
+갤러리	305	margin	이전 수집	가상 장치·모의 응답	PDF 요약 메시지와 연결된 자료	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/pdf-sent-linked-sources.png	기존에 표지만 읽었던 가상 PDF 2쪽을 모두 추출해 2쪽의 고유 문장을 확인. 첨부 파일이 전송 메시지로 옮겨지고, 그 대화의 참고 기록 1개가 표시됨.
+갤러리	306	margin	이전 수집	가상 장치·모의 응답	기록 연결 해제 후 일반 질문	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/pdf-link-removed-follow-up.png	앞선 후속 요청은 PDF를 포함하며, 연결 해제 뒤 요청에는 해당 자료가 빠짐. 마지막 메시지에도 파일 첨부 표시가 없음.
+갤러리	307	margin	이전 수집	가상 장치·모의 응답	기존 대화 PDF 재추출 실패	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/pdf-reextract-error-retained.png	기존 대화에서 PDF 본문을 준비하지 못한다고 표시. 질문은 복구되며 이 시점에 AI 요청 또는 기록 저장은 발생하지 않음.
+갤러리	308	margin	이전 수집	가상 장치·모의 응답	PDF 재추출 재시도 성공	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/pdf-reextract-retry-success.png	파일 재선택 없이 재시도해 전체 본문 추출, 기존 메시지의 표지 인용 보존, 최신 연결과 요청에는 재추출 본문이 들어감을 검사.
+갤러리	309	margin	이전 수집	가상 장치·모의 응답	실행 내역에서 돌아갈 답 찾기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/panel-views-runs.png	완료·실패 실행 2개 중 답이 남은 줄만 이동 가능. 완료 줄의 1,234크레딧은 모의값. 탭을 오가도 미완성 질문 보존.
+갤러리	310	margin	이전 수집	가상 장치·모의 응답	실행 내역에서 기존 답으로 이동	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/run-to-existing-answer.png	갈 수 있는 실행 줄을 클릭하면 대화 탭으로 바뀌고 그 실행의 기존 답이 보임.
+갤러리	311	margin	이전 수집	가상 장치·모의 응답	답변에서 할 일 제안 2개 펼치기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/two-task-suggestions.png	첫 답변 아래 할 일 추가 버튼을 눌러 제안 두 개를 보고 각 줄을 선택할 수 있는 상태.
+갤러리	312	margin	이전 수집	가상 장치·모의 응답	고른 제안 1건만 할 일로 저장	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/one-task-suggestion-saved.png	선택한 한 줄만 AI 출처·나만 보기·미완료 할 일로 저장하는 요청 1건 발생. 나머지 줄은 계속 선택 가능하고 대화에는 추가 내역 1개만 남음.
+갤러리	313	margin	이전 수집	가상 장치·모의 응답	전송 후 답변 중단 버튼	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/cancel-in-flight.png	전송하면 입력창이 비고 응답 대기 중에는 답변 중단 버튼을 쓸 수 있음.
+갤러리	314	margin	이전 수집	가상 장치·모의 응답	중단 후 질문 복구	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/cancel-question-restored.png	답변 중단을 누르면 같은 질문이 다시 입력창에 들어옴.
+갤러리	315	margin	이전 수집	가상 장치·모의 응답	응답 중 보낸 두 번째 질문 대기	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/queued-second-question.png	첫 질문을 처리하는 동안 둘째 질문이 대기 줄에 쌓이고 대기 삭제 버튼이 보임.
+갤러리	316	margin	이전 수집	가상 장치·모의 응답	대기 질문이 순서대로 전송	1440 × 900 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/queue-processed.png	모의 네트워크 호출 본문과 대화 순서로 첫째→둘째 순서를 대조. 두 답변 표시와 대기 삭제 버튼이 사라진 것을 확인.
+갤러리	317	margin	이전 수집	가상 장치·모의 응답	390px 모바일 모델 메뉴	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/mobile-model.png	390×844에서 모델 선택 버튼을 포인터로 누르면 목록이 열림. 표시된 모델명은 검사용 가상값.
+갤러리	318	margin	이전 수집	가상 장치·모의 응답	390px 모바일 첨부 메뉴	390 × 844 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/mobile-attachment.png	390×844에서 첨부 및 입력 도구 버튼을 포인터로 눌러 파일·사진·음성·자료 붙이기 네 항목을 확인.
+갤러리	319	margin	이전 수집	가상 장치·모의 응답	390×500에서 3줄 입력·응답	390 × 500 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-모의/mobile-short-reply.png	작은 화면에서 세 줄 질문을 입력해도 전송 버튼이 가려지지 않음. 실제 좌표 클릭 후 모의 답을 받고 입력창 비움.
+갤러리	320	margin	이전 수집	운영 브라우저	AI 대화 › 가상 연구 기록 추가	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/01-test-record.jpg	가상 서면 기록에 참여자 6명·두 비교 기준·날짜 미정을 저장했다. AI 호출 전 화면.
+갤러리	321	margin	이전 수집	운영 브라우저	AI 대화 › 첨부 없이 가상 연구의 근거 사용	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/02-research-context.jpg	Gemini 3.8 Flash에서 참여자 6명·일정 유연성/이동 부담·인터뷰 미정·정확한 기록 제목을 확인했다. 이번 요청 1크레딧.
+갤러리	322	margin	이전 수집	운영 브라우저	AI 대화 › 후속 질문에서 미정과 가정 구분	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/03-followup-unknown.jpg	같은 대화에서 11월 28일로 유도했다. 실제 답변은 날짜 확정 근거가 없다고 답했고 미팅 메모 근거 버튼을 표시했다.
+갤러리	323	margin	이전 수집	운영 브라우저	AI 대화 › 근거 목록에서 연구 원문 고르기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/04-research-source-list.jpg	근거 1개를 실제로 펼쳤을 때 합성 미팅 메모 원문 링크가 표시됐다.
+갤러리	324	margin	이전 수집	운영 브라우저	AI 대화 › 연구 기록의 근거 창에 본문 없음	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/05-research-source-preview.jpg	저장 연구의 근거 제목은 맞았다. 클릭하면 같은 화면의 근거 창은 열리지만 “이 근거의 본문은 대화에 보존되지 않았어요.”가 나오며 원본으로 바로 갈 버튼은 없었다.
+갤러리	325	margin	이전 수집	운영 브라우저	AI 대화 › 가상 PDF 읽기 및 첨부 칩	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/06-attachment-chip.jpg	새 대화에서 가상 PDF를 파일 선택기로 넣었다. 질문 전 첨부 표시 상태.
+갤러리	326	margin	이전 수집	운영 브라우저	AI 대화 › 첨부 PDF 값으로 실제 답변	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/07-pdf-answer.jpg	합성 연구 6명과 다른 PDF 값 8명·식별표식 PLUM-82를 구분하는 시험. 답변과 근거 표기 상태.
+갤러리	327	margin	이전 수집	운영 브라우저	AI 대화 › 첨부 PDF 문장 인용에서 1쪽 발췌 표시	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/08-pdf-citation-snippet.jpg	실제 첨부 인용을 열었을 때 파일명과 [1쪽] 본문, 8명·PLUM-82가 함께 표시됐다. 저장 연구의 근거 상세에는 본문 미보존 상태가 나타났다.
+갤러리	328	margin	이전 수집	운영 브라우저	AI 대화 › 웹 검색을 켠 뒤 전송 전 안내	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/09-web-scope.jpg	웹 검색 모드를 켜면 질문만 보낸다는 안내와 검색어당 14크레딧 문구가 표시된다.
+갤러리	329	margin	이전 수집	운영 브라우저	AI 대화 › 웹 검색의 실제 근거와 크레딧	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/10-web-answer.jpg	Zotero로 소개한 본문 URL은 별도 확인에서 404. 같은 답변의 첫 근거 링크는 올바른 Zotero PDF Reader로 열렸다. 이번 요청 71크레딧.
+갤러리	330	margin	이전 수집	운영 브라우저	AI 대화 › 실행 내역의 실제 검색 기록에서 답변 복귀	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/11-run-ledger.jpg	실행 내역의 71크레딧 성공 행을 눌렀을 때 바로 그 웹 검색 대화로 돌아왔다.
+갤러리	331	margin	이전 수집	운영 브라우저	AI 대화 › 가상 할 일 제안이 응답 지연으로 중단	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/14-proposal-timeout.jpg	운영 할 일 제안이 지연으로 종료돼 입력이 복구됐다. 화면 잔액은 직전보다 37 감소했지만 이 요청의 청구로 확인할 사용량 행은 확보하지 못했다.
+갤러리	332	margin	이전 수집	운영 브라우저	AI 대화 › 실행 목록에 남은 제안 실패	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/15-proposal-run-failed.jpg	할 일 정리는 실패 상태와 재시도 안내를 남겼다. 비교된 잔액 변화의 원인은 이 행에서 확인되지 않았다.
+갤러리	333	margin	이전 수집	운영 브라우저	AI 사용 내역 › 실제 사용과 예약 표시	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-대화-운영/16-account-credit-history.jpg	사용 장부에는 웹 검색 71크레딧 및 일반 질문 1크레딧 행들만 실제 사용으로 표시됐다. 36크레딧은 사용 예약 중으로 표시됐다. 화면 안내는 여전히 선택한 기록과 질문만이라고 적혀 있다.
+갤러리	334	manyfast	이전 수집	참고 서비스 직접 조작	매니패스트 › 체험 채팅에서 선택지 누르기	896 × 772 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-출처와-참고체험/12-manyfast-selected-option.jpg	온보딩 데모에서 POS 연동을 눌러 선택 상태와 선택 완료 버튼 활성화를 확인했다. 사용자 입력이 제한된 공개 체험이다.
+갤러리	335	manyfast	이전 수집	참고 서비스 직접 조작	매니패스트 › 선택을 확정한 후 사용자 답변 표시	896 × 772 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-출처와-참고체험/13-manyfast-after-option.jpg	선택 완료가 답변을 추가했다. 공개 체험에서 안내하는 제한된 선택 플로우를 직접 눌렀다.
+갤러리	336	zotero	이전 수집	참고 서비스 직접 조작	AI 검색 결과 검증 › 답변에 적힌 Zotero 주소 열기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-출처와-참고체험/23-zotero-not-found.jpg	마진 웹 검색 답변 본문의 주소를 독립해서 열었을 때 Zotero 공식 사이트의 Page not found가 표시됐다. 공식 PDF Reader 주소는 /support/pdf_reader이다.
+갤러리	337	zotero	이전 수집	참고 서비스 직접 조작	AI 검색 근거 검증 › Google 인용에서 Zotero 공식 문서로 도착	896 × 772 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/AI-출처와-참고체험/32-zotero-citation-resolved.jpg	마진 근거 목록의 첫 인용을 실제로 눌렀더니 공식 PDF Reader 주소를 열었다. 답변 본문에 적힌 404 주소와 도착지가 달랐다.
+갤러리	338	shadcn-ui	이전 수집	공식 데모 직접 조작	AI Elements › 문장 옆 인용 버튼	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/21-inline-citation.jpg	공식 Base UI 데모. React 문장 끝 인용 버튼을 눌러서 출처를 표시하는 조작과 본문 위치를 확인했다.
+갤러리	339	shadcn-ui	이전 수집	공식 데모 직접 조작	AI Elements › 실제 도구 상태를 설명하는 접힘 행	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/22-tool-disclosure.jpg	공식 예제의 성공 행을 펼쳤다. 성공과 실패를 항목별로 담으며 예시 숫자는 마진 모델 사용량과 무관하다.
+갤러리	340	pdf-js	이전 수집	공식 데모 직접 조작	PDF.js › 여러 페이지 본문에서 검색	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/24-pdf-find.jpg	공식 샘플 PDF의 검색 UI에 trace 입력 후 결과 이동을 눌렀다. 마진 PDF 엔진 재활용 시 비교할 기능이다.
+갤러리	341	easyui	이전 수집	공식 데모 직접 조작	EasyUI › 삼단 버전 목록에서 변경 전후 펼치기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/25-recovery-ledger.jpg	공식 Recovery Ledger 샘플에서 이전 버전을 눌러 같은 자리에서 변경 전후를 읽었다. 브라우저의 제품 데이터는 수정되지 않는다.
+갤러리	342	streamdown	이전 수집	공식 데모 직접 조작	Streamdown › 같은 합성 값의 한국어 표·수식	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/26-streamdown-korean.jpg	공식 예제에 한국어 긴 행과 수식을 넣어 결과를 확인했다. 이 예제에는 마진 인용 객체나 모델 호출을 연결하지 않았다.
+갤러리	343	easyui	이전 수집	공식 데모 직접 조작	EasyUI › 선택을 해제한 뒤 모두 고르기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/27-selection-basket.jpg	공식 샘플에서 선택을 해제하고 전체 4건을 골랐다. 표시되는 일괄 이동·공유·삭제 막대의 위치를 확인했다.
+갤러리	344	reui	이전 수집	공식 데모 직접 조작	ReUI › 조건을 하나 더 넣는 필터 선택	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/28-reui-filter-field.jpg	공식 Base UI 샘플에서 Add filter를 눌러 조건 필드 선택 UI를 확인했다. 예시 규칙은 마진 데이터와 연결되어 있지 않다.
+갤러리	345	kokonut-ui	이전 수집	공식 데모 직접 조작	Kokonut › 저장 상태 공식 예제에서 오프라인 입력	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/29-kokonut-offline.jpg	공식 샘플의 Go offline을 누르고 합성 원고를 입력했다. 예제는 저장 상태를 보여 주며 마진의 저장이나 동기화를 실행하지 않는다.
+갤러리	346	reui	이전 수집	공식 데모 직접 조작	ReUI › 담당자 여러 명의 현재 선택과 미지정	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/30-reui-assignee.jpg	담당자 값 버튼을 실제로 눌러 검색과 선택된 담당자를 확인했다.
+갤러리	347	kokonut-ui	이전 수집	공식 데모 직접 조작	Kokonut › 온라인 복귀 후 샘플 저장 상태	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/31-kokonut-resaved.jpg	가상 편집기를 다시 온라인으로 전환해 Saved just now를 확인했다. 실제 마진 데이터 저장과는 별도다.
+갤러리	348	affectui	이전 수집	공식 데모 직접 조작	affectUI › 다크 모드 댓글 스레드	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/_보강수집/라이브러리-데모/33-affect-thread.jpg	공식 예제에서 다크 모드와 완료 내역 접기 전후를 눌렀다. 한 스레드의 시각 레퍼런스다.
+갤러리	349	toss-securities	이전 수집	참고 서비스 직접 조작	설정 › 색상 모드 라이트 선택	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/01-theme-light.jpg	라이트·다크 미리보기 카드 2종. 라이트 선택 시 즉시 반영.
+갤러리	350	manyfast	이전 수집	참고 서비스 직접 조작	일반 설정 › 테마와 언어	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/01-general-dark.jpg	프로필 빠른 전환에서 다크를 선택한 결과가 일반 설정에 표시됨.
+갤러리	351	toss-securities	이전 수집	참고 서비스 직접 조작	설정 › 색상 모드 다크 선택	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/02-theme-dark.jpg	바꾸면 열린 설정과 뒤 배경이 함께 바뀜.
+갤러리	352	toss-securities	이전 수집	참고 서비스 직접 조작	설정 › 리모콘 왼쪽	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/03-rail-left.jpg	연구 도구 사이드 창 위치와 대응. 왼쪽을 선택한 상태.
+갤러리	353	toss-securities	이전 수집	참고 서비스 직접 조작	설정 › 리모콘 오른쪽	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/04-rail-right.jpg	같은 카드 안에서 현재 위치를 확인하고 즉시 바꿈.
+갤러리	354	margin	이전 수집	로컬 화면	마진 › 연구 홈	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/01-home-default.jpg	가상 연구의 다음 미팅, 할 일, 연구 방향.
+갤러리	355	margin	이전 수집	로컬 화면	마진 › 글·자료 목록	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/02-docs-library.jpg	폴더·자료·문서 목록과 올리기·새 글.
+갤러리	356	margin	이전 수집	로컬 화면	마진 › 연구 전환기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/03-research-switcher.jpg	현재 연구와 모든 연구 보기·새 연구 만들기.
+갤러리	357	margin	이전 수집	로컬 화면	마진 › 화면 설정 기본 상태	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/04-display-settings.jpg	색상 모드·언어·시각 표시·사이드 창 위치·효과음.
+갤러리	358	margin	이전 수집	로컬 화면	마진 홈 › 최근 알림	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/05-home-alerts.jpg	같은 홈에서 목록만 바뀜.
+갤러리	359	margin	이전 수집	로컬 화면	마진 › 연구 도우미 대화	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/06-assistant-chat.jpg	현재 연구를 떠나지 않고 사이드 창으로 열림.
+갤러리	360	margin	이전 수집	로컬 화면	마진 홈 › 최근 미팅	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/07-home-recent-meetings.jpg	같은 홈에서 목록만 바뀜.
+갤러리	361	margin	이전 수집	로컬 화면	마진 홈 › 최근 글·자료	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/08-home-recent-docs.jpg	같은 홈에서 목록만 바뀜.
+갤러리	362	margin	이전 수집	로컬 화면	마진 › 미팅 목록	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/09-meetings-list.jpg	녹음·서면·검토·시간 조율 같은 기록 유형과 예정 미팅.
+갤러리	363	margin	이전 수집	로컬 화면	마진 › 검색 열기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/10-search-initial.jpg	입력 초성과 빠른 이동이 있는 명령 팔레트.
+갤러리	364	margin	이전 수집	로컬 화면	마진 › 글·자료 올리기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/11-docs-upload-menu.jpg	PDF 올리기와 웹 링크 추가 선택.
+갤러리	365	margin	이전 수집	로컬 화면	마진 연구 도우미 › 제안	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/12-assistant-suggestions.jpg	가상 연구의 제안 대기 목록.
+갤러리	366	margin	이전 수집	로컬 화면	마진 설정 › 라이트·다크 전환 버튼	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/13-display-theme-choices.jpg	화면 설정은 한 버튼으로 라이트·다크를 전환한다. 시스템 선택은 계정 메뉴에 있다.
+갤러리	367	modulify	이전 수집	참고 서비스 직접 조작	Modulify › 검색 초기	901 × 772 px	2026-11-25_5단계-전_화면수집_v2/modulify/01-search.jpg	⌘K 검색 입력과 초기 추천.
+갤러리	368	toss-securities	이전 수집	참고 서비스 직접 조작	설정 › 단축키	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/05-shortcuts.jpg	켜기·끄기를 포함한 키 조작 설정.
+갤러리	369	margin	이전 수집	로컬 화면	마진 › 기록 추가 메뉴	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/14-meeting-create-menu.jpg	전역 새로 만들기와 별개.
+갤러리	370	margin	이전 수집	로컬 화면	마진 › 검색 결과	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/15-search-results.jpg	가상 자료·할 일이 검색됨.
+갤러리	371	margin	이전 수집	로컬 화면	마진 연구 도우미 › 실행 내역	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/16-assistant-history.jpg	같은 패널의 별도 이력 탭.
+갤러리	372	toss-securities	이전 수집	참고 서비스 직접 조작	설정 › 알림	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/06-notification-settings.jpg	앱 사용·거래에 반영되는 설정은 읽음만. 조작은 표시를 확인.
+갤러리	373	margin	이전 수집	로컬 화면	마진 › 검색 결과 없음	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/17-search-no-results.jpg	없는 이름을 넣어 빈 결과를 확인.
+갤러리	374	modulify	이전 수집	참고 서비스 직접 조작	검색 › archive 결과	901 × 772 px	2026-11-25_5단계-전_화면수집_v2/modulify/02-search-results.jpg	메뉴·프로젝트가 나뉘는 검색 결과.
+갤러리	375	opensurvey	이전 수집	참고 서비스 직접 조작	프로필 메뉴 › 잔여와 총 크레딧	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/opensurvey/01-profile-usage.jpg	계정 식별 부분을 제외한 사용량·설정 메뉴. 테마 항목은 여기서 미관찰.
+갤러리	376	liner	이전 수집	참고 서비스 직접 조작	설정 › AI 설정	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/02-personal-ai-settings.jpg	답변 언어 등 연구 도우미 개인 설정과 대응.
+갤러리	377	modulify	이전 수집	참고 서비스 직접 조작	검색 › 결과 없음	901 × 772 px	2026-11-25_5단계-전_화면수집_v2/modulify/03-search-empty.jpg	없는 검색어에 초기 상태와 구분되는 결과 없음.
+갤러리	378	liner	이전 수집	참고 서비스 직접 조작	설정 › 하이라이트 설정	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/03-highlight-settings.jpg	브라우저 확장에서 쓸 하이라이트 옵션과 설정 진입.
+갤러리	379	margin	이전 수집	로컬 화면	마진 › 새 연구 화면을 불러오는 중	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/18-onboarding-start.jpg	연구 전환기에서 새 연구 만들기를 눌렀을 때 입력 화면으로 전환되는 중간 상태.
+갤러리	380	margin	이전 수집	로컬 화면	마진 › 서면 피드백 입력	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/19-written-new.jpg	붙여넣기 방식의 미팅 기록 진입.
+갤러리	381	margin	이전 수집	로컬 화면	마진 › 전역 새로 만들기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/20-global-create-menu.jpg	어느 연구 화면에서나 들어오는 생성 메뉴.
+갤러리	382	margin	이전 수집	로컬 화면	마진 › 온보딩 이름·설명 반영	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/21-onboarding-preview-name.jpg	오른쪽 미리보기에 입력값 표시.
+갤러리	383	margin	이전 수집	로컬 화면	마진 › 새 글	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/22-doc-new.jpg	문서 제목과 공개 범위 입력 창.
+갤러리	384	toss-securities	이전 수집	참고 서비스 직접 조작	의견 › 점수·문장 입력	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/08-feedback-ready.jpg	제출 가능 상태까지. 운영 서비스로 의견은 보내지 않음.
+갤러리	385	margin	이전 수집	로컬 화면	마진 › 서면 피드백 저장 완료	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/23-written-saved.jpg	가상 제목과 내용 저장 뒤 미팅 기록에 진입.
+갤러리	386	margin	이전 수집	로컬 화면	마진 › 가상 원고 생성 후 작성 화면	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/24-writer-opened.jpg	실제 저장 뒤 새 원고 페이지.
+갤러리	387	margin	이전 수집	로컬 화면	마진 › 계정 메뉴 화면 모드	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/25-profile-theme.jpg	가상 계정. 설정창 밖에서 직접 전환하는 조작.
+갤러리	388	manyfast	이전 수집	참고 서비스 직접 조작	프로필 › 빠른 설정	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/04-profile-quick-tools.jpg	계정 식별 영역 아래 테마·언어·튜토리얼.
+갤러리	389	manyfast	이전 수집	참고 서비스 직접 조작	프로필 › 테마 빠른 선택	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/05-theme-quick-dialog.jpg	세 선택지를 계정 빠른 메뉴에서 바꾸는 화면.
+갤러리	390	liner	이전 수집	참고 서비스 직접 조작	라이너 › 소스 컬렉션	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/06-collections.jpg	공용 자료와 개인 데스크톱 메뉴의 관계.
+갤러리	391	margin	이전 수집	로컬 화면	마진 › 온보딩 현재 단계	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/26-onboarding-stage.jpg	선행연구를 직접 고른 뒤 다음 질문.
+갤러리	392	margin	이전 수집	로컬 화면	마진 › 온보딩 미팅·투고 목표일	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/27-onboarding-schedule.jpg	다음 미팅과 목표일을 입력하는 구간.
+갤러리	393	manyfast	이전 수집	참고 서비스 직접 조작	프로젝트·기록 검색 › 시작	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/06-search-start.jpg	검색 진입 시 입력에 초점.
+갤러리	394	margin	이전 수집	로컬 화면	마진 › 새 원고 본문 입력	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/28-writer-version-menu.jpg	가상 원고를 작성한 화면. 저장한 버전과 비교한 장면은 뒤에 따로 있다.
+갤러리	395	margin	이전 수집	로컬 화면	마진 › 직접 피드백 입력	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/29-feedback-input.jpg	가상 제목·내용 저장 직전.
+갤러리	396	margin	이전 수집	로컬 화면	마진 › 피드백이 미팅 기록에 연결됨	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/30-feedback-linked.jpg	미팅 원문 옆의 피드백·할 일에 새로 저장.
+갤러리	397	manyfast	이전 수집	참고 서비스 직접 조작	기능 체험하기 › 고객사 예시 선택	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/07-tutorial-choice.jpg	실제 업무 자료 없이 크레딧을 쓰지 않는 공식 예시.
+갤러리	398	manyfast	이전 수집	참고 서비스 직접 조작	공식 예시 › 01 RFP로 초안 만들기	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/08-tutorial-step-01.jpg	고객사 샘플 자료만 사용한 화면.
+갤러리	399	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 요청서 올리기 안내	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/09-tutorial-step-02.jpg	첫 단계에서 예시 파일을 올리도록 안내하는 화면.
+갤러리	400	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 제안요청서가 채워진 상태	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/10-tutorial-attachment.jpg	공식 예시 파일과 프롬프트 자동 입력. 기본화면에 일반 크레딧 문구도 보이는 상태.
+갤러리	401	liner	이전 수집	참고 서비스 직접 조작	소스 컬렉션 › 이름 입력	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/07-collection-create-input.jpg	새로운 비교용 항목만 입력.
+갤러리	402	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 제품 요구사항	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/80-tutorial-prd.jpg	공식 고객사 샘플에서 직접 열어 봄.
+갤러리	403	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 기능명세서	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/81-tutorial-spec.jpg	공식 고객사 샘플에서 직접 열어 봄.
+갤러리	404	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 유저플로우	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/82-tutorial-user-flow.jpg	공식 고객사 샘플에서 직접 열어 봄.
+갤러리	405	toss-securities	이전 수집	참고 서비스 직접 조작	토스증권 › 증시 캘린더	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/80-market-calendar.jpg	날짜 선택과 시장 일정을 비교할 공개 화면.
+갤러리	406	toss-securities	이전 수집	참고 서비스 직접 조작	토스증권 › 주식 골라보기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/81-screener-main.jpg	조건을 선택해 목록을 좁히는 탐색 화면.
+갤러리	407	margin	이전 수집	로컬 화면	마진 설정 › 프로필	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/80-settings-profile.jpg	표시 이름, 로그인 이메일, 비밀번호 변경 폼
+갤러리	408	margin	이전 수집	로컬 화면	마진 설정 › 화면	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/81-settings-appearance.jpg	색상 모드, 언어, 시각, 사운드, 창 위치
+갤러리	409	margin	이전 수집	로컬 화면	마진 설정 › 알림	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/82-settings-notifications.jpg	검토·할 일·일정·공동연구 알림 선택
+갤러리	410	margin	이전 수집	로컬 화면	마진 설정 › 연구 도우미	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/83-settings-assistant.jpg	기본 모델·답변 깊이, 개인 지침
+갤러리	411	margin	이전 수집	로컬 화면	마진 설정 › 사용량·플랜	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/84-settings-usage.jpg	잔액·이력·공개 플랜 안내
+갤러리	412	margin	이전 수집	로컬 화면	마진 설정 › 단축키	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/85-settings-shortcuts.jpg	현재 앱의 단축키 표
+갤러리	413	margin	이전 수집	로컬 화면	마진 설정 › 연구 정보	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/86-settings-research-info.jpg	연구 질문·투고·지도교수와 저장 조작
+갤러리	414	margin	이전 수집	로컬 화면	마진 설정 › 함께하는 사람	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/87-settings-people.jpg	초대 폼과 역할·상태
+갤러리	415	margin	이전 수집	로컬 화면	마진 설정 › 미팅 주기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/88-settings-cadence.jpg	요일·시각·반복과 다음 일정
+갤러리	416	margin	이전 수집	로컬 화면	마진 설정 › 보관·삭제	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/89-settings-danger.jpg	보관, 휴지통 이동과 설명
+갤러리	417	toss-securities	이전 수집	참고 서비스 직접 조작	증시 캘린더 › 다음 달 이동	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/82-calendar-next.jpg	이전·다음 달 조작 뒤 날짜 내용이 바뀜.
+갤러리	418	toss-securities	이전 수집	참고 서비스 직접 조작	주식 골라보기 › 필터 추가	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/83-screener-filters.jpg	조건을 추가하는 선택 목록. 주문 조작은 수행하지 않음.
+갤러리	419	liner	이전 수집	참고 서비스 직접 조작	소스 컬렉션 › 함께 작업할 사람과 링크	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/80-collection-sharing.jpg	테스트 모음에 대해 공유 폼만 열어 봄.
+갤러리	420	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 다음 단계 안내	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/83-tutorial-next-05.jpg	공식 고객사 샘플에서 직접 열어 봄.
+갤러리	421	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 미팅 준비하기	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/84-tutorial-meeting-prep-action.jpg	일반 예시 첫 미팅 준비 화면과 버튼.
+갤러리	422	liner	이전 수집	참고 서비스 직접 조작	라이너 › 질문 홈	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/liner/81-question-home.jpg	개인 사이드바를 제외한 검색·작업 시작 화면.
+갤러리	423	margin	이전 수집	로컬 화면	마진 › 가상 알림 목록	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/90-notification-inbox.jpg	읽음 처리와 교수 응답 알림을 확인하는 진입점.
+갤러리	424	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 미팅 안건 요청을 보낸 뒤	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/85-tutorial-meeting-send.jpg	샘플의 준비된 회의 안건 프롬프트를 실행.
+갤러리	425	liner	이전 수집	참고 서비스 직접 조작	질문 홈 › 모델 선택 메뉴	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/liner/82-model-select.jpg	현재 플랜에서 선택 가능한 모델과 잠긴 항목이 구분되는 화면.
+갤러리	426	margin	이전 수집	로컬 화면	마진 › 알림 전체 필터	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/91-notification-all.jpg	가상 알림의 전부·미확인 조작.
+갤러리	427	margin	이전 수집	로컬 화면	마진 › 일반 알림 읽음 처리	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/92-notification-mark-read.jpg	검토 알림을 제외하고 읽음 처리하는 버튼을 실제 클릭.
+갤러리	428	margin	이전 수집	운영 브라우저	운영 마진 › 빈 테스트 연구의 실제 AI 응답	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin-live/80-assistant-live-result.jpg	가상 문장 한 건만 요청. 현재 사용량과 응답 화면.
+갤러리	429	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 미팅 준비 결과와 다음 작업	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/86-tutorial-prep-outcome.jpg	공식 샘플의 미팅 안건 결과 또는 그 다음 단계 안내.
+갤러리	430	margin	이전 수집	로컬 화면	마진 › 연구 흐름 시간순	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/93-flow-timeline.jpg	단계 카드와 주요 목표. 가상 연구.
+갤러리	431	margin	이전 수집	로컬 화면	마진 연구 흐름 › 월별	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/94-flow-monthly.jpg	같은 가상 연구의 로드맵 보기.
+갤러리	432	margin	이전 수집	로컬 화면	마진 연구 흐름 › 관계도	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/95-flow-map.jpg	같은 가상 연구의 로드맵 보기.
+갤러리	433	margin	이전 수집	로컬 화면	마진 연구 흐름 › 달력	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/96-flow-calendar.jpg	단계 보기에서 달력 탭으로 전환.
+갤러리	434	margin	이전 수집	로컬 화면	마진 › 학생의 검토 상세	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/97-review-owner.jpg	검토 항목, 두 사람이 보는 원고, 교수 응답과 댓글이 각 열에 있음.
+갤러리	435	margin	이전 수집	로컬 화면	마진 검토 › PDF에 위치 핀 찍기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/98-review-pin-mode.jpg	본문 PDF에서 댓글 위치를 정하는 모드.
+갤러리	436	margin	이전 수집	로컬 화면	마진 화면 설정 › 색상 선택 직후	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/99-appearance-toggle-result.jpg	버튼 자체는 라이트·다크 2단 전환. 시스템은 계정 메뉴에서 별도 선택.
+갤러리	437	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 회의록 업로드 단계	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/87-tutorial-meeting-record-entry.jpg	샘플 회의록으로 문서를 갱신하는 도중 화면.
+갤러리	438	margin	이전 수집	로컬 화면	마진 검토 › 공유 설정	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/100-review-share-options.jpg	학생이 공유 상태·수신자·메일 알림 등을 확인하는 단계. 가상 데이터.
+갤러리	439	margin	이전 수집	로컬 화면	마진 검토 › 다시 확인 요청	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/101-review-recheck-form.jpg	이전 차수와 새 수정 결과/파일/설명 관련 입력을 확인. 가상 자료.
+갤러리	440	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 문서함 열기	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/88-tutorial-document-drawer.jpg	자료를 문맥 안에서 함께 보는 조작.
+갤러리	441	liner	이전 수집	참고 서비스 직접 조작	라이너 › 알림 패널	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/liner/83-notifications.jpg	계정 식별 없이 알림 구조와 빈 상태를 봄.
+갤러리	442	margin	이전 수집	로컬 화면	마진 검토 › 새 2차 요청 상태	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/102-review-recheck-result.jpg	가상 검토 한 항목에 새 차수 추가. 공개 상대와 메일은 실제 외부가 아닌 로컬 미리보기.
+갤러리	443	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 파일 올리기 조작	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/89-tutorial-record-upload-menu.jpg	기록 추가 드롭다운에서 업로드 방식 선택.
+갤러리	444	toss-securities	이전 수집	참고 서비스 직접 조작	주식 골라보기 › 국가 필터	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/84-screener-country-filter.jpg	국가·시장·산업을 독립적으로 좁히는 UI.
+갤러리	445	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 회의록 업로드 창	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/90-tutorial-record-file-picker.jpg	개인 파일 대신 준비된 샘플 회의록.
+갤러리	446	toss-securities	이전 수집	참고 서비스 직접 조작	홈 › 지금 뜨는 산업	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/85-home-industries.jpg	공개 시세 영역의 보기 전환.
+갤러리	447	toss-securities	이전 수집	참고 서비스 직접 조작	홈 › 외국인·기관 매매 동향	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/86-home-market-flow.jpg	공개 시세 영역의 보기 전환.
+갤러리	448	toss-securities	이전 수집	참고 서비스 직접 조작	홈 › 실시간 차트	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/87-home-realtime.jpg	공개 시세 영역의 보기 전환.
+갤러리	449	toss-securities	이전 수집	참고 서비스 직접 조작	토스증권 › 리모콘 접기 후	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/88-rail-close.jpg	리모콘이 닫히고 본문이 넓어지는 상태.
+갤러리	450	toss-securities	이전 수집	참고 서비스 직접 조작	토스증권 › 리모콘 다시 열기	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/toss-securities/89-rail-open.jpg	오른쪽 레일의 재진입과 본문 폭 변화. 보유·주문 영역 제외.
+갤러리	451	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 문서함의 회의록 입력 상태	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/92-tutorial-record-current.jpg	첨부 진행 중 볼 수 있는 저장 방식과 대상.
+갤러리	452	margin	이전 수집	로컬 화면	마진 › PDF 2개 업로드 전	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/103-pdf-two-ready.jpg	자료별 이름·유형과 기본 나만 보기. 모두 가상 PDF.
+갤러리	453	margin	이전 수집	로컬 화면	마진 › 다중 자료 추가 완료	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/104-pdf-two-saved.jpg	가상 PDF 2개가 목록에 표시됨. 추가 후 원래 목록에서 계속 작업.
+갤러리	454	liner	이전 수집	참고 서비스 직접 조작	새로고침 후 › 컬렉션과 가상 메모	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/84-source-after-reload.jpg	브라우저를 다시 열어도 업로드한 텍스트가 보임.
+갤러리	455	liner	이전 수집	참고 서비스 직접 조작	라이너 컬렉션 › 문서 행 선택 직후	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/85-source-reader-active.jpg	자체 테스트 메모 행을 눌렀을 때 목록에 표시된 상태. 별도 뷰어 화면은 포함하지 않았다.
+갤러리	456	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 회의록 저장 후	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/93-tutorial-record-created.jpg	본문 미리보기 확인 뒤 샘플 회의록을 기록으로 추가.
+갤러리	457	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 회의록에서 결정 추출	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/94-tutorial-extract-decisions.jpg	원문 기록에서 기획 산출물로 이어지는 결정 추출 조작.
+갤러리	458	liner	이전 수집	참고 서비스 직접 조작	라이너 › 컬렉션 자료로 질문하기	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/86-collection-question-scope.jpg	다음 질문에 컬렉션을 붙이는 경로. 요청은 보내지 않음.
+갤러리	459	margin	이전 수집	로컬 화면	마진 › 목록에서 PDF 미리보기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/105-pdf-preview.jpg	합성 파일을 목록 위에서 열어 문맥과 이동 버튼 확인.
+갤러리	460	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 추출된 결정 중 고르기	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/95-tutorial-decision-choice.jpg	회의록에서 뽑은 후보를 문서에 반영하기 전.
+갤러리	461	margin	이전 수집	로컬 화면	마진 › 목록에서 PDF 미리보기 렌더링 완료	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/106-pdf-reader.jpg	합성 PDF의 첫 페이지가 옆 미리보기 창에 나타난 상태.
+갤러리	462	liner	이전 수집	참고 서비스 직접 조작	라이너 › 크레딧 부족 안내	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/liner/87-credits-exhausted.jpg	컬렉션을 걸고 질문 창까지 진입. 충전이나 결제 없이 보이는 상태.
+갤러리	463	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 결정 반영 전후 비교	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/96-tutorial-before-after.jpg	정식 팀 기능을 공식 예시에서 눌러 본 장면. 결제 없음.
+갤러리	464	margin	이전 수집	로컬 화면	마진 › 가상 PDF 실제 읽기 화면	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/107-pdf-file-view-current.jpg	자료 목록 밖의 PDF 뷰어.
+갤러리	465	margin	이전 수집	로컬 화면	마진 PDF › 페이지 텍스트 보기 직후	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/108-pdf-file-text.jpg	텍스트 보기 버튼을 눌렀다. 이 프레임은 전환 직후 화면이다.
+갤러리	466	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 수정안 승인 직후	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/97-tutorial-apply-outcome.jpg	선택된 수정안을 확인하고 승인 버튼을 실행.
+갤러리	467	margin	이전 수집	로컬 화면	마진 PDF › 새 파일 버전 추가	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/109-pdf-version-form.jpg	현재 버전을 보면서 다음 버전을 준비하는 대화상자.
+갤러리	468	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 남은 수정안 판정	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/98-tutorial-decisions-review.jpg	선택과 승인 결과·남은 상태를 확인.
+갤러리	469	margin	이전 수집	로컬 화면	마진 PDF › 새 버전 저장 후	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/110-pdf-v2-saved.jpg	가상 파일로 다음 버전 추가. 이전 버전과 함께 볼 수 있는 상태.
+갤러리	470	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 승인 절차 다음 화면	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/99-tutorial-after-approval.jpg	가상 회의록 변경안 적용 뒤 이어지는 단계.
+갤러리	471	manyfast	이전 수집	참고 서비스 직접 조작	공식 예시 › 기능명세서와 사용자 흐름 동기화	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/100-tutorial-sync.jpg	같은 프로젝트에서 바뀐 내용이 다른 보기로 갈 때의 선택 화면.
+갤러리	472	margin	이전 수집	로컬 화면	마진 PDF › 이전 파일 버전 다시 열기	1280 × 720 px	2026-11-25_5단계-전_화면수집_v2/margin/111-pdf-v1-back.jpg	새 v2를 만든 다음 기존 v1을 골라서 원래 파일을 읽음.
+갤러리	473	manyfast	이전 수집	참고 서비스 직접 조작	고객사 예시 › 동기화 시작 직후	1139 × 772 px	2026-11-25_5단계-전_화면수집_v2/manyfast/101-tutorial-sync-result.jpg	기능명세서에서 유저플로우로 동기화 시작을 눌렀다. 이 프레임은 실행 직후다.
+09 체험	1	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	체험 모드에서 v1과 저장된 변경본을 비교	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/01-preview-diff-before.png	체험 모드에서 v1과 저장된 변경본을 비교
+09 체험	2	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	실제 버튼 조작 후 v2 · v2 · v1과 로컬 데이터의 번호 중복 확인	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/02-preview-duplicate.png	실제 버튼 조작 후 v2 · v2 · v1과 로컬 데이터의 번호 중복 확인
+09 체험	3	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	글자 내용이 같으나 제목과 굵기가 다르고, 비교 화면에서 차이를 알 수 없음	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/03-compare-same-text.png	글자 내용이 같으나 제목과 굵기가 다르고, 비교 화면에서 차이를 알 수 없음
+09 체험	4	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	복원 직전 제목과 굵기를 가진 버전이 남지 않고 두 버전이 모두 원래 제목·형식	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/04-preview-no-title-format-backup.png	복원 직전 제목과 굵기를 가진 버전이 남지 않고 두 버전이 모두 원래 제목·형식
+09 체험	5	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	넓은 화면에서 피드백 상태와 연결 할 일 수가 숨겨짐	1760 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/05-feedback-wide.png	넓은 화면에서 피드백 상태와 연결 할 일 수가 숨겨짐
+09 체험	6	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	같은 피드백 행에서 창을 좁히자 상태와 수가 다시 표시됨	820 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/06-feedback-narrow.png	같은 피드백 행에서 창을 좁히자 상태와 수가 다시 표시됨
+09 체험	7	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	1440×900 서면 피드백 입력 모달의 초기 화면	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/07-written-open.png	1440×900 서면 피드백 입력 모달의 초기 화면
+09 체험	8	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	1440×768에서 공개 범위가 첫 화면의 본문 아래로 밀림	1440 × 768 px	2026-11-26_09-교차검토_v1/캡처/체험/07b-written-short.png	1440×768에서 공개 범위가 첫 화면의 본문 아래로 밀림
+09 체험	9	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	같은 창 안에서 공개 범위까지 스크롤 가능	1440 × 768 px	2026-11-26_09-교차검토_v1/캡처/체험/08-written-scroll.png	같은 창 안에서 공개 범위까지 스크롤 가능
+09 체험	10	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	320×680 할 일 목록 첫 화면과 실제 할 일의 위치	320 × 680 px	2026-11-26_09-교차검토_v1/캡처/체험/09-tasks-320.png	320×680 할 일 목록 첫 화면과 실제 할 일의 위치
+09 체험	11	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	390×844에서 같은 목록의 첫 화면	390 × 844 px	2026-11-26_09-교차검토_v1/캡처/체험/10-tasks-390.png	390×844에서 같은 목록의 첫 화면
+09 체험	12	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	홈을 바탕으로 연구 도우미 보조 창을 띄웠을 때 하단 선택 표시	390 × 844 px	2026-11-26_09-교차검토_v1/캡처/체험/11-mobile-assistant.png	홈을 바탕으로 연구 도우미 보조 창을 띄웠을 때 하단 선택 표시
+09 체험	13	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	파일을 고르기 전의 활성 제출 버튼	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/12-version-without-file.png	파일을 고르기 전의 활성 제출 버튼
+09 체험	14	margin	09 교차 검토	현재 마진 체험 모드 · 합성 자료	미선택이라는 입력 오류가 뜨고 자료에는 버전 추가 안 됨	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/체험/13-version-missing-error.png	미선택이라는 입력 오류가 뜨고 자료에는 버전 추가 안 됨
+09 연결	1	margin	09 교차 검토	실제 UI · 격리 SQL	연결 모드 복원의 번호	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/01-01-connected-numbering.png	v3 · v2 · v1이며 복원 직전 본문은 v2에 남습니다.
+09 연결	2	margin	09 교차 검토	실제 UI · 격리 SQL	복원 직전 제목과 굵기	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/02-new-title-format-before.png	본문 문자는 v1과 같고 현재 저장된 제목과 글자 굵기가 다릅니다.
+09 연결	3	margin	09 교차 검토	실제 UI · 격리 SQL	본문 평문만 보이는 버전 비교	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/03-18-compare-no-title-format.png	버전 비교에서 제목과 굵기의 차이를 표시하지 않으며 복원 버튼은 켜져 있습니다.
+09 연결	4	margin	09 교차 검토	실제 UI · 격리 SQL	복원 후 되돌릴 이력 없음	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/04-new-title-format-after.png	버전에는 과거 제목과 굵기가 없는 v1과 v2만 있고 복원 직전 상태는 빠져 있습니다.
+09 연결	5	margin	09 교차 검토	실제 UI · 격리 SQL · 마지막 요청만 실패 주입	실패 알림과 복원 직전 제목	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/05-new-restore-failed-version.png	마지막 저장 요청 한 번만 실패시켰습니다. 오류 화면은 편집 중이던 제목을 보여 주나 실제 저장본은 과거 내용으로 바뀌었습니다.
+09 연결	6	margin	09 교차 검토	실제 UI · 격리 SQL · 마지막 요청만 실패 주입	새로고침 뒤 드러난 복원 상태	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/06-new-restore-after-refresh.png	오류 직후 새로고침하면 v1 제목과 본문이 나옵니다. 복원 직전 상태는 v2에 보존돼 있습니다.
+09 연결	7	margin	09 교차 검토	실제 UI · 격리 SQL · 응답 한 번 지연	나만 보기와 저장됨으로 표시되는 원고	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/07-new-visibility-stale.png	지연시킨 저장 응답 이후에도 화면은 나만 보기지만 서버 공유가 유지돼 공동연구자가 가상 원고를 읽을 수 있습니다.
+09 연결	8	margin	09 교차 검토	실제 UI · 격리 SQL · 응답 한 번 지연	새로고침하면 공유 상태로 표시	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/08-new-visibility-reload.png	이전 화면에서 저장했다고 표시되던 변경이 적용되지 않았습니다.
+09 연결	9	margin	09 교차 검토	실제 UI · 격리 SQL	파일 저장 충돌 선택	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/09-19-conflict-choice.png	파란 버튼은 내 편집 내용을 화면에 유지하고 다음 저장의 기준을 바꿉니다.
+09 연결	10	margin	09 교차 검토	실제 UI · 격리 SQL	내 문장을 편집기에 유지한 상태	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/10-19-conflict-keep.png	누른 직후와 자동 저장 대기 1.7초 뒤에도 서버에 학생 문장이 남습니다.
+09 연결	11	margin	09 교차 검토	실제 UI · 격리 SQL	출처 기록의 할 일	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/11-new-task-from-record.png	기록에서 할 일 추가를 눌러 작성한 항목이 같은 기록에 보입니다. 저장 데이터에 기록 식별자가 들어 있습니다.
+09 연결	12	margin	09 교차 검토	실제 UI · 격리 SQL	전체 할 일에서 잘못 표시된 출처	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/12-03-task-source-label.png	작성한 학생 계정에서도 기록 제목 대신 직접 추가로 표시됩니다.
+09 연결	13	margin	09 교차 검토	실제 UI · 격리 SQL	같은 기록 필터를 선택하면 목록에서 빠짐	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/13-new-task-filter-miss.png	전체 할 일에서 보였던 항목이 원본 기록 선택 직후 사라집니다.
+09 연결	14	margin	09 교차 검토	실제 UI · 격리 SQL	다음 미팅 준비 화면의 저장된 목표	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/14-04-meeting-goal-edit.png	할 일·질문·자료 없이 목표 한 줄만 저장돼 있습니다.
+09 연결	15	margin	09 교차 검토	실제 UI · 격리 SQL	홈 다음 미팅의 빈 준비 표시	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/15-04-meeting-goal-home.png	저장된 목표가 있지만 홈 요약은 준비 내용이 없다고 표시합니다.
+09 연결	16	margin	09 교차 검토	실제 UI · 격리 SQL	사용량 화면의 구형 한도 문구	1440 × 900 px	2026-11-26_09-교차검토_v1/캡처/연결/16-24-usage-policy-stale.png	화면에는 최근 24시간 한도만 있다고 표시되며, 적용한 서버 규칙은 월 크레딧과 분당 제한을 사용합니다.
