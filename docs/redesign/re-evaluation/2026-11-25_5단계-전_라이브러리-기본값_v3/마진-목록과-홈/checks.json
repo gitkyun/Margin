@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "다음 미팅 할 일과 나머지, 미담당과 담당자의 위치 확인",
+    "자료 미리보기 전후 공유 표기의 가시성"
+  ],
+  "failures": [
+    [
+      "같은 자료 화면에서 짧고 긴 본문, 스크롤바 유무를 따로 측정",
+      "{\"overlayShort\":{\"outer\":0,\"client\":1044,\"actual\":0,\"titleX\":268,\"scrollHeight\":795,\"height\":795,\"gutter\":\"auto\"},\"overlayLong\":{\"outer\":0,\"client\":1044,\"actual\":0,\"titleX\":268,\"scrollHeight\":2278,\"height\":795,\"gutter\":\"auto\"},\"classicShort\":{\"outer\":0,\"client\":1044,\"actual\":0,\"titleX\":268,\"scrollHeight\":795,\"height\":795,\"gutter\":\"auto\"},\"classicLong\":{\"outer\":0,\"client\":1044,\"actual\":0,\"titleX\":268,\"scrollHeight\":2278,\"height\":795,\"gutter\":\"auto\"}} |  | 0 !== 14 | ",
+      null
+    ]
+  ],
+  "shots": 5
+}

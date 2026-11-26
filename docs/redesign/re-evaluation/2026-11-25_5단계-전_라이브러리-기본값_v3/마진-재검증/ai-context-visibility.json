@@ -1,0 +1,23 @@
+{
+  "test": "일반 연구 질문의 같은 권한 SQL · materials 예",
+  "owner": [
+    {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "kind": "materials",
+      "title": "공유할 가상 비교표"
+    },
+    {
+      "id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "kind": "materials",
+      "title": "학생만 보는 가상 메모"
+    }
+  ],
+  "editor": [
+    {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "kind": "materials",
+      "title": "공유할 가상 비교표"
+    }
+  ],
+  "reviewOnlyProfessor": []
+}

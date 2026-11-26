@@ -1,0 +1,1582 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>시안 01 v2 · 연구 홈 · 60px 레일 · 도우미 · 의견</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+    --text: #171719; --sub: #46474c; --mute: #686b73;
+    --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+    --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+      --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+      --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-weight: 600; vertical-align: middle; }
+
+  header.top { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px; }
+  header.top h1 { margin: 0 0 2px; font-size: 20px; }
+  header.top p { margin: 0; color: var(--sub); font-size: 12.5px; }
+
+  nav.tabs { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  nav.tabs button { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--sub); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  nav.tabs button[aria-selected="true"] { background: var(--text); color: var(--surface); border-color: var(--text); font-weight: 600; }
+
+  main.page { max-width: 1280px; margin: 0 auto; padding: 18px 16px 64px; }
+  section.scene { display: none; }
+  section.scene.on { display: block; }
+
+  .intro { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .intro h2 { margin: 0 0 6px; font-size: 18px; }
+  .intro p { margin: 4px 0; color: var(--sub); }
+
+  .controls-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 10px; }
+  .ctrl-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ctrl-label { font-size: 12.5px; color: var(--mute); font-weight: 600; }
+  .seg { display: inline-flex; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+  .seg button { border: 0; background: transparent; color: var(--sub); padding: 6px 12px; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer; min-height: 32px; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+
+  .tag { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; font-weight: 600; }
+  .tag.now { background: var(--danger-soft); color: var(--danger); }
+  .tag.after { background: var(--brand-soft); color: var(--brand); }
+  .tag.ok { background: var(--ok-soft); color: var(--ok); }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .card h3 { margin: 0 0 8px; font-size: 14.5px; color: var(--text); }
+
+  /* 마진 화면 모형 셸 */
+  .shell { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .topbar { border-bottom: 1px solid var(--line); background: var(--surface); padding: 8px 16px; }
+  .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; width: 100%; }
+  .tb-left, .tb-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .logo { font-weight: 800; font-size: 16px; color: var(--brand); letter-spacing: -0.02em; }
+  .switcher-btn { border: 1px solid var(--line); background: var(--sunken); color: var(--text); padding: 4px 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .m-nav { display: flex; gap: 14px; font-size: 13px; font-weight: 600; color: var(--sub); flex-wrap: wrap; }
+  .m-nav span { padding: 4px 0; border-bottom: 2px solid transparent; }
+  .m-nav span.on { color: var(--text); border-bottom-color: var(--text); }
+  .m-search { background: var(--sunken); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--mute); display: flex; gap: 10px; align-items: center; }
+  .avatar { width: 28px; height: 28px; border-radius: 999px; background: var(--text); color: var(--surface); display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; }
+
+  .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px 60px; position: relative; min-height: 440px; }
+  .workspace.panel-closed { grid-template-columns: minmax(0, 1fr) 60px; }
+  .workspace.panel-closed .side-panel { display: none; }
+
+  .main-pane { padding: 20px 24px 36px; min-width: 0; background: var(--surface); }
+  .main-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .r-title { font-size: 18px; font-weight: 700; margin: 0; }
+  .r-desc { font-size: 13px; color: var(--sub); margin: 3px 0 0; }
+  .chips { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .chip { display: inline-flex; align-items: center; justify-content: center; min-height: 26px; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.2; border: 1px solid var(--line); background: var(--surface); color: var(--sub); }
+  .chip.dday { background: var(--brand-soft); border-color: transparent; color: var(--brand); }
+  .chip.src { background: var(--brand-soft); border-color: transparent; color: var(--brand); }
+  .chip.bad { background: var(--danger-soft); border-color: transparent; color: var(--danger); }
+  .chip.ok { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
+
+  .home-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; align-items: start; }
+  .section-box { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; background: var(--surface); min-width: 0; }
+  .section-box h3 { margin: 0 0 8px; font-size: 14.5px; }
+  .muted-lbl { font-size: 12px; color: var(--mute); margin-bottom: 4px; }
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .mismatch { margin-top: 8px; font-size: 12.5px; color: var(--danger); background: var(--danger-soft); padding: 6px 10px; border-radius: 8px; }
+  .hint-ok { margin-top: 8px; font-size: 12.5px; color: var(--ok); background: var(--ok-soft); padding: 6px 10px; border-radius: 8px; }
+
+  .tabs-line { display: flex; gap: 14px; border-bottom: 1px solid var(--line); margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--mute); flex-wrap: wrap; }
+  .tabs-line span { padding-bottom: 8px; border-bottom: 2px solid transparent; }
+  .tabs-line span.on { color: var(--text); border-bottom-color: var(--text); }
+  .group-sub { font-size: 12px; font-weight: 700; color: var(--brand); margin: 10px 0 6px; display: flex; align-items: center; gap: 6px; }
+  .group-sub.other { color: var(--mute); margin-top: 12px; }
+
+  .task-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 8px; border-radius: 8px; border: 1px solid transparent; }
+  .task-row:hover { background: var(--sunken); }
+  .task-row input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex: none; cursor: pointer; accent-color: var(--brand); }
+  .task-title { font-size: 13.5px; font-weight: 600; }
+  .task-title.done { text-decoration: line-through; color: var(--mute); }
+  .task-meta { font-size: 12px; color: var(--mute); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 3px; }
+  .overdue { color: var(--danger); font-weight: 600; }
+
+  /* 연구 흐름 칩 */
+  .flow-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .flow-wrap.clipped { flex-wrap: nowrap; overflow: hidden; border-right: 2px dashed var(--danger); padding-right: 4px; max-width: 245px; }
+  .flow-step { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); background: var(--sunken); color: var(--sub); white-space: nowrap; flex: none; }
+  .flow-step.done { background: var(--ok-soft); border-color: transparent; color: var(--ok); font-weight: 600; }
+  .flow-step.current { background: #0066ff; border-color: #0066ff; color: #fff; font-weight: 700; }
+  .flow-badge { font-size: 11px; padding: 0 5px; border-radius: 999px; background: var(--surface); color: var(--mute); border: 1px solid var(--line); }
+
+  /* 사이드 창 */
+  .side-panel { border-left: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; min-width: 0; }
+  .sp-head { padding: 12px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sp-head h3 { margin: 0; font-size: 14.5px; }
+  .sp-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--sub); }
+  .sp-box { border: 1px solid var(--line); background: var(--sunken); border-radius: 10px; padding: 10px 12px; color: var(--text); }
+
+  /* 60px 레일 (토스증권 골조 유지) */
+  .rail { width: 60px; border-left: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 0 12px; gap: 8px; }
+  .rail-top, .rail-bot { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+  .rail-btn { width: 48px; min-height: 50px; border: 0; background: transparent; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--mute); font: inherit; font-size: 11px; font-weight: 500; padding: 4px 2px; }
+  .rail-btn:hover { background: var(--sunken); color: var(--sub); }
+  .rail-btn.active { color: var(--text); font-weight: 700; }
+  .rail-btn.active .ico-wrap { background: var(--brand-soft); color: var(--brand); }
+  .ico-wrap { width: 34px; height: 26px; border-radius: 8px; display: grid; place-items: center; }
+  .rail-sq { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--sunken); color: var(--sub); display: grid; place-items: center; cursor: pointer; font: inherit; font-size: 14px; }
+  .rail-sq:hover { border-color: var(--line-strong); color: var(--text); }
+  .rail-collapse { width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--sub); display: grid; place-items: center; cursor: pointer; font: inherit; font-size: 15px; margin-bottom: 4px; }
+  .rail-collapse:hover { background: var(--sunken); color: var(--text); }
+
+  /* 매핑 표 */
+  table.map-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.map-tbl th, table.map-tbl td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; }
+  table.map-tbl th { color: var(--sub); font-weight: 600; background: var(--sunken); }
+
+  /* 사이드 창 닫힘 정렬 비교 */
+  .closed-stage { display: flex; align-items: stretch; gap: 12px; }
+  .main-inner-left { width: 74%; min-width: 0; border: 1px dashed var(--danger); border-radius: 10px; padding: 14px; background: var(--surface); }
+  .dead-space { flex: 1; min-width: 110px; border: 1px dashed var(--danger); border-radius: 10px; background: var(--danger-soft); color: var(--danger); display: grid; place-items: center; text-align: center; padding: 10px; font-size: 12px; font-weight: 600; }
+  .main-inner-center { max-width: 720px; width: 100%; margin: 0 auto; border: 1px dashed var(--ok); border-radius: 10px; padding: 14px; background: var(--surface); }
+  .topbar-inner.aligned { max-width: 720px; margin: 0 auto; }
+
+  /* 알림 위치 토스트 */
+  .toast-stage { min-height: 360px; }
+  .mock-toast { position: absolute; bottom: 16px; right: 76px; max-width: calc(100% - 92px); background: var(--text); color: var(--surface); border-radius: 10px; padding: 10px 14px; font-size: 13px; display: none; align-items: center; gap: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.22); z-index: 25; }
+  .mock-toast.on { display: flex; flex-wrap: wrap; }
+  .mock-toast.overlap { right: 10px; bottom: 12px; outline: 2px solid var(--danger); }
+  .mock-toast button { border: 0; background: transparent; color: var(--brand-soft); font: inherit; font-weight: 700; cursor: pointer; min-height: 32px; padding: 4px 8px; }
+  @media (prefers-color-scheme: dark) {
+    .mock-toast { background: var(--sunken); color: var(--text); border: 1px solid var(--line-strong); }
+    .mock-toast button { color: var(--brand); }
+  }
+
+  /* T14: 도우미 탭·시작 카드·제안 정리·크레딧·의견 창 */
+  .sp-tabs { display: flex; gap: 14px; width: 100%; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--mute); }
+  .sp-tab { border: 0; background: transparent; color: inherit; font: inherit; padding: 4px 0 8px; cursor: pointer; border-bottom: 2px solid transparent; min-height: 32px; }
+  .sp-tab.on { color: var(--text); border-bottom-color: var(--text); }
+  .starter-list { display: flex; flex-direction: column; gap: 8px; }
+  .starter-card { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 12px; text-align: left; cursor: pointer; font: inherit; color: var(--text); min-height: 44px; }
+  .starter-card:hover { border-color: var(--brand); background: var(--brand-soft); }
+  .starter-tag { font-size: 11.5px; font-weight: 700; color: var(--brand); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .starter-title { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  .sp-foot { position: relative; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--surface); margin-top: auto; }
+  .ctx-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); margin-bottom: 8px; }
+  .composer-box { border: 1px solid var(--line-strong); border-radius: 10px; padding: 9px 11px; font-size: 12.5px; color: var(--mute); background: var(--sunken); margin-bottom: 8px; }
+
+  .credit-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--sub); }
+  .credit-btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--sunken); color: var(--text); border-radius: 8px; padding: 5px 9px; font: inherit; font-size: 12px; cursor: pointer; min-height: 32px; }
+  .credit-btn:hover { border-color: var(--brand); }
+  .credit-bar { width: 72px; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .credit-fill { width: 96%; height: 100%; background: var(--brand); border-radius: 999px; }
+  .credit-pop { margin-top: 10px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 10px; padding: 11px 12px; box-shadow: 0 6px 18px rgba(0,0,0,.1); display: none; }
+  .credit-pop.open { display: block; }
+  .credit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; font-size: 12px; }
+  .credit-cell { background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+  .credit-cell span { display: block; color: var(--mute); font-size: 11px; }
+  .credit-cell strong { color: var(--text); font-size: 13px; }
+
+  .sugg-notice { font-size: 12.5px; color: var(--sub); background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+  .triage-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; }
+  .triage-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .triage-actions .btn { min-height: 32px; padding: 5px 9px; font-size: 12px; }
+  .sugg-list { display: flex; flex-direction: column; gap: 8px; }
+  .sugg-card { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); }
+  .sugg-head { display: flex; align-items: flex-start; gap: 8px; }
+  .sugg-head input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; flex: none; cursor: pointer; accent-color: var(--brand); }
+  .sugg-quote { font-size: 12px; color: var(--sub); background: var(--sunken); border-radius: 6px; padding: 6px 8px; margin: 6px 0; }
+
+  .fb-stage { min-height: 470px; }
+  .fb-pop { position: absolute; right: 76px; bottom: 16px; width: min(320px, calc(100% - 92px)); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 14px; padding: 14px; box-shadow: 0 10px 28px rgba(0,0,0,.16); z-index: 24; display: none; }
+  .fb-pop.open { display: block; }
+  .fb-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .fb-head h3 { margin: 0; font-size: 14.5px; }
+  .score-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 8px 0 4px; }
+  .score-btn { min-height: 34px; border: 1px solid var(--line-strong); background: var(--sunken); color: var(--text); border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
+  .score-btn[aria-pressed="true"] { background: #0066ff; border-color: #0066ff; color: #fff; }
+  .type-chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+  .tchip { min-height: 32px; padding: 4px 10px; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 600; border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); cursor: pointer; }
+  .tchip[aria-pressed="true"] { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .fb-input { width: 100%; min-height: 36px; border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px; background: var(--surface); color: var(--text); }
+  .ut-chk { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sub); margin: 10px 0 6px; cursor: pointer; min-height: 32px; }
+  .ut-chk input { width: 18px; height: 18px; accent-color: var(--brand); flex: none; }
+  .fb-preview { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--sunken); border: 1px dashed var(--line-strong); border-radius: 8px; padding: 6px 9px; color: var(--sub); margin-bottom: 8px; }
+
+  /* 반응형: compare.html iframe(약 640~900px)에서는 3열 유지, 모바일(<= 640px)에서는 가로 스크롤 없이 정리 */
+  @media (max-width: 960px) {
+    .workspace { grid-template-columns: minmax(0, 1fr) 235px 60px; }
+    .home-grid { grid-template-columns: 1fr; }
+    .m-search { display: none; }
+  }
+  @media (max-width: 640px) {
+    .main-pane { padding: 14px 12px 24px; }
+    .workspace { grid-template-columns: minmax(0, 1fr); min-height: auto; }
+    .side-panel { border-left: 0; border-top: 1px solid var(--line); }
+    .rail { width: 100%; border-left: 0; border-top: 1px solid var(--line); flex-direction: row; padding: 6px 8px; overflow-x: auto; }
+    .rail-top, .rail-bot { flex-direction: row; width: auto; }
+    .workspace.panel-closed { grid-template-columns: minmax(0, 1fr); }
+    .workspace.toast-keep-rail { grid-template-columns: minmax(0, 1fr) 60px; }
+    .workspace.toast-keep-rail .rail { width: 60px; border-left: 1px solid var(--line); border-top: 0; flex-direction: column; padding: 10px 0 12px; }
+    .workspace.toast-keep-rail .rail-top, .workspace.toast-keep-rail .rail-bot { flex-direction: column; width: 100%; }
+    .closed-stage { flex-direction: column; }
+    .main-inner-left { width: 100%; }
+    .fb-stage { min-height: auto; }
+    .fb-pop { position: static; width: 100%; margin-top: 10px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 01 v2 · 연구 홈 · 60px 레일 · 도우미 · 의견 (Phase 5 쟁점 2·3·5·7)</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="장면">
+  <button role="tab" aria-selected="true" data-scene="01-home">연구 홈</button>
+  <button role="tab" aria-selected="false" data-scene="01-rail-panel">사이드 창과 레일</button>
+  <button role="tab" aria-selected="false" data-scene="01-panel-closed">사이드 창 닫힘</button>
+  <button role="tab" aria-selected="false" data-scene="01-toast">알림 위치</button>
+  <button role="tab" aria-selected="false" data-scene="01-assistant-start">도우미 첫 화면</button>
+  <button role="tab" aria-selected="false" data-scene="01-suggestions">제안 정리</button>
+  <button role="tab" aria-selected="false" data-scene="01-credit">크레딧 표시</button>
+  <button role="tab" aria-selected="false" data-scene="01-feedback">의견 보내기</button>
+</nav>
+
+<main class="page">
+
+<!-- 1. 연구 홈 -->
+<section class="scene on" id="01-home" role="tabpanel">
+  <div class="intro">
+    <h2>연구 홈</h2>
+    <p>지금: 다음 미팅에 목표만 적으면 '아직 준비한 내용이 없어요'가 뜨고, 할 일 출처가 '직접 추가'로 보이며, 연구 흐름 앞 단계가 '예정'으로 보이고 4단계가 잘려요. 바뀐 뒤: 목표 첫 줄·준비 수 분리, 첫 묶음 제목과 출처 칩, 네 단계 모두 표시로 바꿔요.</p>
+    <div class="controls-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">비교</span>
+        <div class="seg" role="group" aria-label="연구 홈 동작 비교">
+          <button aria-pressed="false" data-home-mode="now">지금 동작</button>
+          <button aria-pressed="true" data-home-mode="after">바뀐 뒤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav"><span class="on">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span></div>
+        </div>
+        <div class="tb-right">
+          <div class="m-search"><span>이 연구에서 찾기</span><span>⌘K</span></div>
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <div class="main-pane" id="home-main"></div>
+      <aside class="side-panel" aria-label="사이드 창">
+        <div class="sp-head">
+          <h3>연구 도우미</h3>
+          <span class="tag after">D17 기본 열림</span>
+        </div>
+        <div class="sp-body">
+          <div class="sp-box">홈 본문에 할 일이 열려 있어 사이드 창은 '도우미'를 띄워 중복을 피해요.</div>
+        </div>
+      </aside>
+      <aside class="rail" aria-label="오른쪽 레일">
+        <div class="rail-top">
+          <button class="rail-collapse" type="button" title="사이드 창 접기" aria-label="사이드 창 접기">≫</button>
+          <button class="rail-btn active" type="button" title="도우미">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg></span>
+            <span>도우미</span>
+          </button>
+          <button class="rail-btn" type="button" title="할 일">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg></span>
+            <span>할 일</span>
+          </button>
+          <button class="rail-btn" type="button" title="결정·질문">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v12H7l-3 3V3z"/></svg></span>
+            <span>결정·질문</span>
+          </button>
+          <button class="rail-btn" type="button" title="자료">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg></span>
+            <span>자료</span>
+          </button>
+        </div>
+        <div class="rail-bot">
+          <button class="rail-btn" type="button" title="의견">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span>
+            <span>의견</span>
+          </button>
+          <button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>
+          <button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- 2. 사이드 창과 레일 -->
+<section class="scene" id="01-rail-panel" role="tabpanel">
+  <div class="intro">
+    <h2>사이드 창과 레일</h2>
+    <p>지금: 1440px에서 사이드 창이 기본으로 열려 있지만(D17 유지), 본문과 같은 탭이 사이드 창에 겹쳐 뜰 수 있어요. 바뀐 뒤: 본문과 같은 탭이 사이드 창에 뜨지 않도록 자동으로 다른 탭으로 바꿔요.</p>
+    <div class="controls-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">비교</span>
+        <div class="seg" role="group" aria-label="사이드 창과 레일 동작 비교">
+          <button aria-pressed="false" data-rp-mode="now">지금 동작</button>
+          <button aria-pressed="true" data-rp-mode="after">바뀐 뒤</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">지금 보는 화면</span>
+        <div class="seg" role="group" aria-label="지금 보는 화면">
+          <button aria-pressed="true" data-rp-route="home">홈</button>
+          <button aria-pressed="false" data-rp-route="tasks">할 일</button>
+          <button aria-pressed="false" data-rp-route="docs">글·자료</button>
+        </div>
+      </div>
+      <span class="tag ok">D17 유지: 1440px 기본 열림</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>화면별 사이드 창 기본 탭 매핑 <span class="proposal">제안</span></h3>
+    <table class="map-tbl">
+      <thead><tr><th>지금 보는 화면(본문)</th><th>사이드 창 기본 탭</th><th>피하는 중복</th></tr></thead>
+      <tbody>
+        <tr><td>홈 (하단에 '할 일' 탭 있음)</td><td><b>도우미</b></td><td>할 일</td></tr>
+        <tr><td>할 일</td><td><b>도우미</b></td><td>할 일</td></tr>
+        <tr><td>글·자료</td><td><b>할 일</b></td><td>자료</td></tr>
+      </tbody>
+    </table>
+    <p class="r-desc" style="margin-top:8px;">레일의 현재 탭은 아이콘 배경과 글자 굵기로 구분해요. <span class="proposal">제안</span></p>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav" id="rp-nav"></div>
+        </div>
+        <div class="tb-right">
+          <div class="m-search"><span>이 연구에서 찾기</span><span>⌘K</span></div>
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace" id="rp-ws">
+      <div class="main-pane" id="rp-main"></div>
+      <aside class="side-panel" aria-label="사이드 창">
+        <div class="sp-head">
+          <h3 id="rp-sp-title">도우미</h3>
+          <span class="tag after" id="rp-sp-badge">중복 방지</span>
+        </div>
+        <div class="sp-body" id="rp-sp-body"></div>
+      </aside>
+      <aside class="rail" aria-label="오른쪽 레일" id="rp-rail"></aside>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 사이드 창을 닫았을 때 -->
+<section class="scene" id="01-panel-closed" role="tabpanel">
+  <div class="intro">
+    <h2>사이드 창을 닫았을 때 <span class="proposal">제안</span></h2>
+    <p><span class="proposal">제안</span> 지금: 사이드 창을 닫으면 본문이 왼쪽에 붙어 오른쪽이 약 260px 비고 상단 줄과 정렬선이 맞지 않아요. 바뀐 뒤: 본문 최대폭을 가운데 정렬하고 상단 줄과 정렬선을 맞춰요.</p>
+    <div class="controls-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">비교</span>
+        <div class="seg" role="group" aria-label="사이드 창 닫힘 정렬 비교">
+          <button aria-pressed="false" data-pc-mode="now">지금 동작</button>
+          <button aria-pressed="true" data-pc-mode="after">바뀐 뒤 <span class="proposal">제안</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner" id="pc-topbar">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav"><span class="on">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span></div>
+        </div>
+        <div class="tb-right">
+          <div class="m-search"><span>이 연구에서 찾기</span><span>⌘K</span></div>
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace panel-closed">
+      <div class="main-pane" id="pc-main"></div>
+      <aside class="rail" aria-label="오른쪽 레일">
+        <div class="rail-top">
+          <button class="rail-collapse" type="button" title="사이드 창 열기" aria-label="사이드 창 열기">«</button>
+          <button class="rail-btn" type="button" title="도우미">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg></span>
+            <span>도우미</span>
+          </button>
+          <button class="rail-btn" type="button" title="할 일">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg></span>
+            <span>할 일</span>
+          </button>
+          <button class="rail-btn" type="button" title="결정·질문">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v12H7l-3 3V3z"/></svg></span>
+            <span>결정·질문</span>
+          </button>
+          <button class="rail-btn" type="button" title="자료">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg></span>
+            <span>자료</span>
+          </button>
+        </div>
+        <div class="rail-bot">
+          <button class="rail-btn" type="button" title="의견">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span>
+            <span>의견</span>
+          </button>
+          <button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>
+          <button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- 4. 알림 위치 -->
+<section class="scene" id="01-toast" role="tabpanel">
+  <div class="intro">
+    <h2>알림 위치</h2>
+    <p>지금: 완료 토스트가 레일 아래 버튼('의견'·'화면 배치'·'설정')을 가려요. 바뀐 뒤: 토스트가 레일 폭(60px) + 16px 안쪽에 떠서 버튼을 가리지 않아요. <span class="proposal">여백 16px 제안</span></p>
+    <div class="controls-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">비교</span>
+        <div class="seg" role="group" aria-label="알림 위치 비교">
+          <button aria-pressed="false" data-toast-mode="now">지금 동작</button>
+          <button aria-pressed="true" data-toast-mode="after">바뀐 뒤</button>
+        </div>
+      </div>
+      <button class="btn primary" type="button" id="btn-toast-trigger">완료해 보기</button>
+      <span class="ctrl-label" id="toast-status" role="status">토스트 표시 중</span>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav"><span>홈</span><span>미팅</span><span class="on">할 일</span><span>글·자료</span></div>
+        </div>
+        <div class="tb-right">
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace panel-closed toast-stage toast-keep-rail">
+      <div class="main-pane">
+        <div class="section-box">
+          <h3>할 일</h3>
+          <div class="task-row">
+            <input type="checkbox" id="toast-task-chk" checked aria-label="선행연구 비교표 보완 완료" />
+            <div>
+              <div class="task-title done" id="toast-task-title">선행연구 비교표 보완</div>
+              <div class="task-meta"><span class="chip src">제5차 논문 지도에서</span></div>
+            </div>
+          </div>
+          <p class="r-desc" id="toast-place-note" style="margin-top:12px;"></p>
+        </div>
+      </div>
+      <aside class="rail" aria-label="오른쪽 레일">
+        <div class="rail-top">
+          <button class="rail-collapse" type="button" title="사이드 창 열기" aria-label="사이드 창 열기">«</button>
+          <button class="rail-btn active" type="button" title="도우미">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg></span>
+            <span>도우미</span>
+          </button>
+          <button class="rail-btn" type="button" title="할 일">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg></span>
+            <span>할 일</span>
+          </button>
+          <button class="rail-btn" type="button" title="결정·질문">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v12H7l-3 3V3z"/></svg></span>
+            <span>결정·질문</span>
+          </button>
+          <button class="rail-btn" type="button" title="자료">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg></span>
+            <span>자료</span>
+          </button>
+        </div>
+        <div class="rail-bot">
+          <button class="rail-btn" type="button" title="의견">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span>
+            <span>의견</span>
+          </button>
+          <button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>
+          <button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>
+        </div>
+      </aside>
+      <div class="mock-toast on" id="mock-toast" role="status" aria-live="polite">
+        <span>'선행연구 비교표 보완' 완료했어요.</span>
+        <button type="button" id="btn-toast-undo">되돌리기</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 도우미 첫 화면 -->
+<section class="scene" id="01-assistant-start" role="tabpanel">
+  <div class="intro">
+    <h2>도우미 첫 화면</h2>
+    <p>지금: 홈에서는 시작 카드가 1개만 뜨고, PDF 자료에서는 맥락 칩 없이 일반 예시만 떠요. 바뀐 뒤: 맥락 카드를 먼저 놓고 모자란 자리는 일반 예시로 채워 항상 3개를 보여 줘요. 원고와 PDF 자료 모두 입력창 위에 맥락 칩이 붙어요. <span class="proposal">카드 문구 예시 제안</span></p>
+    <div class="controls-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">비교</span>
+        <div class="seg" role="group" aria-label="도우미 첫 화면 비교">
+          <button aria-pressed="false" data-as-mode="now">지금 동작</button>
+          <button aria-pressed="true" data-as-mode="after">바뀐 뒤</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">지금 보는 화면</span>
+        <div class="seg" role="group" aria-label="도우미 기준 화면">
+          <button aria-pressed="true" data-as-route="home">홈</button>
+          <button aria-pressed="false" data-as-route="writing">원고</button>
+          <button aria-pressed="false" data-as-route="pdf">PDF 자료</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav" id="as-nav"></div>
+        </div>
+        <div class="tb-right">
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <div class="main-pane" id="as-main"></div>
+      <aside class="side-panel" aria-label="연구 도우미">
+        <div class="sp-head">
+          <h3>연구 도우미</h3>
+          <span class="tag after" id="as-count-tag">시작 카드 3개</span>
+          <div class="sp-tabs" role="tablist" aria-label="도우미 탭">
+            <button type="button" class="sp-tab on" role="tab" aria-selected="true">대화</button>
+            <button type="button" class="sp-tab" role="tab" aria-selected="false">제안 6</button>
+            <button type="button" class="sp-tab" role="tab" aria-selected="false">실행 내역</button>
+          </div>
+        </div>
+        <div class="sp-body">
+          <div class="r-desc" id="as-lead"></div>
+          <div class="starter-list" id="as-cards"></div>
+          <p class="r-desc" id="as-status" role="status"></p>
+        </div>
+        <div class="sp-foot">
+          <div id="as-ctx"></div>
+          <div class="composer-box">질문을 적어 주세요 · / 명령어 · 연구 기록 연결</div>
+          <div class="credit-row">
+            <span>남은 양 <b>96%</b></span>
+            <span>사용 내역 ›</span>
+          </div>
+        </div>
+      </aside>
+      <aside class="rail" aria-label="오른쪽 레일">
+        <div class="rail-top">
+          <button class="rail-collapse" type="button" title="사이드 창 접기" aria-label="사이드 창 접기">≫</button>
+          <button class="rail-btn active" type="button" title="도우미">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg></span>
+            <span>도우미</span>
+          </button>
+          <button class="rail-btn" type="button" title="할 일">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg></span>
+            <span>할 일</span>
+          </button>
+          <button class="rail-btn" type="button" title="결정·질문">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v12H7l-3 3V3z"/></svg></span>
+            <span>결정·질문</span>
+          </button>
+          <button class="rail-btn" type="button" title="자료">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg></span>
+            <span>자료</span>
+          </button>
+        </div>
+        <div class="rail-bot">
+          <button class="rail-btn" type="button" title="의견">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span>
+            <span>의견</span>
+          </button>
+          <button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>
+          <button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- 6. 제안 정리 -->
+<section class="scene" id="01-suggestions" role="tabpanel">
+  <div class="intro">
+    <h2>제안 정리</h2>
+    <p>지금: 대기 제안이 쌓여도 한 번에 정리할 수 없고, 카드마다 같은 안내 문장이 되풀이돼요. 바뀐 뒤: 안내 문장은 막대 위에 한 번만 두고, 일괄 정리 막대와 비우기 되돌리기 토스트로 여러 제안을 한꺼번에 처리해요.</p>
+    <div class="controls-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">비교</span>
+        <div class="seg" role="group" aria-label="제안 정리 비교">
+          <button aria-pressed="false" data-sg-mode="now">지금 동작</button>
+          <button aria-pressed="true" data-sg-mode="after">바뀐 뒤</button>
+        </div>
+      </div>
+      <button class="btn" type="button" id="sg-reset">처음으로</button>
+      <span class="ctrl-label" id="sg-status" role="status"></span>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav"><span class="on">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span></div>
+        </div>
+        <div class="tb-right">
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace toast-keep-rail">
+      <div class="main-pane">
+        <div class="section-box">
+          <h3>제안 정리 화면</h3>
+          <p class="r-desc">미팅 정리와 원고 검토에서 뽑힌 제안 후보를 오른쪽 사이드 창에서 모아 정리해요.</p>
+        </div>
+      </div>
+      <aside class="side-panel" aria-label="연구 도우미 제안 탭">
+        <div class="sp-head">
+          <h3>연구 도우미</h3>
+          <div class="sp-tabs" role="tablist" aria-label="도우미 탭">
+            <button type="button" class="sp-tab" role="tab" aria-selected="false">대화</button>
+            <button type="button" class="sp-tab on" role="tab" aria-selected="true" id="sg-tab-count">제안 6</button>
+            <button type="button" class="sp-tab" role="tab" aria-selected="false">실행 내역</button>
+          </div>
+        </div>
+        <div class="sp-body" id="sg-body"></div>
+      </aside>
+      <aside class="rail" aria-label="오른쪽 레일">
+        <div class="rail-top">
+          <button class="rail-collapse" type="button" title="사이드 창 접기" aria-label="사이드 창 접기">≫</button>
+          <button class="rail-btn active" type="button" title="도우미">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg></span>
+            <span>도우미</span>
+          </button>
+          <button class="rail-btn" type="button" title="할 일">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg></span>
+            <span>할 일</span>
+          </button>
+          <button class="rail-btn" type="button" title="결정·질문">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v12H7l-3 3V3z"/></svg></span>
+            <span>결정·질문</span>
+          </button>
+          <button class="rail-btn" type="button" title="자료">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg></span>
+            <span>자료</span>
+          </button>
+        </div>
+        <div class="rail-bot">
+          <button class="rail-btn" type="button" title="의견">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span>
+            <span>의견</span>
+          </button>
+          <button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>
+          <button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>
+        </div>
+      </aside>
+      <div class="mock-toast" id="sg-toast" role="status" aria-live="polite">
+        <span id="sg-toast-msg"></span>
+        <button type="button" id="sg-toast-undo">되돌리기</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. 크레딧 표시 -->
+<section class="scene" id="01-credit" role="tabpanel">
+  <div class="intro">
+    <h2>크레딧 표시</h2>
+    <p>지금: 도우미 아래에 '내 잔액 · 19,190크레딧'만 보여 지급량 대비 비율과 사용량 규칙을 알기 어렵고, 원고 도우미 이름이 제각각이에요. 바뀐 뒤: 퍼센트(%) 기준 '남은 양 96%'와 막대를 보이고 값마다 이름(남은 양·이번 달 지급·사용·예약)을 붙여요. 기능 이름은 '수정 제안받기'로 통일해요. <span class="proposal">제안</span> 네 값과 규칙 문구를 누르거나 마우스를 올렸을 때 작은 창으로 여는 방식은 정해지지 않았어요.</p>
+    <div class="controls-bar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">비교</span>
+        <div class="seg" role="group" aria-label="크레딧 표시 비교">
+          <button aria-pressed="false" data-cr-mode="now">지금 동작</button>
+          <button aria-pressed="true" data-cr-mode="after">바뀐 뒤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav"><span>홈</span><span>미팅</span><span>할 일</span><span class="on">글·자료</span></div>
+        </div>
+        <div class="tb-right">
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <div class="main-pane">
+        <div class="section-box">
+          <h3>학위논문 2장 이론적 배경</h3>
+          <p class="r-desc">선행연구를 연구 목적·자료·분석 관점으로 나눠 비교했다.</p>
+          <div class="row">
+            <button class="btn primary" type="button">수정 제안받기</button>
+            <span class="tag ok">기능 이름 통일: 수정 제안받기</span>
+          </div>
+        </div>
+      </div>
+      <aside class="side-panel" aria-label="연구 도우미 크레딧">
+        <div class="sp-head">
+          <h3>연구 도우미</h3>
+          <div class="sp-tabs" role="tablist" aria-label="도우미 탭">
+            <button type="button" class="sp-tab on" role="tab" aria-selected="true">대화</button>
+            <button type="button" class="sp-tab" role="tab" aria-selected="false">제안 6</button>
+            <button type="button" class="sp-tab" role="tab" aria-selected="false">실행 내역</button>
+          </div>
+        </div>
+        <div class="sp-body">
+          <div class="sp-box">
+            <strong>최근 실행: 수정 제안받기</strong>
+            <div class="r-desc">학위논문 2장 · 오늘 14:20 · -0.4%</div>
+          </div>
+        </div>
+        <div class="sp-foot" id="cr-foot"></div>
+      </aside>
+      <aside class="rail" aria-label="오른쪽 레일">
+        <div class="rail-top">
+          <button class="rail-collapse" type="button" title="사이드 창 접기" aria-label="사이드 창 접기">≫</button>
+          <button class="rail-btn active" type="button" title="도우미">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg></span>
+            <span>도우미</span>
+          </button>
+          <button class="rail-btn" type="button" title="할 일">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg></span>
+            <span>할 일</span>
+          </button>
+          <button class="rail-btn" type="button" title="결정·질문">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v12H7l-3 3V3z"/></svg></span>
+            <span>결정·질문</span>
+          </button>
+          <button class="rail-btn" type="button" title="자료">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg></span>
+            <span>자료</span>
+          </button>
+        </div>
+        <div class="rail-bot">
+          <button class="rail-btn" type="button" title="의견">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span>
+            <span>의견</span>
+          </button>
+          <button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>
+          <button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- 8. 의견 보내기 -->
+<section class="scene" id="01-feedback" role="tabpanel">
+  <div class="intro">
+    <h2>의견 보내기</h2>
+    <p>지금: 레일 아래 '의견'을 누르면 외부 메일 앱이 열려요. 바뀐 뒤: 화면 가운데를 가리지 않고 오른쪽 아래 작은 창에서 점수·유형·한 줄 의견을 바로 보낼 수 있어요. 주소와 창 크기 첨부는 기본 꺼짐이고, 켰을 때만 보낼 값을 미리 보여 줘요. <span class="proposal">제안: 앱 안에 저장</span></p>
+    <div class="controls-bar">
+      <button class="btn primary" type="button" id="fb-open-btn">의견 창 열기·닫기</button>
+      <span class="ctrl-label" id="fb-status" role="status">오른쪽 아래 의견 창 열림</span>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="tb-left">
+          <span class="logo">margin</span>
+          <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+          <div class="m-nav"><span>홈</span><span>미팅</span><span>할 일</span><span class="on">글·자료</span></div>
+        </div>
+        <div class="tb-right">
+          <div class="avatar" aria-label="김학생">김</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="workspace panel-closed fb-stage toast-keep-rail">
+      <div class="main-pane">
+        <div class="section-box">
+          <h3>글·자료 목록</h3>
+          <p class="r-desc">의견 창이 오른쪽 아래에만 떠서 본문 글·자료 작업을 가리지 않아요.</p>
+        </div>
+        <div class="fb-pop open" id="fb-pop" role="dialog" aria-label="의견 보내기">
+          <div class="fb-head">
+            <h3>마진 사용이 어떠신가요?</h3>
+            <button class="btn" type="button" id="fb-close" style="min-height:32px;padding:4px 9px;">닫기</button>
+          </div>
+          <div class="score-row" role="group" aria-label="만족도 점수">
+            <button type="button" class="score-btn" data-score="1" aria-pressed="false">1</button>
+            <button type="button" class="score-btn" data-score="2" aria-pressed="false">2</button>
+            <button type="button" class="score-btn" data-score="3" aria-pressed="false">3</button>
+            <button type="button" class="score-btn" data-score="4" aria-pressed="true">4</button>
+            <button type="button" class="score-btn" data-score="5" aria-pressed="false">5</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute);">
+            <span>매우 불편</span><span>매우 만족</span>
+          </div>
+          <div class="type-chips" role="group" aria-label="의견 유형">
+            <button type="button" class="tchip" data-ftype="불편해요" aria-pressed="true">불편해요</button>
+            <button type="button" class="tchip" data-ftype="제안해요" aria-pressed="false">제안해요</button>
+            <button type="button" class="tchip" data-ftype="오류예요" aria-pressed="false">오류예요</button>
+          </div>
+          <input type="text" class="fb-input" id="fb-text" aria-label="한 줄 의견" placeholder="지금 화면에서 아쉽거나 바라는 점을 적어 주세요." />
+          <label class="ut-chk">
+            <input type="checkbox" id="fb-ctx-chk" />
+            <span>현재 화면 주소와 창 크기 함께 보내기</span>
+          </label>
+          <div class="fb-preview" id="fb-preview" hidden>보낼 값: /r/…/docs · 1440×900</div>
+          <div class="row" style="justify-content:space-between;margin-top:8px;">
+            <span class="proposal">제안: 앱 안에 저장</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn" type="button" id="fb-cancel">닫기</button>
+              <button class="btn primary" type="button" id="fb-send">보내기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="rail" aria-label="오른쪽 레일">
+        <div class="rail-top">
+          <button class="rail-collapse" type="button" title="사이드 창 열기" aria-label="사이드 창 열기">«</button>
+          <button class="rail-btn" type="button" title="도우미">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg></span>
+            <span>도우미</span>
+          </button>
+          <button class="rail-btn" type="button" title="할 일">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg></span>
+            <span>할 일</span>
+          </button>
+          <button class="rail-btn" type="button" title="결정·질문">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 3h16v12H7l-3 3V3z"/></svg></span>
+            <span>결정·질문</span>
+          </button>
+          <button class="rail-btn" type="button" title="자료">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg></span>
+            <span>자료</span>
+          </button>
+        </div>
+        <div class="rail-bot">
+          <button class="rail-btn active" type="button" id="fb-rail-btn" title="의견">
+            <span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span>
+            <span>의견</span>
+          </button>
+          <button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>
+          <button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>
+        </div>
+      </aside>
+      <div class="mock-toast" id="fb-toast" role="status" aria-live="polite">
+        <span>보냈어요. 고마워요.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  function seg(section, attr, onChange) {
+    var btns = section.querySelectorAll('.seg button[data-' + attr + ']');
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        btns.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        onChange(b.dataset[attr]);
+      });
+    });
+  }
+
+  // 1. 연구 홈
+  (function () {
+    var sec = document.getElementById('01-home');
+    var mode = 'after';
+    var done = { t1: false, t2: false, t3: false };
+
+    function render() {
+      var now = mode === 'now';
+      var nextCard = now
+        ? '<div class="section-box">' +
+            '<div class="muted-lbl">다음 미팅 · 날짜 미정 <span class="chip">다음</span></div>' +
+            '<div style="font-size:16px;font-weight:700;">제7차 논문 지도</div>' +
+            '<p class="r-desc">아직 준비한 내용이 없어요.</p>' +
+            '<div class="row">' +
+              '<button class="btn" type="button">기록 열기</button>' +
+              '<button class="btn" type="button">미팅 준비하기</button>' +
+              '<button class="btn" type="button">홈의 다음 미팅으로 지정</button>' +
+            '</div>' +
+            '<div class="mismatch">목표가 저장돼 있는데 "아직 준비한 내용이 없어요"가 뜨고, 이미 다음 미팅인데 지정 버튼이 보여요.</div>' +
+          '</div>'
+        : '<div class="section-box">' +
+            '<div class="muted-lbl">다음 미팅 · 11월 28일 (토) 14:00 · 2일 뒤 <span class="chip">다음</span></div>' +
+            '<div style="font-size:16px;font-weight:700;">제7차 논문 지도</div>' +
+            '<p style="margin:6px 0 2px;font-weight:600;">목표: 2장 비교 기준을 교수님과 확정하기</p>' +
+            '<div class="muted-lbl">가져갈 할 일 0 · 보여 줄 글·자료 0 · 질문 0</div>' +
+            '<div class="row">' +
+              '<button class="btn" type="button">기록 열기</button>' +
+              '<button class="btn primary" type="button">미팅 준비하기</button>' +
+            '</div>' +
+          '</div>';
+
+      var tasks = [
+        { id: 't1', title: '선행연구 비교 기준 정리', meta: '5일 지남', src: '제5차 논문 지도에서', carried: '→ 제6차', group: 'next' },
+        { id: 't2', title: '인터뷰 질문지 보완', meta: '4일 지남', src: '제5차 논문 지도에서', carried: '', group: 'next' },
+        { id: 't3', title: '분석 관점 기준의 정의 한 문장 쓰기', meta: '2일 지남', src: '2장 초안 서면 의견에서', carried: '', group: 'other' }
+      ];
+
+      function taskHtml(t) {
+        var chipHtml = now
+          ? '<span class="chip bad">직접 추가</span>'
+          : '<span class="chip src">' + t.src + '</span>' + (t.carried ? '<span class="chip">' + t.carried + '</span>' : '');
+        return '<div class="task-row">' +
+          '<input type="checkbox" data-tid="' + t.id + '" ' + (done[t.id] ? 'checked' : '') + ' aria-label="' + t.title + '" />' +
+          '<div>' +
+            '<div class="task-title ' + (done[t.id] ? 'done' : '') + '">' + t.title + '</div>' +
+            '<div class="task-meta"><span class="overdue">' + t.meta + '</span>' + chipHtml + '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      var taskList = '<div class="section-box">' +
+        '<div class="tabs-line"><span class="on">할 일 3</span><span>알림 1</span><span>최근 미팅</span><span>최근 글·자료</span></div>' +
+        (now ? '' : '<div class="group-sub">● 다음 미팅에 가져갈 할 일</div>') +
+        taskHtml(tasks[0]) + taskHtml(tasks[1]) +
+        '<div class="group-sub other">그 밖의 할 일</div>' +
+        taskHtml(tasks[2]) +
+        (now ? '<div class="mismatch">첫 묶음에 제목이 없어 정렬 이유를 모르고, 기록에서 만든 할 일이 "직접 추가"로 보여요.</div>' : '') +
+      '</div>';
+
+      var flowCard = now
+        ? '<div class="section-box">' +
+            '<h3>연구 흐름</h3>' +
+            '<div class="flow-wrap clipped">' +
+              '<span class="flow-step">01 주제 정의 <span class="flow-badge">예정</span></span>' +
+              '<span class="flow-step">02 선행연구 <span class="flow-badge">예정</span></span>' +
+              '<span class="flow-step current">03 연구 설계</span>' +
+              '<span class="flow-step">04 논문 작성</span>' +
+            '</div>' +
+            '<div class="mismatch">앞 단계 01·02가 "예정"으로 보이고, 04 논문 작성이 잘려요.</div>' +
+          '</div>'
+        : '<div class="section-box">' +
+            '<h3>연구 흐름</h3>' +
+            '<div class="flow-wrap">' +
+              '<span class="flow-step done">✓ 01 주제 정의 <span class="flow-badge">완료</span></span>' +
+              '<span class="flow-step done">✓ 02 선행연구 <span class="flow-badge">완료</span></span>' +
+              '<span class="flow-step current">03 연구 설계 <span class="flow-badge">현재</span></span>' +
+              '<span class="flow-step">04 논문 작성 <span class="flow-badge">예정</span></span>' +
+            '</div>' +
+            '<p class="r-desc" style="margin-top:8px;">다음 목표 · 연구계획서 심사 · 11월 28일 (토)</p>' +
+          '</div>';
+
+      var purposeCard = '<div class="section-box">' +
+        '<h3>연구 목적</h3>' +
+        '<p class="r-desc">대학원생이 지도 미팅 뒤 기록을 정리해 다음 연구로 잇는 경험을 이해한다.</p>' +
+      '</div>';
+
+      document.getElementById('home-main').innerHTML =
+        '<div class="main-head">' +
+          '<div><div class="r-title">대학원생 연구 기록 경험</div><p class="r-desc">지도 미팅 뒤 기록을 정리하는 경험을 살펴보는 가상 연구예요.</p></div>' +
+          '<div class="chips"><span class="chip">현재 단계 연구 설계 ›</span><span class="chip dday">투고까지 D-82</span></div>' +
+        '</div>' +
+        '<div class="home-grid"><div>' + nextCard + taskList + '</div><div>' + flowCard + purposeCard + '</div></div>';
+
+      document.getElementById('home-main').querySelectorAll('input[data-tid]').forEach(function (chk) {
+        chk.onchange = function () { done[chk.dataset.tid] = chk.checked; render(); };
+      });
+    }
+
+    seg(sec, 'home-mode', function (v) { mode = v; render(); });
+    render();
+  })();
+
+  // 2. 사이드 창과 레일
+  (function () {
+    var sec = document.getElementById('01-rail-panel');
+    var mode = 'after', route = 'home', panelTab = 'assistant', panelOpen = true, note = '';
+
+    var railItems = [
+      { id: 'assistant', label: '도우미', icon: '<path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/>' },
+      { id: 'tasks', label: '할 일', icon: '<path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/>' },
+      { id: 'decisions', label: '결정·질문', icon: '<path d="M4 3h16v12H7l-3 3V3z"/>' },
+      { id: 'materials', label: '자료', icon: '<path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/>' }
+    ];
+
+    var routeInfo = {
+      home: { name: '홈', dup: 'tasks', defAfter: 'assistant', defNow: 'tasks', body: '연구 홈 본문 아래에 이미 "할 일" 탭이 열려 있어요.' },
+      tasks: { name: '할 일', dup: 'tasks', defAfter: 'assistant', defNow: 'tasks', body: '할 일 화면 전체가 할 일 목록을 보여 주고 있어요.' },
+      docs: { name: '글·자료', dup: 'materials', defAfter: 'tasks', defNow: 'materials', body: '글·자료 화면에서 연구 자료와 원고 목록을 보고 있어요.' }
+    };
+
+    var labelOf = { assistant: '도우미', tasks: '할 일', decisions: '결정·질문', materials: '자료' };
+
+    function syncDefaultTab() {
+      note = '';
+      panelOpen = true;
+      var info = routeInfo[route];
+      if (mode === 'now') {
+        panelTab = info.defNow;
+      } else {
+        if (panelTab === info.dup || panelTab === info.defAfter) {
+          panelTab = info.defAfter;
+        }
+        if (panelTab === info.dup) panelTab = info.defAfter;
+      }
+    }
+
+    function render() {
+      var info = routeInfo[route];
+      var isDup = panelTab === info.dup;
+      document.getElementById('rp-ws').classList.toggle('panel-closed', !panelOpen);
+
+      document.getElementById('rp-nav').innerHTML =
+        '<span class="' + (route === 'home' ? 'on' : '') + '">홈</span>' +
+        '<span>미팅</span>' +
+        '<span class="' + (route === 'tasks' ? 'on' : '') + '">할 일</span>' +
+        '<span class="' + (route === 'docs' ? 'on' : '') + '">글·자료</span>';
+
+      document.getElementById('rp-main').innerHTML =
+        '<div class="section-box">' +
+          '<h3>본문: ' + info.name + '</h3>' +
+          '<p class="r-desc">' + info.body + '</p>' +
+          (mode === 'now' && isDup
+            ? '<div class="mismatch">본문과 사이드 창에 같은 "' + labelOf[panelTab] + '" 화면이 겹쳐 떠 있어요.</div>'
+            : '<div class="hint-ok">본문("' + info.name + '")과 겹치지 않도록 사이드 창이 "' + labelOf[panelTab] + '" 탭을 보여 줘요.</div>') +
+        '</div>';
+
+      document.getElementById('rp-sp-title').textContent = labelOf[panelTab];
+      var badge = document.getElementById('rp-sp-badge');
+      badge.textContent = (mode === 'now' && isDup) ? '본문과 중복' : '중복 없음';
+      badge.className = 'tag ' + ((mode === 'now' && isDup) ? 'now' : 'after');
+
+      document.getElementById('rp-sp-body').innerHTML =
+        '<div class="sp-box"><b>사이드 창: ' + labelOf[panelTab] + '</b><br>' +
+        (mode === 'now' && isDup
+          ? '본문에도 "' + labelOf[info.dup] + '"이 있는데 사이드 창도 "' + labelOf[panelTab] + '"을 열고 있어요.'
+          : '사이드 창에서 "' + labelOf[panelTab] + '" 내용을 바로 확인할 수 있어요.') +
+        '</div>' +
+        (note ? '<div class="mismatch">' + note + '</div>' : '');
+
+      var topBtns = '<button class="rail-collapse" type="button" id="rp-collapse" title="사이드 창 접기/열기" aria-label="사이드 창 접기/열기">' + (panelOpen ? '»' : '«') + '</button>';
+      railItems.forEach(function (it) {
+        var active = panelOpen && panelTab === it.id;
+        topBtns += '<button class="rail-btn ' + (active ? 'active' : '') + '" type="button" data-rtab="' + it.id + '" title="' + it.label + '" aria-pressed="' + String(active) + '">' +
+          '<span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' + it.icon + '</svg></span>' +
+          '<span>' + it.label + '</span></button>';
+      });
+
+      document.getElementById('rp-rail').innerHTML =
+        '<div class="rail-top">' + topBtns + '</div>' +
+        '<div class="rail-bot">' +
+          '<button class="rail-btn" type="button" title="의견"><span class="ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg></span><span>의견</span></button>' +
+          '<button class="rail-sq" type="button" title="화면 배치" aria-label="화면 배치">◫</button>' +
+          '<button class="rail-sq" type="button" title="설정" aria-label="설정">⚙</button>' +
+        '</div>';
+
+      document.getElementById('rp-collapse').onclick = function () { panelOpen = !panelOpen; render(); };
+      document.getElementById('rp-rail').querySelectorAll('button[data-rtab]').forEach(function (b) {
+        b.onclick = function () {
+          var next = b.dataset.rtab;
+          panelOpen = true;
+          if (mode === 'after' && next === info.dup) {
+            note = '본문 "' + info.name + '"과 겹쳐서 "' + labelOf[next] + '" 대신 "' + labelOf[info.defAfter] + '" 탭을 유지해요.';
+            panelTab = info.defAfter;
+          } else {
+            note = '';
+            panelTab = next;
+          }
+          render();
+        };
+      });
+    }
+
+    seg(sec, 'rp-mode', function (v) { mode = v; syncDefaultTab(); render(); });
+    seg(sec, 'rp-route', function (v) {
+      route = v;
+      note = '';
+      panelOpen = true;
+      var info = routeInfo[route];
+      if (mode === 'now') {
+        panelTab = info.defNow;
+      } else {
+        panelTab = info.defAfter;
+      }
+      render();
+    });
+    syncDefaultTab();
+    render();
+  })();
+
+  // 3. 사이드 창 닫힘 정렬
+  (function () {
+    var sec = document.getElementById('01-panel-closed');
+    var mode = 'after';
+
+    function render() {
+      var top = document.getElementById('pc-topbar');
+      var main = document.getElementById('pc-main');
+      if (mode === 'now') {
+        top.className = 'topbar-inner';
+        main.innerHTML =
+          '<div class="closed-stage">' +
+            '<div class="main-inner-left">' +
+              '<h3>본문 영역 (왼쪽 정렬)</h3>' +
+              '<p class="r-desc">사이드 창을 닫았는데 본문 최대폭이 왼쪽에 붙어 있어요. 위 상단 줄 오른쪽 끝과 본문 오른쪽 끝의 정렬선이 맞지 않아요.</p>' +
+            '</div>' +
+            '<div class="dead-space">오른쪽 빈 여백<br>약 260px<br>(1440px 기준)</div>' +
+          '</div>';
+      } else {
+        top.className = 'topbar-inner aligned';
+        main.innerHTML =
+          '<div class="main-inner-center">' +
+            '<h3>본문 영역 (가운데 정렬) <span class="proposal">제안</span></h3>' +
+            '<p class="r-desc">상단 줄 내용과 본문 최대폭을 같은 폭으로 가운데 정렬해 양쪽 정렬선이 맞고 오른쪽 빈 덩어리가 사라져요.</p>' +
+          '</div>';
+      }
+    }
+
+    seg(sec, 'pc-mode', function (v) { mode = v; render(); });
+    render();
+  })();
+
+  // 4. 알림 위치
+  (function () {
+    var sec = document.getElementById('01-toast');
+    var mode = 'after';
+    var toastOn = true;
+
+    function render() {
+      var toast = document.getElementById('mock-toast');
+      var chk = document.getElementById('toast-task-chk');
+      var title = document.getElementById('toast-task-title');
+      var status = document.getElementById('toast-status');
+      var note = document.getElementById('toast-place-note');
+
+      title.className = 'task-title' + (chk.checked ? ' done' : '');
+      toast.className = 'mock-toast' + (toastOn ? ' on' : '') + (mode === 'now' ? ' overlap' : '');
+      if (toastOn) {
+        status.textContent = mode === 'now' ? '토스트 표시 중 · 레일 아래 버튼 가림' : '토스트 표시 중 · 레일 안쪽 76px 배치';
+      } else {
+        status.textContent = '토스트 닫힘 (되돌리기 완료)';
+      }
+      note.innerHTML = mode === 'now'
+        ? '<span class="mismatch">지금 동작: 토스트가 오른쪽 끝에 붙어 60px 레일 아래 "의견"·"화면 배치"·"설정" 버튼을 덮어요.</span>'
+        : '<span class="hint-ok">바뀐 뒤: 토스트가 레일 폭(60px) + 16px <span class="proposal">제안</span> 왼쪽에 떠서 레일 버튼을 가리지 않아요.</span>';
+    }
+
+    function triggerComplete() {
+      document.getElementById('toast-task-chk').checked = true;
+      toastOn = true;
+      render();
+    }
+
+    document.getElementById('btn-toast-trigger').onclick = triggerComplete;
+    document.getElementById('toast-task-chk').onchange = function () {
+      toastOn = this.checked;
+      render();
+    };
+    document.getElementById('btn-toast-undo').onclick = function () {
+      document.getElementById('toast-task-chk').checked = false;
+      toastOn = false;
+      render();
+    };
+    seg(sec, 'toast-mode', function (v) { mode = v; render(); });
+    render();
+  })();
+
+  // 5. 도우미 첫 화면
+  (function () {
+    var sec = document.getElementById('01-assistant-start');
+    var mode = 'after', route = 'home';
+
+    var data = {
+      home: {
+        nav: '홈',
+        mainTitle: '연구 홈',
+        mainBody: '다음 미팅 제7차 논문 지도와 미정리 피드백, 기한 지난 할 일이 있어요.',
+        ctxNow: '',
+        ctxAfter: '',
+        leadNow: '맥락 카드가 1개뿐이라 일반 예시가 채워지지 않았어요.',
+        leadAfter: '맥락 카드를 먼저 놓고 부족한 자리는 일반 예시로 채워 항상 3개를 보여 드려요.',
+        cardsNow: [
+          { kind: '맥락', title: '이번 주 할 일 정리하기' }
+        ],
+        cardsAfter: [
+          { kind: '맥락 · 다음 미팅', title: '7차 논문 지도에 가져갈 핵심 안건 정리하기' },
+          { kind: '맥락 · 기한 지남', title: '이번 주 안에 끝낼 수정 순서 정하기' },
+          { kind: '일반 예시 보충', title: '현재 연구 질문에 빠진 근거 확인하기' }
+        ]
+      },
+      writing: {
+        nav: '글·자료',
+        mainTitle: '원고 · 학위논문 2장',
+        mainBody: '2장 이론적 배경 초안을 고치고 있어요. 교수님 서면 피드백이 2건 있어요.',
+        ctxNow: '학위논문 2장 · 문서',
+        ctxAfter: '학위논문 2장 · 문서',
+        leadNow: '원고 맥락 칩은 있지만 시작 카드가 상황에 맞지 않는 일반 예시만 있어요.',
+        leadAfter: '원고 맥락 칩과 함께 원고 작업에 맞는 시작 카드 3개를 바로 보여 드려요.',
+        cardsNow: [
+          { kind: '일반 예시', title: '이 미팅 요약하기' },
+          { kind: '일반 예시', title: '할 일 목록 정리하기' },
+          { kind: '일반 예시', title: '최근 질문 확인하기' }
+        ],
+        cardsAfter: [
+          { kind: '맥락 · 원고', title: '이 글에서 고칠 문장 찾기' },
+          { kind: '맥락 · 원고', title: '받은 피드백과 이 글 대조하기' },
+          { kind: '맥락 · 원고', title: '수정 제안받기' }
+        ]
+      },
+      pdf: {
+        nav: '글·자료',
+        mainTitle: 'PDF 자료 · 선행연구 비교표 v2',
+        mainBody: '참고 논문 PDF를 열어 비교 기준 표를 확인하고 있어요.',
+        ctxNow: '',
+        ctxAfter: '학위논문 2장 참고 PDF · 문서',
+        leadNow: 'PDF 자료 화면에는 입력창 위 맥락 칩도 빠졌고, 카드도 일반 예시만 나와요.',
+        leadAfter: 'PDF 자료에서도 맥락 칩이 붙고, 자료 내용에 맞는 카드와 예시 3개를 함께 보여 드려요.',
+        cardsNow: [
+          { kind: '일반 예시', title: '이 미팅 요약하기' },
+          { kind: '일반 예시', title: '할 일 목록 정리하기' },
+          { kind: '일반 예시', title: '최근 질문 확인하기' }
+        ],
+        cardsAfter: [
+          { kind: '맥락 · PDF 자료', title: '이 PDF의 핵심 주장 3줄로 요약하기' },
+          { kind: '맥락 · PDF 자료', title: '2장 원고와 다른 비교 기준 찾기' },
+          { kind: '일반 예시 보충', title: '수정 제안받기' }
+        ]
+      }
+    };
+
+    function render() {
+      var d = data[route];
+      var now = mode === 'now';
+      var cards = now ? d.cardsNow : d.cardsAfter;
+      var ctx = now ? d.ctxNow : d.ctxAfter;
+
+      document.getElementById('as-nav').innerHTML =
+        '<span class="' + (d.nav === '홈' ? 'on' : '') + '">홈</span>' +
+        '<span>미팅</span><span>할 일</span>' +
+        '<span class="' + (d.nav === '글·자료' ? 'on' : '') + '">글·자료</span>';
+
+      document.getElementById('as-main').innerHTML =
+        '<div class="section-box"><h3>' + d.mainTitle + '</h3><p class="r-desc">' + d.mainBody + '</p></div>';
+
+      var cTag = document.getElementById('as-count-tag');
+      cTag.textContent = '시작 카드 ' + cards.length + '개';
+      cTag.className = 'tag ' + (cards.length === 3 ? 'after' : 'now');
+
+      document.getElementById('as-lead').innerHTML = (now ? d.leadNow : d.leadAfter) + ' <span class="proposal">제안</span>';
+      document.getElementById('as-cards').innerHTML = cards.map(function (c) {
+        return '<button type="button" class="starter-card" data-card-title="' + c.title + '">' +
+          '<div class="starter-tag">' + c.kind + '</div>' +
+          '<div class="starter-title">' + c.title + '</div>' +
+        '</button>';
+      }).join('');
+
+      document.getElementById('as-ctx').innerHTML = ctx
+        ? '<div class="ctx-chip">' + ctx + '</div>'
+        : '<div class="r-desc" style="margin-bottom:6px;">' + (route === 'pdf' && now ? '<span class="tag now">맥락 칩 없음</span>' : '전체 연구 기준') + '</div>';
+
+      document.getElementById('as-status').textContent = '';
+      document.getElementById('as-cards').querySelectorAll('.starter-card').forEach(function (b) {
+        b.onclick = function () {
+          document.getElementById('as-status').textContent = "'" + b.dataset.cardTitle + "' 카드를 입력창에 채웠어요.";
+        };
+      });
+    }
+
+    seg(sec, 'as-mode', function (v) { mode = v; render(); });
+    seg(sec, 'as-route', function (v) { route = v; render(); });
+    render();
+  })();
+
+  // 6. 제안 정리
+  (function () {
+    var sec = document.getElementById('01-suggestions');
+    var mode = 'after';
+    var initial = [
+      { id: 's1', src: '제5차 논문 지도', title: '비교표에 연구 목적별 선정 이유 열 추가', quote: '교수님께서 비교 기준 세 가지를 표 첫 줄에 두라고 하셨어요.', old: true, checked: false },
+      { id: 's2', src: '제5차 논문 지도', title: '인터뷰 질문지 문항을 10개 안으로 정리', quote: '질문 수만 줄이고 참여자 안내 문구는 따로 확인하기로 했어요.', old: true, checked: false },
+      { id: 's3', src: '제4차 논문 지도', title: '선행연구 연도 기준 2020년 이후로 맞추기', quote: '최근 연구 중심으로 범위를 좁혀 보자는 의견이 나왔어요.', old: true, checked: false },
+      { id: 's4', src: '2장 초안 의견', title: '용어 정의 문단 앞뒤 순서 바꾸기', quote: '핵심 개념을 먼저 쓰고 비교 기준을 이어 붙이는 편이 읽혀요.', old: false, checked: false },
+      { id: 's5', src: '2장 초안 의견', title: '표 2-1 출처 연도 누락 채우기', quote: '두 번째 행 참고문헌 표기가 비어 있어요.', old: false, checked: false },
+      { id: 's6', src: '제6차 논문 지도', title: '다음 미팅 안건에 윤리 심의 일정 넣기', quote: '자료 수집 전에 일정 확인이 필요해요.', old: false, checked: false }
+    ];
+    var items = [];
+    var snapshot = null;
+    var statusText = '';
+
+    function reset() {
+      items = initial.map(function (x) { return Object.assign({}, x); });
+      snapshot = null;
+      statusText = '';
+      document.getElementById('sg-toast').classList.remove('on');
+      render();
+    }
+
+    function showToast(msg) {
+      document.getElementById('sg-toast-msg').textContent = msg;
+      document.getElementById('sg-toast').classList.add('on');
+    }
+
+    function render() {
+      var now = mode === 'now';
+      document.getElementById('sg-tab-count').textContent = '제안 ' + items.length;
+      document.getElementById('sg-status').textContent = statusText;
+
+      var allChecked = items.length > 0 && items.every(function (x) { return x.checked; });
+      var notice = '선택한 제안만 기록에 남아요. 선택하지 않은 제안은 나만 볼 수 있어요.';
+      var bar = now
+        ? ''
+        : '<div class="sugg-notice">' + notice + '</div>' +
+          '<div class="triage-bar">' +
+            '<label class="ut-chk" style="margin:0;"><input type="checkbox" id="sg-all" ' + (allChecked ? 'checked' : '') + ' /><span>전체 선택</span></label>' +
+            '<div class="triage-actions">' +
+              '<button class="btn primary" type="button" id="sg-accept">선택한 제안 반영</button>' +
+              '<button class="btn" type="button" id="sg-skip">선택한 제안 넘기기</button>' +
+              '<button class="btn" type="button" id="sg-clear-old">오래된 제안 비우기</button>' +
+            '</div>' +
+          '</div>';
+
+      var listHtml = items.length
+        ? '<div class="sugg-list">' + items.map(function (it) {
+            return '<div class="sugg-card">' +
+              '<div class="sugg-head">' +
+                (now ? '' : '<input type="checkbox" data-sid="' + it.id + '" ' + (it.checked ? 'checked' : '') + ' aria-label="' + it.title + ' 선택" />') +
+                '<div style="min-width:0;flex:1;">' +
+                  '<div class="starter-tag">' + it.src + (it.old ? ' · 이전 미팅' : '') + '</div>' +
+                  '<div class="starter-title">' + it.title + '</div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="sugg-quote">' + it.quote + '</div>' +
+              (now ? '<p class="r-desc" style="margin-top:6px;">' + notice + '</p>' : '') +
+            '</div>';
+          }).join('') + '</div>'
+        : '<div class="sp-box">남은 제안이 없어요.</div>';
+
+      document.getElementById('sg-body').innerHTML = bar + listHtml;
+
+      document.getElementById('sg-body').querySelectorAll('input[data-sid]').forEach(function (chk) {
+        chk.onchange = function () {
+          var target = items.find(function (x) { return x.id === chk.dataset.sid; });
+          if (target) target.checked = chk.checked;
+          render();
+        };
+      });
+
+      var allBox = document.getElementById('sg-all');
+      if (allBox) {
+        allBox.onchange = function () {
+          var v = allBox.checked;
+          items.forEach(function (x) { x.checked = v; });
+          render();
+        };
+      }
+      var accBtn = document.getElementById('sg-accept');
+      if (accBtn) {
+        accBtn.onclick = function () {
+          var sel = items.filter(function (x) { return x.checked; });
+          if (!sel.length) { statusText = '먼저 반영할 제안을 골라 주세요.'; render(); return; }
+          snapshot = items.map(function (x) { return Object.assign({}, x); });
+          items = items.filter(function (x) { return !x.checked; });
+          statusText = sel.length + '건을 기록에 반영했어요.';
+          showToast('선택한 제안 ' + sel.length + '건을 반영했어요.');
+          render();
+        };
+      }
+      var skipBtn = document.getElementById('sg-skip');
+      if (skipBtn) {
+        skipBtn.onclick = function () {
+          var sel = items.filter(function (x) { return x.checked; });
+          if (!sel.length) { statusText = '먼저 넘길 제안을 골라 주세요.'; render(); return; }
+          snapshot = items.map(function (x) { return Object.assign({}, x); });
+          items = items.filter(function (x) { return !x.checked; });
+          statusText = sel.length + '건을 넘겼어요.';
+          showToast('선택한 제안 ' + sel.length + '건을 넘겼어요.');
+          render();
+        };
+      }
+      var oldBtn = document.getElementById('sg-clear-old');
+      if (oldBtn) {
+        oldBtn.onclick = function () {
+          var oldItems = items.filter(function (x) { return x.old; });
+          if (!oldItems.length) { statusText = '비울 오래된 제안이 없어요.'; render(); return; }
+          snapshot = items.map(function (x) { return Object.assign({}, x); });
+          items = items.filter(function (x) { return !x.old; });
+          statusText = '오래된 제안 ' + oldItems.length + '건을 비웠어요.';
+          showToast('오래된 제안 ' + oldItems.length + '건을 비웠어요.');
+          render();
+        };
+      }
+    }
+
+    document.getElementById('sg-toast-undo').onclick = function () {
+      if (snapshot) {
+        items = snapshot;
+        snapshot = null;
+        statusText = '방금 정리를 되돌렸어요.';
+      }
+      document.getElementById('sg-toast').classList.remove('on');
+      render();
+    };
+    document.getElementById('sg-reset').onclick = reset;
+    seg(sec, 'sg-mode', function (v) { mode = v; render(); });
+    reset();
+  })();
+
+  // 7. 크레딧 표시
+  (function () {
+    var sec = document.getElementById('01-credit');
+    var mode = 'after';
+    var popOpen = true;
+
+    function render() {
+      var foot = document.getElementById('cr-foot');
+      if (mode === 'now') {
+        foot.innerHTML =
+          '<div class="composer-box">질문을 적어 주세요 · / 명령어</div>' +
+          '<div class="credit-row">' +
+            '<span>내 잔액 · 19,190크레딧</span>' +
+            '<span>사용 내역 ›</span>' +
+          '</div>' +
+          '<div class="mismatch">퍼센트 비율과 지급·사용·예약 구분이 보이지 않고, 분당 실행 횟수 안내가 빠져 있어요.</div>';
+        return;
+      }
+
+      foot.innerHTML =
+        '<div class="composer-box">질문을 적어 주세요 · / 명령어 · 수정 제안받기</div>' +
+        '<div class="credit-row">' +
+          '<button type="button" class="credit-btn" id="cr-trigger" aria-expanded="' + String(popOpen) + '">' +
+            '<span>남은 양 <b>96%</b></span>' +
+            '<span class="credit-bar" aria-hidden="true"><span class="credit-fill" style="display:block;"></span></span>' +
+          '</button>' +
+          '<span class="proposal">눌러서·마우스로 열기 제안</span>' +
+        '</div>' +
+        '<div class="credit-pop ' + (popOpen ? 'open' : '') + '" id="cr-pop" role="region" aria-label="크레딧 상세">' +
+          '<div class="credit-grid">' +
+            '<div class="credit-cell"><span>남은 양</span><strong>19,190</strong></div>' +
+            '<div class="credit-cell"><span>이번 달 지급</span><strong>20,000</strong></div>' +
+            '<div class="credit-cell"><span>사용</span><strong>479</strong></div>' +
+            '<div class="credit-cell"><span>예약</span><strong>332</strong></div>' +
+          '</div>' +
+          '<p class="r-desc" style="margin:0;">월 크레딧 안에서 쓰고, 1분에 6번까지 실행할 수 있어요.</p>' +
+        '</div>';
+
+      var trig = document.getElementById('cr-trigger');
+      trig.onclick = function () { popOpen = !popOpen; render(); };
+      trig.onmouseenter = function () { if (!popOpen) { popOpen = true; render(); } };
+    }
+
+    seg(sec, 'cr-mode', function (v) { mode = v; popOpen = true; render(); });
+    render();
+  })();
+
+  // 8. 의견 보내기
+  (function () {
+    var pop = document.getElementById('fb-pop');
+    var chk = document.getElementById('fb-ctx-chk');
+    var preview = document.getElementById('fb-preview');
+    var status = document.getElementById('fb-status');
+    var toast = document.getElementById('fb-toast');
+
+    function syncPreview() {
+      preview.hidden = !chk.checked;
+    }
+
+    function setOpen(open) {
+      pop.classList.toggle('open', open);
+      status.textContent = open ? '오른쪽 아래 의견 창 열림' : '의견 창 닫힘';
+    }
+
+    document.getElementById('fb-open-btn').onclick = function () { setOpen(!pop.classList.contains('open')); };
+    document.getElementById('fb-rail-btn').onclick = function () { setOpen(!pop.classList.contains('open')); };
+    document.getElementById('fb-close').onclick = function () { setOpen(false); };
+    document.getElementById('fb-cancel').onclick = function () { setOpen(false); };
+
+    chk.onchange = syncPreview;
+
+    document.querySelectorAll('[id="01-feedback"] .score-btn').forEach(function (b) {
+      b.onclick = function () {
+        document.querySelectorAll('[id="01-feedback"] .score-btn').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      };
+    });
+    document.querySelectorAll('[id="01-feedback"] .tchip').forEach(function (b) {
+      b.onclick = function () {
+        document.querySelectorAll('[id="01-feedback"] .tchip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      };
+    });
+
+    document.getElementById('fb-send').onclick = function () {
+      setOpen(false);
+      document.getElementById('fb-text').value = '';
+      chk.checked = false;
+      syncPreview();
+      toast.classList.add('on');
+      status.textContent = '보냈어요. 고마워요.';
+    };
+
+    syncPreview();
+  })();
+})();
+</script>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

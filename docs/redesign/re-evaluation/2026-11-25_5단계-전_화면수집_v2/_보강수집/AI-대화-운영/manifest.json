@@ -1,0 +1,184 @@
+[
+  {
+    "label": "AI 대화 › 가상 연구 기록 추가",
+    "observation": "가상 서면 기록에 참여자 6명·두 비교 기준·날짜 미정을 저장했다. AI 호출 전 화면.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "01-test-record.jpg",
+    "captured_at": "2026-11-25T22:22:41+09:00"
+  },
+  {
+    "label": "AI 대화 › 첨부 없이 가상 연구의 근거 사용",
+    "observation": "Gemini 3.8 Flash에서 참여자 6명·일정 유연성/이동 부담·인터뷰 미정·정확한 기록 제목을 확인했다. 이번 요청 1크레딧.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "02-research-context.jpg",
+    "captured_at": "2026-11-25T22:23:01+09:00"
+  },
+  {
+    "label": "AI 대화 › 후속 질문에서 미정과 가정 구분",
+    "observation": "같은 대화에서 11월 28일로 유도했다. 실제 답변은 날짜 확정 근거가 없다고 답했고 미팅 메모 근거 버튼을 표시했다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "03-followup-unknown.jpg",
+    "captured_at": "2026-11-25T22:23:09+09:00"
+  },
+  {
+    "label": "AI 대화 › 근거 목록에서 연구 원문 고르기",
+    "observation": "근거 1개를 실제로 펼쳤을 때 합성 미팅 메모 원문 링크가 표시됐다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "04-research-source-list.jpg",
+    "captured_at": "2026-11-25T22:23:14+09:00"
+  },
+  {
+    "label": "AI 대화 › 연구 기록의 근거 창에 본문 없음",
+    "observation": "저장 연구의 근거 제목은 맞았다. 클릭하면 같은 화면의 근거 창은 열리지만 “이 근거의 본문은 대화에 보존되지 않았어요.”가 나오며 원본으로 바로 갈 버튼은 없었다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "05-research-source-preview.jpg",
+    "captured_at": "2026-11-25T22:23:18+09:00"
+  },
+  {
+    "label": "AI 대화 › 가상 PDF 읽기 및 첨부 칩",
+    "observation": "새 대화에서 가상 PDF를 파일 선택기로 넣었다. 질문 전 첨부 표시 상태.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "06-attachment-chip.jpg",
+    "captured_at": "2026-11-25T22:23:49+09:00"
+  },
+  {
+    "label": "AI 대화 › 첨부 PDF 값으로 실제 답변",
+    "observation": "합성 연구 6명과 다른 PDF 값 8명·식별표식 PLUM-82를 구분하는 시험. 답변과 근거 표기 상태.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "07-pdf-answer.jpg",
+    "captured_at": "2026-11-25T22:23:55+09:00"
+  },
+  {
+    "label": "AI 대화 › 첨부 PDF 문장 인용에서 1쪽 발췌 표시",
+    "observation": "실제 첨부 인용을 열었을 때 파일명과 [1쪽] 본문, 8명·PLUM-82가 함께 표시됐다. 저장 연구의 근거 상세에는 본문 미보존 상태가 나타났다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "08-pdf-citation-snippet.jpg",
+    "captured_at": "2026-11-25T22:24:06+09:00"
+  },
+  {
+    "label": "AI 대화 › 웹 검색을 켠 뒤 전송 전 안내",
+    "observation": "웹 검색 모드를 켜면 질문만 보낸다는 안내와 검색어당 14크레딧 문구가 표시된다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "09-web-scope.jpg",
+    "captured_at": "2026-11-25T22:24:12+09:00"
+  },
+  {
+    "label": "AI 대화 › 웹 검색의 실제 근거와 크레딧",
+    "observation": "Zotero로 소개한 본문 URL은 별도 확인에서 404. 같은 답변의 첫 근거 링크는 올바른 Zotero PDF Reader로 열렸다. 이번 요청 71크레딧.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "10-web-answer.jpg",
+    "captured_at": "2026-11-25T22:24:33+09:00"
+  },
+  {
+    "label": "AI 대화 › 실행 내역의 실제 검색 기록에서 답변 복귀",
+    "observation": "실행 내역의 71크레딧 성공 행을 눌렀을 때 바로 그 웹 검색 대화로 돌아왔다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "11-run-ledger.jpg",
+    "captured_at": "2026-11-25T22:24:38+09:00"
+  },
+  {
+    "label": "AI 대화 › 가상 할 일 제안이 응답 지연으로 중단",
+    "observation": "운영 할 일 제안이 지연으로 종료돼 입력이 복구됐다. 화면 잔액은 직전보다 37 감소했지만 이 요청의 청구로 확인할 사용량 행은 확보하지 못했다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "14-proposal-timeout.jpg",
+    "captured_at": "2026-11-25T22:26:35+09:00"
+  },
+  {
+    "label": "AI 대화 › 실행 목록에 남은 제안 실패",
+    "observation": "할 일 정리는 실패 상태와 재시도 안내를 남겼다. 비교된 잔액 변화의 원인은 이 행에서 확인되지 않았다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "15-proposal-run-failed.jpg",
+    "captured_at": "2026-11-25T22:26:41+09:00"
+  },
+  {
+    "label": "AI 사용 내역 › 실제 사용과 예약 표시",
+    "observation": "사용 장부에는 웹 검색 71크레딧 및 일반 질문 1크레딧 행들만 실제 사용으로 표시됐다. 36크레딧은 사용 예약 중으로 표시됐다. 화면 안내는 여전히 선택한 기록과 질문만이라고 적혀 있다.",
+    "viewport": {
+      "h": 720,
+      "w": 1280
+    },
+    "source": "https://margin-research.pages.dev",
+    "mode": "운영 브라우저 · 실제 AI",
+    "product": "margin",
+    "file": "16-account-credit-history.jpg",
+    "captured_at": "2026-11-25T22:32:51+09:00"
+  }
+]

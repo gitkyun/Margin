@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 11 · 검토·도우미·계정</title>
+<style>
+:root {
+  --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+  --text: #171719; --sub: #46474c; --mute: #686b73;
+  --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+  --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+    --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+    --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); }
+section.scene { display: none; }
+section.scene.on { display: block; }
+.top { background: var(--surface); border-bottom: 1px solid var(--line); padding: 16px max(16px, calc((100% - 960px) / 2)); }
+.top p, .desc { color: var(--sub); }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 20px; }
+h2 { font-size: 18px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+h3 { font-size: 15px; }
+.top p { margin-top: 4px; }
+main { width: min(100%, 992px); margin: 0 auto; padding: 18px 16px 36px; }
+.scene { padding: clamp(12px, 3vw, 24px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.scene + .scene { margin-top: 16px; }
+.desc { display: grid; gap: 4px; margin: 8px 0 16px; overflow-wrap: anywhere; }
+.mock { display: grid; gap: 12px; padding: clamp(10px, 3vw, 20px); background: var(--sunken); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.card { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; }
+.mock > .narrow { width: min(100%, 490px); justify-self: center; }
+.stack { display: grid; gap: 12px; }
+.flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.between { justify-content: space-between; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.muted { color: var(--mute); }
+.help { color: var(--sub); }
+.label { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-weight: 650; }
+.required { color: var(--mute); font-weight: 450; font-size: 12px; }
+.field { display: grid; gap: 5px; }
+input[type="text"], .control { width: 100%; min-width: 0; min-height: 36px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); padding: 7px 10px; font: inherit; }
+input::placeholder { color: var(--mute); opacity: 1; }
+.notice { border-radius: 8px; background: var(--sunken); border: 1px solid var(--line); padding: 10px; color: var(--sub); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--line); gap: 4px 14px; }
+.tabs span { display: inline-flex; min-height: 34px; align-items: center; border-bottom: 2px solid transparent; color: var(--sub); }
+.tabs .active { border-color: var(--text); color: var(--text); font-weight: 700; }
+.pin-banner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px; background: var(--brand-soft); border: 1px solid var(--line); border-radius: 8px; }
+.pin-banner[hidden], [hidden] { display: none; }
+.pdf-frame { padding: 10px; border-radius: 8px; background: var(--sunken); border: 1px solid var(--line); }
+.pdf-paper { background: var(--surface); border: 1px solid var(--line); padding: clamp(10px, 4vw, 28px); min-height: 160px; }
+.document-line { border-bottom: 1px solid var(--line-strong); height: 10px; }
+.document-line:last-child { width: 68%; }
+.doc-marker { display: flex; justify-content: center; }
+.doc-marker .btn { border-style: dashed; }
+.count, .current, .success { display: inline-block; border-radius: 5px; padding: 2px 6px; font-size: 12px; white-space: nowrap; }
+.count { color: var(--sub); background: var(--sunken); }
+.current { color: var(--text); background: var(--brand-soft); border: 1px solid var(--line); font-weight: 650; }
+.success { color: var(--sub); background: var(--ok-soft); }
+.thread { padding: 10px 0; border-top: 1px solid var(--line); }
+.thread .flow { margin-top: 6px; }
+.thread.reply { padding-left: 12px; margin-left: 8px; border-left: 2px solid var(--line-strong); }
+.tombstone { color: var(--mute); }
+.run { padding: 0; }
+.run summary { min-height: 46px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 10px 4px; cursor: pointer; list-style: none; }
+.run summary::-webkit-details-marker { display: none; }
+.run + .run { border-top: 1px solid var(--line); }
+.run summary::after { content: ""; width: 7px; height: 7px; border: solid var(--sub); border-width: 0 2px 2px 0; transform: rotate(45deg); margin: 0 3px 3px; }
+.run[open] summary::after { transform: rotate(225deg); margin: 3px 3px 0; }
+.run .help { padding: 0 4px 10px; }
+.run .model { font-size: 12px; }
+.conv { min-width: 0; }
+.conv strong, .conv time, .conv .model { display: block; }
+time { font-size: 12px; }
+.command-menu { display: grid; gap: 2px; }
+.command-menu .btn { display: grid; grid-template-columns: 19px minmax(0, 1fr); width: 100%; align-items: start; text-align: left; border-color: transparent; background: transparent; padding: 7px 5px; gap: 6px; }
+.command-menu .btn:hover { background: var(--sunken); border-color: var(--line); }
+.command-menu .label { line-height: 1.4; display: block; }
+.command-menu .help { display: block; overflow-wrap: anywhere; font-size: 13px; }
+.command-icon { color: var(--sub); text-align: center; min-height: 19px; }
+.globe { position: relative; border: 1.5px solid currentColor; border-radius: 50%; width: 16px; height: 16px; min-height: 0; margin-top: 2px; }
+.globe::before { content: ""; position: absolute; inset: -1px 3px; border: 1px solid currentColor; border-radius: 50%; }
+.globe::after { content: ""; position: absolute; top: 6px; left: 0; right: 0; height: 1px; background: currentColor; }
+.avatar { display: inline-grid; place-items: center; border-radius: 50%; height: 36px; width: 36px; background: var(--brand-soft); color: var(--text); font-weight: 650; }
+.account-panel { width: min(100%, 320px); justify-self: end; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 11 · 검토·도우미·계정</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+<main>
+<section class="scene on" id="11-rev-01">
+  <h2>검토 요청 만들기 창 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 프라이버시 고지는 명확하지만, 진입 메뉴(&#x27;교수님께 검토 요청&#x27;)와 창 제목(&#x27;검토 요청 만들기&#x27;)이 다르고 필수 표시는 회색 &#x27;필수&#x27;로 다른 창과 달라요</span><span><strong>바뀐 점:</strong> 공개 범위 고지를 유지하고, 진입 버튼 이름과 창 제목을 맞추며 필수 표기를 통일해요.</span></p>
+  <div class="mock">
+    <div class="flow"><span class="muted">기록 추가</span><span aria-hidden="true">›</span><button class="btn" type="button">검토 요청 만들기</button></div>
+    <section class="card narrow stack" aria-labelledby="review-form-title">
+      <h3 id="review-form-title">검토 요청 만들기</h3>
+      <p class="help">링크를 만들기 전에 교수님께 공개될 내용을 확인할 수 있어요.</p>
+      <label class="field"><span class="label">검토 요청 제목 <span class="required">필수</span></span><input type="text" placeholder="예: 선행연구 표와 연구 질문 수정 결과"></label>
+      <div class="field">
+        <div class="label">검토할 교수 <span class="required">필수</span></div>
+        <button type="button" class="control flow between" aria-label="검토할 교수, 지도교수">지도교수 <span class="muted" aria-hidden="true">⌄</span></button>
+      </div>
+      <fieldset class="card">
+        <legend class="label">검토받을 수정 결과 <span class="required">필수</span></legend>
+        <button type="button" class="btn" aria-pressed="false">연구 질문 구체화</button>
+      </fieldset>
+      <p class="notice">개인 메모, 할 일 목록, AI 대화, 선택하지 않은 AI 제안은 포함되지 않아요.</p>
+      <div class="actions"><button class="btn" type="button">취소</button><button class="btn primary" type="button">공유할 내용 확인 <span aria-hidden="true">→</span></button></div>
+    </section>
+  </div>
+</section>
+<section class="scene on" id="11-rev-08">
+  <h2>핀 찍기 모드 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 핀 찍기 시 버튼 글자만 바뀌고 PDF 위 위치 안내·취소 버튼이 없으며 모바일에서는 문서 탭과 응답 탭에 안내·취소가 갈려 있고, p06에서는 좌측 여백과 하단 상자 테두리가 겹쳐요</span><span><strong>바뀐 점:</strong> PDF 바로 위에 핀 위치 선택 안내와 취소 버튼을 나란히 두어, 화면이 좁아도 취소하고 문서로 돌아올 수 있어요.</span></p>
+  <div class="mock">
+    <section class="card stack" aria-labelledby="pin-doc-heading">
+      <div class="tabs" aria-label="검토 화면"><span class="active">문서</span><span>응답</span></div>
+      <div class="pin-banner" id="pin-guide">
+        <p><strong>PDF에서 핀을 찍을 위치를 선택해 주세요.</strong></p>
+        <button class="btn" type="button" id="pin-cancel">취소</button>
+      </div>
+      <div class="flow between"><h3 id="pin-doc-heading">PDF 문서</h3><button class="btn" type="button" id="pin-start" hidden>핀 찍기</button></div>
+      <div class="pdf-frame">
+        <div class="pdf-paper stack">
+          <strong>대학원생 연구 기록 경험</strong>
+          <div aria-hidden="true"><div class="document-line"></div><div class="document-line"></div><div class="document-line"></div></div>
+          <div class="doc-marker" id="pin-target">
+            <button class="btn" type="button" id="pin-pick"><span aria-hidden="true">⚐</span> 이 위치 선택</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+<section class="scene on" id="11-rev-09">
+  <h2>댓글 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 삭제된 댓글(&quot;삭제한 댓글이에요.&quot;) 아래에 답글·해결로 표시·⋯ 버튼이 활성 상태로 남고 상단 댓글 개수에도 포함돼요</span><span><strong>바뀐 점:</strong> 삭제한 댓글은 댓글 수에 포함하지 않고 답글·해결·메뉴·링크 복사 버튼을 빼요. 댓글 해결과 교수 응답은 따로 유지해요.</span></p>
+  <div class="mock">
+    <section class="card narrow stack" aria-labelledby="comments-title">
+      <div class="flow between"><h3 id="comments-title">댓글 <span class="count">2</span></h3></div>
+      <div>
+        <article class="thread">
+          <strong>지도교수</strong>
+          <p>비교 기준 열은 좋아요. 분석 관점 열만 정의를 보완해 주세요.</p>
+          <div class="flow"><button type="button" class="btn">답글</button><button type="button" class="btn">해결로 표시</button><button type="button" class="btn" aria-label="지도교수 댓글 메뉴">⋯</button></div>
+        </article>
+        <article class="thread reply"><strong>김학생</strong><p>네, 다음 버전에 정의를 덧붙일게요.</p></article>
+        <article class="thread tombstone"><p>삭제한 댓글이에요.</p></article>
+      </div>
+    </section>
+    <section class="card narrow" aria-labelledby="professor-response-title">
+      <h3 id="professor-response-title">교수 응답</h3>
+      <p class="help">해결로 표시해도 교수 응답은 바뀌지 않아요.</p>
+    </section>
+  </div>
+</section>
+<section class="scene on" id="11-ast-03">
+  <h2>실행 내역 탭 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 실행 내역 탭은 유지 대상이지만, 내부 모델 식별자가 줄바꿈되며 노출되고 중복 제목·일관성 없는 화살표·동일한 &#x27;연구 대화&#x27; 제목이 보여요</span><span><strong>바뀐 점:</strong> 실행 내역 탭에 모델 표시 이름과 구분되는 대화 제목을 쓰고, 같은 화살표로 내역을 펼쳐요.</span></p>
+  <div class="mock">
+    <section class="card narrow stack" aria-labelledby="assisted-run-heading">
+      <h3 id="assisted-run-heading">연구 도우미</h3>
+      <div class="tabs" aria-label="연구 도우미 탭"><span>대화</span><span>제안</span><span class="active">실행 내역</span></div>
+      <div>
+        <details class="run">
+          <summary><span class="conv"><strong>선행연구 비교 기준 정리</strong><span class="model muted">Gemini 빠른 모델</span></span><span class="success">성공</span></summary>
+          <p class="help">실행 시각 <time datetime="2026-11-24T19:00" class="muted">2026. 11. 24. 19:00</time></p>
+        </details>
+        <details class="run" open>
+          <summary><span class="conv"><strong>다음 미팅 준비</strong><span class="model muted">Gemini 빠른 모델</span></span><span class="success">성공</span></summary>
+          <p class="help">실행 시각 <time datetime="2026-11-24T18:57" class="muted">2026. 11. 24. 18:57</time></p>
+        </details>
+      </div>
+    </section>
+  </div>
+</section>
+<section class="scene on" id="11-ast-04">
+  <h2>대화 기록 메뉴 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 같은 제목(&#x27;안녕&#x27;)이 날짜·시간 구분 없이 연속으로 나열되고 현재 보고 있는 대화 표시도 없어요</span><span><strong>바뀐 점:</strong> 대화마다 날짜와 시간을 보여 주고 현재 대화에 표시를 붙여요.</span></p>
+  <div class="mock">
+    <section class="card narrow" aria-labelledby="conversation-menu-title">
+      <h3 id="conversation-menu-title">대화 기록 <span aria-hidden="true">⌄</span></h3>
+      <div class="row" aria-current="true">
+        <div class="conv"><strong>안녕</strong><time datetime="2026-11-24T19:00" class="muted">2026. 11. 24. 19:00</time></div>
+        <span class="current">현재 대화</span>
+      </div>
+      <div class="row">
+        <div class="conv"><strong>안녕</strong><time datetime="2026-11-24T18:57" class="muted">2026. 11. 24. 18:57</time></div>
+      </div>
+    </section>
+  </div>
+</section>
+<section class="scene on" id="11-ast-05">
+  <h2>/ 명령 메뉴 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 슬래시 명령 8개 설명이 모두 말줄임으로 잘리고, 메뉴 상단이 &#x27;아직 대화가 없어요&#x27; 제목 아래를 덮으며 웹 검색 아이콘(○)이 보관함과 같아요</span><span><strong>바뀐 점:</strong> 명령 설명이 줄바꿈되고 메뉴가 빈 대화 제목을 덮지 않아요. 웹 검색은 지구본 아이콘으로 표시해요.</span></p>
+  <div class="mock">
+    <section class="card narrow stack" aria-labelledby="slash-panel-title">
+      <h3 id="slash-panel-title">연구 도우미</h3>
+      <p><strong>아직 대화가 없어요</strong></p>
+      <div class="card command-menu" aria-label="슬래시 명령">
+        <button class="btn" type="button"><span class="command-icon" aria-hidden="true">▣</span><span><span class="label">미팅 정리</span><span class="help">가장 최근 미팅 메모에서 피드백을 정리해요.</span></span></button>
+        <button class="btn" type="button"><span class="command-icon" aria-hidden="true">✧</span><span><span class="label">수정 제안받기</span><span class="help">아직 처리하지 않은 피드백의 수정 방향을 제안해요.</span></span></button>
+        <button class="btn" type="button"><span class="command-icon" aria-hidden="true">▤</span><span><span class="label">원고 검토</span><span class="help">가장 최근 원고의 흐름, 근거, 문장을 살펴봐요.</span></span></button>
+        <button class="btn" type="button"><span class="command-icon" aria-hidden="true">✓</span><span><span class="label">할 일 정리</span><span class="help">이 연구의 기록에서 해야 할 일을 정리해요.</span></span></button>
+        <button class="btn" type="button"><span class="command-icon" aria-hidden="true">▧</span><span><span class="label">논문·자료 요약</span><span class="help">첨부한 파일이나 최근 자료의 핵심 내용을 요약해요.</span></span></button>
+        <button class="btn" type="button"><span class="command-icon" aria-hidden="true">✎</span><span><span class="label">초안 쓰기</span><span class="help">이 연구의 기록으로 초안을 써요.</span></span></button>
+        <button class="btn" type="button"><span class="command-icon globe" aria-hidden="true"></span><span><span class="label">웹 검색</span><span class="help">Google에서 공개 웹 근거를 찾아요.</span></span></button>
+        <button class="btn" type="button"><span class="command-icon" aria-hidden="true">▢</span><span><span class="label">일정 확인</span><span class="help">이 연구의 미팅, 할 일, 주요 목표를 살펴봐요.</span></span></button>
+      </div>
+      <input type="text" aria-label="연구 도우미 입력" value="/">
+    </section>
+  </div>
+</section>
+<section class="scene on" id="11-acc-04">
+  <h2>계정 전환 보기</h2>
+  <p class="desc"><span><strong>지금:</strong> 계정 메뉴의 하위 계정 전환 보기에 영어 문구가 남아 있어요</span><span><strong>바뀐 점:</strong> 계정 메뉴의 하위 보기 제목과 버튼을 &#x27;계정 전환&#x27;으로 표시해요.</span></p>
+  <div class="mock">
+    <section class="card account-panel stack" aria-labelledby="switcher-panel-title">
+      <div class="flow between"><h3 id="switcher-panel-title">계정 전환</h3><span class="muted">계정 메뉴</span></div>
+      <div class="flow"><span class="avatar" aria-hidden="true">김</span><strong>김학생</strong></div>
+      <div class="actions"><button class="btn" type="button">계정 전환</button></div>
+    </section>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  var pinGuide = document.getElementById('pin-guide');
+  var pinTarget = document.getElementById('pin-target');
+  var pinStart = document.getElementById('pin-start');
+  var pinCancel = document.getElementById('pin-cancel');
+  function setPinMode(active) {
+    pinGuide.hidden = !active;
+    pinTarget.hidden = !active;
+    pinStart.hidden = active;
+    (active ? pinCancel : pinStart).focus();
+  }
+  pinStart.addEventListener('click', function () { setPinMode(true); });
+  pinCancel.addEventListener('click', function () { setPinMode(false); });
+  document.getElementById('pin-pick').addEventListener('click', function () { setPinMode(false); });
+})();
+</script>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>시안 01 — 연구 홈 · 60px 레일(Fill) · 연구 도우미(%·3카드·제안정리) · 인앱 의견</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f8fa;
+    --border: #e5e8ee;
+    --text: #191f28;
+    --sub: #4e5968;
+    --mute: #8b95a1;
+    --blue: #3182f6;
+    --blue-soft: #e8f3ff;
+    --red: #f04452;
+    --green: #0ca678;
+    --rail-w: 60px;
+    --panel-w: 360px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    color: var(--text);
+    background: #eef1f5;
+    line-height: 1.5;
+  }
+  .proto-banner {
+    background: #191f28;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 12.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .proto-banner strong { color: #90c2ff; }
+  .proto-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .proto-btn {
+    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .proto-btn.active { background: var(--blue); border-color: var(--blue); font-weight: 600; }
+
+  .shell {
+    display: grid;
+    grid-template-rows: 56px 1fr;
+    height: calc(100vh - 44px);
+    background: var(--bg);
+    max-width: 1440px;
+    margin: 0 auto;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+  }
+  .tb-left, .tb-right { display: flex; align-items: center; gap: 18px; }
+  .logo { font-weight: 800; font-size: 17px; color: var(--blue); letter-spacing: -0.03em; }
+  .switcher-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nav { display: flex; gap: 20px; font-size: 14px; font-weight: 600; color: var(--sub); }
+  .nav .on { color: var(--text); border-bottom: 2px solid var(--text); padding: 16px 0; margin: -16px 0; }
+  .search {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    color: var(--mute);
+    width: 210px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 999px;
+    background: var(--text); color: #fff;
+    display: grid; place-items: center; font-size: 12px; font-weight: 700;
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr var(--panel-w) var(--rail-w);
+    overflow: hidden;
+    position: relative;
+  }
+  .workspace.panel-closed { grid-template-columns: 1fr 0 var(--rail-w); }
+  .main {
+    overflow-y: auto;
+    padding: 32px 44px 64px;
+    background: #fff;
+  }
+  .main-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .r-title { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
+  .r-desc { font-size: 13.5px; color: var(--sub); margin: 4px 0 0; }
+  .chips { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--sub);
+  }
+  .chip.dday { background: var(--blue-soft); border-color: transparent; color: var(--blue); }
+
+  /* Improved banner: NO left blue stripe ("AI 티" 제거) */
+  .action-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .action-card .tag {
+    font-size: 11px; font-weight: 700; color: var(--blue);
+    background: var(--blue-soft); padding: 2px 8px; border-radius: 6px;
+    display: inline-block; margin-bottom: 4px;
+  }
+  .action-card h3 { font-size: 14.5px; margin: 0; }
+  .action-card p { font-size: 12.5px; color: var(--sub); margin: 2px 0 0; }
+  .btn-primary {
+    background: var(--blue); color: #fff; border: none;
+    padding: 9px 15px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-ghost {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 7px 12px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+
+  .home-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 28px; }
+  .section-box {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .muted-lbl { font-size: 12px; font-weight: 600; color: var(--mute); margin-bottom: 4px; }
+  .tabs-line {
+    display: flex; gap: 18px; border-bottom: 1px solid var(--border);
+    margin-bottom: 14px; font-size: 13.5px; font-weight: 600; color: var(--mute);
+  }
+  .tabs-line .on { color: var(--text); border-bottom: 2px solid var(--text); padding-bottom: 10px; }
+  .group-sub {
+    font-size: 11.5px; font-weight: 700; color: var(--blue);
+    display: flex; align-items: center; gap: 6px; margin: 4px 0 10px;
+  }
+  .task-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 8px; border-radius: 10px; cursor: pointer;
+  }
+  .task-row:hover { background: var(--surface); }
+  .chk { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #cbd5e1; margin-top: 2px; flex-shrink: 0; }
+  .task-title { font-size: 13.5px; font-weight: 600; }
+  .task-meta { font-size: 12px; color: var(--mute); }
+  .overdue { color: var(--red); font-weight: 600; }
+
+  /* Side Panel */
+  .side-panel {
+    border-left: 1px solid var(--border);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .workspace.panel-closed .side-panel { display: none; }
+  .sp-head {
+    padding: 14px 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .sp-title { font-size: 14.5px; font-weight: 700; }
+  .sp-tabs { display: flex; gap: 14px; font-size: 13px; font-weight: 600; color: var(--mute); }
+  .sp-tab { padding: 0 0 10px; cursor: pointer; border-bottom: 2px solid transparent; }
+  .sp-tab.on { color: var(--text); border-bottom-color: var(--text); }
+  .sp-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .starter-card {
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 12px;
+    padding: 11px 13px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .starter-card:hover { border-color: var(--blue); background: #f8fbff; }
+  .starter-tag { font-size: 11px; font-weight: 700; color: var(--blue); margin-bottom: 2px; }
+  .starter-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .triage-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+  .sp-foot {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    background: #fff;
+  }
+  .composer {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--mute);
+    margin-bottom: 8px;
+  }
+  .credit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--sub);
+  }
+  .credit-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .credit-bar { width: 84px; height: 6px; border-radius: 999px; background: #e5e8ee; overflow: hidden; }
+  .credit-fill { width: 96%; height: 100%; background: var(--blue); border-radius: 999px; }
+
+  /* 60px Toss-skeleton Right Rail (maintained per 11-19 decision, Fill icons upgraded) */
+  .rail {
+    border-left: 1px solid var(--border);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0 12px;
+    justify-content: space-between;
+  }
+  .rail-top, .rail-bot { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+  .rail-btn {
+    width: 48px; height: 54px;
+    border: none; background: transparent;
+    border-radius: 10px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    color: var(--mute); font-size: 11px; font-weight: 500;
+  }
+  .rail-btn:hover { background: var(--surface); color: var(--sub); }
+  .rail-btn.active { color: var(--text); font-weight: 700; }
+  .rail-btn.active .ico-wrap { background: #f2f4f6; }
+  .ico-wrap {
+    width: 34px; height: 28px; border-radius: 8px;
+    display: grid; place-items: center;
+  }
+  .rail-sq {
+    width: 32px; height: 32px; border: none; border-radius: 8px;
+    background: rgba(7, 25, 76, 0.04); color: var(--sub);
+    display: grid; place-items: center; cursor: pointer; font-size: 14px;
+  }
+  .rail-sq:hover { background: rgba(7, 25, 76, 0.09); color: var(--text); }
+
+  /* In-app UT Feedback Popover */
+  .fb-pop {
+    position: fixed;
+    right: 76px;
+    bottom: 20px;
+    width: 320px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.14);
+    padding: 18px;
+    display: none;
+    z-index: 60;
+  }
+  .fb-pop.open { display: block; }
+  .score-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 10px 0 4px; }
+  .score-btn {
+    height: 36px; border: 1px solid var(--border); background: var(--surface);
+    border-radius: 9px; font-weight: 700; cursor: pointer;
+  }
+  .score-btn.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .type-chips { display: flex; gap: 6px; margin: 12px 0 10px; }
+  .tchip {
+    padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--border); background: #fff; cursor: pointer;
+  }
+  .tchip.on { background: var(--text); color: #fff; border-color: var(--text); }
+  .fb-ta {
+    width: 100%; height: 74px; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px; font-family: inherit; font-size: 13px; resize: none;
+  }
+  .ut-chk { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--sub); margin: 8px 0 12px; }
+
+  /* Toast positioned cleanly LEFT of 60px rail! */
+  .toast {
+    position: fixed;
+    right: 76px;
+    bottom: 20px;
+    background: #191f28;
+    color: #fff;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 50;
+  }
+  .toast.show { display: flex; }
+  .toast button { background: rgba(255,255,255,0.16); border: none; color: #fff; padding: 4px 9px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="proto-banner">
+  <div><strong>시안 01 · 홈 + 60px 레일(토스 골조 유지) + 도우미(%·3카드·제안 정리) + 인앱 의견</strong> — 직접 클릭해 체험하세요</div>
+  <div class="proto-pills">
+    <button class="proto-btn active" id="btnTriggerToast">완료 토스트(레일 회피) 테스트</button>
+    <button class="proto-btn" id="btnToggleFb">우하단 인앱 의견 열기</button>
+  </div>
+</div>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="tb-left">
+      <span class="logo">margin</span>
+      <span class="switcher-btn">대학원생 연구 기록 경험 ▾</span>
+      <nav class="nav">
+        <span class="on">홈</span><span>미팅</span><span>할 일</span><span>글·자료</span>
+      </nav>
+    </div>
+    <div class="tb-right">
+      <div class="search"><span>이 연구에서 찾기</span><span>⌘K</span></div>
+      <div class="avatar">김</div>
+    </div>
+  </header>
+
+  <div class="workspace" id="ws">
+    <main class="main">
+      <div class="main-head">
+        <div>
+          <h1 class="r-title">대학원생 연구 기록 경험</h1>
+          <p class="r-desc">지도 미팅 뒤 기록을 정리하는 경험을 살펴보는 가상 연구예요.</p>
+        </div>
+        <div class="chips">
+          <span class="chip">현재 단계 연구 설계 ›</span>
+          <span class="chip dday">투고까지 D-82</span>
+        </div>
+      </div>
+
+      <!-- 좌측 파란 띠 제거 + 목적어 명시 카피 -->
+      <div class="action-card">
+        <div>
+          <span class="tag">미팅 후 정리</span>
+          <h3>지난 5차 미팅에서 나온 할 일을 아직 정리하지 않았어요</h3>
+          <p>추출된 피드백 2건을 확인하고 다음 미팅 할 일로 연결해 두세요.</p>
+        </div>
+        <button class="btn-primary" id="btnOrganize">미팅 할 일 정리하기</button>
+      </div>
+
+      <div class="home-grid">
+        <div>
+          <div class="section-box">
+            <div class="muted-lbl">다음 미팅 · 11월 27일 (금) 14:00</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+              <div>
+                <div style="font-size:16px;font-weight:700;">제7차 논문 지도</div>
+                <div style="font-size:12.5px;color:var(--sub);margin-top:2px;">가져갈 할 일 2건 · 질문 2개 준비 중</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-ghost">기록 열기</button>
+                <button class="btn-primary" style="padding:7px 13px;font-size:12.5px;">미팅 준비하기</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabs-line">
+            <span class="on">할 일 3</span><span>알림 1</span><span>최근 미팅</span><span>최근 글·자료</span>
+          </div>
+
+          <!-- RC-7 개선: 첫 묶음에 소제목 명시 -->
+          <div class="group-sub">● 다음 미팅에 가져갈 할 일</div>
+          <div class="task-row" onclick="showUndoToast('선행연구 비교 기준 정리')">
+            <span class="chk"></span>
+            <div>
+              <div class="task-title">선행연구 비교 기준 정리</div>
+              <div class="task-meta"><span class="overdue">5일 지남</span> · 제5차 논문 지도</div>
+            </div>
+          </div>
+          <div class="task-row" onclick="showUndoToast('인터뷰 질문지 보완')">
+            <span class="chk"></span>
+            <div>
+              <div class="task-title">인터뷰 질문지 보완</div>
+              <div class="task-meta"><span class="overdue">4일 지남</span> · 제5차 논문 지도</div>
+            </div>
+          </div>
+          <div class="group-sub" style="color:var(--mute);margin-top:14px;">그 밖의 할 일</div>
+          <div class="task-row" onclick="showUndoToast('분석 관점 기준의 정의 한 문장 쓰기')">
+            <span class="chk"></span>
+            <div>
+              <div class="task-title">분석 관점 기준의 정의 한 문장 쓰기</div>
+              <div class="task-meta"><span class="overdue">2일 지남</span> · 2장 초안 서면 의견</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <strong style="font-size:13.5px;">연구 흐름</strong>
+              <span style="font-size:12px;color:var(--mute);">열기 ›</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;">
+              <span style="color:var(--mute);">✓ 문헌 검토</span> —
+              <span style="background:var(--blue);color:#fff;padding:2px 8px;border-radius:999px;font-weight:700;">02 연구 설계</span> —
+              <span style="color:var(--mute);">03 자료 수집</span>
+            </div>
+            <div style="font-size:12px;color:var(--sub);margin-top:10px;">다음 목표 · 연구계획서 심사 · 11월 28일 (토)</div>
+          </div>
+          <div class="section-box">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <strong style="font-size:13.5px;">연구 방향</strong>
+              <span style="font-size:12px;color:var(--mute);">고치기</span>
+            </div>
+            <p style="font-size:13px;color:var(--sub);margin:0;">대학원생이 지도 미팅 뒤 기록을 정리해 다음 연구로 잇는 경험을 이해한다.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- D17 유지: 기본 열림하되 홈 진입 시 할 일 대신 도우미로 자동 전환해 중복 제거 -->
+    <aside class="side-panel">
+      <div class="sp-head">
+        <div class="sp-top">
+          <span class="sp-title">연구 도우미</span>
+          <span style="font-size:11.5px;color:var(--blue);background:var(--blue-soft);padding:2px 7px;border-radius:6px;font-weight:600;">홈 중복 방지 자동 전환</span>
+        </div>
+        <div class="sp-tabs">
+          <span class="sp-tab on" data-ptab="chat">대화</span>
+          <span class="sp-tab" data-ptab="suggest">제안 <b style="color:var(--blue);">56</b></span>
+          <span class="sp-tab" data-ptab="runs">실행 내역</span>
+        </div>
+      </div>
+
+      <div class="sp-body" id="spChat">
+        <div style="font-size:13px;color:var(--sub);">현재 연구(미팅 5건 · PDF 6개 · 미정리 피드백 2건)를 모두 읽고 있어요.</div>
+        <!-- RC-5 개선: 맥락 우선 3카드 -->
+        <button class="starter-card" onclick="alert('5차 미팅 미정리 피드백 2건을 할 일로 정리하는 프롬프트를 실행합니다.')">
+          <div class="starter-tag">다음 미팅 준비</div>
+          <div class="starter-title">7차 논문 지도에 가져갈 핵심 안건 3개 정리하기</div>
+        </button>
+        <button class="starter-card" onclick="alert('기한 지난 할 일 3건을 우선순위로 재정렬합니다.')">
+          <div class="starter-tag">기한 지난 할 일 3건</div>
+          <div class="starter-title">이번 주 안에 끝낼 수정 순서 제안받기</div>
+        </button>
+        <button class="starter-card" onclick="alert('선행연구 비교표 v2 PDF를 기준으로 검토 요약을 작성합니다.')">
+          <div class="starter-tag">최근 PDF · 선행연구_비교표_v2</div>
+          <div class="starter-title">교수님께 보낼 수정 요약 3줄 초안 만들기</div>
+        </button>
+      </div>
+
+      <div class="sp-body" id="spSuggest" style="display:none;">
+        <!-- 56건 적체 해소용 일괄 트리아지 바 -->
+        <div class="triage-bar">
+          <span>대기 중 <strong>56건</strong></span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-ghost" style="padding:4px 8px;font-size:11.5px;" onclick="alert('7일 이상 지난 대기 제안을 일괄 정리합니다.')">오래된 제안 비우기</button>
+          </div>
+        </div>
+        <div class="starter-card">
+          <div class="starter-tag">제5차 논문 지도 · 할 일 후보</div>
+          <div class="starter-title">비교표에 연구 목적별 선정 이유 열 추가</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn-primary" style="padding:4px 10px;font-size:11.5px;">할 일로 채택</button>
+            <button class="btn-ghost" style="padding:4px 10px;font-size:11.5px;">건너뛰기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-body" id="spRuns" style="display:none;">
+        <div style="font-size:12.5px;color:var(--sub);">최근 실행 내역 및 사용량 확인</div>
+        <div class="starter-card">
+          <div class="starter-tag">완료 · 11월 24일 18:12</div>
+          <div class="starter-title">제5차 미팅 전사문 정리 (-1.2%)</div>
+        </div>
+      </div>
+
+      <div class="sp-foot">
+        <div class="composer">질문을 적어 주세요 · / 명령어 · 모든 연구 기록 자동 반영</div>
+        <!-- 사용자 확정: 퍼센트(%) 주 표기 + 호버 상세 -->
+        <div class="credit-row" title="남은 크레딧: 19,190 / 20,000">
+          <div class="credit-bar-wrap">
+            <span>AI 잔여 <strong style="color:var(--text);">96%</strong></span>
+            <div class="credit-bar"><div class="credit-fill"></div></div>
+          </div>
+          <span style="color:var(--mute);cursor:pointer;">사용 내역 ›</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 60px 토스 골조 유지 + Fill 아이콘 전환 + 톱니 라벨 '연구 설정' -->
+    <aside class="rail">
+      <div class="rail-top">
+        <button class="rail-sq" id="btnCollapse" title="사이드 창 접기/열기" style="background:transparent;margin-bottom:6px;">»</button>
+        <button class="rail-btn active" title="도우미">
+          <span class="ico-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg>
+          </span>
+          <span>도우미</span>
+        </button>
+        <button class="rail-btn" title="할 일 (홈에서는 본문과 중복 안내)" onclick="alert('홈 화면 본문에 이미 할 일이 열려 있습니다. 필요 시 수동으로 전환할 수 있습니다.')">
+          <span class="ico-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm5.5 13.5l6-6-1.4-1.4-4.6 4.6-2.1-2.1-1.4 1.4 3.5 3.5z"/></svg>
+          </span>
+          <span>할 일</span>
+        </button>
+        <button class="rail-btn" title="결정·질문">
+          <span class="ico-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16v12H7l-3 3V3z"/></svg>
+          </span>
+          <span>결정·질문</span>
+        </button>
+        <button class="rail-btn" title="자료">
+          <span class="ico-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5z"/></svg>
+          </span>
+          <span>자료</span>
+        </button>
+      </div>
+      <div class="rail-bot">
+        <button class="rail-btn" id="railFeedback" title="인앱 의견 보내기">
+          <span class="ico-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7l8-5H4l8 5z"/></svg>
+          </span>
+          <span>의견</span>
+        </button>
+        <button class="rail-sq" title="화면 배치">◫</button>
+        <button class="rail-sq" title="연구 설정" aria-label="연구 설정">⚙</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- 우하단 인앱 UT 의견 팝오버 (mailto: 대체) -->
+<div class="fb-pop" id="fbPop">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <strong style="font-size:15px;">마진 사용이 어떠신가요?</strong>
+    <button style="border:none;background:none;cursor:pointer;font-size:16px;" id="fbClose">✕</button>
+  </div>
+  <div class="score-row">
+    <button class="score-btn">1</button><button class="score-btn">2</button><button class="score-btn">3</button><button class="score-btn on">4</button><button class="score-btn">5</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mute);"><span>매우 불편</span><span>매우 만족</span></div>
+  <div class="type-chips">
+    <button class="tchip on">불편해요</button><button class="tchip">제안해요</button><button class="tchip">오류예요</button>
+  </div>
+  <textarea class="fb-ta" placeholder="지금 화면에서 아쉽거나 바라는 점을 짧게 적어 주세요."></textarea>
+  <label class="ut-chk"><input type="checkbox" checked /> 현재 화면 주소와 창 크기 함께 보내기 (선택)</label>
+  <button class="btn-primary" style="width:100%;" onclick="document.getElementById('fbPop').classList.remove('open');showUndoToast('소중한 의견을 보냈어요');">의견 보내기</button>
+</div>
+
+<!-- 60px 레일을 가리지 않는 오프셋 토스트 -->
+<div class="toast" id="toast">
+  <span id="toastMsg">할 일을 완료했어요.</span>
+  <button onclick="document.getElementById('toast').classList.remove('show')">되돌리기</button>
+</div>
+
+<script>
+const ws = document.getElementById('ws');
+document.getElementById('btnCollapse').onclick = () => {
+  ws.classList.toggle('panel-closed');
+  document.getElementById('btnCollapse').textContent = ws.classList.contains('panel-closed') ? '«' : '»';
+};
+document.querySelectorAll('.sp-tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.sp-tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById('spChat').style.display = t.dataset.ptab === 'chat' ? 'flex' : 'none';
+    document.getElementById('spSuggest').style.display = t.dataset.ptab === 'suggest' ? 'flex' : 'none';
+    document.getElementById('spRuns').style.display = t.dataset.ptab === 'runs' ? 'flex' : 'none';
+  };
+});
+const fbPop = document.getElementById('fbPop');
+document.getElementById('railFeedback').onclick = () => fbPop.classList.toggle('open');
+document.getElementById('btnToggleFb').onclick = () => fbPop.classList.toggle('open');
+document.getElementById('fbClose').onclick = () => fbPop.classList.remove('open');
+document.querySelectorAll('.score-btn').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.score-btn').forEach(x => x.classList.remove('on')); b.classList.add('on');
+});
+document.querySelectorAll('.tchip').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tchip').forEach(x => x.classList.remove('on')); b.classList.add('on');
+});
+let toastTimer;
+function showUndoToast(title) {
+  const el = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = `'${title}' 완료 · 60px 레일 왼쪽에 안전 배치됨`;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4500);
+}
+document.getElementById('btnTriggerToast').onclick = () => showUndoToast('선행연구 비교 기준 정리');
+</script>
+</body>
+</html>

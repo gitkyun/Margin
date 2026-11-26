@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MARGIN — 외부 레퍼런스 6종 세부 화면 벤치마크 탐색기</title>
+<style>
+  :root {
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --surface-muted: #f1f3f6;
+    --border: #e5e8ee;
+    --text: #191f28;
+    --text-sub: #4e5968;
+    --text-mute: #8b95a1;
+    --primary: #3182f6;
+    --primary-soft: #e8f3ff;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    line-height: 1.55;
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0 10px;
+    flex-wrap: wrap;
+  }
+  h1 { font-size: 19px; margin: 0; letter-spacing: -0.02em; }
+  .sub { font-size: 13px; color: var(--text-sub); margin: 2px 0 0; }
+  .filters { display: flex; flex-direction: column; gap: 8px; padding-bottom: 14px; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .row-label { font-size: 11.5px; font-weight: 700; color: var(--text-mute); margin-right: 4px; }
+  .pill {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-sub);
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .pill.topic.active { background: var(--text); color: #fff; border-color: var(--text); }
+  .meta { padding: 16px 0 12px; font-size: 13px; color: var(--text-sub); display: flex; justify-content: space-between; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    padding-bottom: 64px;
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.14s ease, box-shadow 0.14s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,23,42,0.08); }
+  .thumb { aspect-ratio: 16/10; background: var(--surface-muted); border-bottom: 1px solid var(--border); overflow: hidden; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+  .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .badges { display: flex; gap: 5px; flex-wrap: wrap; }
+  .b { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+  .b-site { background: var(--primary-soft); color: var(--primary); }
+  .b-topic { background: var(--surface-muted); color: var(--text-sub); }
+  .title { font-size: 14.5px; font-weight: 700; margin: 0; }
+  .note { font-size: 13px; color: var(--text-sub); margin: 0; }
+  .modal-bg {
+    position: fixed; inset: 0; z-index: 100; background: rgba(15,23,42,0.78);
+    display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: 16px; width: 100%; max-width: 1320px;
+    height: min(88vh, 840px); display: grid; grid-template-columns: 1.7fr 1fr; overflow: hidden;
+  }
+  .m-left { background: #0f172a; display: flex; align-items: center; justify-content: center; padding: 16px; overflow: auto; }
+  .m-left img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+  .m-right { padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .m-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .m-close { border: 1px solid var(--border); background: #fff; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; }
+  .box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; }
+  .box-lbl { font-size: 11px; font-weight: 700; color: var(--text-mute); margin-bottom: 4px; }
+  .m-nav { margin-top: auto; display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+  .nbtn { padding: 8px 14px; border: 1px solid var(--border); background: #fff; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1>MARGIN — 외부 레퍼런스 6개 제품 세부 화면 벤치마크 탐색기</h1>
+        <p class="sub">토스증권 · 매니패스트 · 오픈서베이 · Liner · Modulify · 토스(toss.im) 실화면 비교 (1440×900 라이트 모드)</p>
+      </div>
+    </div>
+    <div class="filters">
+      <div id="siteRow" class="row"></div>
+      <div id="topicRow" class="row"></div>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <div class="meta">
+    <span id="countText"></span>
+    <span>카드를 클릭하면 원본 해상도로 확대해 마진 적용 포인트를 확인할 수 있습니다 (← / → / Esc)</span>
+  </div>
+  <section id="grid" class="grid"></section>
+</main>
+
+<div id="modalBg" class="modal-bg">
+  <div class="modal">
+    <div class="m-left"><img id="mImg" src="" alt="" /></div>
+    <div class="m-right">
+      <div class="m-head">
+        <div>
+          <div id="mBadges" class="badges"></div>
+          <h2 id="mTitle" style="font-size:18px;margin:6px 0 0;"></h2>
+        </div>
+        <button id="mClose" class="m-close" type="button">✕</button>
+      </div>
+      <div class="box"><div class="box-lbl">관찰 포인트 & 마진 적용 시사점</div><div id="mNote"></div></div>
+      <div class="box"><div class="box-lbl">파일 경로</div><div id="mPath" style="font-family:ui-monospace,monospace;font-size:12px;"></div></div>
+      <div class="m-nav">
+        <button id="mPrev" class="nbtn" type="button">← 이전</button>
+        <button id="mNext" class="nbtn" type="button">다음 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SITES = ["전체", "토스증권", "매니패스트", "오픈서베이", "Liner", "Modulify", "토스(toss.im)"];
+const TOPICS = ["전체", "사이드 레일·패널", "AI 도우미·추천", "설정·권한", "생성·자료·휴지통", "인앱 의견·크레딧", "공개 랜딩"];
+
+const DATA = [
+  { site: "토스증권", topic: "사이드 레일·패널", title: "우측 56px 레일 + 내 투자 패널 열림", img: "assets/benchmarks/tossinvest/01_home_panel_open.png", note: "선택 탭에 회색 박스를 씌우지 않고 진한 Fill 아이콘과 색상 대비만으로 활성 상태를 표시해 옹졸하지 않음. 마진 #3의 핵심 기준점." },
+  { site: "토스증권", topic: "사이드 레일·패널", title: "관심 탭 전환 시 Fill 아이콘 변화", img: "assets/benchmarks/tossinvest/02_rail_watchlist.png", note: "비활성 연회색 Fill ↔ 활성 진검정 Fill 전환이 명확하고 시각적 흔들림이 없음." },
+  { site: "토스증권", topic: "사이드 레일·패널", title: "사이드 패널 접힘 시 본문 폭 자연 확장", img: "assets/benchmarks/tossinvest/03_rail_closed.png", note: "리모콘 닫기 시 본문 테이블과 요약 카드가 가로 공간을 자연스럽게 확장해 활용함." },
+  { site: "토스증권", topic: "인앱 의견·크레딧", title: "우측 레일 하단 '의견' → 인앱 플로팅 팝오버", img: "assets/benchmarks/tossinvest/04_feedback_dialog.png", note: "mailto: 이탈 없이 우하단에 1~5점 만족도 + 텍스트 입력 팝오버가 즉시 열림. 마진 #15 직접 참고." },
+  { site: "토스증권", topic: "설정·권한", title: "시각적 썸네일 카드 기반 일반 설정 모달", img: "assets/benchmarks/tossinvest/05_settings_dialog.png", note: "색상 모드(다크/라이트)와 사이드 창 위치(왼쪽/오른쪽)를 미니 화면 썸네일로 직관 선택. 마진 #16 직접 참고." },
+  { site: "토스증권", topic: "사이드 레일·패널", title: "종목 상세 화면 고밀도 데이터 레이아웃", img: "assets/benchmarks/tossinvest/07_stock_detail.png", note: "차트·호가·주문·정보가 밀집되어도 카드 경계와 여백 비례가 일정해 피로도가 낮음." },
+
+  { site: "매니패스트", topic: "AI 도우미·추천", title: "워크스페이스 홈 (AI 입력창·체험 3카드·사용량 바)", img: "assets/benchmarks/manyfast/01_hero.png", note: "상단 우측 STARTER 사용량 진행 바, AI 2단 모드(아이디어|자료 분석), 기능 체험 3열 카드가 깔끔하게 정돈됨." },
+  { site: "매니패스트", topic: "인앱 의견·크레딧", title: "상단 '피드백' → 인앱 피드백/문의 모달", img: "assets/benchmarks/manyfast/05_feedback_modal.png", note: "기능 요청|버그 제보|결제/구독 3단 세그먼트 + 제목/내용 + 회신 안내로 UT/베타 수집에 최적화됨." },
+  { site: "매니패스트", topic: "생성·자료·휴지통", title: "자료실 빈 상태 3단계 워크플로우 카드", img: "assets/benchmarks/manyfast/06_library.png", note: "빈 화면을 단순 문구 대신 '회의록 올리기 → AI 기록 → 기획서 반영' 3단계 가치 안내로 활용." },
+  { site: "매니패스트", topic: "생성·자료·휴지통", title: "휴지통 화면 구조", img: "assets/benchmarks/manyfast/07_trash.png", note: "좌측 내비게이션에서 휴지통을 독립 항목으로 분리해 일반 목록과 명확히 격리." },
+  { site: "매니패스트", topic: "AI 도우미·추천", title: "프로젝트 내부 워크스페이스 (AI 맞춤 다음 행동 3종)", img: "assets/benchmarks/manyfast/08_project_workspace.png", note: "현재 문서 완성 상태를 읽어 '유저플로우 생성하기 / 기획 문서 전체 검토하기 / 내보내기' 3개 맞춤 액션을 제안. 마진 홈 도우미 #13의 최고 레퍼런스." },
+
+  { site: "오픈서베이", topic: "인앱 의견·크레딧", title: "데이터스페이스 홈 (크레딧 바·소진 배너·체크리스트)", img: "assets/benchmarks/opensurvey/01_home.png", note: "좌측 하단 기본 크레딧(잔여/총) 진행 바와 AI 입력창 위 소진 배너 연결이 명확. 단, 플로팅 온보딩 카드가 본문을 가리는 점은 피해야 할 안티패턴." },
+  { site: "오픈서베이", topic: "생성·자료·휴지통", title: "'+ 새로 만들기' 3그룹 시맨틱 메뉴 + AI 배지", img: "assets/benchmarks/opensurvey/02_create_menu.png", note: "프로젝트 / 리서치 데이터 / 산출물 3그룹으로 생성 메뉴를 구조화. 마진 '+ 기록 추가' 6개 평면 혼재 해결 참고." },
+  { site: "오픈서베이", topic: "AI 도우미·추천", title: "Dataspace AI 전용 화면 & 최근 항목", img: "assets/benchmarks/opensurvey/03_dataspace_ai.png", note: "AI 입력창 아래 최근 항목을 제목 검색과 함께 리스트로 제공해 대화 이력 접근성이 높음." },
+  { site: "오픈서베이", topic: "생성·자료·휴지통", title: "프로젝트 목록 (프로젝트 단위 | 데이터 단위 전환)", img: "assets/benchmarks/opensurvey/05_projects_list.png", note: "리서치 데이터·내 AI 대화·산출물·멤버를 한눈에 보는 깔끔한 테이블 밀도." },
+  { site: "오픈서베이", topic: "생성·자료·휴지통", title: "라이브러리 화면", img: "assets/benchmarks/opensurvey/07_library.png", note: "재사용 자산과 프로젝트 산출물을 분리 보관하는 구조." },
+
+  { site: "Liner", topic: "AI 도우미·추천", title: "Liner 홈 (슬림 레일 + 학술 연구 AI / 글쓰기 AI)", img: "assets/benchmarks/liner/01_home.png", note: "파란 좌측 띠 없이 입력창 위 은은한 회색 캡슐 안내와 하단 2개 목적 칩으로 군더더기 없는 집중감 구현." },
+  { site: "Liner", topic: "생성·자료·휴지통", title: "즐겨찾기 / 소스 컬렉션 (전체 | AI 답변 | 하이라이트)", img: "assets/benchmarks/liner/05_collections.png", note: "AI 답변과 하이라이트를 자료 컬렉션 탭으로 묶어 관리하는 미니멀 구조." },
+
+  { site: "Modulify", topic: "AI 도우미·추천", title: "Modulify 대시보드 홈", img: "assets/benchmarks/modulify/01_dashboard.png", note: "AI 생성 프롬프트와 빈 사이트 시작(Create blank site)을 한 화면에 자연스럽게 병치." },
+  { site: "Modulify", topic: "생성·자료·휴지통", title: "Search ⌘K 커맨드 팔레트", img: "assets/benchmarks/modulify/03_command_palette.png", note: "단축키 검색 UI의 여백·타이포 기준." },
+  { site: "Modulify", topic: "생성·자료·휴지통", title: "Recently deleted (30일 보관 안내 휴지통)", img: "assets/benchmarks/modulify/06_recently_deleted.png", note: "휴지통 상단 1줄 요약으로 삭제 정책과 복원 후 동작을 간결하게 안내. 마진 #8 참고." },
+  { site: "Modulify", topic: "설정·권한", title: "Workspace settings (행 분할 카드 + Danger zone)", img: "assets/benchmarks/modulify/07_settings.png", note: "좌측 라벨·설명 / 우측 컨트롤 행 분할 카드와 하단 Danger zone 분리. 마진 #16의 정석 패턴." },
+  { site: "Modulify", topic: "설정·권한", title: "Members (역할·상태·최근 활동 테이블)", img: "assets/benchmarks/modulify/08_members.png", note: "공동작업자 역할 변경·초대·상태를 명확한 표로 정리." },
+
+  { site: "토스(toss.im)", topic: "공개 랜딩", title: "toss.im 히어로 & 좌측 스크롤 인디케이터", img: "assets/benchmarks/toss_im/01_hero.png", note: "풀블리드 비주얼, 강한 타이포 위계, 좌측 스크롤 인디케이터로 첫인상 신뢰감 형성. 마진 #17 참고." },
+  { site: "토스(toss.im)", topic: "공개 랜딩", title: "가치 전달 3열 다크 쇼케이스 카드", img: "assets/benchmarks/toss_im/02_value.png", note: "기능 명세가 아니라 사용자 변화 중심 카피와 강한 명암 대비로 시선을 집중시킴." },
+  { site: "토스(toss.im)", topic: "공개 랜딩", title: "제품 경험 섹션 호흡", img: "assets/benchmarks/toss_im/03_product.png", note: "넉넉한 섹션 여백과 한 문장 헤드라인으로 스크롤 피로도를 낮춤." }
+];
+
+let st = { site: "전체", topic: "전체" };
+let list = [...DATA];
+let mIdx = 0;
+
+function renderFilters() {
+  const sr = document.getElementById("siteRow");
+  sr.innerHTML = `<span class="row-label">제품</span>` + SITES.map(s => `<button type="button" class="pill ${st.site===s?"active":""}" data-s="${s}">${s}</button>`).join("");
+  sr.querySelectorAll("button").forEach(b => b.onclick = () => { st.site = b.dataset.s; render(); });
+
+  const tr = document.getElementById("topicRow");
+  tr.innerHTML = `<span class="row-label">마진 주제</span>` + TOPICS.map(t => `<button type="button" class="pill topic ${st.topic===t?"active":""}" data-t="${t}">${t}</button>`).join("");
+  tr.querySelectorAll("button").forEach(b => b.onclick = () => { st.topic = b.dataset.t; render(); });
+}
+
+function render() {
+  renderFilters();
+  list = DATA.filter(d => (st.site==="전체" || d.site===st.site) && (st.topic==="전체" || d.topic===st.topic));
+  document.getElementById("countText").textContent = `표시 중: ${list.length}장 / 전체 ${DATA.length}장`;
+  const g = document.getElementById("grid");
+  g.innerHTML = list.map((d, i) => `
+    <article class="card" data-i="${i}">
+      <div class="thumb"><img src="${d.img}" alt="${d.title}" loading="lazy" /></div>
+      <div class="body">
+        <div class="badges"><span class="b b-site">${d.site}</span><span class="b b-topic">${d.topic}</span></div>
+        <h3 class="title">${d.title}</h3>
+        <p class="note">${d.note}</p>
+      </div>
+    </article>
+  `).join("");
+  g.querySelectorAll(".card").forEach(c => c.onclick = () => openModal(Number(c.dataset.i)));
+}
+
+function openModal(i) {
+  mIdx = i;
+  const d = list[mIdx];
+  document.getElementById("mImg").src = d.img;
+  document.getElementById("mBadges").innerHTML = `<span class="b b-site">${d.site}</span><span class="b b-topic">${d.topic}</span>`;
+  document.getElementById("mTitle").textContent = d.title;
+  document.getElementById("mNote").textContent = d.note;
+  document.getElementById("mPath").textContent = d.img;
+  document.getElementById("mPrev").disabled = mIdx <= 0;
+  document.getElementById("mNext").disabled = mIdx >= list.length - 1;
+  document.getElementById("modalBg").classList.add("open");
+}
+
+document.getElementById("mClose").onclick = () => document.getElementById("modalBg").classList.remove("open");
+document.getElementById("modalBg").onclick = e => { if (e.target.id === "modalBg") e.currentTarget.classList.remove("open"); };
+document.getElementById("mPrev").onclick = () => { if (mIdx > 0) openModal(mIdx - 1); };
+document.getElementById("mNext").onclick = () => { if (mIdx < list.length - 1) openModal(mIdx + 1); };
+document.addEventListener("keydown", e => {
+  if (!document.getElementById("modalBg").classList.contains("open")) return;
+  if (e.key === "Escape") document.getElementById("modalBg").classList.remove("open");
+  if (e.key === "ArrowLeft" && mIdx > 0) openModal(mIdx - 1);
+  if (e.key === "ArrowRight" && mIdx < list.length - 1) openModal(mIdx + 1);
+});
+
+render();
+</script>
+</body>
+</html>

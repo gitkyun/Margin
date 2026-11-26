@@ -1,0 +1,14 @@
+{
+  "captured": [
+    "09_delete_trash_modal_isolated_1440.png",
+    "04_recording_ui_preview_1440.png",
+    "06_upload_invalid_or_error_1440.png",
+    "07_offline_banner_1440.png"
+  ],
+  "notes": {
+    "09_delete_trash_modal_isolated_1440.png": "격리 환경: 휴지통 이동(연구명 입력 확인) 모달",
+    "04_recording_ui_preview_1440.png": "격리 환경: 미팅 녹음 시작/동의 및 실시간 전사 UI",
+    "06_upload_invalid_or_error_1440.png": "격리 환경: 비지원 파일 업로드 시 검증/오류 피드백",
+    "07_offline_banner_1440.png": "격리 환경: 오프라인 전환 시 ShellBanners 배너"
+  }
+}

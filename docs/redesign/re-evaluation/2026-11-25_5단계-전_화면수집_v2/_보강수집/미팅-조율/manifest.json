@@ -1,0 +1,189 @@
+[
+  {
+    "file": "meeting-01-consent.png",
+    "label": "녹음 시작 전 동의",
+    "observation": "브라우저의 가상 마이크를 쓰고 실시간 전사 기능을 끈 상태에서 동의 선택 후 시작. 실제 음성·외부 인식 서버 미사용.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 가상 마이크 · 전사는 수기 테스트 입력",
+    "source": "src/components/RecordingPanel.tsx:494"
+  },
+  {
+    "file": "meeting-02-recording.png",
+    "label": "가상 음성 녹음",
+    "observation": "녹음 중에 일시정지와 마치기 버튼이 활성화됨.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 가상 마이크 · 전사는 수기 테스트 입력",
+    "source": "src/components/RecordingPanel.tsx:220"
+  },
+  {
+    "file": "meeting-03-paused.png",
+    "label": "녹음 일시정지",
+    "observation": "일시정지 후 같은 자리에 계속 녹음 버튼이 나타남.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 가상 마이크 · 전사는 수기 테스트 입력",
+    "source": "src/components/RecordingPanel.tsx:239"
+  },
+  {
+    "file": "meeting-04-before-save.png",
+    "label": "가상 음성 저장 전 검토",
+    "observation": "음성 녹음 중지 후 저장 전 검토가 열리고 전사 없음 안내가 표시됨.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 가상 마이크 · 전사는 수기 테스트 입력",
+    "source": "src/components/RecordingPanel.tsx:344"
+  },
+  {
+    "file": "meeting-05-saved.png",
+    "label": "녹음 저장 뒤 다시 열기",
+    "observation": "같은 미팅의 기록 화면을 다시 열어 저장한 2초 음성을 재생했고, 음원 Blob 연결과 수기 전사문 23자 표시를 확인.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 가상 마이크 · 전사는 수기 테스트 입력",
+    "source": "src/components/RecordingPanel.tsx:418"
+  },
+  {
+    "file": "meeting-06-select-source.png",
+    "label": "서면 원문 선택",
+    "observation": "입력한 테스트 서면 기록에서 문장을 키보드로 선택하면 형광펜·피드백·할 일을 고르는 도구 막대가 나타남.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 테스트 기록",
+    "source": "src/pages/student/MeetingsPage.tsx:1504"
+  },
+  {
+    "file": "meeting-07-feedback-link.png",
+    "label": "피드백으로 바로 저장된 원문",
+    "observation": "선택한 문장에서 자동으로 피드백을 만들고 피드백 상세에 원문 인용과 기록에서 보기 링크가 나타남.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 테스트 기록",
+    "source": "src/components/item-detail/ItemDetail.tsx:425"
+  },
+  {
+    "file": "meeting-08-reopened-source.png",
+    "label": "피드백에서 원문 기록 다시 열기",
+    "observation": "기록에서 보기를 클릭해 같은 원문 메모가 열림. 링크 주소에 선택한 구절의 위치는 들어가지 않음.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 테스트 기록",
+    "source": "src/components/item-detail/ItemDetail.tsx:441"
+  },
+  {
+    "file": "meeting-09-task.png",
+    "label": "원문 문장으로 만든 할 일",
+    "observation": "원문 선택에서 할 일 생성 후 상세를 다시 열었음.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 테스트 기록",
+    "source": "src/pages/student/MeetingsPage.tsx:799"
+  },
+  {
+    "file": "meeting-10-task-done.png",
+    "label": "원문에서 만든 할 일 완료",
+    "observation": "생성한 할 일에서 완료 버튼을 클릭해 체크 상태가 표시됨.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 미리보기 · 테스트 기록",
+    "source": "src/components/item-detail/ItemDetail.tsx:811"
+  },
+  {
+    "file": "poll-01-create.png",
+    "label": "같은 조율의 후보 추가",
+    "observation": "주최자용 실제 조율 만들기 창에서 후보 2개와 참가자 이메일 입력. 날짜·시각 칸은 후보마다 시작·종료로 나뉨. 1440×900에서도 날짜 자리 일부가 잘려 보임.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 연결 UI · 가상 참가자·서버 응답 모의",
+    "source": "src/components/meetings/PollCreate.tsx:132"
+  },
+  {
+    "file": "poll-02-host-open.png",
+    "label": "주최자의 조율 중 상태",
+    "observation": "같은 시간 후보 2개가 조율 상세에 저장되고 주최자만 확정·취소 버튼을 봄.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 연결 UI · 가상 참가자·서버 응답 모의",
+    "source": "src/pages/PlanningPage.tsx:891"
+  },
+  {
+    "file": "poll-03-guest-first.png",
+    "label": "390px 참가자의 첫 응답",
+    "observation": "별도 참가자 계정으로 같은 조율 첫 후보 선택을 저장. 주최자 확정 버튼이 참가자에게 없음.",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    },
+    "mode": "로컬 연결 UI · 가상 참가자·서버 응답 모의",
+    "source": "src/pages/PlanningPage.tsx:891"
+  },
+  {
+    "file": "poll-04-guest-revised.png",
+    "label": "390px 참가자의 응답 수정",
+    "observation": "첫 번째 가능을 취소하고 두 번째 후보를 저장. 새로고침 후 두 번째만 선택 상태.",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    },
+    "mode": "로컬 연결 UI · 가상 참가자·서버 응답 모의",
+    "source": "src/pages/PlanningPage.tsx:891"
+  },
+  {
+    "file": "poll-05-host-confirmed.png",
+    "label": "주최자의 확정 및 미팅 연결",
+    "observation": "확정한 두 번째 후보가 다시 열어도 확정 배지와 미팅 링크로 표시됨. 응답 모의 환경.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 연결 UI · 가상 참가자·서버 응답 모의",
+    "source": "src/pages/PlanningPage.tsx:891"
+  },
+  {
+    "file": "poll-06-linked-meeting.png",
+    "label": "확정한 미팅 열기",
+    "observation": "확정된 조율에서 같은 제목의 미팅으로 연결됨.",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    },
+    "mode": "로컬 연결 UI · 가상 참가자·서버 응답 모의",
+    "source": "src/pages/PlanningPage.tsx:1080"
+  },
+  {
+    "file": "poll-07-guest-locked.png",
+    "label": "390px 참가자의 확정 후 잠금",
+    "observation": "확정 뒤 참가자가 다시 열면 두 후보가 비활성이고 저장 버튼이 사라짐.",
+    "viewport": {
+      "w": 390,
+      "h": 844
+    },
+    "mode": "로컬 연결 UI · 가상 참가자·서버 응답 모의",
+    "source": "src/pages/PlanningPage.tsx:891"
+  }
+]

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 10 · 글·자료</title>
+<style>
+:root {
+  --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+  --text: #171719; --sub: #46474c; --mute: #686b73;
+  --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+  --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+    --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+    --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); }
+section.scene { display: none; } section.scene.on { display: block; }
+body { overflow-wrap: anywhere; }
+header.top { padding: 14px clamp(16px, 4vw, 34px); background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top p { margin: 4px 0 0; color: var(--sub); }
+main { max-width: 1120px; margin: 0 auto; padding: 18px 12px 32px; }
+.scene { padding: clamp(12px, 3vw, 22px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 18px; }
+h1, h2, h3, h4, p { margin: 0; }
+h1 { font-size: 20px; }
+h2 { font-size: 18px; }
+h2 .proposal { vertical-align: 2px; margin-inline-start: 5px; }
+h3 { font-size: 15px; }
+h4 { font-size: 14px; }
+.desc { color: var(--sub); margin: 8px 0 14px; }
+.desc span { display: block; }
+.mock { padding: clamp(10px, 2.3vw, 20px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--sunken); }
+.stack { display: grid; gap: 12px; min-width: 0; }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+.panel, .form-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(9px, 2vw, 16px); min-width: 0; }
+.form-card { max-width: 540px; width: 100%; margin-inline: auto; }
+.page-header { font-size: 28px; font-weight: 700; line-height: 1.2; }
+.hint, .required, .metadata { color: var(--mute); font-size: 13px; }
+.chip, .key { display: inline-block; padding: 2px 7px; background: var(--sunken); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
+.row > *, .panel > * { min-width: 0; }
+.icon { display: inline-block; width: 16px; height: 16px; flex: 0 0 auto; vertical-align: -3px; }
+.folder-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.list-grid { display: grid; grid-template-columns: minmax(85px, .25fr) minmax(0, 1.3fr) minmax(0, .65fr); gap: 12px; align-items: start; }
+.list-grid .panel { align-content: start; }
+.list-grid aside { color: var(--sub); }
+.data-table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; }
+.data-table td, .data-table th { padding: 8px 5px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.data-table thead th { color: var(--sub); font-weight: 600; font-size: 13px; }
+.data-table tbody tr:last-child td, .data-table tbody tr:last-child th { border-bottom: 0; }
+.list-grid .data-table thead th:first-child { width: 52%; }
+.list-grid .data-table tbody th { font-weight: 600; }
+.file-kind { display: inline-block; vertical-align: 2px; }
+.field { display: grid; gap: 5px; }
+.field label, .field-label { font-weight: 600; }
+.required { margin-inline-start: 5px; font-weight: 400; }
+.field input { min-height: 40px; width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 8px; color: var(--text); background: var(--surface); font: inherit; }
+.field input::placeholder { color: var(--mute); opacity: 1; }
+.field .choice { width: 100%; justify-content: space-between; }
+.choice { display: inline-flex; align-items: center; column-gap: 8px; text-align: left; }
+.choice span { color: var(--mute); }
+button.btn:disabled { background: var(--sunken); border-color: var(--line); color: var(--mute); cursor: default; }
+button.btn.more { min-width: 40px; min-height: 40px; font-size: 18px; }
+.menu { margin: 0; padding: 0; list-style: none; max-width: 320px; width: 100%; }
+.menu button.btn { border-color: transparent; width: 100%; text-align: left; display: flex; align-items: center; gap: 6px; }
+.menu button.btn:hover { background: var(--sunken); }
+.menu .key { margin-inline-start: auto; }
+.file-choice { min-height: 54px; border: 1px dashed var(--line-strong); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px; }
+.pdf-preview { padding: clamp(12px, 3vw, 26px); border-radius: 8px; background: var(--sunken); border: 1px solid var(--line); }
+.pdf-preview .data-table th { color: var(--sub); text-align: start; }
+@media (max-width: 660px) {
+  .list-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .desktop-hint { display: none; }
+  .folder-columns .panel { gap: 6px; padding-block: 9px; }
+}
+@media (max-width: 420px) {
+  .mock .page-header { font-size: 22px; }
+  .pdf-head .actions { flex-basis: 100%; }
+}
+.icon { position: relative; border: 1.5px solid currentColor; border-radius: 2px; }
+.icon::after { content: ""; position: absolute; }
+.icon-archive { height: 13px; }
+.icon-archive::after { left: 3px; right: 3px; top: 4px; height: 3px; border-block: 1px solid currentColor; }
+.icon-folder { height: 11px; }
+.icon-folder::after { left: -1.5px; width: 6px; top: -5px; height: 4px; border: 1.5px solid currentColor; border-bottom: 0; border-radius: 2px 2px 0 0; }
+.icon-document, .icon-pdf { width: 13px; height: 16px; }
+.icon-document::after { left: 2px; right: 2px; top: 5px; height: 4px; border-block: 1px solid currentColor; }
+.icon-pdf::after { inset: 4px 2px 2px; background: var(--brand); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 10 · 글·자료</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+<main>
+<section class="scene on" id="10-doc-01">
+  <h2>글·자료 목록 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 원고 버전 열이 &#x27;—&#x27;로 나오고 3단 미리보기 시 공개 범위 열이 숨으며, h1(20px/400)·네이티브 &lt;select&gt;·보관함 ○ 아이콘·다크 흰 PDF 썸네일·동명 행 구분이 어긋나요</span><span><strong>바뀐 점:</strong> 원고 버전 수를 버전 열에 표시하고, 미리보기 중 핵심 열 유지 여부를 재검토하며, PageHeader·선택 컴포넌트·보관 아이콘 1종·파일 종류 아이콘·동명 행 구분을 통일·보완해요</span></p>
+  <div class="mock">
+<div class="stack">
+  <div class="row spread"><h3 class="page-header">글·자료</h3><button type="button" class="btn choice" aria-label="정렬: 최근 고친 순">최근 고친 순<span aria-hidden="true">⌄</span></button></div>
+  <div class="list-grid">
+    <aside class="panel row" aria-label="글·자료 분류"><span><span class="icon icon-archive" aria-hidden="true"></span> 보관함</span></aside>
+    <div class="panel">
+      <table class="data-table">
+        <thead><tr><th scope="col">이름·종류</th><th scope="col">공개 범위</th><th scope="col">버전</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><span class="icon icon-document" aria-hidden="true"></span> 연구계획서 <span class="chip file-kind">원고</span></th><td>나만 보기</td><td>1개 <span class="proposal">제안</span></td></tr>
+          <tr><th scope="row"><span class="icon icon-pdf" aria-hidden="true"></span> 연구계획서 <span class="chip file-kind">PDF</span></th><td>함께 보기</td><td>v1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="panel stack" aria-label="자료 미리보기"><h4>연구계획서</h4><p class="metadata">PDF 미리보기</p><p><span class="icon icon-pdf" aria-hidden="true"></span> 연구계획서</p></aside>
+  </div>
+</div>
+  </div>
+</section>
+
+<section class="scene on" id="10-doc-03">
+  <h2>폴더 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 글·자료 행을 폴더로 끌어 옮기는 코드가 없고 모바일에도 드래그 안내가 뜨며, 320px에서 폴더 목록이 상단 절반을 차지하고 편집자 화면에 비공개 글 포함 여부가 불확실한 폴더 수가 보여요</span><span><strong>바뀐 점:</strong> 동작을 먼저 확인하고, 없으면 끌어 옮기기를 넣거나 안내 문구를 빼요. 모바일에서는 드래그 안내를 숨기고 폴더 영역 높이를 줄이며, 편집자 폴더 수 노출 점검과 새 폴더 창 버튼·필수 표시 통일을 보완해요</span></p>
+  <div class="mock">
+<div class="stack">
+  <h3>폴더 <span class="chip">편집자 화면</span></h3>
+  <div class="folder-columns">
+    <div class="panel stack"><h4>안내 빼기 <span class="proposal">제안</span></h4><div class="row"><span class="icon icon-folder" aria-hidden="true"></span> 선행연구</div></div>
+    <div class="panel stack"><h4>끌어 옮기기 지원 <span class="proposal">제안</span></h4><div class="row"><span class="icon icon-folder" aria-hidden="true"></span> 선행연구</div><p class="hint desktop-hint">글이나 자료를 폴더로 끌어 놓을 수 있어요.</p></div>
+  </div>
+  <div class="form-card stack">
+    <h4>폴더 만들기</h4>
+    <div class="field"><label for="folder-name">폴더 이름<span class="required">필수</span></label><input id="folder-name" type="text" required></div>
+    <div class="field"><span class="field-label">상위 폴더</span><button type="button" class="btn choice" aria-label="상위 폴더: 선택">선택<span aria-hidden="true">⌄</span></button></div>
+    <div class="row"><button type="button" class="btn">취소</button><button type="button" class="btn" disabled>저장</button></div>
+  </div>
+</div>
+  </div>
+</section>
+
+<section class="scene on" id="10-doc-04">
+  <h2>행 메뉴(⋯·우클릭) <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 행 메뉴의 &#x27;보관&#x27;에 휴지통 아이콘이 쓰여 좌측 &#x27;보관함&#x27; 아이콘(○)과 다르고, ⋯ 버튼이 작은 크기(icon-xs)이며 단축키 표시가 없어요</span><span><strong>바뀐 점:</strong> 공통 RowActions 구조는 유지하고 &#x27;보관&#x27;과 &#x27;보관함&#x27; 아이콘을 1종으로 통일하며, ⋯ 버튼의 누르기 쉬운 크기와 메뉴 단축키 표시를 보완해요</span></p>
+  <div class="mock">
+<div class="stack">
+  <div class="row"><span class="icon icon-archive" aria-hidden="true"></span> 보관함</div>
+  <div class="panel stack">
+    <div class="row spread"><h3>인터뷰 질문지 메모</h3><button type="button" class="btn more" aria-label="인터뷰 질문지 메모 행 메뉴" aria-expanded="true" aria-controls="docs-context-menu">⋯</button></div>
+    <ul id="docs-context-menu" class="menu panel" aria-label="행 메뉴">
+      <li><button type="button" class="btn">열기 <kbd class="key">Enter</kbd></button></li>
+      <li><button type="button" class="btn">새 탭에서 열기</button></li>
+      <li><button type="button" class="btn">이름·정보 바꾸기</button></li>
+      <li><button type="button" class="btn"><span class="icon icon-folder" aria-hidden="true"></span> 폴더로 옮기기</button></li>
+      <li><button type="button" class="btn"><span class="icon icon-archive" aria-hidden="true"></span> 보관</button></li>
+    </ul>
+    <p class="hint">메뉴 단축키 표기 예시 <span class="proposal">제안</span></p>
+  </div>
+</div>
+  </div>
+</section>
+
+<section class="scene on" id="10-doc-05">
+  <h2>파일 추가 창 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 단건 자료 등록 창에서 &#x27;자료 유형&#x27;은 네이티브 &lt;select&gt;, &#x27;폴더&#x27;는 커스텀 선택 상자로 혼용되고 파일·입력을 채우기 전에도 제출 버튼이 활성화되며 필수 표시에 파란 *가 쓰여요</span><span><strong>바뀐 점:</strong> &#x27;자료 유형&#x27;과 &#x27;폴더&#x27; 선택 상자를 공통 선택 컴포넌트로 통합하고, 필수 표시 형식 통일과 파일 미선택·미입력 시 제출 버튼 비활성·안내를 보완해요</span></p>
+  <div class="mock">
+<div class="form-card stack">
+  <h3>파일 추가</h3>
+  <div class="field"><span class="field-label">파일<span class="required">필수</span></span><div class="file-choice"><span class="hint">선택한 파일이 없어요.</span><button type="button" class="btn">파일 선택</button></div></div>
+  <div class="field"><label for="file-name">이름<span class="required">필수</span></label><input id="file-name" type="text" required></div>
+  <div class="field"><span class="field-label">자료 유형</span><button type="button" class="btn choice" aria-label="자료 유형: 미분류">미분류<span aria-hidden="true">⌄</span></button></div>
+  <div class="field"><span class="field-label">폴더</span><button type="button" class="btn choice" aria-label="폴더: 폴더 없음">폴더 없음<span aria-hidden="true">⌄</span></button></div>
+  <p class="hint">파일을 선택하고 이름을 입력하면 추가할 수 있어요.</p>
+  <div class="row"><button type="button" class="btn">취소</button><button type="button" class="btn" disabled>추가</button></div>
+</div>
+  </div>
+</section>
+
+<section class="scene on" id="10-doc-06">
+  <h2>새 글 창 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> &#x27;제목 (필수)&#x27; 괄호 형식과 하단 안내의 &#x27;연구 방향&#x27; 표현이 다른 화면(&#x27;연구 목적&#x27;, 파란 */회색 필수)과 달라요</span><span><strong>바뀐 점:</strong> 용어표 기준으로 &#x27;연구 목적&#x27; 표현을 맞추고 필수 표시 방식을 1종으로 통합해요</span></p>
+  <div class="mock">
+<div class="form-card stack">
+  <h3>새 글</h3>
+  <div class="field"><label for="document-title">제목<span class="required">필수</span></label><input id="document-title" type="text" placeholder="예: 연구 방법 초안" required><p class="hint">제목을 적으면 만들 수 있어요.</p></div>
+  <div class="field"><span class="field-label">공개 범위</span><button type="button" class="btn choice" aria-label="공개 범위: 나만 보기">나만 보기<span aria-hidden="true">⌄</span></button><p class="hint">교수님께는 검토 요청에 넣은 항목과 연구 목적만 보여요.</p></div>
+  <div class="row"><button type="button" class="btn">취소</button><button type="button" class="btn" disabled>만들기</button></div>
+</div>
+  </div>
+</section>
+
+<section class="scene on" id="10-mat-01">
+  <h2>PDF 상세 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> 내려받기 버튼이 상단 머리와 PDF 뷰어에 두 개 겹치고, &#x27;새 버전 올리기&#x27; 버튼명이 모달(&#x27;새 버전 추가&#x27;)·종류 배지(&#x27;분석 자료&#x27;)·제목 골조(PageHeader 미사용)와 달라요</span><span><strong>바뀐 점:</strong> 내려받기 버튼을 1곳으로 통합하고, 버튼·종류 배지·PageHeader 표기와 390px 모바일 상단 버튼 줄바꿈을 통일·보완해요</span></p>
+  <div class="mock">
+<div class="stack">
+  <div class="row spread pdf-head">
+    <div class="row"><h3 class="page-header">예비 인터뷰 요약</h3><span class="chip">분석</span><span class="metadata">v1</span></div>
+    <div class="row actions"><button type="button" class="btn">새 버전 추가</button><button type="button" class="btn">내려받기</button></div>
+  </div>
+  <div class="panel stack">
+    <div class="row"><span class="icon icon-pdf" aria-hidden="true"></span><span class="metadata">예비_인터뷰_요약.pdf</span></div>
+    <div class="pdf-preview stack"><h4>예비 인터뷰 요약</h4><p>지도 미팅 뒤 기록을 다시 읽은 경험을 정리했어요.</p></div>
+  </div>
+</div>
+  </div>
+</section>
+
+<section class="scene on" id="10-mat-02">
+  <h2>새 버전 올리기 창 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> PDF 파일을 고르지 않아도 파란 &#x27;새 버전 추가&#x27; 버튼이 활성화돼 누른 뒤에야 오류가 뜨고, 진입 버튼명(&#x27;새 버전 올리기&#x27;)·필수 표시(&#x27;*&#x27;)·자료 유형(&#x27;&lt;select&gt;&#x27;)이 다른 화면과 갈려요</span><span><strong>바뀐 점:</strong> 파일 선택 전 제출 버튼 비활성 또는 안내 상태를 보완하고, 진입 버튼명·필수 표시·선택 상자 컴포넌트를 공통 기준으로 통합해요</span></p>
+  <div class="mock">
+<div class="form-card stack">
+  <h3>새 버전 추가</h3>
+  <p class="hint">새 버전을 올려도 이전 파일과 교수 응답은 그대로 남아요.</p>
+  <div class="field"><label for="material-name">자료 이름<span class="required">필수</span></label><input id="material-name" type="text" value="예비 인터뷰 요약" required></div>
+  <div class="field"><span class="field-label">자료 유형</span><button type="button" class="btn choice" aria-label="자료 유형: 분석">분석<span aria-hidden="true">⌄</span></button></div>
+  <div class="field"><span class="field-label">PDF 파일<span class="required">필수</span></span><div class="file-choice"><span class="hint">선택한 파일이 없어요.</span><button type="button" class="btn">파일 선택</button></div></div>
+  <p class="hint">PDF 파일을 선택하면 새 버전을 추가할 수 있어요.</p>
+  <div class="row"><button type="button" class="btn">취소</button><button type="button" class="btn" disabled>새 버전 추가</button></div>
+</div>
+  </div>
+</section>
+
+<section class="scene on" id="10-mat-03">
+  <h2>텍스트 보기 <span class="proposal">제안</span></h2>
+  <p class="desc"><span><strong>지금:</strong> &#x27;이 페이지 텍스트 보기&#x27;에서 줄 끝과 열 구분을 무시하고 텍스트를 한 줄로 이어 붙여 PDF 표의 행·열 구조가 사라져요</span><span><strong>바뀐 점:</strong> PDF 텍스트 추출 시 줄바꿈과 표의 행·열 구분을 유지해 표 내용이 읽히도록 보완해요</span></p>
+  <div class="mock">
+<div class="panel stack">
+  <h3>이 페이지 텍스트 보기</h3>
+  <article class="pdf-preview stack">
+    <h4>선행연구 비교표</h4>
+    <p>연구 목적에 맞춰 비교 기준을 정리했어요.</p>
+    <table class="data-table" aria-label="가상 선행연구 비교표">
+      <thead><tr><th scope="col">연구</th><th scope="col">연구 대상</th><th scope="col">자료 수집</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">연구 A</th><td>석사과정생</td><td>인터뷰</td></tr>
+        <tr><th scope="row">연구 B</th><td>박사과정생</td><td>미팅 관찰</td></tr>
+        <tr><th scope="row">연구 C</th><td>대학원생</td><td>설문</td></tr>
+      </tbody>
+    </table>
+    <h4>기준 선정 이유</h4>
+    <p>연구 대상을 어떻게 정하고 자료를 수집했는지 비교할 수 있어요.</p>
+  </article>
+</div>
+  </div>
+</section>
+</main>
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

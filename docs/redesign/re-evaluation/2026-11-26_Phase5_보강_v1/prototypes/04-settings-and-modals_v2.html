@@ -1,0 +1,1578 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>시안 04 v2 · 설정 창과 계정</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #fff; --sunken: #f7f7f8; --line: #e1e2e4; --line-strong: #c2c4c8;
+    --text: #171719; --sub: #46474c; --mute: #686b73;
+    --brand: #0066ff; --brand-soft: #eaf2fe; --danger: #d61f1f; --danger-soft: #feecec;
+    --ok: #00843d; --ok-soft: #e6f8ee; --warn: #a35a00; --warn-soft: #fff4e5; --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111214; --surface: #1b1c1e; --sunken: #212225; --line: #2e2f33; --line-strong: #46474c;
+      --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d;
+      --danger: #ff6b6b; --danger-soft: #3a1a1a; --ok: #3fd07f; --ok-soft: #12301f; --warn: #ffb347; --warn-soft: #3a2a12; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+  button.btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  button.btn.primary { background: #0066ff; border-color: #0066ff; color: #fff; }
+  button.btn.danger { color: var(--danger); border-color: var(--danger); background: var(--surface); }
+  button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .proposal { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); font-weight: 600; vertical-align: middle; }
+
+  header.top { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); padding: 12px 16px; }
+  header.top h1 { margin: 0 0 2px; font-size: 20px; }
+  header.top p { margin: 0; color: var(--sub); font-size: 12.5px; }
+
+  nav.tabs { display: flex; gap: 6px; overflow-x: auto; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  nav.tabs button { flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--sub); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 34px; }
+  nav.tabs button[aria-selected="true"] { background: var(--text); color: var(--surface); border-color: var(--text); font-weight: 600; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 18px 16px 60px; }
+  section.scene { display: none; }
+  section.scene.on { display: block; }
+
+  .intro { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .intro h2 { margin: 0 0 6px; font-size: 18px; }
+  .intro p { margin: 4px 0; color: var(--sub); }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 10px; }
+  .ctrl-label { font-size: 12.5px; color: var(--mute); margin-right: 6px; }
+  .seg { display: inline-flex; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+  .seg button { border: 0; background: transparent; color: var(--sub); padding: 6px 12px; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer; min-height: 32px; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+
+  /* Settings window frame */
+  .settings-box {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+    display: grid; grid-template-columns: 228px 1fr; min-height: 520px; overflow: hidden;
+  }
+  .st-side { background: var(--sunken); border-right: 1px solid var(--line); padding: 16px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .st-title-label { font-size: 15px; font-weight: 700; padding: 2px 10px 8px; color: var(--text); }
+  .st-group { font-size: 11.5px; font-weight: 700; color: var(--mute); padding: 10px 10px 4px; }
+  .st-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    width: 100%; text-align: left; border: 1px solid transparent; background: transparent;
+    padding: 7px 10px; border-radius: 8px; font: inherit; font-size: 13.5px; color: var(--sub);
+    cursor: pointer; min-height: 34px;
+  }
+  .st-item:hover:not(:disabled) { background: var(--surface); color: var(--text); }
+  .st-item[aria-current="page"] { background: var(--surface); color: var(--text); font-weight: 700; border-color: var(--line); }
+  .st-item:disabled { color: var(--mute); cursor: default; opacity: 0.72; }
+  .st-item .soon { font-size: 11px; color: var(--mute); font-weight: 400; }
+  .st-foot { margin-top: auto; padding: 12px 10px 2px; font-size: 12px; color: var(--mute); border-top: 1px solid var(--line); }
+
+  .st-main { padding: 24px 26px; min-width: 0; }
+  .st-main h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--text); }
+  .st-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .st-panel-head h3 { font-size: 16px; margin: 0; }
+  .sub-note { font-size: 13px; color: var(--sub); margin: 4px 0 0; }
+  .inline-hint { font-size: 12.5px; color: var(--mute); }
+
+  @media (max-width: 760px) {
+    .settings-box { grid-template-columns: 1fr; }
+    .st-side { border-right: 0; border-bottom: 1px solid var(--line); padding: 12px; }
+    .st-side-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .st-group { width: 100%; padding: 6px 4px 2px; }
+    .st-item { width: auto; flex: none; padding: 6px 10px; }
+    .st-foot { margin-top: 8px; padding: 8px 4px 0; }
+    .st-main { padding: 18px 14px; }
+  }
+
+  .card-box { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; margin-top: 14px; }
+  .row-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 14px 16px; border-bottom: 1px solid var(--line);
+  }
+  .row-item:last-child { border-bottom: 0; }
+  .row-item.foot { background: var(--sunken); justify-content: flex-end; }
+  .row-lbl { font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .row-sub { font-size: 12.5px; color: var(--sub); margin-top: 2px; }
+
+  /* 04-settings-nav comparison table */
+  .nav-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .nav-table th, .nav-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  .nav-table th { color: var(--mute); font-size: 12px; font-weight: 600; background: var(--sunken); }
+  .pill { display: inline-block; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.bad { background: var(--danger-soft); color: var(--danger); }
+  .pill.brand { background: var(--brand-soft); color: var(--brand); }
+  .banner { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--sunken); border: 1px solid var(--line); color: var(--sub); font-size: 13px; }
+  .banner.warn { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+  .banner.bad { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+
+  /* 04-display theme selector & preview */
+  .field-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 8px; }
+  .theme-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 520px) { .theme-grid { grid-template-columns: 1fr; } }
+  .t-card {
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 10px; cursor: pointer; text-align: center;
+    background: var(--surface); color: var(--text); font: inherit; width: 100%; min-height: 36px;
+  }
+  .t-card[aria-checked="true"] { border-color: var(--brand); background: var(--brand-soft); }
+  .mini-ui {
+    height: 60px; border-radius: 8px; border: 1px solid var(--line-strong); overflow: hidden;
+    display: grid; grid-template-rows: 13px 1fr; margin-bottom: 7px; background: #fff;
+  }
+  .mini-ui.dark { background: #1b1c1e; border-color: #46474c; }
+  .mini-ui.sys { background: linear-gradient(135deg, #fff 50%, #1b1c1e 50%); }
+  .mini-top { background: #f4f5f7; border-bottom: 1px solid #e1e2e4; }
+  .mini-ui.dark .mini-top { background: #212225; border-color: #2e2f33; }
+  .mini-ui.sys .mini-top { background: linear-gradient(135deg, #f4f5f7 50%, #212225 50%); border-color: #686b73; }
+  .mini-body { display: grid; grid-template-columns: 1fr 15px; }
+  .mini-body.legacy { grid-template-columns: 18px 1fr; }
+  .mini-rail { background: #f7f7f8; border-left: 1px solid #e1e2e4; }
+  .mini-ui.dark .mini-rail { background: #212225; border-color: #2e2f33; }
+  .mini-legacy-side { background: #f7f7f8; border-right: 1px solid #e1e2e4; }
+
+  .time-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; width: 100%; }
+  .time-row.broken { align-items: flex-end; }
+  .time-preview {
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; background: var(--sunken);
+    font-size: 13px; color: var(--text); min-width: 190px;
+  }
+  .time-row.broken .time-preview { margin-bottom: 18px; }
+
+  /* Form controls */
+  .field-block { margin-top: 14px; }
+  .field-block label, .field-block .f-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .f-opt { font-weight: 400; font-size: 12px; color: var(--mute); margin-left: 6px; }
+  input.inp, select.inp, textarea.inp {
+    width: 100%; max-width: 100%; font: inherit; font-size: 13.5px; color: var(--text); background: var(--surface);
+    border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 11px; min-height: 36px;
+  }
+  input.inp[readonly], textarea.inp[readonly] { background: var(--sunken); color: var(--sub); cursor: default; }
+  .mid-save { margin-top: 10px; }
+  .save-bar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .status-msg { font-size: 13px; color: var(--ok); font-weight: 600; }
+
+  /* 04-usage */
+  .usage-hero { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--sunken); }
+  .usage-pct { font-size: 24px; font-weight: 700; color: var(--text); margin: 0 0 10px; }
+  .bar-track { width: 100%; height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .bar-fill { height: 100%; background: #0066ff; border-radius: 999px; }
+  .usage-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  @media (max-width: 620px) { .usage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .u-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .u-stat span { display: block; font-size: 12px; color: var(--mute); }
+  .u-stat strong { display: block; font-size: 17px; color: var(--text); margin-top: 2px; }
+
+  /* 04-shortcuts */
+  .kbd { display: inline-block; padding: 2px 7px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--sunken); color: var(--text); font-size: 11.5px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+  .sc-group { margin-top: 14px; }
+  .sc-group-head { font-size: 12.5px; font-weight: 700; color: var(--sub); margin: 0 0 6px; }
+  .sc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+  @media (max-width: 620px) { .sc-grid { grid-template-columns: 1fr; } }
+  .sc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 13px; }
+  .sc-flat { max-height: 280px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; position: relative; }
+  .sc-flat::after { content: "하단 항목이 모달 경계에 잘려 보여요"; position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 12px; font-size: 12px; color: var(--danger); background: var(--danger-soft); border-top: 1px solid var(--danger); }
+
+  /* T11: Account & Profile scenes */
+  .profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+  @media (max-width: 920px) { .profile-layout { grid-template-columns: 1fr; } }
+  .acct-menu-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .acct-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .acct-avatar { width: 32px; height: 32px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .acct-theme-box { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunken); }
+  .acct-theme-box .theme-grid { gap: 6px; }
+  .acct-theme-box .t-card { padding: 7px 6px; font-size: 12px; }
+  .acct-theme-box .mini-ui { height: 36px; margin-bottom: 4px; grid-template-rows: 9px 1fr; }
+  .acct-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .acct-confirm { margin-top: 10px; padding: 10px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--sunken); }
+  .sub-links { display: grid; gap: 10px; margin-top: 16px; }
+  .sub-link-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; background: var(--surface); }
+  .btn.danger-solid { background: #d61f1f; border-color: #d61f1f; color: #fff; }
+  .btn.danger-solid:disabled { opacity: 0.45; }
+  .steps-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .step-chip { font-size: 12.5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--sunken); color: var(--mute); }
+  .step-chip.on { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); font-weight: 700; }
+  .step-chip.done { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); font-weight: 600; }
+  .research-choice { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin-top: 10px; background: var(--surface); }
+  .choice-opts { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 8px; align-items: center; }
+  .choice-opts label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+  .choice-opts label.disabled-opt { color: var(--mute); cursor: not-allowed; }
+  .export-bar { width: 140px; height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 6px; }
+  .export-bar-fill { height: 100%; background: #0066ff; transition: width 0.2s linear; }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--text); color: var(--surface); padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none; gap: 12px; align-items: center; max-width: calc(100% - 32px); z-index: 30; }
+  .toast.on { display: flex; }
+  .toast button { white-space: nowrap; flex: none; background: transparent; border: 0; color: #5c9dff; font: inherit; font-weight: 700; cursor: pointer; min-height: 32px; }
+
+  /* T12: Poll create & respond (outside settings box) */
+  .poll-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .poll-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .poll-head h3 { margin: 0; font-size: 16px; }
+  .poll-slots { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .poll-slot { border: 1px solid var(--line); border-radius: var(--radius); background: var(--sunken); padding: 12px; }
+  .poll-slot-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .poll-slot-grid { display: grid; grid-template-columns: minmax(140px, 1.3fr) minmax(105px, 1fr) minmax(105px, 1fr); gap: 8px; align-items: end; }
+  @media (max-width: 600px) { .poll-slot-grid { grid-template-columns: 1fr 1fr; } .poll-slot-grid .poll-date-field { grid-column: 1 / -1; } }
+  .poll-slot-field label { display: block; font-size: 12px; color: var(--sub); margin-bottom: 4px; font-weight: 600; }
+  .poll-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin: 10px 0 14px; font-size: 12.5px; color: var(--sub); }
+  .legend-dot { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 4px; border: 1px solid var(--line-strong); display: inline-block; }
+  .legend-swatch.all { background: var(--ok-soft); border-color: var(--ok); }
+  .legend-swatch.yes { background: var(--brand-soft); border-color: var(--brand); }
+  .legend-swatch.no { background: var(--danger-soft); border-color: var(--danger); }
+  .poll-resp-list { display: flex; flex-direction: column; gap: 10px; }
+  .poll-resp-row { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; }
+  .poll-resp-row.all-ok { border-color: var(--ok); background: var(--ok-soft); }
+  .poll-resp-row.my-yes { border-color: var(--brand); background: var(--brand-soft); }
+  .poll-resp-row.my-no { border-color: var(--danger); background: var(--danger-soft); }
+  .poll-resp-row.confirmed { border-color: var(--ok); box-shadow: 0 0 0 2px var(--ok-soft); }
+  .poll-resp-actions { display: flex; justify-content: flex-end; align-items: center; min-width: 136px; }
+  @media (max-width: 720px) {
+    .poll-resp-row { grid-template-columns: 1fr; gap: 10px; }
+    .poll-resp-actions { justify-content: flex-end; width: 100%; min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>시안 04 v2 · 설정 창과 계정 (Phase 5 쟁점 5·8)</h1>
+  <p>가상 데이터로 지금 동작과 바뀔 모습을 비교하는 시안이에요. 제품 코드와 연결되지 않아요. 색은 Montage 근사값이에요. <span class="proposal">제안</span> 표시는 사용자가 아직 정하지 않은 부분이에요.</p>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="장면">
+  <button type="button" role="tab" aria-selected="true" data-scene="04-settings-nav">설정 창 구조</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-display">화면</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-assistant-settings">연구 도우미</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-usage">사용량</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-shortcuts">단축키</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-research-info">연구 정보</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-profile">프로필</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-login-methods">로그인 수단</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-export">데이터 내보내기</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-delete-account">탈퇴</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-poll-create">시간 조율 만들기</button>
+  <button type="button" role="tab" aria-selected="false" data-scene="04-poll-respond">시간 조율 응답</button>
+</nav>
+
+<main>
+  <!-- 1. 04-settings-nav -->
+  <section class="scene on" id="04-settings-nav" role="tabpanel">
+    <div class="intro">
+      <h2>설정 창 구조</h2>
+      <p>지금: 왼쪽 목록과 오른쪽 제목 이름이 서로 달라요(예: '연구 도우미' → 'AI 기본 설정'). 편집자에게도 '이 연구 &gt; 보관·삭제' 항목이 그대로 보여요.</p>
+      <p>바뀐 점: 왼쪽 목록을 '내 계정'과 '이 연구' 두 묶음으로 두고 오른쪽 제목을 왼쪽 이름과 똑같이 맞춰요. 편집자에게는 '이 연구 &gt; 보관·삭제'를 숨겨요.</p>
+      <div class="controls">
+        <div>
+          <span class="ctrl-label">방식</span>
+          <span class="seg" id="nav-mode" role="group" aria-label="설정 창 구조 방식">
+            <button type="button" aria-pressed="true" data-v="after">바뀐 뒤 (대안 A)</button>
+            <button type="button" aria-pressed="false" data-v="now">지금 동작</button>
+          </span>
+        </div>
+        <div>
+          <span class="ctrl-label">보는 사람</span>
+          <span class="seg" id="nav-who" role="group" aria-label="설정 창 보는 사람">
+            <button type="button" aria-pressed="true" data-v="owner">학생(소유자)</button>
+            <button type="button" aria-pressed="false" data-v="editor">공동연구자(편집자)</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" id="nav-usage-lbl" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" id="nav-danger-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3 id="nav-right-title">연구 도우미</h3>
+          <span class="pill ok" id="nav-title-badge">왼쪽·오른쪽 이름 일치</span>
+        </div>
+        <p class="sub-note" id="nav-role-note"></p>
+        <table class="nav-table">
+          <thead>
+            <tr><th>묶음</th><th>왼쪽 항목 이름</th><th>오른쪽 화면 제목</th><th>상태</th></tr>
+          </thead>
+          <tbody id="nav-map-body"></tbody>
+        </table>
+        <div class="banner" id="nav-editor-banner" style="margin-top:14px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 04-display -->
+  <section class="scene" id="04-display" role="tabpanel">
+    <div class="intro">
+      <h2>화면</h2>
+      <p>지금: 테마가 단일 순환 버튼이고 미리보기 그림이 구형 왼쪽 사이드바예요. 시각 표기 버튼과 미리보기 카드의 아래 정렬도 어긋나요.</p>
+      <p>바뀐 점: '라이트 · 다크 · 시스템' 3단 선택과 실제 앱(상단 + 오른쪽 레일) 썸네일을 쓰고, 계정 메뉴와 같은 선택을 공유해요.</p>
+      <div class="controls">
+        <div>
+          <span class="ctrl-label">방식</span>
+          <span class="seg" id="disp-mode" role="group" aria-label="화면 설정 방식">
+            <button type="button" aria-pressed="true" data-v="after">바뀐 뒤 (대안 A)</button>
+            <button type="button" aria-pressed="false" data-v="now">지금 동작</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" aria-current="page" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3 id="disp-heading">화면</h3>
+        </div>
+        <div class="field-head">
+          <span class="row-lbl">테마</span>
+          <span class="inline-hint" id="disp-sync-hint">계정 메뉴에서도 같은 선택이 보여요.</span>
+        </div>
+        <div id="disp-theme-wrap"></div>
+
+        <div class="card-box">
+          <div class="row-item">
+            <div>
+              <div class="row-lbl">언어</div>
+              <div class="row-sub">기록 원문은 번역하지 않고 화면 글자만 바꿔요.</div>
+            </div>
+            <div class="seg" id="disp-lang" role="group" aria-label="언어 선택">
+              <button type="button" aria-pressed="true" data-lang="ko">한국어</button>
+              <button type="button" aria-pressed="false" data-lang="ja">日本語</button>
+            </div>
+          </div>
+          <div class="row-item">
+            <div class="time-row" id="disp-time-row">
+              <div>
+                <div class="row-lbl" style="margin-bottom:6px;">시각 표기</div>
+                <div class="seg" id="disp-hour" role="group" aria-label="시각 표기">
+                  <button type="button" aria-pressed="true" data-h="24">24시간제</button>
+                  <button type="button" aria-pressed="false" data-h="12">12시간제</button>
+                  <button type="button" aria-pressed="false" data-h="sys">기기 설정 따르기</button>
+                </div>
+              </div>
+              <div class="time-preview">
+                <div style="font-weight:700;">제6차 논문 지도</div>
+                <div style="color:var(--brand);font-weight:600;" id="disp-time-sample">미팅 · 14:00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 04-assistant-settings -->
+  <section class="scene" id="04-assistant-settings" role="tabpanel">
+    <div class="intro">
+      <h2>연구 도우미</h2>
+      <p>지금: 오른쪽 제목이 'AI 기본 설정'이고, D13 결정에 어긋나는 문구("사용할 기록을 확인해요")와 탭 중간의 저장 버튼이 남아 있어요.</p>
+      <p>바뀐 점: Google 모델만 선택하고, 기록 전체 읽기 안내로 바로잡으며, 아래 저장 버튼 하나로 합쳐요.</p>
+      <div class="controls">
+        <div>
+          <span class="ctrl-label">방식</span>
+          <span class="seg" id="ast-mode" role="group" aria-label="연구 도우미 설정 방식">
+            <button type="button" aria-pressed="true" data-v="after">바뀐 뒤 (대안 A)</button>
+            <button type="button" aria-pressed="false" data-v="now">지금 동작</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" aria-current="page" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3 id="ast-heading">연구 도우미</h3>
+        </div>
+        <p class="sub-note" id="ast-copy">연구 도우미는 현재 연구에서 내가 볼 수 있는 모든 기록을 자동으로 읽어요. 기본값을 바꿔도 도우미가 자동으로 실행되지 않아요.</p>
+
+        <div class="field-block">
+          <label for="ast-model">기본 모델</label>
+          <select class="inp" id="ast-model" style="max-width:300px;">
+            <option value="flash">Gemini 3.8 Flash · 간단히</option>
+            <option value="pro">Gemini 3.8 Pro · 깊게</option>
+          </select>
+          <div class="mid-save" id="ast-mid-save" style="display:none;">
+            <button type="button" class="btn primary">저장</button>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="f-label">나만의 연구 도우미</div>
+          <p class="sub-note" style="margin-bottom:10px;">도우미가 답할 때 참고할 이름과 말투, 개인 지침을 정해요. 내 계정에만 저장돼요.</p>
+          <div class="field-block">
+            <label for="ast-name">이름 <span class="f-opt">선택 · 20자까지</span></label>
+            <input class="inp" id="ast-name" maxlength="20" placeholder="예: 콩이" />
+          </div>
+          <div class="field-block">
+            <div class="f-label">말투</div>
+            <div class="seg" id="ast-tone" role="group" aria-label="말투">
+              <button type="button" aria-pressed="true" data-t="기본">기본</button>
+              <button type="button" aria-pressed="false" data-t="간결하게">간결하게</button>
+              <button type="button" aria-pressed="false" data-t="친절하게">친절하게</button>
+              <button type="button" aria-pressed="false" data-t="격식 있게">격식 있게</button>
+            </div>
+          </div>
+          <div class="field-block">
+            <label for="ast-guide">개인 지침 <span class="f-opt">선택</span></label>
+            <textarea class="inp" id="ast-guide" rows="3" placeholder="예: 질적 연구 용어로 설명해 주세요. 고칠 문장은 예시를 하나씩 보여 주세요."></textarea>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <span class="status-msg" id="ast-status" role="status"></span>
+          <button type="button" class="btn primary" id="ast-save">저장</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 04-usage -->
+  <section class="scene" id="04-usage" role="tabpanel">
+    <div class="intro">
+      <h2>사용량</h2>
+      <p>지금: 남은 양 비율 대신 큰 숫자만 보이고, 원가·정산 단위 표기와 다음 지급일의 날짜와 시각까지 함께 노출돼요. 사용량 안내 문구도 현행 규칙과 달라요.</p>
+      <p>바뀐 점: 이번 달 지급량 대비 남은 양을 퍼센트(%)로 먼저 보이고, 네 값마다 이름을 붙이며, 다음 지급일은 날짜만 보여 주고 규칙 문구를 바로잡아요.</p>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" aria-current="page" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3>사용량</h3>
+        </div>
+
+        <div class="usage-hero">
+          <div class="usage-pct">이번 달 남은 양 96%</div>
+          <div class="bar-track" role="progressbar" aria-valuenow="96" aria-valuemin="0" aria-valuemax="100" aria-label="이번 달 남은 크레딧 비율">
+            <div class="bar-fill" style="width:96%;"></div>
+          </div>
+          <p class="sub-note" style="margin-top:8px;">이번 달 지급량 대비 남은 비율이에요. 예약은 실행이 끝난 뒤 실제 사용량으로 정산돼요.</p>
+          <div class="usage-grid">
+            <div class="u-stat"><span>남은 양</span><strong>19,190</strong></div>
+            <div class="u-stat"><span>이번 달 지급</span><strong>20,000</strong></div>
+            <div class="u-stat"><span>사용</span><strong>479</strong></div>
+            <div class="u-stat"><span>예약</span><strong>332</strong></div>
+          </div>
+        </div>
+
+        <div class="card-box">
+          <div class="row-item">
+            <div>
+              <div class="row-lbl">사용 한도 안내</div>
+              <div class="row-sub">월 크레딧 안에서 쓰고, 1분에 6번까지 실행할 수 있어요.</div>
+            </div>
+            <span class="pill brand">현행 규칙</span>
+          </div>
+          <div class="row-item">
+            <div class="row-lbl">다음 지급일</div>
+            <strong>12월 1일</strong>
+          </div>
+          <div class="row-item">
+            <div>
+              <div class="row-lbl">이번 달 실행 횟수</div>
+              <div class="row-sub">내가 볼 수 있는 연구에서 실행한 요청 수예요.</div>
+            </div>
+            <span style="font-weight:600;">요청 70 · 성공 64 · 실패 5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 04-shortcuts -->
+  <section class="scene" id="04-shortcuts" role="tabpanel">
+    <div class="intro">
+      <h2>단축키</h2>
+      <p>지금: 모든 단축키가 그룹 없이 한 줄씩 길게 놓여 아래쪽 항목이 잘려 보여요.</p>
+      <p>바뀐 점: '화면 이동 · 목록과 작업 · 편집과 녹음' 그룹으로 나누어 한눈에 보이게 정리해요. G W, G F, G R, G P도 모두 지금 쓰는 단축키예요.</p>
+      <div class="controls">
+        <div>
+          <span class="ctrl-label">방식</span>
+          <span class="seg" id="sc-mode" role="group" aria-label="단축키 표시 방식">
+            <button type="button" aria-pressed="true" data-v="after">바뀐 뒤 (그룹 표)</button>
+            <button type="button" aria-pressed="false" data-v="now">지금 동작 (한 줄 나열)</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" aria-current="page" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3>단축키</h3>
+        </div>
+        <p class="sub-note">G 단축키는 연구 안에서 G를 누른 뒤 1초 안에 글자를 누르면 돼요. 한글 자판 상태여도 같은 자리를 누르면 돼요.</p>
+        <div id="sc-body"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 04-research-info -->
+  <section class="scene" id="04-research-info" role="tabpanel">
+    <div class="intro">
+      <h2>연구 정보</h2>
+      <p>지금: 오른쪽 제목이 '기본 정보'이고, 공동연구자(편집자)에게도 연구 이름·설명·목적·질문 입력칸이 열려 있어요.</p>
+      <p>바뀐 점: 연구 소유자(김학생)만 고치고 저장할 수 있어요. 편집자에게는 모든 칸을 읽기 전용(회색 배경)으로 두고 이유 한 줄을 보여 줘요.</p>
+      <div class="controls">
+        <div>
+          <span class="ctrl-label">방식</span>
+          <span class="seg" id="ri-mode" role="group" aria-label="연구 정보 방식">
+            <button type="button" aria-pressed="true" data-v="after">바뀐 뒤 (대안 A)</button>
+            <button type="button" aria-pressed="false" data-v="now">지금 동작</button>
+          </span>
+        </div>
+        <div>
+          <span class="ctrl-label">보는 사람</span>
+          <span class="seg" id="ri-who" role="group" aria-label="연구 정보 보는 사람">
+            <button type="button" aria-pressed="true" data-v="owner">학생(소유자)</button>
+            <button type="button" aria-pressed="false" data-v="editor">공동연구자(편집자)</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" aria-current="page" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" id="ri-danger-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3 id="ri-heading">연구 정보</h3>
+        </div>
+        <p class="banner" id="ri-lock-msg" style="margin-bottom:12px;display:none;"></p>
+
+        <div class="field-block">
+          <label for="ri-name">연구 이름</label>
+          <input class="inp" id="ri-name" value="대학원생 연구 기록 경험" />
+        </div>
+        <div class="field-block">
+          <label for="ri-desc">설명 <span class="f-opt">선택</span></label>
+          <textarea class="inp" id="ri-desc" rows="2">지도 미팅 뒤 기록을 정리하는 경험을 살펴보는 가상 연구예요.</textarea>
+        </div>
+        <div class="field-block">
+          <label for="ri-purpose">연구 목적 <span class="f-opt">선택</span></label>
+          <textarea class="inp" id="ri-purpose" rows="2">대학원생이 지도 미팅 뒤 기록을 정리해 다음 연구로 잇는 경험을 이해한다.</textarea>
+        </div>
+        <div class="field-block">
+          <label for="ri-questions">연구 질문 <span class="f-opt">선택 · 한 줄에 하나씩, 5개까지</span></label>
+          <textarea class="inp" id="ri-questions" rows="2">대학원생은 미팅 기록을 정리하며 어떤 어려움을 겪는가?
+기록 정리 방식은 다음 미팅 준비에 어떤 영향을 주는가?</textarea>
+        </div>
+        <div class="field-block">
+          <label for="ri-date">투고·제출 목표일 <span class="f-opt">선택</span></label>
+          <input class="inp" id="ri-date" type="date" value="2026-12-20" style="max-width:220px;" />
+        </div>
+
+        <div class="save-bar" id="ri-save-bar">
+          <span class="status-msg" id="ri-status" role="status"></span>
+          <button type="button" class="btn primary" id="ri-save">저장</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 04-profile -->
+  <section class="scene" id="04-profile" role="tabpanel">
+    <div class="intro">
+      <h2>프로필</h2>
+      <p>지금: 내부 상태 배지('연결됨')가 노출되고, 로그인 수단 안내·데이터 내보내기·탈퇴로 이어지는 경로가 없어요. 오른쪽 위 계정 메뉴에도 3단 테마 선택이 없어요.</p>
+      <p>바뀐 점: 내부 상태 배지를 없애고 로그인 수단·데이터 내보내기·탈퇴를 연결해요. 계정 메뉴에서도 화면 설정과 같은 3단 테마를 고를 수 있어요(계정 기능은 Phase 5에서 설계만 진행해요).</p>
+    </div>
+
+    <div class="profile-layout">
+      <div class="settings-box">
+        <aside class="st-side" aria-label="설정 목록">
+          <div class="st-title-label">설정</div>
+          <div class="st-group">내 계정</div>
+          <div class="st-side-list">
+            <button type="button" class="st-item" aria-current="page" data-scene="04-profile">프로필</button>
+            <button type="button" class="st-item" data-scene="04-display">화면</button>
+            <button type="button" class="st-item" disabled>알림</button>
+            <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+            <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+            <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+          </div>
+          <div class="st-group">이 연구</div>
+          <div class="st-side-list">
+            <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+            <button type="button" class="st-item" disabled>함께하는 사람</button>
+            <button type="button" class="st-item" disabled>미팅 주기</button>
+            <button type="button" class="st-item" disabled>보관·삭제</button>
+          </div>
+          <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+        </aside>
+        <div class="st-main">
+          <div class="st-panel-head">
+            <h3>프로필</h3>
+          </div>
+
+          <div class="field-block">
+            <label for="pf-name">표시 이름</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <input class="inp" id="pf-name" value="김학생" style="max-width:260px;" />
+              <button type="button" class="btn primary" id="pf-save">저장</button>
+              <span class="status-msg" id="pf-status" role="status"></span>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <label for="pf-email">로그인 이메일</label>
+            <input class="inp" id="pf-email" value="student@margin.com" readonly style="max-width:320px;" />
+            <p class="sub-note">로그인 이메일은 여기서 바꿀 수 없어요.</p>
+          </div>
+
+          <div class="sub-links">
+            <div class="sub-link-card">
+              <div>
+                <div class="row-lbl">로그인 수단</div>
+                <div class="row-sub">이메일 비밀번호 변경 또는 연결된 소셜 로그인을 확인해요.</div>
+              </div>
+              <button type="button" class="btn" data-scene="04-login-methods">로그인 수단</button>
+            </div>
+            <div class="sub-link-card">
+              <div>
+                <div class="row-lbl">데이터 내보내기</div>
+                <div class="row-sub">내 연구 기록·원고·자료를 연구별로 묶어 내려받아요.</div>
+              </div>
+              <button type="button" class="btn" data-scene="04-export">데이터 내보내기</button>
+            </div>
+            <div class="sub-link-card">
+              <div>
+                <div class="row-lbl" style="color:var(--danger);">탈퇴</div>
+                <div class="row-sub">소유한 연구를 공동연구자에게 넘기거나 삭제한 뒤 탈퇴해요.</div>
+              </div>
+              <button type="button" class="btn danger" data-scene="04-delete-account">탈퇴</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="acct-menu-card" aria-label="계정 메뉴 모형">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <h3 style="margin:0;font-size:14px;">오른쪽 위 계정 메뉴 모형</h3>
+          <span class="pill brand">설계</span>
+        </div>
+        <div class="acct-head">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="acct-avatar" aria-hidden="true">김</span>
+            <div>
+              <div style="font-weight:700;font-size:13.5px;">김학생</div>
+              <div style="font-size:12px;color:var(--mute);">student@margin.com</div>
+            </div>
+          </div>
+          <span class="pill ok">학생</span>
+        </div>
+
+        <div class="acct-theme-box">
+          <div style="font-size:12.5px;font-weight:600;margin-bottom:6px;">화면</div>
+          <div id="acct-theme-wrap"></div>
+        </div>
+
+        <div class="acct-actions">
+          <button type="button" class="btn" data-scene="04-settings-nav" style="text-align:left;">설정</button>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button type="button" class="btn" id="acct-logout-btn" style="flex:1;text-align:left;">로그아웃</button>
+            <span class="proposal">제안</span>
+          </div>
+        </div>
+
+        <div class="acct-confirm" id="acct-logout-confirm" style="display:none;" role="note" aria-label="로그아웃 결과">
+          <div style="font-weight:700;font-size:13px;">로그아웃했어요(예시) <span class="proposal">제안</span></div>
+          <p class="sub-note" style="font-size:12px;">일반 클릭 한 번으로 바로 로그아웃해요. 확인 창도, 길게 누르기도 없어요. 데이터가 사라지는 동작이 아니라서예요.</p>
+          <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">
+            <button type="button" class="btn" id="acct-logout-cancel">닫기</button>
+          </div>
+        </div>
+        <p class="status-msg" id="acct-menu-status" role="status" style="margin:8px 0 0;font-size:12.5px;"></p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 8. 04-login-methods -->
+  <section class="scene" id="04-login-methods" role="tabpanel">
+    <div class="intro">
+      <h2>로그인 수단</h2>
+      <p>지금: 카카오·LINE 같은 소셜 로그인 사용자에게도 비밀번호 바꾸기 칸이 보이거나 안내가 부족해요.</p>
+      <p>바뀐 점: 이메일 가입자에게만 비밀번호 바꾸기 묶음을 보이고, 카카오·LINE 가입자에게는 연결된 로그인과 관리 안내를 보여 줘요.</p>
+      <div class="controls">
+        <div>
+          <span class="ctrl-label">가입 방식</span>
+          <span class="seg" id="lm-provider" role="group" aria-label="가입 방식">
+            <button type="button" aria-pressed="true" data-v="email">이메일로 가입</button>
+            <button type="button" aria-pressed="false" data-v="kakao">카카오로 가입</button>
+            <button type="button" aria-pressed="false" data-v="line">LINE으로 가입</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" aria-current="page" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3>로그인 수단</h3>
+          <button type="button" class="btn" data-scene="04-profile">프로필로 돌아가기</button>
+        </div>
+        <div id="lm-body"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. 04-export -->
+  <section class="scene" id="04-export" role="tabpanel">
+    <div class="intro">
+      <h2>데이터 내보내기</h2>
+      <p>지금: 연구 기록과 원고를 계정 안에서 한꺼번에 내려받는 화면이 없어요.</p>
+      <p>바뀐 점: 연구별로 내려받기를 요청하면 준비 진행 막대를 거쳐 완료 알림과 토스트가 뜨고 바로 내려받을 수 있어요.</p>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" aria-current="page" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3>데이터 내보내기</h3>
+          <button type="button" class="btn" data-scene="04-profile">프로필로 돌아가기</button>
+        </div>
+        <p class="sub-note">기록·원고·자료를 연구별로 묶어요. 묶음 형식: ZIP(글 Markdown · 첨부 원본) <span class="proposal">제안</span></p>
+        <div class="card-box" id="exp-list"></div>
+        <p class="status-msg" id="exp-status" role="status" style="margin-top:10px;"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. 04-delete-account -->
+  <section class="scene" id="04-delete-account" role="tabpanel">
+    <div class="intro">
+      <h2>탈퇴</h2>
+      <p>지금: 계정 탈퇴 화면과 소유 연구를 공동연구자에게 넘기는 절차가 없어요.</p>
+      <p>바뀐 점: 7일 유예 안내 → 소유 연구마다 넘기기·삭제 고르기 → 로그인 이메일 입력 확인의 3단계로 안전하게 탈퇴를 요청해요.</p>
+    </div>
+
+    <div class="settings-box">
+      <aside class="st-side" aria-label="설정 목록">
+        <div class="st-title-label">설정</div>
+        <div class="st-group">내 계정</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" aria-current="page" data-scene="04-profile">프로필</button>
+          <button type="button" class="st-item" data-scene="04-display">화면</button>
+          <button type="button" class="st-item" disabled>알림</button>
+          <button type="button" class="st-item" data-scene="04-assistant-settings">연구 도우미</button>
+          <button type="button" class="st-item" data-scene="04-usage">사용량</button>
+          <button type="button" class="st-item" data-scene="04-shortcuts">단축키</button>
+        </div>
+        <div class="st-group">이 연구</div>
+        <div class="st-side-list">
+          <button type="button" class="st-item" data-scene="04-research-info">연구 정보</button>
+          <button type="button" class="st-item" disabled>함께하는 사람</button>
+          <button type="button" class="st-item" disabled>미팅 주기</button>
+          <button type="button" class="st-item" disabled>보관·삭제</button>
+        </div>
+        <div class="st-foot">사용 안내 · 자료와 개인정보</div>
+      </aside>
+      <div class="st-main">
+        <div class="st-panel-head">
+          <h3>탈퇴</h3>
+          <button type="button" class="btn" data-scene="04-profile">프로필로 돌아가기</button>
+        </div>
+        <div class="steps-bar" id="del-steps"></div>
+        <div id="del-body"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. 04-poll-create -->
+  <section class="scene" id="04-poll-create" role="tabpanel">
+    <div class="intro">
+      <h2>미팅 시간 조율 만들기 <span class="proposal">제안</span></h2>
+      <p>지금: 한 줄에 날짜·시작·끝 4칸이 좁게 들어가 연도·시각 글자가 잘려 보여요.</p>
+      <p>바뀐 점: 후보 시간마다 날짜·시작·끝이 잘리지 않게 넉넉히 두고, 화면이 좁으면 날짜와 시작·끝을 두 줄로 나눠 보여 줘요.</p>
+    </div>
+
+    <div class="poll-card">
+      <div class="poll-head">
+        <h3>새 미팅 시간 조율</h3>
+        <span class="inline-hint">기준 시간대: 한국 시간</span>
+      </div>
+      <div class="field-block" style="margin-top:0;">
+        <label for="pc-title">미팅 제목</label>
+        <input class="inp" id="pc-title" value="제7차 논문 지도" style="max-width:420px;" />
+      </div>
+      <div class="field-block">
+        <div class="field-head">
+          <span class="f-label" style="margin:0;">후보 시간</span>
+          <button type="button" class="btn" id="pc-add">후보 추가</button>
+        </div>
+        <div class="poll-slots" id="pc-slots"></div>
+      </div>
+      <div class="save-bar">
+        <span class="status-msg" id="pc-status" role="status"></span>
+        <button type="button" class="btn" id="pc-cancel">취소</button>
+        <button type="button" class="btn primary" id="pc-submit">만들기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. 04-poll-respond -->
+  <section class="scene" id="04-poll-respond" role="tabpanel">
+    <div class="intro">
+      <h2>시간 조율 응답 <span class="proposal">제안</span></h2>
+      <p>지금: 위 타임라인 격자와 아래 체크박스에 같은 후보를 두 번 입력하게 되어 있고, 영어 시간대 표기와 배경에 묻히는 범례 색이 섞여 있어요.</p>
+      <p>바뀐 점: 후보마다 '가능 / 불가' 한 가지 방식으로만 고르고, 시간대는 '한국 시간'으로 적으며, '이 시간으로 확정' 버튼을 오른쪽 한 열에 맞춰요.</p>
+    </div>
+
+    <div class="poll-card">
+      <div class="poll-head">
+        <div>
+          <h3>제7차 논문 지도 · 시간 조율 응답</h3>
+          <p class="sub-note">모든 시각은 <strong>한국 시간</strong> 기준이에요. 가능한 후보를 골라 주세요.</p>
+        </div>
+        <span class="pill brand" id="pr-summary">2명 참여 중</span>
+      </div>
+
+      <div class="poll-legend" aria-label="응답 상태 범례">
+        <span class="legend-dot"><span class="legend-swatch all" aria-hidden="true"></span>모두 가능</span>
+        <span class="legend-dot"><span class="legend-swatch yes" aria-hidden="true"></span>내가 가능</span>
+        <span class="legend-dot"><span class="legend-swatch no" aria-hidden="true"></span>내가 불가</span>
+      </div>
+
+      <div class="poll-resp-list" id="pr-list"></div>
+      <p class="status-msg" id="pr-status" role="status" style="margin-top:12px;"></p>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="app-toast" role="status" aria-live="polite">
+  <span id="app-toast-msg"></span>
+  <button type="button" id="app-toast-close">닫기</button>
+</div>
+
+<script>
+(function () {
+  function bindSeg(id, onChange) {
+    var root = document.getElementById(id);
+    if (!root) return;
+    root.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        root.querySelectorAll('button').forEach(function (x) {
+          x.setAttribute('aria-pressed', String(x === b));
+        });
+        onChange(b.dataset.v || b.dataset.lang || b.dataset.h || b.dataset.t);
+      });
+    });
+  }
+
+  /* 04-settings-nav */
+  var navMode = 'after', navWho = 'owner';
+  var navRows = [
+    ['내 계정', '프로필', '프로필', '프로필'],
+    ['내 계정', '화면', '화면', '화면 설정'],
+    ['내 계정', '알림', '알림', '알림 설정'],
+    ['내 계정', '연구 도우미', '연구 도우미', 'AI 기본 설정'],
+    ['내 계정', '사용량', '사용량', '내 AI 크레딧'],
+    ['내 계정', '단축키', '단축키', '단축키'],
+    ['이 연구', '연구 정보', '연구 정보', '기본 정보'],
+    ['이 연구', '함께하는 사람', '함께하는 사람', '공동연구자'],
+    ['이 연구', '미팅 주기', '미팅 주기', '미팅 주기'],
+    ['이 연구', '보관·삭제', '보관·삭제', '보관·삭제']
+  ];
+  function renderNav() {
+    var after = navMode === 'after';
+    var owner = navWho === 'owner';
+    document.getElementById('nav-usage-lbl').textContent = after ? '사용량' : '사용량·플랜';
+    document.getElementById('nav-danger-item').style.display = (after && !owner) ? 'none' : 'flex';
+    document.getElementById('nav-right-title').textContent = after ? '연구 도우미' : 'AI 기본 설정';
+    var badge = document.getElementById('nav-title-badge');
+    badge.className = after ? 'pill ok' : 'pill bad';
+    badge.textContent = after ? '왼쪽·오른쪽 이름 일치' : '왼쪽(연구 도우미) ≠ 오른쪽(AI 기본 설정)';
+    document.getElementById('nav-role-note').textContent = after
+      ? '왼쪽 묶음을 내 계정과 이 연구로 나누고, 각 화면 제목을 왼쪽 항목 이름과 똑같이 맞췄어요.'
+      : '왼쪽은 "연구 도우미"·"함께하는 사람"·"사용량·플랜"인데 오른쪽 제목이 달라 혼란이 생겨요.';
+
+    var body = document.getElementById('nav-map-body');
+    body.innerHTML = navRows.map(function (r) {
+      var group = r[0], left = (!after && r[1] === '사용량') ? '사용량·플랜' : r[1];
+      var right = after ? r[2] : r[3];
+      var hidden = after && !owner && r[1] === '보관·삭제';
+      var same = left === right;
+      var status = hidden
+        ? '<span class="pill brand">편집자에게 숨김</span>'
+        : (same ? '<span class="pill ok">일치</span>' : '<span class="pill bad">불일치</span>');
+      return '<tr' + (hidden ? ' style="opacity:0.55;"' : '') + '><td>' + group + '</td><td>' + left + '</td><td>' + right + '</td><td>' + status + '</td></tr>';
+    }).join('');
+
+    var eb = document.getElementById('nav-editor-banner');
+    if (after && !owner) {
+      eb.className = 'banner';
+      eb.textContent = '공동연구자(편집자)에게는 왼쪽 목록에서 "이 연구 > 보관·삭제" 항목을 숨겨요. 소유자(김학생)만 볼 수 있어요.';
+    } else if (!after && !owner) {
+      eb.className = 'banner bad';
+      eb.textContent = '지금은 편집자에게도 "이 연구 > 보관·삭제" 항목이 그대로 보여 눌러 보면 비활성 버튼만 나와요.';
+    } else {
+      eb.className = 'banner';
+      eb.textContent = '소유자(김학생)는 내 계정 6개와 이 연구 4개 항목을 모두 볼 수 있어요.';
+    }
+  }
+  bindSeg('nav-mode', function (v) { navMode = v; renderNav(); });
+  bindSeg('nav-who', function (v) { navWho = v; renderNav(); });
+  renderNav();
+
+  /* 04-display & 04-profile shared theme */
+  var dispMode = 'after', dispTheme = 'light';
+  function renderThemeCards(wrap, label) {
+    if (!wrap) return;
+    var opts = [
+      ['light', '라이트', ''],
+      ['dark', '다크', ' dark'],
+      ['system', '시스템', ' sys']
+    ];
+    wrap.innerHTML = '<div class="theme-grid" role="radiogroup" aria-label="' + label + '">' + opts.map(function (o) {
+      return '<button type="button" class="t-card" role="radio" aria-checked="' + (dispTheme === o[0]) + '" data-th="' + o[0] + '">' +
+        '<div class="mini-ui' + o[2] + '"><div class="mini-top"></div><div class="mini-body"><div></div><div class="mini-rail"></div></div></div>' +
+        '<strong>' + o[1] + '</strong></button>';
+    }).join('') + '</div>';
+    wrap.querySelectorAll('[data-th]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        dispTheme = btn.dataset.th;
+        renderDisplay();
+        renderProfileMenuTheme();
+      });
+    });
+  }
+  function renderProfileMenuTheme() {
+    renderThemeCards(document.getElementById('acct-theme-wrap'), '계정 메뉴 테마 선택');
+  }
+  function renderDisplay() {
+    var after = dispMode === 'after';
+    document.getElementById('disp-heading').textContent = after ? '화면' : '화면 설정';
+    document.getElementById('disp-sync-hint').style.display = after ? 'inline' : 'none';
+    document.getElementById('disp-time-row').className = after ? 'time-row' : 'time-row broken';
+    var wrap = document.getElementById('disp-theme-wrap');
+    if (after) {
+      renderThemeCards(wrap, '테마 선택');
+    } else {
+      var legacyIdx = ['light', 'dark', 'system'].indexOf(dispTheme);
+      var legacyLabels = ['☀ 라이트', '🌙 다크', '💻 시스템'];
+      wrap.innerHTML = '<div class="card-box" style="margin-top:0;padding:14px;">' +
+        '<div class="mini-ui" style="max-width:210px;height:74px;"><div class="mini-top"></div><div class="mini-body legacy"><div class="mini-legacy-side"></div><div></div></div></div>' +
+        '<button type="button" class="btn" id="legacy-theme-cycle">' + legacyLabels[legacyIdx] + '</button>' +
+        '<p class="sub-note">구형 왼쪽 사이드바 그림이 남아 있고, 세 선택지가 한눈에 보이지 않아요.</p></div>';
+      document.getElementById('legacy-theme-cycle').addEventListener('click', function () {
+        var order = ['light', 'dark', 'system'];
+        dispTheme = order[(order.indexOf(dispTheme) + 1) % 3];
+        renderDisplay();
+        renderProfileMenuTheme();
+      });
+    }
+  }
+  bindSeg('disp-mode', function (v) { dispMode = v; renderDisplay(); });
+  bindSeg('disp-lang', function () {});
+  bindSeg('disp-hour', function (v) {
+    document.getElementById('disp-time-sample').textContent = v === '12' ? '미팅 · 오후 2:00' : '미팅 · 14:00';
+  });
+  renderDisplay();
+  renderProfileMenuTheme();
+
+  /* 04-assistant-settings */
+  var astMode = 'after';
+  function renderAst() {
+    var after = astMode === 'after';
+    document.getElementById('ast-heading').textContent = after ? '연구 도우미' : 'AI 기본 설정';
+    document.getElementById('ast-copy').textContent = after
+      ? '연구 도우미는 현재 연구에서 내가 볼 수 있는 모든 기록을 자동으로 읽어요. 기본값을 바꿔도 도우미가 자동으로 실행되지 않아요.'
+      : 'AI를 실행할 때마다 사용할 기록을 확인해요. 기본값을 바꿔도 AI가 자동으로 실행되지 않아요.';
+    document.getElementById('ast-mid-save').style.display = after ? 'none' : 'block';
+    document.getElementById('ast-status').textContent = '';
+  }
+  bindSeg('ast-mode', function (v) { astMode = v; renderAst(); });
+  bindSeg('ast-tone', function () {});
+  document.getElementById('ast-save').addEventListener('click', function () {
+    document.getElementById('ast-status').textContent = '연구 도우미 설정을 저장했어요.';
+  });
+  renderAst();
+
+  /* 04-shortcuts */
+  var scMode = 'after';
+  var scGroups = [
+    ['화면 이동', [
+      [['⌘', 'K'], '찾기와 바로 하기'],
+      [['G', 'H'], '홈으로 이동'],
+      [['G', 'M'], '미팅으로 이동'],
+      [['G', 'D'], '글·자료로 이동'],
+      [['G', 'W'], '글로 이동'],
+      [['G', 'T'], '할 일로 이동'],
+      [['G', 'F'], '피드백으로 이동'],
+      [['G', 'R'], '검토 요청으로 이동'],
+      [['G', 'A'], '연구 도우미로 이동'],
+      [['G', 'P'], '연구 흐름으로 이동'],
+      [['G', 'S'], '설정으로 이동']
+    ]],
+    ['목록 · 작업', [
+      [[']'], '사이드 창 열기·닫기'],
+      [['J', 'K'], '목록에서 다음·이전 줄로'],
+      [['X'], '목록에서 고른 할 일 체크'],
+      [['⌘', 'Z'], '방금 완료한 할 일 되돌리기']
+    ]],
+    ['편집 · 녹음 · 도움말', [
+      [['H'], '전사문에서 고른 글에 형광펜'],
+      [['⌘', '⇧', 'Enter'], '녹음 중 지금 표시'],
+      [['?'], '이 목록 보기']
+    ]]
+  ];
+  function scRowHtml(keys, label) {
+    return '<div class="sc-row"><span>' + label + '</span><span>' +
+      keys.map(function (k) { return '<kbd class="kbd">' + k + '</kbd>'; }).join(' ') + '</span></div>';
+  }
+  function renderShortcuts() {
+    var body = document.getElementById('sc-body');
+    if (scMode === 'after') {
+      body.innerHTML = scGroups.map(function (g) {
+        return '<div class="sc-group"><div class="sc-group-head">' + g[0] + '</div><div class="sc-grid">' +
+          g[1].map(function (item) { return scRowHtml(item[0], item[1]); }).join('') +
+          '</div></div>';
+      }).join('');
+    } else {
+      var all = scGroups.reduce(function (acc, g) { return acc.concat(g[1]); }, []);
+      body.innerHTML = '<div class="sc-flat" style="margin-top:12px;">' +
+        all.map(function (item) { return '<div class="row-item" style="padding:9px 12px;">' + scRowHtml(item[0], item[1]).replace(/^<div class="sc-row">|<\/div>$/g, '') + '</div>'; }).join('') +
+        '</div>';
+    }
+  }
+  bindSeg('sc-mode', function (v) { scMode = v; renderShortcuts(); });
+  renderShortcuts();
+
+  /* 04-research-info */
+  var riMode = 'after', riWho = 'owner';
+  function renderResearchInfo() {
+    var after = riMode === 'after';
+    var owner = riWho === 'owner';
+    var readOnly = after && !owner;
+    document.getElementById('ri-heading').textContent = after ? '연구 정보' : '기본 정보';
+    document.getElementById('ri-danger-item').style.display = readOnly ? 'none' : 'flex';
+    ['ri-name', 'ri-desc', 'ri-purpose', 'ri-questions', 'ri-date'].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.readOnly = readOnly;
+      if (id === 'ri-date') {
+        el.disabled = readOnly;
+        el.style.background = readOnly ? 'var(--sunken)' : 'var(--surface)';
+        el.style.color = readOnly ? 'var(--sub)' : 'var(--text)';
+      }
+    });
+    var msg = document.getElementById('ri-lock-msg');
+    if (readOnly) {
+      msg.style.display = 'block';
+      msg.className = 'banner';
+      msg.textContent = '연구 정보는 연구 소유자(김학생)만 고칠 수 있어요.';
+    } else if (!after && !owner) {
+      msg.style.display = 'block';
+      msg.className = 'banner bad';
+      msg.textContent = '지금은 편집자에게도 연구 이름·목적·질문 입력칸이 열려 있어요.';
+    } else {
+      msg.style.display = 'none';
+      msg.className = 'banner';
+    }
+    document.getElementById('ri-save-bar').style.display = readOnly ? 'none' : 'flex';
+    document.getElementById('ri-status').textContent = '';
+  }
+  bindSeg('ri-mode', function (v) { riMode = v; renderResearchInfo(); });
+  bindSeg('ri-who', function (v) { riWho = v; renderResearchInfo(); });
+  document.getElementById('ri-save').addEventListener('click', function () {
+    document.getElementById('ri-status').textContent = '연구 정보를 저장했어요.';
+  });
+  renderResearchInfo();
+
+  /* Toast helper */
+  function showToast(msg) {
+    var box = document.getElementById('app-toast');
+    document.getElementById('app-toast-msg').textContent = msg;
+    box.classList.add('on');
+  }
+  document.getElementById('app-toast-close').addEventListener('click', function () {
+    document.getElementById('app-toast').classList.remove('on');
+  });
+
+  /* 04-profile */
+  document.getElementById('pf-save').addEventListener('click', function () {
+    document.getElementById('pf-status').textContent = '표시 이름을 저장했어요.';
+  });
+  document.getElementById('acct-logout-btn').addEventListener('click', function () {
+    document.getElementById('acct-logout-confirm').style.display = 'block';
+    document.getElementById('acct-menu-status').textContent = '로그아웃했어요(예시).';
+  });
+  document.getElementById('acct-logout-cancel').addEventListener('click', function () {
+    document.getElementById('acct-logout-confirm').style.display = 'none';
+  });
+
+  /* 04-login-methods */
+  var lmProvider = 'email';
+  function renderLoginMethods() {
+    var body = document.getElementById('lm-body');
+    if (lmProvider === 'email') {
+      body.innerHTML =
+        '<div class="card-box">' +
+          '<div class="row-item">' +
+            '<div><div class="row-lbl">연결된 로그인: 이메일</div><div class="row-sub">student@margin.com</div></div>' +
+            '<span class="pill ok">사용 중</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="card-box" style="padding:16px;">' +
+          '<div class="row-lbl" style="font-size:14px;">비밀번호 바꾸기</div>' +
+          '<p class="sub-note">현재 비밀번호를 확인한 뒤 새 비밀번호로 바꿔요.</p>' +
+          '<div class="field-block"><label for="lm-cur">현재 비밀번호</label><input class="inp" id="lm-cur" type="password" placeholder="현재 비밀번호" style="max-width:300px;" /></div>' +
+          '<div class="field-block"><label for="lm-new">새 비밀번호</label><input class="inp" id="lm-new" type="password" placeholder="8자 이상 입력" style="max-width:300px;" /></div>' +
+          '<div class="field-block"><label for="lm-chk">새 비밀번호 확인</label><input class="inp" id="lm-chk" type="password" placeholder="한 번 더 입력" style="max-width:300px;" /></div>' +
+          '<div class="save-bar">' +
+            '<span class="status-msg" id="lm-status" role="status"></span>' +
+            '<button type="button" class="btn primary" id="lm-pw-save">비밀번호 바꾸기</button>' +
+          '</div>' +
+        '</div>';
+      document.getElementById('lm-pw-save').addEventListener('click', function () {
+        document.getElementById('lm-status').textContent = '비밀번호를 바꿨어요(예시).';
+      });
+    } else {
+      var name = lmProvider === 'kakao' ? '카카오' : 'LINE';
+      body.innerHTML =
+        '<div class="card-box">' +
+          '<div class="row-item">' +
+            '<div>' +
+              '<div class="row-lbl">연결된 로그인: ' + name + ' <span class="pill ok">연결됨</span></div>' +
+              '<div class="row-sub">' + name + ' 계정으로 로그인해요. 비밀번호는 ' + name + '에서 관리해요.</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    }
+  }
+  bindSeg('lm-provider', function (v) { lmProvider = v; renderLoginMethods(); });
+  renderLoginMethods();
+
+  /* 04-export */
+  var expItems = [
+    { id: 'r1', title: '대학원생 연구 기록 경험', meta: '소유 · 미팅 6건 · 원고 4건 · 자료 3개', state: 'idle', pct: 0 },
+    { id: 'r2', title: '질적 연구 방법론 세미나', meta: '공동연구 · 미팅 3건 · 원고 2건 · 자료 1개', state: 'idle', pct: 0 }
+  ];
+  function renderExport() {
+    var list = document.getElementById('exp-list');
+    list.innerHTML = expItems.map(function (it) {
+      var right = '';
+      if (it.state === 'idle') {
+        right = '<button type="button" class="btn" data-exp="' + it.id + '">내려받기 준비</button>';
+      } else if (it.state === 'busy') {
+        right = '<div><div style="font-size:12.5px;font-weight:600;color:var(--brand);">준비 중…</div>' +
+          '<div class="export-bar" role="progressbar" aria-valuenow="' + it.pct + '" aria-valuemin="0" aria-valuemax="100" aria-label="' + it.title + ' 준비 진행률">' +
+          '<div class="export-bar-fill" style="width:' + it.pct + '%;"></div></div></div>';
+      } else {
+        right = '<button type="button" class="btn primary" data-dl="' + it.id + '">준비됐어요 · 내려받기</button>';
+      }
+      return '<div class="row-item"><div><div class="row-lbl">' + it.title + '</div><div class="row-sub">' + it.meta + '</div></div><div>' + right + '</div></div>';
+    }).join('');
+
+    list.querySelectorAll('[data-exp]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var target = expItems.find(function (x) { return x.id === b.dataset.exp; });
+        if (!target || target.state === 'busy') return;
+        target.state = 'busy';
+        target.pct = 25;
+        document.getElementById('exp-status').textContent = '';
+        renderExport();
+        setTimeout(function () {
+          if (target.state !== 'busy') return;
+          target.pct = 65;
+          renderExport();
+        }, 800);
+        setTimeout(function () {
+          target.state = 'ready';
+          target.pct = 100;
+          renderExport();
+          showToast('내려받을 준비가 됐어요.');
+        }, 2000);
+      });
+    });
+    list.querySelectorAll('[data-dl]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var target = expItems.find(function (x) { return x.id === b.dataset.dl; });
+        document.getElementById('exp-status').textContent = (target ? target.title : '') + ' ZIP 묶음을 내려받기 시작했어요(예시).';
+      });
+    });
+  }
+  renderExport();
+
+  /* 04-delete-account */
+  var delStep = 1;
+  var delChoice = { r1: 'transfer', r1Target: '이연구 (editor@margin.com)', r2: 'delete' };
+  var delEmail = '';
+  function cancelDeleteFlow() {
+    delStep = 1;
+    delEmail = '';
+    renderDeleteAccount();
+    var pfTab = document.querySelector('nav.tabs [data-scene="04-profile"]');
+    if (pfTab) pfTab.click();
+  }
+  function renderDeleteAccount() {
+    var stepNames = ['1. 안내', '2. 소유 연구 처리', '3. 확인'];
+    document.getElementById('del-steps').innerHTML = stepNames.map(function (label, idx) {
+      var n = idx + 1;
+      var cls = delStep === 4 ? 'step-chip done' : (delStep === n ? 'step-chip on' : (delStep > n ? 'step-chip done' : 'step-chip'));
+      return '<span class="' + cls + '">' + label + '</span>';
+    }).join('');
+
+    var body = document.getElementById('del-body');
+    if (delStep === 1) {
+      body.innerHTML =
+        '<div class="banner warn">탈퇴하면 7일 뒤 계정과 내 기록이 지워져요. 7일 안에 다시 로그인하면 되돌릴 수 있어요.</div>' +
+        '<div class="card-box" style="padding:14px 16px;">' +
+          '<div class="row-lbl">지워지는 내용</div>' +
+          '<p class="sub-note">내 계정 정보, 개인 지침, 내가 단독으로 소유한 연구와 기록이 7일 뒤 영구 삭제돼요. 공동연구자에게 넘긴 연구는 남아요.</p>' +
+        '</div>' +
+        '<div class="save-bar">' +
+          '<button type="button" class="btn" id="del-cancel">취소</button>' +
+          '<button type="button" class="btn primary" id="del-next">다음</button>' +
+        '</div>';
+      document.getElementById('del-cancel').addEventListener('click', cancelDeleteFlow);
+      document.getElementById('del-next').addEventListener('click', function () { delStep = 2; renderDeleteAccount(); });
+    } else if (delStep === 2) {
+      body.innerHTML =
+        '<p class="sub-note">내가 소유한 연구마다 어떻게 처리할지 골라 주세요.</p>' +
+        '<div class="research-choice">' +
+          '<div class="row-lbl">대학원생 연구 기록 경험</div>' +
+          '<div class="row-sub">함께하는 사람: 이연구 (editor@margin.com)</div>' +
+          '<div class="choice-opts">' +
+            '<label><input type="radio" name="dc-r1" value="transfer"' + (delChoice.r1 === 'transfer' ? ' checked' : '') + ' /> 공동연구자에게 넘기기</label>' +
+            '<select class="inp" id="del-r1-target" style="width:auto;min-width:210px;"' + (delChoice.r1 !== 'transfer' ? ' disabled' : '') + '>' +
+              '<option value="이연구 (editor@margin.com)">이연구 (editor@margin.com)</option>' +
+            '</select>' +
+            '<label><input type="radio" name="dc-r1" value="delete"' + (delChoice.r1 === 'delete' ? ' checked' : '') + ' /> 삭제</label>' +
+          '</div>' +
+        '</div>' +
+        '<div class="research-choice">' +
+          '<div class="row-lbl">개인 문헌 메모장</div>' +
+          '<div class="row-sub">소유자 혼자만 있는 연구예요.</div>' +
+          '<div class="choice-opts">' +
+            '<label class="disabled-opt"><input type="radio" name="dc-r2" value="transfer" disabled /> 공동연구자에게 넘기기</label>' +
+            '<label><input type="radio" name="dc-r2" value="delete" checked /> 삭제</label>' +
+          '</div>' +
+          '<p class="sub-note" style="margin-top:6px;">공동연구자가 없어 삭제만 고를 수 있어요.</p>' +
+        '</div>' +
+        '<div class="save-bar">' +
+          '<button type="button" class="btn" id="del-prev">이전</button>' +
+          '<button type="button" class="btn" id="del-cancel">취소</button>' +
+          '<button type="button" class="btn primary" id="del-next">다음</button>' +
+        '</div>';
+      body.querySelectorAll('input[name="dc-r1"]').forEach(function (r) {
+        r.addEventListener('change', function () {
+          delChoice.r1 = r.value;
+          document.getElementById('del-r1-target').disabled = delChoice.r1 !== 'transfer';
+        });
+      });
+      document.getElementById('del-prev').addEventListener('click', function () { delStep = 1; renderDeleteAccount(); });
+      document.getElementById('del-cancel').addEventListener('click', cancelDeleteFlow);
+      document.getElementById('del-next').addEventListener('click', function () { delStep = 3; renderDeleteAccount(); });
+    } else if (delStep === 3) {
+      var r1Summary = delChoice.r1 === 'transfer' ? (delChoice.r1Target + '에게 넘기기') : '삭제';
+      body.innerHTML =
+        '<div class="card-box" style="padding:14px 16px;">' +
+          '<div class="row-lbl">선택한 처리 내용</div>' +
+          '<p class="sub-note">• 대학원생 연구 기록 경험: <strong>' + r1Summary + '</strong><br />• 개인 문헌 메모장: <strong>삭제</strong></p>' +
+          '<div class="field-block">' +
+            '<label for="del-confirm-email">로그인 이메일(student@margin.com)을 입력해 주세요</label>' +
+            '<input class="inp" id="del-confirm-email" value="' + delEmail.replace(/"/g, '&quot;') + '" placeholder="student@margin.com" style="max-width:320px;" />' +
+          '</div>' +
+        '</div>' +
+        '<div class="save-bar">' +
+          '<button type="button" class="btn" id="del-prev">이전</button>' +
+          '<button type="button" class="btn" id="del-cancel">취소</button>' +
+          '<button type="button" class="btn danger-solid" id="del-submit"' + (delEmail.trim() === 'student@margin.com' ? '' : ' disabled') + '>탈퇴하기</button>' +
+        '</div>';
+      var emailInp = document.getElementById('del-confirm-email');
+      var subBtn = document.getElementById('del-submit');
+      emailInp.addEventListener('input', function () {
+        delEmail = emailInp.value;
+        subBtn.disabled = delEmail.trim() !== 'student@margin.com';
+      });
+      document.getElementById('del-prev').addEventListener('click', function () { delStep = 2; renderDeleteAccount(); });
+      document.getElementById('del-cancel').addEventListener('click', cancelDeleteFlow);
+      subBtn.addEventListener('click', function () { delStep = 4; renderDeleteAccount(); });
+    } else {
+      body.innerHTML =
+        '<div class="banner" style="background:var(--ok-soft);border-color:var(--ok);color:var(--ok);">' +
+          '<strong>탈퇴를 요청했어요. 12월 3일까지 되돌릴 수 있어요.</strong>' +
+        '</div>' +
+        '<div class="card-box" style="padding:14px 16px;margin-top:12px;">' +
+          '<div class="row-lbl">예약된 처리</div>' +
+          '<p class="sub-note">12월 3일 전까지 다시 로그인하면 탈퇴 요청을 멈출 수 있어요.</p>' +
+        '</div>' +
+        '<div class="save-bar">' +
+          '<button type="button" class="btn" id="del-reset">처음으로</button>' +
+        '</div>';
+      document.getElementById('del-reset').addEventListener('click', function () {
+        delStep = 1; delEmail = ''; renderDeleteAccount();
+      });
+    }
+  }
+  renderDeleteAccount();
+
+  /* T12: 04-poll-create */
+  var pollSlots = [
+    { id: 1, date: '2026-11-27', start: '14:00', end: '15:00' },
+    { id: 2, date: '2026-11-28', start: '10:30', end: '11:30' }
+  ];
+  var pollNextId = 3;
+  function renderPollSlots() {
+    var wrap = document.getElementById('pc-slots');
+    if (!wrap) return;
+    wrap.innerHTML = pollSlots.map(function (s, idx) {
+      var delBtn = pollSlots.length > 1
+        ? '<button type="button" class="btn" data-rm-slot="' + s.id + '" style="min-height:32px;padding:4px 10px;">빼기</button>'
+        : '';
+      return '<div class="poll-slot">' +
+        '<div class="poll-slot-top"><strong style="font-size:13px;">후보 ' + (idx + 1) + '</strong>' + delBtn + '</div>' +
+        '<div class="poll-slot-grid">' +
+          '<div class="poll-slot-field poll-date-field"><label for="pc-d-' + s.id + '">날짜</label><input class="inp" id="pc-d-' + s.id + '" type="date" value="' + s.date + '" data-slot-f="date" data-slot-id="' + s.id + '" /></div>' +
+          '<div class="poll-slot-field"><label for="pc-s-' + s.id + '">시작</label><input class="inp" id="pc-s-' + s.id + '" type="time" value="' + s.start + '" data-slot-f="start" data-slot-id="' + s.id + '" /></div>' +
+          '<div class="poll-slot-field"><label for="pc-e-' + s.id + '">끝</label><input class="inp" id="pc-e-' + s.id + '" type="time" value="' + s.end + '" data-slot-f="end" data-slot-id="' + s.id + '" /></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    wrap.querySelectorAll('[data-slot-f]').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        var item = pollSlots.find(function (x) { return String(x.id) === inp.dataset.slotId; });
+        if (item) item[inp.dataset.slotF] = inp.value;
+      });
+    });
+    wrap.querySelectorAll('[data-rm-slot]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        pollSlots = pollSlots.filter(function (x) { return String(x.id) !== btn.dataset.rmSlot; });
+        renderPollSlots();
+      });
+    });
+  }
+  document.getElementById('pc-add').addEventListener('click', function () {
+    pollSlots.push({ id: pollNextId++, date: '2026-12-01', start: '15:00', end: '16:00' });
+    document.getElementById('pc-status').textContent = '';
+    renderPollSlots();
+  });
+  document.getElementById('pc-cancel').addEventListener('click', function () {
+    document.getElementById('pc-status').textContent = '작성을 취소했어요(예시).';
+  });
+  document.getElementById('pc-submit').addEventListener('click', function () {
+    var t = document.getElementById('pc-title').value.trim() || '미팅 시간 조율';
+    document.getElementById('pc-status').textContent = '"' + t + '" 후보 ' + pollSlots.length + '개로 조율을 만들었어요.';
+    showToast('시간 조율을 만들었어요.');
+  });
+  renderPollSlots();
+
+  /* T12: 04-poll-respond */
+  var respOptions = [
+    { id: 'o1', label: '11월 27일 (금) 14:00 – 15:00', otherOk: true, otherText: '지도교수 가능', my: 'yes' },
+    { id: 'o2', label: '11월 28일 (토) 10:30 – 11:30', otherOk: false, otherText: '지도교수 불가', my: 'yes' },
+    { id: 'o3', label: '12월 1일 (화) 15:00 – 16:00', otherOk: true, otherText: '지도교수 가능', my: 'no' }
+  ];
+  var confirmedOptId = null;
+  function renderPollRespond() {
+    var list = document.getElementById('pr-list');
+    if (!list) return;
+    list.innerHTML = respOptions.map(function (o) {
+      var allOk = o.otherOk && o.my === 'yes';
+      var cls = 'poll-resp-row' + (allOk ? ' all-ok' : (o.my === 'yes' ? ' my-yes' : ' my-no')) + (confirmedOptId === o.id ? ' confirmed' : '');
+      var countText = allOk ? '2/2명 모두 가능' : ((o.otherOk || o.my === 'yes') ? '1/2명 가능' : '0/2명 가능');
+      var myLabel = o.my === 'yes' ? '김학생 가능' : '김학생 불가';
+      var confirmBtn = confirmedOptId === o.id
+        ? '<span class="pill ok">확정됨</span>'
+        : '<button type="button" class="btn' + (allOk ? ' primary' : '') + '" data-pr-confirm="' + o.id + '">이 시간으로 확정</button>';
+      return '<div class="' + cls + '">' +
+        '<div>' +
+          '<div class="row-lbl">' + o.label + '</div>' +
+          '<div class="row-sub">' + myLabel + ' · ' + o.otherText + ' · <strong>' + countText + '</strong></div>' +
+        '</div>' +
+        '<div class="seg" role="group" aria-label="' + o.label + ' 가능 여부">' +
+          '<button type="button" aria-pressed="' + (o.my === 'yes') + '" data-pr-opt="' + o.id + '" data-pr-val="yes">가능</button>' +
+          '<button type="button" aria-pressed="' + (o.my === 'no') + '" data-pr-opt="' + o.id + '" data-pr-val="no">불가</button>' +
+        '</div>' +
+        '<div class="poll-resp-actions">' + confirmBtn + '</div>' +
+      '</div>';
+    }).join('');
+    list.querySelectorAll('[data-pr-opt]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var opt = respOptions.find(function (x) { return x.id === b.dataset.prOpt; });
+        if (!opt) return;
+        opt.my = b.dataset.prVal;
+        renderPollRespond();
+      });
+    });
+    list.querySelectorAll('[data-pr-confirm]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        confirmedOptId = b.dataset.prConfirm;
+        var opt = respOptions.find(function (x) { return x.id === confirmedOptId; });
+        document.getElementById('pr-status').textContent = (opt ? opt.label : '') + ' (한국 시간)으로 미팅을 확정했어요.';
+        showToast('미팅 시간을 확정했어요.');
+        renderPollRespond();
+      });
+    });
+  }
+  renderPollRespond();
+})();
+</script>
+
+<script>
+(function () {
+  function show(id) {
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('scene')) return;
+    document.querySelectorAll('section.scene').forEach(function (s) { s.classList.toggle('on', s === target); });
+    document.querySelectorAll('[data-scene]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.scene === id)); });
+    target.scrollIntoView({ block: 'start' });
+  }
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () { history.replaceState(null, '', '#' + b.dataset.scene); show(b.dataset.scene); });
+  });
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  if (location.hash) show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

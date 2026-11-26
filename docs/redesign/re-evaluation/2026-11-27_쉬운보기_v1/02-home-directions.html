@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>홈 새 방향 두 가지</title>
+<style>
+:root {
+  --bg: #f4f5f7; --surface: #fff; --line: #e1e2e4; --text: #171719; --sub: #46474c; --mute: #686b73;
+  --brand: #0066ff; --brand-soft: #eaf2fe;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #111214; --surface: #1b1c1e; --line: #2e2f33; --text: #f4f4f5; --sub: #c2c4c8; --mute: #9a9ca3; --brand: #5c9dff; --brand-soft: #14233d; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 "Pretendard", -apple-system, "Apple SD Gothic Neo", sans-serif; }
+main { max-width: 1240px; margin: 0 auto; padding: 28px 20px 80px; }
+h1 { font-size: 24px; margin: 0 0 6px; }
+.lead { color: var(--sub); margin: 0 0 20px; font-size: 16px; }
+h2 { font-size: 19px; margin: 32px 0 8px; }
+.switch { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+.switch button { border: 0; background: transparent; color: var(--sub); font: inherit; font-weight: 600; padding: 8px 18px; border-radius: 7px; cursor: pointer; min-height: 40px; }
+.switch button[aria-pressed="true"] { background: #0066ff; color: #fff; }
+.frame { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.06); background: #fff; }
+.frame img { display: block; width: 100%; height: auto; }
+.stage { position: relative; width: 100%; aspect-ratio: 1440 / 900; overflow: hidden; }
+.screen { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; transform-origin: 0 0; display: none; }
+.screen.on { display: block; }
+.why { margin-top: 14px; display: grid; gap: 10px; }
+.why div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.why b { display: block; font-size: 16px; margin-bottom: 2px; }
+.why p { margin: 0; color: var(--sub); font-size: 14px; }
+.panel { display: none; } .panel.on { display: block; }
+.refs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.refs figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.refs img { display: block; width: 100%; height: auto; }
+.refs figcaption { padding: 10px 14px; font-size: 14px; color: var(--sub); }
+.refs figcaption b { color: var(--text); }
+.note { color: var(--mute); font-size: 14px; }
+
+/* ===== 앱 화면 (1440×900, 라이트 고정) ===== */
+.app { width: 1440px; height: 900px; background: #f4f5f7; color: #171719; font: 14px/1.5 -apple-system, "Apple SD Gothic Neo", sans-serif; position: relative; }
+.app * { box-sizing: border-box; }
+.app .top { position: absolute; left: 0; right: 0; top: 0; height: 52px; display: flex; align-items: center; padding: 0 20px; gap: 24px; background: #f4f5f7; }
+.app .logo { font-weight: 800; font-size: 19px; color: #0066ff; letter-spacing: -0.3px; }
+.app .rname { font-weight: 600; font-size: 14px; }
+.app .tabs { display: flex; gap: 22px; font-size: 15px; color: #46474c; margin-left: 12px; }
+.app .tabs .on { color: #171719; font-weight: 700; border-bottom: 2px solid #171719; padding-bottom: 12px; margin-bottom: -14px; }
+.app .search { margin-left: auto; width: 240px; height: 34px; border-radius: 10px; background: #e9eaec; color: #686b73; font-size: 13px; display: flex; align-items: center; padding: 0 12px; }
+.app .send { height: 34px; padding: 0 14px; border-radius: 10px; background: #0066ff; color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; }
+.app .av { width: 32px; height: 32px; border-radius: 50%; background: #171719; color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.app .card { background: #fff; border-radius: 16px; }
+.app .muted { color: #686b73; } .app .small { font-size: 12px; } .app .b { font-weight: 700; }
+.app .btn { display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid #e1e2e4; background: #fff; font-weight: 600; font-size: 13px; }
+.app .btn.pri { background: #0066ff; color: #fff; border-color: #0066ff; }
+.app .chip { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #f2f3f5; color: #46474c; font-size: 12px; }
+.app .ck { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #c2c4c8; flex: none; }
+
+/* 흐름 막대 */
+.app .flow { display: flex; align-items: center; gap: 0; }
+.app .flow .st { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #686b73; }
+.app .flow .dot { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #c2c4c8; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #686b73; background: #fff; }
+.app .flow .done .dot { background: #eaf2fe; border-color: #eaf2fe; color: #0066ff; }
+.app .flow .done { color: #46474c; }
+.app .flow .now .dot { background: #0066ff; border-color: #0066ff; color: #fff; }
+.app .flow .now { color: #171719; font-weight: 700; }
+.app .flow .ln { width: 36px; height: 1.5px; background: #e1e2e4; margin: 0 10px; }
+
+/* A: 레일 + 사이드 창 */
+.app .rail { position: absolute; right: 0; top: 0; bottom: 0; width: 60px; border-left: 1px solid #e9eaec; background: #fff; display: flex; flex-direction: column; align-items: center; padding-top: 14px; gap: 18px; font-size: 11px; color: #686b73; }
+.app .rail .ri { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.app .rail .ic { width: 22px; height: 22px; border-radius: 6px; background: #e9eaec; }
+.app .rail .on .ic { background: #171719; }
+.app .rail .on { color: #171719; font-weight: 700; }
+.app .side { position: absolute; right: 60px; top: 0; bottom: 0; width: 360px; background: #fff; border-left: 1px solid #e9eaec; padding: 18px 20px; }
+.app .sug { border: 1px solid #e1e2e4; border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; font-size: 13px; font-weight: 600; margin-top: 8px; }
+.app .sug .ic2 { width: 28px; height: 28px; border-radius: 8px; background: #f2f3f5; flex: none; }
+.app .ask { position: absolute; left: 20px; right: 20px; bottom: 18px; border: 1px solid #e1e2e4; border-radius: 16px; padding: 12px 14px; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.05); }
+.app .srcs { display: flex; gap: 6px; margin-top: 10px; }
+.app .srcs span { height: 28px; padding: 0 10px; border-radius: 8px; background: #f2f3f5; font-size: 12px; display: inline-flex; align-items: center; color: #46474c; font-weight: 600; }
+
+/* B: 라이너형 왼쪽 목록 */
+.app .lnav { position: absolute; left: 0; top: 0; bottom: 0; width: 260px; background: #f7f7f8; border-right: 1px solid #e9eaec; padding: 16px 14px; }
+.app .lnav .it { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: #46474c; }
+.app .lnav .it.on { background: #e9eaec; color: #171719; font-weight: 700; }
+.app .lnav .sec { font-size: 12px; color: #686b73; margin: 18px 10px 6px; }
+.app .badge { margin-left: auto; font-size: 11px; color: #0066ff; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>홈을 이렇게 바꿔 보면 어떨까요 — 두 가지 방향</h1>
+  <p class="lead">둘 다 <b>미팅 하나가 한 바퀴</b>(준비 → 미팅 → 기록 → 할 일·원고 → 교수님께 보내기)이고, <b>할 일과 피드백은 하나</b>예요. 다른 점은 '첫 화면에서 무엇이 먼저 보이느냐'예요.</p>
+
+  <div class="switch" role="group" aria-label="보기">
+    <button type="button" data-s="now" aria-pressed="false">지금</button>
+    <button type="button" data-s="a" aria-pressed="true">A. 다음 미팅까지</button>
+    <button type="button" data-s="b" aria-pressed="false">B. 넣으면 정리돼요</button>
+  </div>
+
+  <div class="frame"><div class="stage" id="stage">
+
+    <!-- 지금 -->
+    <div class="screen" data-screen="now"><img src="../assets/live-desktop/14_home_main_1440.png" alt="지금 마진 홈" style="width:1440px;height:900px;display:block"></div>
+
+    <!-- A -->
+    <div class="screen on" data-screen="a"><div class="app">
+      <div class="top" style="right:420px">
+        <span class="logo">margin</span><span class="rname">대학원생 연구 기록 경험 ▾</span>
+        <span class="tabs"><span class="on">홈</span><span>미팅</span><span>원고</span></span>
+        <span class="search">이 연구에서 찾기 ⌘K</span>
+        <span class="send">교수님께 보내기</span><span class="av">김</span>
+      </div>
+      <div style="position:absolute; left:20px; top:64px; width:980px; bottom:20px; display:flex; flex-direction:column; gap:16px">
+        <div class="card" style="padding:22px 28px; display:flex; align-items:center; justify-content:space-between">
+          <div class="flow">
+            <span class="st done"><span class="dot">✓</span>문헌 검토</span><span class="ln"></span>
+            <span class="st now"><span class="dot">2</span>연구 설계</span><span class="ln"></span>
+            <span class="st"><span class="dot">3</span>자료 수집</span><span class="ln"></span>
+            <span class="st"><span class="dot">4</span>분석</span><span class="ln"></span>
+            <span class="st"><span class="dot">5</span>논문 작성</span>
+          </div>
+          <span class="muted small">연구계획서 심사까지 D-31</span>
+        </div>
+        <div class="card" style="padding:26px 28px">
+          <div class="muted small b" style="color:#0066ff">다음 미팅 · 11월 28일(금) 오후 2시 · 2일 남음</div>
+          <div style="font-size:24px; font-weight:800; margin:4px 0 2px">제7차 논문 지도</div>
+          <div class="muted">목표: 2장 비교 기준을 교수님과 확정하기</div>
+          <div style="display:flex; gap:28px; margin-top:20px">
+            <div style="flex:1">
+              <div class="b" style="margin-bottom:8px">가져갈 것 <span class="muted">2 / 3 준비됨</span></div>
+              <div style="display:flex; gap:10px; align-items:center; height:32px"><span class="ck" style="background:#0066ff;border-color:#0066ff"></span><span class="muted" style="text-decoration:line-through">선행연구 비교 기준 정리</span></div>
+              <div style="display:flex; gap:10px; align-items:center; height:32px"><span class="ck" style="background:#0066ff;border-color:#0066ff"></span><span class="muted" style="text-decoration:line-through">인터뷰 질문지 보완</span></div>
+              <div style="display:flex; gap:10px; align-items:center; height:32px"><span class="ck"></span><span>교수님께 여쭤볼 것: 비교 기준을 3개로 줄여도 되는지</span></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; justify-content:flex-end">
+              <span class="btn pri">미팅 준비 마저 하기</span>
+              <span class="btn">미리 보내 두기</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="padding:22px 28px; flex:1">
+          <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:10px"><span style="font-size:17px; font-weight:800">할 일</span><span class="muted small">교수님이 말한 것과 내가 할 것을 한곳에</span></div>
+          <div style="display:flex; gap:14px; padding:12px 0; border-top:1px solid #f0f0f2"><span class="ck" style="margin-top:2px"></span><div style="flex:1"><div class="b">분석 관점 기준의 정의 한 문장 쓰기</div><div class="muted small">“기준이 왜 3개인지 한 문장으로 먼저 말할 수 있어야 해요” — 지도교수</div></div><span class="chip">카톡 · 11월 24일</span><span class="small" style="color:#e53935; width:60px; text-align:right">2일 지남</span></div>
+          <div style="display:flex; gap:14px; padding:12px 0; border-top:1px solid #f0f0f2"><span class="ck" style="margin-top:2px"></span><div style="flex:1"><div class="b">2장 표 2-1 출처 다시 확인</div><div class="muted small">한글 파일 빨간 글씨 3군데</div></div><span class="chip">2장 초안 한글 파일</span><span class="small muted" style="width:60px; text-align:right">금요일</span></div>
+          <div style="display:flex; gap:14px; padding:12px 0; border-top:1px solid #f0f0f2"><span class="ck" style="margin-top:2px"></span><div style="flex:1"><div class="b">연구 참여자 모집 문구 초안</div><div class="muted small">“다음 미팅 전에 초안만 보여 줘요” — 지도교수</div></div><span class="chip">제6차 미팅 녹음</span><span class="small muted" style="width:60px; text-align:right">다음 주</span></div>
+        </div>
+      </div>
+      <div class="side">
+        <div style="font-weight:800; font-size:16px">연구 도우미</div>
+        <div class="muted small" style="margin:14px 0 2px">지금 하면 좋은 것</div>
+        <div class="sug"><span class="ic2"></span>어제 받은 카톡 피드백을 할 일로 정리하기</div>
+        <div class="sug"><span class="ic2"></span>제7차 미팅에 가져갈 질문 다듬기</div>
+        <div class="sug"><span class="ic2"></span>2장 초안을 교수님께 보내기 전에 점검하기</div>
+        <div class="ask">
+          <div class="muted">피드백을 넣으면 할 일로 정리해 드려요</div>
+          <div class="srcs"><span>녹음</span><span>카톡 붙여넣기</span><span>한글 파일</span></div>
+        </div>
+      </div>
+      <div class="rail">
+        <span style="font-size:16px">»</span>
+        <span class="ri on"><span class="ic"></span>도우미</span>
+        <span class="ri"><span class="ic"></span>할 일</span>
+        <span class="ri"><span class="ic"></span>자료</span>
+      </div>
+    </div></div>
+
+    <!-- B -->
+    <div class="screen" data-screen="b"><div class="app" style="background:#fff">
+      <div class="lnav">
+        <div class="logo" style="padding:0 10px 14px">margin</div>
+        <div class="it on">대학원생 연구 기록 경험 ▾</div>
+        <div class="it">+ 새 기록 넣기 <span class="badge">⌘K</span></div>
+        <div class="sec">미팅</div>
+        <div class="it">제7차 논문 지도 <span class="badge">2일 남음</span></div>
+        <div class="it">제6차 논문 지도</div>
+        <div class="it">제5차 논문 지도</div>
+        <div class="it">2장 초안 서면 의견</div>
+        <div class="sec">원고</div>
+        <div class="it">2장 이론적 배경</div>
+        <div class="it">연구계획서</div>
+        <div style="position:absolute; left:14px; right:14px; bottom:16px">
+          <div class="it"><span class="av" style="width:26px;height:26px">김</span>김학생</div>
+        </div>
+      </div>
+      <div style="position:absolute; left:260px; right:0; top:0; height:52px; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:0 24px">
+        <span class="btn">찾기 ⌘K</span><span class="send">교수님께 보내기</span>
+      </div>
+      <div style="position:absolute; left:260px; right:0; top:84px; display:flex; justify-content:center">
+        <div class="flow">
+          <span class="st done"><span class="dot">✓</span>문헌 검토</span><span class="ln"></span>
+          <span class="st now"><span class="dot">2</span>연구 설계</span><span class="ln"></span>
+          <span class="st"><span class="dot">3</span>자료 수집</span><span class="ln"></span>
+          <span class="st"><span class="dot">4</span>분석</span><span class="ln"></span>
+          <span class="st"><span class="dot">5</span>논문 작성</span>
+        </div>
+      </div>
+      <div style="position:absolute; left:260px; right:0; top:230px; display:flex; flex-direction:column; align-items:center">
+        <div style="font-size:30px; font-weight:800; letter-spacing:-0.5px">김학생님, 오늘은 무엇을 정리할까요?</div>
+        <div style="width:720px; margin-top:28px; border:1px solid #d6d7da; border-radius:20px; padding:18px 20px; box-shadow:0 2px 14px rgba(0,0,0,.05)">
+          <div class="muted" style="font-size:16px">미팅 녹음, 카톡 대화, 한글 파일을 넣어 보세요. 할 일과 피드백으로 나눠 드려요.</div>
+          <div style="display:flex; align-items:center; margin-top:18px; gap:8px">
+            <span class="srcs" style="margin:0"><span>녹음 시작</span><span>카톡 붙여넣기</span><span>한글·PDF 올리기</span></span>
+            <span style="margin-left:auto; width:34px; height:34px; border-radius:50%; background:#171719"></span>
+          </div>
+        </div>
+        <div style="width:720px; margin-top:36px; display:grid; grid-template-columns:1fr 1fr; gap:14px">
+          <div style="border:1px solid #e9eaec; border-radius:16px; padding:18px 20px">
+            <div class="small b" style="color:#0066ff">다음 미팅 · 2일 남음</div>
+            <div style="font-weight:800; font-size:17px; margin:2px 0">제7차 논문 지도</div>
+            <div class="muted small">목표: 2장 비교 기준을 교수님과 확정하기</div>
+            <div class="small" style="margin-top:12px">가져갈 것 2 / 3 준비됨</div>
+            <div style="height:6px; border-radius:6px; background:#e9eaec; margin-top:6px"><div style="width:66%; height:100%; border-radius:6px; background:#0066ff"></div></div>
+          </div>
+          <div style="border:1px solid #e9eaec; border-radius:16px; padding:18px 20px">
+            <div class="small b">할 일 3</div>
+            <div style="display:flex; gap:8px; align-items:center; margin-top:8px"><span class="ck" style="width:16px;height:16px"></span><span class="small">분석 관점 기준 정의 한 문장</span><span class="small" style="color:#e53935; margin-left:auto">2일 지남</span></div>
+            <div style="display:flex; gap:8px; align-items:center; margin-top:8px"><span class="ck" style="width:16px;height:16px"></span><span class="small">2장 표 2-1 출처 확인</span><span class="small muted" style="margin-left:auto">금요일</span></div>
+            <div style="display:flex; gap:8px; align-items:center; margin-top:8px"><span class="ck" style="width:16px;height:16px"></span><span class="small">참여자 모집 문구 초안</span><span class="small muted" style="margin-left:auto">다음 주</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+
+  </div></div>
+
+  <div class="panel" data-p="now"><div class="why">
+    <div><b>지금</b><p>한 화면에 다음 미팅, 지난 기록 알림, 연구 흐름, 연구 방향, 할 일·알림·최근 미팅·최근 글 4개 탭, 도우미가 함께 있어요. 무엇부터 봐야 할지 화면이 알려 주지 않아요.</p></div>
+  </div></div>
+  <div class="panel on" data-p="a"><div class="why">
+    <div><b>A. 다음 미팅까지 — "이번 주에 뭘 해야 하지?"에 바로 답해요</b><p>맨 위에 연구 흐름 막대, 가운데 큰 카드에 다음 미팅과 가져갈 것 체크리스트, 아래에 할 일 하나(교수님 말 + 내가 할 것 + 어디서 받은 피드백인지). 오른쪽은 지금처럼 토스증권식 레일과 도우미예요. 도우미는 매니패스트처럼 "지금 하면 좋은 것" 3개를 먼저 보여 주고, 맨 아래에서 녹음·카톡·한글 파일을 넣으면 할 일로 정리해요.</p></div>
+    <div><b>달라지는 것</b><p>메뉴 4개 → 3개(홈·미팅·원고). 연구 목적·방향 카드는 홈에서 빠져요(설정에 그대로 있어요). '교수님께 보내기'가 맨 위 버튼 하나로 늘 보여요.</p></div>
+  </div></div>
+  <div class="panel" data-p="b"><div class="why">
+    <div><b>B. 넣으면 정리돼요 — 기록하는 부담을 가장 많이 덜어요</b><p>라이너처럼 첫 화면 가운데가 큰 입력창 하나예요. 녹음·카톡·한글 파일을 넣으면 도우미가 할 일과 피드백으로 나눠요. 그 아래에 다음 미팅과 할 일만 작게 보여요. 왼쪽 목록은 미팅과 원고뿐이라, 미팅 하나를 누르면 그 미팅의 한 페이지가 열려요.</p></div>
+    <div><b>달라지는 것</b><p>위쪽 메뉴가 사라지고 왼쪽 목록 하나로 바뀌어요. 오른쪽 레일과 사이드 창은 없어요. 대신 이건 이미 정한 '토스증권 레일 골조 유지'를 바꾸는 안이라, 고르시면 그 결정도 다시 정해야 해요.</p></div>
+  </div></div>
+  <p class="note">두 안 모두 설명용 가상 데이터예요. 카톡·한글 파일에서 할 일을 뽑는 기능은 지금 제품에 없어서 새로 만들어야 해요.</p>
+
+  <h2>참고한 화면</h2>
+  <div class="refs">
+    <figure><img onerror="this.remove()" src="../assets/benchmarks/tossinvest/01_home_panel_open.png" alt="토스증권 홈"><figcaption><b>토스증권</b> → A의 오른쪽 레일과 사이드 창. 본문은 넓게, 보조는 오른쪽에.</figcaption></figure>
+    <figure><img onerror="this.remove()" src="../assets/benchmarks/manyfast/08_project_workspace.png" alt="매니패스트 작업 화면"><figcaption><b>매니패스트</b> → A의 도우미가 "지금 하면 좋은 것" 3개를 먼저 제안하는 방식. 완성도 막대.</figcaption></figure>
+    <figure><img onerror="this.remove()" src="../assets/benchmarks/liner/01_home.png" alt="라이너 홈"><figcaption><b>라이너</b> → B의 큰 입력창 하나와 조용한 왼쪽 목록.</figcaption></figure>
+  </div>
+</main>
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  function fit() { var s = stage.clientWidth / 1440; document.querySelectorAll('.screen').forEach(function (el) { el.style.transform = 'scale(' + s + ')'; }); }
+  window.addEventListener('resize', fit); fit();
+  document.querySelectorAll('[data-s]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.dataset.s;
+      document.querySelectorAll('[data-s]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      document.querySelectorAll('.screen').forEach(function (el) { el.classList.toggle('on', el.dataset.screen === k); });
+      document.querySelectorAll('.panel').forEach(function (el) { el.classList.toggle('on', el.dataset.p === k); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

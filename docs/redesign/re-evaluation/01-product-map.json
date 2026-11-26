@@ -1,0 +1,75 @@
+{
+  "generatedAt": "2026-11-24T23:50:00+09:00",
+  "phase": 1,
+  "repoBaseline": {
+    "headCommit": "4fce15e",
+    "headMessage": "feat(ui): 목록 행 동작 공통화(⋯·우클릭·스와이프), 파일 추가 창, 넓은 화면 열 표시, 색·테두리 정리 (#184)",
+    "uncommittedFiles": [
+      "apps/home-preview/src/components/assistant/assistant-side-panel.css",
+      "apps/home-preview/src/components/shell/rqa-batch01-regression.test.tsx",
+      "apps/home-preview/src/components/shell/shell.css",
+      "apps/home-preview/src/main.tsx"
+    ],
+    "liveUrl": "https://margin-research.pages.dev",
+    "liveVerifiedInPhase1": false
+  },
+  "routes": {
+    "public": [
+      { "path": "/", "component": "LandingPage", "label": "소개 랜딩" },
+      { "path": "/features", "component": "FeatureTourPage", "label": "기능 둘러보기" },
+      { "path": "/pricing", "component": "PricingPage", "label": "플랜" },
+      { "path": "/guide", "component": "InfoPage", "label": "사용 안내" },
+      { "path": "/privacy", "component": "InfoPage", "label": "자료와 개인정보" },
+      { "path": "/login", "component": "LoginPage", "label": "로그인" },
+      { "path": "/signup", "component": "InviteSignupPage/SignupPage", "label": "가입" },
+      { "path": "/join", "component": "JoinPage", "label": "연구 초대 수락" }
+    ],
+    "workspace": [
+      { "id": "R1", "path": "/r", "component": "ResearchSelectPage", "shell": true, "label": "내 연구 / 받은 검토 요청" },
+      { "id": "R2", "path": "/r/new", "component": "OnboardingPage", "shell": false, "label": "연구 만들기 온보딩" },
+      { "id": "H1", "path": "/r/:researchId", "component": "HomePage", "shell": true, "label": "연구 홈" },
+      { "id": "M1", "path": "/r/:researchId/meetings/:meetingId?", "component": "MeetingsPage", "shell": true, "label": "미팅·서면피드백 목록 및 상세" },
+      { "id": "T1", "path": "/r/:researchId/tasks", "component": "TasksHome", "shell": true, "label": "할 일·피드백" },
+      { "id": "W1", "path": "/r/:researchId/docs", "component": "DocsPage", "shell": true, "label": "글·자료 목록" },
+      { "id": "W2", "path": "/r/:researchId/docs/w/:documentId", "component": "WritingPage", "shell": true, "widePanel": true, "label": "원고 에디터" },
+      { "id": "W3", "path": "/r/:researchId/docs/m/:materialId", "component": "MaterialsPage", "shell": true, "widePanel": true, "label": "PDF 자료 상세" },
+      { "id": "F1", "path": "/r/:researchId/flow", "component": "PlanningPage", "shell": true, "label": "연구 흐름(단계·달력)" },
+      { "id": "M3/X2", "path": "/reviews/:requestId", "component": "ReviewDetailPage", "shell": "conditional", "label": "교수 검토 상세" },
+      { "id": "M4", "path": "/schedule/:pollId", "component": "PollPage", "shell": "conditional", "label": "미팅 시간 조율" }
+    ],
+    "globalOverlays": [
+      { "query": "detail=<kind>:<id>", "component": "ItemDetail", "kinds": ["task", "feedback", "decision", "question", "result"] },
+      { "query": "settings=<section>", "component": "SettingsDialog", "sections": ["profile", "display", "notifications", "assistant", "usage", "shortcuts", "research", "people", "schedule", "danger"] },
+      { "query": "panel=<tab>", "component": "WorkspaceShell SidePanel", "tabs": ["assistant", "tasks", "log", "materials"] },
+      { "query": "new=<kind>", "component": "CreateHosts", "kinds": ["record", "written", "meeting", "poll", "task", "feedback", "doc", "material", "result", "review"] }
+    ]
+  },
+  "roles": ["owner", "editor", "professor_incoming_only", "guest"],
+  "entities": [
+    "Research", "ResearchMember", "ActivityEvent", "MeetingPoll",
+    "Meeting", "Recording", "Feedback", "RevisionPlan", "Task", "Question", "Decision",
+    "MaterialFolder", "DocumentRecord", "DocumentVersion", "Material", "MaterialVersion",
+    "RevisionResult", "ReviewRequest", "ReviewItem", "ReviewRound", "ReviewResponse", "ReviewComment", "ReviewRead",
+    "ResearchPhase", "Milestone", "AIConversation", "Attachment", "SavedAICandidate", "AIRun"
+  ],
+  "mandatoryReviewTargets": [
+    { "id": 1, "topic": "연구 전환기 하단 고정 및 새 연구 만들기 위치", "files": ["components/shell/TopBar.tsx"] },
+    { "id": 2, "topic": "홈 화면 정보 중복 및 일정/로드맵 역할", "files": ["pages/HomePage.tsx", "lib/side-panel.ts"] },
+    { "id": 3, "topic": "우측 사이드 레일 디자인·아이콘·하단 버튼", "files": ["components/shell/SideRail.tsx", "components/shell/shell.css", "components/icons.tsx"] },
+    { "id": 4, "topic": "페이지 제목 크기·굵기 불일치", "files": ["styles.css", "pages/HomePage.tsx", "pages/docs/DocsPage.tsx", "pages/tasks/TasksHome.tsx"] },
+    { "id": 5, "topic": "휴지통 이동 vs 완전 삭제 마찰 구조", "files": ["pages/AuthPages.tsx", "components/PermanentResearchDelete.tsx"] },
+    { "id": 6, "topic": "휴지통 카드 복원·완전 삭제 배치", "files": ["pages/AuthPages.tsx", "components/PermanentResearchDelete.tsx"] },
+    { "id": 7, "topic": "SlideToConfirm 드래그 마감 및 텍스트 겹침", "files": ["components/SlideToConfirm.tsx"] },
+    { "id": 8, "topic": "모달 설명 길이 및 닫기/취소 중복", "files": ["components/PermanentResearchDelete.tsx", "components/ui/dialog.tsx"] },
+    { "id": 9, "topic": "홈 알림 카드 좌측 파란 띠", "files": ["pages/HomePage.tsx"] },
+    { "id": 10, "topic": "투고까지 D-N 칩 텍스트 수직 정렬", "files": ["components/home/SubmissionCountdown.tsx"] },
+    { "id": 11, "topic": "기록 정리하기 등 UX 라이팅 명확성", "files": ["lib/home-action.ts", "pages/HomePage.tsx"] },
+    { "id": 12, "topic": "연구 도우미 제안·실행 내역 탭 필요성", "files": ["components/assistant/AssistantSidePanel.tsx", "pages/ResearchAssistant.tsx"] },
+    { "id": 13, "topic": "연구 도우미 빈 상태 추천 프롬프트 개수·맥락", "files": ["lib/assistant-starters.ts", "pages/assistant/AssistantPanel.tsx"] },
+    { "id": 14, "topic": "잔액 크레딧 표기(숫자 vs %)", "files": ["components/ai/AICreditStatus.tsx", "pages/settings/UsageMeters.tsx"] },
+    { "id": 15, "topic": "의견 수집(mailto vs 인앱/UT 수집)", "files": ["components/shell/SideRail.tsx"] },
+    { "id": 16, "topic": "설정 화면 전반 완성도", "files": ["components/settings/SettingsDialog.tsx", "pages/SettingsPage.tsx"] },
+    { "id": 17, "topic": "공개 랜딩·소개 페이지 완성도", "files": ["pages/PublicPages.tsx", "components/marketing/WorkflowStack.tsx"] },
+    { "id": 18, "topic": "선행 검수 주요 결함(MA-01·08·09·15·20·21·22·23·24 등)", "files": ["styles.css", "pages/reviews/ReviewDetailPage.tsx", "pages/WritingPage.tsx", "pages/docs/DocsPage.tsx"] }
+  ]
+}

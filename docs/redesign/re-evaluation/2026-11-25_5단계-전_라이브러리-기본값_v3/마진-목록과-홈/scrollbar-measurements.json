@@ -1,0 +1,38 @@
+{
+  "overlayShort": {
+    "outer": 0,
+    "client": 1044,
+    "actual": 0,
+    "titleX": 268,
+    "scrollHeight": 795,
+    "height": 795,
+    "gutter": "auto"
+  },
+  "overlayLong": {
+    "outer": 0,
+    "client": 1044,
+    "actual": 0,
+    "titleX": 268,
+    "scrollHeight": 2278,
+    "height": 795,
+    "gutter": "auto"
+  },
+  "classicShort": {
+    "outer": 0,
+    "client": 1044,
+    "actual": 0,
+    "titleX": 268,
+    "scrollHeight": 795,
+    "height": 795,
+    "gutter": "auto"
+  },
+  "classicLong": {
+    "outer": 0,
+    "client": 1044,
+    "actual": 0,
+    "titleX": 268,
+    "scrollHeight": 2278,
+    "height": 795,
+    "gutter": "auto"
+  }
+}

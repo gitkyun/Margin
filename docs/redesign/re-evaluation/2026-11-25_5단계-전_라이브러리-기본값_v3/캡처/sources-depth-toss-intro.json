@@ -1,0 +1,109 @@
+{
+  "rows": [
+    {
+      "file": "motion-toggle-initial.jpg",
+      "key": "motion-toggle",
+      "group": "사용 중인 라이브러리",
+      "name": "Motion",
+      "title": "Layout animation — Motion for React Example",
+      "stage": "기본 화면",
+      "caption": "공식 레이아웃 모션 예제의 시작 위치.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://motion.dev/examples/react-layout-animation",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "file": "motion-toggle-changed.jpg",
+      "key": "motion-toggle",
+      "group": "사용 중인 라이브러리",
+      "name": "Motion",
+      "title": "Layout animation — Motion for React Example",
+      "stage": "조작 후",
+      "caption": "손잡이의 가로 이동이 확인됐다. 목록의 의미나 버튼 자체를 정하는 라이브러리와 역할이 다르다.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://motion.dev/examples/react-layout-animation",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "file": "toss-intro-mobile-hero.jpg",
+      "key": "toss-intro-mobile",
+      "group": "소개와 서비스 흐름",
+      "name": "토스",
+      "title": "토스",
+      "stage": "모바일 기본",
+      "caption": "390px에서 소개 첫 화면과 메뉴를 확인했다. 움직임 줄이기를 켠 브라우저 조건.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://toss.im/",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "toss-intro-service-menu.jpg",
+      "key": "toss-intro",
+      "group": "소개와 서비스 흐름",
+      "name": "토스",
+      "title": "토스",
+      "stage": "조작 후",
+      "caption": "상단 서비스 메뉴를 펼쳤다. 소개의 순서를 따라가지 않고도 원하는 서비스 분류를 찾아갈 수 있다.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://toss.im/",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "file": "toss-intro-mobile-menu.jpg",
+      "key": "toss-intro-mobile",
+      "group": "소개와 서비스 흐름",
+      "name": "토스",
+      "title": "토스",
+      "stage": "조작 후",
+      "caption": "390px에서 서비스·비즈니스 분류, 회사소개와 뉴스룸, 앱 다운로드 메뉴를 열었다.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://toss.im/",
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "toss-intro-story-send.jpg",
+      "key": "toss-intro",
+      "group": "소개와 서비스 흐름",
+      "name": "토스",
+      "title": "토스",
+      "stage": "스크롤 후",
+      "caption": "아래로 내려갈 때 실제 앱 조작과 송금 결과를 한 장면에 보여 준다.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://toss.im/",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "file": "toss-intro-story-next.jpg",
+      "key": "toss-intro",
+      "group": "소개와 서비스 흐름",
+      "name": "토스",
+      "title": "토스",
+      "stage": "스크롤 후",
+      "caption": "같은 소개에서 다음 주제로 넘어가면 자산 관리를 보여 주는 설명과 앱 화면이 이어진다.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://toss.im/",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "file": "toss-intro-footer.jpg",
+      "key": "toss-intro",
+      "group": "소개와 서비스 흐름",
+      "name": "토스",
+      "title": "토스",
+      "stage": "스크롤 후",
+      "caption": "홈 끝에 도달해 주요 회사 및 서비스 지원 링크를 확인했다.",
+      "mode": "공식 사이트 · 실제 조작",
+      "source": "https://toss.im/",
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "fails": []
+}

@@ -1,0 +1,178 @@
+[
+  {
+    "file": "01-01-connected-numbering.png",
+    "label": "연결 모드 복원의 번호",
+    "observation": "v3 · v2 · v1이며 복원 직전 본문은 v2에 남습니다.",
+    "source": "WritingPage.tsx / 20261123000000_material_default_private.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "02-new-title-format-before.png",
+    "label": "복원 직전 제목과 굵기",
+    "observation": "본문 문자는 v1과 같고 현재 저장된 제목과 글자 굵기가 다릅니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "03-18-compare-no-title-format.png",
+    "label": "본문 평문만 보이는 버전 비교",
+    "observation": "버전 비교에서 제목과 굵기의 차이를 표시하지 않으며 복원 버튼은 켜져 있습니다.",
+    "source": "CompareView.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "04-new-title-format-after.png",
+    "label": "복원 후 되돌릴 이력 없음",
+    "observation": "버전에는 과거 제목과 굵기가 없는 v1과 v2만 있고 복원 직전 상태는 빠져 있습니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "05-new-restore-failed-version.png",
+    "label": "실패 알림과 복원 직전 제목",
+    "observation": "마지막 저장 요청 한 번만 실패시켰습니다. 오류 화면은 편집 중이던 제목을 보여 주나 실제 저장본은 과거 내용으로 바뀌었습니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL · 마지막 요청만 실패 주입",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "06-new-restore-after-refresh.png",
+    "label": "새로고침 뒤 드러난 복원 상태",
+    "observation": "오류 직후 새로고침하면 v1 제목과 본문이 나옵니다. 복원 직전 상태는 v2에 보존돼 있습니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL · 마지막 요청만 실패 주입",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "07-new-visibility-stale.png",
+    "label": "나만 보기와 저장됨으로 표시되는 원고",
+    "observation": "지연시킨 저장 응답 이후에도 화면은 나만 보기지만 서버 공유가 유지돼 공동연구자가 가상 원고를 읽을 수 있습니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL · 응답 한 번 지연",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "08-new-visibility-reload.png",
+    "label": "새로고침하면 공유 상태로 표시",
+    "observation": "이전 화면에서 저장했다고 표시되던 변경이 적용되지 않았습니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL · 응답 한 번 지연",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "09-19-conflict-choice.png",
+    "label": "파일 저장 충돌 선택",
+    "observation": "파란 버튼은 내 편집 내용을 화면에 유지하고 다음 저장의 기준을 바꿉니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "10-19-conflict-keep.png",
+    "label": "내 문장을 편집기에 유지한 상태",
+    "observation": "누른 직후와 자동 저장 대기 1.7초 뒤에도 서버에 학생 문장이 남습니다.",
+    "source": "WritingPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "11-new-task-from-record.png",
+    "label": "출처 기록의 할 일",
+    "observation": "기록에서 할 일 추가를 눌러 작성한 항목이 같은 기록에 보입니다. 저장 데이터에 기록 식별자가 들어 있습니다.",
+    "source": "RecordSide.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "12-03-task-source-label.png",
+    "label": "전체 할 일에서 잘못 표시된 출처",
+    "observation": "작성한 학생 계정에서도 기록 제목 대신 직접 추가로 표시됩니다.",
+    "source": "task-groups.ts",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "13-new-task-filter-miss.png",
+    "label": "같은 기록 필터를 선택하면 목록에서 빠짐",
+    "observation": "전체 할 일에서 보였던 항목이 원본 기록 선택 직후 사라집니다.",
+    "source": "TasksHome.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "14-04-meeting-goal-edit.png",
+    "label": "다음 미팅 준비 화면의 저장된 목표",
+    "observation": "할 일·질문·자료 없이 목표 한 줄만 저장돼 있습니다.",
+    "source": "MeetingsPage.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "15-04-meeting-goal-home.png",
+    "label": "홈 다음 미팅의 빈 준비 표시",
+    "observation": "저장된 목표가 있지만 홈 요약은 준비 내용이 없다고 표시합니다.",
+    "source": "HomePage.tsx / NextMeetingPreview.tsx",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  },
+  {
+    "file": "16-24-usage-policy-stale.png",
+    "label": "사용량 화면의 구형 한도 문구",
+    "observation": "화면에는 최근 24시간 한도만 있다고 표시되며, 적용한 서버 규칙은 월 크레딧과 분당 제한을 사용합니다.",
+    "source": "UsageMeters.tsx / 20261115000000_ai_credits.sql",
+    "mode": "실제 UI · 격리 SQL",
+    "viewport": {
+      "w": 1440,
+      "h": 900
+    }
+  }
+]
